@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Setting Commands</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Setting Commands</a></h1>
+    <p><a href="#commands">Commands</a>
+        | <a href="#settings">Settings</a></p>
+    <p>There are a couple of commands that allow you to change settings from
+        the chat inputbox. (<em>You should probably roughly know what you're doing
+            before using these.</em>)</p>
+    
+    <h2>
+        <a name="commands">Commands</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <ul>
+        <li><code>/set &lt;setting&gt; &lt;value&gt;</code>
+        changes a setting</li>
+        <li><code>/get &lt;setting&gt;</code> shows the current value
+    of a setting</li>
+        <li><code>/reset &lt;setting&gt;</code> resets the setting to
+    the default (hard-coded) value</li>
+        <li><code>/clearsetting &lt;setting&gt;</code> sets
+    string settings to an empty string</li>
+        <li><code>/add &lt;setting&gt; &lt;value&gt;</code> adds a string to a
+    list of strings</li>
+        <li><code>/remove &lt;setting&gt; &lt;value&gt;</code> removes a string from a
+    list of strings</li>
+    </ul>
+            
+    <h2>
+        <a name="settings">Settings</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>The following are settings that can be changed using the setting commands.
+        A lot of those - but not all - can also be changed in the Settings Dialog,
+        which is more convient in some cases. This does not show all settings.</p>
+    
+            <ul>
+                <li>For Addressbook related settings, see <a href="help-addressbook.html#advanced">Addressbook Help</a>.</li>
+            </ul>
+    
+    <p>Settings with a <span class="settingExclusive">slightly darker background color</span>
+    are settings that are not available in the Settings Dialog and can only be
+    changed via commands (and sometimes also commandline options).</p>
+    
+    <p>
+        <a href="#font">Font</a> |
+        <a href="#time">Time</a> |
+        <a href="#server">Server/Connection</a> |
+        <a href="#streamchat">Stream Chat</a> |
+        <a href="#streamhighlights">Stream Highlights</a> |
+        <a href="#debugging">Debugging</a> |
+        <a href="#bots">Bot Badges</a>
+    </p>
+            <table class="settings" style="border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">dontSaveSettings</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Don't save settings when Chatty is closed (<code>-ds</code> commandline option).</td>
+                </tr>
+                <tr>
+                    <td class="setting">timeoutButtons</td>
+                    <td rowspan="3">String</td>
+                    <td rowspan="3">See <a href="help-settings.html#commands-menu">Command Settings Help</a></td>
+                    <td><em>too long</em></td>
+                    <td>Buttons in the Userinfo dialog (not only timeout buttons)</td>
+                </tr>
+                <tr>
+                    <td class="setting">userContextMenu</td>
+                    <td><em>empty</em></td>
+                    <td>Custom entries in the User Context Menu</td>
+                </tr>
+                <tr>
+                    <td class="setting">channelContextMenu</td>
+                    <td><em>empty</em></td>
+                    <td>Custom entries in the Channel Context Menu</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">twitchnotifyAsInfo</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Show messages from user "twitchnotify" as info messages.
+                    Turn off to show as regular message, so you can e.g. highlight
+                    it.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">backupDelay</td>
+                    <td>Integer</td>
+                    <td>Number of days</td>
+                    <td>1</td>
+                    <td>How many days to wait between a <a href="help-guide_folders.html#backup">Backup</a></td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">backupCount</td>
+                    <td>Integer</td>
+                    <td>Number of backups</td>
+                    <td>5</td>
+                    <td>How many backups to rotate through</td>
+                </tr>
+                <tr class="settingNoCommandEdit">
+                    <td class="setting">hotkeys</td>
+                    <td>List</td>
+                    <td colspan="2"><em>Cannot be edited by command</em></td>
+                    <td>The hotkeys that are currently defined</td>
+                </tr>
+                <tr class="settingNoCommandEdit">
+                    <td class="setting">windows</td>
+                    <td>Map</td>
+                    <td colspan="2"><em>Cannot be edited by command</em></td>
+                    <td>The windows/dialogs positions/sizes as they where loaded
+                        when you started Chatty (NOT necessarily the current ones).</td>
+                </tr>
+                <tr>
+                    <td class="setting">globalHotkeysEnabled</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Enable global hotkeys that are defined in the settings.
+                    Disable this to temporarily turn off the global hotkeys you
+                    defined.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">imageCache</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Whether images (emotes, usericons) are cached in local
+                    files.</td>
+                </tr>
+            </table>
+            
+            <h3><a name="font">Font</a></h3>
+            
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">font</td>
+                    <td>String</td>
+                    <td>Font name, e.g. <code>Arial</code> or <code>Arial Bold</code></td>
+                    <td>Consolas</td>
+                    <td>The font used for the chat</td>
+                </tr>
+                <tr>
+                    <td class="setting">fontSize</td>
+                    <td>Integer</td>
+                    <td>Font size, e.g. <code>14</code></td>
+                    <td>14</td>
+                    <td>The font size used for the chat</td>
+                </tr>
+                <tr>
+                    <td class="setting">lineSpacing</td>
+                    <td>Integer</td>
+                    <td>Numbers between <code>-1</code> and <code>10</code> probably
+                        make the most sense.</td>
+                    <td>3</td>
+                    <td>The space between chatlines</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">inputFont</td>
+                    <td>String</td>
+                    <td>Font name and size, as understood by <a href="http://docs.oracle.com/javase/7/docs/api/java/awt/Font.html#decode%28java.lang.String%29">Font.decode()</a></td>
+                    <td>Dialog 14</td>
+                    <td>The font for the chat input box (should only be set to
+                        Java logical fonts like <code>Dialog</code> or
+                        <code>Monospaced</code>, otherwise fallback fonts in
+                        chat may not work correctly*)</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">dialogFontSize</td>
+                    <td>Integer</td>
+                    <td>Font size or <code>-1</code> to keep default</td>
+                    <td>-1</td>
+                    <td>Setting to customize the font size of dialogs, currently
+                        experimentel and only for User Info Dialog.</td>
+                </tr>
+            </table>
+            
+            <p>* If a character isn't contained in the chat font you have
+            currently configured, Java will try to find it in the fallback
+            fonts. While still not all characters will be displayed this way, it
+            should work a lot better. You can also <a href="help-troubleshooting.html#font">add your own fallback fonts</a>
+            to improve the situation further. However, setting the input box
+            font to your chat font somehow breaks the fallback font mechanism,
+            resulting in less characters being able to be displayed (like in
+            versions before 0.7.3).</p>
+            
+            <h3><a name="time">Time</a> <span style="font-size:0.5em;">Dr. Freeman..</span></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">timestamp</td>
+                    <td>String</td>
+                    <td>Format as understood by 
+                        <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>
+                        or <code>off</code></td>
+                    <td class="settingDefault">[HH:mm]</td>
+                    <td>The timestamp used for all lines in chat</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">timestampTimezone</td>
+                    <td>String</td>
+                    <td>As understood by <a href="http://docs.oracle.com/javase/7/docs/api/java/util/TimeZone.html#getTimeZone%28java.lang.String%29">Timezone.getTimeZone()</a>
+                        e.g. <code>GMT+2</code> or <code>PST</code></td>
+                    <td class="settingDefault"><code><em>empty</em></code></td>
+                    <td>The timezone used for the <code>timestamp</code></td>
+                </tr>
+                <tr>
+                    <td class="setting">logTimestamp</td>
+                    <td>String</td>
+                    <td>Format as understood by
+                        <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>
+                        or <code>off</code></td>
+                    <td class="settingDefault">[HH:mm:ss]</td>
+                    <td>The timestamp used for all lines in the chatlog files</td>
+                </tr>
+            </table>
+            
+            
+            <h3><a name="server">Server/Connection Settings</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">serverDefault</td>
+                    <td>String</td>
+                    <td>The server address, host or IP</td>
+                    <td class="settingDefault">irc.twitch.tv</td>
+                    <td>Default server to connect to, which can be changed in
+                    the Settings Dialog and is saved between sessions</td>
+                </tr>
+                <tr>
+                    <td class="setting">portDefault</td>
+                    <td>String</td>
+                    <td>One or more ports, seperated by comma</td>
+                    <td class="settingDefault">6667,80</td>
+                    <td>Default port to connect to, which can be changed in the
+                    Settings Dialog and is saved between sessions</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">server</td>
+                    <td>String</td>
+                    <td>The server address, host or IP</td>
+                    <td class="settingDefault"><em>empty</em></td>
+                    <td>If set, overrides the <code>defaultServer</code>, can be
+                    set by commandline options, not saved in between sessions</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">port</td>
+                    <td>String</td>
+                    <td>One or more ports, seperated by comma</td>
+                    <td class="settingDefault"><em>empty</em></td>
+                    <td>If set, overrides the <code>defaultPort</code>, can be
+                    set by commandline options, not saved in between sessions</td>
+                </tr>
+                <tr>
+                    <td class="setting">username</td>
+                    <td>String</td>
+                    <td>Your username</td>
+                    <td class="settingDefault"><em>empty</em></td>
+                    <td>Public part of the <a href="help.html#login">Login data</a>
+                         to login into chat</td>
+                </tr>
+                <tr>
+                    <td class="setting">token</td>
+                    <td>String</td>
+                    <td>OAuth token</td>
+                    <td class="settingDefault"><em>empty</em></td>
+                    <td>Secret part of the <a href="help.html#login">Login data</a>
+                         to authorize with Twitch, don't show this to anyone. You
+                         shouldn't change this directly, but use the <code>/changetoken</code>
+                        command instead when manually setting the token.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">spamProtection</td>
+                    <td>String</td>
+                    <td>messages/seconds, e.g. <code>10/20</code></td>
+                    <td class="settingDefault">18/30</td>
+                    <td>How many messages Chatty allows you to send to the server
+                    in the given time, to prevent a ban from chat</td>
+                </tr>
+                <tr>
+                    <td class="setting">membershipEnabled</td>
+                    <td colspan="2">Boolean</td>
+                    <td class="settingDefault">true</td>
+                    <td>Refers to the <code>twitch.tv/membership</code> IRCv3 CAP, which
+                    enables sending a userlist and joins/parts, allowing for a
+                    correct userlist in Chatty and showing of joins/parts in chat
+                    (if separately enabled of course)</td>
+                </tr>
+            </table>
+            
+            <h3><a name="streamchat">Stream Chat</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamChatChannels</td>
+                    <td>List[String]</td>
+                    <td>Channel name (with leading #) or empty</td>
+                    <td><em>empty</em></td>
+                    <td>Forwards messages from the given channels to
+                        <a href="help.html#streamchat">Stream Chat</a>.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamChatMessageTimeout</td>
+                    <td>Integer</td>
+                    <td>Number of seconds, negative to disable</td>
+                    <td>-1</td>
+                    <td>How long messages are displayed before they disappear
+                    from Stream Chat.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamChatBottom</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Start inserting messages at the bottom. Messages are
+                    always inserted below previous messages, but disabling this setting
+                    will make them <em>start</em> at the top. <em>Requires a
+                        restart of Chatty after changing to take any effect.</em></td>
+                </tr>
+                <tr>
+                    <td class="setting">streamChatResizable</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Whether the Stream Chat dialog is resizable by dragging
+                    the edges.</td>
+                </tr>
+            </table>
+            
+            <h3><a name="streamhighlights">Stream Highlights</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamHighlightChannel</td>
+                    <td>String</td>
+                    <td>Channel name (with leading #) or empty</td>
+                    <td><em>empty</em></td>
+                    <td>Allows moderators in the given channel to run the
+                    !addStreamHighlight command.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamHighlightChannelRespond</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>If this is enabled, Chatty sends a message to chat when
+                    a moderator uses the !addStreamHighlight command. Otherwise
+                    the response to the command is only shown locally.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">streamHighlightCommand</td>
+                    <td>String</td>
+                    <td>The command to use for moderators</td>
+                    <td><em>!addstreamhighlight</em></td>
+                    <td>Change this to define the command that can be used by
+                    mods to add stream highlights in the channel defined with
+                    the <code>streamHighlightChannel</code> setting.</td>
+                </tr>
+            </table>
+            
+            
+            <h3><a name="debugging">Debugging</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">debugLogIrc</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Log raw IRC messages in the Debug Window.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">debugLogIrcFile</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Log raw IRC messages to the debug_irc.log file in the
+                    settings directory.</td>
+                </tr>
+            </table>
+            
+            <h3><a name="bots">Bot Badges</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">botBadgeEnabled</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Show bot badge in chat for known bots.</td>
+                </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">botNames</td>
+                    <td>List[String]</td>
+                    <td>Name of the bot</td>
+                    <td>some default names</td>
+                    <td>List of locally defined known bots. You have to restart
+                    Chatty for changes to take effect.</td>
+                </tr>
+                <tr>
+                    <td class="setting">botNamesBTTV</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Use bot names from BTTV API. BTTV emotes have to be enabled for this to work.</td>
+                </tr>
+                <tr>
+                    <td class="setting">botNamesFFZ</td>
+                    <td colspan="2">Boolean</td>
+                    <td>true</td>
+                    <td>Use bot names from FFZ API. FFZ emotes have to be enabled for this to work.</td>
+                </tr>
+            </table>
+</body>
+</html>
+

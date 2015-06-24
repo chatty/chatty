@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty - Livestreamer</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">To main help page</a></div>
+    <h1><a name="top">Livestreamer</a></h1>
+    <p>
+        <a href="#usage">Usage</a> | 
+        <a href="#settings">Settings</a> | 
+        <a href="#troubleshooting">Troubleshooting</a>
+    </p>
+    <p><a href="http://livestreamer.readthedocs.org/en/latest/">Livestreamer</a>
+    is a commandline program that can be used to watch streams in a player like
+    VLC Player. It has to be downloaded and installed seperately from Chatty.</p>
+
+    <h2><a name="usage">Usage</a></h2>
+    <p>You can open the Livestreamer dialog that Chatty provides via 
+    <code>Extra - Livestreamer</code>, where you can directly run Livestreamer
+    and change some settings.</p>
+    
+    <p>Each time you open a stream via the dialog or a context menu, a tab is
+    added to the dialog where the output of the Livestreamer process is
+    redirected to. If you open a stream with the same stream name and quality you already
+    have open in a tab whose process isn't currently running, then that tab will
+    be reused.</p>
+
+    <p>The tab of a stream is automatically closed when you close the Video
+    Player opened by Livestreamer, if the dialog isn't currently open. Otherwise
+    you have to close it yourself by using the <code>Close</code>-button on the
+    top right, which turns into an <code>End process</code>-button as long as
+    the process is still running. The <code>Retry</code>-button can be used to
+    re-run the last command of that tab (for example when it couldn't find the
+    stream, but you want to retry now because you know it's come online).</p>
+    
+    <h2><a name="settings">Settings</a></h2>
+    <p>The settings can be changed in the Livestreamer dialog.</p>
+    <ul>
+        <li><strong>Enable context menu entry</strong>: Adds Livestreamer to all
+        context menus that can be used to open streams (like User Context Menu,
+        Channel Context Menu or Live Streams Context Menu).</li>
+        <li><strong>Show dialog when opening stream</strong>: Automatically open
+        the Livestreamer Dialog when you open a stream out of the context menu.</li>
+        <li><strong>Context menu qualities</strong>: You can customize which
+        quality options appear in the context menu. The options you enter here
+        are directly given as a parameter to Livestreamer, except <code>Select</code>
+        which tells Chatty you want to select a quality in the dialog. Seperate
+        qualities by space or comma. Add a <code>|</code> (vertical bar) to add
+        a seperator to the menu.
+        
+        <br /><br />
+        Examples:
+        <ul>
+            <li><code>Best, High, Worst | Select</code></li>
+            <li><code>Source High Medium Low Mobile | Select</code></li>
+        </ul>
+        </li>
+        <li><strong>Base command or commandline options</strong>: This is used to
+        construct the command to run Livestreamer and is basicially the part
+        before the URL and the quality. This should point to the Livestreamer
+        program itself, including any commandline options you always want to have included. The default is just <code>livestreamer</code>, which
+        should usually be sufficient if the program is correctly included in
+        the systems PATH variable (or similiar), but it may also include the
+        full path to Livestreamer. Surround the path or any other parameter with quotes if it contains
+        spaces (e.g. <code>"C:\My Programs\Livestreamer\livestreamer.exe"</code>).
+        <br /><br />
+        Examples:
+        <ul>
+            <li><code>"C:\My Programs\Livestreamer\livestreamer.exe" --player "C:\Program
+                    Files\MPC-HC\mpc-hc64.exe"</code> (specify full path to Livestreamer
+            and use a different player)</li>
+            <li><code>/usr/local/bin/livestreamer</code> (this might work on Linux/Mac
+            if it can't find Livestreamer without the full path)</li>
+        </ul>
+        
+        </li>
+        <li><strong>Use Authorization (Twitch Oauth Token)</strong>: Supplies to
+        Twitch Access Token that is used for Chatty to Livestreamer to authenticate
+        you when watching a stream via Livestreamer (probably only necessary to
+        be able to watch sub-only streams).</li>
+    </ul>
+
+    <h2><a name="troubleshooting">Troubleshooting</a></h2>
+    <p>If you get an error like <code>Error: java.io.IOException: Cannot run
+            program "&lt;...&gt;": CreateProcess error=2 [..]</code>, then
+    Chatty probably can't find Livestreamer on your system.</p>
+    
+    <p>To solve this, first make sure that
+    you actually have Livestreamer installed. You need to install it on you own, it does
+    not come bundled with Chatty. If you are sure it is installed (and you maybe can
+    run it from the commandline just fine), you may have to tell Chatty the full
+    path to the Livestreamer executable for it to work by entering it in the
+    <code>Base command or commandline options</code> field. See the Settings section
+    above for examples and help on that.</p>
+</body>
+</html>
+

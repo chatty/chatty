@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Troubleshooting</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Troubleshooting</a></h1>
+    
+    <ul>
+        <li><a href="#known">Known Issues</a></li>
+        <li><a href="#performance">Bad performance / OutOfMemoryError</a></li>
+        <li><a href="#jintellitype">Could not load JIntellitype.dll</a></li>
+        <li><a href="#livestreamer">Livestreamer won't run properly</a></li>
+        <li><a href="#timeout">People are shown as timed out in several channels at once</a></li>
+        <li><a href="#login">Can't connect because the login failed</a></li>
+        <li><a href="#font">Some characters in chat only show up as boxes / Fallback fonts</a></li>
+        <li><a href="#start">Chatty won't start</a></li>
+        <li><a href="#log">Debug log</a></li>
+    </ul>
+    
+    <h2>
+        <a name="known">Known Issues</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>User Interface</h3>
+    <ul>
+        <li>Sometimes users aren't correctly sorted in the userlist</li>
+        <li>Windows: Dragging the upper edge to maximize the window vertically
+            doesn't resize the contents of the window. This may be a Java Bug
+            that I cannot fix. Workaround: Try double-clicking the upper edge
+            instead of dragging it.</li>
+    </ul>
+    
+    <h3>Errors / Crashes</h3>
+    <ul>
+        <li>Using the Calibri font can cause random errors, due to a bug in
+            Java.
+            (<a href="http://stackoverflow.com/questions/16331075/error-generating-jasperreport-in-development-mode">More information</a>)</li>
+        <li>Java can crash due to a bug with the graphics driver.
+            (<a href="http://obsproject.com/forum/threads/chatty.14149/#post-81271">Forum Posts</a>)</li>
+    </ul>
+    <p><a href="help-issues.html">Documentation of some issues</a></p>
+
+    <h2>
+        <a name="performance">Bad performance / OutOfMemoryError</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If you experience a laggy interface, this can have several reasons. For
+    one some chat channels are very busy and depending on your computer, this
+    may not be easy to handle. Managing the userlist can cost a lot of
+    performance in large channels because of having to react to hundreds of
+    users joining or leaving at once. It can help to temporarily
+    <a href="help.html#ignoreJoinsParts">ignore joins/parts</a> in this case.</p>
+    
+    <p>You may also want to check if Irc logging is enabled in the Debug Window
+        (<code>Extra - Debug window - Checkbox: Irc log</code>), which should
+    be disabled by default, but can lower performance if checked.</p>
+    
+    <h2>
+        <a name="jintellitype">Global hotkeys don't work</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>First of all, you only need Global Hotkey support when you want to use
+        global hotkeys (which you can define in the settings). If you don't, you
+        can just ignore any related messages or download the version of Chatty
+        without Hotkey support. Global hotkeys currently only work on Windows.</p>
+    
+    <p>If you want to use global hotkeys and you get a message related to them
+        not working, check the following sections. If you don't get a message,
+        but the global hotkeys you defined just don't work, make sure you
+        actually have global hotkeys enabled in the settings.</p>
+    
+    <h3>Wrong version of Chatty</h3>
+    <p>If you try to add a global hotkey and it tells you that you have the
+        wrong version of Chatty, you probably don't have the version supporting
+        global hotkeys. Download the version that contains <code>hotkey</code>
+        in the <code>.zip</code> filename and try that instead.</p>
+    
+    <h3>Could not load library (jintellitype-1.3.8.jar)</h3>
+    <p>Chatty requires the <code>jintellitype-1.3.8.jar</code> to be in the
+        <code>lib</code> subfolder of where the <code>Chatty.jar</code> is
+        located.</p>
+        
+    <h3>Could not load JIntellitype.dll</h3>
+    <p>If you get this error, you started Chatty with Hotkey support, but it
+    couldn't load the library (.dll) necessary to register hotkeys. This can
+    mean that:
+    
+    <ul>
+        <li>You have the wrong version for your version
+            of Java (32bit or 64bit Java need different versions of the <code>.dll</code>)</li>
+        <li>The <code>JIntellitype.dll</code> isn't stored where the program can
+        find it</li>
+    </ul>
+    <p>
+        Find out if you have the 64bit or 32bit version of Java (e.g. by
+        entering <code>java -version</code> on the commandline to check if there
+        is 64bit in the response), then check if you downloaded the matching
+        version of Chatty.</p>
+    
+    <p>Enter <code>/wdir</code> in Chatty to find out what your working directory
+        is and make sure the <code>JIntellitype.dll</code> is in there. If you
+        are starting Chatty via a shortcut, remember that the directory
+        specified in the <code>Run in</code> field determines your working
+        directory (on Windows at least, but global hotkeys are currently Windows only
+        anyway).</p>
+    
+    <div class="moreInfo">Related information: <a href="help-guide_folders.html">Chatty directories and files</a></div>
+    
+    <h2>
+        <a name="livestreamer">Livestreamer won't run properly</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>See the <a href="help-livestreamer.html">Chatty Livestreamer Help</a>.</p>
+    
+    <h2>
+        <a name="timeout">People are shown as timed out in several channels at once</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If a user is timed out in one channel, Chatty may show the timeouts in
+    other channels as well. This is because there is no channel associated with
+    timeouts or bans in Twitch Chat, so the program has to guess in which
+    channel the timeout occured. See also: <a href="help.html#channels">Joining more than one channel</a>.</p>
+    
+    
+    <h2>
+        <a name="login">Can't connect because the login failed</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If you repeatedly get disconnected because of possibly invalid login
+    data, please open the Connect Dialog and choose <code>Configure login.. - Verify login</code>.
+    This will send a request to Twitch to check if the access token is valid.
+    If the login data is valid, then Twitch may just have temporary problems
+    and you should try again later. The same goes for when the check itself
+    fails because it can't reach the Twitch API.</p>
+    <p>If the login data isn't valid, you can just remove the login and request
+        new login data. Also see the <a href="help.html#login-invalid">section about login</a>
+    for more information about invalid logins.</p>
+    
+    <h2>
+        <a name="font">Some characters in chat only show up as boxes / Fallback fonts</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If Java encounters a character that is not contained in the chat font
+        you currently have configured, it will try to find it in the fallback
+        fonts. While still not all characters will be displayed this way, it
+        should work a lot better. If you want to be able to display even more
+        characters, you can add your own fallback fonts into the Java fallback
+        font directory: <code>&lt;JRE_INSTALL_DIR&gt;/jre/lib/fonts/fallback</code></p>
+    
+    <p>On Windows, the JRE would usually be located in
+        <code>C:\Program Files\Java\</code> or
+        <code>C:\Program Files (x86)\Java\</code>.</p>
+    
+    <p><em>Note:</em> If you set the <code>inputFont</code>
+        <a href="help-setting_commands.html#font">setting</a> to something else
+        besides a Java logical font, then the font fallback mechanism may break.
+        This was the case before version 0.7.3.</p>
+    
+    <h2>
+        <a name="start">Chatty won't start</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>You need to have at least Java 7 JRE (Java Runtime Environment) installed to run Chatty.</p>
+    <p>If you try to start Chatty by double-clicking the <code>Chatty.jar</code>,
+        first make sure that <code>.jar</code> files are associated with Java,
+        and not some other program like WinRAR. The icon of the <code>Chatty.jar</code>
+        should have a Java icon (coffee cup). If you right-click the <code>Chatty.jar</code>
+        you can select the program to open it with under <code>Open with</code>.</p>
+    
+    <p>If you are sure that the <code>Chatty.jar</code> is actually started with
+        Java, but no program window appears, it may be that an error occured before
+    the window (GUI) could be created.</p>
+
+    <h3>Check Association of .jar with Java (Windows)</h3>
+    <p>Open a commandline window and enter <code>assoc .jar</code> which should output
+        <code>.jar=jarfile</code> and enter <code>ftype jarfile</code> which should
+        output something like <code>"C:\Program Files\Java\jre7\bin\javaw.exe" -jar "%1" %*</code>
+        (see also <a href="http://stackoverflow.com/questions/10875839/jar-file-keeps-giving-me-could-not-find-the-main-class-program-will-exit">
+            Could not find the main class. Program will exit.</a>)</p>
+    
+    <h3>Run from commandline</h3>
+    <p>Running Chatty from the commandline has the advantage of being able to
+    get messages from before the GUI is established. Open a commandline where
+    the <code>Chatty.jar</code> is located (Win7/8: Hold <kbd>Shift</kbd> while Right-Clicking to open
+    the context menu, click <code>Open command window here</code>) and enter
+    <code>java -jar Chatty.jar</code>.</p>
+    
+    <h3>Error: Java is not recognized as an internal or external command (Windows)</h3>
+    <p>If you experience this when entering <code>java -jar Chatty.jar</code>
+    in the commandline, then it probably can't find Java because it's not in the
+    <code>PATH</code> environment variable (that defines where to look
+    for programs of which only the filename has been entered, not the whole path).</p>
+    <p>You can enter <code>PATH</code> in a commandline window to check what is
+    in it. It should show a list of semicolon-seperated directories, one of which
+    should point to Java.</p>
+    
+    <h3>Find errors in debug.log</h3>
+    <p>See next section. Of course you'll have to navigate to the folder
+    manually.</p>
+    
+    <h2>
+        <a name="log">Debug log</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If you experience any problems or errors, then there may be helpful
+    information for debugging in the debug log, which is located in the settings
+    directory <code>&lt;user_dir&gt;/.chatty/</code> (e.g.
+    <code>C:\Users\&lt;username&gt;\.chatty\</code>, if you
+        have Chatty running you can enter <code>/openDir</code> to open it or
+        <code>/dir</code> to output the path).</p>
+    <p>In that folder, there are two kinds of debug files:</p>
+    <ul>
+        <li>The <code>debug.log</code> which is overwritten everytime you start
+            Chatty. It may also have a number at the end (like <code>debug.log.1</code>)
+            if Java couldn't open the usual <code>debug.log</code>.</li>
+        <li>Several files (<code>debug0.log, debug1.log, ..</code>), whereas
+        one of them is written to at a time, and then switched to the next when
+        a certain filesize is reached, rotating between a certain number of files.
+        Those files are not overwritten when Chatty is started, but instead new data is appended.</li>
+    </ul>
+    <p>So to find possibly relevant data:</p>
+    <ol>
+        <li>If you haven't started Chatty again after the error occured, check
+            the <code>debug.log</code> first.</li>
+        <li>Otherwise check if one of the <code>debug0.log, debug1.log, ..</code>
+            files could contain the necessary information, based on the last
+        modification dates.
+        <ul>
+            <li>Even if the error is already some time back, it <em>may</em> still
+            be in there, depending on how much data has been added in the meantime.</li>
+        </ul></li>
+    </ol>
+
+    <h2>
+        If you found a bug or have a suggestion..
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p><a href="help.html#contact">Contact</a> me please.</p>
+</body>
+</html>
+    
+    
+    
+    
+    
+    
+    
+    

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chatty - Access token</title>
+<meta name="ROBOTS" content="NOFOLLOW">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript">
+<!--
+function initiate() {
+	var hash = document.location.hash.substr(1);
+	var hashParts = hash.split("&");
+	var access_token = null;
+	for (var i=0;i<hashParts.length;++i) {
+		var parameterParts = hashParts[i].split("=");
+		var key = parameterParts[0];
+		var value = parameterParts[1];
+		if (key == "access_token") {
+			access_token = value;
+		}
+	}
+	document.getElementById("javascript").className = "";
+	if (access_token != null) {
+            document.location.replace("http://127.0.0.1:61324/token/"+access_token);
+	}
+        else {
+            document.getElementById("javascript").innerHTML = "Error: Access Token not found";
+        }
+}
+-->
+</script>
+<style type="text/css">
+	body { font-family: Consolas, sans-serif; text-align: center; background-color: #FFF; max-width: 500px; margin: auto; }
+	input { font-family: Consolas, sans-serif; width: 300px; font-size: 1em; }
+	noscript { color: red;  }
+	.hide { display: none; }
+</style>
+</head>
+<body onload="initiate()">
+<h1>Chatty - Access token</h1>
+<noscript>
+    <p>This page requires <strong>JavaScript</strong> to get the token.
+    If you don't want to enable it, you can copy the text in the URL between
+    <code>access_token=</code> and <code>&amp;scope..</code> instead and set it in
+Chatty using the command (close dialogs first so you can type stuff in):</p>
+    <p><code>/changetoken &lt;paste here&gt;</code></p>
+    <p>There is more information about this in the help. (Open the help in Chatty
+        via <code>Help - About/Help</code> or press <kbd>F1</kbd>, then go to
+        <code>Guides / What to do when getting login fails</code>.)</p>
+</noscript>
+<p id="javascript" class="hide">
+You should be redirected..
+</p>
+</body>
+</html>

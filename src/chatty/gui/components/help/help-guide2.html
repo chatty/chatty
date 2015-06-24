@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Guide: What to do when getting login fails</a></h1>
+    <p>Use this guide when the normal procedure of getting login data fails.</p>
+    
+    <h2>Can't listen to port</h2>
+    <p>If you open the <code>Get login data</code> dialog and it says it can't
+    listen to the port, first check the following:</p>
+    <ul>
+        <li>Make sure no other instance of Chatty is running that may already
+        have taken the port.</li>
+        <li>Check if no other program may already be listening to that port.</li>
+        <li>If the problem persists, reboot your PC and then try again.</li>
+    </ul>
+    <p>If you can't fix this problem and there are no other error messages that
+    may indicate what is going wrong, then you can manually open the necessary
+    page (<em>opening any of these links will invalidate any previous login
+    you requested for Chatty, so only do it if you really want to get a new one</em>):</p>
+    <table class="loginlinks">
+        <tr>
+            <th></th>
+            <th>Chat</th>
+            <th>User read</th>
+            <th>Editor</th>
+            <th>Commercials</th>
+            <th>Subscribers</th>
+        </tr>
+        <tr>
+            <td><a href="https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=spyiu9jqdnfjtwv6l1xjk5zgt8qb91l&redirect_uri=http://127.0.0.1:61324/token/&scope=chat_login">Request new login</a></td>
+            <td>x</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=spyiu9jqdnfjtwv6l1xjk5zgt8qb91l&redirect_uri=http://127.0.0.1:61324/token/&scope=chat_login+user_read">Request new login</a></td>
+            <td>x</td>
+            <td>x</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=spyiu9jqdnfjtwv6l1xjk5zgt8qb91l&redirect_uri=http://127.0.0.1:61324/token/&scope=chat_login+channel_editor+user_read">Request new login</a></td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=spyiu9jqdnfjtwv6l1xjk5zgt8qb91l&redirect_uri=http://127.0.0.1:61324/token/&scope=chat_login+channel_editor+channel_commercial+user_read">Request new login</a></td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><a href="https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=spyiu9jqdnfjtwv6l1xjk5zgt8qb91l&redirect_uri=http://127.0.0.1:61324/token/&scope=chat_login+channel_editor+channel_commercial+user_read+channel_subscriptions">Request new login</a></td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+            <td>x</td>
+        </tr>
+    </table>
+    <p>Since the webserver in Chatty won't run if you got any of the aforementioned
+    errors, your browser will tell you it can't load the page when you get to
+    <code>http://127.0.0.1:61324</code>. Read on in the next section, especially
+    <a href="#addtokenmanually">Manually add the login into Chatty</a>.</p>
+    
+    <h2>The browser says it can't open the page after you authorized Chatty</h2>
+    <p>If you successfully opened the link, authorized Chatty on the Twitch.tv
+    page and got redirected, but the browser can't open the page, first check this:</p>
+    <ul>
+        <li>If you followed the regular process until now, check if the <code>
+                Get login data</code> dialog is still open and it says <code>Ready.</code>.
+        It needs to be open for this to work and will close automatically when it received
+        the necessary data.</li>
+    </ul>
+    <p>If you can't get the page to load, you can manually add the login data into Chatty.</p>
+    <h3><a name="addtokenmanually">Manually add the login into Chatty</a></h3>
+    <p>The information you need should be in the address bar of your browser (where you got the error that it couldn't connect to the page).
+    It should look something like this:</p>
+    <code>http://127.0.0.1:61324/token/#access_token=<strong>[longish mix of letters and numbers]</strong>&amp;scope=chat_login+channel_editor+channel_commercial+user_read</code>
+    
+    <p>The <code>access_token</code> (longish mix of letters and numbers)
+        is sort of a revokable password that lets Chatty
+    use some of the Twitch services on behalf of your account. Copy that from
+    the address bar, go to Chatty (close all dialogs if necessary) and paste
+    it into the following command (that you type into the input bar):</p>
+    <code>/changetoken &lt;the access token&gt;</code>
+    <p>For example if the url looked like this:</p>
+    <code>http://127.0.0.1:61324/token/#access_token=<strong>abcdefghi12345abcdefg</strong>&amp;scope=chat_login+channel_editor+channel_commercial+user_read</code>
+    <p>Then you enter this in Chatty:</p>
+    <code>/changetoken abcdefghi12345abcdefg</code>
+    
+    <p>After entering the command, Chatty will finish the process by checking
+    the token and getting the username associated with it. If everything is ok,
+    it should say that you are now ready to connect.</p>
+    <p>If you want, you can check in <code>Main - Login..</code>
+    whether the token you entered has the correct access associated with it.</p>
+</body>
+</html>
+

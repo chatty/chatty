@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Getting Started</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Getting Started</a></h1>
+    <p>This is a short guide to help you with installing Chatty and getting familiar with some of it's features.</p>
+    
+    <h2>Download & Installation</h2>
+    <p>You can download Chatty from it's <a href="http://chatty.github.io/#download">Website</a>.
+        The download simply consists of a <code>.zip</code>-file which you should
+    extract wherever you want to have Chatty. The extracted files include a
+    <code>Chatty.jar</code> which you should usually be able to double-click to
+    start the program (if Java is installed properly). (See <a href="help-troubleshooting.html#start">the help</a>
+    if Chatty won't start.)</p>
+    
+    <h3>Update Chatty</h3>
+    <p>If you already have an older version of Chatty and want to update, then
+        just replace all the files with the new ones in the <code>.zip</code>.
+        Basicially just unzip the <code>.zip</code> into the same folder and overwrite
+        all files if asked (unless you have some custom icons or sounds that have the same name).
+        You can also unzip it into a new folder (just make sure you don't use the old version anymore).</p>
+    
+        <p>Your settings are saved seperately in the <a href="help-guide_folders.html">settings directory</a>
+        and are not lost when you upgrade to a new version. The new version should normally
+        automatically use the same settings without you needing to change anything.
+        If you are interested in what your settings directory is,
+        enter <code>/openDir</code> in Chatty. There is also a <code>backup</code>
+        folder in there with <a href="help-guide_folders.html#backup">backups</a> of the settings.</p>
+        
+        <p>Please check out the <a href="help-releases.html">Release Information</a> for any changes in a new version that
+        may require your attention.</p>
+        
+    <p><em>Note:</em> If you downgrade to an older version of Chatty, some settings (that the older
+        version didn't have yet) may be lost. So make sure you don't run old versions of Chatty
+        without knowing what you are doing, if you have changed settings unique to newer versions.</p>
+    
+    <h2>Creating a login</h2>
+    <p>If you are starting Chatty for the first time, you will have to request
+    login data from Twitch so Chatty can connect to chat for you and do other
+    stuff like show live streams you follow.</p>
+    <p>In the <code>Connect</code>-dialog, click on <code>Create login..</code>
+        and then <code>Request login data</code> and simply follow the instructions.
+    Once you successfully created the login, close the dialog until you get back
+    to the <code>Connect</code>-dialog. (There is a <a href="help-guide2.html">Guide</a> on what to do
+    when getting login data fails.)</p>
+    
+    <h2>Join channels (and leave channels)</h2>
+    <p>In the <code>Connect</code>-dialog enter the name of the channel you want
+        to join in the <code>Channel:</code> input box. The name of the channel
+    is the same as the name of the stream. You can enter more than one channel
+    name to join by seperating them with a comma. To connect simply press <kbd>Enter</kbd>
+    or click on <code>Connect</code>. After connecting, it will automatically join
+    the channels you specified.</p>
+    
+    <p>Even after connecting you can join additional channels via <code>Channels - Join Channel</code>
+        or entering the command <code>/join &lt;channelname&gt;</code> in the inputbox
+        (e.g. <code>/join joshimuz</code>).</p>
+    
+    <p>You can leave channels by right-clicking anywhere in the channel and
+        selecting <code>Close Channel</code> from the context menu or right-clicking
+    on the channel's tab (only available if there is more than one channel) and
+    selecting <code>Close</code> from the context menu.</p>
+    
+    <h2>Chatting and Moderating</h2>
+    <p>Chatting is pretty straightfoward as you would expect from any chat program,
+    however the inputbox has a few useful features. Enter the beginning of a name
+    in chat and press <kbd>TAB</kbd> to <a href="help.html#nickCompletion">auto-complete</a> the name.
+    Press <kbd>Up-Arrow</kbd> key to go back to <a href="help.html#inputHistory">previous stuff you entered</a>.</p>
+    
+    <p>To moderate a chat, you can of course use the regular moderations commands
+        like <code>/ban</code>, <code>/timeout</code> and so on, but a much more
+    convenient method is to click on the name of a user you want to ban/timeout,
+    which opens the <code>User</code>-dialog, containing several moderation
+    buttons as well as the recent messages of that user, so you can quickly check
+    if you are actually timing out the correct user.</p>
+    
+    <p><img src="userdialog.jpg" alt="User Dialog with moderation buttons" /></p>
+    
+    <h2>Information about the current stream</h2>
+    <p>Chatty regulary requests information about the current stream, which is
+        displayed in the titlebar and the <code>Channel Info</code>-dialog.</p>
+    
+    <p><img src="0_4_overview_top.png" alt="Chatty Title and Tabs" /></p>
+    
+    <p>You can open the <code><a href="help.html#channelinfo">Channel Info</a></code> via the <code>View</code>-menu
+    or the channel context menu (right-click anywhere on the channel). The
+    <code>Channel Info</code> contains the current title/game but also a history
+    of the Viewercount and previous title/games (if you hover over points).</p>
+    <p><img src="viewerhistory_small.gif" alt="Chatty Channel Info Dialog" /></p>
+    
+    <h2>Get notified about streams you follow that go live (and join them)</h2>
+    <p>Open the <code>Live Channels</code>-window via <code>Channels - Live Channels</code>
+    to open up a list of streams you follow that are currently live or streams
+    whose channel you have currently joined that are currently live.</p>
+    
+    <p>(You need to have the <a href="help.html#login">required access</a> with your login data to see streams
+    you follow.)</p>
+    
+    <p>You can enable/disable showing streams you follow in the <code>Settings - Notifications</code>.
+    There you can also configure what kind of Tray Notification you want to have
+    pop up for stream status changes or highlighted messages.</p>
+    
+    <p>To join channels directly out of the <code>Live Channels</code>-dialog
+        right-click on a stream to open the context menu and then select <code>Join channel</code>
+    to join the channel for that stream and if you want also open the stream in
+    your browser or <a href="help-livestreamer.html">Livestreamer</a>.</p>
+    
+    <h2>More stuff you might want to try out..</h2>
+    <ul>
+        <li><strong>Right-clicking</strong>, or whatever opens a context menu
+        in your OS. There are a lot of context menus in Chatty, e.g. for usernames
+        (as shown above), links, emoticons, anywhere else in the channel, tabs,
+        entries in favorites, the live streams dialog, the Channel Info dialog..</li>
+        <li><strong>Configure Chatty</strong> to your needs. Open the <code>Settings</code>
+            from the <code>Main</code>-menu to get all kinds of settings to adjust
+            Chatty to your preference. Please make use of the <code>Help</code> link
+            in the bottom left corner of the <code>Settings</code>-dialog to get
+            help on the current page of settings you have selected.</li>
+        <li><strong>Ask</strong> if you don't understand something. I tried to
+        make the help as comprehensive and easy to understand as possible, but
+        a lot of stuff is probably pretty confusing if you aren't as familiar with
+        the program as I am. So please ask about stuff and maybe also (if you can)
+        propose changes to the help that would make it easier to understand. There
+        are various ways to <a href="help.html#contact">contact</a> me.</li>
+    </ul>
+
+
+</body>
+</html>
+

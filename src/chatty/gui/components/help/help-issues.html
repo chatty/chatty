@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Troubleshooting</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+
+<p>Some documentation of prior or current issues for reference.</p>
+
+
+<h2>Java Crash: Graphics Driver</h2>
+
+<p>Chatty just randomly closes, apparently the JRE completely crashes.</p>
+
+<h3>Crash report excerpt</h3>
+
+<pre>
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x000007f9c08f22bf, pid=272, tid=14464
+#
+# JRE version: Java(TM) SE Runtime Environment (7.0_45-b18) (build 1.7.0_45-b18)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (24.45-b08 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# C  [atig6txx.dll+0x122bf]
+
+[..]
+
+Stack: [0x000000000f5d0000,0x000000000f6d0000],  sp=0x000000000f6c9bc0,  free space=998k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+C  [atig6txx.dll+0x122bf]
+C  0x0000000000000000
+ 
+Java frames: (J=compiled Java code, j=interpreted, Vv=VM code)
+j  sun.awt.Win32GraphicsDevice.getMaxConfigsImpl(I)I+0
+j  sun.awt.Win32GraphicsDevice.getMaxConfigs(I)I+10
+j  sun.awt.Win32GraphicsDevice.getConfigurations()[Ljava/awt/GraphicsConfiguration;+69
+j  javax.swing.ToolTipManager.getDrawingGC(Ljava/awt/Point;)Ljava/awt/GraphicsConfiguration;+36
+
+[..]
+</pre>
+
+<h3>Solution/Workaround</h3>
+<p>Seems to have to do with the graphics driver. Reinstalling/updating the graphics driver may
+help or using the following commandline parameter, which should disable the calls to the library
+that cause the error:</p>
+
+<p><code>-Dsun.awt.nopixfmt=true</code></p>
+
+<p>For example:</p>
+
+<p><code>javaw -Dsun.awt.nopixfmt=true -jar "H:\chatty\Chatty.jar" -cd</code></p>
+
+
+<h3>Links</h3>
+<ul>
+    <li><a href="http://obsproject.com/forum/threads/chatty.14149/#post-81264">http://obsproject.com/forum/threads/chatty.14149/#post-81264</a> (Chatty thread)</li>
+    <li><a href="http://www.oxygenxml.com/forum/topic10290.html">http://www.oxygenxml.com/forum/topic10290.html</a> (Crashes of another program and workaround)</li>
+    <li><a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6477756">http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6477756</a> (Related Bug)</li>
+</ul>
+ 
+ 
+ 
+
+
+
+<h2>Random Errors: Using Calibri Font</h2>
+
+<p>After some time, Chatty suddenly shows an error if using the Calibri font.</p>
+
+<h3>Excerpts</h3>
+
+<pre>
+java.lang.ArrayIndexOutOfBoundsException: 168
+	at sun.font.ExtendedTextSourceLabel.getCharX(ExtendedTextSourceLabel.java:353)
+	at java.awt.font.TextLine$3.computeFunction(TextLine.java:515)
+	at java.awt.font.TextLine.applyFunctionAtIndex(TextLine.java:651)
+	at java.awt.font.TextLine.getCharXPosition(TextLine.java:668)
+	at java.awt.font.TextLine.getCharLinePosition(TextLine.java:678)
+	at java.awt.font.TextLayout.buildCache(TextLayout.java:683)
+	at java.awt.font.TextLayout.ensureCache(TextLayout.java:655)
+	at java.awt.font.TextLayout.getAdvance(TextLayout.java:885)
+	at sun.font.FontDesignMetrics.charsWidth(FontDesignMetrics.java:510)
+	at javax.swing.text.Utilities.getTabbedTextOffset(Utilities.java:422)
+	at javax.swing.text.GlyphPainter1.getBoundedPosition(GlyphPainter1.java:213)
+	at javax.swing.text.GlyphView.getBreakWeight(GlyphView.java:722)
+	at javax.swing.text.ParagraphView.calculateMinorAxisRequirements(ParagraphView.java:732)
+	at javax.swing.text.BoxView.checkRequests(BoxView.java:935)
+	at javax.swing.text.BoxView.getMinimumSpan(BoxView.java:568)
+	at javax.swing.text.BoxView.calculateMinorAxisRequirements(BoxView.java:903)
+	at javax.swing.text.BoxView.checkRequests(BoxView.java:935)
+	at javax.swing.text.BoxView.setSpanOnAxis(BoxView.java:343)
+	at javax.swing.text.BoxView.layout(BoxView.java:708)
+	at javax.swing.text.BoxView.setSize(BoxView.java:397)
+	at javax.swing.plaf.basic.BasicTextUI$RootView.setSize(BasicTextUI.java:1714)
+	at javax.swing.plaf.basic.BasicTextUI.modelToView(BasicTextUI.java:1046)
+	at javax.swing.plaf.basic.BasicTextUI.modelToView(BasicTextUI.java:1022)
+	at javax.swing.text.JTextComponent.modelToView(JTextComponent.java:1428)
+	at chatty.gui.components.ChannelTextPane$ScrollManager.scrollDown(ChannelTextPane.java:1107)
+	at chatty.gui.components.ChannelTextPane$ScrollManager.access$200(ChannelTextPane.java:994)
+	at chatty.gui.components.ChannelTextPane.printInternal(ChannelTextPane.java:932)
+	at chatty.gui.components.ChannelTextPane.print(ChannelTextPane.java:906)
+	at chatty.gui.components.ChannelTextPane.printSpecials(ChannelTextPane.java:772)
+	at chatty.gui.components.ChannelTextPane.printMessage(ChannelTextPane.java:189)
+	at chatty.gui.components.Channel.printMessage(Channel.java:228)
+	at chatty.gui.MainGui$15.run(MainGui.java:1498)
+
+
+java.lang.ArrayIndexOutOfBoundsException: 0
+        at sun.font.ExtendedTextSourceLabel.createCharinfo(Unknown Source)
+        at sun.font.ExtendedTextSourceLabel.getCharinfo(Unknown Source)
+        at sun.font.ExtendedTextSourceLabel.getCharX(Unknown Source)
+        at java.awt.font.TextLine$3.computeFunction(Unknown Source)
+        at java.awt.font.TextLine.applyFunctionAtIndex(Unknown Source)
+        at java.awt.font.TextLine.getCharXPosition(Unknown Source)
+        at java.awt.font.TextLine.getCharLinePosition(Unknown Source)
+        at java.awt.font.TextLayout.buildCache(Unknown Source)
+        at java.awt.font.TextLayout.ensureCache(Unknown Source)
+        at java.awt.font.TextLayout.getAdvance(Unknown Source)
+        at sun.font.FontDesignMetrics.charsWidth(Unknown Source)
+        at javax.swing.text.Utilities.getTabbedTextWidth(Unknown Source)
+</pre>
+
+<h3>Solution/Workaround</h3>
+<p>Hopefully this will be fixed in future Java updates, but for now just don't
+use a Calibri font.</p>
+
+<h3>Links</h3>
+
+<ul>
+    <li><a href="http://stackoverflow.com/questions/16331075/error-generating-jasperreport-in-development-mode">http://stackoverflow.com/questions/16331075/error-generating-jasperreport-in-development-mode</a></li>
+    <li><a href="https://community.oracle.com/message/11119052#11119052">https://community.oracle.com/message/11119052#11119052</a></li>
+</ul>
+
+
+<h2>Twitch Emotes appearing wrong on Retina Displays</h2>
+<p>Twitch Emoticons appear wrong when Chatty is displayed on a Retina display.
+Instead of the Emoticon images, the 404 image the Twitch CDN redirects to is
+shown.
+
+<p>Apparently in newer Java versions <code>Toolkit.getImage()</code> tries to find a higher
+resolution image by adding @2 to the file name, which the Twitch CDN actually
+responds to by redirecting to an error image, which is then displayed.</p>
+
+<h3>Solution/Workaround</h3>
+<p>Use <code>Toolkit.createImage()</code> and create an <code>ImageIcon</code> with the created image.</p>
+
+<h3>Links</h3>
+<ul>
+    <li><a href="https://bugs.openjdk.java.net/browse/JDK-8011059">https://bugs.openjdk.java.net/browse/JDK-8011059</a> (OpenJDK Issue Page about this behaviour)</li>
+</ul>
+
+</body>
+</html>

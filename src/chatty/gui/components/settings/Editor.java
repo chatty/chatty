@@ -1,0 +1,305 @@
+
+package chatty.gui.components.settings;
+
+import chatty.gui.GuiUtil;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+/**
+ * Simple text editor dialog that can be opened with a description of the edit,
+ * a preset value and an optional help text. Auto adjusts the size of the input
+ * box.
+ * 
+ * It should probably be possible to use one instance of this for several
+ * purposes, because the most important stuff is set everytime the dialog is
+ * opened, however some stuff (like whether the help is currently shown) remains
+ * the same.
+ * 
+ * @author tduva
+ */
+public class Editor {
+
+    private final JDialog dialog;
+    private final JLabel label;
+    private final JTextArea input;
+    private final JButton okButton = new JButton("Save");
+    private final JButton cancelButton = new JButton("Cancel");
+    private final JToggleButton toggleInfoButton = new JToggleButton("Help");
+    private final Window parent;
+    private final JLabel info;
+    
+    private DataFormatter<String> formatter;
+    private boolean allowEmpty;
+
+    private String result;
+
+    Editor(Window parent) {
+        dialog = new JDialog(parent);
+        this.parent = parent;
+
+        dialog.setTitle("Input");
+        dialog.setModal(true);
+        GuiUtil.installEscapeCloseOperation(dialog);
+
+        dialog.setLayout(new GridBagLayout());
+        GridBagConstraints gbc;
+
+        // Should contain something to set correct minimum size in constructor
+        label = new JLabel("abc");
+        gbc = GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(5, 5, 5, 5);
+        dialog.add(label, gbc);
+
+        gbc = GuiUtil.makeGbc(0, 1, 3, 1);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.insets = new Insets(0, 7, 5, 7);
+        input = new JTextArea();
+        input.getDocument().addDocumentListener(new ChangeListener());
+        input.setMargin(new Insets(2, 2, 2, 2));
+        setAllowLinebreaks(false);
+        input.setLineWrap(true);
+        input.setWrapStyleWord(true);
+        input.setText("test");
+        // Use monospaced font for easier editing of some kinds of text
+        input.setFont(Font.decode(Font.MONOSPACED));
+        dialog.add(new JScrollPane(input), gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 4, 3, 1);
+        gbc.insets = new Insets(5, 8, 8, 8);
+        info = new JLabel();
+        dialog.add(info, gbc);
+        /**
+         * Set help invisible by default (do it in constructor to get correct
+         * preferred size when setting minimum size)
+         */
+        info.setVisible(false);
+
+        gbc = GuiUtil.makeGbc(0, 3, 1, 1);
+        dialog.add(toggleInfoButton, gbc);
+        
+        gbc = GuiUtil.makeGbc(1, 3, 1, 1);
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 1;
+        dialog.add(okButton, gbc);
+
+        gbc = GuiUtil.makeGbc(2, 3, 1, 1);
+        dialog.add(cancelButton, gbc);
+
+        ActionListener buttonAction = new ButtonAction();
+        okButton.addActionListener(buttonAction);
+        cancelButton.addActionListener(buttonAction);
+        toggleInfoButton.addActionListener(buttonAction);
+
+        okButton.setMnemonic(KeyEvent.VK_S);
+        cancelButton.setMnemonic(KeyEvent.VK_C);
+
+        //okButton.setToolTipText("Press Enter in inputbox to save");
+        cancelButton.setToolTipText("Press ESC to cancel");
+
+        /**
+         * Set a minimum width, so it has some width even for values that may
+         * be shorter. This should be based on one line height.
+         */
+        dialog.pack();
+        Dimension preferred = dialog.getPreferredSize();
+        dialog.setMinimumSize(new Dimension(400, preferred.height));
+    }
+    
+    /**
+     * Shows the editor dialog, with {@code title} as description of the action,
+     * {@code preset} as preset value and {@code info} as help, which can be
+     * toggled by clicking on the Help-button. If not help text is specified,
+     * then there will be no Help-button.
+     * 
+     * @param title The description of what this edit action does
+     * @param preset The preset value to fill the inputbox with
+     * @param info The help text (use {@code null} to don't use help)
+     * @return The edited value or {@code null} if the dialog was closed without
+     * saving
+     */
+    public String showDialog(String title, String preset, String info) {
+        input.setText(preset);
+        label.setText(title);
+        this.info.setText(info);
+        if (info == null) {
+            this.info.setVisible(false);
+        }
+        toggleInfoButton.setVisible(info != null);
+        toggleInfoButton.setSelected(this.info.isVisible());
+        result = null;
+
+        input.requestFocusInWindow();
+
+        // Set initial size, now also based on the preset value
+        dialog.pack();
+        dialog.setSize(dialog.getPreferredSize());
+        
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+        // This will block until closed, during that time stuff can be changed
+
+        return result;
+    }
+    
+    /**
+     * Sets an optional formatter, which can format the input before determining
+     * if there is something to save (which enables/disables the Save-button if
+     * {@link setAllowEmpty(boolean)} is set to false).
+     * 
+     * @param formatter 
+     */
+    public void setFormatter(DataFormatter<String> formatter) {
+        this.formatter = formatter;
+    }
+    
+    /**
+     * Set whether to allow an empty value to be saved. Default is false.
+     * 
+     * @param allow true if empty values should be able to be saved
+     */
+    public void setAllowEmpty(boolean allow) {
+        allowEmpty = allow;
+    }
+    
+    /**
+     * Set whether to allow linebrekas in the value. Otherwise linebreaks are
+     * filtered out when editing an replaced by a space. Default is false.
+     * 
+     * @param allow true to allow linebreaks
+     */
+    public final void setAllowLinebreaks(boolean allow) {
+        input.getDocument().putProperty("filterNewlines", !allow);
+    }
+    
+    private String format(String input) {
+        if (formatter != null && input != null) {
+            return formatter.format(input);
+        }
+        return input;
+    }
+
+    /**
+     * Checks if the current input isn't empty (after formatting) and enables or
+     * diables the "add" button accordingly.
+     */
+    private void updateOkButton() {
+        okButton.setEnabled(isSomethingToSave());
+    }
+
+    /**
+     * Check if there is currently something to save, based on the allowEmpty
+     * property and the current input (possibly after formatting).
+     * 
+     * @return true if there is something to save (as defined by the set rules),
+     * false otherwise
+     */
+    private boolean isSomethingToSave() {
+        if (allowEmpty) {
+            return true;
+        }
+        String currentInput = format(input.getText());
+        return currentInput != null && !currentInput.isEmpty();
+    }
+
+    /**
+     * React on button presses.
+     */
+    private class ButtonAction implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == okButton) {
+                result = input.getText();
+                dialog.setVisible(false);
+            } else if (e.getSource() == cancelButton) {
+                dialog.setVisible(false);
+            } else if (e.getSource() == toggleInfoButton) {
+                /**
+                 * Show and hide the help. Showing the help means the minimum
+                 * size set in the constructor won't really fit anymore, but
+                 * that's not too bad.
+                 */
+                info.setVisible(toggleInfoButton.isSelected());
+                dialog.pack();
+            }
+            
+        }
+
+    }
+    
+    /**
+     * Checks if the first Dimension is bigger in width and/or height than the
+     * second one.
+     * 
+     * @param d1 The first Dimension
+     * @param d2 The second Dimension
+     * @return true if the first Dimension is bigger, false otherwise
+     */
+    private static boolean bigger(Dimension d1, Dimension d2) {
+        if (d1.height > d2.height || d1.width > d2.width) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Adjusts the size of the dialog to the preferred size, but only if that
+     * is bigger than the current size.
+     */
+    private void adjustSize() {
+        if (bigger(dialog.getPreferredSize(), dialog.getSize())) {
+            dialog.pack();
+        }
+    }
+
+    /**
+     * Adjust size of the dialog when editing the input (so the input box
+     * automatically resizes) and update the Save-button state.
+     */
+    private class ChangeListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            updateOkButton();
+            
+            // Wrap in invokeLater() so the size is adjusted correctly after
+            // entering text (otherwise it would always be one edit behind)
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    adjustSize();
+                }
+            });
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            updateOkButton();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            updateOkButton();
+        }
+    }
+
+}

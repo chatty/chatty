@@ -1,0 +1,300 @@
+
+package chatty.util.api;
+
+import chatty.util.StringUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+/**
+ *
+ * @author tduva
+ */
+public class FollowerManager {
+    
+    private static final Logger LOGGER = Logger.getLogger(FollowerManager.class.getName());
+
+    protected enum Type {
+        FOLLOWERS, SUBSCRIBERS
+    }
+
+    /**
+     * The minimum delay between requests per channel.
+     */
+    private static final int REQUEST_DELAY = 60;
+    
+    /**
+     * Save FollowerInfo (containing Followers and some meta information) for
+     * each channel it was requested for.
+     */
+    private final Map<String, FollowerInfo> cached = new HashMap<>();
+    
+    /**
+     * Whether this channel has already been requested during this session. Used
+     * to not set the followers as new for the first request of a channel.
+     */
+    private final Set<String> requested = new HashSet<>();
+    
+    /**
+     * Saves followers by name. Used to check if the same follower was already
+     * seen as following before and whether it was with the same time.
+     */
+    private final Map<String, Map<String, Follower>> alreadyFollowed = new HashMap<>();
+    
+    /**
+     * Saves request errors per stream, so requests can be delayed if errors
+     * occur (e.g. 404).
+     */
+    private final Map<String, Integer> errors = new HashMap<>();
+    
+    /**
+     * The type of this FollowerManager, which can be either for followers or
+     * subscribers.
+     */
+    private final Type type;
+    
+    private final TwitchApi api;
+    private final TwitchApiResultListener listener;
+
+    public FollowerManager(Type type, TwitchApi api, TwitchApiResultListener listener) {
+        this.type = type;
+        this.api = api;
+        this.listener = listener;
+    }
+    
+    /**
+     * Checks if this has new followers. Only checks the first follower in the
+     * list, because followers at the end might be new, even though they
+     * actually are not (if someone unfollows, older followers might show up for
+     * the first time this session).
+     * 
+     * @param followers The list of followers, ordered from new to old
+     * @return Whether any followers are assumed as new
+     */
+    private boolean hasNewFollowers(List<Follower> followers) {
+        return !followers.isEmpty() && followers.get(0).newFollower;
+    }
+    
+    /**
+     * Adds error "points", so requests are delayed if errors happen.
+     * 
+     * @param stream
+     * @param amount 
+     */
+    private void error(String stream, int amount) {
+        Integer current = errors.get(stream);
+        if (current == null) {
+            current = 0;
+        }
+        if (current > 10) {
+            current = 10;
+        }
+        errors.put(stream, current+amount);
+    }
+    
+    private void noError(String stream) {
+        errors.remove(stream);
+    }
+    
+    /**
+     * Checks if there is info already cached and whether it is old enough to
+     * be updated, in which case it requests the data from the API.
+     * 
+     * @param stream The name of the stream to request the data for
+     */
+    protected synchronized void request(String stream) {
+        if (stream == null || stream.isEmpty()) {
+            return;
+        }
+        stream = stream.toLowerCase(Locale.ENGLISH);
+        FollowerInfo cachedInfo = cached.get(stream);
+        if (cachedInfo == null || checkTimePassed(cachedInfo)) {
+            if (type == Type.FOLLOWERS) {
+                api.requestFollowers(stream);
+            } else if (type == Type.SUBSCRIBERS) {
+                api.requestSubscribers(stream);
+            }
+        } else {
+            if (type == Type.FOLLOWERS) {
+                listener.receivedFollowers(cachedInfo);
+            } else if (type == Type.SUBSCRIBERS) {
+                listener.receivedSubscribers(cachedInfo);
+            }
+        }
+    }
+    
+    /**
+     * Checks if enough time has passed from the last time the data was
+     * requested for this FollowerInfo (so stream). Also takes into account
+     * errors that occured when requesting or parsing the data, in which case it
+     * waits longer in between requests.
+     * 
+     * @param info
+     * @return 
+     */
+    private boolean checkTimePassed(FollowerInfo info) {
+        Integer errorCount = errors.get(info.stream);
+        if (errorCount == null) {
+            errorCount = 0;
+        }
+        if (System.currentTimeMillis() - info.time > REQUEST_DELAY*1000+(REQUEST_DELAY*1000*(errorCount)/2)) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Received data from the API, so parse it or handle a possible error, then
+     * give it to the listener.
+     * 
+     * @param responseCode The HTTP response code from the API request
+     * @param stream The name of the stream this data is for
+     * @param json The data returned from the API
+     */
+    protected synchronized void received(int responseCode, String stream, String json) {
+        FollowerInfo result = parseFollowers(stream, json);
+        if (result != null) {
+            noError(stream);
+            cached.put(stream, result);
+            if (type == Type.FOLLOWERS) {
+                listener.receivedFollowers(result);
+                if (hasNewFollowers(result.followers)) {
+                    listener.newFollowers(result);
+                }
+            } else if (type == Type.SUBSCRIBERS) {
+                listener.receivedSubscribers(result);
+            }
+            requested.add(stream);
+        } else {
+            String errorMessage = "";
+            if (responseCode == 404) {
+                errorMessage = "Channel not found.";
+                error(stream, 10);
+            } else if (responseCode == 200) {
+                errorMessage = "Parse error.";
+                error(stream, 1);
+            } else if (responseCode == 401 || responseCode == 403) {
+                errorMessage = "Access denied.";
+                error(stream, 1);
+            } else if (responseCode == 422) {
+                errorMessage = "No data for this channel.";
+                error(stream, 10);
+            } else {
+                errorMessage = "Request error.";
+                error(stream, 1);
+            }
+            FollowerInfo errorResult = new FollowerInfo(stream, errorMessage);
+            cached.put(stream, errorResult);
+            if (type == Type.FOLLOWERS) {
+                listener.receivedFollowers(errorResult);
+            } else if (type == Type.SUBSCRIBERS) {
+                listener.receivedSubscribers(errorResult);
+            }
+        }
+    }
+    
+    private FollowerInfo parseFollowers(String stream, String json) {
+        List<Follower> result = new ArrayList<>();
+        int total = -1;
+        if (json == null) {
+            LOGGER.warning(type+" data null.");
+            return null;
+        }
+        try {
+            JSONParser parser = new JSONParser();
+            Object root = parser.parse(json);
+            if (!(root instanceof JSONObject)) {
+                LOGGER.warning("Error parsing "+type+": root should be object");
+                return null;
+            }
+            JSONObject data = (JSONObject)root;
+            
+            Object follows = data.get("follows");
+            if (type == Type.SUBSCRIBERS) {
+                follows = data.get("subscriptions");
+            }
+            if (!(follows instanceof JSONArray)) {
+                LOGGER.warning("Error parsing "+type+": follows/subs should be object");
+                return null;
+            }
+            for (Object o : (JSONArray)follows) {
+                Follower follower = parseFollower(stream, o);
+                if (follower != null) {
+                    result.add(follower);
+                }
+            }
+            Object totalObject = data.get("_total");
+            if (totalObject instanceof Number) {
+                total = ((Number)totalObject).intValue();
+            }
+        } catch (ParseException ex) {
+            LOGGER.warning("Error parsing "+type+": "+ex);
+            return null;
+        }
+        return new FollowerInfo(stream, result, total);
+    }
+    
+    private Follower parseFollower(String stream, Object o) {
+        try {
+            JSONObject data = (JSONObject)o;
+            String created_at = (String)data.get("created_at");
+            long time = Util.parseTime(created_at);
+            JSONObject user = (JSONObject)data.get("user");
+            String display_name = (String)user.get("display_name");
+            
+            return createFollowerItem(stream, display_name, time);
+        } catch (ClassCastException | NullPointerException | java.text.ParseException ex) {
+            LOGGER.warning("Error parsing entry of "+type+": "+o+" ["+ex+"]");
+        }
+        return null;
+    }
+    
+    /**
+     * Creates a new Follower item with the given values, also adding
+     * information about whether it is a refollow/new follower in this request.
+     * 
+     * @param stream
+     * @param name
+     * @param time
+     * @return 
+     */
+    private Follower createFollowerItem(String stream, String name, long time) {
+        stream = StringUtil.toLowerCase(stream);
+        // Add map for this stream if not already added
+        if (!alreadyFollowed.containsKey(stream)) {
+            alreadyFollowed.put(stream, new HashMap<String, Follower>());
+        }
+        // Check if this follower is already present
+        Map<String,Follower> entries = alreadyFollowed.get(stream);
+        Follower existingEntry = entries.get(name.toLowerCase());
+        boolean refollow = false;
+        boolean newFollow = true;
+        if (existingEntry != null) {
+            newFollow = false;
+            if (existingEntry.time != time) {
+                refollow = true;
+            }
+        }
+        // Don't assume as new if this is the first request that returned for
+        // this channel (during this session), otherwise simply ALL would be
+        // shown as new the first time
+        if (!requested.contains(stream)) {
+            newFollow = false;
+        }
+        Follower newEntry = new Follower(name, time, refollow, newFollow);
+        if (existingEntry == null) {
+            alreadyFollowed.get(stream).put(name.toLowerCase(), newEntry);
+        }
+        return newEntry;
+    }
+    
+}

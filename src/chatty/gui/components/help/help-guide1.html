@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Guide: Run more than one instance of Chatty</a></h1>
+    <p>If you want to run Chatty more than once at the same time, you may need
+    to know how it saves it's settings. By default the settings are saved
+    in your user-directory in the subfolder <code>.chatty</code> (where it is
+    exactly is system-dependant, enter <code>/dir</code> in Chatty to show it's location). When you run the program, it loads the settings
+    and when you exit the program, it saves them, overwriting the file with
+    no regard to possible changes (to the file) that may have occured in the meantime.</p>
+    <p>This means that when you run more than one instance on the same computer,
+    the last one you close always overwrites the settings.</p>
+    
+    <h2>Seperate settings</h2>
+    <p>You can change the default settings directory by using the <code>-cd</code>
+    commandline paramter, which changes the settings directory to the current
+    working directory, meaning the settings are loaded and saved in the same
+    location you specified as working directory.</p>
+    <p>This means you can easily run more than one instance on the same computer
+    with completely different settings, just by using that commandline parameter
+    and specifying different working directories (e.g. in Windows in the shortcut
+    settings).</p>
+    <p>See also: <a href="help-guide_create_shortcut.html">Create Shortcut</a>.</p>
+    
+    <h2>Sharing login data</h2>
+    <p>When you want to run several instances with different settings, but want
+    to use the same account, you run into problems. Everytime you request login
+    data (token), the old login is invalidated, so you have to share the login data
+    you already have between different instances.</p>
+    
+    <p>You can do this by simply copying the <code>login</code> settings file
+    which contains the login data. Make sure you closed the Chatty instance
+    you requested the login data with at least once, so it's actually saved
+    to the file.</p>
+    
+    <p>You could also try to play around with <a href="https://en.wikipedia.org/wiki/Symbolic_link">symbolic links</a>
+        to point to a shared <code>login</code> file.</p>
+    
+    <h2>Using Chatty on different computers</h2>
+    <p>If you want to run Chatty on different computers with the same account,
+    you run into the same problem as mentioned under <em>Sharing login data</em>:
+    You can't have more than one access token with the same account for the same
+    app at the same time.</p>
+    <p>To use Chatty on more than one computer with the same account, you'll
+        have to transfer the login data, either by copying the <code>login</code>
+        file or by entering the access token manually
+        (<code>/get token</code> displays the token,
+        <code>/changetoken &lt;token&gt;</code> changes it).</p>
+    
+</body>
+</html>
+

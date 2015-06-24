@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty - Admin Dialog</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">To main help page</a></div>
+    <h1><a name="top">Admin Dialog</a></h1>
+    <p>
+        <a href="#status">Change game/title</a> | 
+        <a href="#commercials">Run commercials</a>
+    </p>
+
+    <p><em>Open the Admin Dialog via <code>View - Channel Admin</code> or by
+            right-clicking on the channel to open the context menu and choose
+            <code>Channel Admin</code>.</em></p>
+    
+    <p>In the Admin Dialog you can change the title/game of your channel and
+    run commercials, if you have allowed the necessary access when getting your
+    login data. You need <code>Editor access</code> for changing game/title and
+    <code>Commercial access</code> for running commercials. See <a href="help.html#access">allow more access</a>.</p>
+    <p>The Admin Dialog is always opened for the currently selected channel,
+    unless there is no channel open (which is the case just after you started Chatty),
+    in which case it will always be opened for your own channel, which is derived
+    from your configured account name.</p>
+    
+    <h2><a name="status">Change game/title</a></h2>
+    <p>The Status-Tab lets you view and change the title and game of your channel.
+    The information is loaded when you open the dialog and when you press the
+    <code>reload</code>-Button. If others may have changed the info in the meantime,
+    you may want to reload before trying to change it.</p>
+    
+    <h3>Select a game</h3>
+    <p>When you select a game, another dialog will open where you should enter
+        part of the name of the game in the search field and hit <kbd>Enter</kbd>
+        or click the <code>Search</code>-Button to find the correct name, which
+    you can then select. You can also just use the name you entered yourself,
+    but you should usually use the search to make sure your stream appears in
+    the correct category on Twitch.</p>
+    
+    <h3>Use presets</h3>
+    <p>There are also status presets, which allow you to add a combination of
+        title and game, so you can select it later. By pressing <code>Fav</code>
+        on the Status-Tab, you can add the current status to the favorites.
+        The status is also automatically added to the history every time you
+        press the <code>Update</code> button.</p>
+    <p>Press the <code>Presets</code> button to open a table with the favorites
+        and status history. You can filter the table by only showing entries for
+        the game currently have selected or only showing favorites.</p>
+    <p>History entries (the ones that are not favorites) are automatically
+        removed after some time, you can change when they are removed and
+        whether they should be added in the first place in the settings.</p>
+    <p>The <code>Last Activity</code> columns shows when this status was last
+        set using the <code>Update</code> button (or when it was added to the
+        favorites for the first time). The <code>Usage</code> column shows how
+        often it was set using the <code>Update</code> button.</p>
+
+    <h2><a name="commercials">Run commercials</a></h2>
+    <p>If you are partnered with Twitch, you can run commercials on your channel
+    here (even if you are not partnered it may run a commercial). Click on the
+    appropriate button to try to run a commercial of the given length.</p>
+    
+    <p>The <code>Last run</code> time shows when a commercial was last run
+    through Chatty (this session).</p>
+    
+    <h3>Schedule commercials</h3>
+    <p>There are two different ways of scheduling a commercial, either running
+    a single commerical on a delay or repeating running a commercial on a delay.
+    Select either or both options and then press a <code>Run commercial</code>
+    button to schedule the commercial. Press the same button again to cancel the
+    scheduled commercial. Click a button of another length to change the length
+    of the commercial while keeping it on schedule. Scheduled commercials are
+    not completely exact, they may be run a few sceonds too late.</p>
+    
+    <p>If you have <code>Use delay</code> selected, then the commercial will be
+        scheduled to run after the specified time. If you have <code>Repeat</code> selected,
+    then - after each commercial run through Chatty - another commercial will automatically be scheduled to run again with the same delay.
+    You don't need to have <code>Use delay</code> selected for <code>Repeat</code>
+    to work, they just both use the same time as delay.</p>
+    
+    <p>The time for the delay will be interpreted as seconds by default, but you
+    can also specify minutes. Examples: <code>30</code> (30 seconds), <code>5m</code>
+    (5 minutes), <code>120s</code> (2 minutes).</p>
+    
+    <h3>Run commercials via global hotkey</h3>
+    <p>If you have downloaded the appropriate version of Chatty (the one with
+    "hotkey" in the .zip filename, Windows only), you can define a global hotkey
+    to run 30s commercials on the channel you currently have open. The hotkey
+    can be defined on the <code>Commercials</code> tab in the Admin Dialog
+    (don't forget to press <code>Set</code> to actually set it).</p>
+    
+    <p>If you have the Admin Dialog open on the <code>Commercials</code> tab,
+    then executing the hotkey will simulate a click on the 30s button, with all
+    the implications like being able to use a delay, running the commercial on
+    the channel that the Admin Dialog was opened on (instead of the currently
+    active channel) and so on.</p>
+</body>
+</html>
+

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty - Addressbook</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">To main help page</a></div>
+    <h1><a name="top">Addressbook</a></h1>
+    <p>
+        <a href="#editing">Editing Locally</a> (<a href="#commands">Commands</a>) | 
+        <a href="#advanced">Advanced Usage</a> (<a href="#modcommands">Mod Commands</a>, <a href="#file">Change via file</a>)
+    </p>
+
+    <p>The addressbook allows you to add usernames and assign categories to
+        them, which can then be used in other places such as the <a href="help-settings.html#Usercolors">Usercolor settings</a>
+        or the <a href="help-settings.html#Highlight">Highlight settings</a>.
+        Categories cannot contain spaces and are all made lowercase when added/loaded from file.</p>
+    
+    <h2><a name="editing">Editing Locally</a></h2>
+    <p>The addressbook can be edited in several ways:</p>
+    <ul>
+        <li>The addressbook dialog (<code>&lt;Main Menu&gt; - Channels - Addressbook</code>)
+        where all entries are listed and you can add/edit/remove entries.</li>
+        <li>From the user context menu (when you click on a user, then <code>Addressbook</code>)
+        where the entry for this user can be directly added/edited/removed. There
+        you can just select/unselect the categories this user should be in
+        (although only the categories that are already used in the addressbook
+        are listed, so if you want to add a completely
+        new category, you have to add it once by manually editing an entry).</li>
+        <li>The commands that are listed below.</li>
+    </ul>
+    
+    <h3><a name="commands">Commands</a></h3>
+    <p>In addition to the addressbook dialog and user context menu, there are also some commands to
+        edit the addressbook. All commands are prefixed with <code>/ab</code>
+        (e.g. <code>/ab add &lt;name&gt;</code>) or alternatively <code>/users</code> (e.g. <code>/users add &lt;name&gt;</code>):</p>
+    <ul>
+        <li><code>add &lt;name&gt;</code> - Adds a name</li>
+        <li><code>add &lt;name&gt; &lt;categories&gt;</code> - Adds a name and directly assigns it the given categories, or adds the
+            categories to the name if it already exists (categories are comma-seperated, without spaces)</li>
+        <li><code>set &lt;name&gt; &lt;categories&gt;</code> - Sets the categories for this name, adding it if necessary, replacing
+            any present categories for this name</li>
+        <li><code>remove &lt;name&gt;</code> - Completely removes the given name</li>
+        <li><code>remove &lt;name&gt; &lt;categories&gt;</code> - Removes the given categories from this name, but leaves
+            the name</li>
+        <li><code>change &lt;name&gt; &lt;categoriesModification&gt;</code> - Prepend categories with <code>+</code>,
+            <code>-</code> or <code>!</code> to add, remove or toggle the categories respectively. You can specify more than
+            one set of categories, for example: <code>change test +a,b -c !d</code> adds a and b, removes c and toggles d</li>
+        <li><code>get &lt;name&gt;</code> - Shows the categories for this name</li>
+        <li><code>info</code> - Shows number of entries and used categories</li>
+    </ul>
+    <p>Categories are given as a comma-seperated list without spaces, e.g. <code>cat1,cat2,cat3</code>.</p>
+    <p>The following commands edit all entries at once, so they should be used with care:</p>
+    <ul>
+        <li><code>renameCategory &lt;currentName&gt; &lt;newName&gt;</code> - Renames a category, which means all occurences
+            of <code>currentName</code> are replaced with <code>newName</code> in all entries. This can also
+            be used to merge categories, if <code>newName</code> already exists.</li>
+        <li><code>removeCategory &lt;name&gt;</code> - Removes the category with the given name from all entries</li>
+    </ul>
+    
+    <h3>Command Examples</h3>
+    <dl>
+        <dt><code>/ab add josh vip</code></dt>
+        <dd>Adds the category called <code>vip</code> to the user called <code>josh</code></dd>
+        <dd>(Also adds the user to the addressbook in the first place, if not already there)</dd>
+        <dd>(<code>josh</code>'s categories would now be: <code>vip</code>)</dd>
+        
+        <dt><code>/ab set josh rainbow</code></dt>
+        <dd>Sets the categories of the user <code>josh</code> to <code>rainbow</code>, replacing
+            any previously associated categories</dd>
+        <dd>(<code>josh</code>'s categories would now be: <code>rainbow</code>)</dd>
+        <dd>(Also makes <code>josh</code> kind of colorful in chat, try it out with your own name Kappa)</dd>
+
+        <dt><code>/ab add josh vip</code></dt>
+        <dd>Adds the category called <code>vip</code> to the user <code>josh</code></dd>
+        <dd>(<code>josh</code>'s categories would now be: <code>rainbow,vip</code>)</dd>
+        
+        <dt><code>/ab remove josh vip</code></dt>
+        <dd>Removes the category called <code>vip</code> from the user <code>josh</code>,
+        keeping the other categories untouched</dd>
+        <dd>(<code>josh</code>'s categories would now again be: <code>rainbow</code>)</dd>
+        
+    </dl>
+    
+    <h2><a name="advanced">Advanced Usage</a></h2>
+    <p>The following features are a bit more advanced and should only be used if
+    you somewhat know what you're doing.</p>
+    
+    <h3><a name="modcommands">Moderator Commands</a></h3>
+    <p>You can use this to let the moderators of your channel edit your addressbook.
+    Depending on what commands you allow them to use, this can be a powerful tool,
+    so make sure you keep an eye on what your moderators do.</p>
+    
+    <p>The following settings affect the this feature (you have to change them
+        via setting commands):</p>
+    
+    <dl>
+        <dt><code>abCommandsChannel</code></dt>
+        <dd>Set this to the channel you want this enabled in. You can reset the
+            setting to empty using the <code>/clearSetting</code> command to
+            disable the mod commands again.</dd>
+        <dd><code>/set abCommandsChannel #yourchannel</code></dd>
+        
+        <dt><code>abCommands</code></dt>
+        <dd>A comma-seperated list of commands you want the mods to be able to
+        use. Commands can be anything that is
+        listed in the <a href="#commands">Commands</a> section above. So for
+        example if you wanted to allow the <code>add</code> and <code>set</code>
+        commands, the setting value would be <code>add,set</code> (no spaces).</dd>
+        <dd><code>/set abCommands add,set</code></dd>
+        <dd><em>Default value for this is <code>add,set,remove</code>.</em></dd>
+    </dl>
+    
+    <p>If you set the settings accordingly, then the mods will be able to use
+        e.g. <code>!add name category</code> to add <code>name</code> to your
+        Addressbook with the category <code>category</code>. Chatty will output
+        a message about the change, similiar to when you enter the command yourself.
+        It does not send a message to chat, so if you want your moderators to see an
+        actual response, you need to have Chatty on stream (which means the response
+        is also affected by stream delay of course).</p>
+    
+    <h3><a name="file">Change Addressbook via file</a></h3>
+    <p><em>This is a rather experimental feature, so it might not work reliably.</em></p>
+    
+    <p>You can write Addressbook commands (one per line) to the <code>addressbookImport.txt</code>
+        file in the settings directory (enter <code>/dir</code> to find out what
+    your settings directory is). You can use any commands specified in the Commands section above, without
+        the <code>/ab</code> or <code>/users</code> prefix (since it's already
+    implied that they are Addressbook commands). For example:</p>
+    <pre>add darthclide level1
+change nightbot !vip
+set testi ignore</pre>
+    
+    <p>To perform an import, enter the <code>/abImport</code> command and Chatty
+        will read the file and execute each command as if you would have entered
+        it in the input box. Information about the
+        command results is output in the debug window (<code>Extra - Debug window</code>)
+        and the debug log file.</p>
+    
+    <p>You can also set the <code>abAutoImport</code> setting (<code>/set abAutoImport on</code>)
+    and the file will be read automatically within a few seconds when it is
+    detected to have been changed. You have to restart Chatty after changing
+    the <code>abAutoImport</code> value for it to take effect.
+    To make sure no data is lost, you should not
+    write to the file too often, or else it may already be overwritten once
+    changes are detected and the file contents are read and the commands performed.</p>
+    
+    <p>It will also not be read automatically when you on start of Chatty,
+    so you should only apply changes while Chatty is running or
+    use the <code>/abImport</code> command to manually read the file once after
+    start. If you only change the file while Chatty is running, manually reading
+    the file should not be necessary.</p>
+</body>
+</html>
+

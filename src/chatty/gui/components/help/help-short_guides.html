@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Short Guides</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">More Guides..</a></h1>
+    <p>
+        <a href="#localsubonly">Local Subscriber-Only Mode</a> |
+        <a href="#streamers">Chatty for Streamers</a> |
+        <a href="#eventchat">Join Eventchat</a>
+    </p>
+    <p>Probably shorter guides about some aspects of Chatty.</p>
+    <h2><a name="localsubonly">Local Subscriber-Only Mode</a></h2>
+    <p>You can create your own local subonly mode, which ignores all messages
+        written by non-subscribers.</p>
+    
+    <p>Features used: <a href="help-settings.html#Ignore">Ignore System</a>, <a href="help-addressbook.html">Addressbook</a>,
+    <a href="help-settings.html#Commands">Custom Commands</a></p>
+    
+    <h3>Create Ignore Entry</h3>
+    <p>Go to <code>Main - Settings - Ignore</code> and make sure <code>Enable Ignore</code>
+        is ticked. Then add to the list (press the Plus-Button):</p>
+    <p><code>!status:smbaf chanCat:subonly</code></p>
+    <p>The <code>!status:smbaf</code> prefix matches on messages send by users that
+        <em>don't</em> have any of the status levels defined, in this case users
+        that are neither a subscriber (<code>s</code>), moderator (<code>m</code>), broadcaster (<code>b</code>),
+        admin (<code>a</code>) or staff (<code>f</code>). So basicially this only matches on normal users.</p>
+    <p>The second requirement for a match is the <code>chanCat:subonly</code>
+        prefix, which refers to the channel category <code>subonly</code>, which
+        means the channel the message was send in needs to have that Addressbook category.
+        This is used to be able to easily toggle subonly-mode for a channel, and
+        of course to prevent it being enabled in all channels you join in the
+        first place.</p>
+    
+    <h3>Create Custom Command to modify Addressbook</h3>
+    <p>To make use of the Ignore Entry defined in the previous section, you need
+        to add the <code>subonly</code> category to the channel you want to have
+        it enabled for. To do this, you could open the Addressbook Dialog
+        (<code>Channels - Addressbook</code>) and add the channel with the
+        category there (channels need a leading # in this case, so e.g. <code>#joshimuz</code>).</p>
+    
+    <p>You can however also use <a href="help-addressbook.html#commands">Addressbook Commands</a>:</p>
+    <p><code>/ab change #joshimuz !subonly</code></p>
+    <p>This toggles the <code>subonly</code> category for the given channel, so
+    when the category is there, it removes the category, and when the category is not there,
+    it adds the category.</p>
+    <p>To do this a bit more conveniently, you can add it as a custom command. Go
+        to <code>Main - Settings - Commands</code> and add the following to the
+    list:</p>
+    <p><code>/Toggle_Subonly /ab change #$$1 !subonly</code></p>
+    <p>If you enter <code>/Toggle_Subonly joshimuz</code>, this will automatically
+        run the Addressbook as mentioned above (<code>$$1</code> means this is
+        being replaced with the first word after the command).</p>
+    
+    <p>To make this more convenient (entering the command with the correct channel
+        could be a bit of a hassle), add the Custom Command to the <code>Channel Context Menu</code>
+        (on the same page in the settings). Just click on <code>Edit</code> and add
+    the command name (without any parameters):</p>
+    <p><code>/Toggle_Subonly</code></p>
+    <p>Now if you right-click on a channel, the context menu that opens should
+        have an entry <code>Toggle Subonly</code>, which you can
+        use to turn your own local subonly mode for the current channel on and off.</p>
+    
+    
+    <h2><a name="streamers">Chatty for Streamers</a></h2>
+    
+    <h3>Stay informed</h3>
+    <ul>
+        <li>Open the <code>&lt;View - Channel Info&gt;</code> to see your current
+        stream title/game, a graph of your viewercount and how long your current
+        stream already is going.</li>
+        <li>Open the <code>&lt;Extra - Followers/Subscribers&gt;</code> dialog
+        to view your 100 most recent Followers/Subscribers and some stats based
+        on that.</li>
+    </ul>
+    
+    <h3>Manage your stream</h3>
+    <ul>
+        <li>Open the <code>&lt;View - Channel Admin&gt;</code> dialog to change
+        the title/game of your stream and run commercials:
+        <ul>
+            <li>Presets/History for title/game combinations</li>
+            <li>Favorite games you play often</li>
+            <li>Run commercials on a delay and/or timer</li>
+            <li>Run commercials while playing a game via a global hotkey
+                (Windows only)</li>
+        </ul>
+        </li>
+    </ul>
+    
+    <h3>Capture chat for on-stream chat</h3>
+    <ul>
+        <li>Customize chat colors, for example change to black background to be
+            able to make the background transparent in your streaming program.</li>
+        <li>If you capture Chatty with your streaming program, make sure to
+            enable the setting <code>Settings - Window - Always show chat scrollbar</code>, so you can always capture the same
+            region, independant of how many messages are in the chat window.</li>
+        <li>Change the font so it shows up nicely on stream.</li>
+        <li>If you want to have all text in bold - not just the names - you can
+            set the font by command like this: <code>/set font Arial Bold</code>.</li>
+        <li>You can clear the chat window by using the <code>/clearchat</code>
+            command (e.g. if you changed some settings before starting the stream
+        you don't want to show).</li>
+    </ul>
+    
+    
+    <h2><a name="eventchat">Join Eventchat</a></h2>
+    <p>Sometimes there are channels that run on a special set of event chat
+        servers, so they are seperated from the channels you see when you join
+        <code>irc.twitch.tv</code>. This only applies to webchat (at the moment
+        at least), so often the chat you get connecting to <code>irc.twitch.tv</code>
+        is called "mobile chat", because the mobile apps apparently also don't
+        support event chat.</p>
+    
+    <p>See this <a href="http://help.twitch.tv/customer/portal/questions/8152306-can-t-see-chat-of-some-channels-on-irc-">
+            Twitch Support Center entry</a> or <a href="http://twitchstatus.com/#chat">Twitchstatus.com</a> for an (unofficial) list
+    of servers.</p>
+    
+       <p>What you have to do in Chatty to be able to get the
+        event chat instead of the "normal chat" that is only used by IRC and
+        mobile users, is connect to a different server. Since Chatty can only
+        connect to one server at a time, you either have to only join channels
+        that are on the event chat servers, or run two <a href="help-guide1.html">seperate instances</a> of
+        Chatty at the same time.</p>
+       
+       <p>There are different ways of connecting to a different server:</p>
+       <ul>
+           <li>The <code>/server &lt;host&gt;[:port]</code> command connects to the given server and
+           port manually.</li>
+           <li>The <code>-server</code> and <code>-port</code> commandline options
+           allow you to specify a different server when you start Chatty.</li>
+           <li>The <code>Server</code> and <code>Port</code> settings in the
+               Settings Dialog under <code>Advanced</code> allows you to set
+           fixed settings for the server to connect to. This especially makes sense
+           if you are using <a href="help-guide1.html">seperate settings for different instances</a> of Chatty.</li>
+       </ul>
+    
+</body>
+</html>
+

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Guide: Chatty directories and files</a></h1>
+    <p>
+        <a href="#directories">Directories</a> |
+        <a href="#files">Files</a> |
+        <a href="#backup">Backup</a>
+    </p>
+    <p>Learn what directories and files Chatty creates/uses.</p>
+    <h2><a name="directories">Directories</a></h2>
+    <h3>Settings Directory</h3>
+    <p>The settings directory by default is in your user home directory in a
+        subfolder called <code>.chatty</code>. If you use the <code>-cd</code>
+    commandline parameter, then the settings directory is the current Working
+    Directory.</p>
+    
+    <p>You can use commandline parameters by creating a shortcut and setting the
+        target to something like <code>javaw.exe -jar "D:\Chatty\Chatty.jar" -cd</code>.</p>
+    <h3>Working Directory</h3>
+    <p>This directory is associated with Chatty when you start it. This is usually
+    the directory the program is started from. If you created a shortcut to start
+    Chatty with, this may point to the Java-executable instead of Chatty itself,
+    which can lead to errors. In Windows, you can change the Working Directory
+    in the shortcut settings by changing what is defined under <code>Run in</code>.</p>
+    <h3>JAR Location</h3>
+    <p>This is where the Chatty.jar is located and is used for loading libraries
+    that Chatty uses.</p>
+    
+    <h3>Displaying Directories in Chatty</h3>
+    <p>You can use the <code>/dir</code> command in Chatty to output the settings
+        directory and the <code>/wdir</code> command for the working directory
+        (<code>/openDir</code> and <code>/openWdir</code> to open them in the standard filebrowser).
+    You can also check the settings dialog for the directory where the logs
+    are saved in and the directory where the sounds are loaded from.</p>
+    
+    <h2><a name="files">Files</a></h2>
+    <h3>Write and read</h3>
+    <p>There are several files that Chatty creates/changes when you run/close it.</p>
+    <table class="files">
+        <tr>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Files</th>
+            <th></th>
+        </tr>
+        <tr>
+            <td>Settings</td>
+            <td>&lt;settings&gt;</td>
+            <td>login, favoritesAndHistory, settings</td>
+            <td><a href="help.html#settingFiles">Setting Files</a></td>
+        </tr>
+        <tr>
+            <td>Debug Log</td>
+            <td>&lt;settings&gt;</td>
+            <td>debug.log, debug.log.x</td>
+            <td>Contains debug information from the last run</td>
+        </tr>
+        <tr>
+            <td>Chatlogs</td>
+            <td>&lt;settings&gt;/logs</td>
+            <td>&lt;channel&gt;.log</td>
+            <td>Chatlogs for every channel (if enabled)</td>
+        </tr>
+        <tr>
+            <td>Emoticons</td>
+            <td>&lt;settings&gt;</td>
+            <td>emoticons, emotesets, bttvemotes</td>
+            <td>Cached list of emoticons, emotesets, BTTV emotes (Cached for about one day)</td>
+        </tr>
+        <tr>
+            <td>Addressbook</td>
+            <td>&lt;settings&gt;</td>
+            <td>addressbook</td>
+            <td>List of names and associated categories</td>
+        </tr>
+        <tr>
+            <td>Backups</td>
+            <td>&lt;settings&gt;/logs</td>
+            <td>backup_&lt;number&gt;_&lt;orig_filename&gt;</td>
+        </tr>
+    </table>
+    <h3>Read-only</h3>
+    <p>Files that Chatty only reads but doesn't modify.</p>
+    <table class="files">
+        <tr>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Files</th>
+            <th></th>
+        </tr>
+        <tr>
+            <td>Sounds</td>
+            <td>&lt;working&gt;/sounds</td>
+            <td>.wav files</td>
+            <td>Chatty loads the sounds from here</td>
+        </tr>
+        <tr>
+            <td>Images</td>
+            <td>&lt;working&gt;/img</td>
+            <td>.png files</td>
+            <td>Default location where images for custom usericons are loaded
+            from</td>
+        </tr>
+        <tr>
+            <td>JIntellitype</td>
+            <td>&lt;working&gt;</td>
+            <td>JIntellitype.dll</td>
+            <td>If you have a version of Chatty with Hotkey support</td>
+        </tr>
+    </table>
+    
+    <h2><a name="backup">Backup</a></h2>
+    <p>Chatty performs an automatic backup (enabled by default) everytime it is
+    started (if at least the number of days as defined in the settings have passed,
+    by default one). It copies the setting files (except login) to the backup folder
+    in the settings directory, increasing the numbering of the files with every
+    backup. It only makes as many backups as defined in the settings and then
+    starts over with the first number, rotating the files.</p>
+
+    <p>This is supposed to make recovery of settings easier in case they are not
+        read or written correctly and thus lost (which shouldn't usually
+        happen). In that case you can manually copy/rename the lost files from
+        a backup (just looks for the most recent one based on the change date
+        that looks fine).</p>
+    
+    <p><em>If some settings are important to you this can help, but you
+            shouldn't rely on it. Always make your own backups, best on a
+            different device!</em></p>
+</body>
+</html>
+

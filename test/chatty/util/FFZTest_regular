@@ -1,0 +1,60 @@
+{
+  "room": {
+    "_id": 1743, 
+    "_tid": 22680841, 
+    "css": null, 
+    "display_name": "Joshimuz", 
+    "id": "joshimuz", 
+    "is_group": false, 
+    "moderator_badge": "//cdn.frankerfacez.com/8ff4873d0c589af07889dd941101c57c.png", 
+    "set": 1744
+  }, 
+  "sets": {
+    "1744": {
+      "_type": 1, 
+      "css": null, 
+      "description": null, 
+      "emoticons": [
+        {
+          "css": null, 
+          "height": 16, 
+          "hidden": false, 
+          "id": 12364, 
+          "margins": null, 
+          "name": "joshWASTED", 
+          "owner": {
+            "display_name": "Joshimuz", 
+            "id": 1743, 
+            "name": "joshimuz"
+          }, 
+          "public": true, 
+          "urls": {
+            "1": "//cdn.frankerfacez.com/emoticon/12364/1"
+          }, 
+          "width": 100
+        }, 
+        {
+          "css": null, 
+          "height": 17, 
+          "hidden": false, 
+          "id": 12363, 
+          "margins": null, 
+          "name": "joshBUSTED", 
+          "owner": {
+            "display_name": "Joshimuz", 
+            "id": 1743, 
+            "name": "joshimuz"
+          }, 
+          "public": true, 
+          "urls": {
+            "1": "//cdn.frankerfacez.com/emoticon/12363/1"
+          }, 
+          "width": 100
+        }
+      ], 
+      "icon": null, 
+      "id": 1744, 
+      "title": "Channel: Joshimuz"
+    }
+  }
+}

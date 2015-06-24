@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help - Create Shortcut and add Icon</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Create Shortcut and add Icon</a></h1>
+
+    <p>This applies to Windows 7, not sure about other OS.</p>
+
+    <p>You can create a shortcut for Chatty, which has some potential advantages (depending on what you need):</p>
+    <ul>
+	    <li>You can give Chatty <a href="help.html#launch">launch options</a>, like <code>-cd</code> to use a different <a href="help-guide_folders.html">settings directory</a>.</li>
+	    <li>You can attach Chatty to the taskbar.</li>
+	    <li>You can give the shortcut the Chatty icon, to replace the Java icon without changing it for all Java programs.</li>
+    </ul>
+    <h2>Create shortcut</h2>
+    <p>Create a shortcut to Java to start Chatty:</p>
+    <h3>First way</h3>
+<ul>
+	<li>Right-click in the folder you want to create the shortcut in, choose <code>New - Shortcut</code> from the context menu. Enter <code>javaw -jar "D:\Chatty\Chatty.jar"</code> as location of the item.</li>
+	<li>Go to the next page and enter a name for the shortcut and finish creating the shorcut.</li>
+	<li>Right-click on the newly created shortcut and choose <code>Properties</code> from the context menu. Make sure that under <code>Shortcut</code> the <code>Start in</code> points to the folder that the <code>Chatty.jar</code> is in (otherwise some stuff might not work).</li>
+</ul>
+<h3>Second way</h3>
+<ul>
+	<li>Right-click on the <code>Chatty.jar</code> and drag it to an open area in the folder, then let go to open the context menu, choose the option to create a shortcut.</li>
+	<li>Right-click on the newly created shortcut and choose <code>Properties</code> from the context menu. In the <code>Target</code> field, it should have the path to the <code>Chatty.jar</code>. Before that add: <code>javaw -jar </code>, so that in total it reads for example: <code>javaw -jar "D:\Chatty\Chatty.jar"</code></li>
+</ul>
+
+<h2>Editing shortcut</h2>
+<p>Add launch options or icon:</p>
+<ul>
+	<li>Right-click on the newly created shortcut and choose <code>Properties</code> from the context menu, then go to the <code>Shortcut</code> tab.</li>
+	<li>Add any <a href="help.html#launch">launch options</a> you want to use with Chatty after the path to Chatty. For example: <code>javaw -jar "D:\Chatty\Chatty.jar" -cd</code></li>
+	<li>Click <code>Change Icon..</code> and then <code>Browse..</code> to select an item to use for the Shortcut from your harddrive. (<a href="http://chatty.github.io/Chatty.ico">Download Chatty icon as <code>.ico</code> file</a>, right-click and <code>Save target as..</code>)</li>
+</ul>
+<h2>Use shortcut</h2>
+<p>You can then start Chatty by using this shortcut or you can drag it to the taskbar to attach it to it.</p>
+</body>
+</html>
+
