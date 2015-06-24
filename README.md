@@ -4,14 +4,20 @@ Chatty
 Chatty is a Twitch Chat Client for Desktop written in Java featuring many
 Twitch specific features.
 
-Website: http://chatty.github.io
-E-Mail: chattyclient@gmail.com
-Twitter: @ChattyClient (https://twitter.com/ChattyClient)
+* Website: http://chatty.github.io
+* E-Mail: chattyclient@gmail.com
+* Twitter: @ChattyClient (https://twitter.com/ChattyClient)
 
 I learned about most of the Java techniques and APIs used in this during
 development, so many things won't be designed ideally. I also never
 released such a project as opensource before, so if I missed anything or
 didn't adhere to some license correctly, please tell me.
+
+Download
+========
+
+Go to the [website](http://chatty.github.io) for ready to use downloads
+and more information on the features.
 
 License Information
 ===================
@@ -19,41 +25,47 @@ License Information
 External Libraries/Resources
 ----------------------------
 
-* JSON-Simple [lib/json-simple-*.jar]
-	Website: https://code.google.com/p/json-simple/)
-	License: "Apache License 2.0"
+* JSON-Simple:
+  * File: `assets/lib/json-simple-*.jar`
+  * Website: https://code.google.com/p/json-simple/
+  * License: "Apache License 2.0"
 	(for the license text see the APACHE_LICENSE file
 	or http://www.apache.org/licenses/LICENSE-2.0).
 
-* JIntellitype [lib/jintellitype-*.jar, Jintellitype*.dll]
-	Website: https://code.google.com/p/jintellitype/
-	License: "Apache License 2.0"
+* JIntellitype:
+  * Files: `assets/lib/jintellitype-*.jar, Jintellitype*.dll`
+  * Website: https://code.google.com/p/jintellitype/
+  * License: "Apache License 2.0"
 	(for the license text see the APACHE_LICENSE file
 	or http://www.apache.org/licenses/LICENSE-2.0).
 
-* Favorites Icon [star.png] by Everaldo Coelho
-	Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
-	License: LGPL
+* Favorites Icon by Everaldo Coelho:
+  * File: `star.png`
+  * Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
+  * License: LGPL
 	(for the license text see the LGPL file or
 	http://www.gnu.org/licenses/lgpl.html)
 
-* Misc Icons [list-add.png, list-remove.png, view-refresh.png,
+* Misc Icons from the Tango Icon Theme:
+  * Files: `list-add.png, list-remove.png, view-refresh.png,
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
-		go-previous.png, go-home.png, go-web.png] from the Tango Icon Theme
-	Source: http://tango.freedesktop.org/Tango_Icon_Library
-	License: Released into the Public Domain
+		go-previous.png, go-home.png, go-web.png`
+  * Source: http://tango.freedesktop.org/Tango_Icon_Library
+  * License: Released into the Public Domain
 
-* Misc Icons [edit.png, ok.png, no.png] from NUVOLA ICON THEME for KDE 3.x
-		by David Vignoni
-	Source: http://www.icon-king.com/projects/nuvola/
-	License: LGPL
+* Misc Icons from NUVOLA ICON THEME for KDE 3.x
+		by David Vignoni:
+  * Files: `edit.png, ok.png, no.png`
+  * Source: http://www.icon-king.com/projects/nuvola/
+  * License: LGPL
 	(for the license text see the LGPL file or
 	http://www.gnu.org/licenses/lgpl.html)
 
-* Robot Icon [icon_bot.png] by Yusuke Kamiyamane
-	Source: https://www.iconfinder.com/icons/46205/robot_icon
-	License: CC-BY 3.0
+* Robot Icon by Yusuke Kamiyamane
+  * File: `icon_bot.png`
+  * Source: https://www.iconfinder.com/icons/46205/robot_icon
+  * License: CC-BY 3.0
 	(http://creativecommons.org/licenses/by/3.0/)
 
 
