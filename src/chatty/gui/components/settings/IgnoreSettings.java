@@ -1,16 +1,21 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.IgnoredMessages;
 import chatty.gui.components.LinkLabel;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 
 /**
  *
@@ -21,8 +26,12 @@ public class IgnoreSettings extends SettingsPanel {
     private static final String INFO_IGNORE = HighlightSettings.INFO
             +"Example: <code>chan:joshimuz re:!bet.*</code>";
     
+    private final IgnoredUsers ignoredUsers;
+    
     public IgnoreSettings(SettingsDialog d) {
         super(true);
+        
+        ignoredUsers = new IgnoredUsers(d);
         
         JPanel base = addTitledPanel("Ignore Messages", 0, true);
         
@@ -97,12 +106,80 @@ public class IgnoreSettings extends SettingsPanel {
         });
         base.add(items, gbc);
         
-        gbc = d.makeGbc(0,4,3,1);
+        JButton ignoredUsersButton = new JButton("Ignored Users");
+        ignoredUsersButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        ignoredUsersButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ignoredUsers.setLocationRelativeTo(IgnoreSettings.this);
+                ignoredUsers.setVisible(true);
+            }
+        });
+        gbc = d.makeGbc(0, 4, 1, 1);
+        gbc.insets = new Insets(1,10,5,5);
+        gbc.anchor = GridBagConstraints.NORTH;
+        base.add(ignoredUsersButton, gbc);
+        
+        gbc = d.makeGbc(1,4,2,1);
         gbc.insets = new Insets(0, 5, 5, 5);
-        base.add(new LinkLabel("<html><body style=\"width:300px;\">"
-                + "Matching messages works the same as the Highlights system. "
+        base.add(new LinkLabel("<html><body style=\"width:220px;\">"
                 + "Click on the Help link on the bottom left for help."
                 , d.getLinkLabelListener()), gbc);
+    }
+    
+    private static class IgnoredUsers extends JDialog {
+
+        private static final DataFormatter<String> FORMATTER = new DataFormatter<String>() {
+
+            @Override
+            public String format(String input) {
+                return input.replaceAll("\\s", "");
+            }
+        };
+        
+        public IgnoredUsers(SettingsDialog d) {
+            super(d);
+            
+            setDefaultCloseOperation(HIDE_ON_CLOSE);
+            setTitle("Ignored Users");
+            setLayout(new GridBagLayout());
+            
+            GridBagConstraints gbc;
+            
+            gbc = d.makeGbc(0, 0, 1, 1);
+            add(new JLabel("Ignored in chat"), gbc);
+            
+            gbc = d.makeGbc(1, 0, 1, 1);
+            add(new JLabel("Ignored for whispers"), gbc);
+            
+            gbc = d.makeGbc(0, 1, 1, 1);
+            ListSelector ignoredChat = d.addListSetting("ignoredUsers", 180, 250, false);
+            ignoredChat.setDataFormatter(FORMATTER);
+            add(ignoredChat, gbc);
+            
+            gbc = d.makeGbc(1, 1, 1, 1);
+            ListSelector ignoredWhispers = d.addListSetting("ignoredUsersWhisper", 180, 250, false);
+            ignoredWhispers.setDataFormatter(FORMATTER);
+            add(ignoredWhispers, gbc);
+            
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setVisible(false);
+                }
+            });
+            gbc = d.makeGbc(0, 5, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(5, 5, 5, 5);
+            add(closeButton, gbc);
+            
+            pack();
+        }
+        
     }
     
 }

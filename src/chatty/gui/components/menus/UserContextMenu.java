@@ -31,6 +31,9 @@ public class UserContextMenu extends ContextMenu {
         addSeparator();
         
         addItem("copy", "Copy Name", MISC);
+        addSeparator(MISC);
+        ContextMenuHelper.addIgnore(this, user.nick, MISC, false);
+        ContextMenuHelper.addIgnore(this, user.nick, MISC, true);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user

@@ -784,6 +784,18 @@ public class TwitchClient {
             g.printSystem("[Addressbook] Importing from file..");
             addressbook.importFromFile();
         }
+        else if (command.equals("ignore")) {
+            commandIgnore(parameter, false);
+        }
+        else if (command.equals("unignore")) {
+            commandUnignore(parameter, false);
+        }
+        else if (command.equals("ignorewhisper")) {
+            commandIgnore(parameter, true);
+        }
+        else if (command.equals("unignorewhisper")) {
+            commandUnignore(parameter, true);
+        }
         
         else if (command.equals("changetoken")) {
             g.changeToken(parameter);
@@ -1041,6 +1053,40 @@ public class TwitchClient {
             } else {
                 textInput(channel, result);
             }
+        }
+    }
+    
+    public void commandIgnore(String parameter, boolean whisper) {
+        if (parameter != null && !parameter.isEmpty()) {
+            String[] split = parameter.split(" ");
+            String name = split[0].toLowerCase();
+            String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
+            String message = whisper ? " from whispering you" : " in chat";
+            if (settings.listContains(setting, name)) {
+                g.printSystem("Ignore: '"+name+"' already ignored"+message);
+            } else {
+                settings.setAdd(setting, name);
+                g.printSystem("Ignore: '"+name+"' now ignored"+message);
+            }
+        } else {
+            g.printSystem("Ignore: Invalid name");
+        }
+    }
+    
+    public void commandUnignore(String parameter, boolean whisper) {
+        if (parameter != null && !parameter.isEmpty()) {
+            String[] split = parameter.split(" ");
+            String name = split[0].toLowerCase();
+            String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
+            String message = whisper ? " from whispering you" : " in chat";
+            if (!settings.listContains(setting, name)) {
+                g.printSystem("Ignore: '"+name+"' not ignored"+message);
+            } else {
+                settings.listRemove(setting, name);
+                g.printSystem("Ignore: '"+name+"' no longer ignored"+message);
+            }
+        } else {
+            g.printSystem("Ignore: Invalid name");
         }
     }
     

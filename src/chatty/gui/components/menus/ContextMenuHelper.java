@@ -2,6 +2,7 @@
 package chatty.gui.components.menus;
 
 import chatty.Helper;
+import chatty.util.settings.Settings;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,7 @@ public class ContextMenuHelper {
     public static String livestreamerQualities;
     public static String userCustomCommands;
     public static String channelCustomCommands;
+    public static Settings settings;
     
     /**
      * Pattern for finding the qualities in the Livestreamer qualities setting
@@ -155,6 +157,19 @@ public class ContextMenuHelper {
                 sep = false;
             }
 
+        }
+    }
+    
+    public static void addIgnore(ContextMenu m, String name, String submenu, boolean whisper) {
+        if (settings != null) {
+            String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
+            String label = whisper ? "(whisper)" : "(chat)";
+            String item = whisper ? "Whisper" : "";
+            if (settings.listContains(setting, name)) {
+                m.addItem("unignore"+item, "Unignore "+label, submenu);
+            } else {
+                m.addItem("ignore"+item, "Ignore "+label, submenu);
+            }
         }
     }
     

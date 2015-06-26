@@ -49,16 +49,16 @@
     </ul>
         <h3>Full Changelog</h3>
 <pre>
-New features:
+#### New features
 - Added experimental Whisper support (this will probably not developed much
   until Twitch moves Whispers to the new system)
 - Improved TAB Completion: Added predictive sorting for names which gives users
   who recently talked/highlighted you a higher priority, added setting to
   toggle completion to common prefix (disabled by default)
-- Added $first option for Custom Usericon restriction to show them in front of
+- Added `$first` option for Custom Usericon restriction to show them in front of
   the regular Usericons
 
-Changes:
+#### Changes
 - Show long slowmode times as "> day" in the titlebar
 - Added "Open in online help" button in Help window
 - Allow global FFZ/BTTV to be added to the favorites as well
@@ -68,15 +68,18 @@ Changes:
 - Updated help
 - Added timestamp option to "Log to file" settings (previously only changeable
   with setting commands)
-- Highlight/Ignore: Allow non-standard channels in chan:/!chan: prefixes
+- Highlight/Ignore: Allow non-standard channels in `chan:`/`!chan:` prefixes
 - Added Copy Stream Name to Channel Context Menu (Miscellaneous submenu)
+- Changed website URL to GitHub
 
-Bugfixes:
+#### Bugfixes
 - Fixed error in slowmode message parsing
 - Changed Ignore option config:info to only apply to info messages, not regular
   chat messages
 - Fixed tab not showing new message if message was highlighted with
-  config:!notify option
+  `config:!notify` option
+- Fixed message parsing from inadvertently ignoring some (rare) messages
+- Fixed replacing of all linebreak characters when sending message
 </pre>
     
     <h2>

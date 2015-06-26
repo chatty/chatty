@@ -220,7 +220,8 @@ public class Channel extends JPanel {
             "clearChat", "refresh", "changetoken", "testNotification", "server",
             "set", "add", "clearSetting", "remove", "customCompletion",
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
-            "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights"
+            "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
+            "ignore", "unignore", "ignoreWhisper", "unignoreWhisper"
         }));
         
         private void updateSettings() {

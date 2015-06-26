@@ -810,6 +810,7 @@ public class MainGui extends JFrame implements Runnable {
         ContextMenuHelper.userCustomCommands = client.settings.getString("userContextMenu");
         ContextMenuHelper.livestreamerQualities = client.settings.getString("livestreamerQualities");
         ContextMenuHelper.enableLivestreamer = client.settings.getBoolean("livestreamer");
+        ContextMenuHelper.settings = client.settings;
     }
     
     private void updateChannelsSettings() {
@@ -1296,13 +1297,19 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 updateUserInfoDialog(user);
-            }
-            else if (cmd.startsWith("command")) {
+            } else if (cmd.startsWith("command")) {
                 String command = cmd.substring(7);
                 client.command(user.getChannel(), command, user.getRegularDisplayNick());
-            }
-            else if (cmd.equals("copy")) {
+            } else if (cmd.equals("copy")) {
                 MiscUtil.copyToClipboard(user.getRegularDisplayNick());
+            } else if (cmd.equals("ignore")) {
+                client.commandIgnore(user.nick, false);
+            } else  if (cmd.equals("ignoreWhisper")) {
+                client.commandIgnore(user.nick, true);
+            } else  if (cmd.equals("unignore")) {
+                client.commandUnignore(user.nick, false);
+            } else  if (cmd.equals("unignoreWhisper")) {
+                client.commandUnignore(user.nick, true);
             }
             nameBasedStuff(cmd, user.getNick());
         }
@@ -2275,7 +2282,8 @@ public class MainGui extends JFrame implements Runnable {
                 client.chatLog.message(chan.getName(), user, text, action);
                 
                 boolean isOwnMessage = isOwnUsername(user.getNick()) || (whisper && action);
-                boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage);
+                boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
+                        || (userIgnored(user, whisper) && !isOwnMessage);
                 boolean highlighted = false;
                 if (client.settings.getBoolean("highlightIgnored") || !ignored) {
                     highlighted = checkHighlight(user, text, highlighter, "highlight", isOwnMessage);
@@ -2341,6 +2349,19 @@ public class MainGui extends JFrame implements Runnable {
                 updateUserInfoDialog(user);
             }
         });
+    }
+    
+    /**
+     * Checks the dedicated user ignore list. The regular ignore list may still
+     * ignore the user.
+     * 
+     * @param user
+     * @param whisper
+     * @return 
+     */
+    private boolean userIgnored(User user, boolean whisper) {
+        String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
+        return client.settings.listContains(setting, user.nick);
     }
     
     private String processMessage(String text) {

@@ -110,7 +110,7 @@ public class WhisperConnection {
             c.sendSpamProtectedMessage("#jtv", "/w "+nick+" "+message, false);
             User user = c.getUser(WHISPER_CHANNEL, nick);
             listener.whisperSent(user, message);
-            if (!isUserAllowed(user)) {
+            if (isUserIgnored(user)) {
                 listener.info("You haven't allowed to receive whispers from "+user);
             }
         } else {
@@ -132,6 +132,13 @@ public class WhisperConnection {
             return false;
         }
         return true;
+    }
+    
+    private boolean isUserIgnored(User user) {
+        if (settings.listContains("ignoredUsersWhisper", user.nick)) {
+            return true;
+        }
+        return !isUserAllowed(user);
     }
     
     private class Events implements TwitchConnection.ConnectionListener {
