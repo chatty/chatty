@@ -520,6 +520,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return result;
     }
     
+    protected ComboStringSetting addComboStringSetting(String name, int size, boolean editable, Map<String, String> choices) {
+        ComboStringSetting result = new ComboStringSetting(choices);
+        result.setEditable(editable);
+        stringSettings.put(name, result);
+        return result;
+    }
+    
 //    protected JTextField addStringSetting(String name, int size, boolean editable) {
 //        JTextField result = new JTextField(size);
 //        result.setEditable(editable);

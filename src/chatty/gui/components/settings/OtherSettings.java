@@ -3,7 +3,10 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -60,18 +63,40 @@ public class OtherSettings extends SettingsPanel {
                 "After the given number of seconds of not changing position of the scrollbar, automatically scroll down."));
         autoScrollPanel.add(d.addSimpleLongSetting("autoScrollTimeout", 3, true));
         autoScrollPanel.add(new JLabel("seconds of inactiviy"));
-        
+
         gbc = d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(4,5,0,5);
+        gbc.insets = new Insets(4,1,0,5);
         other.add(autoScrollPanel, gbc);
+        
+        other.add(d.addSimpleBooleanSetting("pauseChatOnMouseMove",
+                "Pause chat when moving the mouse over it",
+                "Stop scrolling while moving the mouse over chat (only if the scrollbar is active)"),
+                d.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
+        
+        JPanel commandPanel = new JPanel(new GridBagLayout());
+        
+        commandPanel.add(new JLabel("Run command on click on user (holding Ctrl):"),
+                d.makeGbc(0, 0, 1, 1));
+        
+        Map<String, String> commandChoices = new HashMap<>();
+        commandChoices.put("", "Off");
+        commandChoices.put("/timeout", "Timeout");
+        commandChoices.put("/ban", "Ban");
+        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 30, false, commandChoices);
+        commandPanel.add(commandOnCtrlClick,
+                d.makeGbc(1, 0, 1, 1));
+        
+        gbc = d.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(0, 0, 0, 0);
+        other.add(commandPanel, gbc);
  
-        gbc = d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
         other.add(new JLabel("Chat buffer size:"), gbc);
         
-        gbc = d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
         other.add(d.addSimpleLongSetting("bufferSize", 3, true), gbc);
         
-        gbc = d.makeGbc(2, 2, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST);
         other.add(new JLabel("(too high values can lower performance)"), gbc);
 
 

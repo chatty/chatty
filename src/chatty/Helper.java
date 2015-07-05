@@ -61,6 +61,13 @@ public class Helper {
     
     public static String USERNAME_REGEX = "[a-zA-Z0-9_]+";
     
+    /**
+     * Kind of relaxed valiadation if a channel, which can have a leading # or
+     * not.
+     * 
+     * @param channel
+     * @return 
+     */
     public static boolean validateChannel(String channel) {
         try {
             return channel.matches("(?i)^#{0,1}"+USERNAME_REGEX+"$");
@@ -69,6 +76,24 @@ public class Helper {
         }
     }
     
+    /**
+     * Checks if the given channel is a regular channel, which means it starts
+     * with a # (and is valid otherwise).
+     * 
+     * @param channel
+     * @return 
+     */
+    public static boolean isRegularChannel(String channel) {
+        return validateChannel(channel) && channel.startsWith("#");
+    }
+    
+    /**
+     * Checks if the given name is a valid stream (no leading # and valid
+     * otherwise).
+     * 
+     * @param stream
+     * @return 
+     */
     public static boolean validateStream(String stream) {
         try {
             return stream.matches("(?i)^"+USERNAME_REGEX+"$");
@@ -79,12 +104,12 @@ public class Helper {
     
     /**
      * Checks if the given stream/channel is valid and turns it into a channel
-     * if necessary.
+     * if necessary (leading # and all lowercase).
      *
      * @param channel The channel, valid or invalid, leading # or not.
      * @return The channelname with leading #, or null if channel was invalid.
      */
-    public static String checkChannel(String channel) {
+    public static String toValidChannel(String channel) {
         if (channel == null) {
             return null;
         }

@@ -211,6 +211,7 @@ public abstract class Irc {
         try {
             address = addressManager.getAddress(server, port);
         } catch (UnknownHostException ex) {
+            onConnectionAttempt(server, -1, false);
             warning("Could not resolve host: "+server);
             disconnected(ERROR_UNKNOWN_HOST);
             return;

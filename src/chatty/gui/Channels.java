@@ -11,15 +11,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.*;
-import javax.swing.Action;
-import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 import javax.swing.JDialog;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -286,23 +282,6 @@ public class Channels {
     }
     
     public void removeChannel(final String channelName) {
-        // TODO: Why invokeLater?
-//        SwingUtilities.invokeLater(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                Channel panel = channels.get(channel);
-//                if (panel == null) {
-//                    return;
-//                }
-//                channels.remove(channel);
-//                tabs.removeTab(panel);
-//                if (tabs.getTabCount() == 0) {
-//                    addDefaultChannel();
-//                    gui.updateState();
-//                }
-//            }
-//        });
         Channel channel = channels.get(channelName);
         if (channel == null) {
             return;
@@ -310,6 +289,8 @@ public class Channels {
         channels.remove(channelName);
         closePopout(channel);
         tabs.removeTab(channel);
+        channel.cleanUp();
+
         if (tabs.getTabCount() == 0) {
             if (dialogs.isEmpty() || !closeLastChannelPopout) {
                 addDefaultChannel();

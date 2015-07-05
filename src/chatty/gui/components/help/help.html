@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.1b4)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.1b5)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -64,6 +64,7 @@
                     <li><a href="#thanks">Miscellaneous/Thanks</a></li>
                     <li><a href="#about">About/License</a></li>
                     <li><a href="#ignoreJoinsParts">Ignore joins/parts</a></li>
+                    <li><a href="help-memory_usage.html">About Memory Usage</a></li>
                 </ul>
 
                 <strong>Guides</strong>
@@ -93,6 +94,14 @@
     viewercount, followed by the current stream title and game. Anything other
     than the number of people in the chat is requested from the Twitch API about
     every two minutes.</p>
+    
+    <p>In addition, the titlebar will also show additional information, if enabled:</p>
+    <ul>
+        <li>The name of the channel that is being hosted</li>
+        <li><code>Sub</code> for Subscriber-Only Mode</li>
+        <li><code>Slow: &lt;time&gt;</code> for Slowmode</li>
+        <li><code>R9k</code> for R9Kbeta Mode</li>
+    </ul>
     
     <h2>
         <a name="shortcuts">Shortcuts</a>
@@ -807,10 +816,15 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     <ul>
             <li><strong>Whitelist</strong>: If enabled, only users that have the
                 <a href="help-addressbook.html">Addressbook</a> category <code>whisper</code> will be able to send
-                whispers to you. Messages from other users are completely ignored.
+                whispers to you. Messages from other users are discarded.
                 Alternatively you can also <strong>blacklist</strong> users by adding them to the
             <code>blockwhisper</code> category (which makes most sense with the Whitelist setting
-            disabled).</li>
+            disabled).<br /><br >
+            In addition, you can also add users to the Ignore List by right-clicking
+            on them in chat to open the context menu and choosing <code>Miscellaneous - Ignore (whisper)</code>.
+            Unlike the Blacklist or Whitelist using the Addressbook, this will not completely discard the messages, but instead add them
+            to the Ignored Messages dialog and possibly output some other messages
+            about it, depending on the Ignore settings.</li>
             <li><strong>Display</strong>: Changes where the whispers are displayed.
                 <ul>
                     <li><strong>Active Chat</strong> - Show in the chat window you are currently having

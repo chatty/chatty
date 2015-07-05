@@ -528,7 +528,7 @@ public class TwitchConnection {
         Set<String> valid = new HashSet<>();
         Set<String> invalid = new HashSet<>();
         for (String channel : channels) {
-            String checkedChannel = Helper.checkChannel(channel);
+            String checkedChannel = Helper.toValidChannel(channel);
             if (checkedChannel == null) {
                 invalid.add(channel);
             } else {
@@ -968,29 +968,29 @@ public class TwitchConnection {
             if (onChannel(channel) || whisperConnection) {
                 infoMessage(channel, text);
                 if (tags != null) {
-                    String msgId = tags.get("msg-id");
-                    if ("subs_on".equals(msgId)) {
-                        channelStates.setSubmode(channel, true);
-                    }
-                    else if ("subs_off".equals(msgId)) {
-                        channelStates.setSubmode(channel, false);
-                    }
-                    else if ("slow_off".equals(msgId)) {
-                        channelStates.setSlowmode(channel, -1);
-                    }
-                    else if ("slow_on".equals(msgId)) {
-                        Pattern p = Pattern.compile("[0-9]+");
-                        Matcher m = p.matcher(text);
-                        if (m.find()) {
-                            channelStates.setSlowmode(channel, m.group());
-                        }
-                    }
-                    else if ("r9k_on".equals(msgId)) {
-                        channelStates.setR9kMode(channel, true);
-                    }
-                    else if ("r9k_off".equals(msgId)) {
-                        channelStates.setR9kMode(channel, false);
-                    }
+//                    String msgId = tags.get("msg-id");
+//                    if ("subs_on".equals(msgId)) {
+//                        channelStates.setSubmode(channel, true);
+//                    }
+//                    else if ("subs_off".equals(msgId)) {
+//                        channelStates.setSubmode(channel, false);
+//                    }
+//                    else if ("slow_off".equals(msgId)) {
+//                        channelStates.setSlowmode(channel, -1);
+//                    }
+//                    else if ("slow_on".equals(msgId)) {
+//                        Pattern p = Pattern.compile("[0-9]+");
+//                        Matcher m = p.matcher(text);
+//                        if (m.find()) {
+//                            channelStates.setSlowmode(channel, m.group());
+//                        }
+//                    }
+//                    else if ("r9k_on".equals(msgId)) {
+//                        channelStates.setR9kMode(channel, true);
+//                    }
+//                    else if ("r9k_off".equals(msgId)) {
+//                        channelStates.setR9kMode(channel, false);
+//                    }
                 }
             }
         }
@@ -1236,9 +1236,20 @@ public class TwitchConnection {
                 }
             } else if (command.equals("ROOMSTATE")) {
                 if (tags != null) {
-                    channelStates.setR9kMode(channel, checkTagsState("r9k", tags));
-                    channelStates.setSubmode(channel, checkTagsState("subs-only", tags));
-                    channelStates.setSlowmode(channel, tags.get("slow"));
+                    /**
+                     * ROOMSTATE doesn't always have to contain all states, so
+                     * only work with those that are actually there (otherwise
+                     * they may be inadvertently recognized as false).
+                     */
+                    if (tags.containsKey("r9k")) {
+                        channelStates.setR9kMode(channel, checkTagsState("r9k", tags));
+                    }
+                    if (tags.containsKey("subs-only")) {
+                        channelStates.setSubmode(channel, checkTagsState("subs-only", tags));
+                    }
+                    if (tags.containsKey("slow")) {
+                        channelStates.setSlowmode(channel, tags.get("slow"));
+                    }
                 }
             }
         }

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty Help</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Memory Usage</a></h1>
+    
+    <p>
+        <a href="#restrict">Restrict Memory Usage</a> |
+        <a href="#error">OutOfMemoryError</a>
+    </p>
+    <p>The programs memory is managed by Java, which means Java allocates a
+        certain amount of memory which is then filled up with data of the program
+        and once Java decides so, it cleans up data that is not used anymore
+        (Garbage Collection). This leads to the actual memory usage going up and
+        down constantly, while the allocated memory mostly stays the same. So
+        even if only 50 MB are filled with data by the program <em>at the time</em>, Java may
+        still have 200 MB reserved to optimize Gargabe Collection. Thus, the memory usage in e.g. the Task Manager
+        may not reflect what the program actually <em>requires</em>, just how
+        much Java uses.</p>
+    
+    <p>Use the <code>/appinfo</code> command in Chatty to get some information
+        about the current memory usage.</p>
+    
+    <p>A typical memory usage pattern, which can change over time as the program
+        is running while Java optimizes Gargabe Collection:<br />
+        <img src="jconsole.jpg" alt="Typical memory usage pattern" /></p>
+    
+    <h2><a name="restrict">Restrict Memory Usage</a></h2>
+    <p>You can <a href="http://stackoverflow.com/questions/1493913/how-to-set-the-maximum-memory-usage-for-jvm">restrict</a> how much memory Java is allowed to use by specifying
+        commandline parameters for Java. <a href="help-guide_create_shortcut.html">Create a shortcut</a>
+        and add the appropriate parameter after the <code>javaw.exe</code> but
+        before the <code>-jar</code> parameter.</p>
+    
+    <p>For example to restrict memory to 100 MB: <code>javaw -Xmx100M -jar "D:\Chatty\Chatty.jar"</code></p>
+    
+    <h2><a name="error">OutOfMemoryError</a></h2>
+    <p>If you get an OutOfMemoryError then Java ran out of memory. This can
+        either be because it simply can't allocate enough memory (at least 100 MB is recommended)
+        or there is a bug that prevents it from cleaning up memory that is not
+        actually used anymore. These kinds of bugs are pretty difficult to track
+        down though, especially if they only occur somewhat randomly.</p>
+    
+</body>
+</html>
+

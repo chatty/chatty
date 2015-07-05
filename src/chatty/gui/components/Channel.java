@@ -7,19 +7,12 @@ import chatty.gui.StyleServer;
 import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.Message;
-import chatty.gui.components.textpane.ChannelTextPane.MessageType;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
-import chatty.util.api.Emoticons.TagEmotes;
-import chatty.util.settings.Settings;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,29 +114,11 @@ public class Channel extends JPanel {
 
         input.requestFocusInWindow();
         setStyles();
-        
-        // TODO: Commented out because using a shortcut like Ctrl-F makes the
-        // chat stay fixed
-        //input.addKeyListener(new MyKeyListener());
-        //text.addKeyListener(new MyKeyListener());
     }
     
-    private class MyKeyListener extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                text.setFixedChat(true);
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                text.setFixedChat(false);
-            }
-        }
-
+    public void cleanUp() {
+        text.cleanUp();
+        input.cleanUp();
     }
     
     public void setType(Type type) {

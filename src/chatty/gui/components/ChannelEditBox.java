@@ -237,8 +237,8 @@ public class ChannelEditBox extends JTextField implements KeyListener,
         autoCompletion.setCompletionServer(server);
     }
     
-    public void addCompletionType(String type, String prefix) {
-        
+    public void cleanUp() {
+        autoCompletion.cleanUp();
     }
 
     public static void main(String[] args) {

@@ -92,7 +92,7 @@ public class SettingsManager {
         
         // Connecting/Login data
         settings.addString("serverDefault", "irc.twitch.tv");
-        settings.addString("portDefault", "6667,80");
+        settings.addString("portDefault", "6667,443");
         // Seperate settings for commandline/temp so others can be saved
         settings.addString("server", "", false);
         settings.addString("port", "", false);
@@ -147,7 +147,7 @@ public class SettingsManager {
         settings.addString("deletedMessagesMode", "keepShortened");
         settings.addLong("deletedMessagesMaxLength", 50);
         settings.addBoolean("clearChatOnChannelCleared", false);
-        settings.addLong("bufferSize", 250);
+        settings.addLong("bufferSize", 500);
         settings.addBoolean("twitchnotifyAsInfo", true);
         settings.addBoolean("printStreamStatus", true);
         settings.addLong("filterCombiningCharacters", Helper.FILTER_COMBINING_CHARACTERS_LENIENT);
@@ -226,7 +226,10 @@ public class SettingsManager {
         settings.addBoolean("channelsWarning", true);
         settings.addBoolean("autoScroll", true);
         settings.addLong("autoScrollTimeout", 30);
+        settings.addBoolean("pauseChatOnMouseMove", false);
+        settings.addString("commandOnCtrlClick", "");
         settings.addLong("versionLastChecked", 0);
+        settings.addString("updateAvailable", "");
         settings.addBoolean("checkNewVersion", true);
         settings.addString("liveStreamsSorting", "recent");
         settings.addLong("historyRange", 0);
@@ -482,12 +485,22 @@ public class SettingsManager {
                 LOGGER.warning("Added /Ban,/Unban to timeoutButtons setting, now: "+newValue);
             }
         }
+        if (beforeVersion("0.8.1")) {
+            if (settings.getString("portDefault").equals("6667,80")) {
+                settings.setString("portDefault", "6667,443");
+            }
+        }
     }
     
     /**
      * Checks whether the current version (the version saved in the
      * "currentVersion" setting, which is overwritten with Chatty.VERSION on
      * every start) is smaller than the given one.
+     * 
+     * This basicially means that if the user last used a version smaller than
+     * the given one, this returns true. Usually the current version would be
+     * used if a new condition is added, to change a setting only on the switch
+     * to the given version.
      *
      * @param version The version to check against
      * @return true if the given version is greater than the current version

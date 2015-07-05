@@ -28,9 +28,13 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,6 +47,7 @@ import java.util.regex.Matcher;
 import javax.swing.*;
 import static javax.swing.JComponent.WHEN_FOCUSED;
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
+import javax.swing.border.Border;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 
@@ -119,18 +124,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         SHOW_BANMESSAGES, COMBINE_BAN_MESSAGES, DELETE_MESSAGES,
         DELETED_MESSAGES_MODE, ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
-        FILTER_COMBINING_CHARACTERS
+        FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
     
     protected final Styles styles = new Styles();
-    private final ScrollManager scrollManager = new ScrollManager();
+    private final ScrollManager scrollManager;
     
-    private boolean fixedChat = false;
     public final LineSelection lineSelection;
     
     private int messageTimeout = -1;
+    
+    private final javax.swing.Timer updateTimer;
     
     public ChannelTextPane(MainGui main, StyleServer styleServer) {
         this(main, styleServer, false, true);
@@ -146,6 +152,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         linkController.addUserListener(main.getUserListener());
         linkController.addUserListener(lineSelection);
         linkController.setLinkListener(this);
+        scrollManager = new ScrollManager();
+        this.addMouseListener(scrollManager);
+        this.addMouseMotionListener(scrollManager);
         setEditorKit(new MyEditorKit(startAtBottom));
         this.setDocument(new MyDocument());
         doc = getStyledDocument();
@@ -155,28 +164,29 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         styles.setStyles();
         
         if (special) {
-            javax.swing.Timer timer = new javax.swing.Timer(2000, new ActionListener() {
+            updateTimer = new javax.swing.Timer(2000, new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     removeOldLines();
                 }
             });
-            timer.setRepeats(true);
-            timer.start();
+            updateTimer.setRepeats(true);
+            updateTimer.start();
+        } else {
+            updateTimer = null;
         }
     }
     
-//    @Override
-//    public String getToolTipText(MouseEvent e) {
-//        return "test";
-//    }
-    
-    public void setFixedChat(boolean fixed) {
-        this.fixedChat = fixed;
-        if (!fixed) {
-            scrollManager.scrollDown();
+    /**
+     * This has to be called when the ChannelTextPane is no longer used, so it
+     * can be gargabe collected.
+     */
+    public void cleanUp() {
+        if (updateTimer != null) {
+            updateTimer.stop();
         }
+        scrollManager.cleanUp();
     }
     
     public void setMessageTimeout(int seconds) {
@@ -203,17 +213,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
  
     /**
-     * Prints a message from a user to the main text area
+     * Prints a message from a user to the main text area.
      * 
-     * @param user The User this message is from
-     * @param text The text of the message
-     * @param action Whether this is an action message (/me)
-     * @param specialType Whether this is a highlight or ignored message
-     * @param color The color to use for highlight, if null the default color is
-     * used
+     * @param message Message object containing all the data
      */
-//    public void printMessage(final User user, final String text, boolean action,
-//            MessageType specialType, Color color, TagEmotes emotes) {
     public void printMessage(Message message) {
 
         User user = message.user;
@@ -923,7 +926,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          */
         @Override
         public void userClicked(User user, MouseEvent e) {
-            if (e != null && e.isControlDown()) {
+            if (e != null && ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown())) {
                 Element element = LinkController.getElement(e);
                 Element line = null;
                 while (element.getParentElement() != null) {
@@ -1194,7 +1197,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * scroll position.
      */
     private void clearSomeChat() {
-        if (fixedChat) {
+        if (scrollManager.fixedChat) {
+            return;
+        }
+        if (!scrollManager.isScrollpositionAtTheEnd() && scrollManager.pauseKeyPressed) {
             return;
         }
         int count = doc.getDefaultRootElement().getElementCount();
@@ -1758,7 +1764,30 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         UrlOpener.openUrlPrompt(this.getTopLevelAncestor(), url);
     }
     
-    private class ScrollManager {
+    /**
+     * Handles scrolling down and when to not scroll down.
+     */
+    private class ScrollManager extends MouseAdapter implements MouseMotionListener {
+        
+        /**
+         * Stop scrolling of chat.
+         */
+        private boolean fixedChat = false;
+        
+        /**
+         * The key used in conjunction with the mouse to pause scrolling of chat
+         * (currently Ctrl).
+         */
+        private boolean pauseKeyPressed = false;
+        
+        /**
+         * Listen for keys to detect when Ctrl is pressed application wide.
+         */
+        private final KeyEventDispatcher keyListener;
+        
+        private Popup popup;
+        private JLabel fixedChatInfoLabel;
+        private long mouseLastMoved;
         
         private JScrollPane scrollpane;
         
@@ -1776,18 +1805,54 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         private int lastScrollPosition = 0;
         
         /**
-         * The number of second to allow it to be scrolled up without changing
-         * the scroll position.
-         */
-        private static final int SCROLLED_UP_TIMEOUT = 30;
-        
-        /**
          * The most recent width/height of the scrollpane, used to determine
          * whether it is decreased.
          */
         private int width;
         private int height;
         
+        private final javax.swing.Timer updateTimer;
+        
+        ScrollManager() {
+            updateTimer = new javax.swing.Timer(500, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (System.currentTimeMillis() - mouseLastMoved > 700) {
+                        setFixedChat(false);
+                    }
+                }
+            });
+            updateTimer.setRepeats(true);
+            updateTimer.start();
+            
+            keyListener = new KeyEventDispatcher() {
+
+                @Override
+                public boolean dispatchKeyEvent(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+                        if (e.getID() == KeyEvent.KEY_PRESSED) {
+                            return handleKeyPressed();
+                        } else {
+                            return handleKeyReleased();
+                        }
+                    }
+                    return false;
+                }
+            };
+        }
+        
+        /**
+         * Clean up any outside reference to this so it can be garbage
+         * collected (also close the info popup if necessary).
+         */
+        public void cleanUp() {
+            KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            kfm.removeKeyEventDispatcher(keyListener);
+            hideFixedChatInfo();
+            updateTimer.stop();
+        }
+
         public void setScrollPane(JScrollPane pane) {
             this.scrollpane = pane;
             addListeners();
@@ -1808,7 +1873,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     width = c.getWidth();
                     height = c.getHeight();
                 }
-            
+                
             });
             
             // Listener to detect when the scroll position was last changed
@@ -1821,9 +1886,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                                     && e.getValue() != lastScrollPosition) {
                                 lastChanged = System.currentTimeMillis();
                                 lastScrollPosition = e.getValue();
+                                
+                                /**
+                                 * When changing scroll position, chat should
+                                 * not be fixed anymore (but don't scroll down).
+                                 */
+                                fixedChat = false;
+                                hideFixedChatInfo();
                             }
                         }
                     });
+
+            KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            kfm.addKeyEventDispatcher(keyListener);
         }
         
         /**
@@ -1851,16 +1926,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (!styles.autoScroll()) {
                 return false;
             }
-            //JScrollBar vbar = scrollpane.getVerticalScrollBar();
-            //int current = vbar.getValue();
-            //System.out.println("Scroll"+current);
-//            if (current != lastScrollPosition) {
-//                lastChanged = System.currentTimeMillis();
-//                //System.out.println("changed");
-//                lastScrollPosition = current;
-//            }
             long timePassed = System.currentTimeMillis() - lastChanged;
-            //System.out.println(timePassed);
             if (timePassed > 1000 * styles.autoScrollTimeout()) {
                 LOGGER.info("ScrolledUp Timeout (" + timePassed + ")");
                 return true;
@@ -1908,6 +1974,106 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
+        public void setFixedChat(boolean fixed) {
+            /**
+             * Only works if actually scrolling, so ignore otherwise.
+             */
+            if (!scrollpane.getVerticalScrollBar().isVisible()) {
+                return;
+            }
+            // Check if should scroll down
+            if (!fixed && fixedChat) {
+                this.fixedChat = fixed;
+                scrollDown();
+            }
+            // Hide or show info
+            if (fixed) {
+                showFixedChatInfo();
+            } else {
+                hideFixedChatInfo();
+            }
+            // Update value either way
+            this.fixedChat = fixed;
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+        }
+
+        /**
+         * When the mouse is moved over the area, then stop scrolling (if
+         * enabled).
+         *
+         * @param e 
+         */
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            mouseLastMoved = System.currentTimeMillis();
+            if ((styles.isEnabled(Setting.PAUSE_ON_MOUSEMOVE) || pauseKeyPressed)
+                    && isScrollpositionAtTheEnd()) {
+                setFixedChat(true);
+            }
+        }
+        
+        /**
+         * Disable fixed chat when mouse leaves the area.
+         * 
+         * @param e 
+         */
+        @Override
+        public void mouseExited(MouseEvent e) {
+            if (!pauseKeyPressed) {
+                setFixedChat(false);
+            }
+        }
+        
+        private boolean handleKeyPressed() {
+            pauseKeyPressed = true;
+            if (fixedChat) {
+                mouseLastMoved = System.currentTimeMillis();
+                return true;
+            }
+            return false;
+        }
+        
+        private boolean handleKeyReleased() {
+            pauseKeyPressed = false;
+            return false;
+        }
+        
+        private void createFixedChatInfoLabel() {
+            JLabel label = new JLabel("chat paused");
+            Border border = BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.GRAY),
+                    BorderFactory.createEmptyBorder(2, 4, 2, 4));
+            label.setBorder(border);
+            label.setForeground(Color.BLACK);
+            label.setBackground(HtmlColors.decode("#EEEEEE"));
+            label.setOpaque(true);
+            fixedChatInfoLabel = label;
+        }
+        
+        private void showFixedChatInfo() {
+            if (popup == null) {
+                if (fixedChatInfoLabel == null) {
+                    createFixedChatInfoLabel();
+                }
+                JLabel label = fixedChatInfoLabel;
+                Point p = scrollpane.getLocationOnScreen();
+                int labelWidth = label.getPreferredSize().width;
+                p.x += scrollpane.getViewport().getWidth() - labelWidth - 5;
+                popup = PopupFactory.getSharedInstance().getPopup(
+                        ChannelTextPane.this, label, p.x, p.y);
+                popup.show();
+            }
+        }
+        
+        private void hideFixedChatInfo() {
+            if (popup != null) {
+                popup.hide();
+                popup = null;
+            }
+        }
     }
     
     /**
@@ -2043,6 +2209,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.ACTION_COLORED, false);
             addSetting(Setting.COMBINE_BAN_MESSAGES, true);
             addSetting(Setting.BOT_BADGE_ENABLED, true);
+            addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -2358,6 +2525,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return (int)numericSettings.get(Setting.DELETED_MESSAGES_MODE);
         }
         
+        public boolean isEnabled(Setting setting) {
+            return settings.get(setting);
+        }
+        
         /**
          * Make a link style for the given URL.
          * 
@@ -2399,7 +2570,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return (int)numericSettings.get(Setting.BUFFER_SIZE);
         }
     }
-    
     
 }
 

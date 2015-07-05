@@ -11,7 +11,6 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
-import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import java.awt.Cursor;
 import java.awt.Point;
@@ -23,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
-import javax.swing.JToolTip;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -82,7 +80,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     public void setMouseClickedListener(MouseClickedListener listener) {
         mouseClickedListener = listener;
     }
-    
+
     /**
      * Set the listener for all context menus.
      * 
@@ -158,7 +156,8 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (mouseClickedListener != null && e.getClickCount() == 1 && !e.isControlDown()) {
+        if (mouseClickedListener != null && e.getClickCount() == 1
+                && !e.isAltDown() && !e.isAltGraphDown()) {
             // Doing this on mousePressed will prevent selection of text,
             // because this is used to change the focus to the input
             mouseClickedListener.mouseClicked();
@@ -167,7 +166,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     
     @Override
     public void mouseMoved(MouseEvent e) {
-        
+
         JTextPane text = (JTextPane)e.getSource();
         
         String url = getUrl(e);
@@ -178,7 +177,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             text.setCursor(NORMAL_CURSOR);
         }
     }
-    
+
     /**
      * Gets the URL from the MouseEvent (if there is any).
      * 
@@ -200,7 +199,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             if (deleted == null) {
                 return false;
             }
-            return (Boolean)(deleted);
+            return deleted;
         }
         return false;
     }

@@ -38,7 +38,7 @@ public class UpdateMessage extends JDialog {
         changelog = new JTextArea();
         changelog.setFont(Font.decode(Font.MONOSPACED));
         changelog.setEditable(false);
-        changelog.setColumns(82);
+        changelog.setColumns(87);
         changelog.setRows(30);
         changelog.setMargin(new Insets(5, 5, 5, 5));
         

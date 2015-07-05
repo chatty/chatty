@@ -1,7 +1,6 @@
 
 package chatty.gui;
 
-import chatty.ChannelState;
 import chatty.gui.components.UserInfo;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
@@ -31,7 +30,6 @@ import chatty.UsercolorItem;
 import chatty.Usericon;
 import chatty.WhisperConnection;
 import chatty.gui.components.AddressbookDialog;
-import chatty.gui.components.textpane.ChannelTextPane.MessageType;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
 import chatty.gui.components.FollowersDialog;
@@ -62,17 +60,13 @@ import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -654,10 +648,6 @@ public class MainGui extends JFrame implements Runnable {
                 // Should be done when the main window is already visible, so
                 // it can be centered on it correctly, if that is necessary
                 reopenWindows();
-                
-                // This only seemed to jump to the correct reference (#latest)
-                // if done after showing the GUI
-                openReleaseInfo(false);
             }
         });
     }
@@ -1644,7 +1634,17 @@ public class MainGui extends JFrame implements Runnable {
         
         @Override
         public void userClicked(User user, MouseEvent e) {
-            if (e == null || !e.isControlDown()) {
+            if (e == null || (!e.isControlDown() && !e.isAltDown())) {
+                openUserInfoDialog(user);
+                return;
+            }
+            String command = client.settings.getString("commandOnCtrlClick");
+            if (command.startsWith("/")) {
+                command = command.substring(1);
+            }
+            if (e.isControlDown() && !command.isEmpty()) {
+                client.command(user.getChannel(), command, user.getRegularDisplayNick());
+            } else if (!e.isAltDown()) {
                 openUserInfoDialog(user);
             }
         }
@@ -1892,16 +1892,31 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void openReleaseInfo(final boolean forced) {
+    /**
+     * Opens the release info in the help.
+     */
+    public void openReleaseInfo() {
+        /**
+         * Use invokeLater() twice to run definitely when everything is ready so it
+         * jumps to the correct reference (#latest). Otherwise it didn't really
+         * seem to work. This may also help to open it after other stuff (like
+         * the Connection Dialog) is opened.
+         * 
+         * This was previously implicitly achieved by having it in showGui(),
+         * which already runs in invokeLater(), and then calling this which also
+         * ran in invokeLater().
+         */
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                String currentVersion = client.settings.getString("currentVersion");
-                if (forced || !currentVersion.equals(Chatty.VERSION)) {
-                    client.settings.setString("currentVersion", Chatty.VERSION);
-                    openHelp("help-releases.html", "latest");
-                }
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        openHelp("help-releases.html", "latest");
+                    }
+                });
             }
         });
     }
@@ -2190,7 +2205,7 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (channel == null) {
                     showNotification("[Test] It works!", "This is where the text goes.", null);
                 } else {
-                    showNotification("[Status] "+Helper.checkChannel(channel), "Test Notification (this would pop up when a stream status changes)", channel);
+                    showNotification("[Status] "+Helper.toValidChannel(channel), "Test Notification (this would pop up when a stream status changes)", channel);
                 }
             }
         });
@@ -2406,6 +2421,9 @@ public class MainGui extends JFrame implements Runnable {
                 channels.getChannel(channel).userBanned(user);
                 user.addBan();
                 updateUserInfoDialog(user);
+                if (client.settings.listContains("streamChatChannels", channel)) {
+                    streamChat.userBanned(user);
+                }
             }
         });
     }
@@ -2423,6 +2441,9 @@ public class MainGui extends JFrame implements Runnable {
                     panel = channels.getActiveChannel();
                 } else {
                     panel = channels.getChannel(channel);
+                    if (client.settings.listContains("streamChatChannels", channel)) {
+                        streamChat.clear();
+                    }
                 }
                 if (panel != null) {
                     panel.clearChat();

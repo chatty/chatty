@@ -251,11 +251,13 @@ public class TwitchClient {
         // Output any cached warning messages
         warning(null);
         
+        // Before checkNewVersion(), so "updateAvailable" is already updated
+        checkForVersionChange();
         // Check version, if enabled in this build
         if (Chatty.VERSION_CHECK_ENABLED) {
             checkNewVersion();
         }
-
+        
         // Connect or open connect dialog
         if (settings.getBoolean("connectOnStartup")) {
             prepareConnection();
@@ -313,6 +315,11 @@ public class TwitchClient {
             g.addUser("", new User("brett", ""));
             g.addUser("", new User("bll", ""));
             g.addUser("", new User("bzp______________", ""));
+            
+            String[] chans = new String[]{"europeanspeedsterassembly","esamarathon2","heinki","joshimuz","lotsofs","test","a","b","c"};
+            for (String chan : chans) {
+                g.printLine(chan, "test");
+            }
         }
     }
     
@@ -335,15 +342,42 @@ public class TwitchClient {
     }
     
     /**
+     * Check if the current version (Chatty.VERSION) is different from the
+     * "currentVersion" in the settings, which means a different version is
+     * being run compared to the last time.
+     * 
+     * If a new version is detected, updates the "currentVersion" setting,
+     * clears the "updateAvailable" setting and opens the release info.
+     */
+    private void checkForVersionChange() {
+        String currentVersion = settings.getString("currentVersion");
+        if (!currentVersion.equals(Chatty.VERSION)) {
+            settings.setString("currentVersion", Chatty.VERSION);
+            // Changed version, so should check for update properly again
+            settings.setString("updateAvailable", "");
+            g.openReleaseInfo();
+        }
+    }
+    
+    /**
      * Checks for a new version if the last check was long enough ago.
      */
     private void checkNewVersion() {
-        //g.setUpdateAvailable();
         if (!settings.getBoolean("checkNewVersion")) {
             return;
         }
+        /**
+         * Check if enough time has passed since the last check.
+         */
         long ago = System.currentTimeMillis() - settings.getLong("versionLastChecked");
         if (ago/1000 < CHECK_VERSION_INTERVAL) {
+            /**
+             * If not checking, check if update was detected last time.
+             */
+            String updateAvailable = settings.getString("updateAvailable");
+            if (!updateAvailable.isEmpty()) {
+                g.setUpdateAvailable(updateAvailable);
+            }
             return;
         }
         settings.setLong("versionLastChecked", System.currentTimeMillis());
@@ -361,6 +395,7 @@ public class TwitchClient {
                     g.printSystem("New version available: "+version+" "+infoText
                             +"(Go to <Help-Website> to download)");
                     g.setUpdateAvailable(version);
+                    settings.setString("updateAvailable", version);
                 } else {
                     g.printSystem("You already have the newest version.");
                 }
@@ -862,7 +897,7 @@ public class TwitchClient {
         }
         
         else if (command.equals("releaseinfo")) {
-            g.openReleaseInfo(true);
+            g.openReleaseInfo();
         }
         
         else if (command.equals("echo")) {
@@ -913,15 +948,11 @@ public class TwitchClient {
     
     private void testCommands(String channel, String command, String parameter) {
         if (command.equals("addchans")) {
-//            String[] splitSpace = parameter.split(" ");
-//            int type = Channel.TYPE_CHANNEL;
-//            if (splitSpace.length == 2) {
-//                type = Integer.parseInt(splitSpace[1]);
-//            }
-//            String[] split2 = splitSpace[0].split(",");
-//            for (String chan : split2) {
-//                //g.getChannel(chan, type);
-//            }
+            String[] splitSpace = parameter.split(" ");
+            String[] split2 = splitSpace[0].split(",");
+            for (String chan : split2) {
+                g.printLine(chan, "test");
+            }
         } else if (command.equals("settestuser")) {
             String[] split = parameter.split(" ");
             createTestUser(split[0], split[1]);
@@ -1020,6 +1051,9 @@ public class TwitchClient {
             sendMessage(channel, message);
         } else if (command.equals("c1")) {
             sendMessage(channel, (char)1+parameter);
+        } else if (command.equals("gc")) {
+            Runtime.getRuntime().gc();
+            LogUtil.logMemoryUsage();
         }
     }
     
@@ -1410,7 +1444,7 @@ public class TwitchClient {
 
         @Override
         public void newFollowers(FollowerInfo followerInfo) {
-            g.followerSound(Helper.checkChannel(followerInfo.stream));
+            g.followerSound(Helper.toValidChannel(followerInfo.stream));
         }
 
         @Override
@@ -1570,7 +1604,7 @@ public class TwitchClient {
      * @param channel
      */
     private void logViewerstats(String channel) {
-        if (Helper.validateChannel(channel)) {
+        if (Helper.isRegularChannel(channel)) {
             ViewerStats stats = api.getStreamInfo(Helper.toStream(channel), null).getViewerStats(true);
             chatLog.viewerstats(channel, stats);
         }
@@ -1695,7 +1729,7 @@ public class TwitchClient {
         @Override
         public void receivedBotNames(String stream, Set<String> names) {
             if (settings.getBoolean("botNamesBTTV")) {
-                String channel = Helper.checkChannel(stream);
+                String channel = Helper.toValidChannel(stream);
                 botNameManager.addBotNames(channel, names);
             }
         }
@@ -1980,7 +2014,7 @@ public class TwitchClient {
         public void onChannelCleared(String channel) {
             if (channel != null) {
                 if (settings.getBoolean("clearChatOnChannelCleared")) {
-                    g.clearChat();
+                    g.clearChat(channel);
                 }
                 g.printLine(channel, "Channel was cleared by a moderator.");
             } else {

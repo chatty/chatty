@@ -5,6 +5,7 @@ import chatty.gui.HtmlColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -29,6 +30,9 @@ import javax.swing.event.CaretListener;
  * This is probably only fit for shorter texts, because it always works on the
  * whole text. Might have bad performance in huge documents if it where modified
  * to work in another context.
+ * 
+ * If this is not used anymore, you should call {@link cleanUp()} to make sure
+ * it can get gargabe collected.
  * 
  * @author tduva
  */
@@ -66,6 +70,9 @@ public class AutoCompletion {
     // GUI elements for info display
     private JWindow infoWindow;
     private JLabel infoLabel;
+    
+    private final ComponentListener componentListener;
+    private Window containingWindow;
 
     /**
      * Creates a new auto completion object bound to the given JTextField.
@@ -114,6 +121,37 @@ public class AutoCompletion {
                 hideCompletionInfoWindow();
             }
         });
+        
+        /**
+         * Listener to attach to the textField and the main containing window,
+         * so when any of that moves or gets resized, the info window is hidden.
+         * 
+         * The componentShown() and componentHidden() methods may not do
+         * anything depending on the specific use, but keeping them there just
+         * in case.
+         */
+        componentListener = new ComponentListener() {
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                infoWindow.setVisible(false);
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                infoWindow.setVisible(false);
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                infoWindow.setVisible(false);
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                infoWindow.setVisible(false);
+            }
+        };
     }
 
     /**
@@ -517,7 +555,7 @@ public class AutoCompletion {
             newPosition = true;
         }
 
-        if (newPosition) {
+        if (newPosition || !infoWindow.isVisible()) {
             // Determine and set new position
             location.x -= infoWindow.getWidth() / 4;
             if (location.x + infoWindow.getWidth() > textField.getWidth()) {
@@ -552,30 +590,11 @@ public class AutoCompletion {
          * Hide the info popup if the textfield or containing window is changed
          * in any way.
          */
-        ComponentListener listener = new ComponentListener() {
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                infoWindow.setVisible(false);
-            }
-
-            @Override
-            public void componentMoved(ComponentEvent e) {
-                infoWindow.setVisible(false);
-            }
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-                infoWindow.setVisible(false);
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-                infoWindow.setVisible(false);
-            }
-        };
-        SwingUtilities.getWindowAncestor(textField).addComponentListener(listener);
-        textField.addComponentListener(listener);
+        containingWindow = SwingUtilities.getWindowAncestor(textField);
+        if (containingWindow != null) {
+            containingWindow.addComponentListener(componentListener);
+        }
+        textField.addComponentListener(componentListener);
     }
 
     private void reshowCompletionInfoWindow() {
@@ -693,6 +712,17 @@ public class AutoCompletion {
             }
         }
         return a.substring(0, minLength);
+    }
+    
+    /**
+     * This should be called when the AutoCompletion is no longer used, so it
+     * can be gargabe collected.
+     */
+    public void cleanUp() {
+        if (containingWindow != null) {
+            containingWindow.removeComponentListener(componentListener);
+        }
+        infoWindow = null;
     }
 
 }

@@ -306,7 +306,7 @@ public class Usericon implements Comparable {
             channelRestriction = "";
             channelInverse = false;
         }
-        channel = Helper.checkChannel(channel);
+        channel = Helper.toValidChannel(channel);
         if (channel == null) {
             channel = "";
         }

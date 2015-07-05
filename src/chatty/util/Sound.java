@@ -40,19 +40,41 @@ public class Sound {
         }
         
         try {
-            Clip clip = AudioSystem.getClip();
-            
             // getAudioInputStream() also accepts a File or InputStream
             File file = new File(PATH+fileName);
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            
+            DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
+            Clip clip = (Clip)AudioSystem.getLine(info);
             clip.open(ais);
-            FloatControl gain = ((FloatControl)clip.getControl(FloatControl.Type.MASTER_GAIN));
-            gain.setValue(calculateGain(volume, gain.getMinimum(), gain.getMaximum()));
+            
+            // Volume, use what is available
+            String volumeInfo;
+            FloatControl gain = getFirstAvailableControl(clip,
+                    FloatControl.Type.MASTER_GAIN, FloatControl.Type.VOLUME);
+            if (gain != null) {
+                gain.setValue(calculateGain(volume,
+                        gain.getMinimum(), gain.getMaximum()));
+                volumeInfo = gain.toString();
+            } else {
+                volumeInfo = "no volume control";
+            }
+            
             clip.start();
-            LOGGER.info("Playing sound "+id+"/"+fileName+" ("+gain.getValue()+")");
+            LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
         } catch (NullPointerException | LineUnavailableException | IOException | UnsupportedAudioFileException ex) {
             LOGGER.warning("Couldn't play sound ("+id+"/"+fileName+"): "+ex.getLocalizedMessage());
         }
+    }
+    
+    private static FloatControl getFirstAvailableControl(Clip clip,
+            FloatControl.Type... types) {
+        for (FloatControl.Type type : types) {
+            if (clip.isControlSupported(type)) {
+                return (FloatControl)clip.getControl(type);
+            }
+        }
+        return null;
     }
     
     private static float calculateGain(float volume, float min, float max) {
