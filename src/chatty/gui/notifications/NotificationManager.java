@@ -129,6 +129,13 @@ public class NotificationManager<T> {
      */
     public void clearAll() {
         queue.clear();
+        clearAllShown();
+    }
+    
+    /**
+     * Closes all displayed notifications.
+     */
+    public void clearAllShown() {
         // Create a copy of the list so it can iterate over all elements while
         // the original list is modified.
         for (Notification n : new LinkedList<>(displayed)) {

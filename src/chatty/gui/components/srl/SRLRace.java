@@ -185,7 +185,7 @@ public class SRLRace extends JDialog {
     
     private void update() {
         if (timeStarted > 0 && currentRace.state == Race.IN_PROGRESS) {
-            time.setText(DateTime.ago3(timeStarted, true));
+            time.setText(DateTime.agoClock(timeStarted, true));
         } else {
             time.setText("");
         }
@@ -305,7 +305,7 @@ public class SRLRace extends JDialog {
         
         private String formatTime(long time) {
             if (time > 0) {
-                return DateTime.duration2(time, true);
+                return DateTime.durationClock(time, true);
             }
             return "-";
         }

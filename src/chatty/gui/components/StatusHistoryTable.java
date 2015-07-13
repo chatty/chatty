@@ -257,8 +257,8 @@ public class StatusHistoryTable extends JTable {
         
         @Override
         public void setValue(Object value) {
-            Long timePassed = (Long)value;
-            setText(DateTime.ago2(timePassed));
+            Long lastActivity = (Long)value;
+            setText(DateTime.agoText(lastActivity));
             JLabel label = (JLabel)this;
             label.setHorizontalAlignment(JLabel.CENTER);
         }
@@ -299,7 +299,7 @@ public class StatusHistoryTable extends JTable {
             } else if (columnIndex == 2) {
                 return entry.game;
             } else if (columnIndex == 3) {
-                return System.currentTimeMillis() - entry.lastActivity;
+                return entry.lastActivity;
             } else if (columnIndex == 4) {
                 return entry.timesUsed;
             }

@@ -330,12 +330,12 @@ public class AdminDialog extends JDialog {
             if (!loading && infoLastLoaded > 0) {
                 long timePassed = System.currentTimeMillis() - infoLastLoaded;
                 updated.setText("Info last loaded: "
-                        +DateTime.duration(timePassed, false)+" ago"
+                        +DateTime.duration(timePassed, 1, 0)+" ago"
                         +(statusEdited ? " (edited)" : ""));
             }
             if (lastCommercialRun > 0) {
                 long ago = System.currentTimeMillis() - lastCommercialRun;
-                lastCommercialInfo.setText("Last run: "+DateTime.duration(ago, false)+" ago");
+                lastCommercialInfo.setText("Last run: "+DateTime.duration(ago, 1, 0)+" ago");
                 lastCommercialInfo.setToolTipText("Last run: "+DateTime.formatFullDatetime(lastCommercialRun));
             }
             if (loading && lastPutResult > 0) {
@@ -351,8 +351,11 @@ public class AdminDialog extends JDialog {
                 runCommercialNow(scheduledCommercialLength);
             } else if (System.currentTimeMillis() - lastCommercialRunAttempt
                     > COMMERCIAL_RUN_ATTEMPT_DELAY) {
-                setCommercialResult("Commercial ("+scheduledCommercialLength+"s)"
-                        + " scheduled to run in "+DateTime.duration(timeLeft, true));
+                setCommercialResult(
+                        String.format("Commercial (%ds) scheduled to run in %s",
+                                scheduledCommercialLength,
+                                DateTime.duration(timeLeft, 2, 0))
+                );
             }
         }
     }

@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -114,7 +115,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     @Override
     public void mousePressed(MouseEvent e) {
         
-        if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
+        if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
             String url = getUrl(e);
             if (url != null && !isUrlDeleted(e)) {
                 if (linkListener != null) {

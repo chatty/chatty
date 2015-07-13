@@ -4,6 +4,7 @@ package chatty.gui.components;
 import chatty.Helper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamInfosContextMenu;
+import chatty.util.DateTime;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
@@ -322,7 +323,10 @@ public class LiveStreamsList extends JList<StreamInfo> {
                 area.setSize(width, Short.MAX_VALUE);
             }
             // Add Borders
-            String title = info.getDisplayName()+" ("+Helper.formatViewerCount(info.getViewers())+" Viewers)";
+            String title = String.format("%s (%s | %s)",
+                    info.getDisplayName(),
+                    Helper.formatViewerCount(info.getViewers()),
+                    DateTime.agoUptimeCompact(info.getTimeStartedWithPicnic()));
             Border titleBaseBorder = isSelected ? TITLE_SELECTED : TITLE;
             if (info.getStatusChangeTimeAgo() < STREAMINFO_NEW_TIME) {
                 titleBaseBorder = TITLE_NEW;

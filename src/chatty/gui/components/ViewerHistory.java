@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 /**
  * Shows a graph with the viewer count history.
@@ -708,7 +709,7 @@ public class ViewerHistory extends JComponent {
          */
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON1) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
                 if (e.getClickCount() == 2) {
                     fixedHoverEntry = false;
                     setFixedStartAt(hoverEntry);

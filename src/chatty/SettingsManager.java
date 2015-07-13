@@ -45,7 +45,7 @@ public class SettingsManager {
     
     public SettingsManager(Settings settings) {
         this.settings = settings;
-        backup = new BackupManager(Paths.get(Chatty.getUserDataDirectory()+"backup"+File.separator),
+        backup = new BackupManager(Paths.get(Chatty.getBackupDirectory()),
             Paths.get(Chatty.getUserDataDirectory()));
     }
     
@@ -171,6 +171,7 @@ public class SettingsManager {
         settings.addBoolean("ffz", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
+        settings.addBoolean("showAnimatedEmotes", false);
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addString("tabOrder", "normal");
@@ -226,7 +227,8 @@ public class SettingsManager {
         settings.addBoolean("channelsWarning", true);
         settings.addBoolean("autoScroll", true);
         settings.addLong("autoScrollTimeout", 30);
-        settings.addBoolean("pauseChatOnMouseMove", false);
+        settings.addBoolean("pauseChatOnMouseMove", true);
+        settings.addBoolean("pauseChatOnMouseMoveCtrlRequired", false);
         settings.addString("commandOnCtrlClick", "");
         settings.addLong("versionLastChecked", 0);
         settings.addString("updateAvailable", "");
@@ -258,6 +260,9 @@ public class SettingsManager {
         settings.addList("popoutAttributes", new ArrayList(), Setting.STRING);
         
         settings.addBoolean("simpleTitle", false);
+        settings.addBoolean("titleShowUptime", true);
+        settings.addBoolean("titleShowViewerCount", true);
+        settings.addBoolean("titleShowChannelState", true);
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
         

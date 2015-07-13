@@ -21,6 +21,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 
@@ -163,7 +164,7 @@ public class Notification {
             @Override
             public void mouseClicked(MouseEvent e) {
                 close();
-                if (e.getButton() != MouseEvent.BUTTON1) {
+                if (SwingUtilities.isRightMouseButton(e)) {
                     if (listener != null) {
                         listener.notificationAction(Notification.this);
                     }

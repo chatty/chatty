@@ -112,7 +112,7 @@ public class Connection implements Runnable {
             return;
         } catch (IOException ex) {
             warning("Error opening connection: "+ex);
-            irc.disconnected(Irc.ERROR_SOCKET_ERROR,ex.getMessage());
+            irc.disconnected(Irc.ERROR_SOCKET_ERROR, ex.getLocalizedMessage());
             return;
         }
         // At this point the connection succeeded, but not registered with the

@@ -124,7 +124,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         SHOW_BANMESSAGES, COMBINE_BAN_MESSAGES, DELETE_MESSAGES,
         DELETED_MESSAGES_MODE, ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
-        FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE
+        FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
+        PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
@@ -1607,6 +1608,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (main.emoticons.isEmoteIgnored(emoticon)) {
                 continue;
             }
+            if (emoticon.isAnimated
+                    && !styles.isEnabled(Setting.EMOTICONS_SHOW_ANIMATED)) {
+                continue;
+            }
             Matcher m = emoticon.getMatcher(text);
             while (m.find()) {
                 // As long as this emoticon is still found in the text, add
@@ -2009,10 +2014,23 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         @Override
         public void mouseMoved(MouseEvent e) {
             mouseLastMoved = System.currentTimeMillis();
-            if ((styles.isEnabled(Setting.PAUSE_ON_MOUSEMOVE) || pauseKeyPressed)
-                    && isScrollpositionAtTheEnd()) {
+            if (isPauseEnabled() && isScrollpositionAtTheEnd()) {
                 setFixedChat(true);
             }
+        }
+        
+        /**
+         * Only allow chat pause if enabled altogether and if Ctrl isn't
+         * required to be pressed or it's pressed anyway.
+         * 
+         * @return true if chat pause can be enabled, false otherwise
+         */
+        private boolean isPauseEnabled() {
+            if (!styles.isEnabled(Setting.PAUSE_ON_MOUSEMOVE)) {
+                return false;
+            }
+            return !styles.isEnabled(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED)
+                    || pauseKeyPressed;
         }
         
         /**
@@ -2210,6 +2228,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.COMBINE_BAN_MESSAGES, true);
             addSetting(Setting.BOT_BADGE_ENABLED, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
+            addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
+            addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);

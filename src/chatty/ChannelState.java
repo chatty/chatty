@@ -1,6 +1,8 @@
 
 package chatty;
 
+import chatty.util.DateTime;
+
 /**
  * Holds the state for a single channel, like slowmode, submode and so on.
  * 
@@ -173,6 +175,8 @@ public class ChannelState {
         String result = "";
         if (slowMode == SLOWMODE_ON_INVALID || slowMode > 86400) {
             result += "Slow: >day";
+        } else if (slowMode > 999) {
+            result += "Slow: "+DateTime.duration(slowMode*1000, 1, 0);
         } else if (slowMode > 0) {
             result += "Slow: "+slowMode;
         }

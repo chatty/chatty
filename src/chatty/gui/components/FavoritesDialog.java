@@ -461,7 +461,7 @@ public class FavoritesDialog extends JDialog {
                 setText("-");
             }
             else {
-                setText(DateTime.ago(time));
+                setText(DateTime.agoText(time));
             }
             JLabel label = (JLabel)this;
             label.setHorizontalAlignment(JLabel.CENTER);

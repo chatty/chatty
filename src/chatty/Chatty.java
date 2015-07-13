@@ -170,6 +170,10 @@ public class Chatty {
         return getWorkingDirectory()+"img"+File.separator;
     }
     
+    public static String getBackupDirectory() {
+        return getUserDataDirectory()+"backup"+File.separator;
+    }
+    
     public static String chattyVersion() {
         return "Chatty Version "+Chatty.VERSION
                 +(Chatty.HOTKEY ? " Hotkey" : "")
@@ -177,6 +181,6 @@ public class Chatty {
     }
     
     public static String uptime() {
-        return DateTime.agoFull(STARTED_TIME);
+        return DateTime.ago(STARTED_TIME);
     }
 }

@@ -80,7 +80,7 @@ public class StreamHighlightHelper {
      * @return A textual response to adding the highlight
      */
     public String addHighlight(String channel, String comment) {
-        if (channel == null || channel.isEmpty()) {
+        if (channel == null || channel.isEmpty() || !Helper.isRegularChannel(channel)) {
             return "Failed adding stream highlight (no channel).";
         }
         
@@ -88,7 +88,7 @@ public class StreamHighlightHelper {
         StreamInfo streamInfo = api.getStreamInfo(Helper.toStream(channel), null);
         String streamTime = "Stream Time N/A";
         if (streamInfo.isValid() && streamInfo.getOnline()) {
-            streamTime = DateTime.ago5(streamInfo.getTimeStarted(), true);
+            streamTime = DateTime.ago(streamInfo.getTimeStarted());
         }
         
         if (comment == null) {

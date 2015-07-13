@@ -7,15 +7,29 @@
     <h1><a name="top">Troubleshooting</a></h1>
     
     <ul>
-        <li><a href="#known">Known Issues</a></li>
-        <li><a href="#performance">Bad performance / OutOfMemoryError</a></li>
-        <li><a href="#jintellitype">Could not load JIntellitype.dll</a></li>
-        <li><a href="#livestreamer">Livestreamer won't run properly</a></li>
-        <li><a href="#timeout">People are shown as timed out in several channels at once</a></li>
-        <li><a href="#login">Can't connect because the login failed</a></li>
-        <li><a href="#font">Some characters in chat only show up as boxes / Fallback fonts</a></li>
-        <li><a href="#start">Chatty won't start</a></li>
-        <li><a href="#log">Debug log</a></li>
+        <li>Startup/Folders/Settings
+            <ul>
+                <li><a href="#start">Chatty won't start</a></li>
+                <li><a href="#jintellitype">Could not load JIntellitype.dll</a></li>
+                <li><a href="#settings_lost">Settings lost</a></li>
+                <li><a href="#wrong_folders">Wrong image/sounds folder</a></li>
+            </ul>
+        </li>
+        <li>Connection Issues
+            <ul>
+                <li><a href="#login">Can't connect because the login failed</a></li>
+                <li><a href="#connect">Can't connect</a></li>
+            </ul>
+        </li>
+        <li>Other
+            <ul>
+                <li><a href="#known">Known Issues</a></li>
+                <li><a href="#performance">Bad performance / OutOfMemoryError</a></li>
+                <li><a href="#livestreamer">Livestreamer won't run properly</a></li>
+                <li><a href="#font">Some characters in chat only show up as boxes / Fallback fonts</a></li>
+                <li><a href="#log">Debug log</a></li>
+            </ul>
+        </li>
     </ul>
     
     <h2>
@@ -107,21 +121,35 @@
     <p>See the <a href="help-livestreamer.html">Chatty Livestreamer Help</a>.</p>
     
     <h2>
-        <a name="timeout">People are shown as timed out in several channels at once</a>
+        <a name="settings_lost">Settings lost</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>If a user is timed out in one channel, Chatty may show the timeouts in
-    other channels as well. This is because there is no channel associated with
-    timeouts or bans in Twitch Chat, so the program has to guess in which
-    channel the timeout occured. See also: <a href="help.html#channels">Joining more than one channel</a>.</p>
+    <p>If you loose your settings (or part of it like just the Addressbook) then
+        either they weren't saved/loaded properly for some reason or you changed
+        your configuration and your settings directory is not the same anymore.</p>
     
+    <ul>
+        <li>Enter <code>/dir</code> in Chatty to find out what your settings
+            directory is (<code>/openDir</code> to open it) and whether that's
+            the one you used before (there should be quite a few files and
+            folders).</li>
+        <li>If there is a <code>backup</code> folder you can try to restore the
+            automatic backup. <a href="help-guide_folders.html#backup">More Information...</a></li>
+    </ul>
     
+    <h2>
+        <a name="wrong_folders">Wrong image/sounds folder</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>The image/sounds folders are based on the current Working Directory,
+        which is set when you start Chatty. <a href="help-guide_folders.html#wdir">More Information..</a></p>
+
     <h2>
         <a name="login">Can't connect because the login failed</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>If you repeatedly get disconnected because of possibly invalid login
-    data, please open the Connect Dialog and choose <code>Configure login.. - Verify login</code>.
+    data, please go to <code>Main - Login.. - Verify login</code>.
     This will send a request to Twitch to check if the access token is valid.
     If the login data is valid, then Twitch may just have temporary problems
     and you should try again later. The same goes for when the check itself
@@ -129,6 +157,21 @@
     <p>If the login data isn't valid, you can just remove the login and request
         new login data. Also see the <a href="help.html#login-invalid">section about login</a>
     for more information about invalid logins.</p>
+    <p>Another reason may be that you are connecting to the <a href="#connect">wrong port</a>.</p>
+    
+    <h2>
+        <a name="connect">Can't connect</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>It's possible that your internet/firewall doesn't like the port you are
+        using to connect. By default it tries to connect to <code>6667</code>
+        first. Twitch may also have changed the ports. You can check <a href="http://twitchstatus.com">Twitchstatus.com</a>
+        (not an official Twitch site) which chat server/ports are available (make sure to use an <code>irc</code> server).
+        The host <code>irc.twitch.tv</code> should resolve to the available server IPs, so you normally
+        shouldn't have to enter an IP directly (for main chat).</p>
+    
+    <p>If you are using a shortcut to start Chatty, also check any
+        custom server/port you may have defined there using <a href="help.html#launch">commandline parameters</a>.</p>
     
     <h2>
         <a name="font">Some characters in chat only show up as boxes / Fallback fonts</a>

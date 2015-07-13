@@ -102,6 +102,7 @@ public class Emoticon {
     public final String urlX2;
     public final String creator;
     public final String info;
+    public final boolean isAnimated;
     
     private String stream;
     
@@ -135,6 +136,7 @@ public class Emoticon {
         private String stringId = null;
         private String creator;
         private String info;
+        private boolean isAnimated = false;
         
         public Builder(Type type, String search, String url) {
             this.type = type;
@@ -195,6 +197,11 @@ public class Emoticon {
         
         public Builder setInfo(String info) {
             this.info = info;
+            return this;
+        }
+        
+        public Builder setAnimated(boolean isAnimated) {
+            this.isAnimated = isAnimated;
             return this;
         }
         
@@ -295,6 +302,7 @@ public class Emoticon {
         this.stringId = builder.stringId;
         this.creator = builder.creator;
         this.info = builder.info;
+        this.isAnimated = builder.isAnimated;
     }
     
     private void createMatcher() {

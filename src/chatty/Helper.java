@@ -185,6 +185,9 @@ public class Helper {
             case Irc.SSL_ERROR:
                 result = "Could not established secure connection ("+reasonMessage+")";
                 break;
+            case Irc.ERROR_SOCKET_ERROR:
+                result = reasonMessage;
+                break;
         }
         
         if (!result.isEmpty()) {

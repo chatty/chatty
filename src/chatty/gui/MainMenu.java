@@ -101,11 +101,19 @@ public class MainMenu extends JMenuBar {
         
         
         JMenu viewOptions = new JMenu("Options");
+        
+        JMenu titleOptions = new JMenu("Titlebar");
+        addCheckboxItem(titleOptions, "titleShowUptime", "Stream Uptime");
+        addCheckboxItem(titleOptions, "titleShowChannelState", "Channel State");
+        addCheckboxItem(titleOptions, "titleShowViewerCount", "Viewer/Chatter Count");
+        
+        viewOptions.add(titleOptions);
+        
         addCheckboxItem(viewOptions,"showJoinsParts","Show joins/parts");
         addCheckboxItem(viewOptions, "showModMessages", "Show mod/unmod");
         addCheckboxItem(viewOptions, "attachedWindows", "Attached dialogs");
         addCheckboxItem(viewOptions, "mainResizable", "Window resizable");
-        
+
         view.add(viewOptions);
         view.addSeparator();
         addItem(view,"dialog.channelInfo","Channel Info");
@@ -140,6 +148,12 @@ public class MainMenu extends JMenuBar {
         addItem(streamChat,"dialog.streamchat", "Open");
         addCheckboxItem(streamChat, "streamChatResizable", "Resizable");
         extra.add(streamChat);
+        
+        JMenu streamHighlights = new JMenu("Stream Highlights");
+        addItem(streamHighlights, "addStreamHighlight", "Add Stream Highlight");
+        addItem(streamHighlights, "openStreamHighlights", "Open Stream Highlights");
+        extra.add(streamHighlights);
+        
         extra.addSeparator();
         JMenu debugOptions = new JMenu("Options");
         addCheckboxItem(debugOptions,"simpleTitle","Simple Title");

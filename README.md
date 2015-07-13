@@ -62,7 +62,7 @@ External Libraries/Resources
 	(for the license text see the LGPL file or
 	http://www.gnu.org/licenses/lgpl.html)
 
-* Robot Icon by Yusuke Kamiyamane
+* Robot Icon by Yusuke Kamiyamane:
   * File: `icon_bot.png`
   * Source: https://www.iconfinder.com/icons/46205/robot_icon
   * License: CC-BY 3.0

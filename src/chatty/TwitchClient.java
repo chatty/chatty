@@ -780,6 +780,9 @@ public class TwitchClient {
         else if (command.equals("openwdir")) {
             MiscUtil.openFolder(new File(Chatty.getWorkingDirectory()), g);
         }
+        else if (command.equals("openbackupdir")) {
+            MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
+        }
         
         // Settings
         else if (command.equals("set")) {
@@ -911,10 +914,10 @@ public class TwitchClient {
             g.printSystem(LogUtil.getMemoryUsage());
         }
         else if (command.equals("addstreamhighlight")) {
-            g.printLine(channel, streamHighlights.addHighlight(channel, parameter));
+            commandAddStreamHighlight(channel, parameter);
         }
         else if (command.equals("openstreamhighlights")) {
-            g.printLine(channel, streamHighlights.openFile());
+            commandOpenStreamHighlights(channel);
         }
         
         else if (c.command(channel, command, parameter)) {
@@ -1229,6 +1232,14 @@ public class TwitchClient {
                 g.printLine(usage);
             }
         }
+    }
+    
+    public void commandAddStreamHighlight(String channel, String parameter) {
+        g.printLine(channel, streamHighlights.addHighlight(channel, parameter));
+    }
+    
+    public void commandOpenStreamHighlights(String channel) {
+        g.printLine(channel, streamHighlights.openFile());
     }
     
     private void commandRefresh(String channel, String parameter) {

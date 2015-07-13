@@ -57,50 +57,6 @@ public class OtherSettings extends SettingsPanel {
         graphics.add(d.addSimpleBooleanSetting("noddraw", "Disable DirectDraw", ""), gbc);
         
         // Other settings
-        
-        JPanel autoScrollPanel = new JPanel();
-        autoScrollPanel.add(d.addSimpleBooleanSetting("autoScroll", "Scroll down after",
-                "After the given number of seconds of not changing position of the scrollbar, automatically scroll down."));
-        autoScrollPanel.add(d.addSimpleLongSetting("autoScrollTimeout", 3, true));
-        autoScrollPanel.add(new JLabel("seconds of inactiviy"));
-
-        gbc = d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(4,1,0,5);
-        other.add(autoScrollPanel, gbc);
-        
-        other.add(d.addSimpleBooleanSetting("pauseChatOnMouseMove",
-                "Pause chat when moving the mouse over it",
-                "Stop scrolling while moving the mouse over chat (only if the scrollbar is active)"),
-                d.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
-        
-        JPanel commandPanel = new JPanel(new GridBagLayout());
-        
-        commandPanel.add(new JLabel("Run command on click on user (holding Ctrl):"),
-                d.makeGbc(0, 0, 1, 1));
-        
-        Map<String, String> commandChoices = new HashMap<>();
-        commandChoices.put("", "Off");
-        commandChoices.put("/timeout", "Timeout");
-        commandChoices.put("/ban", "Ban");
-        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 30, false, commandChoices);
-        commandPanel.add(commandOnCtrlClick,
-                d.makeGbc(1, 0, 1, 1));
-        
-        gbc = d.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(0, 0, 0, 0);
-        other.add(commandPanel, gbc);
- 
-        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
-        other.add(new JLabel("Chat buffer size:"), gbc);
-        
-        gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleLongSetting("bufferSize", 3, true), gbc);
-        
-        gbc = d.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST);
-        other.add(new JLabel("(too high values can lower performance)"), gbc);
-
-
-
         gbc = d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST);
         JCheckBox versionCheck = d.addSimpleBooleanSetting("checkNewVersion", "Inform me about new versions",
                 "Automatically check for a new version every few days and output a message "
@@ -117,13 +73,6 @@ public class OtherSettings extends SettingsPanel {
         gbc = d.makeGbc(2, 5, 1, 1);
         other.add(d.addEditorStringSetting("statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER), gbc);
         
-//        gbc = d.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST);
-//        other.add(new JLabel("Timeout buttons:"), gbc);
-//        
-//        gbc = d.makeGbc(1, 5, 2, 1, GridBagConstraints.WEST);
-//        other.add(d.addSimpleStringSetting("timeoutButtons", 20, true), gbc);
-        
-
     }
     
 }

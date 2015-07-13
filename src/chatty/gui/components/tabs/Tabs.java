@@ -1,36 +1,61 @@
 
-package chatty.gui.components;
+package chatty.gui.components.tabs;
 
-import chatty.gui.components.menus.ContextMenuListener;
-import chatty.gui.components.menus.TabContextMenu;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
 
 /**
- * A Tabpane that shows a simple JPanel when only one Tab is added.
+ * A JPanel that can have one or more Components added to it, and it will show
+ * a JTabbedPane depending on that.
  */
 public class Tabs extends JPanel {
     
-    public static final int ADD_ORDER = 0;
-    public static final int ALPHABETIC_ORDER = 1;
+    public enum TabOrder {
+        INSERTION, ALPHABETIC
+    }
     
-    private final JTabbedPane tabs = new JTabbedPane();
+    private final JTabbedPane tabs = new DraggableTabbedPane();
     private Component firstComp;
     
-    private int order = ADD_ORDER;
+    private boolean mouseWheelScrolling = true;
     
-    private final ContextMenuListener contextMenuListener;
+    private TabOrder order = TabOrder.INSERTION;
     
-    public Tabs(ContextMenuListener contextMenuListener) {
-        this.contextMenuListener = contextMenuListener;
+    public Tabs() {
         setLayout(new BorderLayout());
         tabs.setOpaque(false);
-        tabs.setComponentPopupMenu(new TabContextMenu(contextMenuListener));
+        tabs.addMouseWheelListener(new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (mouseWheelScrolling) {
+                    if (e.getWheelRotation() < 0) {
+                        setSelectedPrevious();
+                    } else if (e.getWheelRotation() > 0) {
+                        setSelectedNext();
+                    }
+                }
+            }
+        });
         //tabs.setTabPlacement(JTabbedPane.LEFT);
+    }
+    
+    public void setMouseWheelScrollingEnabled(boolean enabled) {
+        mouseWheelScrolling = enabled;
+    }
+    
+    public void setPopupMenu(JPopupMenu menu) {
+        tabs.setComponentPopupMenu(menu);
     }
     
     /**
@@ -140,7 +165,7 @@ public class Tabs extends JPanel {
      * @return 
      */
     private int findInsertPosition(String newTabName) {
-        if (order == ALPHABETIC_ORDER) {
+        if (order == TabOrder.ALPHABETIC) {
             for (int i = 0; i < tabs.getTabCount(); i++) {
                 if (newTabName.compareToIgnoreCase(tabs.getTitleAt(i)) < 0) {
                     return i;
@@ -153,7 +178,7 @@ public class Tabs extends JPanel {
     public void addChangeListener(ChangeListener listener) {
         tabs.addChangeListener(listener);
     }
-    
+
     /**
      * Gets the currently selected Component.
      * 
@@ -224,8 +249,38 @@ public class Tabs extends JPanel {
         }
     }
     
-    public void setOrder(int order) {
+    public void setOrder(TabOrder order) {
         this.order = order;
+    }
+    
+    public Collection<Component> getComponents(Component c, int direction) {
+        List<Component> result = new ArrayList<>();
+        int index = tabs.indexOfComponent(c);
+        if (index != -1) {
+            if (direction == 1 || direction == 0) {
+                for (int i = index+1; i < getTabCount(); i++) {
+                    result.add(tabs.getComponentAt(i));
+                }
+            }
+            if (direction == -1 || direction == 0) {
+                for (int i = index-1; i >= 0; i--) {
+                    result.add(tabs.getComponentAt(i));
+                }
+            }
+        }
+        return result;
+    }
+    
+    public Collection<Component> getAllComponents() {
+        List<Component> result = new ArrayList<>();
+        if (firstComp != null) {
+            result.add(firstComp);
+        } else {
+            for (int i = 0; i < getTabCount(); i++) {
+                result.add(tabs.getComponentAt(i));
+            }
+        }
+        return result;
     }
     
 }

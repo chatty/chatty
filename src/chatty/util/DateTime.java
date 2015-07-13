@@ -1,12 +1,12 @@
 
 package chatty.util;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Stuff to do with dates/time.
@@ -18,9 +18,9 @@ public class DateTime {
     private static final SimpleDateFormat FULL_DATETIME = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ZZ");
     private static final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm:ss");
     private static final SimpleDateFormat SDF2 = new SimpleDateFormat("HH:mm");
-    public static final int MINUTE = 60;
-    public static final int HOUR = MINUTE * 60;
-    public static final int DAY = HOUR * 24;
+    public static final long MINUTE = 60;
+    public static final long HOUR = MINUTE * 60;
+    public static final long DAY = HOUR * 24;
     
     public static int currentHour12Hour() {
         Calendar cal = Calendar.getInstance();
@@ -63,15 +63,9 @@ public class DateTime {
     public static String format2(long time) {
         return format(time, SDF2);
     }
-    
-    public static String ago(long time) {
-        long timePassed = System.currentTimeMillis() - time;
-        return ago2(timePassed);
-        
-    }
-    
-    public static String ago2(long timePassed) {
-        long seconds = timePassed / 1000;
+
+    public static String agoText(long time) {
+        long seconds = (System.currentTimeMillis() - time) / 1000;
         if (seconds < MINUTE*10) {
             return "just now";
         }
@@ -79,55 +73,21 @@ public class DateTime {
             return "recently";
         }
         if (seconds < DAY) {
-            int hours = (int)seconds / HOUR;
+            long hours = seconds / HOUR;
             return hours+" "+(hours == 1 ? "hour" : "hours")+" ago";
         }
-        int days = (int)seconds / DAY;
+        long days = seconds / DAY;
         return days+" "+(days == 1 ? "day" : "days")+" ago";
     }
     
-    public static String ago4(long time) {
-        long seconds = (System.currentTimeMillis() - time) / 1000;
-        if (seconds < MINUTE) {
-            return seconds+" "+(seconds == 1 ? "second" : "seconds");
-        }
-        if (seconds < HOUR) {
-            int minutes = (int)seconds / MINUTE;
-            return minutes+" "+(minutes == 1 ? "minute" : "minutes");
-        }
-        if (seconds < DAY) {
-            int hours = (int)seconds / HOUR;
-            return hours+" "+(hours == 1 ? "hour" : "hours");
-        }
-        int days = (int)seconds / DAY;
-        return days+" "+(days == 1 ? "day" : "days");
-    }
-    
-    public static String ago4compact(long time) {
-        long seconds = (System.currentTimeMillis() - time) / 1000;
-        if (seconds < MINUTE) {
-            return seconds+"s";
-        }
-        if (seconds < HOUR) {
-            int minutes = (int)seconds / MINUTE;
-            return minutes+"m";
-        }
-        if (seconds < DAY) {
-            int hours = (int)seconds / HOUR;
-            return hours+"h";
-        }
-        int days = (int)seconds / DAY;
-        return days+"d";
-    }
-    
-    public static String ago3(long time, boolean showSeconds) {
+    public static String agoClock(long time, boolean showSeconds) {
         long timePassed = System.currentTimeMillis() - time;
         long seconds = timePassed / 1000;
         
-        return duration2(seconds, showSeconds);
+        return durationClock(seconds, showSeconds);
     }
     
-    public static String duration2(long seconds, boolean showSeconds) {
+    public static String durationClock(long seconds, boolean showSeconds) {
         long hours = seconds / HOUR;
         seconds = seconds % HOUR;
         
@@ -138,105 +98,177 @@ public class DateTime {
             return String.format("%02d:%02d:%02d", hours, minutes, seconds);
         return String.format("%02d:%02d", hours, minutes, seconds);
     }
-    
-    public static String ago5(long time) {
-        return ago5(time, false);
+
+    public static String agoSingleCompact(long time) {
+        return DateTime.ago(time, 0, 1, 0);
     }
     
-    public static String ago5(long time, boolean showSeconds) {
-        long timePassed = System.currentTimeMillis() - time;
-        long seconds = timePassed / 1000;
-        
-        return duration3(seconds, showSeconds);
+    public static String agoSingleVerbose(long time) {
+        return duration(System.currentTimeMillis() - time, 1, 0,
+                Formatting.VERBOSE);
     }
     
-    public static String duration3(long seconds) {
-        return duration3(seconds, false);
+    public static String agoUptimeCompact(long time) {
+        long ago = System.currentTimeMillis() - time;
+        if (ago < (1000*HOUR)) {
+            return duration(ago, 0, 0, S);
+        }
+        return duration(ago, H, 0, M, Formatting.LAST_ONE_EXACT);
     }
     
-    public static String duration3(long seconds, boolean showSeconds) {
-        long hours = seconds / HOUR;
-        seconds = seconds % HOUR;
+    public static enum Formatting {
+        COMPACT, VERBOSE, LEADING_ZERO_VALUES, NO_ZERO_VALUES, NO_SPACES,
+        LAST_ONE_EXACT
+    }
+    
+    private static final String[] TIMENAMES_COMPACT = {"d", "h", "m", "s"};
+    private static final String[] TIMENAMES_VERBOSE = {" days", " hours", " minutes", " seconds"};
+    
+    public static final int S = 1;
+    public static final int M = 2;
+    public static final int H = 3;
+    public static final int D = 4;
+    public static final int N = 0;
+    
+    public static String ago(long time, Formatting... options) {
+        return duration(System.currentTimeMillis() - time, options);
+    }
+    
+    public static String ago(long milliseconds, int upperLimit, int max,
+            int lowerLimit, Formatting... options) {
+        return duration(System.currentTimeMillis() - milliseconds, upperLimit,
+                max, lowerLimit, options);
+    }
+
+    public static String duration(long milliseconds, Formatting... options) {
+        return duration(milliseconds, 0, 0, options);
+    }
+    
+    public static String duration(long milliseconds, int max, int lowerLimit, Formatting... options) {
+        return duration(milliseconds, 0, max, lowerLimit, options);
+    }
+    
+    public static String duration(long milliseconds, int upperLimit, int max,
+            int lowerLimit, Formatting... options) {
+        return duration(milliseconds, upperLimit, max, lowerLimit, 1, options);
+    }
+    
+    public static String duration(long seconds, int upperLimit, int max,
+            int lowerLimit, int min, Formatting... options) {
         
-        long minutes = seconds / MINUTE;
-        seconds = seconds % MINUTE;
+        List<Formatting> options2 = Arrays.asList(options);
+        boolean leadingZeroValues = options2.contains(Formatting.LEADING_ZERO_VALUES);
+        boolean noZeroValues = options2.contains(Formatting.NO_ZERO_VALUES);
+        boolean verbose = options2.contains(Formatting.VERBOSE);
+        boolean lastOneExact = options2.contains(Formatting.LAST_ONE_EXACT);
+        String sep = " ";
+        if (options2.contains(Formatting.NO_SPACES)) {
+            sep = "";
+        }
         
-        if (hours == 0) {
-            if (showSeconds) {
-                return String.format("%dm %ds", minutes, seconds);
+        boolean negative = false;
+        if (seconds < 0) {
+            seconds = -seconds;
+            negative = true;
+        }
+        double[] times = getTimes(seconds, TIME_DEF, upperLimit);
+        String[] timeNames = verbose ? TIMENAMES_VERBOSE : TIMENAMES_COMPACT;
+
+        StringBuilder b = new StringBuilder();
+        int shown = 0;
+        int shownNonzero = 0;
+        for (int i=0;i<times.length;i++) {
+            int left = times.length - i;
+            int time = (int)times[i];
+//            if (shown >= max && max > 0) {
+//                break;
+//            }
+//            if (left <= lowerLimit && shown > 0) {
+//                break;
+//            }
+            if (time == 0) {
+                if ((left > lowerLimit+min) || shown >= min) {
+                    if (noZeroValues) {
+                        continue;
+                    } else if (!leadingZeroValues && shownNonzero == 0) {
+                        continue;
+                    }
+                }
             }
-            return String.format("%dm", minutes);
-        }
-        if (showSeconds) {
-            return String.format("%dh %dm %ds", hours, minutes, seconds);
-        }
-        return String.format("%dh %dm", hours, minutes);
-    }
-    
-    public static String duration(long time, boolean detailed) {
-        return duration(time, detailed, true);
-    }
-    
-    public static String duration(long time, boolean detailed, boolean milliseconds) {
-        long seconds = time;
-        if (milliseconds) {
-            seconds = time / 1000;
-        }
-        if (seconds < MINUTE) {
-            return seconds+"s";
-        }
-        if (seconds < HOUR) {
-            int s = (int)seconds % MINUTE;
-            if (detailed && s > 0) {
-                return seconds / MINUTE+"m "+s+"s";
+
+            if (shown > 0) {
+                b.append(sep);
+            } else if (negative) {
+                b.append("-");
             }
-            return seconds / MINUTE+"m";
+            /**
+             * Now considered shown
+             */
+            shown++;
+            boolean lastOne = shown >= max && max > 0
+                    || left-1 <= lowerLimit && shown > 0;
+            String timeName = timeNames[i+timeNames.length-times.length];
+            if (time == 1 && verbose) {
+                timeName = timeName.substring(0, timeName.length() - 1);
+            }
+            if (lastOne && lastOneExact) {
+                b.append(String.format(Locale.ENGLISH, "%.1f", times[i]));
+            } else {
+                b.append(time);
+            }
+            b.append(timeName);
+            
+            if (time > 0) {
+                shownNonzero++;
+            }
+            if (lastOne) {
+                break;
+            }
         }
-        if (seconds < DAY) {
-            return seconds / HOUR+"h";
-        }
-        return seconds / DAY+"d";
+        return b.toString();
     }
     
-    public static String agoFull(long time) {
-        return durationFull(System.currentTimeMillis() - time, true);
-    }
+    private static final long[] TIME_DEF = {DAY, HOUR, MINUTE, 1};
     
-    public static String durationFull(long time, boolean milliseconds) {
-        long seconds = time;
-        if (milliseconds) {
-            seconds = time / 1000;
+    public static double[] getTimes(long input, long[] timeDef, int upperLimit) {
+        double seconds = (double)(input / 1000);
+        if (upperLimit <= 0 || upperLimit > timeDef.length) {
+            upperLimit = timeDef.length;
         }
-        long days = seconds / DAY;
-        seconds = seconds % DAY;
-        
-        long hours = seconds / HOUR;
-        seconds = seconds % HOUR;
-        
-        long minutes = seconds / MINUTE;
-        seconds = seconds % MINUTE;
-        
-        if (days > 0) {
-            return String.format("%dd %dh %dm %ds", days, hours, minutes, seconds);
-        } else if (hours > 0) {
-            return String.format("%dh %dm %ds", hours, minutes, seconds);
-        } else if (minutes > 0) {
-            return String.format("%dm %ds", minutes, seconds);
+        double[] result = new double[upperLimit];
+        int offset = timeDef.length - upperLimit;
+        for (int i=0;i<result.length;i++) {
+            long def = timeDef[i+offset];
+            result[i] = seconds / def;
+            seconds = seconds % def;
         }
-        return String.format("%ds", seconds);
+        return result;
     }
     
     public static final void main(String[] args) {
-        System.out.println(durationFull(269467, false));
-        System.out.println(formatFullDatetime((long)1427846400*1000));
-        System.out.println(System.currentTimeMillis());
-        try {
-            long time = chatty.util.api.Util.parseTime("2015-04-01T00:00:00Z");
-            System.out.println(time);
-            System.out.println(formatFullDatetime(time));
-            System.out.println(time / 1000);
-        } catch (ParseException ex) {
-            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        System.out.println("'"+dur(HOUR*2+1, Formatting.COMPACT, 0, -2, 2, 2, 2)+"'");
+//        System.out.println("'"+duration(1000*MINUTE*1+1000, Formatting.COMPACT, N, 0, 0, 0, 2)+"'");
+        //System.out.println(agoSingleVerbose(System.currentTimeMillis() ));
+        //System.out.println(ago(System.currentTimeMillis() - 1000*60*60*25));
+//        System.out.println(duration(1000*(HOUR*2), 0, 0, 0, 1, Formatting.LAST_ONE_EXACT));
+        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*54)));
+        int a = 1 << 4;
+        int b = 1 << 5;
+        int c = 1 << 1;
+        int v = a | b;
+        //System.out.println(v ^ c);
+//        System.out.println("'"+duration(1000*1, 1, 2)+"'");
+//        System.out.println((long)1000*DAY*3000+1);
+//        System.out.println(durationFull(269467, false));
+//        System.out.println(formatFullDatetime((long)1427846400*1000));
+//        System.out.println(System.currentTimeMillis());
+//        try {
+//            long time = chatty.util.api.Util.parseTime("2015-04-01T00:00:00Z");
+//            System.out.println(time);
+//            System.out.println(formatFullDatetime(time));
+//            System.out.println(time / 1000);
+//        } catch (ParseException ex) {
+//            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 }

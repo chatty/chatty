@@ -28,19 +28,17 @@ public class EmoteSettings extends SettingsPanel {
         JPanel main = addTitledPanel("General Settings", 0);
         
         GridBagConstraints gbc;
-        
-        gbc = d.makeGbcCloser(0, 0, 2, 1, GridBagConstraints.WEST);
+
         main.add(
                 d.addSimpleBooleanSetting("emoticonsEnabled", "Show emoticons",
                         "Whether to show emotes as icons.\n"
                         + "Changing this only affects new lines."),
-                gbc);
+                d.makeGbcCloser(0, 0, 2, 1, GridBagConstraints.WEST));
         
-        gbc = d.makeGbcCloser(2, 0, 3, 1, GridBagConstraints.WEST);
-        main.add(
-                d.addSimpleBooleanSetting("bttvEmotes", "Enable BetterTTV Emotes",
-                        "Show BetterTTV emoticons (most of them at least)"),
-                gbc);
+        main.add(d.addSimpleBooleanSetting("bttvEmotes",
+                "Enable BetterTTV Emotes",
+                "Show BetterTTV emoticons"),
+                d.makeGbcCloser(2, 0, 3, 1, GridBagConstraints.WEST));
 
         
         gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
@@ -50,15 +48,24 @@ public class EmoteSettings extends SettingsPanel {
                 gbc);
         
         
-        final JCheckBox ffzMod = d.addSimpleBooleanSetting("ffzModIcon","Enable FFZ Mod Icon",
+        final JCheckBox ffzMod = d.addSimpleBooleanSetting("ffzModIcon",
+                "Enable FFZ Mod Icon",
                 "Show custom mod icon for some channels (only works if FFZ is enabled).");
         gbc = d.makeGbc(2, 1, 3, 1, GridBagConstraints.WEST);
         main.add(ffzMod,
                 gbc);
         
-        main.add(new JLabel("Maximum Height:"), d.makeGbc(2, 2, 1, 1, GridBagConstraints.WEST));
-        main.add(d.addSimpleLongSetting("emoteMaxHeight", 3, true), d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST));
-        main.add(new JLabel("pixels"), d.makeGbc(4, 2, 1, 1, GridBagConstraints.WEST));
+        main.add(d.addSimpleBooleanSetting("showAnimatedEmotes",
+                "Allow animated emotes",
+                "Show animated BetterTTV emoticons"),
+                d.makeGbc(2, 2, 3, 1, GridBagConstraints.WEST));
+        
+        main.add(new JLabel("Maximum Height:"),
+                d.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST));
+        main.add(d.addSimpleLongSetting("emoteMaxHeight", 3, true),
+                d.makeGbc(3, 3, 1, 1, GridBagConstraints.WEST));
+        main.add(new JLabel("pixels"),
+                d.makeGbc(4, 3, 1, 1, GridBagConstraints.WEST));
         //main.add(new JLabel("(Max height of 0 means no max height.)"), d.makeGbc(2, 3, 3, 1));
         
         main.add(new JLabel("Scale:"), d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
@@ -91,7 +98,7 @@ public class EmoteSettings extends SettingsPanel {
         });
         
         
-        JPanel ignored = addTitledPanel("Ignored Emotes", 1);
+        JPanel ignored = addTitledPanel("Ignored Emotes", 1, true);
         
         gbc = d.makeGbc(0, 0, 1, 1);
         ignored.add(d.addListSetting("ignoredEmotes", 150, 130, false), gbc);

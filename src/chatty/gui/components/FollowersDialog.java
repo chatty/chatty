@@ -294,15 +294,21 @@ public class FollowersDialog extends JDialog {
         if (currentInfo != null) {
             if (currentInfo.requestError) {
                 if (lastUpdated != -1) {
-                    loadInfo.setText(currentInfo.requestErrorDescription
-                            + " (" + DateTime.ago4compact(currentInfo.time)
-                            + " ago, updated " + DateTime.ago4compact(lastUpdated) + " ago)");
+                    loadInfo.setText(String.format("%s (%s ago, updated %s ago)",
+                            currentInfo.requestErrorDescription,
+                            DateTime.agoSingleCompact(currentInfo.time),
+                            DateTime.agoSingleCompact(lastUpdated))
+                    );
                 } else {
-                    loadInfo.setText(currentInfo.requestErrorDescription
-                            + " (" + DateTime.ago4compact(currentInfo.time) + " ago)");
+                    loadInfo.setText(String.format("%s (%s ago)",
+                            currentInfo.requestErrorDescription,
+                            DateTime.agoSingleCompact(currentInfo.time))
+                    );
                 }
             } else {
-                loadInfo.setText("Last updated "+DateTime.ago4(lastUpdated)+" ago");
+                loadInfo.setText(String.format("Last updated %s ago",
+                        DateTime.agoSingleVerbose(lastUpdated))
+                );
             }
         }
         if (loading) {
@@ -422,7 +428,7 @@ public class FollowersDialog extends JDialog {
                         writer.write(f.name);
                         if (!onlyName) {
                             writer.write("\t" + DateTime.formatFullDatetime(f.time));
-                            writer.write(" (" + DateTime.ago4(f.time) + ")");
+                            writer.write(" (" + DateTime.agoSingleVerbose(f.time) + ")");
                         }
                         writer.newLine();
                     }
@@ -483,7 +489,7 @@ public class FollowersDialog extends JDialog {
                 // In case name is cut off
                 setToolTipText(f.name);
             } else {
-                setText(DateTime.ago4(f.time));
+                setText(DateTime.agoSingleVerbose(f.time));
                 setToolTipText(DateTime.formatFullDatetime(f.time));
             }
 

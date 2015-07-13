@@ -156,7 +156,7 @@ public class RacesTable extends JTable {
         
         private String formatTime(long time) {
             if (time > 0) {
-                return DateTime.ago3(time, false);
+                return DateTime.agoClock(time, false);
             }
             return "-";
         }

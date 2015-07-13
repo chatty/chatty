@@ -92,6 +92,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_ADVANCED = "Advanced";
     private static final String PANEL_HOTKEYS = "Hotkeys";
     private static final String PANEL_COMPLETION = "Completion";
+    private static final String PANEL_CHAT = "Chat";
     
     private String currentlyShown;
     
@@ -104,6 +105,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String[] MENU = {
         PANEL_MAIN,
         PANEL_MESSAGES,
+        PANEL_CHAT,
         PANEL_EMOTES,
         PANEL_IMAGES,
         PANEL_COLORS,
@@ -199,15 +201,14 @@ public class SettingsDialog extends JDialog implements ActionListener {
         hotkeySettings = new HotkeySettings(this);
         cards.add(hotkeySettings, PANEL_HOTKEYS);
         cards.add(new CompletionSettings(this), PANEL_COMPLETION);
+        cards.add(new ChatSettings(this), PANEL_CHAT);
         
         currentlyShown = PANEL_MAIN;
         selection.addListSelectionListener(new ListSelectionListener() {
 
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    showPanel(selection.getSelectedValue());
-                }
+                showPanel(selection.getSelectedValue());
             }
         });
         
@@ -268,6 +269,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             }
         }
         stuffBasedOnPanel();
+        selection.requestFocusInWindow();
         
         setVisible(true);
     }

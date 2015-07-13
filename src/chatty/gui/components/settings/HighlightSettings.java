@@ -33,42 +33,45 @@ public class HighlightSettings extends SettingsPanel {
         GridBagConstraints gbc;
         
         gbc = d.makeGbc(0,0,1,1);
+        gbc.insets.bottom -= 3;
         gbc.anchor = GridBagConstraints.WEST;
         base.add(d.addSimpleBooleanSetting("highlightEnabled", "Enable Highlight",
                 "If enabled, shows messages that match the highlight criteria "
                 + "in another color"), gbc);
         
-        gbc = d.makeGbc(1,0,1,1);
+        Insets settingInsets = new Insets(1,14,1,4);
+        
+        gbc = d.makeGbc(0,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0,12,2,5);
+        gbc.insets = settingInsets;
         base.add(d.addSimpleBooleanSetting("highlightUsername", "Highlight "
                 + "own name",
                 "If enabled, highlights messages containing your current "
                 + "username, even if you didn't add it to the list."), gbc);
 
         gbc = d.makeGbc(1,1,1,1);
-        gbc.insets = new Insets(0,12,2,5);
+        gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
         base.add(d.addSimpleBooleanSetting("highlightNextMessages", "Highlight follow-up",
                 "If enabled, highlights messages from the same user that are written"
                         + "shortly after the last highlighted one."), gbc);
         
-        gbc = d.makeGbc(1,2,1,1);
-        gbc.insets = new Insets(0,12,2,5);
+        gbc = d.makeGbc(0,2,1,1);
+        gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
         base.add(d.addSimpleBooleanSetting("highlightOwnText", "Check own text for highlights",
                 "If enabled, allows own messages to be highlighted, otherwise "
                 + "your own messages are NEVER highlighted. Good for testing."),
                 gbc);
         
-        gbc = d.makeGbc(1,3,1,1);
-        gbc.insets = new Insets(0,12,2,5);
+        gbc = d.makeGbc(1,2,1,1);
+        gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
         base.add(d.addSimpleBooleanSetting("highlightIgnored", "Check ignored messages",
                 "If enabled, checks ignored messages as well, otherwise they are"
                         + " just ignored for highlighting."), gbc);
         
-        gbc = d.makeGbc(0,1,1,4);
+        gbc = d.makeGbc(0,5,2,4);
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("highlight", 220, 250, true);
         items.setInfo(INFO_HIGHLIGHTS);
@@ -84,16 +87,16 @@ public class HighlightSettings extends SettingsPanel {
         gbc.weighty = 1;
         base.add(items, gbc);
         
-        gbc = d.makeGbc(1,4,1,1);
-        base.add(new LinkLabel("<html><body style=\"width:120px;\">"
-                + "Add words to highlight messages. "
-                + " [help:highlight More info..]"
-                + "<br />"
-                + "<ul style='margin-left: 10px;'>"
-                + "<li style='margin-top: 3px;'>Prepend with 'cs:' to make case-sensitive.</li>"
-                + "<li style='margin-top: 3px;'>Prepend with 'w:'/'wcs:' to match words.</li>"
-                + "<li style='margin-top: 3px;'>Prepend with 'user:' to specify a username.</li>"
-                + "<li style='margin-top: 3px;'>More in the help..</li>"
-                + "</ul>", d.getLinkLabelListener()), gbc);
+//        gbc = d.makeGbc(1,4,1,1);
+//        base.add(new LinkLabel("<html><body style=\"width:120px;\">"
+//                + "Add words to highlight messages. "
+//                + " [help:highlight More info..]"
+//                + "<br />"
+//                + "<ul style='margin-left: 10px;'>"
+//                + "<li style='margin-top: 3px;'>Prepend with 'cs:' to make case-sensitive.</li>"
+//                + "<li style='margin-top: 3px;'>Prepend with 'w:'/'wcs:' to match words.</li>"
+//                + "<li style='margin-top: 3px;'>Prepend with 'user:' to specify a username.</li>"
+//                + "<li style='margin-top: 3px;'>More in the help..</li>"
+//                + "</ul>", d.getLinkLabelListener()), gbc);
     }
 }

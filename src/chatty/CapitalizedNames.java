@@ -333,7 +333,7 @@ public class CapitalizedNames {
                 return "No capitalization set for "+name;
             }
             String timeInfo = cached.time == -1 ? "set at unknown time"
-                    : "set "+DateTime.ago4(cached.time)+" ago, "+DateTime.formatFullDatetime(cached.time);
+                    : "set "+DateTime.agoSingleVerbose(cached.time)+" ago, "+DateTime.formatFullDatetime(cached.time);
             return "Capitalization for " + name + " is "+cached.capitalizedName+" ("+(cached.fixed ? "manually " : "")+timeInfo+")";
         }
     }

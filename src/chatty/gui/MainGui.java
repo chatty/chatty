@@ -45,6 +45,7 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
+import chatty.util.DateTime;
 import chatty.util.ImageCache;
 import chatty.util.MiscUtil;
 import chatty.util.Sound;
@@ -624,13 +625,29 @@ public class MainGui extends JFrame implements Runnable {
                 toggleHelp();
             }
         });
-        
+
         addMenuAction("dialog.streamchat", "Window: Open StreamChat",
                 "Open Dialog", KeyEvent.VK_O, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 openStreamChat();
+            }
+        });
+        
+        hotkeyManager.registerAction("notification.closeAll", "Close all shown/queued notifications", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                notificationManager.clearAll();
+            }
+        });
+        
+        hotkeyManager.registerAction("notification.closeAllShown", "Close all shown notifications", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                notificationManager.clearAllShown();
             }
         });
     }
@@ -762,18 +779,19 @@ public class MainGui extends JFrame implements Runnable {
         emotesDialog.setEmoteScale((int)client.settings.getLong("emoteScaleDialog"));
     }
     
+    private static final String[] menuBooleanSettings = new String[]{
+        "showJoinsParts", "ontop", "showModMessages", "attachedWindows",
+        "simpleTitle", "globalHotkeysEnabled", "mainResizable", "streamChatResizable",
+        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState"
+    };
+    
     /**
      * Initiates the Main Menu with settings
      */
     private void loadMenuSettings() {
-        loadMenuSetting("showJoinsParts");
-        loadMenuSetting("ontop");
-        loadMenuSetting("showModMessages");
-        loadMenuSetting("attachedWindows");
-        loadMenuSetting("simpleTitle");
-        loadMenuSetting("globalHotkeysEnabled");
-        loadMenuSetting("mainResizable");
-        loadMenuSetting("streamChatResizable");
+        for (String setting : menuBooleanSettings) {
+            loadMenuSetting(setting);
+        }
     }
     
     /**
@@ -1223,6 +1241,10 @@ public class MainGui extends JFrame implements Runnable {
                 livestreamerDialog.open(null, null);
             } else if (cmd.equals("configureLogin")) {
                 openTokenDialog();
+            } else if (cmd.equals("addStreamHighlight")) {
+                client.commandAddStreamHighlight(channels.getActiveChannel().getName(), null);
+            } else if (cmd.equals("openStreamHighlights")) {
+                client.commandOpenStreamHighlights(channels.getActiveChannel().getName());
             }
         }
 
@@ -1342,6 +1364,23 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.equals("closeChannel")) {
                 client.closeChannel(channels.getActiveChannel().getName());
+            }
+            else if (cmd.startsWith("closeAllTabs")) {
+                Collection<Channel> chans = null;
+                if (cmd.equals("closeAllTabsButCurrent")) {
+                    chans = channels.getTabsRelativeToCurrent(0);
+                } else if (cmd.equals("closeAllTabsToLeft")) {
+                    chans = channels.getTabsRelativeToCurrent(-1);
+                } else if (cmd.equals("closeAllTabsToRight")) {
+                    chans = channels.getTabsRelativeToCurrent(1);
+                } else if (cmd.equals("closeAllTabs")) {
+                    chans = channels.getTabs();
+                }
+                if (chans != null) {
+                    for (Channel c : chans) {
+                        client.closeChannel(c.getName());
+                    }
+                }
             }
             else if (cmd.equals("joinHostedChannel")) {
                 String chan = client.getHostedChannel(channels.getActiveChannel().getName());
@@ -2910,6 +2949,7 @@ public class MainGui extends JFrame implements Runnable {
 
             // Stream Info
             if (!channelName.isEmpty()) {
+                boolean hideCounts = !client.settings.getBoolean("titleShowViewerCount");
                 String chanNameText = channelName;
                 if (client.isWhisperAvailable()) {
                     chanNameText += " [W]";
@@ -2921,23 +2961,47 @@ public class MainGui extends JFrame implements Runnable {
                 if (!client.isUserlistLoaded(channelName)) {
                     numUsers += "*";
                 }
+                if (hideCounts) {
+                    numUsers = "";
+                }
                 
-                String chanState = client.getChannelState(channelName).getInfo();
+                String chanState = "";
+                if (client.settings.getBoolean("titleShowChannelState")) {
+                    chanState = client.getChannelState(channelName).getInfo();
+                }
                 if (!chanState.isEmpty()) {
                     chanState = " "+chanState;
                 }
-                
+
                 StreamInfo streamInfo = getStreamInfo(channel.getStreamName());
                 if (streamInfo.isValid()) {
                     if (streamInfo.getOnline()) {
-                        String numViewers = Helper.formatViewerCount(streamInfo.getViewers());
-                        title += chanNameText + " [" + numUsers + "|" + numViewers + "]";
+                        
+                        String uptime = "";
+                        if (client.settings.getBoolean("titleShowUptime")) {
+                            uptime = DateTime.agoUptimeCompact(
+                                    streamInfo.getTimeStartedWithPicnic());
+                        }
+                        String numViewers = "|"+Helper.formatViewerCount(streamInfo.getViewers());
+                        if (!client.settings.getBoolean("titleShowViewerCount")) {
+                            numViewers = "";
+                        } else if (!uptime.isEmpty()) {
+                            uptime = "|"+uptime;
+                        }
+                        title += chanNameText + " [" + numUsers + numViewers + uptime + "]";
                     } else {
-                        title += chanNameText + " [" + numUsers + "]";
+                        title += chanNameText;
+                        if (!hideCounts) {
+                            title += " [" + numUsers + "]";
+                        }
                     }
                     title += chanState+" - " + streamInfo.getFullStatus();
                 } else {
-                    title += chanNameText + " [" + numUsers + "]"+chanState;
+                    title += chanNameText;
+                    if (!hideCounts) {
+                        title += " [" + numUsers + "]";
+                    }
+                    title += chanState;
                 }
             } else if (client.isWhisperAvailable()) {
                 title += " [W]";
@@ -2947,23 +3011,7 @@ public class MainGui extends JFrame implements Runnable {
             return title;
         }
     }
-    
-//    private class ViewerStats {
-//        private long lastTime;
-//        private static final long DELAY = 10*60*1000;
-//        
-//        public void makeViewerStats(String channel) {
-//            long timePassed = System.currentTimeMillis() - lastTime;
-//            if (timePassed > DELAY) {
-//                StreamInfo info = getStreamInfo();
-//                lastTime = System.currentTimeMillis();
-//            }
-//        }
-//    }
 
-    
-
-    
     public void openConnectDialog(final String channelPreset) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -3484,6 +3532,9 @@ public class MainGui extends JFrame implements Runnable {
                     setResizable(bool);
                 } else if (setting.equals("streamChatResizable")) {
                     streamChat.setResizable(bool);
+                }
+                if (setting.startsWith("title")) {
+                    updateState(true);
                 }
                 loadMenuSetting(setting);
             }

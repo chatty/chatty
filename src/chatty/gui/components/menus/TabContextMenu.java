@@ -15,8 +15,16 @@ public class TabContextMenu extends ContextMenu {
     public TabContextMenu(ContextMenuListener listener) {
         this.listener = listener;
         
-        addItem("popoutChannel", "Popout");
+        String subMenu = "Close All";
+        
+        addItem("popoutChannel", "Popout");addSeparator();
         addItem("closeChannel", "Close");
+        
+        addItem("closeAllTabsButCurrent", "Except current", subMenu);
+        addItem("closeAllTabsToLeft", "To left of current", subMenu);
+        addItem("closeAllTabsToRight", "To right of current", subMenu);
+        addSeparator(subMenu);
+        addItem("closeAllTabs", "All", subMenu);
     }
     
     @Override

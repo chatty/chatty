@@ -31,7 +31,8 @@ public class StyleManager implements StyleServer {
             "lineSpacing", "bufferSize", "actionColored","combineBanMessages",
             "timestampTimezone", "autoScrollTimeout", "searchResultColor2",
             "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
-            "filterCombiningCharacters", "pauseChatOnMouseMove"
+            "filterCombiningCharacters", "pauseChatOnMouseMove",
+            "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -119,6 +120,8 @@ public class StyleManager implements StyleServer {
         other.addAttribute(Setting.BOT_BADGE_ENABLED, settings.getBoolean("botBadgeEnabled"));
         other.addAttribute(Setting.FILTER_COMBINING_CHARACTERS, settings.getLong("filterCombiningCharacters"));
         other.addAttribute(Setting.PAUSE_ON_MOUSEMOVE, settings.getBoolean("pauseChatOnMouseMove"));
+        other.addAttribute(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, settings.getBoolean("pauseChatOnMouseMoveCtrlRequired"));
+        other.addAttribute(Setting.EMOTICONS_SHOW_ANIMATED, settings.getBoolean("showAnimatedEmotes"));
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
         long deletedMessagesModeNumeric = 0;

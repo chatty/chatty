@@ -5,8 +5,9 @@ import chatty.Helper;
 import chatty.Helper.IntegerPair;
 import chatty.gui.components.Channel;
 import chatty.gui.components.ChannelDialog;
-import chatty.gui.components.Tabs;
+import chatty.gui.components.tabs.Tabs;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.menus.TabContextMenu;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -72,7 +73,8 @@ public class Channels {
     public Channels(MainGui gui, StyleManager styleManager,
             ContextMenuListener contextMenuListener) {
         windowListener = new MyWindowListener();
-        tabs = new Tabs(contextMenuListener);
+        tabs = new Tabs();
+        tabs.setPopupMenu(new TabContextMenu(contextMenuListener));
         this.styleManager = styleManager;
         this.contextMenuListener = contextMenuListener;
         this.gui = gui;
@@ -558,6 +560,30 @@ public class Channels {
         return result;
     }
     
+    public Collection<Channel> getTabs() {
+        List<Channel> result = new ArrayList<>();
+        for (Component comp : tabs.getAllComponents()) {
+            if (channels.containsValue(comp)) {
+                result.add((Channel)comp);
+            }
+        }
+        return result;
+    }
+    
+    public Collection<Channel> getTabsRelativeToCurrent(int direction) {
+        return getTabsRelativeTo(getActiveTab(), direction);
+    }
+    
+    public Collection<Channel> getTabsRelativeTo(Channel chan, int direction) {
+        List<Channel> result = new ArrayList<>();
+        for (Component comp : tabs.getComponents(chan, direction)) {
+            if (channels.containsValue(comp)) {
+                result.add((Channel)comp);
+            }
+        }
+        return result;
+    }
+    
     public void setInitialFocus() {
         getActiveChannel().requestFocusInWindow();
     }
@@ -602,9 +628,9 @@ public class Channels {
     }
     
     public void setTabOrder(String order) {
-        int setting = Tabs.ADD_ORDER;
+        Tabs.TabOrder setting = Tabs.TabOrder.INSERTION;
         switch (order) {
-            case "alphabetical": setting = Tabs.ALPHABETIC_ORDER; break;
+            case "alphabetical": setting = Tabs.TabOrder.ALPHABETIC; break;
         }
         tabs.setOrder(setting);
     }

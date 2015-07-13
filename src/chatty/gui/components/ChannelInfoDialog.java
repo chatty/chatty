@@ -5,6 +5,8 @@ import chatty.gui.LinkListener;
 import chatty.gui.UrlOpener;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
+import static chatty.util.DateTime.H;
+import static chatty.util.DateTime.S;
 import chatty.util.api.StreamInfo;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -203,11 +205,15 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     }
     
     private static String formatTime(long time) {
-        return DateTime.ago5(time);
+        return formatDuration(System.currentTimeMillis() - time);
     }
     
     private static String formatTime(long time, long time2) {
-        return DateTime.duration3((time2 - time) / 1000);
+        return formatDuration(time2 - time);
+    }
+    
+    private static String formatDuration(long time) {
+        return DateTime.duration(time, H, 2, S);
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {

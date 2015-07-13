@@ -179,7 +179,7 @@ public class SRL {
             long errorAgo = System.currentTimeMillis() - lastError;
             if (lastReceived > 0) {
                 infoText += "Last updated: "
-                        + DateTime.duration(ago, true) + " ago";
+                        + DateTime.duration(ago, 1, 0) + " ago";
             }
             if (isAutoUpdating()) {
                 infoText += " (auto updating)";
@@ -190,7 +190,9 @@ public class SRL {
                 }
             }
             if (lastError != -1) {
-                infoText += " [" + DateTime.duration(errorAgo, true) + " ago: " + errorMessage + "]";
+                infoText += String.format(" [%s ago: %s]",
+                        DateTime.duration(errorAgo, 2, 0),
+                        errorMessage);
             }
             racesDialog.setStatusText(infoText);
         }

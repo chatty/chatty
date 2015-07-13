@@ -15,7 +15,7 @@ public class Logging {
     public static final Level USERINFO = new UserinfoLevel();
     
     private static final String LOG_FILE = Chatty.getUserDataDirectory()+"debug%g.log";
-    private static final String LOG_FILE2 = Chatty.getUserDataDirectory()+"debug.log";
+    private static final String LOG_FILE2 = Chatty.getUserDataDirectory()+"debug_session.log";
     private static final String LOG_FILE_IRC = Chatty.getUserDataDirectory()+"debug_irc%g.log";
     
     /**

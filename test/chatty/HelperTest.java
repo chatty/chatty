@@ -53,11 +53,11 @@ public class HelperTest {
     
     @Test
     public void checkChannelTest() {
-        assertEquals(Helper.checkChannel("abc"), "#abc");
-        assertNull(Helper.checkChannel(""));
-        assertNull(Helper.checkChannel("#"));
-        assertNull(Helper.checkChannel(" 1"));
-        assertEquals(Helper.checkChannel("#abc"), "#abc");
+        assertEquals(Helper.toValidChannel("abc"), "#abc");
+        assertNull(Helper.toValidChannel(""));
+        assertNull(Helper.toValidChannel("#"));
+        assertNull(Helper.toValidChannel(" 1"));
+        assertEquals(Helper.toValidChannel("#abc"), "#abc");
     }
     
     @Test

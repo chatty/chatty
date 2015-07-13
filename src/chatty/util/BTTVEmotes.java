@@ -201,6 +201,10 @@ public class BTTVEmotes {
             String code = (String)o.get("code");
             String info = (String)o.get("channel");
             String id = (String)o.get("id");
+            String imageType = null;
+            if (o.get("imageType") instanceof String) {
+                imageType = (String)o.get("imageType");
+            }
             
             if (code == null || code.isEmpty() || id == null || id.isEmpty()) {
                 return null;
@@ -213,6 +217,9 @@ public class BTTVEmotes {
             builder.setStringId(id);
             if (channelRestriction != null) {
                 builder.addStreamRestriction(channelRestriction);
+            }
+            if (imageType != null && imageType.equals("gif")) {
+                builder.setAnimated(true);
             }
             
             // Adds restrictions to emote (if present)

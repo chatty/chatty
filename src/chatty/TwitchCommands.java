@@ -317,7 +317,7 @@ public class TwitchCommands {
                 sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..");
             }
             else {
-                String formatted = DateTime.duration(time, true, false);
+                String formatted = DateTime.duration(time*1000, 0, 2, 0);
                 String onlySeconds = time+"s";
                 String timeString = formatted.equals(onlySeconds)
                         ? onlySeconds : onlySeconds+"/"+formatted;

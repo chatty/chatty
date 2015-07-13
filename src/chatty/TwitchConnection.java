@@ -377,6 +377,7 @@ public class TwitchConnection {
         if (cancelReconnectionTimer()) {
             listener.onGlobalInfo("Canceled reconnecting");
             irc.setState(Irc.STATE_OFFLINE);
+            irc.connectionAttempts = 0;
         }
         boolean success = irc.disconnect();
         irc2.disconnect();
@@ -692,7 +693,7 @@ public class TwitchConnection {
 
         @Override
         void onRegistered() {
-            connectionAttempts = 0;
+            connectionAttempts = 1;
 
             if (this != irc) {
                 return;
@@ -720,6 +721,8 @@ public class TwitchConnection {
 
                 if (reason != Irc.REQUESTED_DISCONNECT) {
                     startReconnectTimer(reason);
+                } else {
+                    connectionAttempts = 0;
                 }
                 listener.onDisconnect(reason, reasonMessage);
             } else if (this == userlistConnection) {
@@ -729,7 +732,7 @@ public class TwitchConnection {
         
         private void startReconnectTimer(int reason) {
             if (reconnectionTimer == null) {
-                if (connectionAttempts >= maxReconnectionAttempts) {
+                if (connectionAttempts > maxReconnectionAttempts) {
                     listener.onGlobalInfo("Gave up reconnecting. :(");
                 } else {
                     int delay = getReconnectionDelay(connectionAttempts);
