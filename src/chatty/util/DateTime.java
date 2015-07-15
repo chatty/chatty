@@ -212,7 +212,9 @@ public class DateTime {
                 timeName = timeName.substring(0, timeName.length() - 1);
             }
             if (lastOne && lastOneExact) {
-                b.append(String.format(Locale.ENGLISH, "%.1f", times[i]));
+                // Substract for rounding down with one digit precision
+                double exact = times[i] - 0.05;
+                b.append(String.format(Locale.ENGLISH, "%.1f", exact));
             } else {
                 b.append(time);
             }
@@ -251,7 +253,7 @@ public class DateTime {
         //System.out.println(agoSingleVerbose(System.currentTimeMillis() ));
         //System.out.println(ago(System.currentTimeMillis() - 1000*60*60*25));
 //        System.out.println(duration(1000*(HOUR*2), 0, 0, 0, 1, Formatting.LAST_ONE_EXACT));
-        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*54)));
+        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*110)));
         int a = 1 << 4;
         int b = 1 << 5;
         int c = 1 << 1;

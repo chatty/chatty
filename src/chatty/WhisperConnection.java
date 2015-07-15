@@ -57,6 +57,23 @@ public class WhisperConnection {
     }
     
     /**
+     * Check whether the whisper feature is enabled and configured correctly.
+     * 
+     * @return true if enabled and configured correctly, false otherwise
+     */
+    public boolean isEnabled() {
+        if (!settings.getBoolean("whisperEnabled")) {
+            return false;
+        }
+        String server = settings.getString("groupChatServer");
+        String port = settings.getString("groupChatPort");
+        if (server.isEmpty() || port.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+    
+    /**
      * Connect to the Group Chat Server (specified in the settings) using the
      * given name and password. If already connected, this will simply store
      * the given name/password and not connect. It may use the stored data to
@@ -77,6 +94,13 @@ public class WhisperConnection {
         }
     }
     
+    /**
+     * The whisper command in the form: {@code /w <target> <message>}
+     * 
+     * @param parameter The target and message in a String
+     * @param onlyReply Whether to only send a whisper to people you already
+     * have whispered with this session
+     */
     public void whisperCommand(String parameter, boolean onlyReply) {
         if (parameter == null) {
             listener.info("Whisper: Invalid parameters.");
@@ -90,6 +114,19 @@ public class WhisperConnection {
         }
     }
     
+    /**
+     * Whisper entered directly into the channel input box of a whisper tab, so
+     * get the target of the whisper.
+     * 
+     * If a whisper is entered in the combined whisper channel, then the message
+     * has to be in the format {@code <target> <message>}. In case the user only
+     * types the message, whispers entered this way will only be send to users
+     * that the local user has already whispered with this session.
+     * 
+     * @param channel The channel
+     * @param message The message entered, which may be the {@code <message>} or
+     * {@code <target> <message>} depending on the channel
+     */
     public void whisperChannel(String channel, String message) {
         if (channel.equals(WHISPER_CHANNEL)) {
             whisperCommand(message, true);
@@ -101,7 +138,19 @@ public class WhisperConnection {
         }
     }
     
+    /**
+     * Send a whisper.
+     * 
+     * @param nick The target of the whisper
+     * @param message The message
+     * @param onlyReply If true, it will only send a whisper to people that have
+     * already whispered with you this session
+     */
     public void whisper(String nick, String message, boolean onlyReply) {
+        if (!isEnabled()) {
+            listener.info("Whisper feature not enabled (<Main - Settings - Advanced>)");
+            return;
+        }
         if (onlyReply && c.getExistingUser(WHISPER_CHANNEL, nick) == null) {
             listener.info("Didn't receive any whisper from '"+nick+"', use /w command");
             return;

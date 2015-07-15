@@ -686,6 +686,7 @@ public class TwitchConnection {
                 if (settings.getBoolean("membershipEnabled")) {
                     send("CAP REQ :twitch.tv/membership");
                 }
+                send("CAP END");
                 //send("TWITCHCLIENT 4");
             }
             userlistReceived.clear();

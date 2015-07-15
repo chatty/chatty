@@ -16,24 +16,30 @@
                     <li><a href="#commands">Commands</a></li>
                     <li><a href="#login">Login data</a></li>
                 </ul>
-                
-                <strong>Chat features</strong>
+
+                <strong>Chat basics</strong>
                 <ul class="menu">
                     <li><a href="#symbols">Symbols used in chat</a></li>
+                    <li><a href="#favorites">Favorites / History</a></li>
+                    <li><a href="#whisper">Whisper Feature</a></li>
+                </ul>
+                
+                <strong>Chat moderation / utility</strong>
+                <ul class="menu">
                     <li><a href="#nickCompletion">TAB Completion</a></li>
                     <li><a href="#inputHistory">Input History</a></li>
-                    <li><a href="#channels">Joining more than one channel</a></li>
-                    <li><a href="#favorites">Favorites / History</a></li>
+                    <li><a href="#userselection">User Selection Mode</a></li>
+                    <li><a href="#emoticons">Emoticons/Emote Dialog</a></li>
+                    <li><a href="#pausechat">Pause Chat / One-click moderation</a></li>
+                </ul>
+                
+                <strong>Chat customization</strong>
+                <ul class="menu">
                     <li><a href="#highlight">Highlight</a></li>
                     <li><a href="#ignore">Ignore</a></li>
                     <li><a href="#userColors">User Colors</a></li>
-                    <li><a href="#emoticons">Emoticons/Emote Dialog</a></li>
                     <li><a href="#customemotes">Custom Emotes</a></li>
-                    <li><a href="help-addressbook.html">Addressbook</a></li>
-                    <li><a href="#userselection">User Selection Mode</a></li>
-                    <li><a href="#streamchat">Stream Chat</a></li>
                     <li><a href="#customNames">Custom Usernames</a></li>
-                    <li><a href="#whisper">Whisper Feature</a></li>
                 </ul>
                 
                 <strong>Stream features</strong>
@@ -45,6 +51,7 @@
                     <li><a href="help-srl.html">SpeedrunsLive (SRL)</a></li>
                     <li><a href="#followers">Followers/Subscribers List</a></li>
                     <li><a href="#streamhighlights">Stream Highlights</a></li>
+                    <li><a href="#streamchat">Stream Chat</a></li>
                 </ul>
             </td>
             <td valign="top">
@@ -54,6 +61,7 @@
                     <li><a href="help-setting_commands.html">Setting commands</a></li>
                     <li><a href="#settingFiles">Setting files</a></li>
                     <li><a href="#launch">Launch options</a></li>
+                    <li><a href="help-addressbook.html">Addressbook</a></li>
                 </ul>
                 
                 <strong>Miscallaneous</strong>
@@ -689,7 +697,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     jump to the first message of the next user above it.</p>
     
     <p>In addition to the currently selected message, it will also highlight all
-        other messages by the same user. You can also hold <kbd>Ctrl</kbd> and
+        other messages by the same user. You can also hold <kbd>AltGr</kbd> and
     click on a username in chat to highlight all that users messages (and enter
     User Selection Mode).</p>
     
@@ -863,6 +871,45 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     may be a temporary problem, you may have entered the server/port wrong or
     the feature is not working as it is implemented in Chatty anymore (in which
     case you should disable the feature).</p>
+    
+    <h2>
+        <a name="pausechat">Pause Chat / One-click moderation</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If enabled in the settings under <code>Main - Settings - Chat</code> you
+        can stop the chat from scrolling down while you move the mouse over chat.
+        This can prevent misclicks when the chat is moving. The chat will resume
+        scrolling down as soon as you stop moving the mouse or move it out of
+        the chat area.</p>
+    
+    <p>Optionally, you can set it to require <kbd>Ctrl</kbd> being pressed in
+        conjunction with moving the mouse to initiate pausing. You can let go of
+        <kbd>Ctrl</kbd> as soon as pausing is started and it will stay paused as
+        long as you move the mouse inside the chat area.</p>
+    
+    <p>This only works when the chat area is already filled, so the scrollbar is
+        actually used. In addition, there may be instances where something you
+        want to click will move anyway, for example if a message is deleted due
+        to a timeout/ban, causing other messages to move.</p>
+    
+    <h3>Scroll up to stop scrolling</h3>
+    <p>Another way of preventing scrolling down is scrolling up. Once you are
+        manually scrolled up, chat will stop scrolling down automatically.
+        However messages may still be removed from the buffer causing the chat
+        to move despite it not actively scrolling down. It will stop removing
+        messages to get moving to a minimum as long as you keep holding
+        <kbd>Ctrl</kbd>.</p>
+    
+    <p>A certain time after not moving the scroll position, it will scroll down
+        automatically (unless <kbd>Ctrl</kbd> is still being pressed).</p>
+    
+    <h3>One-click moderation</h3>
+    <p>Holding <kbd>Ctrl</kbd> and clicking on a user in chat can execute a ban
+        or timeout on that user. Enable this feature and define what it does in
+        the settings (<code>Main - Settings - Chat</code>).</p>
+    
+    <p>It is recommended to enable the pause chat feature if you are using this,
+        or else misclicks could be very common.</p>
     
     <h2>
         <a name="channelinfo">Channel Info / History</a>

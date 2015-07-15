@@ -28,15 +28,17 @@ public class SettingsManager {
     private final String[] debugSettings = {
         "server",
         "port",
-        "ontop",
+        "serverDefault",
+        "portDefault",
+        "membershipEnabled",
+        "whisperEnabled",
+        "groupChatServer",
+        "groupChatPort",
+        "imageCache",
         "dontSaveSettings",
         "usePassword",
-        "ignoreJoinsParts",
         "debugLogIrc",
         "showJoinsParts",
-        "showBanMessages",
-        "emoticonsEnabled",
-        "showBanMessages",
         "saveChannelHistory",
         "historyClear",
         "autoScroll",
@@ -227,7 +229,7 @@ public class SettingsManager {
         settings.addBoolean("channelsWarning", true);
         settings.addBoolean("autoScroll", true);
         settings.addLong("autoScrollTimeout", 30);
-        settings.addBoolean("pauseChatOnMouseMove", true);
+        settings.addBoolean("pauseChatOnMouseMove", false);
         settings.addBoolean("pauseChatOnMouseMoveCtrlRequired", false);
         settings.addString("commandOnCtrlClick", "");
         settings.addLong("versionLastChecked", 0);

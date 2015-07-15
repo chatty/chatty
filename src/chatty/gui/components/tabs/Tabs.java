@@ -21,7 +21,20 @@ import javax.swing.event.ChangeListener;
 public class Tabs extends JPanel {
     
     public enum TabOrder {
-        INSERTION, ALPHABETIC
+        /**
+         * Inserts added tabs at the end.
+         */
+        INSERTION,
+        
+        /**
+         * Inserts new tabs in alphabetic order based on the name of the added
+         * Component. If tabs have been reordered manually, then tabs are
+         * inserted before the first tab whose name would be greater than the
+         * new one.
+         * 
+         * <p>Ordering is done ignoring case.</p>
+         */
+        ALPHABETIC
     }
     
     private final JTabbedPane tabs = new DraggableTabbedPane();
@@ -253,6 +266,17 @@ public class Tabs extends JPanel {
         this.order = order;
     }
     
+    /**
+     * Get all added components relative to the given Component, in a certain
+     * direction. If the given Component is not a tab, then an empty list is
+     * returned.
+     * 
+     * @param c The Component used as the center
+     * @param direction -1 for tabs to the left, 1 for tabs to the right and 0
+     * for tabs in both directions
+     * @return List of components in the given direction, except the given
+     * center one, or empty if no components are found
+     */
     public Collection<Component> getComponents(Component c, int direction) {
         List<Component> result = new ArrayList<>();
         int index = tabs.indexOfComponent(c);

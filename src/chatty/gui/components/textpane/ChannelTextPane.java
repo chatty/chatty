@@ -1925,7 +1925,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * otherwise
          */
         private boolean scrolledUpTimeout() {
-            if (fixedChat) {
+            if (fixedChat || pauseKeyPressed) {
                 return false;
             }
             if (!styles.autoScroll()) {
