@@ -42,7 +42,7 @@ public class WindowSettings extends SettingsPanel {
         
         other.add(d.addSimpleBooleanSetting("chatScrollbarAlways", "Always show chat scrollbar",
                 "Always show scrollbar in chat window, even if no scrolling is necessary."),
-                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 0, 3, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("minimizeToTray", "Minimize to tray",
                 "When minimizing Chatty, it will be hidden to the tray icon."),
@@ -50,20 +50,28 @@ public class WindowSettings extends SettingsPanel {
         
         other.add(d.addSimpleBooleanSetting("closeToTray", "Close to tray",
                 "When closing the window, Chatty will not exit but instead be minimized to the tray icon."),
-                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
         
         other.add(new JLabel("Tab Order:"), d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
         other.add(
                 d.addComboStringSetting("tabOrder", 1, false, new String[]{"normal", "alphabetical"}),
-                d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST)
+                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST)
         );
+        
+        other.add(d.addSimpleBooleanSetting("tabsMwheelScrolling",
+                "Scroll through tabs with mousewheel",
+                "Scrolling over the tabs changes between them"),
+                d.makeGbc(0, 3, 4, 1, GridBagConstraints.WEST));
 
         other.add(new JLabel("Default Userlist Width:"),
-                d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
         other.add(d.addSimpleLongSetting("userlistWidth", 3, true),
-                d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
         
-        
+        other.add(new JLabel("Min. Width:"),
+                d.makeGbc(2, 4, 1, 1, GridBagConstraints.WEST));
+        other.add(d.addSimpleLongSetting("userlistMinWidth", 3, true),
+                d.makeGbc(3, 4, 1, 1, GridBagConstraints.WEST));
         
         
         JPanel popout = addTitledPanel("Popout", 2);

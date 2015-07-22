@@ -23,7 +23,7 @@ public class FrankerFaceZTest {
     public void testParseEmote() throws Exception {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(loadJSON("FFZ_emote_regular"));
-        Emoticon emote = FrankerFaceZ.parseEmote(obj, null, null);
+        Emoticon emote = FrankerFaceZParsing.parseEmote(obj, null, null, null);
         assertNotNull(emote);
         assertEquals(emote.code, "joshWASTED");
         assertEquals(emote.creator, "Joshimuz");
@@ -31,7 +31,7 @@ public class FrankerFaceZTest {
         assertEquals(emote.getHeight(), 16);
         
         obj = (JSONObject) parser.parse(loadJSON("FFZ_emote_no_height"));
-        emote = FrankerFaceZ.parseEmote(obj, null, null);
+        emote = FrankerFaceZParsing.parseEmote(obj, null, null, null);
         assertNotNull(emote);
         assertEquals(emote.code, "joshWASTED");
         assertEquals(emote.creator, "Joshimuz");
@@ -44,7 +44,7 @@ public class FrankerFaceZTest {
     private void testParseEmoteError(String fileName) throws Exception {
         JSONParser parser = new JSONParser();
         JSONObject obj = (JSONObject) parser.parse(loadJSON(fileName));
-        Emoticon emote = FrankerFaceZ.parseEmote(obj, null, null);
+        Emoticon emote = FrankerFaceZParsing.parseEmote(obj, null, null, null);
         assertNull(emote);
     }
     

@@ -4,6 +4,8 @@ package chatty.gui.components.tabs;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ public class Tabs extends JPanel {
     private Component firstComp;
     
     private boolean mouseWheelScrolling = true;
+    private boolean mouseWheelScrollingAnywhere = false;
     
     private TabOrder order = TabOrder.INSERTION;
     
@@ -52,10 +55,15 @@ public class Tabs extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 if (mouseWheelScrolling) {
-                    if (e.getWheelRotation() < 0) {
-                        setSelectedPrevious();
-                    } else if (e.getWheelRotation() > 0) {
-                        setSelectedNext();
+                    // Only scroll if actually on tabs area
+                    int index = tabs.indexAtLocation(e.getX(), e.getY());
+                    if (mouseWheelScrollingAnywhere || index != -1
+                            || isNearLastTab(e.getPoint())) {
+                        if (e.getWheelRotation() < 0) {
+                            setSelectedPrevious();
+                        } else if (e.getWheelRotation() > 0) {
+                            setSelectedNext();
+                        }
                     }
                 }
             }
@@ -63,8 +71,18 @@ public class Tabs extends JPanel {
         //tabs.setTabPlacement(JTabbedPane.LEFT);
     }
     
+    private boolean isNearLastTab(Point p) {
+        Rectangle bounds = tabs.getBoundsAt(tabs.getTabCount() - 1);
+        bounds.width += 99999;
+        return bounds.contains(p);
+    }
+    
     public void setMouseWheelScrollingEnabled(boolean enabled) {
         mouseWheelScrolling = enabled;
+    }
+    
+    public void setMouseWheelScrollingAnywhereEnabled(boolean enabled) {
+        mouseWheelScrollingAnywhere = enabled;
     }
     
     public void setPopupMenu(JPopupMenu menu) {

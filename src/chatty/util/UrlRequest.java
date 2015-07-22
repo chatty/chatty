@@ -69,7 +69,7 @@ public abstract class UrlRequest implements Runnable {
         LOGGER.info(label+"Request: "+url);
         getUrl(url);
         if (result != null) {
-            LOGGER.info(label+"Request Response (" + responseCode + ", " + result.length()
+            LOGGER.info(label+"Response (" + responseCode + ", " + result.length()
                     + (encoding != null ? ", " + encoding : "") + "): " + url);
         }
         requestResult(result, responseCode);

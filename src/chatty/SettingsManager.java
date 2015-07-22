@@ -177,6 +177,8 @@ public class SettingsManager {
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addString("tabOrder", "normal");
+        settings.addBoolean("tabsMwheelScrolling", false);
+        settings.addBoolean("tabsMwheelScrollingAnywhere", false);
         settings.addBoolean("actionColored", false);
         
         settings.addBoolean("customUsercolors", false);
@@ -267,6 +269,7 @@ public class SettingsManager {
         settings.addBoolean("titleShowChannelState", true);
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
+        settings.addLong("userlistMinWidth", 120);
         
         // Highlight
         settings.addList("highlight",new ArrayList(), Setting.STRING);

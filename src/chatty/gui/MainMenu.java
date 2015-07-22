@@ -163,6 +163,12 @@ public class MainMenu extends JMenuBar {
             addItem(extra,"unhandledException", "Unhandled Exception");
         }
         addItem(extra,"debug","Debug window");
+        
+        // Maybe add own submenu later when more functions are available
+//        extra.addSeparator();
+//        JMenu speedruncom = new JMenu("Speedrun.com");
+//        addItem(speedruncom, "srcOpen", "Open Game Website");
+//        extra.add(speedruncom);
 
         // Help
         addItem(help,"website","Website");

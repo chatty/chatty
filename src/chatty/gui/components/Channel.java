@@ -58,11 +58,12 @@ public class Channel extends JPanel {
     
     private boolean userlistEnabled = true;
     private int previousUserlistWidth;
+    private int userlistMinWidth;
     
     private String name;
 
     public Channel(String name, Type type, MainGui main, StyleManager styleManager,
-            ContextMenuListener contextMenuListener, final int userlistSize) {
+            ContextMenuListener contextMenuListener) {
         this.setLayout(new BorderLayout());
         this.styleManager = styleManager;
         this.name = name;
@@ -94,7 +95,6 @@ public class Channel extends JPanel {
         // User list
         users = new UserList(contextMenuListener, main.getUserListener());
         userlist = new JScrollPane(users);
-        setUserlistWidth(userlistSize);
         
         
         // Split Pane
@@ -424,9 +424,10 @@ public class Channel extends JPanel {
         }
     }
     
-    public final void setUserlistWidth(int width) {
+    public final void setUserlistWidth(int width, int minWidth) {
         userlist.setPreferredSize(new Dimension(width, 10));
-        userlist.setMinimumSize(new Dimension(0, 0));
+        userlist.setMinimumSize(new Dimension(minWidth, 0));
+        userlistMinWidth = minWidth;
     }
     
     /**
@@ -466,7 +467,7 @@ public class Channel extends JPanel {
         if (enable) {
             userlist.setVisible(true);
             mainPane.setDividerSize(DIVIDER_SIZE);
-            setUserlistWidth(previousUserlistWidth);
+            setUserlistWidth(previousUserlistWidth, userlistMinWidth);
             setTextPreferredSizeTemporarily();
             mainPane.setDividerLocation(-1);
         } else {

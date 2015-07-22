@@ -23,6 +23,7 @@ import chatty.util.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
+import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
@@ -30,6 +31,7 @@ import chatty.util.TwitchEmotes;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.Webserver;
 import chatty.util.api.EmoticonSizeCache;
+import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
@@ -101,6 +103,8 @@ public class TwitchClient {
     
     public final SpeedrunsLive speedrunsLive;
     
+    public final Speedruncom speedruncom;
+    
     public final StatusHistory statusHistory;
     
     public final StreamStatusWriter streamStatusWriter;
@@ -164,6 +168,7 @@ public class TwitchClient {
         twitchemotes = new TwitchEmotes(new TwitchemotesListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener());
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener());
+        frankerFaceZ.autoUpdateFeatureFridayEmotes();
 
         // Settings
         settingsManager = new SettingsManager(settings);
@@ -212,6 +217,7 @@ public class TwitchClient {
         testUser.setAddressbook(addressbook);
         
         speedrunsLive = new SpeedrunsLive();
+        speedruncom = new Speedruncom(api);
         
         statusHistory = new StatusHistory(settings);
         settings.addSettingsListener(statusHistory);
@@ -318,7 +324,7 @@ public class TwitchClient {
             
             String[] chans = new String[]{"europeanspeedsterassembly","esamarathon2","heinki","joshimuz","lotsofs","test","a","b","c"};
             for (String chan : chans) {
-                g.printLine(chan, "test");
+                //g.printLine(chan, "test");
             }
         }
     }
@@ -1687,8 +1693,8 @@ public class TwitchClient {
     private class EmoticonsListener implements FrankerFaceZListener {
 
         @Override
-        public void channelEmoticonsReceived(Set<Emoticon> emotes) {
-            g.addEmoticons(emotes);
+        public void channelEmoticonsReceived(EmoticonUpdate emotes) {
+            g.updateEmoticons(emotes);
             if (refreshRequests.contains("ffz")) {
                 g.printLine("FFZ emotes updated.");
                 refreshRequests.remove("ffz");

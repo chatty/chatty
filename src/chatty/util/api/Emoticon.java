@@ -54,6 +54,10 @@ public class Emoticon {
         TWITCH, FFZ, BTTV, CUSTOM
     }
     
+    public static enum SubType {
+        FEATURE_FRIDAY
+    }
+    
     private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");
     
     /**
@@ -92,6 +96,7 @@ public class Emoticon {
     private static final int MAX_SCALED_HEIGHT = 150;
     
     public final Type type;
+    public final SubType subType;
     public final String code;
     public final int emoteSet;
     private final Set<String> streamRestrictions;
@@ -125,6 +130,7 @@ public class Emoticon {
         private final String search;
         private final String url;
         
+        private SubType subtype;
         private String urlX2;
         private int width = -1;
         private int height = -1;
@@ -202,6 +208,11 @@ public class Emoticon {
         
         public Builder setAnimated(boolean isAnimated) {
             this.isAnimated = isAnimated;
+            return this;
+        }
+        
+        public Builder setSubType(SubType subtype) {
+            this.subtype = subtype;
             return this;
         }
         
@@ -303,6 +314,7 @@ public class Emoticon {
         this.creator = builder.creator;
         this.info = builder.info;
         this.isAnimated = builder.isAnimated;
+        this.subType = builder.subtype;
     }
     
     private void createMatcher() {
@@ -352,9 +364,9 @@ public class Emoticon {
     /**
      * The name of the stream associated with this emoticon. For Twitch emotes
      * this will be the name of the stream the subemote is from. For FFZ emotes
-     * the name of the stream the emote is usable in. Used for display purposes,
-     * so it isn't necessarily lowercase.
-     * 
+     * the name of the stream the emote is from for Feature Friday. Used for
+     * display purposes, so it isn't necessarily lowercase.
+     *
      * @return The name of the stream, or null if none is set
      * @see hasStreamSet()
      */
@@ -378,8 +390,9 @@ public class Emoticon {
     
     /**
      * Sets the name of the stream associated with this emote. This is only for
-     * display/joining the channel.
-     * 
+     * display/joining the channel (e.g. showing a subemenu with options to join
+     * etc.).
+     *
      * @param stream The name of the stream
      * @see getStream()
      */

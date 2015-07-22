@@ -739,9 +739,19 @@ public class EmotesDialog extends JDialog {
         protected void updateEmotes() {
             reset();
             Set<Emoticon> ffz = Emoticons.filterByType(emoteManager.getOtherGlobalEmotes(), Emoticon.Type.FFZ);
+            Set<Emoticon> ffzRegular = new HashSet<>();
+            Set<Emoticon> ffzFeatured = new HashSet<>();
+            for (Emoticon emote : ffz) {
+                if (emote.subType == Emoticon.SubType.FEATURE_FRIDAY) {
+                    ffzFeatured.add(emote);
+                } else {
+                    ffzRegular.add(emote);
+                }
+            }
             Set<Emoticon> bttv = Emoticons.filterByType(emoteManager.getOtherGlobalEmotes(), Emoticon.Type.BTTV);
 
-            addEmotes(ffz, "Global FFZ Emotes");
+            addEmotes(ffzRegular, "Global FFZ Emotes");
+            addEmotes(ffzFeatured, "Global FFZ Emotes [Feature Friday]");
             addEmotes(bttv, "Global BTTV Emotes");
             
             relayout();
@@ -772,8 +782,15 @@ public class EmotesDialog extends JDialog {
             panel.setLayout(new GridBagLayout());
             
             addScaledEmote(emote, panel, 1, "100%");
-            addScaledEmote(emote, panel, (float)1.5, "150%");
+            if (emote.getWidth()*3+180 < EmotesDialog.this.getWidth()) {
+                /**
+                 * Don't show middle one if emote is too wide (this won't be too
+                 * exact, but should work well enough in this case).
+                 */
+                addScaledEmote(emote, panel, (float)1.5, "150%");
+            }
             addScaledEmote(emote, panel, 2, "200%");
+            
             
             JPanel panel2 = new JPanel();
             panel2.setLayout(new GridBagLayout());

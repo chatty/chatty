@@ -58,6 +58,7 @@ public class Channels {
      * Default width of the userlist, given to Channel objects when created.
      */
     private int defaultUserlistWidth = 140;
+    private int minUserlistWidth = 0;
     private boolean chatScrollbarAlaways;
     private Channel lastActiveChannel = null;
     
@@ -79,6 +80,8 @@ public class Channels {
         this.contextMenuListener = contextMenuListener;
         this.gui = gui;
         tabs.addChangeListener(new TabChangeListener());
+        tabs.setMouseWheelScrollingEnabled(gui.getSettings().getBoolean("tabsMwheelScrolling"));
+        tabs.setMouseWheelScrollingAnywhereEnabled(gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
         gui.addWindowListener(windowListener);
         //tabs.setOpaque(false);
         //tabs.setBackground(new Color(0,0,0,0));
@@ -153,7 +156,8 @@ public class Channels {
     }
     
     private Channel createChannel(String name, Channel.Type type) {
-        Channel channel = new Channel(name,type,gui,styleManager, contextMenuListener, defaultUserlistWidth);
+        Channel channel = new Channel(name,type,gui,styleManager, contextMenuListener);
+        channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
         channel.setMouseClickedListener(mouseClickedListener);
         channel.setScrollbarAlways(chatScrollbarAlaways);
         return channel;
@@ -608,12 +612,13 @@ public class Channels {
         tabs.setSelectedPrevious();
     }
     
-    public void setDefaultUserlistWidth(int width) {
+    public void setDefaultUserlistWidth(int width, int minWidth) {
         defaultUserlistWidth = width;
+        minUserlistWidth = minWidth;
         if (defaultChannel != null) {
             // Set the width of the default channel because it's created before
             // the width is loaded from the settings
-            defaultChannel.setUserlistWidth(width);
+            defaultChannel.setUserlistWidth(width, minWidth);
         }
     }
     

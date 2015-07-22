@@ -51,6 +51,7 @@ import chatty.util.MiscUtil;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
 import chatty.util.hotkeys.HotkeyManager;
@@ -822,7 +823,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateChannelsSettings() {
-        channels.setDefaultUserlistWidth((int)client.settings.getLong("userlistWidth"));
+        channels.setDefaultUserlistWidth(
+                (int)client.settings.getLong("userlistWidth"),
+                (int)client.settings.getLong("userlistMinWidth"));
         channels.setChatScrollbarAlways(client.settings.getBoolean("chatScrollbarAlways"));
     }
     
@@ -1245,6 +1248,8 @@ public class MainGui extends JFrame implements Runnable {
                 client.commandAddStreamHighlight(channels.getActiveChannel().getName(), null);
             } else if (cmd.equals("openStreamHighlights")) {
                 client.commandOpenStreamHighlights(channels.getActiveChannel().getName());
+            } else if (cmd.equals("srcOpen")) {
+                client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
         }
 
@@ -1389,6 +1394,9 @@ public class MainGui extends JFrame implements Runnable {
                 } else {
                     client.joinChannel(chan);
                 }
+            }
+            else if (cmd.equals("srcOpen")) {
+                client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
             else if (cmd.equals("copy")) {
                 MiscUtil.copyToClipboard(Helper.toStream(channels.getActiveChannel().getName()));
@@ -3043,6 +3051,17 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 emotesDialog.updateEmotesets(client.getSpecialUser().getEmoteSet());
+            }
+        });
+    }
+    
+    public void updateEmoticons(final EmoticonUpdate update) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                emoticons.updateEmoticons(update);
+                emotesDialog.update();
             }
         });
     }

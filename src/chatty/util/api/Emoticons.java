@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -121,6 +122,38 @@ public class Emoticons {
     private final Map<String, Set<String>> emotesNamesPerStream = new HashMap<>();
     
     private Set<Integer> localEmotesets = new HashSet<>();
+    
+    public void updateEmoticons(EmoticonUpdate update) {
+        removeEmoticons(update);
+        if (!update.emotes.isEmpty()) {
+            addEmoticons(update.emotes);
+        }
+    }
+    
+    private void removeEmoticons(EmoticonUpdate update) {
+        // If used for other types as well, may have to handle favorites
+        if (update.typeToRemove == null) {
+            return;
+        }
+        int removed = 0;
+        if (update.typeToRemove == Emoticon.Type.FFZ) {
+            Iterator<Emoticon> it = otherGlobalEmotes.iterator();
+            while (it.hasNext()) {
+                Emoticon emote = it.next();
+                if (emote.type == update.typeToRemove) {
+                    if (update.subTypeToRemove == null
+                            || emote.subType == update.subTypeToRemove) {
+                        it.remove();
+                        removed++;
+                    }
+                }
+            }
+        }
+        if (removed >= 0) {
+            LOGGER.info(String.format("Removed %d emotes (%s/%s)", removed,
+                    update.typeToRemove, update.subTypeToRemove));
+        }
+    }
     
     /**
      * Adds the given emoticons and sorts them into different maps, depending

@@ -58,7 +58,16 @@ public class HotkeyManager {
     private final Map<String, HotkeyAction> actions = new LinkedHashMap<>();
     private final Map<JDialog, Object> popouts = new WeakHashMap<>();
     
-    private boolean globalHotkeysEnabled = true;
+    /**
+     * Whether global hotkeys are currently to be enabled (registered).
+     */
+    private boolean globalHotkeysRegister = true;
+    
+    /**
+     * Whether global hotkeys are currently enabled as per setting. They may
+     * still be not registered if temporarily disabled.
+     */
+    private boolean globalHotkeysEnabled = false;
     private boolean enabled = true;
     
     private GlobalHotkeySetter globalHotkeys;
@@ -140,9 +149,16 @@ public class HotkeyManager {
         return map;
     }
     
+    /**
+     * Enable/disable global and app hotkeys.
+     * 
+     * @param enabled 
+     */
     public synchronized void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        setGlobalHotkeysEnabled(enabled);
+        if (!enabled || globalHotkeysEnabled) {
+            setGlobalHotkeysRegistered(enabled);
+        }
     }
     
     /**
@@ -151,12 +167,22 @@ public class HotkeyManager {
      * @param enabled true to enable global hotkeys, false to disable
      */
     public synchronized void setGlobalHotkeysEnabled(boolean enabled) {
-        boolean previous = globalHotkeysEnabled;
-        this.globalHotkeysEnabled = enabled;
-        if (enabled && !previous) {
+        globalHotkeysEnabled = enabled;
+        setGlobalHotkeysRegistered(enabled);
+    }
+    
+    /**
+     * Enable or disable global hotkeys.
+     * 
+     * @param enabled true to enable global hotkeys, false to disable
+     */
+    private void setGlobalHotkeysRegistered(boolean register) {
+        boolean previous = globalHotkeysRegister;
+        this.globalHotkeysRegister = register;
+        if (register && !previous) {
             addGlobalHotkeys();
         }
-        if (!enabled && previous) {
+        if (!register && previous) {
             removeGlobalHotkeys();
         }
     }
@@ -265,7 +291,7 @@ public class HotkeyManager {
      * currently enabled.
      */
     private void addGlobalHotkeys() {
-        if (!globalHotkeysEnabled) {
+        if (!globalHotkeysRegister) {
             return;
         }
         for (Hotkey hotkey : hotkeys) {

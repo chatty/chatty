@@ -43,10 +43,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private final Set<String> restartRequiredDef = new HashSet<>(Arrays.asList(
             "capitalizedNames", "ffz", "nod3d", "noddraw",
-            "userlistWidth", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
+            "userlistWidth", "userlistMinWidth", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
             "logPath", "logTimestamp",
             "botNamesBTTV", "botNamesFFZ", "ircv3CapitalizedNames",
-            "whisperEnabled", "groupChatServer", "groupChatPort"));
+            "whisperEnabled", "groupChatServer", "groupChatPort",
+            "tabsMwheelScrolling"));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(
         "membershipEnabled"));
@@ -693,9 +694,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     private void close() {
-        if (settings.getBoolean("globalHotkeysEnabled")) {
-            owner.hotkeyManager.setEnabled(true);
-        }
+        owner.hotkeyManager.setEnabled(true);
         setVisible(false);
     }
     

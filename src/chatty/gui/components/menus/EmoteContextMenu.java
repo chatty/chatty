@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -34,9 +35,6 @@ public class EmoteContextMenu extends ContextMenu {
             addSeparator();
             if (emote.type == Emoticon.Type.FFZ) {
                 addItem("ffzlink", "FrankerFaceZ Emote");
-                if (emote.hasStreamSet()) {
-                    addItem("", emote.getStream());
-                }
                 if (emote.creator != null) {
                     addItem("emoteCreator", "Emote by: "+emote.creator);
                 }
@@ -53,6 +51,7 @@ public class EmoteContextMenu extends ContextMenu {
             if (emote.info != null) {
                 addItem("", emote.info);
             }
+            addStreamSubmenu(emote);
         }
         
         // Emoteset information
@@ -62,13 +61,7 @@ public class EmoteContextMenu extends ContextMenu {
                 addItem("twitchturbolink", "Turbo Emoticon");
             } else {
                 addItem("", "Subscriber Emoticon");
-                if (emote.hasStreamSet()) {
-                    String subMenu = emote.getStream();
-                    addItem("profile", "Twitch Profile", subMenu);
-                    addItem("join", "Join "+Helper.toValidChannel(emote.getStream()), subMenu);
-                    addSeparator(subMenu);
-                    addItem("showChannelEmotes", "Show Subemotes", subMenu);
-                }
+                addStreamSubmenu(emote);
             }
             addItem("", "Emoteset: "+emote.emoteSet);
         }
@@ -89,6 +82,10 @@ public class EmoteContextMenu extends ContextMenu {
                 addItem("favoriteEmote", "Favorite");
             }
         }
+        
+        if (Chatty.DEBUG) {
+            addItem("", String.valueOf(System.identityHashCode(emote)));
+        }
     }
 
     @Override
@@ -100,6 +97,16 @@ public class EmoteContextMenu extends ContextMenu {
     
     public static void setEmoteManager(Emoticons emotes) {
         emoteManager = emotes;
+    }
+    
+    private void addStreamSubmenu(Emoticon emote) {
+        if (emote.hasStreamSet()) {
+            String subMenu = emote.getStream();
+            addItem("profile", "Twitch Profile", subMenu);
+            addItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);
+            addSeparator(subMenu);
+            addItem("showChannelEmotes", "Show Emotes", subMenu);
+        }
     }
     
 }
