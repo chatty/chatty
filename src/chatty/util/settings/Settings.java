@@ -456,9 +456,9 @@ public class Settings {
      * @throws SettingNotFoundException if a setting with this name doesn't
      * exist or isn't a List setting.
      */
-    public void listRemove(String settingName, Object value) {
+    public boolean listRemove(String settingName, Object value) {
         synchronized(LOCK) {
-            getListInternal(settingName).remove(value);
+            return getListInternal(settingName).remove(value);
         }
     }
     
@@ -483,12 +483,14 @@ public class Settings {
      * @throws SettingNotFoundException if a setting with the given name doesn't
      * exist or isn't a List-setting.
      */
-    public void setAdd(String settingName, Object value) {
+    public boolean setAdd(String settingName, Object value) {
         synchronized(LOCK) {
             List settingList = (List)get(settingName, Setting.LIST);
             if (!settingList.contains(value)) {
                 settingList.add(value);
+                return true;
             }
+            return false;
         }
     }
     

@@ -139,4 +139,11 @@ public class StringUtil {
         return LINEBREAK_CHARACTERS.matcher(s).replaceAll(" ");
     }
     
+    public static String append(String a, String b, String sep) {
+        if (a == null || a.isEmpty()) {
+            return b;
+        }
+        return a+sep+b;
+    }
+    
 }

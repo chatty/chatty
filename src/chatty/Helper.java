@@ -49,7 +49,7 @@ public class Helper {
      * @param set
      * @return 
      */
-    public static String buildStreamsString(Set<String> set) {
+    public static String buildStreamsString(Collection<String> set) {
         String result = "";
         String sep = "";
         for (String channel : set) {

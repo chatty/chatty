@@ -81,6 +81,10 @@ public class TwitchUrl {
         return "http://www.nightdev.com/betterttv/";
     }
     
+    public static String makeTwitchemotesUrl(int id) {
+        return "https://twitchemotes.com/emote/"+id;
+    }
+    
     public static final String MULTITWITCH = "http://multitwitch.tv/";
     public static final String SPEEDRUNTV = "http://speedrun.tv/";
     public static final String KADGAR = "http://kadgar.net/live/";

@@ -551,23 +551,26 @@ public class Channels {
      * @return The {@code List} of {@code Channel} objects
      */
     public List<Channel> getChannelsOfType(Channel.Type type) {
-        List<Channel> result = new ArrayList<>();
-        if (defaultChannel != null) {
-            result.add(defaultChannel);
-        }
+        List<Channel> result = new ArrayList<>(getTabs(type));
         for (Channel c : channels.values()) {
-            if (type == null || c.getType() == type) {
+            // Add channels that aren't on tabs (popouts)
+            if ((type == null || c.getType() == type) && !result.contains(c)) {
                 result.add(c);
             }
         }
-        //result.addAll(channels.values());
         return result;
     }
     
     public Collection<Channel> getTabs() {
+        return getTabs(null);
+    }
+    
+    public Collection<Channel> getTabs(Channel.Type type) {
         List<Channel> result = new ArrayList<>();
         for (Component comp : tabs.getAllComponents()) {
-            if (channels.containsValue(comp)) {
+            Channel chan = (Channel)comp;
+            if ((type == null || chan.getType() == type)
+                    && channels.containsValue(chan) || chan == defaultChannel) {
                 result.add((Channel)comp);
             }
         }
@@ -639,7 +642,7 @@ public class Channels {
         }
         tabs.setOrder(setting);
     }
-    
+
     /**
      * When the active tab is changed, keeps track of the lastActiveChannel and
      * does some work necessary when tab is changed.

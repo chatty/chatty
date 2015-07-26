@@ -1320,13 +1320,13 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("copy")) {
                 MiscUtil.copyToClipboard(user.getRegularDisplayNick());
             } else if (cmd.equals("ignore")) {
-                client.commandIgnore(user.nick, false);
+                client.commandSetIgnored(user.nick, "chat", true);
             } else  if (cmd.equals("ignoreWhisper")) {
-                client.commandIgnore(user.nick, true);
+                client.commandSetIgnored(user.nick, "whisper", true);
             } else  if (cmd.equals("unignore")) {
-                client.commandUnignore(user.nick, false);
+                client.commandSetIgnored(user.nick, "chat", false);
             } else  if (cmd.equals("unignoreWhisper")) {
-                client.commandUnignore(user.nick, true);
+                client.commandSetIgnored(user.nick, "whisper", false);
             }
             nameBasedStuff(cmd, user.getNick());
         }
@@ -1613,6 +1613,8 @@ public class MainGui extends JFrame implements Runnable {
             } else if (e.getActionCommand().equals("emoteId")) {
                 if (emote.type == Emoticon.Type.FFZ) {
                     url = TwitchUrl.makeFFZUrl(emote.numericId);
+                } else if (emote.type == Emoticon.Type.TWITCH) {
+                    url = TwitchUrl.makeTwitchemotesUrl(emote.numericId);
                 }
             } else if (e.getActionCommand().equals("emoteCreator")) {
                 if (emote.type == Emoticon.Type.FFZ) {
@@ -2331,7 +2333,11 @@ public class MainGui extends JFrame implements Runnable {
                     if (whisperSetting == WhisperConnection.DISPLAY_ONE_WINDOW) {
                         chan = channels.getChannel(channel);
                     } else if (whisperSetting == WhisperConnection.DISPLAY_PER_USER) {
-                        chan = channels.getChannel("$"+user.getNick());
+                        if (!userIgnored(user, true)) {
+                            chan = channels.getChannel("$"+user.getNick());
+                        } else {
+                            chan = channels.getActiveChannel();
+                        }
                     } else {
                         chan = channels.getActiveChannel();
                     }
@@ -2356,12 +2362,12 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
                     highlightedMessages.addMessage(channel, user, text, action,
-                            tagEmotes);
+                            tagEmotes, whisper);
                     if (!highlighter.getLastMatchNoSound()) {
                         playHighlightSound(channel);
                     }
                     if (!highlighter.getLastMatchNoNotification()) {
-                        showHighlightNotification(channel, user, text);
+                        showHighlightNotification(channel, user, (whisper ? "[Whísper] " : "")+text);
                         channels.setChannelHighlighted(chan);
                     } else {
                         channels.setChannelNewMessage(chan);
@@ -2374,7 +2380,7 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if ignored, without printing message
                 if (ignored) {
                     ignoredMessages.addMessage(channel, user, text, action,
-                            tagEmotes);
+                            tagEmotes, whisper);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -3455,6 +3461,22 @@ public class MainGui extends JFrame implements Runnable {
                 adminDialog.commercialResult(stream, text, result);
             }
         });
+    }
+    
+    /**
+     * Returns a list of open channels in the order the tabs are open (popouts
+     * at the end if present).
+     * 
+     * Should probably only be used out of the EDT.
+     * 
+     * @return 
+     */
+    public List<String> getOpenChannels() {
+        List<String> result = new ArrayList<>();
+        for (Channel chan : channels.getChannelsOfType(Channel.Type.CHANNEL)) {
+            result.add(chan.getName());
+        }
+        return result;
     }
 
     /**

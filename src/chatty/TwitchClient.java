@@ -46,6 +46,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * The main client class, responsible for managing most parts of the program.
@@ -631,6 +632,7 @@ public class TwitchClient {
     }
     
     public boolean disconnect() {
+        w.disconnect();
         return c.disconnect();
     }
     
@@ -829,16 +831,22 @@ public class TwitchClient {
             addressbook.importFromFile();
         }
         else if (command.equals("ignore")) {
-            commandIgnore(parameter, false);
+            commandSetIgnored(parameter, null, true);
         }
         else if (command.equals("unignore")) {
-            commandUnignore(parameter, false);
+            commandSetIgnored(parameter, null, false);
+        }
+        else if (command.equals("ignorechat")) {
+            commandSetIgnored(parameter, "chat", true);
+        }
+        else if (command.equals("unignorechat")) {
+            commandSetIgnored(parameter, "chat", false);
         }
         else if (command.equals("ignorewhisper")) {
-            commandIgnore(parameter, true);
+            commandSetIgnored(parameter, "whisper", true);
         }
         else if (command.equals("unignorewhisper")) {
-            commandUnignore(parameter, true);
+            commandSetIgnored(parameter, "whisper", false);
         }
         
         else if (command.equals("changetoken")) {
@@ -1099,34 +1107,60 @@ public class TwitchClient {
         }
     }
     
-    public void commandIgnore(String parameter, boolean whisper) {
+    /**
+     * Adds or removes the name given in the parameter on the ignore list. This
+     * is done for either regular ignores (chat) and/or whisper ignores
+     * depending on the given type.
+     * 
+     * Outputs a message with the new state depending on whether any change (at
+     * least one list was changed) occured or not.
+     *
+     * @param parameter The first word is used as name to ignore/unignore
+     * @param type Can be "chat", "whisper" or null to affect both lists
+     * @param ignore true to ignore, false to unignore
+     */
+    public void commandSetIgnored(String parameter, String type, boolean ignore) {
         if (parameter != null && !parameter.isEmpty()) {
             String[] split = parameter.split(" ");
             String name = split[0].toLowerCase();
-            String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
-            String message = whisper ? " from whispering you" : " in chat";
-            if (settings.listContains(setting, name)) {
-                g.printSystem("Ignore: '"+name+"' already ignored"+message);
-            } else {
-                settings.setAdd(setting, name);
-                g.printSystem("Ignore: '"+name+"' now ignored"+message);
+            String message = "";
+            List<String> setting = new ArrayList<>();
+            if (type == null || type.equals("chat")) {
+                message = "in chat";
+                setting.add("ignoredUsers");
             }
-        } else {
-            g.printSystem("Ignore: Invalid name");
-        }
-    }
-    
-    public void commandUnignore(String parameter, boolean whisper) {
-        if (parameter != null && !parameter.isEmpty()) {
-            String[] split = parameter.split(" ");
-            String name = split[0].toLowerCase();
-            String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
-            String message = whisper ? " from whispering you" : " in chat";
-            if (!settings.listContains(setting, name)) {
-                g.printSystem("Ignore: '"+name+"' not ignored"+message);
+            if (type == null || type.equals("whisper")) {
+                message = StringUtil.append(message, "from whispering you", "/");
+                setting.add("ignoredUsersWhisper");
+            }
+            boolean changed = false;
+            for (String s : setting) {
+                if (ignore) {
+                    if (settings.setAdd(s, name)) {
+                        changed = true;
+                    }
+                } else {
+                    if (settings.listRemove(s, name)) {
+                        changed = true;
+                    }
+                }
+            }
+            if (changed) {
+                if (ignore) {
+                    g.printSystem(String.format("Ignore: '%s' now ignored %s",
+                            name, message));
+                } else {
+                    g.printSystem(String.format("Ignore: '%s' no longer ignored %s",
+                            name, message));
+                }
             } else {
-                settings.listRemove(setting, name);
-                g.printSystem("Ignore: '"+name+"' no longer ignored"+message);
+                if (ignore) {
+                    g.printSystem(String.format("Ignore: '%s' already ignored %s",
+                            name, message));
+                } else {
+                    g.printSystem(String.format("Ignore: '%s' not ignored %s",
+                            name, message));
+                }
             }
         } else {
             g.printSystem("Ignore: Invalid name");
@@ -1815,7 +1849,13 @@ public class TwitchClient {
 
         @Override
         public void aboutToSaveSettings(Settings settings) {
-            settings.setString("previousChannel", Helper.buildStreamsString(c.getOpenChannels()));
+            Collection<String> openChans;
+            if (SwingUtilities.isEventDispatchThread()) {
+                openChans = g.getOpenChannels();
+            } else {
+                openChans = c.getOpenChannels();
+            }
+            settings.setString("previousChannel", Helper.buildStreamsString(openChans));
             EmoticonSizeCache.saveToFile();
         }
         

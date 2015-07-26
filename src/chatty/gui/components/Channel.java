@@ -196,7 +196,7 @@ public class Channel extends JPanel {
             "set", "add", "clearSetting", "remove", "customCompletion",
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
-            "ignore", "unignore", "ignoreWhisper", "unignoreWhisper"
+            "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat"
         }));
         
         private void updateSettings() {
@@ -508,6 +508,12 @@ public class Channel extends JPanel {
     
     public User getSelectedUser() {
         return text.getSelectedUser();
+    }
+    
+        
+    @Override
+    public String toString() {
+        return String.format("%s '%s'", type, name);
     }
     
 }
