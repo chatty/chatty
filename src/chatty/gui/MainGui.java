@@ -1595,7 +1595,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             } else if (cmd.equals("showChannelEmotes")) {
                 if (streams.size() >= 1) {
-                    openEmotesDialogChannelEmotes(streams.iterator().next());
+                    openEmotesDialogChannelEmotes(streams.iterator().next().toLowerCase());
                 }
             }
         }

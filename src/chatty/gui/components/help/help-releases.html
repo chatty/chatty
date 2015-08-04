@@ -39,7 +39,7 @@
     full list of changes.</p>
 
     <h2>
-        <a name="0.8.1">Version 0.8.1</a> <a name="latest">(This one!)</a> (2015-06-??)
+        <a name="0.8.1">Version 0.8.1</a> <a name="latest">(This one!)</a> (2015-08-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <h3>Highlights / Important Information</h3>
@@ -48,6 +48,9 @@
             <a href="help.html#whisper">Help</a>.</li>
         <li>Added feature to pause chat scrolling when moving the mouse over it
             (you have to enable it in the settings under <code>Chat</code>).</li>
+        <li>Added Tabs drag and drop reordering, more menu options for closing and more.</li>
+        <li>Readded FFZ Feature Friday support and improved it.</li>
+        <li>Show more stream and channel state information (like slowmode, submode, etc.).</li>
     </ul>
         <h3>Full Changelog</h3>
 <pre>
@@ -57,22 +60,71 @@
 - Improved TAB Completion: Added predictive sorting for names which gives users
   who recently talked/highlighted you a higher priority, added setting to
   toggle completion to common prefix (disabled by default)
-- Added `$first` option for Custom Usericon restriction to show them in front of
-  the regular Usericons
+- Added dedicated ignore user lists (separate for chat and whispers)
 
-#### Changes
-- Show long slowmode times as "> day" in the titlebar
-- Added "Open in online help" button in Help window
-- Allow global FFZ/BTTV to be added to the favorites as well
-- Added $globalmod and $anymod status identifiers for Usericons/Usercolors
-- Show indication of action message (/me) in User Info Dialog chat history and
-  log files (star in front of the message)
-- Updated help
+#### Chat Window
+- Added Pause Chat when moving mouse over chat feature (configure in the settings)
+- Changed Ctrl to be used to pause chat, use Alt+Gr for selecting when clicking
+  on a username in chat
+- Don't scroll down when scrolled up even when scroll down timeout has passed
+  while holding Ctrl
+- Added one-click moderation when holding Ctrl (configure in the Chat settings)
+
+#### Tabs
+- Added manual resorting of tabs by drag and drop
+- Added more menu entries to close tabs to Tab Context Menu
+- Rejoin channels in the order the tabs were, when rejoining channels from last
+  session on start (depends on the Tab Order setting of course)
+- Switch to tab when right-clicking on it (which wasn't the case everywhere)
+- Optional mouse wheel scrolling through tabs
+
+#### Emoticons
+- Added FFZ Feature Friday again and improved support for it in Emotes Dialog
+- Improved Emote Context Menu (open twitchemotes.com for Twitch emotes id,
+  added channel submenu for more emotes where it makes sense)
+- Added setting to toggle animated emotes (BTTV GIF emotes)
+- Allow global FFZ/BTTV emotes to be added to the favorites as well
+- Don't show 150% size in Emotes Dialog Detail View when emote is too wide
+
+#### Chat/Stream Info Display
+- Improved display for long slowmode times in the titlebar
+- Implemented new ROOMSTATE command, allowing for accurate display of
+  submode/slowmode/r9k in titlebar
+- Added stream uptime to the titlebar, added settings to customize what is shown
+  in the titlebar a bit more (`View - Options - Titlebar`)
+- Added stream uptime to Live Streams Dialog
+
+#### Settings / Configuration
 - Added timestamp option to "Log to file" settings (previously only changeable
   with setting commands)
 - Highlight/Ignore: Allow non-standard channels in `chan:`/`!chan:` prefixes
+- Added setting for minimum userlist width
+- Switched default ports to `6667,443` due to port 80 not being available
+  anymore for standard IRC
+- Updated Settings Dialog
+- Added $globalmod and $anymod status identifiers for Usericons/Usercolors
+- Added `$first` option for Custom Usericon restriction to show them in front of
+  the regular Usericons
+- Added setting for filtering of combining characters to change between off,
+  lenient and strict replacing (filter can circumvent performance issues)
+
+#### Commands / Menus
 - Added Copy Stream Name to Channel Context Menu (Miscellaneous submenu)
+- Added hotkey action to close all/all shown notifications
+- Added /openBackupDir command
+- Added entries to the `Extra` menu to record/open stream highlights
+- Added "Open speedrun.com" Channel Context Menu entry in Miscellaneous submenu
+  (which tries to open the leaderboards page for the current game)
+
+#### Other Changes
+- Added "Open in online help" button in Help window
+- Show indication of action message (/me) in User Info Dialog chat history and
+  log files (star in front of the message)
+- Apply bans/timeouts to Stream Chat
 - Changed website URL to GitHub
+- Improved debug output a bit
+- Keep showing "Update Available" notification after restart
+- Updated help
 
 #### Bugfixes
 - Fixed error in slowmode message parsing
@@ -81,7 +133,14 @@
 - Fixed tab not showing new message if message was highlighted with
   `config:!notify` option
 - Fixed message parsing from inadvertently ignoring some (rare) messages
+- Fixed raw message parsing
 - Fixed replacing of all linebreak characters when sending message
+- Fixed wrong channel being cleared when "Clear chat when cleared by a
+  moderator" setting is enabled
+- Fixed hotkey bug when opening/closing hotkey settings with global hotkeys
+  disabled
+- Fixed off-by-one error for reconnection attempts
+- Fixed sounds on Linux (hopefully)
 </pre>
     
     <h2>

@@ -21,7 +21,7 @@
                 <ul class="menu">
                     <li><a href="#symbols">Symbols used in chat</a></li>
                     <li><a href="#favorites">Favorites / History</a></li>
-                    <li><a href="#whisper">Whisper Feature</a></li>
+                    <li><a href="help-whisper.html">Whisper Feature</a></li>
                 </ul>
                 
                 <strong>Chat moderation / utility</strong>
@@ -55,16 +55,17 @@
                 </ul>
             </td>
             <td valign="top">
-                <strong>Settings</strong>
+                <strong>Settings / Files</strong>
                 <ul class="menu">
                     <li><a href="help-settings.html">Settings Help</a></li>
                     <li><a href="help-setting_commands.html">Setting commands</a></li>
                     <li><a href="#settingFiles">Setting files</a></li>
                     <li><a href="#launch">Launch options</a></li>
                     <li><a href="help-addressbook.html">Addressbook</a></li>
+                    <li><a href="help-guide_folders.html">Chatty Directories and Files</a></li>
                 </ul>
                 
-                <strong>Miscallaneous</strong>
+                <strong>Miscellaneous</strong>
                 <ul class="menu">
                     <li><a href="help-releases.html">Release Information</a></li>
                     <li><a href="help-troubleshooting.html">Troubleshooting</a></li>
@@ -80,7 +81,7 @@
                     <li><a href="help-getting-started.html">Getting Started Guide</a></li>
                     <li><a href="help-guide1.html">Run more than one instance of Chatty</a></li>
                     <li><a href="help-guide2.html">What to do when getting login fails</a></li>
-                    <li><a href="help-guide_folders.html">Chatty Directories and Files</a></li>
+                    
 		    <li><a href="help-guide_create_shortcut.html">Create shortcut (launch options/icon)</a></li>
                     <li><a href="help-short_guides.html">More Guides..</a></li>
                 </ul>
@@ -364,7 +365,7 @@
         <li>Nicknames of who is currently in the userlist (using <kbd>TAB</kbd>)</li>
         <li>Chatty setting names when you use a setting command (using <kbd>TAB</kbd>)</li>
         <li>Some comands after <code>/</code> (using <kbd>TAB</kbd>, e.g. <code>/sub</code> then <kbd>TAB</kbd> to complete to <code>/subscribers</code>)</li>
-        <li>Emoticon names (using <kbd>Shift-TAB</kbd>, e.g. <code>Datsh</code> then <kbd>TAB</kbd> to complete to <code>DatSheffy</code>)</li>
+        <li>Emoticon names (using <kbd>Shift-TAB</kbd>, e.g. <code>Datsh</code> then <kbd>Shift-TAB</kbd> to complete to <code>DatSheffy</code>)</li>
         <li><a href="help-settings.html#Completion-custom">Custom completion</a>
             that is prepended with a dot and for which items can be added in the
             settings (using <kbd>Shift-TAB</kbd>)</li>
@@ -373,6 +374,8 @@
     <h3>How it works</h3>
     <p>There are a couple of <a href="help-settings.html#Completion">settings</a>
     that change the behaviour of the TAB Completion.</p>
+    
+    <p>How the TAB Completion process works:</p>
 
     <ol>
         <li>Enter the beginning of an item (name, setting, emote).</li>
@@ -774,105 +777,6 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     </ul>
     
     <h2>
-        <a name="whisper">Whisper Feature</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p><em>It is recommended that you read and understand this whole section
-        before enabling this feature.</em></p>
-        <p>Chatty implements the new <code>/w</code> command that Twitch Chat provides, allowing
-    you to send private messages in chat to other users. However, it is disabled
-    by default, since it has a few problems:</p>
-    <ul>
-        <li>Twitch is currently testing Whispering on the Group Chat servers but
-            is planning to move it to a whole different system soon, which means
-            in the current state it is not really encouraged to be used by
-            third-party applications. It is unclear what the new system will be
-            and whether it will be possible to implement it in Chatty. Also, due
-            to these circumstances, not too much development time will be put
-            into the Whisper feature in Chatty at this time.</li>
-        <li>Whispering currently runs on the Group Chat servers, so Chatty can't
-            just use <code>irc.twitch.tv</code> to connect as for regular chat.
-            Since there is no easy official way to get the server data
-            automatically, you have enter the IP and port yourself if you want
-            to use this feature.</li>
-    </ul>
-    <h3>Getting started</h3>
-    <p>You have to change a few settings in order to use this feature
-        (all under <code>Main - Settings - Advanced</code>):</p>
-    <ul>
-        <li><strong>Whisper Enabled</strong>: Connect to the given Group Chat server to send and receive
-        whispers.</li>
-            <li><strong>Server</strong>: The Group Chat server IP to connect to. You can check:
-                <ul>
-                    <li><a href="http://twitchstatus.com/">Twitchstatus.com</a> (unofficial site) at the bottom of the page,
-                "Group Chat" tab</li>
-                    <li>Get an IP from the Twitch API using <a href="http://blog.bashtech.net/twitch-group-chat-irc/">this guide</a>
-                    (you will need a token and be member of a Group Chat, you won't need to get a channelname)</li>
-                </ul></li>
-            <li><strong>Port</strong>: The port for the Group Chat server you
-            are using (you should get it along with the IP).</li>
-    </ul>
-    <em>All these three settings require a restart of Chatty to take full effect,
-            although it may have some effect without a restart.</em>
-    
-    <p>Once properly enabled and connected, <code>[W]</code> will be shown in the titlebar and
-        the <code>/connection</code> command will show the Whisper connection.
-        The connection is attempted once you connect to regular chat.
-    </p>
-    
-    <p>Optional settings:</p>
-    <ul>
-            <li><strong>Whitelist</strong>: If enabled, only users that have the
-                <a href="help-addressbook.html">Addressbook</a> category <code>whisper</code> will be able to send
-                whispers to you. Messages from other users are discarded.
-                Alternatively you can also <strong>blacklist</strong> users by adding them to the
-            <code>blockwhisper</code> category (which makes most sense with the Whitelist setting
-            disabled).<br /><br >
-            In addition, you can also add users to the Ignore List by right-clicking
-            on them in chat to open the context menu and choosing <code>Miscellaneous - Ignore (whisper)</code>.
-            Unlike the Blacklist or Whitelist using the Addressbook, this will not completely discard the messages, but instead add them
-            to the Ignored Messages dialog and possibly output some other messages
-            about it, depending on the Ignore settings.</li>
-            <li><strong>Display</strong>: Changes where the whispers are displayed.
-                <ul>
-                    <li><strong>Active Chat</strong> - Show in the chat window you are currently having
-                    active in Chatty.</li>
-                    <li><strong>One Window</strong> - Show all whispers in one separate window.
-                    In that window you will be able to respond to whispers by
-                    just typing <code>&lt;name&gt; &lt;message&gt;</code> instead
-                    of having to use the <code>/w</code> command. To be sure you
-                    actually provide the user to send it to you can only whisper
-                    to users that have already whispered to you (so e.g.
-                    <code>Hey how are you? :)</code> wont't be send to the user
-                    named <code>Hey</code>). The tab for collecting all whispers
-                    is named <code>$[whisper]</code>.</li>
-                    <li><strong>Per User</strong> - Open an extra tab for every
-                    user that whispers to you. You can respond to whispers by
-                    just typing the message in the tab for that user. The tab
-                    will be named <code>$&lt;username&gt;</code>.</li>
-                </ul>
-            </li>
-    </ul>
-    
-    
-    <h3>Usage</h3>
-    <ul>
-        <li>When you receive a whisper, it will be displayed depending on the Display setting and
-    will be indicated by the nickname being marked like this: <code>-[name]-</code></li>
-        <li>When you send a whisper via <code>/w &lt;name&gt; &lt;message&gt;</code>,
-            then this will be indicated in chat by the nickname being marked like this: <code>&gt;&gt;[name]</code></li>
-        <li>In both cases the name is the name of the person you are talking with, not your own name.</li>
-        <li>When you click on the name, you will be able to see your conversation,
-        with your own messages marked with a asterisk in front (*), which is usually
-        used to mark action messages (<code>/me</code>).</li>
-    </ul>
-    
-    <p>If you get a lot of errors like <code>Whisper feature: Disconnected</code> there
-    may be a temporary problem, you may have entered the server/port wrong or
-    the feature is not working as it is implemented in Chatty anymore (in which
-    case you should disable the feature).</p>
-    
-    <h2>
         <a name="pausechat">Pause Chat / One-click moderation</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -880,14 +784,17 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         can stop the chat from scrolling down while you move the mouse over chat.
         This can prevent misclicks when the chat is moving. The chat will resume
         scrolling down as soon as you stop moving the mouse or move it out of
-        the chat area.</p>
-    
+        the chat area. When the chat is already paused, you can also hold
+        <kbd>Ctrl</kbd> to keep the chat paused even without moving the mouse.</p>
+
     <p>Optionally, you can set it to require <kbd>Ctrl</kbd> being pressed in
         conjunction with moving the mouse to initiate pausing. You can let go of
         <kbd>Ctrl</kbd> as soon as pausing is started and it will stay paused as
         long as you move the mouse inside the chat area.</p>
     
-    <p>This only works when the chat area is already filled, so the scrollbar is
+    <p>A little popup in the top-right will indicate that the chat is paused.</p>
+    
+    <p><em>Please note:</em> This only works when the chat area is already filled, so the scrollbar is
         actually used. In addition, there may be instances where something you
         want to click will move anyway, for example if a message is deleted due
         to a timeout/ban, causing other messages to move.</p>

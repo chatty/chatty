@@ -106,28 +106,28 @@
     
     
     <h2><a name="eventchat">Join Eventchat</a></h2>
-    <p>Sometimes there are channels that run on a special set of event chat
-        servers, so they are seperated from the channels you see when you join
-        <code>irc.twitch.tv</code>. This only applies to webchat (at the moment
-        at least), so often the chat you get connecting to <code>irc.twitch.tv</code>
-        is called "mobile chat", because the mobile apps apparently also don't
-        support event chat.</p>
+    <p>When you join a channel of a big event and you don't receive any (or few) messages,
+        it's possible that the channel is on the Event Chat servers, not the
+        regular Twitch Chat servers. It's a common problem to run into if you're
+        not using the website (like any regular IRC client, Chatty and possibly
+        mobile).</p>
     
-    <p>See this <a href="http://help.twitch.tv/customer/portal/questions/8152306-can-t-see-chat-of-some-channels-on-irc-">
-            Twitch Support Center entry</a> or <a href="http://twitchstatus.com/#chat">Twitchstatus.com</a> for an (unofficial) list
-    of servers.</p>
+    <p>In order to join Event Chat in Chatty, you have to connect to a different
+        server. See <a href="http://twitchstatus.com/#chat">Twitchstatus.com</a> for an (unofficial) list
+        of servers (make sure you choose the <code>Event Chat</code> tab and use
+        a server/port combination that is marked as <code>irc</code> in the
+        <code>Protocol</code> column).</p>
     
-       <p>What you have to do in Chatty to be able to get the
-        event chat instead of the "normal chat" that is only used by IRC and
-        mobile users, is connect to a different server. Since Chatty can only
-        connect to one server at a time, you either have to only join channels
-        that are on the event chat servers, or run two <a href="help-guide1.html">seperate instances</a> of
-        Chatty at the same time.</p>
+       <p>Since Chatty can only connect to one server at a time, you either have
+           to only join channels that are on the Event Chat servers, or run two
+           <a href="help-guide1.html">seperate instances</a> of Chatty at the
+           same time.</p>
        
        <p>There are different ways of connecting to a different server:</p>
        <ul>
            <li>The <code>/server &lt;host&gt;[:port]</code> command connects to the given server and
-           port manually.</li>
+               port manually (for example <code>/server irc.twitch.tv:443</code>,
+               replace with an Event Chat server accordingly).</li>
            <li>The <code>-server</code> and <code>-port</code> commandline options
            allow you to specify a different server when you start Chatty.</li>
            <li>The <code>Server</code> and <code>Port</code> settings in the
@@ -135,6 +135,18 @@
            fixed settings for the server to connect to. This especially makes sense
            if you are using <a href="help-guide1.html">seperate settings for different instances</a> of Chatty.</li>
        </ul>
+       
+       <p>If you want to switch between servers sometimes, you can create a
+           custom command to connect to Event Chat so you don't have to enter
+           the command with the IP and port manually every time. Go to
+           <code>Settings - Commands</code>, add a new Custom Command and enter:
+           <code>/eventchat /server &lt;server&gt;:&lt;port&gt;</code> (replace
+           with the appropriate IP and port of course). Then you
+           can just enter <code>/eventchat</code> in the inputbox (while not
+           being connected) and it will connect to Event Chat and if you want to
+           connect to regular Twitch Chat just connect regularly via the menu
+           (and it will use <code>irc.twitch.tv</code> if you didn't change the
+           server settings).</p>
     
 </body>
 </html>

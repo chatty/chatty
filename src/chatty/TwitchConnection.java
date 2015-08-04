@@ -737,9 +737,6 @@ public class TwitchConnection {
                     listener.onGlobalInfo("Gave up reconnecting. :(");
                 } else {
                     int delay = getReconnectionDelay(connectionAttempts);
-                    if (reason == Irc.ERROR_UNKNOWN_HOST) {
-                        delay = getMaxReconnectionDelay();
-                    }
                     listener.onGlobalInfo("Attempting to reconnect in "+delay
                             +" seconds.. ("
                             +irc.connectionAttempts+"/"+maxReconnectionAttempts+")"
@@ -1253,6 +1250,9 @@ public class TwitchConnection {
                     }
                     if (tags.containsKey("slow")) {
                         channelStates.setSlowmode(channel, tags.get("slow"));
+                    }
+                    if (tags.containsKey("broadcaster-lang")) {
+                        channelStates.setLang(channel, tags.get("broadcaster-lang"));
                     }
                 }
             }

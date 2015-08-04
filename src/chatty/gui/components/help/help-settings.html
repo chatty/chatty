@@ -7,6 +7,7 @@
     <h1><a name="top">Settings</a></h1>
     <p><a href="#Main">Main</a>
         | <a href="#Messages">Messages</a>
+        | <a href="#Chat">Chat</a>
         | <a href="#Emoticons">Emoticons</a>
         | <a href="#Usericons">Usericons</a>
         | <a href="#Usercolors">Usercolors</a>
@@ -94,9 +95,9 @@
             moderator badge). These messages can be sometimes
         be kind of broken (on Twitch's side) and can show some or all mods in the channel
         as being modded/unmodded.</li>
-        <li><strong>Show joins/parts (TC1 only)</strong>: Show joins/parts, which
-            only works on TC1 (<a href="#Advanced-TC">more information</a>). Joins/parts
-        are always kind of delayed, so don't take them too seriously.</li>
+        <li><strong>Show joins/parts</strong>: Show joins/parts, which
+        are always kind of delayed, so don't take them too seriously (only works
+        when <code>Advanced - Correct Userlist</code> is enabled).</li>
         <li><strong>Show stream status in chat</strong> outputs the stream status
         (title and game) in the chat window on join and when it changes
         (when the stream goes offline or online or changes the title or game).</li>
@@ -141,6 +142,55 @@
     received a message from that user during this session.</em></p>
     
     <h2>
+        <a name="Chat">Chat</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>Chat Settings</h3>
+    <ul>
+        <li><strong>Scroll down after <code>&lt;x&gt;</code> seconds of inactivity</strong>: If you scrolled
+            up in chat but haven't moved scrollposition in the given number of seconds, it will scroll down
+            if new messages come in. This prevents new messages from being hidden
+            indefinitely if you accidently stayed scrolled up.</li>
+        <li><strong>Chat buffer size</strong>: How many lines of text are kept
+            for each channel in chat to scroll back to.</li>
+    </ul>
+    
+    <h3>Pause Chat</h3>
+    <p>The Pause Chat feature stops Chatty from scrolling down when you move the
+        mouse over chat. This can be useful if you want to click specific stuff
+        in a fast moving chat, for example if you are moderating or just want to
+        click on an emote to see what it is.</p>
+    
+    <p><em>Please note:</em> This will not work properly until the chat window is filled with
+        text, because only then will Chatty actively scroll down. Also, this
+        only stops Chatty from actively scrolling down, so if e.g. a big message
+        is being timed out and thus shortened, stuff may still move around accordingly
+        (which in that case couldn't really be prevented anyway).</p>
+    
+    <p>Chat is paused as long as you move the mouse over chat or if you hold
+        <kbd>Ctrl</kbd> (and initiated pausing by moving the mouse). A little
+        popup in the top-right will indicate that the chat is paused.</p>
+    
+    <p>Holding <kbd>Ctrl</kbd> basicially acts as if you moved the mouse
+        continuously.</p>
+    
+    <ul>
+        <li><strong>Pause chat when moving the mouse over it:</strong> Enables
+        this feature.</li>
+        <li><strong>Require Ctrl being pressed to start pausing chat:</strong>
+            If this is enabled, you need to have <kbd>Ctrl</kbd> pressed to
+            start pausing chat when moving the mouse over it. Once it's paused,
+            you can let go of <kbd>Ctrl</kbd> and it will stay paused as long as
+            you move the mouse (or hold <kbd>Ctrl</kbd> again to keep it paused
+            even when not moving the mouse, as usual).</li>
+        <li><strong>Run command when clicking on user (holding Ctrl):</strong>
+            When you select a command here, then clicking on a user in chat
+            while holding <kbd>Ctrl</kbd> will run the command on that user. You
+            can <a href="help-setting_commands.html#chat">manually edit</a> this
+            setting to use another command.</li>
+    </ul>
+    
+    <h2>
         <a name="Emoticons">Emoticons</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -155,6 +205,7 @@
                 effect when you change it.</em></li>
         <li><strong>Enable FFZ Mod Icon</strong>: Show the FFZ Mod Icon instead of the regular
             Mod Icon (where available). <em>Requires FrankerFaceZ setting to be enabled.</em></li>
+        <li><strong>Allow animated emotes</strong>: Show animated emotes (BTTV GIF emotes).</li>
         <li><strong>Scale</strong>: The relative size of how emotes are displayed in chat (100% is regular size).</li>
         <li><strong>Maximum Height</strong>: The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</li>
         <li><strong>Emotes Dialog</strong>: The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</li>
@@ -544,6 +595,9 @@
         more convenient. Aside from the settings, you can also ignore/unignore
         users via the User Context Menu.</p>
     
+    <p>Ignored users are independant of the main ignore list, so they also apply
+        if ignore is disabled.</p>
+    
     <h2>
         <a name="Sounds">Sounds</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -732,8 +786,12 @@
         context menu.</li>
         <li><strong>Tab Order</strong>: Whether to show tabs in the order they
         were opened or alphabetically.</li>
+        <li><strong>Scroll through tabs with mousewheel</strong>: Hover mouse
+            over tabs and scroll to change tabs.</li>
         <li><strong>Default Userlist Width</strong>: The default width of the
             userlist in pixels.</li>
+        <li><strong>Min. Width</strong>: The minimum width of the userlist in
+            pixels.</li>
         
     </ul>
     
@@ -917,12 +975,6 @@
     </h2>
     <h3>Other</h3>
     <ul>
-        <li><strong>Scroll down after [..] seconds of inactivity</strong>: If you scrolled
-        up in chat but haven't moved scrollposition in the given number of seconds, it will scroll down
-        if new messages come in. This prevents accidently scrolling up from hiding
-        new messages.</li>
-        <li><strong>Chat buffer size</strong>: How many lines of text are kept
-        for each channel in chat to scroll back to.</li>
         <li><strong>Inform me about new versions</strong>: Checks for new
         versions every few days and outputs a message about it.</li>
     </ul>
@@ -981,7 +1033,7 @@
     <ul>
         <li><strong>Server</strong>: The default server to connect to</li>
         <li><strong>Port</strong>: The default port(s) to connect to (can be
-            a list of ports, e.g. <code>6667,80</code>)</li>
+            a list of ports, e.g. <code>6667,443</code>)</li>
     </ul>
     <p>The values of these settings are used when connecting, unless the commandline
         parameters <code>-server</code> and/or <code>-port</code> are used,
@@ -991,7 +1043,7 @@
     and <code>/get port</code>.</p>
 
     <h3>Whisper Feature</h3>
-    <div class="moreInfo">Help: <a href="help.html#whisper">Whisper Feature</a></div>
+    <div class="moreInfo">Help: <a href="help-whisper.html">Whisper Feature</a></div>
     
     <h3><a name="Advanced-Userlist">Correct Userlist</a></h3>
     <p>If this setting is enabled, the IRCv3 capability that enables joins/parts is send

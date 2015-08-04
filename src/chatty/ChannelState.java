@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.DateTime;
+import chatty.util.StringUtil;
 
 /**
  * Holds the state for a single channel, like slowmode, submode and so on.
@@ -32,6 +33,8 @@ public class ChannelState {
      * channe is being hosted.
      */
     private String hosting;
+    
+    private String lang;
     
     /**
      * Cached info text based on the current state.
@@ -159,6 +162,16 @@ public class ChannelState {
         return hosting;
     }
     
+    public synchronized boolean setLang(String lang) {
+        if ((this.lang == null && lang != null)
+                || (this.lang != null && !this.lang.equals(lang))) {
+            this.lang = lang;
+            updateInfo();
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Get the info text based on the current state.
      * 
@@ -173,6 +186,7 @@ public class ChannelState {
      */
     private void updateInfo() {
         String result = "";
+        String sep = "|";
         if (slowMode == SLOWMODE_ON_INVALID || slowMode > 86400) {
             result += "Slow: >day";
         } else if (slowMode > 999) {
@@ -181,22 +195,16 @@ public class ChannelState {
             result += "Slow: "+slowMode;
         }
         if (subMode) {
-            if (!result.isEmpty()) {
-                result += "|";
-            }
-            result += "Sub";
+            result = StringUtil.append(result, sep, "Sub");
         }
         if (r9kMode) {
-            if (!result.isEmpty()) {
-                result += "|";
-            }
-            result += "r9k";
+            result = StringUtil.append(result, sep, "r9k");
         }
         if (hosting != null) {
-            if (!result.isEmpty()) {
-                result += "|";
-            }
-            result += "Hosting: "+hosting;
+            result = StringUtil.append(result, sep, "Hosting: "+hosting);
+        }
+        if (lang != null) {
+            result = StringUtil.append(result, sep, lang);
         }
         if (!result.isEmpty()) {
             result = "["+result+"]";

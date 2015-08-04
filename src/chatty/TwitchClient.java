@@ -1130,7 +1130,7 @@ public class TwitchClient {
                 setting.add("ignoredUsers");
             }
             if (type == null || type.equals("whisper")) {
-                message = StringUtil.append(message, "from whispering you", "/");
+                message = StringUtil.append(message, "/", "from whispering you");
                 setting.add("ignoredUsersWhisper");
             }
             boolean changed = false;

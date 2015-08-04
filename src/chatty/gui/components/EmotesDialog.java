@@ -585,10 +585,15 @@ public class EmotesDialog extends JDialog {
         void addEmotes(Collection<Emoticon> emotes, String title) {
             if (!emotes.isEmpty()) {
                 addTitle(title+" ("+emotes.size()+" emotes)");
-                List<Emoticon> sorted = new ArrayList<>(emotes);
-                Collections.sort(sorted, new SortEmotesByTypeAndName());
-                addEmotesPanel(sorted);
+                addEmotesPanel(sortEmotes(emotes));
             }
+        }
+        
+        Collection<Emoticon> sortEmotes(Collection<Emoticon> emotes) {
+            // Copy so the original doesn't get changed
+            List<Emoticon> sorted = new ArrayList<>(emotes);
+            Collections.sort(sorted, new SortEmotesByTypeAndName());
+            return sorted;
         }
         
         /**
@@ -699,7 +704,7 @@ public class EmotesDialog extends JDialog {
                     Set<Emoticon> subEmotes = emoteManager.getEmoticons(emoteset);
                     if (!subEmotes.isEmpty()) {
                         addTitle("Subscriber emotes of " + stream + " (" + subEmotes.size() + ")");
-                        addEmotesPanel(subEmotes);
+                        addEmotesPanel(sortEmotes(subEmotes));
                         if (!emotesets.contains(emoteset)) {
                             addSubtitle("(Need to be subscribed to use these.)", true);
                         }

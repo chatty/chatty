@@ -32,4 +32,15 @@ public class StringUtilTest {
         assertEquals(StringUtil.removeDuplicateWhitespace("  "), " ");
         assertEquals(StringUtil.removeDuplicateWhitespace(""), "");
     }
+    
+    @Test
+    public void testAppend() {
+        assertEquals(StringUtil.append("abc", "|", "abc"), "abc|abc");
+        assertEquals(StringUtil.append("abc", "", "abc"), "abcabc");
+        assertEquals(StringUtil.append(null, "|", "b"), "b");
+        assertEquals(StringUtil.append("", "|", "b"), "b");
+        assertEquals(StringUtil.append("abc", "|", null), "abc|null");
+        assertEquals(StringUtil.append("abc", null, "abc"), "abcnullabc");
+        assertEquals(StringUtil.append(null, null, null), null);
+    }
 }

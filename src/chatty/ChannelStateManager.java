@@ -87,6 +87,12 @@ public class ChannelStateManager {
         }
     }
     
+    public void setLang(String channel, String lang) {
+        if (getState(channel).setLang(lang)) {
+            updated(channel);
+        }
+    }
+    
     /**
      * Reset the channelstate for the given channel.
      * 

@@ -154,14 +154,25 @@ public class IgnoreSettings extends SettingsPanel {
             add(new JLabel("Ignored for whispers"), gbc);
             
             gbc = d.makeGbc(0, 1, 1, 1);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 0.5;
+            gbc.weighty = 1;
             ListSelector ignoredChat = d.addListSetting("ignoredUsers", 180, 250, false);
             ignoredChat.setDataFormatter(FORMATTER);
             add(ignoredChat, gbc);
             
             gbc = d.makeGbc(1, 1, 1, 1);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 0.5;
+            gbc.weighty = 1;
             ListSelector ignoredWhispers = d.addListSetting("ignoredUsersWhisper", 180, 250, false);
             ignoredWhispers.setDataFormatter(FORMATTER);
             add(ignoredWhispers, gbc);
+            
+            gbc = d.makeGbc(0, 2, 2, 1);
+            add(new JLabel("<html><body style='width:260px;'>These lists are "
+                    + "independant from the main ignore list, so the users are "
+                    + "ignored even if the Ignore system is disabled."), gbc);
             
             JButton closeButton = new JButton("Close");
             closeButton.addActionListener(new ActionListener() {
@@ -178,6 +189,7 @@ public class IgnoreSettings extends SettingsPanel {
             add(closeButton, gbc);
             
             pack();
+            setMinimumSize(getPreferredSize());
         }
         
     }

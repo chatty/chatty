@@ -16,19 +16,21 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <ul>
-        <li><code>/set &lt;setting&gt; &lt;value&gt;</code>
-        changes a setting</li>
-        <li><code>/get &lt;setting&gt;</code> shows the current value
-    of a setting</li>
-        <li><code>/reset &lt;setting&gt;</code> resets the setting to
-    the default (hard-coded) value</li>
-        <li><code>/clearsetting &lt;setting&gt;</code> sets
-    string settings to an empty string</li>
-        <li><code>/add &lt;setting&gt; &lt;value&gt;</code> adds a string to a
-    list of strings</li>
-        <li><code>/remove &lt;setting&gt; &lt;value&gt;</code> removes a string from a
-    list of strings</li>
+        <li><code>/set &lt;setting&gt; &lt;value&gt;</code> changes a setting</li>
+        <li><code>/get &lt;setting&gt;</code> shows the current value of a
+            setting</li>
+        <li><code>/reset &lt;setting&gt;</code> resets the setting to the
+            default (hard-coded) value</li>
+        <li><code>/clearsetting &lt;setting&gt;</code> sets string settings to
+            an empty string</li>
+        <li><code>/add &lt;setting&gt; &lt;value&gt;</code> adds item to a list
+            of strings/numbers</li>
+        <li><code>/remove &lt;setting&gt; &lt;value&gt;</code> removes item from
+            a list of strings/numbers</li>
     </ul>
+            
+            <p><em>Tip:</em> You can use <a href="help.html#nickCompletion">TAB Completion</a>
+                for setting names when using it behind a setting command.</p>
             
     <h2>
         <a name="settings">Settings</a>
@@ -44,12 +46,17 @@
     
     <p>Settings with a <span class="settingExclusive">slightly darker background color</span>
     are settings that are not available in the Settings Dialog and can only be
-    changed via commands (and sometimes also commandline options).</p>
+    changed via commands (and sometimes also commandline options). Settings with
+    a <span class="settingNoCommandEdit">lighter color</span> can't (or are not recommended to) be changed
+    via setting commands, but are added to the list because their value can be
+    viewed with <code>/get</code>.</p>
     
     <p>
         <a href="#font">Font</a> |
         <a href="#time">Time</a> |
         <a href="#server">Server/Connection</a> |
+        <a href="#chat">Chat</a> |
+        <a href="#window">Window</a> |
         <a href="#streamchat">Stream Chat</a> |
         <a href="#streamhighlights">Stream Highlights</a> |
         <a href="#debugging">Debugging</a> |
@@ -113,13 +120,6 @@
                     <td>List</td>
                     <td colspan="2"><em>Cannot be edited by command</em></td>
                     <td>The hotkeys that are currently defined</td>
-                </tr>
-                <tr class="settingNoCommandEdit">
-                    <td class="setting">windows</td>
-                    <td>Map</td>
-                    <td colspan="2"><em>Cannot be edited by command</em></td>
-                    <td>The windows/dialogs positions/sizes as they where loaded
-                        when you started Chatty (NOT necessarily the current ones).</td>
                 </tr>
                 <tr>
                     <td class="setting">globalHotkeysEnabled</td>
@@ -312,6 +312,79 @@
                     enables sending a userlist and joins/parts, allowing for a
                     correct userlist in Chatty and showing of joins/parts in chat
                     (if separately enabled of course)</td>
+                </tr>
+            </table>
+            
+            <h3><a name="chat">Chat</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">pauseChatOnMouseMove</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Enables the <a href="help.html#pausechat">Pause Chat</a>
+                        feature</td>
+                </tr>
+                <tr>
+                    <td class="setting">pauseChatOnMouseMoveCtrlRequired</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Require <kbd>Ctrl</kbd> to be pressed to start pausing
+                        chat</td>
+                </tr>
+                <tr>
+                    <td class="setting">commandOnCtrlClick</td>
+                    <td>String</td>
+                    <td>Command to run (only the command name)</td>
+                    <td><em>empty</em></td>
+                    <td>The command to run when clicking on a user while holding
+                        <kbd>Ctrl</kbd></td>
+                </tr>
+            </table>
+            
+            <h3><a name="window">Window</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr class="settingNoCommandEdit">
+                    <td class="setting">windows</td>
+                    <td>Map</td>
+                    <td colspan="2"><em>Cannot be edited by command</em></td>
+                    <td>The windows/dialogs positions/sizes as they where loaded
+                        when you started Chatty (NOT necessarily the current ones).</td>
+                </tr>
+                <tr>
+                    <td class="setting">tabOrder</td>
+                    <td>String</td>
+                    <td><code>normal</code>, <code>alphabetical</code></td>
+                    <td>normal</td>
+                    <td>How tabs are added (in the order they are added or
+                        alphabetical).</td>
+                </tr>
+                <tr>
+                    <td class="setting">tabsMwheelScrolling</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Scroll through tabs with mousewheel.</td>
+                </tr>
+                <tr>
+                    <td class="setting">tabsMwheelScrollingAnywhere</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Allow scrolling through tabs with mousewheel everywhere
+                        on the tabpane where nothing else can be scrolled (mainly
+                        the inputbox).</td>
                 </tr>
             </table>
             
