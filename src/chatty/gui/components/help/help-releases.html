@@ -45,8 +45,8 @@
     <h3>Highlights / Important Information</h3>
     <ul>
         <li>If you want to use the <code>/w</code> (whisper) command and receive whispers in Chatty, read the
-            <a href="help.html#whisper">Help</a>.</li>
-        <li>Added feature to pause chat scrolling when moving the mouse over it
+            <a href="help-whisper.html">Whisper Help</a> (some configuration required).</li>
+        <li>Added feature to <a href="help.html#pausechat">pause scrolling</a> when moving the mouse over chat
             (you have to enable it in the settings under <code>Chat</code>).</li>
         <li>Added Tabs drag and drop reordering, more menu options for closing and more.</li>
         <li>Readded FFZ Feature Friday support and improved it.</li>
@@ -55,16 +55,16 @@
         <h3>Full Changelog</h3>
 <pre>
 #### New features
-- Added experimental Whisper support (this will probably not developed much
-  until Twitch moves Whispers to the new system)
+- Added experimental Whisper support (this will probably not be developed much
+  until Twitch moves Whispers to the new system, read help on how to enable)
 - Improved TAB Completion: Added predictive sorting for names which gives users
   who recently talked/highlighted you a higher priority, added setting to
   toggle completion to common prefix (disabled by default)
 - Added dedicated ignore user lists (separate for chat and whispers)
 
 #### Chat Window
-- Added Pause Chat when moving mouse over chat feature (configure in the settings)
-- Changed Ctrl to be used to pause chat, use Alt+Gr for selecting when clicking
+- Added Pause Chat when moving mouse over chat feature (enable in the settings)
+- Changed Ctrl to be used to pause chat, use AltGr for selecting when clicking
   on a username in chat
 - Don't scroll down when scrolled up even when scroll down timeout has passed
   while holding Ctrl
@@ -76,7 +76,7 @@
 - Rejoin channels in the order the tabs were, when rejoining channels from last
   session on start (depends on the Tab Order setting of course)
 - Switch to tab when right-clicking on it (which wasn't the case everywhere)
-- Optional mouse wheel scrolling through tabs
+- Optional mouse wheel scrolling through tabs (enable in the settings)
 
 #### Emoticons
 - Added FFZ Feature Friday again and improved support for it in Emotes Dialog
@@ -85,6 +85,7 @@
 - Added setting to toggle animated emotes (BTTV GIF emotes)
 - Allow global FFZ/BTTV emotes to be added to the favorites as well
 - Don't show 150% size in Emotes Dialog Detail View when emote is too wide
+- Sort Channel Subscriber Emotes alphabetically
 
 #### Chat/Stream Info Display
 - Improved display for long slowmode times in the titlebar
@@ -102,7 +103,7 @@
 - Switched default ports to `6667,443` due to port 80 not being available
   anymore for standard IRC
 - Updated Settings Dialog
-- Added $globalmod and $anymod status identifiers for Usericons/Usercolors
+- Added `$globalmod` and `$anymod` status identifiers for Usericons/Usercolors
 - Added `$first` option for Custom Usericon restriction to show them in front of
   the regular Usericons
 - Added setting for filtering of combining characters to change between off,
@@ -124,12 +125,14 @@
 - Changed website URL to GitHub
 - Improved debug output a bit
 - Keep showing "Update Available" notification after restart
+- Removed condition to use maximum reconnection delay when host could not be
+  resolved
 - Updated help
 
 #### Bugfixes
 - Fixed error in slowmode message parsing
-- Changed Ignore option config:info to only apply to info messages, not regular
-  chat messages
+- Changed Ignore option `config:info` to only apply to info messages, not
+  regular chat messages
 - Fixed tab not showing new message if message was highlighted with
   `config:!notify` option
 - Fixed message parsing from inadvertently ignoring some (rare) messages

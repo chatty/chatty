@@ -1155,6 +1155,8 @@ public class MainGui extends JFrame implements Runnable {
                 openHelp("help-admin.html", ref);
             } else if (type.equals("help-livestreamer")) {
                 openHelp("help-livestreamer.html", ref);
+            } else if (type.equals("help-whisper")) {
+                openHelp("help-whisper.html", ref);
             } else if (type.equals("url")) {
                 UrlOpener.openUrlPrompt(MainGui.this, ref);
             } else if (type.equals("update")) {
@@ -2505,7 +2507,6 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    // TODO: TEST
     public void testHotkey() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

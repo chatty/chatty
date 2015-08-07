@@ -6,9 +6,11 @@
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
     <h1><a name="top">Whisper Feature</a></h1>
     
-    <a href="#start">Getting started</a> |
-    <a href="#usage">Usage</a> |
-    <a href="#troubleshooting">Troubleshooting</a>
+    <p>
+        <a href="#start">Getting started</a> |
+        <a href="#usage">Usage</a> |
+        <a href="#troubleshooting">Troubleshooting</a>
+    </p>
     
 <p><em>It is recommended that you read and understand this whole section
         before enabling this feature.</em></p>
@@ -16,13 +18,12 @@
     you to send private messages in chat to other users. However, it is disabled
     by default, since it has a few problems:</p>
     <ul>
-        <li>Twitch is currently testing Whispering on the Group Chat servers but
-            is planning to move it to a whole different system soon, which means
-            in the current state it is not really encouraged to be used by
-            third-party applications. It is unclear what the new system will be
-            and whether it will be possible to implement it in Chatty. Also, due
-            to these circumstances, not too much development time will be put
-            into the Whisper feature in Chatty at this time.</li>
+        <li>Twitch is planning to move Whispering to a whole different system
+            soon, which means in the current state it is not really encouraged
+            to be used by third-party applications. It is unclear what the new
+            system will be and whether it will be possible to implement it in
+            Chatty. Also, due to these circumstances, not too much development
+            time will be put into the Whisper feature in Chatty at this time.</li>
         <li>Whispering currently runs on the Group Chat servers, so Chatty can't
             just use <code>irc.twitch.tv</code> to connect as for regular chat.
             Since there is no easy official way to get the server data
@@ -32,28 +33,40 @@
         <h2><a name="start">Getting started</a></h2>
     <p>You have to change a few settings in order to use this feature
         (all under <code>Main - Settings - Advanced</code>):</p>
+    
+    <h3>Required settings</h3>
     <ul>
         <li><strong>Whisper Enabled</strong>: Connect to the given Group Chat server to send and receive
-        whispers.</li>
-            <li><strong>Server</strong>: The Group Chat server IP to connect to. You can check:
-                <ul>
-                    <li><a href="http://twitchstatus.com/">Twitchstatus.com</a> (unofficial site) at the bottom of the page,
-                "Group Chat" tab, "irc" Protocol (not "ws_irc")</li>
-                    <li>Get an IP from the Twitch API using <a href="http://blog.bashtech.net/twitch-group-chat-irc/">this guide</a>
+        whispers. Enable when you configured the server. Disable this it if you run into problems.</li>
+        <li><strong>Server/Port</strong>: You can click on <code>Select server..</code> and select a server from
+        the list (all listed <em>should</em> work). This is using an unsupported
+        Twitch API which is not guaranteed to stay the same.</li>
+    </ul>
+
+    <p>If <code>Select server..</code> is not working, configure the server manually:</p>
+    <ul>
+        <li><strong>Server</strong>: The Group Chat server IP to connect to. You can check:
+            <ul>
+                <li><a href="http://twitchstatus.com/">Twitchstatus.com</a> (unofficial site) at the bottom of the page,
+                    "Group Chat" tab, "irc" Protocol (not "ws_irc")</li>
+                <li>Get an IP from the Twitch API using <a href="http://blog.bashtech.net/twitch-group-chat-irc/">this guide</a>
                     (you will need a token and be member of a Group Chat, you won't need to get a channelname)</li>
-                </ul></li>
-            <li><strong>Port</strong>: The port for the Group Chat server you
+            </ul></li>
+        <li><strong>Port</strong>: The port for the Group Chat server you
             are using (you should get it along with the IP).</li>
     </ul>
-    <em>All these three settings require a restart of Chatty to take full effect,
+    
+    <em>Changing these settings requires a restart of Chatty to take full effect,
             although it may have some effect without a restart.</em>
     
     <p>Once properly enabled and connected, <code>[W]</code> will be shown in the titlebar and
         the <code>/connection</code> command will show the Whisper connection.
-        The connection is attempted once you connect to regular chat.
+        The connection is attempted when you connect to regular chat. When you
+        disconnect from regular chat via the <code>Main</code> menu whispers will
+        also be disconnected.
     </p>
     
-    <p>Optional settings:</p>
+    <h3>Optional settings</h3>
     <ul>
             <li><strong>Whitelist</strong>: If enabled, only users that have the
                 <a href="help-addressbook.html">Addressbook</a> category <code>whisper</code> will be able to send
@@ -89,6 +102,8 @@
     
     
     <h2><a name="usage">Usage</a></h2>
+    <p>When the Whisper Feature is connected (<code>[W]</code> appears in the
+        titlebar) you can receive and send whispers:</p>
     <ul>
         <li>When you receive a whisper, it will be displayed depending on the Display setting and
     will be indicated by the nickname being marked like this: <code>-[name]-</code></li>
@@ -106,23 +121,26 @@
     
     <ul>
         <li>A temporary problem with Twitch or your internet connection, in which
-            case just wait a while</li>
+            case just wait a while.</li>
         <li>Wrong server/port entered, follow the <a href="#start">Getting Started</a>
-            guide to check if the data you entered is still correct</li>
+            guide to check if the data you entered is still correct.</li>
         <li>Twitch changed the system and it is not working as implemented in Chatty
-            anymore (in which case you should disable the feature)</li>
+            anymore (in which case you should disable the feature).</li>
     </ul>
     
     <p>How to proceed:</p>
     <ul>
         <li>Check <a href="http://twitchstatus.com">Twitchstatus.com</a> (mainly Group Chat Tab),
             <a href="https://twitter.com/chattyclient">@ChattyClient</a> and
-            other usual places to find out if the problem lies with Twitch</li>
+            other usual places to find out if the problem lies with Twitch.
+            Disable the Whisper Feature if necessary.</li>
         <li>If the <code>[W]</code> in the titlebar isn't there, but it also
             doesn't output errors anymore, it may have given up trying to connect,
-            in which case you can enter <code>/reconnect</code> (if you are currently
-            connected to regular chat) or connect to regular chat through the <code>Main</code>
-            menu. Connecting to whispers is currently tied to connecting to regular chat.</li>
+            in which case you should connect to regular chat through the <code>Main</code>
+            menu (disconnect first if necessary). Connecting to whispers is
+            currently somewhat tied to connecting to regular chat. Disconnecting
+            from regular chat from the <code>Main</code> menu will also disconnect
+            from whispers.</li>
     </ul>
 </body>
 </html>

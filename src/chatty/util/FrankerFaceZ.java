@@ -227,6 +227,12 @@ public class FrankerFaceZ {
         listener.usericonsReceived(usericons);
     }
     
+    /**
+     * Parse event JSON, update variables and request appropriate emotes if
+     * feature friday was found.
+     * 
+     * @param json 
+     */
     private void handleFeatureFriday(String json) {
         // Also updates featureFridayChannel field
         int set = parseFeatureFriday(json);
@@ -253,6 +259,14 @@ public class FrankerFaceZ {
         }
     }
     
+    /**
+     * Parse event JSON and return feature friday emote set. Also updates the
+     * feature friday channel variable.
+     * 
+     * @param json
+     * @return The feature friday FFZ emote set, or -1 if none was found or an
+     * error occured
+     */
     private int parseFeatureFriday(String json) {
         try {
             JSONParser parser = new JSONParser();
@@ -269,12 +283,18 @@ public class FrankerFaceZ {
         return -1;
     }
     
+    /**
+     * Send a message to the listener to clear all FFZ Feature Friday emotes.
+     */
     private void clearFeatureFridayEmotes() {
         listener.channelEmoticonsReceived(new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.FEATURE_FRIDAY));
     }
 
+    /**
+     * Request and parse FFZ bot names.
+     */
     public void requestBotNames() {
         UrlRequest request = new UrlRequest("http://cdn.frankerfacez.com/script/bots.txt") {
             

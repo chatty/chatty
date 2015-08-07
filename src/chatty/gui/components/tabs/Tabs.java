@@ -70,10 +70,14 @@ public class Tabs extends JPanel {
                 }
             }
         });
+        
         tabs.addMouseListener(new MouseAdapter() {
             
             @Override
             public void mousePressed(MouseEvent e) {
+                /**
+                 * Switch to clicked tab.
+                 */
                 int index = tabs.indexAtLocation(e.getX(), e.getY());
                 if (index != -1) {
                     tabs.setSelectedIndex(index);

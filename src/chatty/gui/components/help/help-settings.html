@@ -1029,13 +1029,17 @@
     can however reset any setting to the default by either deleting the settings
     file or using <a href="help-setting_commands.html#server">setting commands</a>.</p>
     
-    <h3>Connecting</h3>
+    <h3>Connection</h3>
     <ul>
         <li><strong>Server</strong>: The default server to connect to</li>
         <li><strong>Port</strong>: The default port(s) to connect to (can be
             a list of ports, e.g. <code>6667,443</code>)</li>
+        <li><a name="Advanced-Userlist"><strong>Correct Userlist</strong></a>:
+        If this setting is enabled, the IRCv3 capability that enables joins/parts is send
+        on connect. This doesn't mean you have to <em>show</em> joins/parts in
+        chat, it just means joins/parts are received in the background to maintain the userlist.</li>
     </ul>
-    <p>The values of these settings are used when connecting, unless the commandline
+    <p>The server/port values are used when connecting, unless the commandline
         parameters <code>-server</code> and/or <code>-port</code> are used,
     then the value that is given there is used instead (without it being shown
     here). You should know if you set a server or port with a commandline
@@ -1045,14 +1049,10 @@
     <h3>Whisper Feature</h3>
     <div class="moreInfo">Help: <a href="help-whisper.html">Whisper Feature</a></div>
     
-    <h3><a name="Advanced-Userlist">Correct Userlist</a></h3>
-    <p>If this setting is enabled, the IRCv3 capability that enables joins/parts is send
-        on connect. This doesn't mean you have to <em>show</em> joins/parts in
-        chat, it just means joins/parts are received in the background to maintain the userlist.</p>
-    
     <h3><a name="Advanced-TC">Twitch Client Version</a></h3>
     <p>The Twitch Client Version setting has been removed since Twitch Chat was
-    switched over to IRCv3 tags and commands. It optionally also contains joins/parts/userlist.</p>
+    switched over to IRCv3 tags and commands (receiving of joins/parts is now
+    controlled by the <a href="#Advanced-Userlist">Correct Userlist</a> setting).</p>
     
     <h2>
         <a name="Hotkeys">Hotkeys</a>

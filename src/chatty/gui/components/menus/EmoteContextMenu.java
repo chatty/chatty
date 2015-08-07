@@ -40,10 +40,10 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             } else if (emote.type == Emoticon.Type.BTTV) {
                 addItem("bttvlink", "BetterTTV Emote");
-                if (emote.hasStreamSet() && emote.emoteSet == Emoticon.SET_UNDEFINED) {
-                    if (emote.getStream().contains(" ")) {
-                        addItem("", emote.getStream());
-                    }
+                if (emote.hasStreamSet()
+                        && emote.emoteSet == Emoticon.SET_UNDEFINED
+                        && Helper.validateStream(emote.getStream())) {
+                    addItem("", emote.getStream());
                 }
             } else if (emote.type == Emoticon.Type.CUSTOM) {
                 addItem("", "Custom Emote");
@@ -100,7 +100,7 @@ public class EmoteContextMenu extends ContextMenu {
     }
     
     private void addStreamSubmenu(Emoticon emote) {
-        if (emote.hasStreamSet() && !emote.getStream().contains(" ")) {
+        if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
             String subMenu = emote.getStream();
             addItem("profile", "Twitch Profile", subMenu);
             addItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);

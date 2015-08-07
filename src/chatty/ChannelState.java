@@ -200,10 +200,10 @@ public class ChannelState {
         if (r9kMode) {
             result = StringUtil.append(result, sep, "r9k");
         }
-        if (hosting != null) {
+        if (hosting != null && !hosting.isEmpty()) {
             result = StringUtil.append(result, sep, "Hosting: "+hosting);
         }
-        if (lang != null) {
+        if (lang != null && !lang.isEmpty()) {
             result = StringUtil.append(result, sep, lang);
         }
         if (!result.isEmpty()) {
