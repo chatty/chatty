@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -809,9 +810,13 @@ public class EmotesDialog extends JDialog {
                 addInfo(panel2, "Emote ID:", ""+emote.numericId);
             }
             if (emote.emoteSet > Emoticon.SET_UNDEFINED) {
-                addInfo(panel2, "Twitch Emoteset:", ""+emote.emoteSet);
+                String emoteSetInfo = String.valueOf(emote.emoteSet);
+                if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
+                    emoteSetInfo += " (Turbo)";
+                }
+                addInfo(panel2, "Twitch Emoteset:", emoteSetInfo);
             }
-            if (emote.hasStreamSet()) {
+            if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
                 addInfo(panel2, "Channel:", emote.getStream());
             }
             addInfo(panel2, "Usability:", emote.hasStreamRestrictions() ? "Local" : "Global");

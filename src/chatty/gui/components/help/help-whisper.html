@@ -12,11 +12,13 @@
         <a href="#troubleshooting">Troubleshooting</a>
     </p>
     
-<p><em>It is recommended that you read and understand this whole section
+    <p><em>It is recommended that you read and understand this whole section
         before enabling this feature.</em></p>
-        <p>Chatty implements the new <code>/w</code> command that Twitch Chat provides, allowing
-    you to send private messages in chat to other users. However, it is disabled
-    by default, since it has a few problems:</p>
+    
+    <p>Chatty implements the new <code>/w</code> command that Twitch Chat
+        provides, allowing you to send private messages in chat to other users.
+        However, it is disabled by default, since it has a few problems:</p>
+    
     <ul>
         <li>Twitch is planning to move Whispering to a whole different system
             soon, which means in the current state it is not really encouraged
@@ -30,18 +32,32 @@
             automatically, you have enter the IP and port yourself if you want
             to use this feature.</li>
     </ul>
-        <h2><a name="start">Getting started</a></h2>
+        
+        
+    <h2><a name="start">Getting started</a></h2>
     <p>You have to change a few settings in order to use this feature
         (all under <code>Main - Settings - Advanced</code>):</p>
     
     <h3>Required settings</h3>
     <ul>
-        <li><strong>Whisper Enabled</strong>: Connect to the given Group Chat server to send and receive
-        whispers. Enable when you configured the server. Disable this it if you run into problems.</li>
-        <li><strong>Server/Port</strong>: You can click on <code>Select server..</code> and select a server from
-        the list (all listed <em>should</em> work). This is using an unsupported
-        Twitch API which is not guaranteed to stay the same.</li>
+        <li><strong>Whisper Enabled</strong>: Connect to the given Group Chat
+            server to send and receive whispers. Enable when you configured the
+            server. Disable this it if you run into problems.</li>
+        <li><strong>Server/Port</strong>: You can click on
+            <code>Select server..</code> and select a server from the list (all
+            listed <em>should</em> work). This is using an unsupported Twitch
+            API which is not guaranteed to stay the same.</li>
     </ul>
+    
+    <p>Once these settings are correctly configured, Chatty will connect to
+        Whispers when you connect to regular chat. It will disconnect when you
+        disconnect from regular chat via the Main-menu. If the Whisper Feature
+        is properly connected and ready to use, <code>[W]</code> will be shown
+        in the titlebar and the <code>/connection</code> command will show the
+        Whisper connection in addition to the regular chat connection.</p>
+    
+    <p>If you were already connected when you changed these settings, either
+        disconnect and connect again (via the Main menu) or restart Chatty.</p>
 
     <p>If <code>Select server..</code> is not working, configure the server manually:</p>
     <ul>
@@ -55,47 +71,43 @@
         <li><strong>Port</strong>: The port for the Group Chat server you
             are using (you should get it along with the IP).</li>
     </ul>
-    
-    <em>Changing these settings requires a restart of Chatty to take full effect,
-            although it may have some effect without a restart.</em>
-    
-    <p>Once properly enabled and connected, <code>[W]</code> will be shown in the titlebar and
-        the <code>/connection</code> command will show the Whisper connection.
-        The connection is attempted when you connect to regular chat. When you
-        disconnect from regular chat via the <code>Main</code> menu whispers will
-        also be disconnected.
-    </p>
-    
+
     <h3>Optional settings</h3>
     <ul>
             <li><strong>Whitelist</strong>: If enabled, only users that have the
-                <a href="help-addressbook.html">Addressbook</a> category <code>whisper</code> will be able to send
-                whispers to you. Messages from other users are discarded.
-                Alternatively you can also <strong>blacklist</strong> users by adding them to the
-            <code>blockwhisper</code> category (which makes most sense with the Whitelist setting
-            disabled).<br /><br >
-            In addition, you can also add users to the Ignore List by right-clicking
-            on them in chat to open the context menu and choosing <code>Miscellaneous - Ignore (whisper)</code>.
-            Unlike the Blacklist or Whitelist using the Addressbook, this will not completely discard the messages, but instead add them
-            to the Ignored Messages dialog and possibly output some other messages
-            about it, depending on the Ignore settings.</li>
-            <li><strong>Display</strong>: Changes where the whispers are displayed.
+                <a href="help-addressbook.html">Addressbook</a> category
+                <code>whisper</code> will be able to send whispers to you.
+                Messages from other users are discarded. Alternatively you can
+                also <strong>blacklist</strong> users by adding them to the
+                <code>blockwhisper</code> category (which makes most sense with
+                the Whitelist setting disabled).<br /><br >
+                
+                In addition, you can also add users to the Ignore List by
+                right-clicking on them in chat to open the context menu and
+                choosing <code>Miscellaneous - Ignore (whisper)</code>. Unlike
+                the Blacklist or Whitelist using the Addressbook, this will not
+                completely discard the messages, but instead add them to the
+                Ignored Messages dialog and possibly output some other messages
+                about it, depending on the Ignore settings.</li>
+            <li><strong>Display</strong>: Changes where the whispers are
+                displayed.
                 <ul>
-                    <li><strong>Active Chat</strong> - Show in the chat window you are currently having
-                    active in Chatty.</li>
-                    <li><strong>One Window</strong> - Show all whispers in one separate window.
-                    In that window you will be able to respond to whispers by
-                    just typing <code>&lt;name&gt; &lt;message&gt;</code> instead
-                    of having to use the <code>/w</code> command. To be sure you
-                    actually provide the user to send it to you can only whisper
-                    to users that have already whispered to you (so e.g.
-                    <code>Hey how are you? :)</code> wont't be send to the user
-                    named <code>Hey</code>). The tab for collecting all whispers
-                    is named <code>$[whisper]</code>.</li>
+                    <li><strong>Active Chat</strong> - Show in the chat window
+                        you are currently having active in Chatty.</li>
+                    <li><strong>One Window</strong> - Show all whispers in one
+                        separate window. In that window you will be able to
+                        respond to whispers by just typing <code>&lt;name&gt;
+                        &lt;message&gt;</code> instead of having to use the
+                        <code>/w</code> command. To be sure you actually provide
+                        the user to send it to you can only whisper to users
+                        that have already whispered to you (so e.g.
+                        <code>Hey how are you? :)</code> wont't be send to the
+                        user named <code>Hey</code>). The tab for collecting all
+                        whispers is named <code>$[whisper]</code>.</li>
                     <li><strong>Per User</strong> - Open an extra tab for every
-                    user that whispers to you. You can respond to whispers by
-                    just typing the message in the tab for that user. The tab
-                    will be named <code>$&lt;username&gt;</code>.</li>
+                        user that whispers to you. You can respond to whispers
+                        by just typing the message in the tab for that user. The
+                        tab will be named <code>$&lt;username&gt;</code>.</li>
                 </ul>
             </li>
     </ul>
@@ -105,14 +117,19 @@
     <p>When the Whisper Feature is connected (<code>[W]</code> appears in the
         titlebar) you can receive and send whispers:</p>
     <ul>
-        <li>When you receive a whisper, it will be displayed depending on the Display setting and
-    will be indicated by the nickname being marked like this: <code>-[name]-</code></li>
-        <li>When you send a whisper via <code>/w &lt;name&gt; &lt;message&gt;</code>,
-            then this will be indicated in chat by the nickname being marked like this: <code>&gt;&gt;[name]</code></li>
-        <li>In both cases the name is the name of the person you are talking with, not your own name.</li>
-        <li>When you click on the name, you will be able to see your conversation,
-        with your own messages marked with a asterisk in front (*), which is usually
-        used to mark action messages (<code>/me</code>).</li>
+        <li>When you receive a whisper, it will be displayed depending on the
+            Display setting and will be indicated by the nickname being marked
+            like this: <code>-[name]-</code></li>
+        <li>When you send a whisper via
+            <code>/w &lt;name&gt; &lt;message&gt;</code>, then this will be
+            indicated in chat by the nickname being marked like this:
+            <code>&gt;&gt;[name]</code></li>
+        <li>In both cases the name is the name of the person you are talking
+            with, not your own name.</li>
+        <li>When you click on the name, you will be able to see your
+            conversation, with your own messages marked with a asterisk in front
+            (*), which is usually used to mark action messages
+            (<code>/me</code>).</li>
     </ul>
     
     <h2><a name="troubleshooting">Troubleshooting</a></h2>

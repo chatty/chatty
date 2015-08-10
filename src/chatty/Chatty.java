@@ -47,7 +47,7 @@ public class Chatty {
     /**
      * Version number of this version of Chatty
      */
-    public static final String VERSION = "0.8.1b";
+    public static final String VERSION = "0.8.1";
     
     /**
      * Enable Version Checker (if you compile and distribute this yourself, you

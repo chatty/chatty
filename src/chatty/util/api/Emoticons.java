@@ -3,7 +3,6 @@ package chatty.util.api;
 
 import chatty.Chatty;
 import chatty.Helper;
-import static chatty.util.api.Emoticon.SET_UNDEFINED;
 import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -364,7 +363,7 @@ public class Emoticons {
      */
     public String getStreamFromEmoteset(int emoteset) {
         String stream = emotesetStreams.get(emoteset);
-        if ("00000turbo".equals(stream) || "turbo".equals(stream)) {
+        if ("--twitch-turbo--".equals(stream) || "turbo".equals(stream)) {
             return "Turbo Emotes";
         }
         return emotesetStreams.get(emoteset);
