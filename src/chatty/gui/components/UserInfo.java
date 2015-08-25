@@ -11,6 +11,8 @@ import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.util.DateTime;
+import chatty.util.DateTime.Formatting;
+import chatty.util.api.ChannelInfo;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +21,6 @@ import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,7 @@ public class UserInfo extends JDialog {
     private final JPanel buttonPane;
     private final JPanel buttonPane2;
     private final JPanel infoPane;
+    private final JPanel infoPane2;
 
     private final ActionListener actionListener;
     
@@ -60,10 +62,15 @@ public class UserInfo extends JDialog {
     private String currentLocalUsername;
     
     private float fontSize;
+    
+    private final JLabel createdAt = new JLabel("Loading..");
+    private final JLabel followers = new JLabel();
+    
+    private final MainGui owner;
    
     public UserInfo(final MainGui owner, final ContextMenuListener contextMenuListener) {
         super(owner);
-        
+        this.owner = owner;
         actionListener = new ActionListener() {
 
             @Override
@@ -108,8 +115,22 @@ public class UserInfo extends JDialog {
         infoPane.add(numberOfLines);
         infoPane.add(firstSeen);
         infoPane.add(colorInfo);
+        infoPane2 = new JPanel();
+        LinkLabel l = new LinkLabel("[open:details More..]", new LinkLabelListener() {
 
-        gbc = makeGbc(0,4,3,1);
+            @Override
+            public void linkClicked(String type, String ref) {
+                toggleInfo();
+            }
+        });
+        infoPane.add(l);
+        
+        
+        infoPane2.add(createdAt);
+        infoPane2.add(followers);
+//        add(infoPane2, gbc);
+
+        gbc = makeGbc(0,5,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10,5,3,5);
         add(closeButton,gbc);
@@ -417,8 +438,12 @@ public class UserInfo extends JDialog {
         return Action.NONE;
     }
     
-    public void setUser(User user, String localUsername) {
-        currentUser = user;
+    private void setUser(User user, String localUsername) {
+        if (currentUser != user) {
+            removeInfo();
+            currentUser = user;
+            
+        }
         currentLocalUsername = localUsername;
         
         //infoPane.setComponentPopupMenu(new UserContextMenu(user, contextMenuListener));
@@ -437,8 +462,8 @@ public class UserInfo extends JDialog {
         lines.setText(null);
         lines.setText(makeLines());
         firstSeen.setText(" First seen: "+DateTime.format(user.getCreatedAt()));
-        firstSeen.setToolTipText(DateTime.formatFullDatetime(user.getCreatedAt()));
-        numberOfLines.setText(" Number of messages: "+user.getNumberOfMessages());
+        firstSeen.setToolTipText("First seen (this session only): "+DateTime.formatFullDatetime(user.getCreatedAt()));
+        numberOfLines.setText(" Messages: "+user.getNumberOfMessages());
         updateColor();
         updateModButtons();
         finishDialog();
@@ -554,5 +579,55 @@ public class UserInfo extends JDialog {
         gbc.gridheight = h;
         gbc.insets = new Insets(2,2,2,2);
         return gbc;
+    }
+    
+    private boolean infoAdded;
+    
+    private void addInfo() {
+        GridBagConstraints gbc = makeGbc(0, 4, 3, 1);
+        gbc.insets = new Insets(-8, 5, 0, 5);
+        add(infoPane2, gbc);
+        revalidate();
+        finishDialog();
+        infoAdded = true;
+    }
+    
+    private void removeInfo() {
+        remove(infoPane2);
+        revalidate();
+        finishDialog();
+        infoAdded = false;
+    }
+    
+    private void toggleInfo() {
+        if (infoAdded) {
+            removeInfo();
+        } else {
+            showInfo();
+        }
+    }
+    
+    private void showInfo() {
+        ChannelInfo info = owner.getCachedChannelInfo(currentUser.nick);
+        if (info == null) {
+            addInfo();
+            createdAt.setText("Loading..");
+            createdAt.setToolTipText(null);
+            followers.setText(null);
+        } else {
+            setChannelInfo(info);
+        }
+    }
+    
+    public void setChannelInfo(ChannelInfo info) {
+        if (info == null || currentUser == null || !currentUser.nick.equals(info.name)) {
+            removeInfo();
+            return;
+        }
+        addInfo();
+        createdAt.setText("Registered: "+DateTime.ago(info.createdAt, 0, 1, 0, Formatting.VERBOSE)+" ago");
+        createdAt.setToolTipText("Account created: "+DateTime.formatFullDatetime(info.createdAt));
+        
+        followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));
     }
 }

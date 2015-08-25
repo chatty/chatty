@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Chatty;
 import chatty.Usericon;
+import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.FollowerManager.Type;
 import java.io.UnsupportedEncodingException;
@@ -63,6 +64,9 @@ public class TwitchApi {
     
     private final Set<String> requestedChatIcons =
             Collections.synchronizedSet(new HashSet<String>());
+    
+    private final Map<String, ChannelInfo> cachedChannelInfo =
+            Collections.synchronizedMap(new HashMap<String, ChannelInfo>());
     
     private final ExecutorService executor;
 
@@ -217,8 +221,20 @@ public class TwitchApi {
         return url;
     }
     
+    public ChannelInfo getCachedChannelInfo(String stream) {
+        ChannelInfo info = cachedChannelInfo.get(stream);
+        if (info != null) {
+            if (System.currentTimeMillis() - info.time > 600*1000) {
+                getChannelInfo(stream);
+            }
+            return info;
+        }
+        getChannelInfo(stream);
+        return null;
+    }
+    
     public void getChannelInfo(String stream) {
-        if (stream == null) {
+        if (stream == null || stream.isEmpty()) {
             return;
         }
         String url = "https://api.twitch.tv/kraken/channels/"+stream;
@@ -506,6 +522,7 @@ public class TwitchApi {
             resultListener.putChannelInfoResult(SUCCESS);
         }
         resultListener.receivedChannelInfo(stream, info, SUCCESS);
+        cachedChannelInfo.put(stream, info);
     }
     
     /**
@@ -678,10 +695,18 @@ public class TwitchApi {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject)parser.parse(json);
             
+            String name = (String)root.get("name");
             String status = (String)root.get("status");
             String game = (String)root.get("game");
-            
-            return new ChannelInfo(status,game);
+            int views = JSONUtil.getInteger(root, "views", -1);
+            int followers = JSONUtil.getInteger(root, "followers", -1);
+            long createdAt = -1;
+            try {
+                createdAt = Util.parseTime(JSONUtil.getString(root, "created_at"));
+            } catch (java.text.ParseException ex) {
+                LOGGER.warning("Error parsing ChannelInfo: "+ex);
+            }
+            return new ChannelInfo(name, status,game, createdAt, followers, views);
         }
         catch (ParseException ex) {
             LOGGER.warning("Error parsing ChannelInfo.");

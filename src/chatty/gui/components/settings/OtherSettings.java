@@ -68,10 +68,15 @@ public class OtherSettings extends SettingsPanel {
         }
         
         gbc = d.makeGbc(0, 5, 2, 1);
-        other.add(d.addSimpleBooleanSetting("enableStatusWriter", "Write Stream Status:", "abc"), gbc);
+        other.add(d.addSimpleBooleanSetting("enableStatusWriter", "Write Stream Status:", ""), gbc);
         
         gbc = d.makeGbc(2, 5, 1, 1);
         other.add(d.addEditorStringSetting("statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER), gbc);
+        
+        
+        gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
+        other.add(d.addSimpleBooleanSetting("autoUnhost", "Auto-Unhost in your channel when live",
+                "Automatically sends the /unhost command in your channel if your stream is live"), gbc);
         
     }
     

@@ -344,6 +344,8 @@ public class AdminDialog extends JDialog {
                     setLoading(false);
                 }
             }
+            // In case the text is going to be too big, breaking the dialog
+            finishDialog();
         }
         if (scheduledCommercialTime > 0) {
             long timeLeft = scheduledCommercialTime - System.currentTimeMillis();
@@ -528,7 +530,7 @@ public class AdminDialog extends JDialog {
                 status.setText(info.getStatus());
                 game.setText(info.getGame());
                 updated.setText("Info last loaded: just now");
-                infoLastLoaded = System.currentTimeMillis();
+                infoLastLoaded = info.time;
                 statusEdited = false;
             } else {
                 infoLastLoaded = -1;
@@ -882,7 +884,7 @@ public class AdminDialog extends JDialog {
             }
             if (e.getSource() == update) {
                 if (currentChannel != null && !currentChannel.isEmpty()) {
-                    ChannelInfo info = new ChannelInfo(status.getText(), game.getText());
+                    ChannelInfo info = new ChannelInfo(currentChannel, status.getText(), game.getText());
                     main.putChannelInfo(currentChannel, info);
                     setLoading(true);
                     addCurrentToHistory();

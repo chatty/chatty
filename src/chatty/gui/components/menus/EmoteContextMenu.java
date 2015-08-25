@@ -3,6 +3,7 @@ package chatty.gui.components.menus;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
@@ -24,7 +25,7 @@ public class EmoteContextMenu extends ContextMenu {
         this.listener = listener;
         this.emoteImage = emoteImage;
         
-        addItem("code", emote.code);
+        addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
         addItem("emoteImage", emoteImage.getSizeString());
         if (emote.numericId != Emoticon.ID_UNDEFINED) {
             addItem("emoteId", "ID: "+emote.numericId);

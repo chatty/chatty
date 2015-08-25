@@ -1,6 +1,8 @@
 
 package chatty.util.api;
 
+import chatty.util.StringUtil;
+
 /**
  * Holds info about the channel (title, game). This is different to stream info
  * because this isn't associated with a stream (so it doesn't have viewercount)
@@ -10,12 +12,27 @@ package chatty.util.api;
  */
 public class ChannelInfo {
     
-    private final String status;
-    private final String game;
+    public final long time;
+    public final String name;
+    public final long createdAt;
+    public final int followers;
+    public final int views;
+    public final String status;
+    public final String game;
     
-    public ChannelInfo(String status, String game) {
+    public ChannelInfo(String name, String status, String game) {
+        this(name, status, game, -1, -1, -1);
+    }
+    
+    public ChannelInfo(String name, String status, String game, long createdAt,
+            int followers, int views) {
         this.status = status;
         this.game = game;
+        this.createdAt = createdAt;
+        this.views = views;
+        this.followers = followers;
+        this.name = StringUtil.toLowerCase(name);
+        this.time = System.currentTimeMillis();
     }
     
     public String getStatus() {
@@ -24,6 +41,11 @@ public class ChannelInfo {
     
     public String getGame() {
         return game;
+    }
+    
+    @Override
+    public String toString() {
+        return name+"/"+status+"/"+game+"/"+createdAt+"/"+followers+"/"+views;
     }
     
 }

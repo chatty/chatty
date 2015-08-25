@@ -6,6 +6,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticon.EmoticonUser;
@@ -14,7 +15,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -523,7 +523,7 @@ public class EmotesDialog extends JDialog {
          * @param title The text of the title
          */
         void addTitle(String title) {
-            JLabel titleLabel = new JLabel(title);
+            JLabel titleLabel = new JLabel(StringUtil.shortenTo(title, 48, 34));
             titleLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = TITLE_INSETS;
@@ -770,7 +770,7 @@ public class EmotesDialog extends JDialog {
             super(name, updateOn);
         }
         
-        GridBagConstraints lgbc = new GridBagConstraints();
+        private GridBagConstraints lgbc = new GridBagConstraints();
 
         @Override
         protected void updateEmotes() {
@@ -862,7 +862,8 @@ public class EmotesDialog extends JDialog {
             
             lgbc.gridx = 1;
             lgbc.anchor = GridBagConstraints.EAST;
-            panel.add(new JLabel(value), lgbc);
+            
+            panel.add(new JLabel(StringUtil.shortenTo(value, 35, 20)), lgbc);
             
             lgbc.gridy++;
         }

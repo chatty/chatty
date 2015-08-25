@@ -269,7 +269,7 @@ public class SettingsManager {
         settings.addBoolean("titleShowChannelState", true);
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
-        settings.addLong("userlistMinWidth", 120);
+        settings.addLong("userlistMinWidth", 0);
         
         // Highlight
         settings.addList("highlight",new ArrayList(), Setting.STRING);
@@ -399,6 +399,9 @@ public class SettingsManager {
         settings.addLong("whisperDisplayMode", WhisperConnection.DISPLAY_IN_CHAT);
         settings.addString("groupChatServer", "");
         settings.addString("groupChatPort", "");
+        settings.addBoolean("whisperAutoRespond", false);
+        
+        settings.addBoolean("autoUnhost", false);
     }
     
     /**

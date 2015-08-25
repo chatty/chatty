@@ -74,6 +74,22 @@ public class StringUtil {
         return input;
     }
     
+    public static String shortenTo(String input, int max, int min) {
+        if (input != null && input.length() > max) {
+            if (min+2 > max) {
+                min = max-2;
+            }
+            if (max > 2) {
+                String start = input.substring(0, min);
+                String end = input.substring(input.length() - (max - min - 2));
+                return start+".."+end;
+            } else {
+                return "..";
+            }
+        }
+        return input;
+    }
+    
     public static String trim(String s) {
         if (s == null) {
             return null;
@@ -144,6 +160,10 @@ public class StringUtil {
             return b;
         }
         return a+sep+b;
+    }
+    
+    public static final void main(String[] args) {
+        System.out.println(shortenTo("abcdefghi", 8, 5));
     }
     
 }

@@ -1626,9 +1626,15 @@ public class TwitchClient {
                 }
                 g.setChannelNewStatus(channel, newStatus);
                 if (info.getOnline()
-                        && info.getTimeStartedWithPicnicAgo() < 60*1000
+//                        && info.getTimeStartedWithPicnicAgo() < 60*1000
                         && getHostedChannel(channel) != null) {
-                    g.printLine("** Still hosting another channel while streaming. **");
+                    if (settings.getBoolean("autoUnhost")
+                            && info.stream.equals(c.getUsername())
+                            && c.onChannel(channel)) {
+                        c.sendCommandMessage(channel, ".unhost", "Trying to turn off host mode.. (Auto-Unhost)");
+                    } else {
+                        g.printLine("** Still hosting another channel while streaming. **");
+                    }
                 }
             }
             if (info.getOnline() || !settings.getBoolean("ignoreOfflineNotifications")) {

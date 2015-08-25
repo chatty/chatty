@@ -3373,6 +3373,7 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 adminDialog.setChannelInfo(channel, info, result);
+                userInfoDialog.setChannelInfo(info);
             }
         });
     }
@@ -3383,6 +3384,10 @@ public class MainGui extends JFrame implements Runnable {
     
     public void getChannelInfo(String channel) {
         client.api.getChannelInfo(channel);
+    }
+    
+    public ChannelInfo getCachedChannelInfo(String channel) {
+        return client.api.getCachedChannelInfo(channel);
     }
     
     public void performGameSearch(String search) {

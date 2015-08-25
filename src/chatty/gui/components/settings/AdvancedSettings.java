@@ -125,6 +125,10 @@ public class AdvancedSettings extends SettingsPanel {
                 d.makeGbc(2, 3, 2, 1));
         
         
+        whisper.add(d.addSimpleBooleanSetting("whisperAutoRespond", "Auto-respond to ignored/non-whitelisted users",
+                "Sends an automatic message telling users you didn't receive their message"),
+                d.makeGbc(0, 4, 5, 1, GridBagConstraints.WEST));
+        
     }
     
     private class GroupChatSelect extends JDialog {

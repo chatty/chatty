@@ -21,6 +21,7 @@ public class DateTime {
     public static final long MINUTE = 60;
     public static final long HOUR = MINUTE * 60;
     public static final long DAY = HOUR * 24;
+    public static final long YEAR = DAY * 365;
     
     public static int currentHour12Hour() {
         Calendar cal = Calendar.getInstance();
@@ -121,8 +122,8 @@ public class DateTime {
         LAST_ONE_EXACT
     }
     
-    private static final String[] TIMENAMES_COMPACT = {"d", "h", "m", "s"};
-    private static final String[] TIMENAMES_VERBOSE = {" days", " hours", " minutes", " seconds"};
+    private static final String[] TIMENAMES_COMPACT = {"y", "d", "h", "m", "s"};
+    private static final String[] TIMENAMES_VERBOSE = {" years", " days", " hours", " minutes", " seconds"};
     
     public static final int S = 1;
     public static final int M = 2;
@@ -230,7 +231,7 @@ public class DateTime {
         return b.toString();
     }
     
-    private static final long[] TIME_DEF = {DAY, HOUR, MINUTE, 1};
+    private static final long[] TIME_DEF = {YEAR, DAY, HOUR, MINUTE, 1};
     
     public static double[] getTimes(long input, long[] timeDef, int upperLimit) {
         double seconds = (double)(input / 1000);

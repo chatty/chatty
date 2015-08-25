@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.settings.Settings;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -19,6 +20,10 @@ public class WhisperConnection {
     private final TwitchConnection c;
     private final WhisperListener listener;
     private final Settings settings;
+    
+    private final String AUTO_RESPOND_MESSAGE = "[Auto-Message] This user has "
+            + "not allowed to receive whispers from you.";
+    private final Set<String> autoRespondedTo = new HashSet<>();
     
     public WhisperConnection(WhisperListener listener, Settings settings) {
         this.listener = listener;
@@ -156,7 +161,7 @@ public class WhisperConnection {
             return;
         }
         if (isAvailable()) {
-            c.sendSpamProtectedMessage("#jtv", "/w "+nick+" "+message, false);
+            rawWhisper(nick, message);
             User user = c.getUser(WHISPER_CHANNEL, nick);
             listener.whisperSent(user, message);
             if (isUserIgnored(user)) {
@@ -165,6 +170,10 @@ public class WhisperConnection {
         } else {
             listener.info("Can't send whisper: not connected");
         }
+    }
+    
+    private void rawWhisper(String nick, String message) {
+        c.sendSpamProtectedMessage("#jtv", "/w "+nick+" "+message, false);
     }
     
     /**
@@ -313,6 +322,14 @@ public class WhisperConnection {
         public void onWhisper(User user, String message, String emotes) {
             if (isUserAllowed(user)) {
                 listener.whisperReceived(user, message, emotes);
+            }
+            if (isUserIgnored(user) && settings.getBoolean("whisperAutoRespond")) {
+                if (!autoRespondedTo.contains(user.nick)) {
+                    rawWhisper(user.nick, AUTO_RESPOND_MESSAGE);
+                    autoRespondedTo.add(user.nick);
+                }
+            } else {
+                autoRespondedTo.remove(user.nick);
             }
         }
         
