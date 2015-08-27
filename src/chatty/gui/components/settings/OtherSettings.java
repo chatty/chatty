@@ -75,8 +75,8 @@ public class OtherSettings extends SettingsPanel {
         
         
         gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleBooleanSetting("autoUnhost", "Auto-Unhost in your channel when live",
-                "Automatically sends the /unhost command in your channel if your stream is live"), gbc);
+        other.add(d.addSimpleBooleanSetting("autoUnhost", "Auto-Unhost when your stream goes live",
+                "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"), gbc);
         
     }
     

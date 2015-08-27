@@ -45,9 +45,10 @@ public class DateTimeTest {
         assertEquals(DateTime.duration(1000*(DAY+1), S, 0, 0), (DAY+1)+"s");
         assertEquals(DateTime.duration(1000*(DAY+1), S, 0, D), (DAY+1)+"s");
         assertEquals(DateTime.duration(0, 0, 0, 0, 0), "");
-        assertEquals(DateTime.duration(0, 0, 0, 0, 0, Formatting.LEADING_ZERO_VALUES), "0d 0h 0m 0s");
+        assertEquals(DateTime.duration(0, 0, 0, 0, 0, Formatting.LEADING_ZERO_VALUES), "0y 0d 0h 0m 0s");
         assertEquals(DateTime.duration(0, 0, 0, S, 1), "0m");
         assertEquals(DateTime.duration(0, S, 0, S, 1), "0s");
+        assertEquals(DateTime.duration((long)123456789*1000, 1, 0, Formatting.VERBOSE), "3 years");
 //        for (long i=0;i<(1000*DAY*2);i += 33) {
 //            assertEquals(DateTime.duration(i, H, 3, 0, LD_ZERO), DateTime.duration3(i/1000, true));
 //        }

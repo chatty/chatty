@@ -468,7 +468,7 @@ public class TwitchConnection {
         if (sendSpamProtectedMessage(channel, message, false)) {
             listener.onInfo(channel, echo);
         } else {
-            listener.onInfo("# Command not sent to prevent ban: " + message);
+            listener.onInfo(channel, "# Command not sent to prevent ban: " + message);
         }
     }
     

@@ -977,6 +977,18 @@
     <ul>
         <li><strong>Inform me about new versions</strong>: Checks for new
         versions every few days and outputs a message about it.</li>
+        <li><strong>Auto-Unhost when your stream goes live</strong>: Automatically
+            sends the <code>/unhost</code> command to your channel if you started
+            your stream session in the last 15 minutes and the stream status
+            changes (usually from offline -> live).<br />
+            For this to work, you need to have joined the channel in Chatty,
+            either with the broadcaster account (so your own account if it's
+            your stream) or with an account that is an editor in the channel
+            (in which case you also have to add the channel to the
+            <code>autoUnhostStreams</code> setting, via
+            <code>/add autoUnhostStreams &lt;streamName&gt;</code>, in order to
+            tell Chatty that you are authorized/want to use the automatic <code>/unhost</code>
+            feature in that channel).</li>
     </ul>
     <h3>Write Stream Status</h3>
     <p>You can let Chatty write information (title, game, viewercount) of a

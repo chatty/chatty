@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.1)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.2b1)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -234,8 +234,10 @@
         <a name="login">Login data</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>The login data consists of a <em>username</em> (or account name) and most importantly an <em>access token</em>, which is sort of a
-    revokable password that can also have different types of access associated with it, the ones usable for Chatty being:</p>
+    <p>The login data consists of a <em>username</em> (or account name) and most
+        importantly an <em>access token</em>, which is sort of a revokable
+        password that can also have different types of access associated with
+        it, the ones usable for Chatty being:</p>
     
     <dl>
         <dt><code>Chat access</code></dt>
@@ -258,19 +260,21 @@
             via the <a href="#followers">Subscribers Dialog</a> (if you have a sub button).</dd>
     </dl>
     
-    <p>Once requested from Twitch, the login data is stored locally on your computer
-    along with the other settings of Chatty. Since Twitch gives out the access token
-    per application, any access token for the same account requested with Chatty
-    will be invalidated when you request a new access token.</p>
+    <p>Once requested from Twitch, the login data is stored locally on your
+        computer along with the other settings of Chatty.
+        <span style="text-decoration: line-through">Since Twitch gives out the
+        access token per application, any access token for the same account
+        requested with Chatty will be invalidated when you request a new access
+        token</span>. (This doesn't seem to be the case anymore.)</p>
+    
     <p>If getting login data fails, read <a href="help-guide2.html">this guide</a>.
         If your login was determined invalid, read <a href="#login-invalid">down below</a>.</p>
     
     <h3><a name="access">Allow more access</a></h3>
-    <p>To allow Chatty more access than it already has (e.g. if you haven't selected
-        editor access before, but you want it now),
-        you need to request a new access token.
-    Just go to <code>&lt;Main - Login..&gt;</code>, delete the login
-    and request it again with the necessary access.</p>
+    <p>To allow Chatty more access than it already has (e.g. if you haven't
+        selected editor access before, but you want it now), you need to request
+        a new access token. Just go to <code>&lt;Main - Login..&gt;</code>,
+        delete the login and request it again with the necessary access.</p>
     
     <h3>Allow less access</h3>
     <p>To allow Chatty less access than it already has (e.g. you don't want it
@@ -288,11 +292,11 @@
         by anyone having access to your computer.
     It allows anyone who obtains it to chat in your name and access the other
     things listed above (if you allowed it when getting the token). If you think
-    the token may have been compromised, please immediately delete it and
-    <em>request a new one</em> (which will invalidate any previously issued)
-    or go to your Twitch Settings subsection
+    the token may have been compromised, please immediately go to your Twitch
+    Settings subsection
     <a href="http://www.twitch.tv/settings/connections">Connections</a>
-    and <em>revoke the accesss</em> there.</p>
+    and <em>revoke the accesss</em> there. You can then request a new one for
+    which Twitch will ask you to authorize Chatty again.</p>
     
     <h3><a name="login-invalid">Invalid Login</a></h3>
     <p>If your login is determined invalid (either by checking it manually or

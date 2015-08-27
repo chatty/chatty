@@ -1625,15 +1625,26 @@ public class TwitchClient {
                     g.printLine(channel, "~" + newStatus + "~");
                 }
                 g.setChannelNewStatus(channel, newStatus);
+                
+                /**
+                 * Only do warning/unhost stuff if stream is only at most 15
+                 * minutes old. This prevents unhosting at the end of the stream
+                 * when the status may change from online -> offline -> online
+                 * due to cached data from the Twitch API and unhost when the
+                 * streamer already hosted someone else intentionally.
+                 */
                 if (info.getOnline()
-//                        && info.getTimeStartedWithPicnicAgo() < 60*1000
+                        && info.getTimeStartedWithPicnicAgo() < 15*60*1000
                         && getHostedChannel(channel) != null) {
                     if (settings.getBoolean("autoUnhost")
-                            && info.stream.equals(c.getUsername())
-                            && c.onChannel(channel)) {
+                            && c.onChannel(channel)
+                            && (
+                                info.stream.equals(c.getUsername())
+                                || settings.listContains("autoUnhostStreams", info.stream)
+                            )) {
                         c.sendCommandMessage(channel, ".unhost", "Trying to turn off host mode.. (Auto-Unhost)");
                     } else {
-                        g.printLine("** Still hosting another channel while streaming. **");
+                        g.printLine(channel, "** Still hosting another channel while streaming. **");
                     }
                 }
             }
@@ -1803,6 +1814,12 @@ public class TwitchClient {
         
     }
     
+    /**
+     * Only used for testing. You have to restart Chatty for the spam protection
+     * in the connectin to change.
+     * 
+     * @param value 
+     */
     public void setLinesPerSeconds(String value) {
         spamProtection.setLinesPerSeconds(value);
     }

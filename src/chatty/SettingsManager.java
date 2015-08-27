@@ -402,6 +402,7 @@ public class SettingsManager {
         settings.addBoolean("whisperAutoRespond", false);
         
         settings.addBoolean("autoUnhost", false);
+        settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
     }
     
     /**

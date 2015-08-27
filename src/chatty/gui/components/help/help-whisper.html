@@ -7,7 +7,7 @@
     <h1><a name="top">Whisper Feature</a></h1>
     
     <p>
-        <a href="#start">Getting started</a> |
+        <a href="#start">Getting started / Settings</a> |
         <a href="#usage">Usage</a> |
         <a href="#troubleshooting">Troubleshooting</a>
     </p>
@@ -34,7 +34,7 @@
     </ul>
         
         
-    <h2><a name="start">Getting started</a></h2>
+    <h2><a name="start">Getting started / Settings</a></h2>
     <p>You have to change a few settings in order to use this feature
         (all under <code>Main - Settings - Advanced</code>):</p>
     
@@ -110,6 +110,18 @@
                         tab will be named <code>$&lt;username&gt;</code>.</li>
                 </ul>
             </li>
+            <li><strong>Auto-respond to ignored/non-whitelisted users</strong>:
+                If enabled, sends an automatic reponse to users that you have
+                ignored (or not whitelisted if you have the whitelist enabled),
+                if they whisper to you. This does not apply to messages that are
+                ignored due to the regular ignore list, just the separate user
+                ignore list (changeable through the Settings, commands or the
+                User Context Menu) or the special Addressbook categories for
+                whispers (see above).<br />
+                The message being sent is <code>[Auto-Message] This user has not
+                allowed to receive whispers from you.</code>. The message is
+                only sent once per session to each different user that whispers
+                to you and is also spam protected.</li>
     </ul>
     
     

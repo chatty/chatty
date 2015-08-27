@@ -161,19 +161,22 @@ public class WhisperConnection {
             return;
         }
         if (isAvailable()) {
-            rawWhisper(nick, message);
-            User user = c.getUser(WHISPER_CHANNEL, nick);
-            listener.whisperSent(user, message);
-            if (isUserIgnored(user)) {
-                listener.info("You haven't allowed to receive whispers from "+user);
+            if (!rawWhisper(nick, message)) {
+                listener.info("# Whisper not sent (spam protection): " + message);
+            } else {
+                User user = c.getUser(WHISPER_CHANNEL, nick);
+                listener.whisperSent(user, message);
+                if (isUserIgnored(user)) {
+                    listener.info("You haven't allowed to receive whispers from " + user);
+                }
             }
         } else {
             listener.info("Can't send whisper: not connected");
         }
     }
     
-    private void rawWhisper(String nick, String message) {
-        c.sendSpamProtectedMessage("#jtv", "/w "+nick+" "+message, false);
+    private boolean rawWhisper(String nick, String message) {
+        return c.sendSpamProtectedMessage("#jtv", "/w "+nick+" "+message, false);
     }
     
     /**
