@@ -816,6 +816,9 @@ public class EmotesDialog extends JDialog {
                 }
                 addInfo(panel2, "Twitch Emoteset:", emoteSetInfo);
             }
+            if (emote.emoteSet == Emoticon.SET_UNKNOWN) {
+                addInfo(panel2, "Twitch Emoteset:", "unknown");
+            }
             if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
                 addInfo(panel2, "Channel:", emote.getStream());
             }

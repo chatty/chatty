@@ -3,8 +3,13 @@ package chatty;
 
 import chatty.util.DateTime;
 import chatty.util.LogUtil;
+import chatty.util.MiscUtil;
+import chatty.util.SingleInstance;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * Main class that starts the client as well as parses the commandline
@@ -65,9 +70,19 @@ public class Chatty {
      */
     public static final String VERSION_TEST_URL = "http://127.0.0.1/twitch/version.txt";
     
+    /**
+     * For use with the -single commandline argument, if no port is specified.
+     * Unregistered port from the User Ports range.
+     */
+    private static final int DEFAULT_SINGLE_INSTANCE_PORT = 48724;
     
+    // End of configuration
+    
+    /**
+     * When this program was started
+     */
     public static final long STARTED_TIME = System.currentTimeMillis();
-    
+
     /**
      * If true, use the current working directory to save settings etc.
      */
@@ -79,54 +94,88 @@ public class Chatty {
      * @param args The commandline arguments.
      */
     public static void main(String[] args) {
-        HashMap<String, String> parsedArgs = parseArguments(args);
+        Map<String, String> parsedArgs = MiscUtil.parseArgs(args);
+        
+        /**
+         * Continue only if single instance mode isn't enabled or registering
+         * succeeded.
+         */
+        if (parsedArgs.containsKey("single")) {
+            int port = getInstancePort(parsedArgs);
+            if (!SingleInstance.registerInstance(port)) {
+                SingleInstance.notifyRunningInstance(port,
+                        encodeParametersToJSON(parsedArgs));
+                // Exit program
+                return;
+            }
+        }
+        
         if (parsedArgs.containsKey("cd")) {
             useCurrentDirectory = true;
         }
-        new TwitchClient(parsedArgs);
+
+        final TwitchClient client = new TwitchClient(parsedArgs);
+        
+        // Adding listener just in case, will do nothing if not used
+        SingleInstance.setNewInstanceListener(new SingleInstance.NewInstanceListener() {
+
+            @Override
+            public void newInstance(String message) {
+                Map<String, String> args = decodeParametersFromJSON(message);
+                if (args.containsKey("channel")) {
+                    String channel = args.get("channel");
+                    client.joinChannels(Helper.parseChannelsFromString(channel, false));
+                }
+            }
+        });
         
         LogUtil.startMemoryUsageLogging();
     }
     
     /**
-     * Parses the command line arguments into a HashMap for easier use.
+     * Encodes the given Map of parameters to a JSON String.
      * 
-     * Example:
-     * -username abc -password abcdefg -connect
-     * 
-     * Gets parsed into 2 arguments with parameter and one argument with an
-     * empty parameter.
-     * 
-     * @param args The string array of arguments
-     * @return The Hashmap with argument/parameter pairs
+     * @param parameters The Map of parsed parameters
+     * @return The JSON String
      */
-    static HashMap<String,String> parseArguments(String[] args) {
-        HashMap<String,String> result = new HashMap<>();
-        String argumentName = null;
-        for (String arg : args) {
-            if (arg.startsWith(("-"))) {
-                // Everything starting with "-" is an argument
-                if (argumentName != null && !result.containsKey(argumentName)) {
-                    result.put(argumentName,"");
-                }
-                argumentName = arg.substring(1);
+    private static String encodeParametersToJSON(Map<String, String> parameters) {
+        JSONObject object = new JSONObject();
+        object.putAll(parameters);
+        return object.toJSONString();
+    }
+
+    /**
+     * Decodes the given JSON String into a Map of parameters.
+     * 
+     * @param json The JSON String
+     * @return The Map of parameters or an empty Map if any error occurs
+     */
+    private static Map<String, String> decodeParametersFromJSON(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject)parser.parse(json);
+            Map<String, String> result = new HashMap<>();
+            for (Object key : root.keySet()) {
+                result.put((String)key, (String)root.get(key));
             }
-            else if (argumentName != null) {
-                // Everything else is a value of the argument
-                if (result.containsKey(argumentName)) {
-                    String currentArgument = result.get(argumentName);
-                    result.put(argumentName,currentArgument+" "+arg);
-                }
-                else {
-                    result.put(argumentName,arg);
-                }
+            return result;
+        } catch (Exception ex) {
+            return new HashMap();
+        }
+    }
+    
+    private static int getInstancePort(Map<String, String> args) {
+        int port = DEFAULT_SINGLE_INSTANCE_PORT;
+        String arg = args.get("single");
+        if (arg != null) {
+            try {
+                port = Integer.parseInt(arg);
+            } catch (NumberFormatException ex) {
+                // Use default
             }
         }
-        if (!result.containsKey(argumentName)) {
-            result.put(argumentName, "");
-        }
-        return result; 
-   }
+        return port;
+    }
     
     /**
      * Gets the directory to save data in (settings, cache) and also creates it

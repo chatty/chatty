@@ -1566,7 +1566,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         /**
                          * Add emote from message alone
                          */
-                        String code = text.substring(start, end);
+                        String code = text.substring(start, end+1);
                         String url = Emoticon.getTwitchEmoteUrlById(id, 1);
                         Emoticon.Builder b = new Emoticon.Builder(
                                 Emoticon.Type.TWITCH, code, url);

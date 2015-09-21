@@ -367,12 +367,7 @@ public class FavoritesDialog extends JDialog {
      */
     public Set<String> getChannels() {
         String channels = input.getText();
-        String[] chans = Helper.parseChannels(channels, false);
-        Set<String> result = new HashSet<>();
-        for (String channel : chans) {
-            result.add(channel);
-        }
-        return result;
+        return Helper.parseChannelsFromString(channels, false);
     }
     
     public void setData(Set<String> favorites, Map<String, Long> history) {

@@ -128,12 +128,7 @@ public class JoinDialog extends JDialog {
     
     private Set<String> getChannels() {
         String chans = channels.getText();
-        String[] chansArray = Helper.parseChannels(chans, false);
-        Set<String> result = new HashSet<>();
-        for (String channel : chansArray) {
-            result.add(channel);
-        }
-        return result;
+        return Helper.parseChannelsFromString(chans, false);
     }
     
     private void changed() {

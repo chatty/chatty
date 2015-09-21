@@ -430,7 +430,7 @@ public class SettingsManager {
      * 
      * @param args Map with commandline settings, key=value pairs
      */
-    void loadCommandLineSettings(HashMap<String, String> args) {
+    void loadCommandLineSettings(Map<String, String> args) {
         for (String key : args.keySet()) {
             // Go through all commandline options
             String value = args.get(key);
@@ -465,6 +465,9 @@ public class SettingsManager {
                     break;
                 case "port":
                     settings.setString("port", value);
+                    break;
+                case "single":
+                    LOGGER.info("Single instance (port: "+(value.isEmpty() ? "default" : value)+")");
                     break;
             }
             if (key.startsWith("set:") && key.length() > 4) {

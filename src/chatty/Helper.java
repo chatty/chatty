@@ -21,9 +21,16 @@ public class Helper {
         return VIEWERCOUNT_FORMAT.format(viewerCount);
     }
     
-    public static String[] parseChannels(String channels, boolean prepend) {
+    /**
+     * Parses comma-separated channels from a String.
+     * 
+     * @param channels The list channels to parse
+     * @param prepend Whether to prepend # if necessary
+     * @return Set of channels sorted as in the String
+     */
+    public static Set<String> parseChannelsFromString(String channels, boolean prepend) {
         String[] parts = channels.split(",");
-        Vector<String> result = new Vector<>();
+        Set<String> result = new LinkedHashSet<>();
         for (String part : parts) {
             String channel = part.trim();
             if (validateChannel(channel)) {
@@ -33,9 +40,11 @@ public class Helper {
                 result.add(StringUtil.toLowerCase(channel));
             }
         }
-        String[] resultArray = new String[result.size()];
-        result.copyInto(resultArray);
-        return resultArray;
+        return result;
+    }
+    
+    public static String[] parseChannels(String channels, boolean prepend) {
+        return parseChannelsFromString(channels, prepend).toArray(new String[0]);
     }
     
     public static String[] parseChannels(String channels) {
@@ -385,6 +394,8 @@ public class Helper {
 //            htmlspecialchars_encode("&");
 //        }
 //        System.out.println(System.currentTimeMillis() - start);
+        
+        System.out.println(Arrays.asList(parseChannels("b,a,b,c")));
     }
     
     /**

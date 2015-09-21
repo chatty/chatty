@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.2b1)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.2b2)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -663,7 +663,9 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <p>Required:</p>
         <ul>
             <li>The <strong>code</strong> can be prefixed with <code>re:</code>
-            to specify a regular expression. Otherwise it is interpreted as plain text.</li>
+            to specify a regular expression. Otherwise it is interpreted as plain text
+            (the same as regular Twitch emotes, case-sensitive and usually separated
+            by space from other characters).</li>
             <li>The <strong>image file</strong> is relative to the settings directory (where you created
             the <code>emotes.txt</code> in), so just put them in the same directory.
         You should also be able to use URLs to load the image from the internet.</li>
@@ -1110,7 +1112,8 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <dd>Connect immediately when starting Chatty</dd>
         
         <dt><code>-channel &lt;channel&gt;</code></dt>
-        <dd>The channel to join</dd>
+        <dd>The channel to join (you can specify more than one channel by
+            separating them with a comma)</dd>
         
         <dt><code>-ds</code></dt>
         <dd>Don't save settings on exit (settings are everything that is
@@ -1120,11 +1123,27 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <dd>Use current working directory (usually the directory you
                 start Chatty from) for saving/loading settings and other files.
                 This can be useful to make Chatty more portable or use several
-                different setting files on the same computer.</dd>
+                different setting files on the same computer.
+                <a href="help-guide_folders.html">More information..</a></dd>
         
         <dt><code>-set:&lt;settingName&gt; &lt;setting value&gt;</code></dt>
         <dd>Change any setting that can be edited via the <code>/set</code>
         command (see <a href="help-setting_commands.html">Setting Commands</a>).</dd>
+        
+        <dt><code>-single [port]</code></dt>
+        <dd>Run in single instance mode, which means if you start Chatty while 
+            it's already running the parameters are forwarded to the already
+            running instance instead of starting another one. You have to
+            specify the <code>-single</code> parameter with the same port (or
+            no port to use the default one) for all instances that you want to
+            have run in the same single instance mode.</dd>
+        <dd>The port is listened to locally to check if any instance is already
+            running and to forward the commandline parameters. If you don't
+            supply a port a default one is used. If the used port is already
+            taken by another program you have to specify one that works or else
+            no instance of Chatty will be able to start.</dd>
+        <dd>Currently only the <code>-channel</code> parameter is used when 
+            forwarded to an already running instance (joining the channel).</dd>
     </dl>
     
     <h2>

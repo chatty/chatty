@@ -60,13 +60,15 @@ public class TwitchClient {
     private volatile boolean shuttingDown = false;
     
     /**
-     * The URL to get a token.
+     * The URL to get a token. Needs to end with the scopes so other ones can be
+     * added.
      */
     public static final String REQUEST_TOKEN_URL = ""
             + "https://api.twitch.tv/kraken/oauth2/authorize"
             + "?response_type=token"
             + "&client_id="+Chatty.CLIENT_ID
             + "&redirect_uri="+Chatty.REDIRECT_URI
+            + "&force_verify=true"
             + "&scope=chat_login";
     
     /**
@@ -147,7 +149,7 @@ public class TwitchClient {
     private final WhisperConnection w;
     private final IrcLogger ircLogger = new IrcLogger();
     
-    public TwitchClient(HashMap<String, String> args) {
+    public TwitchClient(Map<String, String> args) {
 
         // Logging
         new Logging(this);

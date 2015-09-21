@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -526,8 +527,8 @@ public class TwitchConnection {
      * @param channels Set of channelnames (valid/invalid, leading # or not).
      */
     public void joinChannels(Set<String> channels) {
-        Set<String> valid = new HashSet<>();
-        Set<String> invalid = new HashSet<>();
+        Set<String> valid = new LinkedHashSet<>();
+        Set<String> invalid = new LinkedHashSet<>();
         for (String channel : channels) {
             String checkedChannel = Helper.toValidChannel(channel);
             if (checkedChannel == null) {
@@ -700,12 +701,18 @@ public class TwitchConnection {
                 return;
             }
             
-            if (!openChannels.isEmpty()) {
-                joinChannels(getOpenChannels());
-            } else if (autojoin != null) {
+            
+            if (autojoin != null) {
                 for (String channel : autojoin) {
                     joinChannel(channel);
                 }
+                /**
+                 * Only use autojoin once, to prevent it from being used on
+                 * reconnect (open channels should be used for that).
+                 */
+                autojoin = null;
+            } else {
+                joinChannels(getOpenChannels());
             }
             listener.onRegistered();
         }
