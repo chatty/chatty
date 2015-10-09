@@ -133,6 +133,13 @@ public class MessageSettings extends SettingsPanel {
         otherSettingsPanel.add(d.addSimpleBooleanSetting("printStreamStatus", "Show stream status in chat",
                 "Output stream status when you join a channel and when it changes"), gbc);
         
+        gbc = d.makeGbc(2, 3, 2, 1);
+        gbc.anchor = GridBagConstraints.WEST;
+        otherSettingsPanel.add(
+                d.addSimpleBooleanSetting("colorCorrection", "Correct readability of usercolors",
+                        "If enabled, changes some usercolors to make them more readable on the current background"),
+                gbc);
+        
         /**
          * Timeout settings
          */

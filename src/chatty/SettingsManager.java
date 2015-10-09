@@ -173,7 +173,7 @@ public class SettingsManager {
         settings.addBoolean("ffz", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
-        settings.addBoolean("showAnimatedEmotes", true);
+        settings.addBoolean("showAnimatedEmotes", false);
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addString("tabOrder", "normal");
@@ -201,6 +201,7 @@ public class SettingsManager {
         settings.addString("highlightColor","#FF0000");
         settings.addString("searchResultColor", "LightYellow");
         settings.addString("searchResultColor2", "#FFFF80");
+        settings.addBoolean("colorCorrection", true);
         
         
         // History and Favorites
@@ -221,6 +222,7 @@ public class SettingsManager {
         settings.addBoolean("saveStatusHistory", true);
         settings.addBoolean("statusHistoryClear", true);
         settings.addLong("statusHistoryKeepDays", 30);
+        settings.addString("statusHistorySorting", "");
         
         // Commercials
         settings.addString("commercialHotkey","");

@@ -778,6 +778,8 @@ public class MainGui extends JFrame implements Runnable {
         streamChat.setMessageTimeout((int)client.settings.getLong("streamChatMessageTimeout"));
         
         emotesDialog.setEmoteScale((int)client.settings.getLong("emoteScaleDialog"));
+        
+        adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
     }
     
     private static final String[] menuBooleanSettings = new String[]{
@@ -3672,6 +3674,7 @@ public class MainGui extends JFrame implements Runnable {
                 System.out.println("Saving GUI settings.");
                 client.settings.setLong("favoritesSorting", favoritesDialog.getSorting());
                 emoticons.saveFavoritesToSettings(settings);
+                client.settings.setString("statusHistorySorting", adminDialog.getStatusHistorySorting());
             }
         }
         

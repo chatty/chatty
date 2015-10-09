@@ -14,6 +14,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -21,7 +24,10 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
@@ -248,6 +254,70 @@ public class GuiUtil {
             updateLookAndFeel(childWindow);
         }
         SwingUtilities.updateComponentTreeUI(window);
+    }
+    
+    /**
+     * Returns the current sort keys of the given table encoded in a String.
+     * 
+     * <p>This is intended to be used together with
+     * {@link setSortingForTable(JTable, String)}.</p>
+     *
+     * @param table
+     * @return 
+     */
+    public static String getSortingFromTable(JTable table) {
+        List<? extends RowSorter.SortKey> keys = table.getRowSorter().getSortKeys();
+        String result = "";
+        for (RowSorter.SortKey key : keys) {
+            int order = 0;
+            if (key.getSortOrder() == SortOrder.ASCENDING) {
+                order = 1;
+            } else if (key.getSortOrder() == SortOrder.DESCENDING) {
+                order = 2;
+            }
+            result += String.format("%s:%s;", key.getColumn(), order);
+        }
+        return result;
+    }
+    
+    /**
+     * Sets the sort keys for the RowSorter of the given JTable. Doesn't change
+     * the sorting if the sorting parameter doesn't contain any valid sort key.
+     * 
+     * <p>This is intended to be used together with
+     * {@link getSortingFromTable(JTable)}.</p>
+     *
+     * @param table
+     * @param sorting 
+     */
+    public static void setSortingForTable(JTable table, String sorting) {
+        List<RowSorter.SortKey> keys = new ArrayList<>();
+        StringTokenizer t = new StringTokenizer(sorting, ";");
+        while (t.hasMoreTokens()) {
+            String[] split = t.nextToken().split(":");
+            if (split.length == 2) {
+                try {
+                    int rowId = Integer.parseInt(split[0]);
+                    int orderId = Integer.parseInt(split[1]);
+                    SortOrder order;
+                    switch (orderId) {
+                        case 1: order = SortOrder.ASCENDING; break;
+                        case 2: order = SortOrder.DESCENDING; break;
+                        default: order = SortOrder.UNSORTED;
+                    }
+                    keys.add(new RowSorter.SortKey(rowId, order));
+                } catch (NumberFormatException ex) {
+                    // Just don't add anything
+                }
+            }
+        }
+        try {
+            if (!keys.isEmpty()) {
+                table.getRowSorter().setSortKeys(keys);
+            }
+        } catch (IllegalArgumentException ex) {
+            // Don't change sorting
+        }
     }
     
 }

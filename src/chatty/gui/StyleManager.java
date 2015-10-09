@@ -32,7 +32,8 @@ public class StyleManager implements StyleServer {
             "timestampTimezone", "autoScrollTimeout", "searchResultColor2",
             "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
-            "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes"
+            "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
+            "colorCorrection"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -106,22 +107,22 @@ public class StyleManager implements StyleServer {
         StyleConstants.setLineSpacing(paragraphStyle, spacing);
         
         other = new SimpleAttributeSet();
-        //other.addAttribute(ChannelTextPane.TIMESTAMP_ENABLED, settings.getBoolean("timestampEnabled"));
-        other.addAttribute(Setting.EMOTICONS_ENABLED, settings.getBoolean("emoticonsEnabled"));
-        other.addAttribute(Setting.EMOTICON_SCALE_FACTOR, settings.getLong("emoteScale"));
-        other.addAttribute(Setting.EMOTICON_MAX_HEIGHT, settings.getLong("emoteMaxHeight"));
-        other.addAttribute(Setting.USERICONS_ENABLED, settings.getBoolean("usericonsEnabled"));
-        other.addAttribute(Setting.SHOW_BANMESSAGES, settings.getBoolean("showBanMessages"));
-        other.addAttribute(Setting.AUTO_SCROLL, settings.getBoolean("autoScroll"));
-        other.addAttribute(Setting.AUTO_SCROLL_TIME, settings.getLong("autoScrollTimeout"));
-        other.addAttribute(Setting.ACTION_COLORED, settings.getBoolean("actionColored"));
-        other.addAttribute(Setting.BUFFER_SIZE, settings.getLong("bufferSize"));
-        other.addAttribute(Setting.COMBINE_BAN_MESSAGES, settings.getBoolean("combineBanMessages"));
-        other.addAttribute(Setting.BOT_BADGE_ENABLED, settings.getBoolean("botBadgeEnabled"));
-        other.addAttribute(Setting.FILTER_COMBINING_CHARACTERS, settings.getLong("filterCombiningCharacters"));
-        other.addAttribute(Setting.PAUSE_ON_MOUSEMOVE, settings.getBoolean("pauseChatOnMouseMove"));
-        other.addAttribute(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, settings.getBoolean("pauseChatOnMouseMoveCtrlRequired"));
-        other.addAttribute(Setting.EMOTICONS_SHOW_ANIMATED, settings.getBoolean("showAnimatedEmotes"));
+        addBooleanSetting(Setting.EMOTICONS_ENABLED, "emoticonsEnabled");
+        addLongSetting(Setting.EMOTICON_SCALE_FACTOR, "emoteScale");
+        addLongSetting(Setting.EMOTICON_MAX_HEIGHT, "emoteMaxHeight");
+        addBooleanSetting(Setting.USERICONS_ENABLED, "usericonsEnabled");
+        addBooleanSetting(Setting.SHOW_BANMESSAGES, "showBanMessages");
+        addBooleanSetting(Setting.AUTO_SCROLL, "autoScroll");
+        addLongSetting(Setting.AUTO_SCROLL_TIME, "autoScrollTimeout");
+        addBooleanSetting(Setting.ACTION_COLORED, "actionColored");
+        addLongSetting(Setting.BUFFER_SIZE, "bufferSize");
+        addBooleanSetting(Setting.COMBINE_BAN_MESSAGES, "combineBanMessages");
+        addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
+        addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
+        addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
+        addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");
+        addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
+        addBooleanSetting(Setting.COLOR_CORRECTION, "colorCorrection");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
         long deletedMessagesModeNumeric = 0;
@@ -131,8 +132,14 @@ public class StyleManager implements StyleServer {
             deletedMessagesModeNumeric = settings.getLong("deletedMessagesMaxLength");
         }
         other.addAttribute(Setting.DELETED_MESSAGES_MODE, deletedMessagesModeNumeric);
-        
-        
+    }
+    
+    private void addBooleanSetting(Setting key, String name) {
+        other.addAttribute(key, settings.getBoolean(name));
+    }
+    
+    private void addLongSetting(Setting key, String name) {
+        other.addAttribute(key, settings.getLong(name));
     }
     
     private Color makeColor(String setting) {

@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.StatusHistory;
 import chatty.StatusHistoryEntry;
+import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -209,6 +210,7 @@ public class StatusHistoryDialog extends JDialog {
         table.setData(history.getEntries());
         closeAction = CloseAction.CANCEL;
         setVisible(true);
+        // The dialog is modal
         StatusHistoryEntry selected = table.getSelectedEntry();
         if (selected != null) {
             if (closeAction == CloseAction.TITLE) {
@@ -220,6 +222,14 @@ public class StatusHistoryDialog extends JDialog {
             }
         }
         return null;
+    }
+    
+    public String getSortOrder() {
+        return GuiUtil.getSortingFromTable(table);
+    }
+    
+    public void setSortOrder(String sorting) {
+        GuiUtil.setSortingForTable(table, sorting);
     }
     
     /**

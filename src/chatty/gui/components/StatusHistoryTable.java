@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.StatusHistoryEntry;
+import chatty.gui.GuiUtil;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
 import java.awt.Color;
@@ -9,6 +10,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -17,6 +19,8 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -57,7 +61,9 @@ public class StatusHistoryTable extends JTable {
         
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        sorter.toggleSortOrder(3);
+        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+        sortKeys.add(new RowSorter.SortKey(3, SortOrder.DESCENDING));
+        sorter.setSortKeys(sortKeys);
         
         addMouseListener(new MouseAdapter() {
 

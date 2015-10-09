@@ -852,6 +852,14 @@ public class AdminDialog extends JDialog {
         }
     }
     
+    public String getStatusHistorySorting() {
+        return statusHistoryDialog.getSortOrder();
+    }
+    
+    public void setStatusHistorySorting(String order) {
+        statusHistoryDialog.setSortOrder(order);
+    }
+    
     /**
      * Adds the current status to the preset history
      */

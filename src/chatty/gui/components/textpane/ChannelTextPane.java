@@ -125,7 +125,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         DELETED_MESSAGES_MODE, ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
-        PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED
+        PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED,
+        COLOR_CORRECTION
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
@@ -2230,6 +2231,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
             addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
+            addSetting(Setting.COLOR_CORRECTION, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -2437,7 +2439,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 userStyle.addAttribute(Attribute.USER_MESSAGE, true);
                 Color userColor = user.getColor();
                 // Only correct color if no custom color is defined
-                if (!user.hasCustomColor()) {
+                if (!user.hasCustomColor() && isEnabled(Setting.COLOR_CORRECTION)) {
                     userColor = HtmlColors.correctReadability(userColor, getBackground());
                     user.setCorrectedColor(userColor);
                 }

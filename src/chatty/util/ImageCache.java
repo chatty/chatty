@@ -1,6 +1,8 @@
 
 package chatty.util;
 
+import chatty.util.gif.GifUtil;
+import static java.awt.MediaTracker.COMPLETE;
 import static java.awt.MediaTracker.ERRORED;
 import java.awt.Toolkit;
 import java.io.File;
@@ -261,7 +263,7 @@ public class ImageCache {
     public static ImageIcon getImageDirectly(URL url) {
         ImageIcon loadedIcon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
         if (loadedIcon.getImageLoadStatus() != ERRORED) {
-            return loadedIcon;
+            return checkForGif(url, loadedIcon);
         }
         return null;
     }
@@ -374,13 +376,13 @@ public class ImageCache {
     
     private static ImageIcon getImageFromFile(Path file) {
         try {
-            ImageIcon image = new ImageIcon(Toolkit.getDefaultToolkit().createImage(file.toUri().toURL()));
+            URL url = file.toUri().toURL();
+            ImageIcon image = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
             if (image.getImageLoadStatus() != ERRORED) {
-                return image;
+                return checkForGif(url, image);
             }
-            
         } catch (MalformedURLException ex) {
-            
+            LOGGER.warning("Error loading image from file: "+ex);
         }
         return null;
     }
@@ -431,6 +433,30 @@ public class ImageCache {
         synchronized(lockObjects) {
             lockObjects.remove(file);
         }
+    }
+    
+    /**
+     * Checks if the given image might be a GIF file and tries to load it, while
+     * also fixing potential frame rate issues.
+     * 
+     * @param url
+     * @param icon
+     * @return 
+     */
+    private static ImageIcon checkForGif(URL url, ImageIcon icon) {
+        // Not sure if this check works reliably, but it seemed to not be
+        // complete when loading animated GIFs.
+        if (icon.getImageLoadStatus() != COMPLETE) {
+            // Assume GIF
+            try {
+                ImageIcon gifIcon = GifUtil.getGifFromUrl(url);
+                LOGGER.info("Loaded " + url + " as GIF.");
+                return gifIcon;
+            } catch (Exception ex) {
+                LOGGER.info("Error loading GIF " + url + ": " + ex);
+            }
+        }
+        return icon;
     }
     
 }

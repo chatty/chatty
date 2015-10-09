@@ -130,7 +130,7 @@ public class LogFile {
                 return true;
             }
         } catch (IOException ex) {
-            LOGGER.warning("Log: Lock failed ("+file+" / "+ex.getLocalizedMessage()+")");
+            LOGGER.warning("Log: Lock failed ("+file+" / "+ex+")");
         }
         LOGGER.warning("Log: Lock failed ("+file+")");
         return false;
