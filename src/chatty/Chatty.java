@@ -70,6 +70,8 @@ public class Chatty {
      */
     public static final String VERSION_TEST_URL = "http://127.0.0.1/twitch/version.txt";
     
+    public static final String COMPILE_INFO = "JDK8";
+    
     /**
      * For use with the -single commandline argument, if no port is specified.
      * Unregistered port from the User Ports range.
@@ -224,9 +226,11 @@ public class Chatty {
     }
     
     public static String chattyVersion() {
-        return "Chatty Version "+Chatty.VERSION
-                +(Chatty.HOTKEY ? " Hotkey" : "")
-                +(Chatty.DEBUG ? " (Debug)" : "");
+        return String.format("Chatty Version %s%s%s / %s",
+                Chatty.VERSION,
+                (Chatty.HOTKEY ? " Hotkey": ""),
+                (Chatty.DEBUG ? " (Debug)" : ""),
+                COMPILE_INFO);
     }
     
     public static String uptime() {

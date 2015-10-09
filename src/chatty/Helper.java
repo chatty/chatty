@@ -461,11 +461,12 @@ public class Helper {
     }
     
     public static String systemInfo() {
-        return "Java: "+System.getProperty("java.version")+" ("
-                +System.getProperty("java.vendor")
-                +") OS: "+System.getProperty("os.name")+" ("
-                +System.getProperty("os.version")
-                +"/"+System.getProperty("os.arch")+")";
+        return String.format("Java: %s (%s) OS: %s (%s/%s)",
+                System.getProperty("java.version"),
+                System.getProperty("java.vendor"),
+                System.getProperty("os.name"),
+                System.getProperty("os.version"),
+                System.getProperty("os.arch"));
     }
     
     /**
