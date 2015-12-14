@@ -176,6 +176,12 @@ public class Channels {
         if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
             channel.setUserlistEnabled(false);
         }
+        
+        boolean noInputAtStart = gui.getSettings().getBoolean("noInputAtStart");
+        if (noInputAtStart) {
+            channel.toggleInput();
+        }
+        
         return channel;
     }
     

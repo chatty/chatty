@@ -224,6 +224,8 @@ public class SettingsManager {
         
         settings.addBoolean("imageCache", true);
         
+        settings.addBoolean("noInputAtStart", false);
+        
         // Colors
         settings.addString("foregroundColor","#111111");
         settings.addString("backgroundColor","#FAFAFA");

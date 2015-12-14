@@ -67,7 +67,13 @@ public class ChatSettings extends SettingsPanel {
         main.add(bufferSizesButton,
                 gbc);
         
-        
+        JCheckBox noInputAtStartPanel = new JCheckBox();
+        noInputAtStartPanel.add(d.addSimpleBooleanSetting("noInputAtStart",
+                "input field is hidden as default",
+                "input field is hidden as default"));
+
+        gbc = d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST);
+        main.add(noInputAtStartPanel, gbc);       
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
         
