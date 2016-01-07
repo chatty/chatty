@@ -113,6 +113,7 @@ public class MainMenu extends JMenuBar {
         addCheckboxItem(viewOptions, "showModMessages", "Show mod/unmod");
         addCheckboxItem(viewOptions, "attachedWindows", "Attached dialogs");
         addCheckboxItem(viewOptions, "mainResizable", "Window resizable");
+        addCheckboxItem(viewOptions, "statusBar", "Show Status Bar");
 
         view.add(viewOptions);
         view.addSeparator();

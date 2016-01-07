@@ -1,79 +1,36 @@
 
 package chatty.gui;
 
-import chatty.gui.components.UserInfo;
-import chatty.gui.components.DebugWindow;
-import chatty.gui.components.ChannelInfoDialog;
-import chatty.gui.components.LinkLabelListener;
+import chatty.*;
+import chatty.gui.components.*;
 import chatty.gui.components.help.About;
-import chatty.gui.components.HighlightedMessages;
-import chatty.gui.components.TokenDialog;
-import chatty.gui.components.AdminDialog;
-import chatty.gui.components.ConnectionDialog;
-import chatty.gui.components.Channel;
-import chatty.gui.components.TokenGetDialog;
-import chatty.gui.components.FavoritesDialog;
-import chatty.gui.components.JoinDialog;
-import chatty.util.api.Emoticon;
-import chatty.util.api.StreamInfo;
-import chatty.util.api.TokenInfo;
-import chatty.util.api.Emoticons;
-import chatty.util.api.ChannelInfo;
-import java.util.List;
-import chatty.Chatty;
-import chatty.TwitchClient;
-import chatty.Helper;
-import chatty.User;
-import chatty.Irc;
-import chatty.StatusHistory;
-import chatty.UsercolorItem;
-import chatty.Usericon;
-import chatty.WhisperConnection;
-import chatty.gui.components.AddressbookDialog;
-import chatty.gui.components.EmotesDialog;
-import chatty.gui.components.ErrorMessage;
-import chatty.gui.components.FollowersDialog;
-import chatty.gui.components.LiveStreamsDialog;
-import chatty.gui.components.LivestreamerDialog;
-import chatty.gui.components.srl.SRL;
-import chatty.gui.components.SearchDialog;
-import chatty.gui.components.StreamChat;
-import chatty.gui.components.UpdateMessage;
 import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
+import chatty.gui.components.srl.SRL;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
-import chatty.util.DateTime;
-import chatty.util.ImageCache;
-import chatty.util.MiscUtil;
-import chatty.util.Sound;
-import chatty.util.StringUtil;
+import chatty.util.*;
+import chatty.util.api.*;
 import chatty.util.api.Emoticon.EmoticonImage;
-import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
-import chatty.util.api.FollowerInfo;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.util.logging.LogRecord;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
+import java.util.logging.LogRecord;
 
 /**
  * The Main Hub for all GUI activity.
@@ -119,6 +76,7 @@ public class MainGui extends JFrame implements Runnable {
     private FollowersDialog followerDialog;
     private FollowersDialog subscribersDialog;
     private StreamChat streamChat;
+    private JLabel statusBar;
     
     // Helpers
     private final Highlighter highlighter = new Highlighter();
@@ -232,6 +190,10 @@ public class MainGui extends JFrame implements Runnable {
         channels.getComponent().setPreferredSize(new Dimension(600,300));
         add(channels.getComponent(), BorderLayout.CENTER);
         channels.setChangeListener(new ChannelChangeListener());
+
+        statusBar = new JLabel();
+        add(statusBar, BorderLayout.SOUTH);
+        statusBar.setText(" ");  // single space just to force it to always have some height
         
         // Some newer stuff
         addressbookDialog = new AddressbookDialog(this, client.addressbook);
@@ -740,6 +702,8 @@ public class MainGui extends JFrame implements Runnable {
         
         windowStateManager.loadWindowStates();
         windowStateManager.setAttachedWindowsEnabled(client.settings.getBoolean("attachedWindows"));
+
+        statusBar.setVisible(client.settings.getBoolean("statusBar"));
         
         // Set window maximized state
         if (client.settings.getBoolean("maximized")) {
@@ -784,8 +748,9 @@ public class MainGui extends JFrame implements Runnable {
     
     private static final String[] menuBooleanSettings = new String[]{
         "showJoinsParts", "ontop", "showModMessages", "attachedWindows",
-        "simpleTitle", "globalHotkeysEnabled", "mainResizable", "streamChatResizable",
-        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState"
+        "simpleTitle", "globalHotkeysEnabled", "mainResizable", "statusBar",
+        "streamChatResizable", "titleShowUptime", "titleShowViewerCount",
+        "titleShowChannelState"
     };
     
     /**
@@ -2927,6 +2892,7 @@ public class MainGui extends JFrame implements Runnable {
             } else {
                 setTitle(mainTitle);
             }
+            statusBar.setText(mainTitle);
             Map<Channel, JDialog> popoutChannels = channels.getPopoutChannels();
             for (Channel channel : popoutChannels.keySet()) {
                 String title = makeTitle(channel, state);
@@ -3579,6 +3545,8 @@ public class MainGui extends JFrame implements Runnable {
                     ImageCache.setCachingEnabled(bool);
                 } else if (setting.equals("mainResizable")) {
                     setResizable(bool);
+                } else if (setting.equals("statusBar")) {
+                    statusBar.setVisible(bool);
                 } else if (setting.equals("streamChatResizable")) {
                     streamChat.setResizable(bool);
                 }
