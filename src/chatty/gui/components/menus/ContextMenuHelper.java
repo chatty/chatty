@@ -69,6 +69,7 @@ public class ContextMenuHelper {
         String streamSubmenu = "Twitch Stream" + s;
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
+        m.addItem("streamChat", "Chat", streamSubmenu);
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
         m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
         m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);

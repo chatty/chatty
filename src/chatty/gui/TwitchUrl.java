@@ -44,7 +44,7 @@ public class TwitchUrl {
             JOptionPane.showMessageDialog(parent, "Unable to open Twitch Stream URL (Not on a channel)",
                     "Info", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            String url = makeTwitchStreamUrl(nick, popout);
+            String url = makeTwitchStreamUrl(nick, popout ? "popout" : null);
             UrlOpener.openUrlPrompt(parent, url);
         }
     }
@@ -52,11 +52,11 @@ public class TwitchUrl {
     public static String makeTwitchProfileUrl(String channel) {
         return "http://twitch.tv/" + channel + "/profile";
     }
-    
-    public static String makeTwitchStreamUrl(String channel, boolean popout) {
+
+    public static String makeTwitchStreamUrl(String channel, String action) {
         String url = "http://twitch.tv/" + channel + "";
-        if (popout) {
-            url += "/popout";
+        if ((action != null) && !action.isEmpty()) {
+            url += action;
         }
         return url;
     }
