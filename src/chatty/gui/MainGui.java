@@ -1545,20 +1545,28 @@ public class MainGui extends JFrame implements Runnable {
                     "Info", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            if (cmd.equals("stream") || cmd.equals("streamPopout") || cmd.equals("profile")) {
+            if (cmd.equals("stream")
+                    || cmd.equals("streamPopout")
+                    || cmd.equals("streamChat")
+                    || cmd.equals("profile")) {
                 List<String> urls = new ArrayList<>();
                 for (String stream : streams) {
                     String url;
                     switch (cmd) {
                         case "stream":
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, false);
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, null);
                             break;
                         case "profile":
                             url = TwitchUrl.makeTwitchProfileUrl(stream);
                             break;
-                        default:
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, true);
+                        case "streamPopout":
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, "popout");
                             break;
+                        case "streamChat":
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, "chat");
+                            break;
+                        default:
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, null);
                     }
                     urls.add(url);
                 }
