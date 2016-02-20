@@ -88,6 +88,11 @@ public class EmoteSettings extends SettingsPanel {
         d.addLongSetting("emoteScaleDialog", emoteScaleDialog);
         main.add(emoteScaleDialog, d.makeGbc(1, 3, 1, 1, GridBagConstraints.CENTER));
         
+        main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick",
+                "Double-click on emote closes Emote Dialog",
+                "Double-clicking on an emote in the Emotes Dialog closes the Dialog"),
+                d.makeGbc(0, 4, 3, 1));
+        
         ffzMod.setEnabled(false);
         ffz.addItemListener(new ItemListener() {
 

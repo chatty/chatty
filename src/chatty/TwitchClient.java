@@ -1317,6 +1317,10 @@ public class TwitchClient {
             refreshRequests.add("bttvemotes");
             bttvEmotes.requestEmotes("$global$", true);
             bttvEmotes.requestEmotes(channel, true);
+        } else if (parameter.equals("emotesets")) {
+            g.printLine("Refreshing emoteset information..");
+            refreshRequests.add("emotesets");
+            twitchemotes.requestEmotesets(true);
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
         }
@@ -1810,6 +1814,10 @@ public class TwitchClient {
 
         @Override
         public void emotesetsReceived(Map<Integer, String> emotesetStreams) {
+            if (refreshRequests.contains("emotesets")) {
+                g.printLine("Emoteset information updated.");
+                refreshRequests.remove("emotesets");
+            }
             g.setEmotesets(emotesetStreams);
             c.setEmotesets(emotesetStreams);
         }

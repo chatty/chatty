@@ -61,6 +61,10 @@ public class TwitchUrl {
         return url;
     }
     
+    public static String makeTwitchPlayerUrl(String channel) {
+        return "http://player.twitch.tv/?channel="+channel;
+    }
+    
     public static String makeTwitchTurboUrl() {
         return "http://twitch.tv/turbo";
     }

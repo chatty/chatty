@@ -778,6 +778,7 @@ public class MainGui extends JFrame implements Runnable {
         streamChat.setMessageTimeout((int)client.settings.getLong("streamChatMessageTimeout"));
         
         emotesDialog.setEmoteScale((int)client.settings.getLong("emoteScaleDialog"));
+        emotesDialog.setCloseOnDoubleClick(client.settings.getBoolean("closeEmoteDialogOnDoubleClick"));
         
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
     }
@@ -1545,7 +1546,8 @@ public class MainGui extends JFrame implements Runnable {
                     "Info", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-            if (cmd.equals("stream") || cmd.equals("streamPopout") || cmd.equals("profile")) {
+            if (cmd.equals("stream") || cmd.equals("streamPopout")
+                    || cmd.equals("streamPopoutOld") || cmd.equals("profile")) {
                 List<String> urls = new ArrayList<>();
                 for (String stream : streams) {
                     String url;
@@ -1555,6 +1557,9 @@ public class MainGui extends JFrame implements Runnable {
                             break;
                         case "profile":
                             url = TwitchUrl.makeTwitchProfileUrl(stream);
+                            break;
+                        case "streamPopout":
+                            url = TwitchUrl.makeTwitchPlayerUrl(stream);
                             break;
                         default:
                             url = TwitchUrl.makeTwitchStreamUrl(stream, true);
@@ -2259,7 +2264,7 @@ public class MainGui extends JFrame implements Runnable {
                     showNotification("[Test] It works!", "This is where the text goes.", null);
                 } else {
                     showNotification("[Status] "+Helper.toValidChannel(channel), "Test Notification (this would pop up when a stream status changes)", channel);
-                }
+            }
             }
         });
     }
@@ -3581,6 +3586,8 @@ public class MainGui extends JFrame implements Runnable {
                     setResizable(bool);
                 } else if (setting.equals("streamChatResizable")) {
                     streamChat.setResizable(bool);
+                } else if (setting.equals("closeEmoteDialogOnDoubleClick")) {
+                    emotesDialog.setCloseOnDoubleClick(bool);
                 }
                 if (setting.startsWith("title")) {
                     updateState(true);

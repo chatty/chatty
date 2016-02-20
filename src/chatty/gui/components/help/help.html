@@ -365,6 +365,49 @@
     want to keep the default one for all channels.</p>
     
     <h2>
+        <a name="userlist">Userlist</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>The userlist on the side of the channel shows all users currently
+        considered to be in the channel.</p>
+    
+    <ul>
+        <li>A user gets added to the userlist..
+            <ul>
+                <li>..when the user says something in chat.</li>
+                <li>..when Chatty receives a JOIN from Twitch Chat for that user (or
+                    that user is on the received NAMES list).</li>
+            </ul>
+        </li>
+        <li>A user gets removed from the userlist..
+            <ul>
+                <li>..when Chatty receives a PART from Twitch Chat for that user.</li>
+            </ul>
+        </li>
+        <li>The userlist gets cleared entirely..
+            <ul>
+                <li>..when you close the channel (close the Tab).</li>
+                <li>..when you rejoin the channel (e.g. when reconnecting).</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <p>In order to receive JOIN/PART messages, the setting <code>Correct Userlist</code>
+        under <code>Settings - Advanced - Connection</code> has to be enabled.</p>
+    
+    <p>JOIN/PART messages are sent in batches and can be pretty delayed. So if
+        someone joins the chat, he may only appear as joined after e.g. 15
+        seconds. If you want to use this to directly react on stream to someone
+        joining, then including stream delay your reaction may be e.g. 30
+        seconds too late (possibly longer). The user may even have already left
+        the channel again, but it just doesn't show yet.</p>
+    
+    <p>Also note that the userlist doesn't necessarily have to do with who
+        watches your stream. A user can be logged into chat without watching the
+        stream and vice versa. Overall, just don't take the userlist too
+        seriously.</p>
+    
+    <h2>
         <a name="nickCompletion">TAB Completion</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>

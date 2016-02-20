@@ -159,6 +159,7 @@ public class SettingsManager {
         settings.addLong("emoteMaxHeight", 0);
         settings.addLong("emoteScale", 100);
         settings.addLong("emoteScaleDialog", 100);
+        settings.addBoolean("closeEmoteDialogOnDoubleClick", false);
         settings.addBoolean("usericonsEnabled",true);
         settings.addString("font","Consolas");
         settings.addLong("fontSize",14);
@@ -322,6 +323,7 @@ public class SettingsManager {
         
         settings.addBoolean("useCustomNotifications", true);
         
+        settings.addLong("nType", 0);
         settings.addLong("nScreen", -1);
         settings.addLong("nPosition", 3);
         settings.addLong("nDisplayTime", 10);
@@ -330,6 +332,8 @@ public class SettingsManager {
         settings.addLong("nMaxQueueSize", 4);
         settings.addBoolean("nActivity", false);
         settings.addLong("nActivityTime", 10);
+        
+        settings.addList("notificationProperties", new ArrayList<>(), Setting.LIST);
         
         settings.addLong("v0.5", 0);
         settings.addBoolean("tips", true);

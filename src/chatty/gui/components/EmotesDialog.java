@@ -93,6 +93,8 @@ public class EmotesDialog extends JDialog {
     private Emoticon detailsEmote;
     private boolean repaint;
     private float scale;
+    
+    private boolean closeOnDoubleClick = true;
    
     public EmotesDialog(Window owner, Emoticons emotes, final MainGui main, ContextMenuListener contextMenuListener) {
         super(owner);
@@ -166,7 +168,7 @@ public class EmotesDialog extends JDialog {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    if (e.getClickCount() == 2) {
+                    if (e.getClickCount() == 2 && closeOnDoubleClick) {
                         setVisible(false);
                     } else {
                         JLabel label = (JLabel) e.getSource();
@@ -205,6 +207,10 @@ public class EmotesDialog extends JDialog {
         setMinimumSize(getPreferredSize());
         
         setSize(320,300);
+    }
+    
+    public void setCloseOnDoubleClick(boolean enabled) {
+        this.closeOnDoubleClick = enabled;
     }
 
     /**
