@@ -1,10 +1,18 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 
 /**
  *
@@ -25,8 +33,12 @@ public class HighlightSettings extends SettingsPanel {
     
     private static final String INFO_HIGHLIGHTS = INFO+"Example: <code>user:botimuz cs:Bets open</code>";
     
+    private final NoHighlightUsers noHighlightUsers;
+    
     public HighlightSettings(SettingsDialog d) {
         super(true);
+        
+        noHighlightUsers = new NoHighlightUsers(d);
         
         JPanel base = addTitledPanel("Highlight Messages", 0, true);
         
@@ -71,7 +83,7 @@ public class HighlightSettings extends SettingsPanel {
                 "If enabled, checks ignored messages as well, otherwise they are"
                         + " just ignored for highlighting."), gbc);
         
-        gbc = d.makeGbc(0,5,2,4);
+        gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("highlight", 220, 250, true);
         items.setInfo(INFO_HIGHLIGHTS);
@@ -87,16 +99,72 @@ public class HighlightSettings extends SettingsPanel {
         gbc.weighty = 1;
         base.add(items, gbc);
         
-//        gbc = d.makeGbc(1,4,1,1);
-//        base.add(new LinkLabel("<html><body style=\"width:120px;\">"
-//                + "Add words to highlight messages. "
-//                + " [help:highlight More info..]"
-//                + "<br />"
-//                + "<ul style='margin-left: 10px;'>"
-//                + "<li style='margin-top: 3px;'>Prepend with 'cs:' to make case-sensitive.</li>"
-//                + "<li style='margin-top: 3px;'>Prepend with 'w:'/'wcs:' to match words.</li>"
-//                + "<li style='margin-top: 3px;'>Prepend with 'user:' to specify a username.</li>"
-//                + "<li style='margin-top: 3px;'>More in the help..</li>"
-//                + "</ul>", d.getLinkLabelListener()), gbc);
+        JButton noHighlightUsersButton = new JButton("Users to never higlight");
+        noHighlightUsersButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        noHighlightUsersButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                noHighlightUsers.setLocationRelativeTo(HighlightSettings.this);
+                noHighlightUsers.setVisible(true);
+            }
+        });
+        gbc = d.makeGbc(0, 6, 2, 1);
+        gbc.insets = new Insets(1,10,5,5);
+        gbc.anchor = GridBagConstraints.WEST;
+        base.add(noHighlightUsersButton, gbc);
+    }
+    
+    private static class NoHighlightUsers extends JDialog {
+
+        private static final DataFormatter<String> FORMATTER = new DataFormatter<String>() {
+
+            @Override
+            public String format(String input) {
+                return input.replaceAll("\\s", "").toLowerCase();
+            }
+        };
+        
+        public NoHighlightUsers(SettingsDialog d) {
+            super(d);
+            
+            setDefaultCloseOperation(HIDE_ON_CLOSE);
+            setTitle("Users to never highlight");
+            setLayout(new GridBagLayout());
+            
+            GridBagConstraints gbc;
+
+            gbc = d.makeGbc(0, 1, 2, 1);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 0.5;
+            gbc.weighty = 1;
+            ListSelector noHighlightUsers = d.addListSetting("noHighlightUsers", 180, 250, false);
+            noHighlightUsers.setDataFormatter(FORMATTER);
+            add(noHighlightUsers, gbc);
+            
+            gbc = d.makeGbc(0, 2, 2, 1);
+            add(new JLabel("<html><body style='width:260px;'>Users on this list "
+                    + "will never trigger a highlight. This can be useful e.g. "
+                    + "for bots in your channel that repeatedly post messages "
+                    + "containing your name."), gbc);
+            
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setVisible(false);
+                }
+            });
+            gbc = d.makeGbc(0, 5, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(5, 5, 5, 5);
+            add(closeButton, gbc);
+            
+            pack();
+            setMinimumSize(getPreferredSize());
+        }
+        
     }
 }

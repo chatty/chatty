@@ -149,6 +149,8 @@ public class TwitchClient {
     private final WhisperConnection w;
     private final IrcLogger ircLogger = new IrcLogger();
     
+    private boolean fixServer = false;
+    
     public TwitchClient(Map<String, String> args) {
 
         // Logging
@@ -593,6 +595,8 @@ public class TwitchClient {
     public boolean prepareConnection(String name, String password,
             String channel, String server, String ports) {
         
+        fixServer = false;
+        
         if (c.getState() > Irc.STATE_OFFLINE) {
             g.showMessage("Cannot connect: Already connected.");
             return false;
@@ -857,6 +861,9 @@ public class TwitchClient {
         
         else if (command.equals("reconnect")) {
             commandReconnect();
+        }
+        else if (command.equals("fixserver")) {
+            commandFixServer(channel);
         }
         
         else if (command.equals("refresh")) {
@@ -1243,6 +1250,14 @@ public class TwitchClient {
         }
     }
     
+    private void commandFixServer(String channel) {
+        if (!Helper.validateChannel(channel)) {
+            return;
+        }
+        fixServer = true;
+        api.getServer(channel);
+    }
+    
     private void commandCustomCompletion(String parameter) {
         String usage = "Usage: /customCompletion <add/set/remove> <item> <value>";
         if (parameter == null) {
@@ -1521,6 +1536,20 @@ public class TwitchClient {
         @Override
         public void receivedDisplayName(String name, String displayName) {
             capitalizedNames.setName(name, displayName);
+        }
+
+        @Override
+        public void receivedServer(String channel, String server) {
+            LOGGER.info("Received server info: "+channel+"/"+server);
+            if (fixServer && server != null) {
+                String s = Helper.getServer(server);
+                int p = Helper.getPort(server);
+                c.disconnect();
+                prepareConnectionAnyChannel(s, String.valueOf(p));
+            }
+            else {
+                g.printLine(channel, "An error occured requesting server info.");
+            }
         }
     }
     

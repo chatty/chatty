@@ -134,7 +134,7 @@ public class IgnoreSettings extends SettingsPanel {
 
             @Override
             public String format(String input) {
-                return input.replaceAll("\\s", "");
+                return input.replaceAll("\\s", "").toLowerCase();
             }
         };
         

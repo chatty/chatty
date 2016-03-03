@@ -7,7 +7,8 @@
     <h1><a name="top">Addressbook</a></h1>
     <p>
         <a href="#editing">Editing Locally</a> (<a href="#commands">Commands</a>) | 
-        <a href="#advanced">Advanced Usage</a> (<a href="#modcommands">Mod Commands</a>, <a href="#file">Change via file</a>)
+        <a href="#advanced">Advanced Usage</a> (<a href="#modcommands">Mod Commands</a>,
+        <a href="#file">Change via file</a>, <a href="#unique-cats">Unique Categories</a>)
     </p>
 
     <p>The addressbook allows you to add usernames and assign categories to
@@ -81,9 +82,11 @@
         
     </dl>
     
+    
     <h2><a name="advanced">Advanced Usage</a></h2>
     <p>The following features are a bit more advanced and should only be used if
     you somewhat know what you're doing.</p>
+    
     
     <h3><a name="modcommands">Moderator Commands</a></h3>
     <p>You can use this to let the moderators of your channel edit your addressbook.
@@ -118,6 +121,7 @@
         actual response, you need to have Chatty on stream (which means the response
         is also affected by stream delay of course).</p>
     
+    
     <h3><a name="file">Change Addressbook via file</a></h3>
     <p><em>This is a rather experimental feature, so it might not work reliably.</em></p>
     
@@ -151,6 +155,22 @@ set testi ignore</pre>
     the file should not be necessary.</p>
     
     <p>Example: <a href="http://pastebin.com/LDFpEUaC">mIRC script</a> to edit the Addressbook.</p>
+    
+    
+    <h3><a name="unique-cats">Somewhat unique categories</a></h3>
+    <p>You can add somewhat unique categories to a setting, which means that
+        only one user will have that category assigned, as long as you only use
+        Addressbook commands to apply that category (and not the context menu or
+        Addressbook dialog).</p>
+    
+    <p>Use <code>/set abUniqueCats star</code> to set the category <code>star</code>
+        as unique category. That way, only one user can have that category.
+        What happens is that when using an Addressbook command like
+        <code>/ab add Jack star</code>, it will first remove the <code>star</code> category
+        from all other users and then add it to <code>Jack</code>.</p>
+    
+    <p>If you want to have more than one unique category, you can separate
+        several categories by comma: <code>/set abUniqueCats star,gold</code></p>
 </body>
 </html>
 

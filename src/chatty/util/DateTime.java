@@ -117,6 +117,16 @@ public class DateTime {
         return duration(ago, H, 0, M, Formatting.LAST_ONE_EXACT);
     }
     
+    public static String agoUptimeCompact2(long time) {
+        long seconds = (System.currentTimeMillis() - time)/1000;
+        long hours = seconds/HOUR;
+        long minutes = (seconds%HOUR) / MINUTE;
+        if (hours > 0) {
+            return String.format("%dh%02dm", hours, minutes);
+        }
+        return String.format("%dm", minutes);
+    }
+    
     public static enum Formatting {
         COMPACT, VERBOSE, LEADING_ZERO_VALUES, NO_ZERO_VALUES, NO_SPACES,
         LAST_ONE_EXACT

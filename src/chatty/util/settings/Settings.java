@@ -30,9 +30,10 @@ public class Settings {
     private final Object LOCK = new Object();
     
     /**
-     * Holds all settings of different Types.
+     * Holds all settings of different Types. TreeMap to have setting names
+     * lookup case-insenstive while still retaining the case for display.
      */
-    private final HashMap<String,Setting> settings = new HashMap<>();
+    private final Map<String,Setting> settings = new TreeMap(String.CASE_INSENSITIVE_ORDER);
     private final Set<SettingChangeListener> listeners = new HashSet<>();
     private final Set<SettingsListener> settingsListeners = new HashSet<>();
     private final String defaultFile;

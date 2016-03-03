@@ -396,6 +396,9 @@ public class Helper {
 //        System.out.println(System.currentTimeMillis() - start);
         
         System.out.println(Arrays.asList(parseChannels("b,a,b,c")));
+        
+        System.out.println(getServer("server"));
+        System.out.println(getPort("server"));
     }
     
     /**
@@ -507,6 +510,27 @@ public class Helper {
     
     public static Pattern getUrlPattern() {
         return URL_PATTERN;
+    }
+    
+    public static String getServer(String serverPort) {
+        int p = serverPort.lastIndexOf(":");
+        if (p == -1) {
+            return serverPort;
+        }
+        return serverPort.substring(0, p);
+    }
+    
+    public static int getPort(String serverPort) {
+        int p = serverPort.lastIndexOf(":");
+        if (p == -1) {
+            return -1;
+        }
+        String port = serverPort.substring(p+1);
+        try {
+            return Integer.parseInt(port);
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
     }
     
 }

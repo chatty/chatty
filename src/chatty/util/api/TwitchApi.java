@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Chatty;
+import chatty.Helper;
 import chatty.Usericon;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
@@ -41,7 +42,7 @@ public class TwitchApi {
     enum RequestType {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
-        SUBSCRIBERS, USERINFO
+        SUBSCRIBERS, USERINFO, CHAT_SERVER
     }
     
     public static final int ACCESS_DENIED = 0;
@@ -277,6 +278,18 @@ public class TwitchApi {
         }
     }
     
+    public void getServer(String channel) {
+        if (channel == null) {
+            return;
+        }
+        String url = "https://tmi.twitch.tv/servers?channel="+Helper.toStream(channel);
+        if (attemptRequest(url, channel)) {
+            TwitchApiRequest request =
+                    new TwitchApiRequest(this, RequestType.CHAT_SERVER, url);
+            executor.execute(request);
+        }
+    }
+    
     /**
      * Checks if a request with the given url can be made. Returns true if no
      * request with that url is currently waiting for a response, false
@@ -429,6 +442,9 @@ public class TwitchApi {
         else if (type == RequestType.USERINFO) {
             String displayName = parseNameFromUserInfo(result);
             resultListener.receivedDisplayName(StringUtil.toLowerCase(stream), displayName);
+        }
+        else if (type == RequestType.CHAT_SERVER) {
+            resultListener.receivedServer(stream, parseServer(result));
         }
         
     }
@@ -781,6 +797,18 @@ public class TwitchApi {
             return displayName;
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             LOGGER.warning("Error parsing userinfo: "+ex);
+        }
+        return null;
+    }
+    
+    private String parseServer(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(json);
+            JSONArray servers = (JSONArray)root.get("servers");
+            return (String)servers.get(0);
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing server: "+ex);
         }
         return null;
     }

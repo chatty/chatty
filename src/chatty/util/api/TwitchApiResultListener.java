@@ -32,4 +32,6 @@ public interface TwitchApiResultListener {
      * @param displayName Correctly capitalized name
      */
     void receivedDisplayName(String name, String displayName);
+    
+    void receivedServer(String channel, String server);
 }

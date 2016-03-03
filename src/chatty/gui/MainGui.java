@@ -2361,8 +2361,10 @@ public class MainGui extends JFrame implements Runnable {
                 boolean isOwnMessage = isOwnUsername(user.getNick()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
+                
                 boolean highlighted = false;
-                if (client.settings.getBoolean("highlightIgnored") || !ignored) {
+                if ((client.settings.getBoolean("highlightIgnored") || !ignored)
+                        && !client.settings.listContains("noHighlightUsers", user.nick)) {
                     highlighted = checkHighlight(user, text, highlighter, "highlight", isOwnMessage);
                 }
                 
@@ -3001,7 +3003,7 @@ public class MainGui extends JFrame implements Runnable {
                         
                         String uptime = "";
                         if (client.settings.getBoolean("titleShowUptime")) {
-                            uptime = DateTime.agoUptimeCompact(
+                            uptime = DateTime.agoUptimeCompact2(
                                     streamInfo.getTimeStartedWithPicnic());
                         }
                         String numViewers = "|"+Helper.formatViewerCount(streamInfo.getViewers());

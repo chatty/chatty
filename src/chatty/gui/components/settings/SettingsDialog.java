@@ -47,7 +47,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "logPath", "logTimestamp",
             "botNamesBTTV", "botNamesFFZ", "ircv3CapitalizedNames",
             "whisperEnabled", "groupChatServer", "groupChatPort",
-            "tabsMwheelScrolling"));
+            "tabsMwheelScrolling", "inputFont"));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(
         "membershipEnabled"));

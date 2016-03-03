@@ -190,7 +190,7 @@ public class Channel extends JPanel {
         
         private final Set<String> commands = new TreeSet<>(Arrays.asList(new String[]{
             "subscribers", "subscribersOff", "timeout", "ban", "unban", "host", "unhost", "clear", "mods",
-            "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff",
+            "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteonly", "emoteonlyoff",
             "connection", "uptime", "dir", "wdir", "openDir", "openWdir", "releaseInfo", "openBackupDir",
             "clearChat", "refresh", "changetoken", "testNotification", "server",
             "set", "add", "clearSetting", "remove", "customCompletion",

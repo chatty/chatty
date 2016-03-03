@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -11,6 +12,10 @@ public class ComboStringSetting extends GenericComboSetting<String> implements S
 
     public ComboStringSetting(String[] items) {
         super(items);
+    }
+    
+    public ComboStringSetting(Collection<String> items) {
+        super(items.toArray(new String[0]));
     }
     
     public ComboStringSetting(Map<String, String> items) {

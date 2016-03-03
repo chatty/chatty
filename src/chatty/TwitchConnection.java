@@ -347,8 +347,10 @@ public class TwitchConnection {
     }
     
     private Collection<Integer> getSecuredPorts() {
+        List setting = settings.getList(
+                whisperConnection ? "securedPortsWhisper" : "securedPorts");
         Collection<Integer> result = new HashSet<>();
-        for (Object value : settings.getList("securedPorts")) {
+        for (Object value : setting) {
             result.add(((Long)value).intValue());
         }
         return result;
@@ -1262,6 +1264,12 @@ public class TwitchConnection {
                         channelStates.setLang(channel, tags.get("broadcaster-lang"));
                     }
                 }
+            } else if (command.equals("SERVERCHANGE")) {
+                listener.onInfo(channel, "*** You may be on the wrong server "
+                        + "for this channel. Enter /fixserver to connect to the "
+                        + "correct server (which may cause other channels to not "
+                        + "work anymore, because Chatty only supports one main "
+                        + "connection to a single server). ***");
             }
         }
         

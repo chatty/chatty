@@ -99,6 +99,7 @@ public class SettingsManager {
         settings.addString("server", "", false);
         settings.addString("port", "", false);
         settings.addList("securedPorts", new ArrayList<>(Arrays.asList((long)6697)), Setting.LONG);
+        settings.addList("securedPortsWhisper", new ArrayList<>(Arrays.asList()), Setting.LONG);
         
         settings.addBoolean("userlistConnection", true);
         settings.addList("userlistConnectionBlacklist", new ArrayList(), Setting.STRING);
@@ -281,6 +282,7 @@ public class SettingsManager {
         settings.addBoolean("highlightOwnText", false);
         settings.addBoolean("highlightNextMessages", false);
         settings.addBoolean("highlightIgnored", false);
+        settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
         
         // Ignore
         settings.addList("ignore", new ArrayList(), Setting.STRING);

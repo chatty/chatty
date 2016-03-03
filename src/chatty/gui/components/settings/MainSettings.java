@@ -4,8 +4,10 @@ package chatty.gui.components.settings;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -32,8 +34,9 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         GridBagConstraints gbc;
         
         JPanel fontSettingsPanel = addTitledPanel("Chat Font", 0);
-        JPanel startSettingsPanel = addTitledPanel("Startup", 1);
-        JPanel lafSettingsPanel = addTitledPanel("Look&Feel", 2);
+        JPanel inputFontSettingsPanel = addTitledPanel("Input Font", 1);
+        JPanel startSettingsPanel = addTitledPanel("Startup", 2);
+        JPanel lafSettingsPanel = addTitledPanel("Look&Feel", 3);
         
         /*
          * Font settings (Panel)
@@ -75,6 +78,21 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         gbc = d.makeGbc(3,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         fontSettingsPanel.add(lineSpacing, gbc);
+        
+        gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
+        inputFontSettingsPanel.add(new JLabel("Input Font:"), gbc);
+        
+        List<String> inputFonts = new ArrayList<>();
+        for (int i=12; i<=32; i++) {
+            inputFonts.add("Dialog "+i);
+        }
+        for (int i=12; i<=32; i++) {
+            inputFonts.add("Monospaced "+i);
+        }
+        ComboStringSetting inputFont = new ComboStringSetting(inputFonts);
+        d.addStringSetting("inputFont", inputFont);
+        gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
+        inputFontSettingsPanel.add(inputFont, gbc);
         
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
         startSettingsPanel.add(new JLabel("On start:"), gbc);

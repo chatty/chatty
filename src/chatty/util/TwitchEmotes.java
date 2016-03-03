@@ -20,7 +20,7 @@ public class TwitchEmotes {
     
     private static final Logger LOGGER = Logger.getLogger(TwitchEmotes.class.getName());
     
-    private static final String EMOTESET_URL = "http://direct.twitchemotes.com/api_cache/v2/sets.json";
+    private static final String EMOTESET_URL = "https://twitchemotes.com/api_cache/v2/sets.json";
     
     private static final int CACHED_EMOTICONS_EXPIRE_AFTER = 60 * 60 * 24;
     private static final String FILE = Chatty.getCacheDirectory() + "emotesets";
