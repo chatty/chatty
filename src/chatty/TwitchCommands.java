@@ -80,6 +80,12 @@ public class TwitchCommands {
         else if (command.equals("r9koff")) {
             r9kOff(channel);
         }
+        else if (command.equals("emoteonly")) {
+            emoteonlyOn(channel);
+        }
+        else if (command.equals("emoteonlyoff")) {
+            emoteonlyOff(channel);
+        }
         else if (command.equals("mod")) {
             commandMod(channel, parameter);
         }
@@ -295,6 +301,18 @@ public class TwitchCommands {
     public void r9kOff(String channel) {
         if (onChannel(channel, true)) {
             sendMessage(channel,".r9kbetaoff", "Trying to turn r9k mode off..");
+        }
+    }
+    
+    public void emoteonlyOn(String channel) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel,".emoteonly", "Trying to turn on emote-only mode..");
+        }
+    }
+    
+    public void emoteonlyOff(String channel) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel,".emoteonlyoff", "Trying to turn off emote-only mode..");
         }
     }
     
