@@ -274,6 +274,8 @@ public class SettingsManager {
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
         settings.addLong("userlistMinWidth", 0);
+
+        settings.addBoolean("statusBar", false);
         
         // Highlight
         settings.addList("highlight",new ArrayList(), Setting.STRING);
