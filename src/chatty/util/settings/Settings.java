@@ -55,7 +55,7 @@ public class Settings {
     
     private void settingChanged(String setting, int type, Object value) {
         for (SettingChangeListener listener : listeners) {
-            listener.settingChanged(setting, type, value);
+            listener.settingChanged(setting.toLowerCase(), type, value);
         }
     }
     
@@ -74,13 +74,13 @@ public class Settings {
     }
     
     public void setFile(String settingName, String fileName) {
-        if (!isSetting(settingName)) {
-            throw new SettingNotFoundException("Could not find setting: "+settingName);
+        if (!isSetting(settingName)) { // Here no .toLowerCase() as isSetting will call getType which will do that for us.
+            throw new SettingNotFoundException("Could not find setting: "+settingName.toLowerCase());
         }
         if (!files.contains(fileName)) {
             throw new SettingFileNotFoundException("Could not find setting file: "+fileName);
         }
-        Setting setting = settings.get(settingName);
+        Setting setting = settings.get(settingName.toLowerCase());
         setting.setFile(fileName);
     }
     
@@ -102,7 +102,7 @@ public class Settings {
      * @return 
      */
     private boolean isOfType(String settingName, int type) {
-        Setting obj = settings.get(settingName);
+        Setting obj = settings.get(settingName.toLowerCase());
         if (obj != null && obj.isOfType(type)) {
             return true;
         }
@@ -110,7 +110,7 @@ public class Settings {
     }
     
     private boolean isOfSubtype(String settingName, int type) {
-        Setting obj = settings.get(settingName);
+        Setting obj = settings.get(settingName.toLowerCase());
         if (obj != null && obj instanceof SubtypeSetting) {
             return ((SubtypeSetting)obj).isOfSubType(type);
         }
@@ -118,7 +118,7 @@ public class Settings {
     }
     
     private int getType(String settingName) {
-        Setting obj = settings.get(settingName);
+        Setting obj = settings.get(settingName.toLowerCase());
         if (obj != null) {
             return obj.getType();
         }
@@ -201,10 +201,10 @@ public class Settings {
      */
     private void add(String settingName, Object value, int type, int subType, boolean save) {
         if (type == Setting.MAP || type == Setting.LIST) {
-            settings.put(settingName, new SubtypeSetting(value, type, subType, save, defaultFile));
+            settings.put(settingName.toLowerCase(), new SubtypeSetting(value, type, subType, save, defaultFile));
         }
         else {
-            settings.put(settingName, new Setting(value, type, save, defaultFile));
+            settings.put(settingName.toLowerCase(), new Setting(value, type, save, defaultFile));
         }
     }
     
@@ -222,7 +222,7 @@ public class Settings {
             if (!isOfType(settingName, type)) {
                 throw new SettingNotFoundException("Could not find setting: " + settingName);
             }
-            Setting setting = settings.get(settingName);
+            Setting setting = settings.get(settingName.toLowerCase());
 
             if (value == null) {
                 changed = setting.setToDefault();
@@ -232,7 +232,7 @@ public class Settings {
             }
         }
         if (changed) {
-            settingChanged(settingName,type,value);
+            settingChanged(settingName.toLowerCase(),type,value);
             return Setting.CHANGED;
         }
         return Setting.NOT_CHANGED;
@@ -250,15 +250,15 @@ public class Settings {
     private Object get(String settingName, int type) {
         synchronized(LOCK) {
             if (!isOfType(settingName, type)) {
-                throw new SettingNotFoundException("Could not find setting: " + settingName);
+                throw new SettingNotFoundException("Could not find setting: " + settingName.toLowerCase());
             }
-            return settings.get(settingName).getValue();
+            return settings.get(settingName.toLowerCase()).getValue();
         }
     }
     
     private Object get(String settingName) {
         synchronized(LOCK) {
-            return settings.get(settingName).getValue();
+            return settings.get(settingName.toLowerCase()).getValue();
         }
     }
     
@@ -547,15 +547,15 @@ public class Settings {
      */
     public void setSettingChanged(String settingName) {
         if (isListSetting(settingName)) {
-            settingChanged(settingName, Setting.LIST, getList(settingName));
+            settingChanged(settingName.toLowerCase(), Setting.LIST, getList(settingName));
         } else if (isMapSetting(settingName)) {
-            settingChanged(settingName, Setting.MAP, getMap(settingName));
+            settingChanged(settingName.toLowerCase(), Setting.MAP, getMap(settingName));
         }
     }
     
     public String settingValueToString(String setting) {
         synchronized(LOCK) {
-            return settings.get(setting).toString();
+            return settings.get(setting.toLowerCase()).toString();
         }
     }
     
