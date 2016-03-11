@@ -55,8 +55,9 @@ public class TwitchConnection {
      */
     private final int maxReconnectionAttempts = 20;
     /**
-     * The time between reconnection attempts. The time for the first attempt,
-     * second time for the second attempt etc..
+     * The time in seconds between reconnection attempts. The first entry is the
+     * time for the first attempt, second entry for the second attempt and so
+     * on. The last entry is used for all further attempts.
      */
     private final static int[] RECONNECTION_DELAY = new int[]{1, 5, 5, 10, 10, 60};
 
@@ -950,6 +951,21 @@ public class TwitchConnection {
             if (onChannel(channel)) {
                 if (settings.getBoolean("twitchnotifyAsInfo") && nick.equals("twitchnotify")) {
                     listener.onInfo(channel, "[Notification] " + text);
+                    Pattern p = Pattern.compile("([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        String name = null;
+                        int months = 1;
+                        try {
+                            name = m.group(1);
+                            months = Integer.parseInt(m.group(2));
+                        } catch (Exception ex) {
+                            // Do nothing
+                        }
+                        if (name != null) {
+                            listener.onSubscriberNotification(channel, name, months);
+                        }
+                    }
                 } else if (nick.equals("jtv")) {
                     specialMessage(text, channel);
                 } else {
@@ -1393,6 +1409,8 @@ public class TwitchConnection {
         void onHost(String channel, String target);
         
         void onChannelCleared(String channel);
+        
+        void onSubscriberNotification(String channel, String name, int months);
         
     }
 

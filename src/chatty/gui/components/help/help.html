@@ -20,6 +20,7 @@
                 <strong>Chat basics</strong>
                 <ul class="menu">
                     <li><a href="#symbols">Symbols used in chat</a></li>
+                    <li><a href="#userlist">Userlist</a></li>
                     <li><a href="#favorites">Favorites / History</a></li>
                     <li><a href="help-whisper.html">Whisper Feature</a></li>
                 </ul>
@@ -220,13 +221,22 @@
     <ul>
         <li><code>/server &lt;host&gt;[:port]</code> - Connect to a custom server</li>
         <li><code>/raw &lt;command&gt;</code> - Send a raw command to the server</li>
-        <li><code>/refresh &lt;emoticons/badges/ffz/ffzglobal/bttvemotes&gt;</code>
-            - Refresh the Twitch emoticons or badges (current channel) list or
-            refresh FrankerFaceZ channel emoticons (current channel) or global emoticons.
+        <li><code>/refresh &lt;emoticons/badges/ffz/ffzglobal/bttvemotes/emotesets&gt;</code>
+            - Refresh the given data from it's respective API:
+            <ul>
+                <li><code>emoticons</code>: Twitch Emotes</li>
+                <li><code>badges</code>: Twitch Badges (current channel)</li>
+                <li><code>ffz</code>: FFZ Emotes (current channel)</li>
+                <li><code>ffzglobal</code>: Global FFZ Emotes</li>
+                <li><code>bttvemotes</code>: BTTV Emotes (global and current channel)</li>
+                <li><code>emotesets</code>: Association between emoteset and
+                    channel name, to display Twitch Subemotes info correctly
+                    (twitchemotes.com API)</li>
+            </ul>
             <em>This downloads the lists from the Internet, so don't use this
             unless you need to (it's basicially like pressing reload in your
             browser, just only for some stuff).</em></li>
-            <li><code>/changetoken &lt;token&gt;</code> - Checks if the given token
+        <li><code>/changetoken &lt;token&gt;</code> - Checks if the given token
             is valid and sets it as new token if it is</li>
     </ul>
     
@@ -401,6 +411,9 @@
         joining, then including stream delay your reaction may be e.g. 30
         seconds too late (possibly longer). The user may even have already left
         the channel again, but it just doesn't show yet.</p>
+    
+    <p>The userlist can also take some time to initially load after you join a
+        channel, or not load at all sometimes.</p>
     
     <p>Also note that the userlist doesn't necessarily have to do with who
         watches your stream. A user can be logged into chat without watching the

@@ -786,7 +786,8 @@ public class MainGui extends JFrame implements Runnable {
     private static final String[] menuBooleanSettings = new String[]{
         "showJoinsParts", "ontop", "showModMessages", "attachedWindows",
         "simpleTitle", "globalHotkeysEnabled", "mainResizable", "streamChatResizable",
-        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState"
+        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState",
+        "titleLongerUptime"
     };
     
     /**
@@ -3003,8 +3004,13 @@ public class MainGui extends JFrame implements Runnable {
                         
                         String uptime = "";
                         if (client.settings.getBoolean("titleShowUptime")) {
-                            uptime = DateTime.agoUptimeCompact2(
+                            if (client.settings.getBoolean("titleLongerUptime")) {
+                                uptime = DateTime.agoUptimeCompact2(
                                     streamInfo.getTimeStartedWithPicnic());
+                            } else {
+                                uptime = DateTime.agoUptimeCompact(
+                                    streamInfo.getTimeStartedWithPicnic());
+                            }
                         }
                         String numViewers = "|"+Helper.formatViewerCount(streamInfo.getViewers());
                         if (!client.settings.getBoolean("titleShowViewerCount")) {

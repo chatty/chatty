@@ -269,6 +269,7 @@ public class SettingsManager {
         
         settings.addBoolean("simpleTitle", false);
         settings.addBoolean("titleShowUptime", true);
+        settings.addBoolean("titleLongerUptime", true);
         settings.addBoolean("titleShowViewerCount", true);
         settings.addBoolean("titleShowChannelState", true);
         settings.addBoolean("chatScrollbarAlways", false);
@@ -360,6 +361,8 @@ public class SettingsManager {
         settings.addString("abCommands", "add,set,remove");
         settings.addString("abUniqueCats", "");
         settings.addBoolean("abAutoImport", false);
+        settings.addString("abSubMonthsChan", "");
+        settings.addList("abSubMonths", new ArrayList(), Setting.LONG);
 
         // Backup
         settings.addLong("backupDelay", 1);

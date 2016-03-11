@@ -335,6 +335,10 @@ public class WhisperConnection {
                 autoRespondedTo.remove(user.nick);
             }
         }
+
+        @Override
+        public void onSubscriberNotification(String channel, String name, int months) {
+        }
         
     }
     

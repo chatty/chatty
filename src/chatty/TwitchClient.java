@@ -2144,6 +2144,28 @@ public class TwitchClient {
         @Override
         public void onWhisper(User user, String message, String emotes) {
         }
+
+        @Override
+        public void onSubscriberNotification(String channel, String name, int months) {
+            System.out.println(channel+" "+name+" "+months);
+            if (!settings.getString("abSubMonthsChan").equalsIgnoreCase(channel)) {
+                return;
+            }
+            List<Long> monthsDef = new ArrayList<>();
+            settings.getList("abSubMonths", monthsDef);
+            long max = 0;
+            for (long entry : monthsDef) {
+                if (months >= entry && entry > max) {
+                    max = entry;
+                }
+            }
+            if (name != null && max > 0) {
+                String cat = max+"months";
+                addressbook.add(name, cat);
+                LOGGER.info(String.format("[Subscriber] Added '%s' with category '%s'",
+                        name, cat));
+            }
+        }
         
     }
     

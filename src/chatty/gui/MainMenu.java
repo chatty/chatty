@@ -104,6 +104,7 @@ public class MainMenu extends JMenuBar {
         
         JMenu titleOptions = new JMenu("Titlebar");
         addCheckboxItem(titleOptions, "titleShowUptime", "Stream Uptime");
+        addCheckboxItem(titleOptions, "titleLongerUptime", "More Detailed Uptime");
         addCheckboxItem(titleOptions, "titleShowChannelState", "Channel State");
         addCheckboxItem(titleOptions, "titleShowViewerCount", "Viewer/Chatter Count");
         

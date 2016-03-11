@@ -122,7 +122,7 @@ public class DateTime {
         long hours = seconds/HOUR;
         long minutes = (seconds%HOUR) / MINUTE;
         if (hours > 0) {
-            return String.format("%dh%02dm", hours, minutes);
+            return String.format("%dh %dm", hours, minutes);
         }
         return String.format("%dm", minutes);
     }
