@@ -43,15 +43,6 @@ public class AdvancedSettings extends SettingsPanel {
     
     public AdvancedSettings(final SettingsDialog d) {
 
-        JPanel warning = new JPanel();
-        
-        warning.add(new JLabel("<html><body style='width:300px'>"
-                + "These settings can break Chatty if you change them, "
-                + "so you should only change these settings if you "
-                + "know what you are doing."));
-        
-        addPanel(warning, getGbc(0));
-        
         JPanel connection = addTitledPanel("Connection", 1);
 
         connection.add(new JLabel("Server:"),
@@ -59,9 +50,9 @@ public class AdvancedSettings extends SettingsPanel {
         connection.add(d.addSimpleStringSetting("serverDefault", 20, true),
                 d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
         
-        connection.add(new JLabel("Port:"),
+        connection.add(new JLabel("Ports:"),
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
-        connection.add(d.addSimpleStringSetting("portDefault", 10, true),
+        connection.add(d.addSimpleStringSetting("portDefault", 14, true),
                 d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
         
         connection.add(new JLabel("(These might be overridden by commandline parameters.)"),

@@ -53,7 +53,7 @@ public class TwitchConnection {
     /**
      * How many times to try to reconnect
      */
-    private final int maxReconnectionAttempts = 20;
+    private final int maxReconnectionAttempts = 30;
     /**
      * The time in seconds between reconnection attempts. The first entry is the
      * time for the first attempt, second entry for the second attempt and so

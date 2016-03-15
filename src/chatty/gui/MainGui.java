@@ -54,6 +54,8 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
+import chatty.util.api.TwitchApi;
+import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -3382,7 +3384,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void setChannelInfo(final String channel, final ChannelInfo info, final int result) {
+    public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3441,7 +3443,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void putChannelInfoResult(final int result) {
+    public void putChannelInfoResult(final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3474,7 +3476,7 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void commercialResult(final String stream, final String text, final int result) {
+    public void commercialResult(final String stream, final String text, final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override

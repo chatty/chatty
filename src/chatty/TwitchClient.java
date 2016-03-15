@@ -36,15 +36,19 @@ import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
+import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -1474,7 +1478,7 @@ public class TwitchClient {
         }
         
         @Override
-        public void runCommercialResult(String stream, String text, int result) {
+        public void runCommercialResult(String stream, String text, RequestResult result) {
             commercialResult(stream, text, result);
         }
  
@@ -1484,12 +1488,12 @@ public class TwitchClient {
         }
         
         @Override
-        public void receivedChannelInfo(String channel, ChannelInfo info, int result) {
+        public void receivedChannelInfo(String channel, ChannelInfo info, RequestResult result) {
             g.setChannelInfo(channel, info, result);
         }
     
         @Override
-        public void putChannelInfoResult(int result) {
+        public void putChannelInfoResult(RequestResult result) {
             g.putChannelInfoResult(result);
         }
 
@@ -1738,7 +1742,7 @@ public class TwitchClient {
      */
     public void runCommercial(String stream, int length) {
         if (stream == null || stream.isEmpty()) {
-            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.FAILED);
+            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.RequestResult.FAILED);
         }
         else {
             String channel = "#"+stream;
@@ -1763,7 +1767,7 @@ public class TwitchClient {
      * @param text
      * @param result 
      */
-    private void commercialResult(String stream, String text, int result) {
+    private void commercialResult(String stream, String text, RequestResult result) {
         String channel = "#"+stream;
         if (isChannelOpen(channel)) {
             g.printLine(channel, text);

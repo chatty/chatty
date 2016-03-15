@@ -8,6 +8,7 @@ import chatty.gui.components.settings.DurationSetting;
 import chatty.util.DateTime;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
+import chatty.util.api.TwitchApi.RequestResult;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -524,9 +525,9 @@ public class AdminDialog extends JDialog {
      * @param stream Then stream the info is for
      * @param info The channel info
      */
-    public void setChannelInfo(String stream, ChannelInfo info, int result) {
+    public void setChannelInfo(String stream, ChannelInfo info, RequestResult result) {
         if (stream.equals(this.currentChannel)) {
-            if (result == TwitchApi.SUCCESS) {
+            if (result == TwitchApi.RequestResult.SUCCESS) {
                 status.setText(info.getStatus());
                 game.setText(info.getGame());
                 updated.setText("Info last loaded: just now");
@@ -534,7 +535,7 @@ public class AdminDialog extends JDialog {
                 statusEdited = false;
             } else {
                 infoLastLoaded = -1;
-                if (result == TwitchApi.NOT_FOUND) {
+                if (result == TwitchApi.RequestResult.NOT_FOUND) {
                     updated.setText("Error loading info: Channel not found.");
                 } else {
                     updated.setText("Error loading info.");
@@ -552,19 +553,22 @@ public class AdminDialog extends JDialog {
      * 
      * @param result 
      */
-    public void setPutResult(int result) {
-        if (result == TwitchApi.SUCCESS) {
+    public void setPutResult(RequestResult result) {
+        if (result == TwitchApi.RequestResult.SUCCESS) {
             setPutResult("Info successfully updated.");
         } else {
-            if (result == TwitchApi.ACCESS_DENIED) {
+            if (result == TwitchApi.RequestResult.ACCESS_DENIED) {
                 setPutResult("Changing info failed: Access denied");
                 updated.setText("Error: Access denied");
-            } else if (result == TwitchApi.FAILED) {
+            } else if (result == TwitchApi.RequestResult.FAILED) {
                 setPutResult("Changing info failed: Unknown error");
                 updated.setText("Error: Unknown error");
-            } else if (result == TwitchApi.NOT_FOUND) {
+            } else if (result == TwitchApi.RequestResult.NOT_FOUND) {
                 setPutResult("Changing info failed: Channel not found.");
                 updated.setText("Error: Channel not found.");
+            } else if (result == TwitchApi.RequestResult.INVALID_STREAM_STATUS) {
+                setPutResult("Changing info failed: Invalid title/game (possibly bad language)");
+                updated.setText("Error: Invalid title/game");
             }
         }
         lastPutResult = System.currentTimeMillis();
@@ -755,11 +759,11 @@ public class AdminDialog extends JDialog {
      * @param resultText
      * @param result 
      */
-    public void commercialResult(String stream, String resultText, int result) {
+    public void commercialResult(String stream, String resultText, RequestResult result) {
         setCommercialResult(DateTime.currentTime()+" "+resultText);
         lastCommercialRunAttempt = System.currentTimeMillis();
         setLoadingCommercial(false);
-        if (result == TwitchApi.RUNNING_COMMERCIAL) {
+        if (result == TwitchApi.RequestResult.RUNNING_COMMERCIAL) {
             lastCommercial.put(stream, System.currentTimeMillis());
             if (stream != null && stream.equals(currentChannel)) {
                 lastCommercialRun = System.currentTimeMillis();

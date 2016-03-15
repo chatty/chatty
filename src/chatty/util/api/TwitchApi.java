@@ -45,12 +45,18 @@ public class TwitchApi {
         SUBSCRIBERS, USERINFO, CHAT_SERVER
     }
     
+    public enum RequestResult {
+        ACCESS_DENIED, SUCCESS, FAILED, NOT_FOUND, RUNNING_COMMERCIAL,
+        INVALID_CHANNEL, INVALID_STREAM_STATUS, UNKNOWN
+    }
+    
     public static final int ACCESS_DENIED = 0;
     public static final int SUCCESS = 1;
     public static final int FAILED = 2;
     public static final int NOT_FOUND = 3;
     public static final int RUNNING_COMMERCIAL = 4;
     public static final int INVALID_CHANNEL = 5;
+    public static final int INVALID_TITLE = 6;
     
     private final TwitchApiResultListener resultListener;
     
@@ -478,23 +484,23 @@ public class TwitchApi {
         else if (type == RequestType.COMMERCIAL) {
             String stream = removeRequest(url);
             String resultText = "Commercial probably not running (unknown response: "+responseCode+")";
-            int resultCode = -1;
+            RequestResult resultCode = RequestResult.UNKNOWN;
             if (responseCode == 204) {
                 resultText = "Running commercial..";
-                resultCode = RUNNING_COMMERCIAL;
+                resultCode = RequestResult.RUNNING_COMMERCIAL;
             }
             else if (responseCode == 422) {
                 resultText = "Commercial length not allowed or trying to run too early.";
-                resultCode = FAILED;
+                resultCode = RequestResult.FAILED;
             }
             else if (responseCode == 401 || responseCode == 403) {
                 resultText = "Can't run commercial: Access denied";
-                resultCode = ACCESS_DENIED;
+                resultCode = RequestResult.ACCESS_DENIED;
                 accessDenied();
             }
             else if (responseCode == 404) {
                 resultText = "Can't run commercial: Channel '"+stream+"' not found";
-                resultCode = INVALID_CHANNEL;
+                resultCode = RequestResult.INVALID_CHANNEL;
             }
             if (resultListener != null) {
                 resultListener.runCommercialResult(stream, resultText, resultCode);
@@ -535,9 +541,9 @@ public class TwitchApi {
             return;
         }
         if (type == RequestType.CHANNEL_PUT) {
-            resultListener.putChannelInfoResult(SUCCESS);
+            resultListener.putChannelInfoResult(RequestResult.SUCCESS);
         }
-        resultListener.receivedChannelInfo(stream, info, SUCCESS);
+        resultListener.receivedChannelInfo(stream, info, RequestResult.SUCCESS);
         cachedChannelInfo.put(stream, info);
     }
     
@@ -552,22 +558,25 @@ public class TwitchApi {
     private void handleChannelInfoResultError(String stream, RequestType type, int responseCode) {
         if (type == RequestType.CHANNEL) {
             if (responseCode == 404) {
-                resultListener.receivedChannelInfo(stream, null, NOT_FOUND);
+                resultListener.receivedChannelInfo(stream, null, RequestResult.NOT_FOUND);
             } else {
-                resultListener.receivedChannelInfo(stream, null, FAILED);
+                resultListener.receivedChannelInfo(stream, null, RequestResult.FAILED);
             }
         } else {
             // The result of changing channel info requires some extra
             // handling, because it can have different response codes.
             if (responseCode == 404) {
-                resultListener.putChannelInfoResult(NOT_FOUND);
+                resultListener.putChannelInfoResult(RequestResult.NOT_FOUND);
             } else if (responseCode == 401 || responseCode == 403) {
                 LOGGER.warning("Error setting channel info: Access denied");
-                resultListener.putChannelInfoResult(ACCESS_DENIED);
+                resultListener.putChannelInfoResult(RequestResult.ACCESS_DENIED);
                 accessDenied();
+            } else if (responseCode == 422) {
+                LOGGER.warning("Error setting channel info: Probably invalid title");
+                resultListener.putChannelInfoResult(RequestResult.INVALID_STREAM_STATUS);
             } else {
                 LOGGER.warning("Error setting channel info: Unknown error (" + responseCode + ")");
-                resultListener.putChannelInfoResult(FAILED);
+                resultListener.putChannelInfoResult(RequestResult.FAILED);
             }
         }
     }
