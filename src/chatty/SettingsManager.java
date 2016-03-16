@@ -363,6 +363,7 @@ public class SettingsManager {
         settings.addBoolean("abAutoImport", false);
         settings.addString("abSubMonthsChan", "");
         settings.addList("abSubMonths", new ArrayList(), Setting.LONG);
+        settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
 
         // Backup
         settings.addLong("backupDelay", 1);
@@ -414,6 +415,11 @@ public class SettingsManager {
         
         settings.addBoolean("autoUnhost", false);
         settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
+        
+        settings.addBoolean("cmEnabled", false);
+        settings.addString("cmChannel", "");
+        settings.addString("cmTemplate", "{user}: {message}");
+        settings.addBoolean("cmHighlightedOnly", false);
     }
     
     /**

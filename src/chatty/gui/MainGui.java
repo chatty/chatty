@@ -45,6 +45,7 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
+import chatty.util.CopyMessages;
 import chatty.util.DateTime;
 import chatty.util.ImageCache;
 import chatty.util.MiscUtil;
@@ -2422,6 +2423,8 @@ public class MainGui extends JFrame implements Runnable {
                         streamChat.printMessage(message);
                     }
                 }
+                
+                CopyMessages.copyMessage(client.settings, user, text, highlighted);
                 
                 // Stuff independent of highlight/ignore
                 user.addMessage(processMessage(text), action);

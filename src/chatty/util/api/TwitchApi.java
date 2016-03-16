@@ -50,14 +50,6 @@ public class TwitchApi {
         INVALID_CHANNEL, INVALID_STREAM_STATUS, UNKNOWN
     }
     
-    public static final int ACCESS_DENIED = 0;
-    public static final int SUCCESS = 1;
-    public static final int FAILED = 2;
-    public static final int NOT_FOUND = 3;
-    public static final int RUNNING_COMMERCIAL = 4;
-    public static final int INVALID_CHANNEL = 5;
-    public static final int INVALID_TITLE = 6;
-    
     private final TwitchApiResultListener resultListener;
     
     private final StreamInfoManager streamInfoManager;

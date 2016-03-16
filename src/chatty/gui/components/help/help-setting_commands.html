@@ -60,7 +60,8 @@
         <a href="#streamchat">Stream Chat</a> |
         <a href="#streamhighlights">Stream Highlights</a> |
         <a href="#debugging">Debugging</a> |
-        <a href="#bots">Bot Badges</a>
+        <a href="#bots">Bot Badges</a> |
+        <a href="#cm">Copy Messages</a>
     </p>
             <table class="settings" style="border-collapse: collapse;">
                 <tr style="border-bottom: 1px solid #EEE">
@@ -526,6 +527,48 @@
                     <td colspan="2">Boolean</td>
                     <td>true</td>
                     <td>Use bot names from FFZ API. FFZ emotes have to be enabled for this to work.</td>
+                </tr>
+            </table>
+            
+            <h3><a name="cm">Copy Messages</a></h3>
+            <p>This can automatically copy all incoming messages into the clipboard.</p>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="settingExclusive">cmEnabled</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Enable/disable the copy messages feature altogether.</td>
+                </tr>
+                <tr>
+                    <td class="settingExclusive">cmChannel</td>
+                    <td>String</td>
+                    <td>Channel Name (including leading #)</td>
+                    <td><em>empty</em></td>
+                    <td>Restrict copying messages to this channel. Leave empty
+                        for no channel restriction.</td>
+                </tr>
+                <tr>
+                    <td class="settingExclusive">cmTemplate</td>
+                    <td>String</td>
+                    <td>Template for the copied text</td>
+                    <td>{user}: {message}</td>
+                    <td>This is the template for what is put into the clipboard.
+                        <code>{user}</code> is replaced with the name of the
+                        user who send the message, <code>{message}</code> is
+                        replaced with the text of the message itself.</td>
+                </tr>
+                <tr>
+                    <td class="settingExclusive">cmHighlightedOnly</td>
+                    <td colspan="2">Boolean</td>
+                    <td>false</td>
+                    <td>Only copy highlighted messages.</td>
                 </tr>
             </table>
 </body>

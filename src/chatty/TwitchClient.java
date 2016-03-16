@@ -242,6 +242,7 @@ public class TwitchClient {
         c.setUsericonManager(usericonManager);
         c.setBotNameManager(botNameManager);
         c.addChannelStateListener(new ChannelStateUpdater());
+        c.setSubNotificationPattern(settings.getString("subNotificationPattern"));
         
         w = new WhisperConnection(new MyWhisperListener(), settings);
         w.setUsericonManager(usericonManager);

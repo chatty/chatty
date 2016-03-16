@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  *
@@ -94,6 +95,8 @@ public class TwitchConnection {
     private final ChannelStateManager channelStates = new ChannelStateManager();
     
     private boolean whisperConnection;
+    
+    private Pattern subNotificationPattern;
 
     public TwitchConnection(final ConnectionListener listener, Settings settings,
             String label) {
@@ -144,6 +147,15 @@ public class TwitchConnection {
     
     public void setWhisperConnection(boolean value) {
         this.whisperConnection = value;
+    }
+    
+    public void setSubNotificationPattern(String text) {
+        try {
+            subNotificationPattern = Pattern.compile(text);
+        } catch (PatternSyntaxException ex) {
+            LOGGER.warning("Invalid sub notification pattern ("+text+"): "+ex);
+            subNotificationPattern = null;
+        }
     }
     
     public void simulate(String data) {
@@ -951,19 +963,21 @@ public class TwitchConnection {
             if (onChannel(channel)) {
                 if (settings.getBoolean("twitchnotifyAsInfo") && nick.equals("twitchnotify")) {
                     listener.onInfo(channel, "[Notification] " + text);
-                    Pattern p = Pattern.compile("([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
-                    Matcher m = p.matcher(text);
-                    if (m.find()) {
-                        String name = null;
-                        int months = 1;
-                        try {
-                            name = m.group(1);
-                            months = Integer.parseInt(m.group(2));
-                        } catch (Exception ex) {
-                            // Do nothing
-                        }
-                        if (name != null) {
-                            listener.onSubscriberNotification(channel, name, months);
+                    if (subNotificationPattern != null) {
+                        Pattern p = subNotificationPattern;
+                        Matcher m = p.matcher(text);
+                        if (m.find()) {
+                            String name = null;
+                            int months = 1;
+                            try {
+                                name = m.group(1);
+                                months = Integer.parseInt(m.group(2));
+                            } catch (Exception ex) {
+                                // Do nothing
+                            }
+                            if (name != null) {
+                                listener.onSubscriberNotification(channel, name, months);
+                            }
                         }
                     }
                 } else if (nick.equals("jtv")) {
