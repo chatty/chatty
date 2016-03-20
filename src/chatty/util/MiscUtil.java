@@ -7,8 +7,14 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,6 +23,8 @@ import javax.swing.JOptionPane;
  * @author tduva
  */
 public class MiscUtil {
+    
+    private static final Logger LOGGER = Logger.getLogger(MiscUtil.class.getName());
 
     /**
      * Copy the given text to the clipboard.
@@ -80,5 +88,19 @@ public class MiscUtil {
         return result;
     }
     
-    
+    public static void moveFile(Path from, Path to) {
+        try {
+            Files.move(from, to, ATOMIC_MOVE);
+        } catch (IOException ex) {
+            LOGGER.warning("Error moving file "+from+": " + ex);
+            System.out.println("Error moving file "+from+": " + ex);
+
+            try {
+                Files.move(from, to, REPLACE_EXISTING);
+            } catch (IOException ex2) {
+                LOGGER.warning("Error moving file "+from+" (2): " + ex2);
+                System.out.println("Error moving file "+from+" (2): " + ex2);
+            }
+        }
+    }
 }

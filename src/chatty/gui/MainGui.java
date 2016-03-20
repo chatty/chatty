@@ -881,7 +881,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Saves location/size for windows/dialogs and whether it was open.
+     * Puts the updated state of the windows/dialogs/popouts into the settings.
      */
     public void saveWindowStates() {
         windowStateManager.saveWindowStates();
@@ -1231,6 +1231,15 @@ public class MainGui extends JFrame implements Runnable {
                 openHelp("");
             } else if (cmd.equals("settings")) {
                 getSettingsDialog().showSettings();
+            } else if (cmd.equals("saveSettings")) {
+                int result = JOptionPane.showConfirmDialog(MainGui.this,
+                        "This manually saves settings to file.\n" +
+                        "Settings are also automatically saved when you exit Chatty.",
+                        "Save Settings to file",
+                        JOptionPane.OK_CANCEL_OPTION);
+                if (result == 0) {
+                    client.saveSettings(false);
+                }
             } else if (cmd.equals("website")) {
                 UrlOpener.openUrlPrompt(MainGui.this, Chatty.WEBSITE, true);
             } else if (cmd.equals("favoritesDialog")) {

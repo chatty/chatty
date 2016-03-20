@@ -62,6 +62,7 @@ public class TwitchClient {
     private static final Logger LOGGER = Logger.getLogger(TwitchClient.class.getName());
     
     private volatile boolean shuttingDown = false;
+    private volatile boolean settingsAlreadySavedOnExit = false;
     
     /**
      * The URL to get a token. Needs to end with the scopes so other ones can be
@@ -1893,23 +1894,45 @@ public class TwitchClient {
      * Should run in EDT.
      */
     public void exit() {
-        if (capitalizedNames != null) {
-            capitalizedNames.saveToFileOnce();
-        }
-        addressbook.saveToFileOnce();
-        if (g != null && g.guiCreated) {
-            g.saveWindowStates();
-        }
+        shuttingDown = true;
+        saveSettings(true);
         logAllViewerstats();
         c.disconnect();
         w.disconnect();
-        shuttingDown = true;
-        if (!settings.getBoolean("dontSaveSettings")) {
-            settings.saveSettingsToJson();
-        }
         g.cleanUp();
         chatLog.close();
         System.exit(0);
+    }
+    
+    /**
+     * Save all settings to file.
+     * 
+     * @param onExit If true, this will save the settings disregarding any
+     * save restrictions like saving them only once (as on exit)
+     */
+    public void saveSettings(boolean onExit) {
+        if (onExit) {
+            if (settingsAlreadySavedOnExit) {
+                return;
+            }
+            settingsAlreadySavedOnExit = true;
+        }
+        
+        LOGGER.info("Saving settings..");
+        System.out.println("Saving settings..");
+        if (capitalizedNames != null) {
+            capitalizedNames.saveToFile();
+        }
+        
+        // Prepare saving settings
+        if (g != null && g.guiCreated) {
+            g.saveWindowStates();
+        }
+        // Actually write settings to file
+        if (!onExit || !settings.getBoolean("dontSaveSettings")) {
+            addressbook.saveToFile();
+            settings.saveSettingsToJson();
+        }
     }
     
     private class SettingSaveListener implements SettingsListener {
@@ -1929,8 +1952,6 @@ public class TwitchClient {
     }
     
     private class Messages implements TwitchConnection.ConnectionListener {
-        
-        
 
         @Override
         public void onChannelJoined(String channel) {

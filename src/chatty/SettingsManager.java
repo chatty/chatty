@@ -396,7 +396,7 @@ public class SettingsManager {
         settings.addBoolean("streamChatBottom", true);
         settings.addBoolean("streamChatResizable", true);
         
-        settings.addString("streamHighlightCommand", "!addstreamhighlight");
+        settings.addString("streamHighlightCommand", "!highlight");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
         

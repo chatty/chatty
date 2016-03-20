@@ -3,6 +3,8 @@ package chatty;
 
 import chatty.util.RingBuffer;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.logging.*;
 
@@ -14,9 +16,9 @@ public class Logging {
     
     public static final Level USERINFO = new UserinfoLevel();
     
-    private static final String LOG_FILE = Chatty.getUserDataDirectory()+"debug%g.log";
-    private static final String LOG_FILE2 = Chatty.getUserDataDirectory()+"debug_session.log";
-    private static final String LOG_FILE_IRC = Chatty.getUserDataDirectory()+"debug_irc%g.log";
+    private static final String LOG_FILE = Chatty.getDebugLogDirectory()+"debug%g.log";
+    private static final String LOG_FILE2 = Chatty.getDebugLogDirectory()+"debug_session.log";
+    private static final String LOG_FILE_IRC = Chatty.getDebugLogDirectory()+"debug_irc%g.log";
     
     /**
      * Maximum log file size in bytes.
@@ -31,6 +33,7 @@ public class Logging {
     private final RingBuffer<LogRecord> lastMessages = new RingBuffer<>(4);
     
     public Logging(final TwitchClient client) {
+        createLogDir();
         
         // Remove default handlers
         LogManager.getLogManager().reset();
@@ -133,6 +136,7 @@ public class Logging {
     }
     
     public static FileHandler getIrcFileHandler() {
+        createLogDir();
         try {
             FileHandler file = new FileHandler(LOG_FILE_IRC,MAX_LOG_SIZE,2,true);
             file.setFormatter(new Formatter() {
@@ -151,6 +155,14 @@ public class Logging {
             Logger.getLogger(Logging.class.getName()).log(Level.WARNING, null, ex);
         }
         return null;
+    }
+    
+    public static void createLogDir() {
+        try {
+            Files.createDirectories(Paths.get(Chatty.getDebugLogDirectory()));
+        } catch (IOException ex) {
+            Logger.getLogger(Logging.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

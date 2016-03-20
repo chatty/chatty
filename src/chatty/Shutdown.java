@@ -27,15 +27,7 @@ public class Shutdown implements Runnable {
         LOGGER.info("Shutdown");
         System.out.println("Shutdown");
         
-        // Save/close stuff that should already be closed by a regular shutdown
-        // so only use methods that are only executed once and synchronized.
-        client.addressbook.saveToFileOnce();
-        if (!client.settings.getBoolean("dontSaveSettings")) {
-            client.settings.saveSettingsToJson();
-        }
+        client.saveSettings(true);
         client.chatLog.close();
-        if (client.capitalizedNames != null) {
-            client.capitalizedNames.saveToFileOnce();
-        }
     }
 }

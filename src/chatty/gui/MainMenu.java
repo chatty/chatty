@@ -94,6 +94,8 @@ public class MainMenu extends JMenuBar {
         setIcon(addItem(main,"settings","Settings", KeyEvent.VK_S), "preferences-system.png");
         addItem(main,"configureLogin","Login..");
         main.addSeparator();
+        addItem(main,"saveSettings","Save..");
+        main.addSeparator();
         addItem(main,"exit","Exit");
         
         // View
