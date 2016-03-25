@@ -5,11 +5,23 @@
 <body>
     <div id="backlink"><a href="help.html">To main help page</a></div>
     <h1><a name="top">Addressbook</a></h1>
-    <p>
-        <a href="#editing">Editing Locally</a> (<a href="#commands">Commands</a>) | 
-        <a href="#advanced">Advanced Usage</a> (<a href="#modcommands">Mod Commands</a>,
-        <a href="#file">Change via file</a>, <a href="#unique-cats">Unique Categories</a>)
-    </p>
+    <ul>
+        <li>
+            <a href="#editing">Editing Locally</a>
+            <ul>
+                <li><a href="#commands">Commands</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#advanced">Advanced Usage</a>
+            <ul>
+                <li><a href="#modcommands">Mod Commands</a></li>
+                <li><a href="#file">Change via file</a></li>
+                <li><a href="#unique-cats">Unique Categories</a></li>
+                <li><a href="#subs-cats">Automatic Subscriber Categories</a></li>
+            </ul>
+        </li>
+    </ul>
 
     <p>The addressbook allows you to add usernames and assign categories to
         them, which can then be used in other places such as the <a href="help-settings.html#Usercolors">Usercolor settings</a>
@@ -173,7 +185,7 @@ set testi ignore</pre>
         several categories by comma: <code>/set abUniqueCats star,gold</code></p>
     
     
-    <h3><a name="unique-cats">Automatic Subscriber Categories</a></h3>
+    <h3><a name="subs-cats">Automatic Subscriber Categories</a></h3>
     <p>This is an experimental feature that adds Subscribers automatically to
         an Addressbook category, depending on how many months they subscribed.
         This works on Subscriber Notifications in chat, so you have to be in the

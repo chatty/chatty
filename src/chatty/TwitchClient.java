@@ -1000,6 +1000,8 @@ public class TwitchClient {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
             g.setUpdateAvailable("[test]");
+        } else if (command.equals("testannouncement")) {
+            g.setAnnouncementAvailable(Boolean.parseBoolean(parameter));
         } else if (command.equals("removechan")) {
             g.removeChannel(parameter);
         } else if (command.equals("testtimer")) {

@@ -225,6 +225,10 @@ public class Chatty {
         return getUserDataDirectory()+"backup"+File.separator;
     }
     
+    public static String getDebugLogDirectory() {
+        return getUserDataDirectory()+"debuglogs"+File.separator;
+    }
+    
     public static String chattyVersion() {
         return String.format("Chatty Version %s%s%s / %s",
                 Chatty.VERSION,

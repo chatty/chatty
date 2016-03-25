@@ -43,30 +43,24 @@ public class MainMenu extends JMenuBar {
     
     private final ItemListener itemListener;
     private final ActionListener actionListener;
+    private final LinkLabelListener linkLabelListener;
     
     // Set here because it is used more than once
     private final String IGNORED_LABEL = "Ignored";
     private final String HIGHLIGHTS_LABEL = "Highlights";
     
-    /**
-     * Stores whether the "Update Available!" message has been added yet, so
-     * it's guaranteed to be only added once.
-     */
-    private boolean addedUpdateMessage;
-    /**
-     * Store whether the update notification is currently set to the smaller
-     * version, so it doesn't constantly change unless necessary.
-     */
-    private boolean updateMessageSmaller;
+    private final Notification notification = new Notification();
     
     /**
      * Stores all the menu items associated with a key
      */
     private final HashMap<String,JMenuItem> menuItems = new HashMap<>();
     
-    public MainMenu(ActionListener actionListener, ItemListener itemListener) {
+    public MainMenu(ActionListener actionListener, ItemListener itemListener,
+            LinkLabelListener linkLabelListener) {
         this.itemListener = itemListener;
         this.actionListener = actionListener;
+        this.linkLabelListener = linkLabelListener;
         
         //this.setBackground(Color.black);
         //this.setForeground(Color.white);
@@ -178,6 +172,8 @@ public class MainMenu extends JMenuBar {
         JMenuItem helpItem = addItem(help,"about","About/Help", KeyEvent.VK_H);
         helpItem.setAccelerator(KeyStroke.getKeyStroke("F1"));
         setIcon(helpItem, "help-browser.png");
+        help.addSeparator();
+        addItem(help,"news","Announcements");
         
         
         add(main);
@@ -332,57 +328,111 @@ public class MainMenu extends JMenuBar {
         }
     }
     
-    /**
-     * Regular version of the update notification.
-     */
-    private static final String UPDATE_MESSAGE = "<html>"
-            + "<body style='text-align: right;padding-right:5px;'>"
-            + "[update:show Update&nbsp;available!]";
-    /**
-     * Smaller version of the update notification.
-     */
-    private static final String UPDATE_MESSAGE_SMALL = "<html>"
-            + "<body style='text-align: right;padding-right:5px;'>"
-            + "[update:show Update!]";
+    public void setUpdateNotification(boolean enabled) {
+        notification.setUpdateNotification(enabled);
+    }
     
-    /**
-     * Add the Update available! link in the menubar.
-     * 
-     * @param listener The listener that reacts on a click on the link
-     */
-    public void setUpdateAvailable(LinkLabelListener listener) {
-        if (!addedUpdateMessage) {
-            final LinkLabel updateNotification = new LinkLabel(UPDATE_MESSAGE, listener);
+    public void setAnnouncementNotification(boolean enabled) {
+        notification.setAnnouncementNotification(enabled);
+    }
+
+    private class Notification {
+        
+        private static final String MESSAGE_BASE = "<html>"
+            + "<body style='text-align: right;padding-right:5px;'>";
+        
+        /**
+         * Stores whether the notification label has been added to the layout
+         * yet, so it's guaranteed to be only added once.
+         */
+        private boolean addedLabelToLayout;
+        
+        /**
+         * Store whether the notification is currently set to the smaller
+         * version, so it doesn't constantly change unless necessary.
+         */
+        private boolean updateMessageSmaller;
+
+        private String message;
+        private String shortMessage;
+        private Dimension preferredSize = new Dimension();
+        private LinkLabel notification;
+        private boolean updateNotificationEnabled;
+        private boolean announcementNotificationEnabled;
+
+        public void setUpdateNotification(boolean enabled) {
+            if (updateNotificationEnabled != enabled) {
+                updateNotificationEnabled = enabled;
+                setNotification();
+            }
+        }
+
+        public void setAnnouncementNotification(boolean enabled) {
+            if (announcementNotificationEnabled != enabled) {
+                announcementNotificationEnabled = enabled;
+                setNotification();
+            }
+        }
+
+        private void makeText() {
+            message = MESSAGE_BASE;
+            shortMessage = MESSAGE_BASE;
+            if (announcementNotificationEnabled) {
+                message += "[announcement:show Announcement]";
+                shortMessage += "[announcement:show News]";
+            }
+            if (updateNotificationEnabled) {
+                if (announcementNotificationEnabled) {
+                    message += "&nbsp;-&nbsp;";
+                    shortMessage += "&nbsp;-&nbsp;";
+                }
+                message += "[update:show Update&nbsp;available!]";
+                shortMessage += "[update:show Update!]";
+            }
+        }
+        
+        private void setNotification() {
+            makeText();
+            if (!addedLabelToLayout) {
+                addNotificationToLayout();
+                addedLabelToLayout = true;
+            }
             
-            // Add listener and stuff to change notification size when less
-            // space is there (Update available! -> Update!)
-            // Save the preferred size for the regular version here, because
-            // checking the preferred size in the listener would change between
-            // the regular and smaller version
-            final Dimension requiredSize = updateNotification.getPreferredSize();
-            updateNotification.addComponentListener(new ComponentAdapter() {
+            // Save preferred size of regular version to compare to in listener
+            notification.setText(message);
+            preferredSize = notification.getPreferredSize();
+        }
+
+        private void addNotificationToLayout() {
+            notification = new LinkLabel("", linkLabelListener);
+            
+            /**
+             * Add listener to change notification text to a shorter version
+             * when less space is available ("Update available!" -> "Update!").
+             */
+            notification.addComponentListener(new ComponentAdapter() {
 
                 @Override
                 public void componentResized(ComponentEvent e) {
                     Dimension actualSize = e.getComponent().getSize();
-                    if (actualSize.width < requiredSize.width+10) {
+                    if (actualSize.width < preferredSize.width + 10) {
                         if (!updateMessageSmaller) {
-                            updateNotification.setText(UPDATE_MESSAGE_SMALL);
+                            notification.setText(shortMessage);
                             updateMessageSmaller = true;
                             //System.out.println("made smaller");
                         }
                     } else {
                         if (updateMessageSmaller) {
-                            updateNotification.setText(UPDATE_MESSAGE);
+                            notification.setText(message);
                             updateMessageSmaller = false;
                             //System.out.println("made bigger again");
                         }
                     }
                 }
             });
-            
-            add(updateNotification);
-            addedUpdateMessage = true;
+
+            add(notification);
         }
+        
     }
 }

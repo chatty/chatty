@@ -35,6 +35,7 @@ import chatty.gui.components.ErrorMessage;
 import chatty.gui.components.FollowersDialog;
 import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.LivestreamerDialog;
+import chatty.gui.components.NewsDialog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
@@ -118,6 +119,7 @@ public class MainGui extends JFrame implements Runnable {
     private SRL srl;
     private LivestreamerDialog livestreamerDialog;
     private UpdateMessage updateMessage;
+    private NewsDialog newsDialog;
     private EmotesDialog emotesDialog;
     private FollowersDialog followerDialog;
     private FollowersDialog subscribersDialog;
@@ -241,6 +243,7 @@ public class MainGui extends JFrame implements Runnable {
         srl = new SRL(this, client.speedrunsLive, contextMenuListener);
         livestreamerDialog = new LivestreamerDialog(this, linkLabelListener, client.settings);
         updateMessage = new UpdateMessage(this);
+        newsDialog = new NewsDialog(this, client.settings);
         
         client.settings.addSettingChangeListener(new MySettingChangeListener());
         client.settings.addSettingsListener(new MySettingsListener());
@@ -254,7 +257,7 @@ public class MainGui extends JFrame implements Runnable {
         
         // Main Menu
         MainMenuListener menuListener = new MainMenuListener();
-        menu = new MainMenu(menuListener,menuListener);
+        menu = new MainMenu(menuListener,menuListener, linkLabelListener);
         setJMenuBar(menu);
 
         state.update();
@@ -669,6 +672,8 @@ public class MainGui extends JFrame implements Runnable {
                 // Should be done when the main window is already visible, so
                 // it can be centered on it correctly, if that is necessary
                 reopenWindows();
+                
+                newsDialog.autoRequestNews(true);
             }
         });
     }
@@ -1170,6 +1175,10 @@ public class MainGui extends JFrame implements Runnable {
                 if (ref.equals("show")) {
                     openUpdateDialog();
                 }
+            } else if (type.equals("announcement")) {
+                if (ref.equals("show")) {
+                    newsDialog.showDialog();
+                }
             }
         }
     }
@@ -1229,6 +1238,8 @@ public class MainGui extends JFrame implements Runnable {
                 exit();
             } else if (cmd.equals("about")) {
                 openHelp("");
+            } else if (cmd.equals("news")) {
+                newsDialog.showDialog();
             } else if (cmd.equals("settings")) {
                 getSettingsDialog().showSettings();
             } else if (cmd.equals("saveSettings")) {
@@ -2807,10 +2818,14 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                menu.setUpdateAvailable(linkLabelListener);
+                menu.setUpdateNotification(true);
                 updateMessage.setNewVersion(newVersion);
             }
         });
+    }
+    
+    public void setAnnouncementAvailable(boolean enabled) {
+        menu.setAnnouncementNotification(enabled);
     }
     
     public void showSettings() {

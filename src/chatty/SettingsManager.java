@@ -420,6 +420,9 @@ public class SettingsManager {
         settings.addString("cmChannel", "");
         settings.addString("cmTemplate", "{user}: {message}");
         settings.addBoolean("cmHighlightedOnly", false);
+        
+        settings.addBoolean("newsAutoRequest", true);
+        settings.addLong("newsLastRead", 0);
     }
     
     /**
