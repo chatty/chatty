@@ -35,6 +35,7 @@ public class Sound {
                 return;
             }
         }
+
         if (delay >= 0) {
             lastPlayed.put(id, System.currentTimeMillis());
         }
@@ -60,12 +61,12 @@ public class Sound {
                 volumeInfo = "no volume control";
             }
 
-            clip.addLineListener(new LineListener() {
-                public void update(LineEvent event) {
-                    if (event.getType() == LineEvent.Type.STOP)
+            clip.addLineListener(
+                listener -> {
+                    if (listener.getType() == LineEvent.Type.STOP)
                         clip.close();
                 }
-            });
+            );
 
             clip.start();
             LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
