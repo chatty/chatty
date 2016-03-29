@@ -67,7 +67,7 @@ public class NewsDialog extends JDialog {
     private final JLabel version;
     private final JTextPane news;
 
-    public NewsDialog(MainGui main, Settings settings) {
+    public NewsDialog(MainGui main, final Settings settings) {
         super(main);
         
         this.main = main;
@@ -172,6 +172,11 @@ public class NewsDialog extends JDialog {
         getNews(false);
     }
     
+    /**
+     * Requests the news only if the auto request setting is enabled.
+     * 
+     * @param openIfUnread Open the dialog automatically for new news
+     */
     public void autoRequestNews(boolean openIfUnread) {
         if (settings.getBoolean("newsAutoRequest")) {
             getNews(openIfUnread);
@@ -190,21 +195,21 @@ public class NewsDialog extends JDialog {
             setNews(cachedNews);
             return;
         }
-        lastRequested = System.currentTimeMillis();
         requestNews(openIfUnread);
     }
     
     /**
      * Requests the announcements from the server.
      */
-    private void requestNews(boolean openIfUnread) {
+    private void requestNews(final boolean openIfUnread) {
         news.setText("Loading..");
         latestNewsTimestamp = 0;
+        lastRequested = System.currentTimeMillis();
         
         UrlRequest request = new UrlRequest(NEWS_URL) {
             
             @Override
-            public void requestResult(String result, int responseCode) {
+            public void requestResult(final String result, final int responseCode) {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
@@ -246,6 +251,7 @@ public class NewsDialog extends JDialog {
                 setTitle("Announcements");
                 main.setAnnouncementAvailable(false);
             }
+            return newCount;
         } catch (Exception ex) {
             news.setText("Error loading news.");
             LOGGER.warning(MiscUtil.getStackTrace(ex));

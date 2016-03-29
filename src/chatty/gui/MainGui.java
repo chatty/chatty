@@ -2622,8 +2622,9 @@ public class MainGui extends JFrame implements Runnable {
         if (!ignoreChecker.check(null, line)) {
             // Add here so it only affects the display, but not ignoring or
             // logging
-            if (LocalDateTime.now().getMonth() == Month.APRIL
-                    && LocalDateTime.now().getDayOfMonth() == 1) {
+            Calendar cal = Calendar.getInstance();
+            if (cal.get(Calendar.MONTH) == Calendar.APRIL
+                    && cal.get(Calendar.DAY_OF_MONTH) == 1) {
                 line = line.replace("months in a row", "years in a row");
             }
             channel.printLine(line);

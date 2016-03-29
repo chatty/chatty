@@ -302,8 +302,6 @@ public class TwitchClient {
         // Shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
         
-        version5Info();
-        
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,793,33,42");
             g.addUser("", new User("josh", ""));
@@ -1875,24 +1873,6 @@ public class TwitchClient {
         spamProtection.setLinesPerSeconds(value);
     }
     
-    private void version5Info() {
-        long count = settings.getLong("v0.5");
-        if (!settings.getString("token").isEmpty()
-                && !settings.getBoolean("token_user")
-                && count < 2) {
-            g.printSystem("With Version 0.5, Chatty can notify you about streams "
-                    + "you follow and show a list of them. You have to request "
-                    + "new login data containing <Read user info> access to be "
-                    + "able to use that. Go to "
-                    + "<Main - Connect - Configure login..>, remove the login "
-                    + "and request it again.");
-            g.printSystem("You can enable/disable this feature under "
-                    + "<Main - Settings - Notifications> if you have the "
-                    + "necessary access.");
-            settings.setLong("v0.5", ++count);
-        }
-    }
-    
     /**
      * Exit the program. Do some cleanup first and save stuff to file (settings,
      * addressbook, chatlogs).
@@ -1913,8 +1893,8 @@ public class TwitchClient {
     /**
      * Save all settings to file.
      * 
-     * @param onExit If true, this will save the settings disregarding any
-     * save restrictions like saving them only once (as on exit)
+     * @param onExit If true, this will save the settings only if they haven't
+     * already been saved with this being true before
      */
     public void saveSettings(boolean onExit) {
         if (onExit) {

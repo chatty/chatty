@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -27,6 +28,13 @@ public class Proc extends Thread {
     private final String label;
     private final long created;
 
+    /**
+     * Create a new process.
+     * 
+     * @param command The command and parameters
+     * @param listener The listener to monitor the process state and output
+     * @param label Label for debug output
+     */
     public Proc(String command, ProcListener listener, String label) {
         this.command = command;
         this.listener = listener;
@@ -43,21 +51,21 @@ public class Proc extends Thread {
         try {
             Runtime rt = Runtime.getRuntime();
             String[] cmd = split(command);
-            Process process = rt.exec(cmd);
-            this.process = process;
+            Process p = rt.exec(cmd);
+            this.process = p;
             LOGGER.info(String.format("[%s] Process %s started. [%s]",
                     label, id(), command));
             listener.processStarted(this);
 
             // Read both output streams (output of the process, so input), so
             // the process keeps running and to output it's output
-            InputStreamHelper errorStream = new InputStreamHelper(process.getErrorStream());
-            InputStreamHelper inputStream = new InputStreamHelper(process.getInputStream());
+            InputStreamHelper errorStream = new InputStreamHelper(p.getErrorStream());
+            InputStreamHelper inputStream = new InputStreamHelper(p.getInputStream());
 
             errorStream.start();
             inputStream.start();
 
-            int exitValue = process.waitFor();
+            int exitValue = p.waitFor();
             errorStream.join(1000);
             inputStream.join(1000);
             listener.processFinished(this, exitValue);
@@ -126,13 +134,13 @@ public class Proc extends Thread {
 
     /**
      * Splits up a line of text into tokens by spaces, ignoring spaces for parts
-     * that are surrounded by brackets.
+     * that are surrounded by quotes.
      *
      * <p>
      * This can be used for splitting up parameters.</p>
      *
      * @param input The line of text to tokenize
-     * @return An array of tokens (tokens in brackets may be empty)
+     * @return An array of tokens (tokens in quotes may be empty)
      */
     private static String[] split(String input) {
         List<String> result = new ArrayList<>();
@@ -145,5 +153,10 @@ public class Proc extends Thread {
             }
         }
         return result.toArray(new String[result.size()]);
+    }
+    
+    public static void main(String[] args) {
+        String[] split = split("abc -d \"abc jfwe\"  fwe\"hmm\"");
+        System.out.println(Arrays.asList(split));
     }
 }

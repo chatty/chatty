@@ -9,17 +9,28 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * Provides functions to start processes and store a list of them.
+ * 
  * @author tduva
  */
 public class ProcessManager {
     
+    // Used to make an id for currently running processes
     private static final AtomicInteger lastId = new AtomicInteger();
-    private static final Map<Integer, Proc> processes = Collections.synchronizedMap(new TreeMap<>());
     
+    // Store currently running processes
+    private static final Map<Integer, Proc> processes
+            = Collections.synchronizedMap(new TreeMap<Integer, Proc>());
+    
+    /**
+     * Handle input from the /proc command.
+     * 
+     * @param input The parameters to the command
+     * @return Message back to the user
+     */
     public static String command(String input) {
         if (input == null || input.isEmpty()) {
-            return "Invalid";
+            return "Invalid input.";
         }
         String[] split = input.split(" ", 2);
         String command = split[0];
@@ -53,6 +64,12 @@ public class ProcessManager {
         return "Invalid input.";
     }
     
+    /**
+     * Execute the given process and parameters.
+     * 
+     * @param command The process and parameters
+     * @param label For debug output
+     */
     public static void execute(String command, String label) {
         final int id = lastId.incrementAndGet();
         Proc proc = new Proc(command, new Proc.ProcListener() {
@@ -68,12 +85,19 @@ public class ProcessManager {
 
             @Override
             public void processFinished(Proc p, int exitValue) {
-                processes.remove(id, p);
+                processes.remove(id);
             }
         }, label+"/"+id);
         proc.start();
     }
     
+    /**
+     * Try to kill the process with the given id, if running.
+     * 
+     * @param id The id as created in execute()
+     * @return true if the id was of a running process, false otherwise (doesn't
+     * give any indiciation if killing the process actually worked)
+     */
     public static boolean kill(int id) {
         Proc proc = processes.get(id);
         if (proc != null) {
@@ -83,6 +107,11 @@ public class ProcessManager {
         return false;
     }
     
+    /**
+     * Return a list of human-readable information on all running processes.
+     * 
+     * @return 
+     */
     public static Collection<String> getList() {
         Collection<String> result = new ArrayList<>();
         for (int id : processes.keySet()) {

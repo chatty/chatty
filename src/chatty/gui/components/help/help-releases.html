@@ -63,6 +63,12 @@ Improvements
   by default)
 - Added feature to automatically add Addressbook categories on Subscriber
   notifications (experimental)
+- Added feature to automatically copy messages into clipboard
+- Moved debug logs to down directory
+- Increased max reconnection attempts to 30
+- Added error message for setting invalid stream status in Admin Dialog
+- Added in-app announcements for news about Chatty (Help - Announcements)
+- Added /proc command to start native processes
 - Updated help
 
 Settings
@@ -76,7 +82,12 @@ Settings
 - Added setting to display more detailed uptime in titlebar (enabled by default)
 - Changed default for showing animated emotes to off
 - Changed default for Min. Userlist Width to 0
+- Changed defaults for server/port
+- Changed default for Highlight Mod Command to !highlight, ignore case for both
+  the channel and command setting
 - Made setting names case-insensitive (when using setting commands)
+- Changed the process of saving settings in an attempt to make it more reliable
+- Added menu entry to save settings manually
 
 Bugfixes
 ========
@@ -86,6 +97,8 @@ Bugfixes
 - Fixed autojoin not working sometimes
 - Fixed framerate of GIFs, which may break some GIFs that worked before, but
   prevents high CPU usage (displaying animated GIFs in Java is hard)
+- Check if Java supports opening URLs on the current platform and run native
+  command if necessary
 </pre>
     
     <h2>
