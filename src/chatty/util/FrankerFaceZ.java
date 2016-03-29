@@ -205,7 +205,9 @@ public class FrankerFaceZ {
         } else if (type == Type.FEATURE_FRIDAY) {
             emotes = FrankerFaceZParsing.parseSetEmotes(result, Emoticon.SubType.FEATURE_FRIDAY);
             for (Emoticon emote : emotes) {
-                emote.setStream(featureFridayChannel);
+                if (featureFridayChannel != null) {
+                    emote.setStream(featureFridayChannel);
+                }
             }
         }
         
@@ -273,9 +275,7 @@ public class FrankerFaceZ {
             JSONObject root = (JSONObject)parser.parse(json);
             int set = ((Number)root.get("set")).intValue();
             featureFridayChannel = (String)root.get("channel");
-            if (featureFridayChannel != null) {
-                return set;
-            }
+            return set;
         } catch (ParseException | NullPointerException | ClassCastException ex) {
             // Assume no feature friday
         }

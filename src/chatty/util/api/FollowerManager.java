@@ -252,7 +252,8 @@ public class FollowerManager {
             String display_name = (String)user.get("display_name");
             
             return createFollowerItem(stream, display_name, time);
-        } catch (ClassCastException | NullPointerException | java.text.ParseException ex) {
+        } catch (ClassCastException | NullPointerException
+                | java.text.ParseException | NumberFormatException ex) {
             LOGGER.warning("Error parsing entry of "+type+": "+o+" ["+ex+"]");
         }
         return null;

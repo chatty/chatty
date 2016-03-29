@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.FileWatcher;
+import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -715,9 +716,10 @@ public class Addressbook {
      */
     public synchronized void saveToFile() {
         Path file = Paths.get(fileName);
+        Path tempFile = Paths.get(fileName+"-temp");
         LOGGER.info("Writing addressbook to "+fileName);
         System.out.println("Saving addressbook.");
-        try (BufferedWriter writer = Files.newBufferedWriter(file, CHARSET)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
             for (AddressbookEntry entry : entries.values()) {
                 writer.write(makeLine(entry));
                 writer.newLine();
@@ -726,6 +728,7 @@ public class Addressbook {
         } catch (IOException ex) {
             LOGGER.warning("Error writing addressbook: "+ex.getLocalizedMessage());
         }
+        MiscUtil.moveFile(tempFile, file);
     }
     
     /**

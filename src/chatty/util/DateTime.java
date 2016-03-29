@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Stuff to do with dates/time.
@@ -77,8 +78,12 @@ public class DateTime {
             long hours = seconds / HOUR;
             return hours+" "+(hours == 1 ? "hour" : "hours")+" ago";
         }
-        long days = seconds / DAY;
-        return days+" "+(days == 1 ? "day" : "days")+" ago";
+        if (seconds < YEAR) {
+            long days = seconds / DAY;
+            return days + " " + (days == 1 ? "day" : "days") + " ago";
+        }
+        long years = seconds / YEAR;
+        return years+" "+(years == 1 ? "year" : "years")+" ago";
     }
     
     public static String agoClock(long time, boolean showSeconds) {
@@ -122,7 +127,7 @@ public class DateTime {
         long hours = seconds/HOUR;
         long minutes = (seconds%HOUR) / MINUTE;
         if (hours > 0) {
-            return String.format("%dh%02dm", hours, minutes);
+            return String.format("%dh %dm", hours, minutes);
         }
         return String.format("%dm", minutes);
     }
@@ -283,5 +288,6 @@ public class DateTime {
 //        } catch (ParseException ex) {
 //            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
 //        }
+        System.out.println(TimeUnit.HOURS.toMillis(1));
     }
 }

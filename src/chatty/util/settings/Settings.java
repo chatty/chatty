@@ -2,6 +2,7 @@
 package chatty.util.settings;
 
 import chatty.Logging;
+import chatty.util.MiscUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -863,13 +864,10 @@ public class Settings {
     public void saveSettingsToJson() {
         aboutToSaveSettings();
         synchronized(LOCK) {
-            if (!saved) {
-                System.out.println("Saving settings.");
-                saved = true;
-                saveSettingsToJson(defaultFile);
-                for (String fileName : files) {
-                    saveSettingsToJson(fileName);
-                }
+            System.out.println("Saving settings to JSON.");
+            saveSettingsToJson(defaultFile);
+            for (String fileName : files) {
+                saveSettingsToJson(fileName);
             }
         }
     }
@@ -878,14 +876,16 @@ public class Settings {
         LOGGER.info("Saving settings to file: "+fileName);
         String json = settingsToJson(fileName);
         Path file = Paths.get(fileName);
-        try (BufferedWriter writer = Files.newBufferedWriter(file, CHARSET)) {
+        Path tempFile = Paths.get(fileName+"-temp");
+        try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
             writer.write(json);
         } catch (IOException ex) {
             LOGGER.warning("Error saving settings to file: "+ex);
             System.out.println("Error saving settings to file: "+ex);
         }
+        MiscUtil.moveFile(tempFile, file);
     }
-    
+
     /**
      * Loads the settings from a JSON file.
      */

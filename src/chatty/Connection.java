@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -82,14 +83,16 @@ public class Connection implements Runnable {
                 /**
                  * Workaround for "Could not generate DH keypair" exception
                  * http://stackoverflow.com/a/6862383
+                 * 
+                 * Maybe not be necessary anymore for now
                  */
-                List<String> limited = new LinkedList<>();
-                for (String suite : ((SSLSocket) socket).getEnabledCipherSuites()) {
-                    if (!suite.contains("_DHE_")) {
-                        limited.add(suite);
-                    }
-                }
-                ((SSLSocket) socket).setEnabledCipherSuites(limited.toArray(new String[limited.size()]));
+//                List<String> limited = new LinkedList<>();
+//                for (String suite : ((SSLSocket) socket).getEnabledCipherSuites()) {
+//                    if (!suite.contains("_DHE_")) {
+//                        limited.add(suite);
+//                    }
+//                }
+//                ((SSLSocket) socket).setEnabledCipherSuites(limited.toArray(new String[limited.size()]));
             } else {
                 socket = new Socket();
             }
@@ -121,7 +124,7 @@ public class Connection implements Runnable {
         info("Connected to "+socket.getRemoteSocketAddress().toString());
         connected = true;
         irc.connected(socket.getInetAddress().toString(),address.getPort());
-
+        
         StringBuilder b = new StringBuilder();
         boolean previousWasCR = false;
         String receivedLine = null;

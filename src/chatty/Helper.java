@@ -512,20 +512,32 @@ public class Helper {
         return URL_PATTERN;
     }
     
-    public static String getServer(String serverPort) {
-        int p = serverPort.lastIndexOf(":");
+    /**
+     * Retrieve the server part out of a string formatted as "server:port".
+     * 
+     * @param serverAndPort
+     * @return The server, or the entire string if no ":" was found
+     */
+    public static String getServer(String serverAndPort) {
+        int p = serverAndPort.lastIndexOf(":");
         if (p == -1) {
-            return serverPort;
+            return serverAndPort;
         }
-        return serverPort.substring(0, p);
+        return serverAndPort.substring(0, p);
     }
     
-    public static int getPort(String serverPort) {
-        int p = serverPort.lastIndexOf(":");
+    /**
+     * Retrieve the port part out of a string formatted as "server:port".
+     * 
+     * @param serverAndPort 
+     * @return The parsed port, or -1 if invalid
+     */
+    public static int getPort(String serverAndPort) {
+        int p = serverAndPort.lastIndexOf(":");
         if (p == -1) {
             return -1;
         }
-        String port = serverPort.substring(p+1);
+        String port = serverAndPort.substring(p+1);
         try {
             return Integer.parseInt(port);
         } catch (NumberFormatException ex) {

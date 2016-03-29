@@ -23,6 +23,7 @@ import chatty.util.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
+import chatty.util.ProcessManager;
 import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
@@ -36,15 +37,19 @@ import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
+import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -58,6 +63,7 @@ public class TwitchClient {
     private static final Logger LOGGER = Logger.getLogger(TwitchClient.class.getName());
     
     private volatile boolean shuttingDown = false;
+    private volatile boolean settingsAlreadySavedOnExit = false;
     
     /**
      * The URL to get a token. Needs to end with the scopes so other ones can be
@@ -238,6 +244,7 @@ public class TwitchClient {
         c.setUsericonManager(usericonManager);
         c.setBotNameManager(botNameManager);
         c.addChannelStateListener(new ChannelStateUpdater());
+        c.setSubNotificationPattern(settings.getString("subNotificationPattern"));
         
         w = new WhisperConnection(new MyWhisperListener(), settings);
         w.setUsericonManager(usericonManager);
@@ -294,8 +301,6 @@ public class TwitchClient {
         
         // Shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
-        
-        version5Info();
         
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,793,33,42");
@@ -836,6 +841,9 @@ public class TwitchClient {
             g.printSystem("[Addressbook] Importing from file..");
             addressbook.importFromFile();
         }
+        else if (command.equals("proc")) {
+            g.printSystem("[Proc] "+ProcessManager.command(parameter));
+        }
         else if (command.equals("ignore")) {
             commandSetIgnored(parameter, null, true);
         }
@@ -994,6 +1002,8 @@ public class TwitchClient {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
             g.setUpdateAvailable("[test]");
+        } else if (command.equals("testannouncement")) {
+            g.setAnnouncementAvailable(Boolean.parseBoolean(parameter));
         } else if (command.equals("removechan")) {
             g.removeChannel(parameter);
         } else if (command.equals("testtimer")) {
@@ -1474,7 +1484,7 @@ public class TwitchClient {
         }
         
         @Override
-        public void runCommercialResult(String stream, String text, int result) {
+        public void runCommercialResult(String stream, String text, RequestResult result) {
             commercialResult(stream, text, result);
         }
  
@@ -1484,12 +1494,12 @@ public class TwitchClient {
         }
         
         @Override
-        public void receivedChannelInfo(String channel, ChannelInfo info, int result) {
+        public void receivedChannelInfo(String channel, ChannelInfo info, RequestResult result) {
             g.setChannelInfo(channel, info, result);
         }
     
         @Override
-        public void putChannelInfoResult(int result) {
+        public void putChannelInfoResult(RequestResult result) {
             g.putChannelInfoResult(result);
         }
 
@@ -1738,7 +1748,7 @@ public class TwitchClient {
      */
     public void runCommercial(String stream, int length) {
         if (stream == null || stream.isEmpty()) {
-            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.FAILED);
+            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.RequestResult.FAILED);
         }
         else {
             String channel = "#"+stream;
@@ -1763,7 +1773,7 @@ public class TwitchClient {
      * @param text
      * @param result 
      */
-    private void commercialResult(String stream, String text, int result) {
+    private void commercialResult(String stream, String text, RequestResult result) {
         String channel = "#"+stream;
         if (isChannelOpen(channel)) {
             g.printLine(channel, text);
@@ -1863,24 +1873,6 @@ public class TwitchClient {
         spamProtection.setLinesPerSeconds(value);
     }
     
-    private void version5Info() {
-        long count = settings.getLong("v0.5");
-        if (!settings.getString("token").isEmpty()
-                && !settings.getBoolean("token_user")
-                && count < 2) {
-            g.printSystem("With Version 0.5, Chatty can notify you about streams "
-                    + "you follow and show a list of them. You have to request "
-                    + "new login data containing <Read user info> access to be "
-                    + "able to use that. Go to "
-                    + "<Main - Connect - Configure login..>, remove the login "
-                    + "and request it again.");
-            g.printSystem("You can enable/disable this feature under "
-                    + "<Main - Settings - Notifications> if you have the "
-                    + "necessary access.");
-            settings.setLong("v0.5", ++count);
-        }
-    }
-    
     /**
      * Exit the program. Do some cleanup first and save stuff to file (settings,
      * addressbook, chatlogs).
@@ -1888,23 +1880,45 @@ public class TwitchClient {
      * Should run in EDT.
      */
     public void exit() {
-        if (capitalizedNames != null) {
-            capitalizedNames.saveToFileOnce();
-        }
-        addressbook.saveToFileOnce();
-        if (g != null && g.guiCreated) {
-            g.saveWindowStates();
-        }
+        shuttingDown = true;
+        saveSettings(true);
         logAllViewerstats();
         c.disconnect();
         w.disconnect();
-        shuttingDown = true;
-        if (!settings.getBoolean("dontSaveSettings")) {
-            settings.saveSettingsToJson();
-        }
         g.cleanUp();
         chatLog.close();
         System.exit(0);
+    }
+    
+    /**
+     * Save all settings to file.
+     * 
+     * @param onExit If true, this will save the settings only if they haven't
+     * already been saved with this being true before
+     */
+    public void saveSettings(boolean onExit) {
+        if (onExit) {
+            if (settingsAlreadySavedOnExit) {
+                return;
+            }
+            settingsAlreadySavedOnExit = true;
+        }
+        
+        LOGGER.info("Saving settings..");
+        System.out.println("Saving settings..");
+        if (capitalizedNames != null) {
+            capitalizedNames.saveToFile();
+        }
+        
+        // Prepare saving settings
+        if (g != null && g.guiCreated) {
+            g.saveWindowStates();
+        }
+        // Actually write settings to file
+        if (!onExit || !settings.getBoolean("dontSaveSettings")) {
+            addressbook.saveToFile();
+            settings.saveSettingsToJson();
+        }
     }
     
     private class SettingSaveListener implements SettingsListener {
@@ -1924,8 +1938,6 @@ public class TwitchClient {
     }
     
     private class Messages implements TwitchConnection.ConnectionListener {
-        
-        
 
         @Override
         public void onChannelJoined(String channel) {
@@ -2143,6 +2155,28 @@ public class TwitchClient {
 
         @Override
         public void onWhisper(User user, String message, String emotes) {
+        }
+
+        @Override
+        public void onSubscriberNotification(String channel, String name, int months) {
+            System.out.println(channel+" "+name+" "+months);
+            if (!settings.getString("abSubMonthsChan").equalsIgnoreCase(channel)) {
+                return;
+            }
+            List<Long> monthsDef = new ArrayList<>();
+            settings.getList("abSubMonths", monthsDef);
+            long max = 0;
+            for (long entry : monthsDef) {
+                if (months >= entry && entry > max) {
+                    max = entry;
+                }
+            }
+            if (name != null && max > 0) {
+                String cat = max+"months";
+                addressbook.add(name, cat);
+                LOGGER.info(String.format("[Subscriber] Added '%s' with category '%s'",
+                        name, cat));
+            }
         }
         
     }

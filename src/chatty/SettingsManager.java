@@ -93,12 +93,12 @@ public class SettingsManager {
         settings.addBoolean("globalHotkeysEnabled", true);
         
         // Connecting/Login data
-        settings.addString("serverDefault", "irc.twitch.tv");
-        settings.addString("portDefault", "6667,443");
+        settings.addString("serverDefault", "irc.chat.twitch.tv");
+        settings.addString("portDefault", "6697,6667,443,80");
         // Seperate settings for commandline/temp so others can be saved
         settings.addString("server", "", false);
         settings.addString("port", "", false);
-        settings.addList("securedPorts", new ArrayList<>(Arrays.asList((long)6697)), Setting.LONG);
+        settings.addList("securedPorts", new ArrayList<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
         settings.addList("securedPortsWhisper", new ArrayList<>(Arrays.asList()), Setting.LONG);
         
         settings.addBoolean("userlistConnection", true);
@@ -248,6 +248,8 @@ public class SettingsManager {
         settings.addString("currentVersion", "");
         
         settings.addBoolean("urlPrompt", true);
+        settings.addBoolean("urlCommandEnabled", false);
+        settings.addString("urlCommand", "");
 
         // Window
         settings.addBoolean("attachedWindows", false);
@@ -269,6 +271,7 @@ public class SettingsManager {
         
         settings.addBoolean("simpleTitle", false);
         settings.addBoolean("titleShowUptime", true);
+        settings.addBoolean("titleLongerUptime", true);
         settings.addBoolean("titleShowViewerCount", true);
         settings.addBoolean("titleShowChannelState", true);
         settings.addBoolean("chatScrollbarAlways", false);
@@ -360,6 +363,9 @@ public class SettingsManager {
         settings.addString("abCommands", "add,set,remove");
         settings.addString("abUniqueCats", "");
         settings.addBoolean("abAutoImport", false);
+        settings.addString("abSubMonthsChan", "");
+        settings.addList("abSubMonths", new ArrayList(), Setting.LONG);
+        settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
 
         // Backup
         settings.addLong("backupDelay", 1);
@@ -392,7 +398,7 @@ public class SettingsManager {
         settings.addBoolean("streamChatBottom", true);
         settings.addBoolean("streamChatResizable", true);
         
-        settings.addString("streamHighlightCommand", "!addstreamhighlight");
+        settings.addString("streamHighlightCommand", "!highlight");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
         
@@ -411,6 +417,14 @@ public class SettingsManager {
         
         settings.addBoolean("autoUnhost", false);
         settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
+        
+        settings.addBoolean("cmEnabled", false);
+        settings.addString("cmChannel", "");
+        settings.addString("cmTemplate", "{user}: {message}");
+        settings.addBoolean("cmHighlightedOnly", false);
+        
+        settings.addBoolean("newsAutoRequest", true);
+        settings.addLong("newsLastRead", 0);
     }
     
     /**
@@ -485,11 +499,11 @@ public class SettingsManager {
     }
     
     /**
-     * Override some now unused settings.
+     * Override some now unused settings or change settings on version change.
      */
     void overrideSettings() {
         settings.setBoolean("ignoreJoinsParts", false);
-        if (beforeVersion("0.7.2")) {
+        if (updatedFromBefore("0.7.2")) {
             String value = settings.getString("timeoutButtons");
             if (value.equals("5,2m,10m,30m")) {
                 /**
@@ -510,10 +524,19 @@ public class SettingsManager {
                 LOGGER.warning("Added /Ban,/Unban to timeoutButtons setting, now: "+newValue);
             }
         }
-        if (beforeVersion("0.8.1")) {
+        if (updatedFromBefore("0.8.1")) {
             if (settings.getString("portDefault").equals("6667,80")) {
                 settings.setString("portDefault", "6667,443");
             }
+        }
+        if (updatedFromBefore("0.8.2")) {
+            if (settings.getString("serverDefault").equals("irc.twitch.tv")) {
+                settings.setString("serverDefault", "irc.chat.twitch.tv");
+            }
+            if (settings.getString("portDefault").equals("6667,443")) {
+                settings.setString("portDefault", "6697,6667,443,80");
+            }
+            settings.listAdd("securedPorts", (long)443);
         }
     }
     
@@ -530,7 +553,7 @@ public class SettingsManager {
      * @param version The version to check against
      * @return true if the given version is greater than the current version
      */
-    private boolean beforeVersion(String version) {
+    private boolean updatedFromBefore(String version) {
         return Version.compareVersions(settings.getString("currentVersion"), version) == 1;
     }
     

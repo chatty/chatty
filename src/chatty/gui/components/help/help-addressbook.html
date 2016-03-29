@@ -5,11 +5,23 @@
 <body>
     <div id="backlink"><a href="help.html">To main help page</a></div>
     <h1><a name="top">Addressbook</a></h1>
-    <p>
-        <a href="#editing">Editing Locally</a> (<a href="#commands">Commands</a>) | 
-        <a href="#advanced">Advanced Usage</a> (<a href="#modcommands">Mod Commands</a>,
-        <a href="#file">Change via file</a>, <a href="#unique-cats">Unique Categories</a>)
-    </p>
+    <ul>
+        <li>
+            <a href="#editing">Editing Locally</a>
+            <ul>
+                <li><a href="#commands">Commands</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#advanced">Advanced Usage</a>
+            <ul>
+                <li><a href="#modcommands">Mod Commands</a></li>
+                <li><a href="#file">Change via file</a></li>
+                <li><a href="#unique-cats">Unique Categories</a></li>
+                <li><a href="#subs-cats">Automatic Subscriber Categories</a></li>
+            </ul>
+        </li>
+    </ul>
 
     <p>The addressbook allows you to add usernames and assign categories to
         them, which can then be used in other places such as the <a href="help-settings.html#Usercolors">Usercolor settings</a>
@@ -171,6 +183,37 @@ set testi ignore</pre>
     
     <p>If you want to have more than one unique category, you can separate
         several categories by comma: <code>/set abUniqueCats star,gold</code></p>
+    
+    
+    <h3><a name="subs-cats">Automatic Subscriber Categories</a></h3>
+    <p>This is an experimental feature that adds Subscribers automatically to
+        an Addressbook category, depending on how many months they subscribed.
+        This works on Subscriber Notifications in chat, so you have to be in the
+        channel at the time of the subscription for it to work.</p>
+    <p>First you need to do some configuration:</p>
+    <ul>
+        <li><code>/set abSubMonthsChan #&lt;yourchannel&gt;</code> - Set the
+            channel you want the feature enabled for</li>
+        <li><code>/add abSubMonths &lt;number&gt;</code> - Add one or several
+            subscription lenghts in months (repeat the command with a different
+            number to add more than one)</li>
+        <li><code>/remove abSubMonths &lt;number&gt;</code> - Remove a number
+            from the list</li>
+    </ul>
+    
+    <p>The months represent the categories that are automatically added. For
+        example if you configured the months as <code>[3, 6, 12]</code>:</p>
+    <ul>
+        <li><code>.. subscribed for 3 months in a row!</code> would add that
+            user to the <code>3months</code> category</li>
+        <li><code>.. subscribed for 4 months in a row!</code> would add that
+            user to the <code>3months</code> category</li>
+        <li><code>.. subscribed for 11 months in a row!</code> would add that
+            user to the <code>6months</code> category</li>
+        <li><code>.. subscribed for 20 months in a row!</code> would add that
+            user to the <code>12months</code> category</li>
+        <li><code>.. just subscribed!</code> won't do anything</li>
+    </ul>
 </body>
 </html>
 

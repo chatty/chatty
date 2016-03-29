@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Usericon;
+import chatty.util.api.TwitchApi.RequestResult;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,9 +18,9 @@ public interface TwitchApiResultListener {
     void receivedUsericons(List<Usericon> icons);
     void gameSearchResult(Set<String> games);
     void tokenVerified(String token, TokenInfo tokenInfo);
-    void runCommercialResult(String stream, String text, int result);
-    void putChannelInfoResult(int result);
-    void receivedChannelInfo(String channel, ChannelInfo info, int result);
+    void runCommercialResult(String stream, String text, RequestResult result);
+    void putChannelInfoResult(RequestResult result);
+    void receivedChannelInfo(String channel, ChannelInfo info, RequestResult result);
     void accessDenied();
     void receivedFollowers(FollowerInfo followerInfo);
     void newFollowers(FollowerInfo followerInfo);

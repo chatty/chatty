@@ -60,6 +60,10 @@ public class LinkLabel extends JEditorPane {
         super.setText(text);
     }
     
+    public void addRule(String css) {
+        ((HTMLDocument)getDocument()).getStyleSheet().addRule(css);
+    }
+    
     /**
      * When a link was clicked, split it to get the link type and actual link.
      * A link should be like: type:link (e.g. help:login)

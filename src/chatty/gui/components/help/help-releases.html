@@ -15,6 +15,7 @@
     <h1><a name="top">Release Information</a></h1>
     
     <p>
+    <a href="#0.8.1">0.8.2</a> |
     <a href="#0.8.1">0.8.1</a> |
     <a href="#0.8">0.8</a> |
     <a href="#0.7.3">0.7.3</a> |
@@ -39,7 +40,69 @@
     full list of changes.</p>
 
     <h2>
-        <a name="0.8.1">Version 0.8.1</a> <a name="latest">(This one!)</a> (2015-08-10)
+        <a name="0.8.2">Version 0.8.2</a> <a name="latest">(This one!)</a> (2016-03-10)
+        <a href="#top" class="top">[back to top]</a>
+    </h2>
+<pre>
+Improvements
+============
+- Added some account info to User Info Dialog (click on "More..")
+- Added auto-unhost feature (to unhost when your stream goes live, disabled by
+  default)
+- Added single-instance mode, with the ability to join channels in the already
+  running instance
+- Improved Emote Dialog info a bit
+- Added `force_verify=true` parameter to Authorize URL (makes Twitch always ask
+  if you want to Authorize, makes sure you are logged in to the right account)
+- Added new Twitch Player URL in context menu
+- Added /emoteonly and /emoteonlyoff commands (in case they get enabled again)
+- Added "emotesets" parameter to /refresh command
+- Changed twitchemotes.com API URL (which is the source of emoteset information)
+- Added some support for selecting the correct chat server
+- Added auto-responses to whispers for ignored/non-whitelisted users (disabled
+  by default)
+- Added feature to automatically add Addressbook categories on Subscriber
+  notifications (experimental)
+- Added feature to automatically copy messages into clipboard
+- Moved debug logs to down directory
+- Increased max reconnection attempts to 30
+- Added error message for setting invalid stream status in Admin Dialog
+- Added in-app announcements for news about Chatty (Help - Announcements)
+- Added /proc command to start native processes
+- Updated help
+
+Settings
+========
+- Added more font sizes to GUI
+- Added input font setting to GUI
+- Added setting to prevent highlights from specific users (e.g. your own bots)
+- Added setting to toggle closing of Emote Dialog on double-click on Emote
+- Added setting to remember Status History table sorting order
+- Added setting to toggle Usercolor correction
+- Added setting to display more detailed uptime in titlebar (enabled by default)
+- Changed default for showing animated emotes to off
+- Changed default for Min. Userlist Width to 0
+- Changed defaults for server/port
+- Changed default for Highlight Mod Command to !highlight, ignore case for both
+  the channel and command setting
+- Made setting names case-insensitive (when using setting commands)
+- Changed the process of saving settings in an attempt to make it more reliable
+- Added menu entry to save settings manually
+
+Bugfixes
+========
+- Fixed Admin Dialog sizing causing display issues
+- Fixed spam protection message being displayed on the wrong channel
+- Fixed new Twitch Emotes code being one character short
+- Fixed autojoin not working sometimes
+- Fixed framerate of GIFs, which may break some GIFs that worked before, but
+  prevents high CPU usage (displaying animated GIFs in Java is hard)
+- Check if Java supports opening URLs on the current platform and run native
+  command if necessary
+</pre>
+    
+    <h2>
+        <a name="0.8.1">Version 0.8.1</a> (2015-08-10)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <h3>Highlights / Important Information</h3>

@@ -35,6 +35,7 @@ import chatty.gui.components.ErrorMessage;
 import chatty.gui.components.FollowersDialog;
 import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.LivestreamerDialog;
+import chatty.gui.components.NewsDialog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
@@ -45,6 +46,7 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
+import chatty.util.CopyMessages;
 import chatty.util.DateTime;
 import chatty.util.ImageCache;
 import chatty.util.MiscUtil;
@@ -54,6 +56,8 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
+import chatty.util.api.TwitchApi;
+import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -61,6 +65,8 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 import java.util.logging.LogRecord;
 import javax.swing.AbstractAction;
@@ -115,6 +121,7 @@ public class MainGui extends JFrame implements Runnable {
     private SRL srl;
     private LivestreamerDialog livestreamerDialog;
     private UpdateMessage updateMessage;
+    private NewsDialog newsDialog;
     private EmotesDialog emotesDialog;
     private FollowersDialog followerDialog;
     private FollowersDialog subscribersDialog;
@@ -238,6 +245,7 @@ public class MainGui extends JFrame implements Runnable {
         srl = new SRL(this, client.speedrunsLive, contextMenuListener);
         livestreamerDialog = new LivestreamerDialog(this, linkLabelListener, client.settings);
         updateMessage = new UpdateMessage(this);
+        newsDialog = new NewsDialog(this, client.settings);
         
         client.settings.addSettingChangeListener(new MySettingChangeListener());
         client.settings.addSettingsListener(new MySettingsListener());
@@ -251,7 +259,7 @@ public class MainGui extends JFrame implements Runnable {
         
         // Main Menu
         MainMenuListener menuListener = new MainMenuListener();
-        menu = new MainMenu(menuListener,menuListener);
+        menu = new MainMenu(menuListener,menuListener, linkLabelListener);
         setJMenuBar(menu);
 
         state.update();
@@ -666,6 +674,8 @@ public class MainGui extends JFrame implements Runnable {
                 // Should be done when the main window is already visible, so
                 // it can be centered on it correctly, if that is necessary
                 reopenWindows();
+                
+                newsDialog.autoRequestNews(true);
             }
         });
     }
@@ -759,6 +769,8 @@ public class MainGui extends JFrame implements Runnable {
         
         loadCommercialDelaySettings();
         UrlOpener.setPrompt(client.settings.getBoolean("urlPrompt"));
+        UrlOpener.setCustomCommandEnabled(client.settings.getBoolean("urlCommandEnabled"));
+        UrlOpener.setCustomCommand(client.settings.getString("urlCommand"));
         channels.setTabOrder(client.settings.getString("tabOrder"));
         
         favoritesDialog.setSorting((int)client.settings.getLong("favoritesSorting"));
@@ -786,7 +798,8 @@ public class MainGui extends JFrame implements Runnable {
     private static final String[] menuBooleanSettings = new String[]{
         "showJoinsParts", "ontop", "showModMessages", "attachedWindows",
         "simpleTitle", "globalHotkeysEnabled", "mainResizable", "streamChatResizable",
-        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState"
+        "titleShowUptime", "titleShowViewerCount", "titleShowChannelState",
+        "titleLongerUptime"
     };
     
     /**
@@ -877,7 +890,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Saves location/size for windows/dialogs and whether it was open.
+     * Puts the updated state of the windows/dialogs/popouts into the settings.
      */
     public void saveWindowStates() {
         windowStateManager.saveWindowStates();
@@ -1166,6 +1179,10 @@ public class MainGui extends JFrame implements Runnable {
                 if (ref.equals("show")) {
                     openUpdateDialog();
                 }
+            } else if (type.equals("announcement")) {
+                if (ref.equals("show")) {
+                    newsDialog.showDialog();
+                }
             }
         }
     }
@@ -1225,8 +1242,19 @@ public class MainGui extends JFrame implements Runnable {
                 exit();
             } else if (cmd.equals("about")) {
                 openHelp("");
+            } else if (cmd.equals("news")) {
+                newsDialog.showDialog();
             } else if (cmd.equals("settings")) {
                 getSettingsDialog().showSettings();
+            } else if (cmd.equals("saveSettings")) {
+                int result = JOptionPane.showConfirmDialog(MainGui.this,
+                        "This manually saves settings to file.\n" +
+                        "Settings are also automatically saved when you exit Chatty.",
+                        "Save Settings to file",
+                        JOptionPane.OK_CANCEL_OPTION);
+                if (result == 0) {
+                    client.saveSettings(false);
+                }
             } else if (cmd.equals("website")) {
                 UrlOpener.openUrlPrompt(MainGui.this, Chatty.WEBSITE, true);
             } else if (cmd.equals("favoritesDialog")) {
@@ -2420,6 +2448,8 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 
+                CopyMessages.copyMessage(client.settings, user, text, highlighted);
+                
                 // Stuff independent of highlight/ignore
                 user.addMessage(processMessage(text), action);
                 if (highlighted) {
@@ -2590,6 +2620,13 @@ public class MainGui extends JFrame implements Runnable {
     
     private void printInfo(Channel channel, String line) {
         if (!ignoreChecker.check(null, line)) {
+            // Add here so it only affects the display, but not ignoring or
+            // logging
+            Calendar cal = Calendar.getInstance();
+            if (cal.get(Calendar.MONTH) == Calendar.APRIL
+                    && cal.get(Calendar.DAY_OF_MONTH) == 1) {
+                line = line.replace("months in a row", "years in a row");
+            }
             channel.printLine(line);
         } else {
             ignoredMessages.addInfoMessage(channel.getName(), line);
@@ -2792,10 +2829,14 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                menu.setUpdateAvailable(linkLabelListener);
+                menu.setUpdateNotification(true);
                 updateMessage.setNewVersion(newVersion);
             }
         });
+    }
+    
+    public void setAnnouncementAvailable(boolean enabled) {
+        menu.setAnnouncementNotification(enabled);
     }
     
     public void showSettings() {
@@ -3003,8 +3044,13 @@ public class MainGui extends JFrame implements Runnable {
                         
                         String uptime = "";
                         if (client.settings.getBoolean("titleShowUptime")) {
-                            uptime = DateTime.agoUptimeCompact2(
+                            if (client.settings.getBoolean("titleLongerUptime")) {
+                                uptime = DateTime.agoUptimeCompact2(
                                     streamInfo.getTimeStartedWithPicnic());
+                            } else {
+                                uptime = DateTime.agoUptimeCompact(
+                                    streamInfo.getTimeStartedWithPicnic());
+                            }
                         }
                         String numViewers = "|"+Helper.formatViewerCount(streamInfo.getViewers());
                         if (!client.settings.getBoolean("titleShowViewerCount")) {
@@ -3376,7 +3422,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void setChannelInfo(final String channel, final ChannelInfo info, final int result) {
+    public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3435,7 +3481,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void putChannelInfoResult(final int result) {
+    public void putChannelInfoResult(final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3468,7 +3514,7 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void commercialResult(final String stream, final String text, final int result) {
+    public void commercialResult(final String stream, final String text, final RequestResult result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3656,6 +3702,12 @@ public class MainGui extends JFrame implements Runnable {
             }
             if (setting.equals("urlPrompt")) {
                 UrlOpener.setPrompt((Boolean)value);
+            }
+            if (setting.equals("urlCommandEnabled")) {
+                UrlOpener.setCustomCommandEnabled((Boolean)value);
+            }
+            if (setting.equals("urlCommand")) {
+                UrlOpener.setCustomCommand((String)value);
             }
             if (setting.equals("abUniqueCats")) {
                 client.addressbook.setSomewhatUniqueCategories((String)value);

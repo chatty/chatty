@@ -43,4 +43,12 @@ public class JSONUtil {
         return errorValue;
     }
     
+    public static boolean getBoolean(JSONObject data, Object key, boolean errorValue) {
+        Object value = data.get(key);
+        if (value != null && value instanceof Boolean) {
+            return (Boolean)value;
+        }
+        return errorValue;
+    }
+    
 }

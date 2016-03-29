@@ -56,9 +56,9 @@ public class StreamHighlightHelper {
     public String modCommand(User user, String line) {
         String channel = user.getChannel();
         String settingChannel = settings.getString("streamHighlightChannel");
-        String command = settings.getString("streamHighlightCommand");
+        String command = StringUtil.toLowerCase(settings.getString("streamHighlightCommand"));
         if (command != null && !command.isEmpty()
-                && settingChannel != null && settingChannel.equals(channel)
+                && settingChannel != null && settingChannel.equalsIgnoreCase(channel)
                 && user.hasChannelModeratorRights()) {
             if (StringUtil.toLowerCase(line).startsWith(command)) {
                 String comment = line.substring(command.length());
