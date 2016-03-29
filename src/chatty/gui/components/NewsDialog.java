@@ -301,13 +301,12 @@ public class NewsDialog extends JDialog {
             else if (time_added > lastRead) {
                 sb.append(" <span class='new'>(new)</span>");
             }
-            
             sb.append("</h2>");
-            sb.append(" <div class=\"time\">");
-            sb.append(DATETIME.format(new Date(time_added)));
-            sb.append(" ("+DateTime.agoText(time_added)+")");
-            sb.append("</div>");
-            sb.append("<p>").append(parseContent(content)).append("</p>");
+            sb.append(String.format(" <div class=\"time\">%s (%s)</div><p>%s</p>",
+                    DATETIME.format(new Date(time_added)),
+                    DateTime.agoText(time_added),
+                    parseContent(content)));
+            
         }
         sb.append("</body></html>");
 

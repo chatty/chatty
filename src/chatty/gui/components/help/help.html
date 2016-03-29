@@ -75,6 +75,7 @@
                     <li><a href="#about">About/License</a></li>
                     <li><a href="#ignoreJoinsParts">Ignore joins/parts</a></li>
                     <li><a href="help-memory_usage.html">About Memory Usage</a></li>
+                    <li><a href="#custom-processes">Run Custom Processes</a></li>
                 </ul>
 
                 <strong>Guides</strong>
@@ -1134,6 +1135,30 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
             been removed. You can now disable the <a href="help-settings.html#Advanced-Userlist">Correct Userlist</a>
         setting to not get any joins/parts if you think it could improve performance.</em></p>
     
+    <h2>
+        <a name="custom-processes">Run custom processes</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>Using the <code>/proc</code> command you can start processes directly out
+        of Chatty. An example of where this is already integrated into Chatty is
+        starting Livestreamer, however this is a more basic implementation.
+        <em>This is probably only interesting for advanced users.</em></p>
+    
+    <ul>
+        <li><code>/proc exec &lt;command and parameters&gt;</code> - Try to
+            start a process on your computer.</li>
+        <li><code>/proc list</code> - List of processes currently running out of
+            Chatty.</li>
+        <li><code>/proc kill &lt;id&gt;</code> - Forcefully end the process with
+            the given id (get the id from the list of processes).</li>
+    </ul>
+    
+    <p>Example: <code>/proc exec notepad H:\hl.txt</code> will start Notepad
+        and open the given file.</p>
+    
+    <p><em>Note:</em> Commands and output of the process is logged in the Debug Log which
+        is written to file and output to <code>Extra&nbsp;-&nbsp;Debug window</code>.</p>
+        
     <h2>
         <a name="launch">Launch options</a>
         <a href="#top" class="top">[back to menu]</a>

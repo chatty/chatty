@@ -19,7 +19,7 @@ public class CopyMessages {
             return;
         }
         String channel = settings.getString("cmChannel");
-        if (!channel.trim().isEmpty() && !channel.equals(user.getChannel())) {
+        if (!channel.trim().isEmpty() && !channel.equalsIgnoreCase(user.getChannel())) {
             return;
         }
         String text = settings.getString("cmTemplate");

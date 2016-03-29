@@ -111,4 +111,13 @@ public class MiscUtil {
         e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
+    
+    public static final boolean OS_WINDOWS = checkOS("Windows");
+    public static final boolean OS_LINUX = checkOS("Linux");
+    public static final boolean OS_MAC = checkOS("Mac");
+    
+    private static boolean checkOS(String check) {
+        String os = System.getProperty("os.name");
+        return os.startsWith(check);
+    }
 }

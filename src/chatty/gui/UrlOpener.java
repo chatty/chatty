@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.util.MiscUtil;
+import chatty.util.ProcessManager;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -39,6 +40,17 @@ public class UrlOpener {
      */
     public static void setPrompt(boolean usePrompt) {
         prompt = usePrompt;
+    }
+    
+    private static boolean customCommandEnabled;
+    private static String customCommand;
+    
+    public static void setCustomCommandEnabled(boolean enabled) {
+        customCommandEnabled = enabled;
+    }
+    
+    public static void setCustomCommand(String command) {
+        customCommand = command;
     }
     
     /**
@@ -82,17 +94,45 @@ public class UrlOpener {
         if (url == null) {
             return false;
         }
-        if (Desktop.isDesktopSupported()) {
+        URI parsed;
+        try {
+            parsed = new URI(url);
+        } catch (URISyntaxException ex) {
+            LOGGER.warning("Invalid URI format: " + ex);
+            return false;
+        }
+        if (Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)
+                && !customCommandEnabled) {
             try {
-                Desktop.getDesktop().browse(new URI(url));
+                Desktop.getDesktop().browse(parsed);
                 return true;
             } catch (IOException ex) {
-                LOGGER.warning("IOException when opening URL "+ex.getLocalizedMessage());
-            } catch (URISyntaxException ex) {
-                LOGGER.warning("URISyntaxException when opening URL "+ex.getLocalizedMessage());
+                LOGGER.warning("Error opening URL: "+ex);
             }
         } else {
-            LOGGER.warning("Desktop not supported.");
+            return openUrlNative(url);
+        }
+        return false;
+    }
+    
+    private static boolean openUrlNative(String url) {
+        String command = null;
+        if (customCommandEnabled && customCommand != null && !customCommand.isEmpty()) {
+            command = customCommand+" "+url;
+        }
+        else if (MiscUtil.OS_WINDOWS) {
+            command = "explorer "+url;
+        }
+        else if (MiscUtil.OS_LINUX) {
+            command = "xdg-open "+url;
+        }
+        else if (MiscUtil.OS_MAC) {
+            command = "open "+url;
+        }
+        if (command != null) {
+            ProcessManager.execute(command, "URL");
+            return true;
         }
         return false;
     }

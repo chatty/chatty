@@ -23,6 +23,7 @@ import chatty.util.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
+import chatty.util.ProcessManager;
 import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
@@ -841,6 +842,9 @@ public class TwitchClient {
         else if (command.equals("abimport")) {
             g.printSystem("[Addressbook] Importing from file..");
             addressbook.importFromFile();
+        }
+        else if (command.equals("proc")) {
+            g.printSystem("[Proc] "+ProcessManager.command(parameter));
         }
         else if (command.equals("ignore")) {
             commandSetIgnored(parameter, null, true);

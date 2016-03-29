@@ -4,7 +4,9 @@ package chatty.gui;
 import chatty.Chatty;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -21,6 +23,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.event.MenuListener;
 
 /**
@@ -359,6 +362,9 @@ public class MainMenu extends JMenuBar {
         private LinkLabel notification;
         private boolean updateNotificationEnabled;
         private boolean announcementNotificationEnabled;
+        
+//        private Timer flashTimer;
+//        private int flashCount;
 
         public void setUpdateNotification(boolean enabled) {
             if (updateNotificationEnabled != enabled) {
@@ -383,8 +389,8 @@ public class MainMenu extends JMenuBar {
             }
             if (updateNotificationEnabled) {
                 if (announcementNotificationEnabled) {
-                    message += "&nbsp;-&nbsp;";
-                    shortMessage += "&nbsp;-&nbsp;";
+                    message += "&nbsp;|&nbsp;";
+                    shortMessage += "&nbsp;|&nbsp;";
                 }
                 message += "[update:show Update&nbsp;available!]";
                 shortMessage += "[update:show Update!]";
@@ -401,6 +407,37 @@ public class MainMenu extends JMenuBar {
             // Save preferred size of regular version to compare to in listener
             notification.setText(message);
             preferredSize = notification.getPreferredSize();
+            
+            // This needs to be improved/tested more first
+//            if (announcementNotificationEnabled || updateNotificationEnabled) {
+//                flashCount = 9;
+//
+//                if (flashTimer != null) {
+//                    flashTimer.stop();
+//                    flashTimer = null;
+//                }
+//                flashTimer = new Timer(500, new ActionListener() {
+//
+//                    @Override
+//                    public void actionPerformed(ActionEvent e) {
+//                        System.out.println(flashCount);
+//                        if (flashCount % 2 == 0) {
+//                            notification.addRule("a { color: blue; }");
+//                        } else {
+//                            notification.addRule("a { color: red; }");
+//
+//                        }
+//                        if (flashCount == 0) {
+//                            flashTimer.stop();
+//                            System.out.println("Stop");
+//                        } else {
+//                            flashCount--;
+//                        }
+//                    }
+//                });
+//                flashTimer.setRepeats(true);
+//                flashTimer.start();
+//            }
         }
 
         private void addNotificationToLayout() {

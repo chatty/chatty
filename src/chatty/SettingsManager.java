@@ -248,6 +248,8 @@ public class SettingsManager {
         settings.addString("currentVersion", "");
         
         settings.addBoolean("urlPrompt", true);
+        settings.addBoolean("urlCommandEnabled", false);
+        settings.addString("urlCommand", "");
 
         // Window
         settings.addBoolean("attachedWindows", false);

@@ -65,6 +65,8 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 import java.util.logging.LogRecord;
 import javax.swing.AbstractAction;
@@ -767,6 +769,8 @@ public class MainGui extends JFrame implements Runnable {
         
         loadCommercialDelaySettings();
         UrlOpener.setPrompt(client.settings.getBoolean("urlPrompt"));
+        UrlOpener.setCustomCommandEnabled(client.settings.getBoolean("urlCommandEnabled"));
+        UrlOpener.setCustomCommand(client.settings.getString("urlCommand"));
         channels.setTabOrder(client.settings.getString("tabOrder"));
         
         favoritesDialog.setSorting((int)client.settings.getLong("favoritesSorting"));
@@ -2616,6 +2620,12 @@ public class MainGui extends JFrame implements Runnable {
     
     private void printInfo(Channel channel, String line) {
         if (!ignoreChecker.check(null, line)) {
+            // Add here so it only affects the display, but not ignoring or
+            // logging
+            if (LocalDateTime.now().getMonth() == Month.APRIL
+                    && LocalDateTime.now().getDayOfMonth() == 1) {
+                line = line.replace("months in a row", "years in a row");
+            }
             channel.printLine(line);
         } else {
             ignoredMessages.addInfoMessage(channel.getName(), line);
@@ -3691,6 +3701,12 @@ public class MainGui extends JFrame implements Runnable {
             }
             if (setting.equals("urlPrompt")) {
                 UrlOpener.setPrompt((Boolean)value);
+            }
+            if (setting.equals("urlCommandEnabled")) {
+                UrlOpener.setCustomCommandEnabled((Boolean)value);
+            }
+            if (setting.equals("urlCommand")) {
+                UrlOpener.setCustomCommand((String)value);
             }
             if (setting.equals("abUniqueCats")) {
                 client.addressbook.setSomewhatUniqueCategories((String)value);
