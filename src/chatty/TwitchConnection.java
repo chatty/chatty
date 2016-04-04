@@ -1011,31 +1011,8 @@ public class TwitchConnection {
             }
             if (onChannel(channel) || whisperConnection) {
                 infoMessage(channel, text);
-                if (tags != null) {
-//                    String msgId = tags.get("msg-id");
-//                    if ("subs_on".equals(msgId)) {
-//                        channelStates.setSubmode(channel, true);
-//                    }
-//                    else if ("subs_off".equals(msgId)) {
-//                        channelStates.setSubmode(channel, false);
-//                    }
-//                    else if ("slow_off".equals(msgId)) {
-//                        channelStates.setSlowmode(channel, -1);
-//                    }
-//                    else if ("slow_on".equals(msgId)) {
-//                        Pattern p = Pattern.compile("[0-9]+");
-//                        Matcher m = p.matcher(text);
-//                        if (m.find()) {
-//                            channelStates.setSlowmode(channel, m.group());
-//                        }
-//                    }
-//                    else if ("r9k_on".equals(msgId)) {
-//                        channelStates.setR9kMode(channel, true);
-//                    }
-//                    else if ("r9k_off".equals(msgId)) {
-//                        channelStates.setR9kMode(channel, false);
-//                    }
-                }
+            } else {
+                listener.onInfo(String.format("[Info/%s] %s", channel, text));
             }
         }
 

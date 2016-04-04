@@ -1255,7 +1255,7 @@ public class TwitchClient {
                 String to = split[0];
                 String message = split[1];
                 c.sendSpamProtectedMessage(to, message, false);
-                g.printLine(String.format("* To: %s : %s", to, message));
+                g.printLine(String.format("-> %s: %s", to, message));
                 return;
             }
         }
