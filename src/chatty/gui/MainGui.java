@@ -2628,6 +2628,9 @@ public class MainGui extends JFrame implements Runnable {
                 line = line.replace("months in a row", "years in a row");
             }
             channel.printLine(line);
+            if (channel.getType() == Channel.Type.SPECIAL) {
+                channels.setChannelNewMessage(channel);
+            }
         } else {
             ignoredMessages.addInfoMessage(channel.getName(), line);
         }

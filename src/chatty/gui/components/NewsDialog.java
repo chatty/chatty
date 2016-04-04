@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.Chatty;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.util.DateTime;
@@ -49,7 +50,7 @@ public class NewsDialog extends JDialog {
     private static final Logger LOGGER = Logger.getLogger(NewsDialog.class.getName());
     
     private static final String NEWS_URL = "http://chatty.github.io/news.json";
-//    private static final String NEWS_URL = "http://127.0.0.1/twitch/news.json";
+    private static final String NEWS_URL_TEST = "http://127.0.0.1/twitch/news.json";
     
     private static final String SETTING_LAST_READ_TIMESTAMP = "newsLastRead";
     private static final int REQUEST_DELAY = 60*1000;
@@ -64,8 +65,8 @@ public class NewsDialog extends JDialog {
     private String cachedNews;
     
     // GUI
-    private final JLabel version;
     private final JTextPane news;
+    private final JButton refreshButton;
 
     public NewsDialog(MainGui main, final Settings settings) {
         super(main);
@@ -90,9 +91,6 @@ public class NewsDialog extends JDialog {
         });
         news.setContentType("text/html");
         
-        version = new JLabel();
-        
-        add(version, BorderLayout.NORTH);
         add(new JScrollPane(news), BorderLayout.CENTER);
         
         JPanel buttons = new JPanel(new GridBagLayout());
@@ -100,7 +98,7 @@ public class NewsDialog extends JDialog {
         
         final JButton markRead = new JButton("Mark as read & Close");
         final JButton close = new JButton("Close");
-        final JButton refresh = new JButton(new ImageIcon(NewsDialog.class.getResource("view-refresh.png")));
+        refreshButton = new JButton(new ImageIcon(NewsDialog.class.getResource("view-refresh.png")));
         
         GridBagConstraints gbc = new GridBagConstraints();
         
@@ -110,7 +108,7 @@ public class NewsDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.weightx = 0.8;
         gbc.insets = new Insets(5, 4, 5, 4);
-        buttons.add(refresh, gbc);
+        buttons.add(refreshButton, gbc);
         
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -138,12 +136,12 @@ public class NewsDialog extends JDialog {
                 } else if (e.getSource() == close) {
                     setVisible(false);
                 }
-                else if (e.getSource() == refresh) {
+                else if (e.getSource() == refreshButton) {
                     requestNews(false);
                 }
             }
         };
-        refresh.addActionListener(buttonAction);
+        refreshButton.addActionListener(buttonAction);
         markRead.addActionListener(buttonAction);
         close.addActionListener(buttonAction);
         
@@ -205,8 +203,9 @@ public class NewsDialog extends JDialog {
         news.setText("Loading..");
         latestNewsTimestamp = 0;
         lastRequested = System.currentTimeMillis();
+        refreshButton.setEnabled(false);
         
-        UrlRequest request = new UrlRequest(NEWS_URL) {
+        UrlRequest request = new UrlRequest(Chatty.DEBUG ? NEWS_URL_TEST : NEWS_URL) {
             
             @Override
             public void requestResult(final String result, final int responseCode) {
@@ -222,6 +221,7 @@ public class NewsDialog extends JDialog {
                         } else {
                             news.setText("Error loading news. ("+responseCode+")");
                         }
+                        refreshButton.setEnabled(true);
                     }
                 });
             }

@@ -41,7 +41,7 @@ import javax.swing.Timer;
 public class Channel extends JPanel {
     
     public enum Type {
-        NONE, CHANNEL, WHISPER
+        NONE, CHANNEL, WHISPER, SPECIAL
     }
     
     private static final int DIVIDER_SIZE = 5;

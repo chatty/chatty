@@ -160,6 +160,9 @@ public class Channels {
         channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
         channel.setMouseClickedListener(mouseClickedListener);
         channel.setScrollbarAlways(chatScrollbarAlaways);
+        if (type == Channel.Type.SPECIAL) {
+            channel.setUserlistEnabled(false);
+        }
         return channel;
     }
     
@@ -201,6 +204,8 @@ public class Channels {
             return Channel.Type.CHANNEL;
         } else if (name.startsWith("$")) {
             return Channel.Type.WHISPER;
+        } else if (name.startsWith("*")) {
+            return Channel.Type.SPECIAL;
         }
         return Channel.Type.NONE;
     }

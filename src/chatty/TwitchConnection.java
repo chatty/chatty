@@ -475,6 +475,8 @@ public class TwitchConnection {
     /**
      * Send a spam protected command to a channel, with the given echo message
      * that will be displayed to the user.
+     * 
+     * This doesn't check if you're actually on the channel.
      *
      * @param channel The channel to send the message to
      * @param message The message to send (e.g. a moderation command)
@@ -491,6 +493,8 @@ public class TwitchConnection {
     /**
      * Tries to send a spam protected message, which will either be send or not,
      * depending on the status of the spam protection.
+     * 
+     * This doesn't check if you're actually on the channel.
      *
      * @param channel The channel to send the message to
      * @param message The message to send
@@ -1048,6 +1052,9 @@ public class TwitchConnection {
             if (nick.equals("jtv")) {
                 specialMessage(text, null);
             }
+            if (nick.startsWith("*")) {
+                listener.onSpecialMessage(nick, text);
+            }
         }
 
         private void specialMessage(String text, String channel) {
@@ -1425,6 +1432,8 @@ public class TwitchConnection {
         void onChannelCleared(String channel);
         
         void onSubscriberNotification(String channel, String name, int months);
+        
+        void onSpecialMessage(String name, String message);
         
     }
 

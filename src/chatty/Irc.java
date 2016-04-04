@@ -606,6 +606,7 @@ public abstract class Irc {
         }
         //send("USER " + nick + " * * : "+nick);
         send("NICK " + nick);
+        send(String.format("USER %s 0 * :Chatty", nick));
     }
     
     /**
