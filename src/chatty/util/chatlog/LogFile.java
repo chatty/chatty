@@ -32,6 +32,7 @@ public class LogFile {
     private Path file;
     
     private LogFile(Path path, String name) {
+        name = name.replace("*", "_");
         for (int i=0;i<MAX_ATTEMPTS;i++) {
             String fileName;
             if (i == 0) {

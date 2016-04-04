@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty - Using a Bouncer</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">To main help page</a></div>
+    <h1><a name="top">Using a Bouncer</a></h1>
+    <p>Chatty is tailored towards Twitch Chat and is not a general IRC client,
+        so using a Bouncer may not work correctly or may cause unexpected
+        behaviour. Nevertheless, if you want to try if it works for you, this
+        page should get you started.</p>
+    
+    <h2>Connecting to the Bouncer</h2>
+    <p>By default Chatty will connect to the server/ports that are set in the
+        settings, using the store OAuth token. To connect to a Bouncer you need
+        to change both the server and port and tell Chatty to use the Bouncer
+        password instead.</p>
+    
+    <p>You will need to start Chatty with some <a href="help.html#launch">launch options</a>.
+        You can create a <a href="help-guide_create_shortcut.html">shortcut</a>
+        or .bat file for that.</p>
+    
+    <dl class="defList">
+        <dt><code>-server &lt;host/ip&gt;</code></dt>
+        <dd>This will overwrite the Server in the settings for this session (but
+            not change the setting). Set this to the IP/Host of your Bouncer.</dd>
+        
+        <dt><code>-port &lt;port&gt;</code></dt>
+        <dd>Same as server, set this to the port of your Bouncer.</dd>
+
+        <dt><code>-password [password]</code></dt>
+        <dd>Set this to the password of your Bouncer. The password is not saved
+            in between sessions which is why you need this option.</dd>
+    </dl>
+    
+    <p>If your bouncer uses special names starting with <code>*</code> like
+        <code>*status</code>, this will open an extra Tab in Chatty. You can
+        also use the <code>/msg</code> command to directly write to that name
+        (e.g. <code>/msg *perform list</code>).</p>
+    
+    <h2>Configuring the Bouncer</h2>
+    <p>You have to configure your Bouncer to connect to Twitch Chat. There are
+        probably guides out there how to configure your Bouncer. In regards to
+        connecting to Twitch Chat in particular you can use one of the guides
+        for regular IRC clients and apply it to the Bouncer.</p>
+    
+    <p>In addition to that, the Bouncer will need to send the following raw
+        commands after connecting to Twitch Chat, which will make it send info
+        like usercolors, emotes, user status and much more:</p>
+    
+    <pre>
+CAP REQ :twitch.tv/tags
+CAP REQ :twitch.tv/commands</pre>
+    
+    <p>See <a href="https://github.com/justintv/Twitch-API/blob/master/IRC.md">more information on Twitch Chat</a>.
+    
+</body>
+</html>
+

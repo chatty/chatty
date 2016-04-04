@@ -475,6 +475,8 @@ public class TwitchConnection {
     /**
      * Send a spam protected command to a channel, with the given echo message
      * that will be displayed to the user.
+     * 
+     * This doesn't check if you're actually on the channel.
      *
      * @param channel The channel to send the message to
      * @param message The message to send (e.g. a moderation command)
@@ -491,6 +493,8 @@ public class TwitchConnection {
     /**
      * Tries to send a spam protected message, which will either be send or not,
      * depending on the status of the spam protection.
+     * 
+     * This doesn't check if you're actually on the channel.
      *
      * @param channel The channel to send the message to
      * @param message The message to send
@@ -1007,31 +1011,8 @@ public class TwitchConnection {
             }
             if (onChannel(channel) || whisperConnection) {
                 infoMessage(channel, text);
-                if (tags != null) {
-//                    String msgId = tags.get("msg-id");
-//                    if ("subs_on".equals(msgId)) {
-//                        channelStates.setSubmode(channel, true);
-//                    }
-//                    else if ("subs_off".equals(msgId)) {
-//                        channelStates.setSubmode(channel, false);
-//                    }
-//                    else if ("slow_off".equals(msgId)) {
-//                        channelStates.setSlowmode(channel, -1);
-//                    }
-//                    else if ("slow_on".equals(msgId)) {
-//                        Pattern p = Pattern.compile("[0-9]+");
-//                        Matcher m = p.matcher(text);
-//                        if (m.find()) {
-//                            channelStates.setSlowmode(channel, m.group());
-//                        }
-//                    }
-//                    else if ("r9k_on".equals(msgId)) {
-//                        channelStates.setR9kMode(channel, true);
-//                    }
-//                    else if ("r9k_off".equals(msgId)) {
-//                        channelStates.setR9kMode(channel, false);
-//                    }
-                }
+            } else {
+                listener.onInfo(String.format("[Info/%s] %s", channel, text));
             }
         }
 
@@ -1047,6 +1028,9 @@ public class TwitchConnection {
              */
             if (nick.equals("jtv")) {
                 specialMessage(text, null);
+            }
+            if (nick.startsWith("*")) {
+                listener.onSpecialMessage(nick, text);
             }
         }
 
@@ -1425,6 +1409,8 @@ public class TwitchConnection {
         void onChannelCleared(String channel);
         
         void onSubscriberNotification(String channel, String name, int months);
+        
+        void onSpecialMessage(String name, String message);
         
     }
 

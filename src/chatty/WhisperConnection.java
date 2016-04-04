@@ -339,6 +339,10 @@ public class WhisperConnection {
         @Override
         public void onSubscriberNotification(String channel, String name, int months) {
         }
+
+        @Override
+        public void onSpecialMessage(String name, String message) {
+        }
         
     }
     

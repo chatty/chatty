@@ -43,6 +43,17 @@
         <a name="0.8.2">Version 0.8.2</a> <a name="latest">(This one!)</a> (2016-03-10)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>During March Twitch migrated Twitch Chat to new servers (Amazon AWS),
+        which you probably noticed due to some issues for some third-party
+        tools. This however also brought some improvements.</p>
+    
+        <p>Twitch Chat now supports SSL
+        on ports 6697 and 443 and Chatty will automatically add these to the default ports if
+        your port setting is still on the previous default (otherwise you might
+        have to add it yourself). The migration also got rid of Event Chat which
+        previously meant some big channels were on separate severs and not easily accesible from Chatty or
+        Mobile Chat. Now all channels should be on the same servers.</p>
+    <h3>Full Changelog</h3>
 <pre>
 Improvements
 ============
@@ -67,8 +78,12 @@ Improvements
 - Moved debug logs to down directory
 - Increased max reconnection attempts to 30
 - Added error message for setting invalid stream status in Admin Dialog
-- Added in-app announcements for news about Chatty (Help - Announcements)
-- Added /proc command to start native processes
+- Added in-app announcements (Help - Announcements), for more reliable
+  communication of relevant news about Chatty (if new announcement is available
+  a window will pop up on start and a notification will be shown in the main
+  menu bar)
+- Added /proc command to start native processes out of Chatty
+- ShortenDisplayOfExcessivelyLongEmoteCodesLookingOutTheirWindow
 - Updated help
 
 Settings
@@ -82,7 +97,8 @@ Settings
 - Added setting to display more detailed uptime in titlebar (enabled by default)
 - Changed default for showing animated emotes to off
 - Changed default for Min. Userlist Width to 0
-- Changed defaults for server/port
+- Changed defaults for server/port (actual values changed when updating to this
+  version, if setting values are on the previous default)
 - Changed default for Highlight Mod Command to !highlight, ignore case for both
   the channel and command setting
 - Made setting names case-insensitive (when using setting commands)
@@ -115,7 +131,7 @@ Bugfixes
         <li>Readded FFZ Feature Friday support and improved it.</li>
         <li>Show more stream and channel state information (like slowmode, submode, etc.).</li>
     </ul>
-        <h3>Full Changelog</h3>
+    <h3>Full Changelog</h3>
 <pre>
 #### New features
 - Added experimental Whisper support (this will probably not be developed much

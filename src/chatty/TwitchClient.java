@@ -118,8 +118,6 @@ public class TwitchClient {
     
     public final StreamStatusWriter streamStatusWriter;
     
-    protected final CapitalizedNames capitalizedNames;
-    
     protected final BotNameManager botNameManager;
     
     protected final CustomNames customNames;
@@ -205,11 +203,6 @@ public class TwitchClient {
 
         streamHighlights = new StreamHighlightHelper(settings, api);
         
-        if (false) {
-            capitalizedNames = new CapitalizedNames(api);
-        } else {
-            capitalizedNames = null;
-        }
         customNames = new CustomNames(settings);
         
         chatLog = new ChatLog(settings);
@@ -238,7 +231,6 @@ public class TwitchClient {
         
         c = new TwitchConnection(new Messages(), settings, "main");
         c.setAddressbook(addressbook);
-        c.setCapitalizedNamesManager(capitalizedNames);
         c.setCustomNamesManager(customNames);
         c.setUsercolorManager(usercolorManager);
         c.setUsericonManager(usericonManager);
@@ -662,6 +654,9 @@ public class TwitchClient {
     /**
      * Anything entered in a channel input box is reacted to here.
      * 
+     * This must be safe input (i.e. input directly by the local user) because
+     * this can execute all kind of commands.
+     * 
      * @param channel
      * @param text 
      */
@@ -678,6 +673,9 @@ public class TwitchClient {
             }
             else if (channel.startsWith("$")) {
                 w.whisperChannel(channel, text);
+            }
+            else if (channel.startsWith("*")) {
+                c.sendCommandMessage(channel, text, "> "+text);
             }
             else {
                 g.printLine("Not in a channel");
@@ -719,6 +717,9 @@ public class TwitchClient {
     /**
      * Text has to start with a /.
      * 
+     * This must be safe input (i.e. input directly by the local user) because
+     * this can execute all kind of commands.
+     * 
      * @param channel
      * @param text
      * @return 
@@ -736,6 +737,9 @@ public class TwitchClient {
     /**
      * Reacts on all of the commands entered in the channel input box.
      * 
+     * This must be safe input (i.e. input directly by the local user) because
+     * this can execute all kind of commands.
+     * 
      * @param channel
      * @param command
      * @param parameter
@@ -744,12 +748,17 @@ public class TwitchClient {
     public boolean command(String channel, String command, String parameter) {
         command = StringUtil.toLowerCase(command);
         
-        // IRC Commands
+        //---------------
+        // Connection/IRC
+        //---------------
         if (command.equals("quit")) {
             c.quit();
         }
         else if (command.equals("server")) {
             commandServer(parameter);
+        }
+        else if (command.equals("reconnect")) {
+            commandReconnect();
         }
         else if (command.equals("connection")) {
             if (!w.isOffline()) {
@@ -772,21 +781,22 @@ public class TwitchClient {
         else if (command.equals("me")) {
             commandActionMessage(channel,parameter);
         }
+        else if (command.equals("msg")) {
+            commandCustomMessage(parameter);
+        }
         else if (command.equals("w")) {
             w.whisperCommand(parameter, false);
         }
-        else if (command.equals("clearchat")) {
-            g.clearChat();
+        else if (command.equals("changetoken")) {
+            g.changeToken(parameter);
         }
-        else if (command.equals("resortuserlist")) {
-            g.resortUsers(channel);
+        else if (command.equals("fixserver")) {
+            commandFixServer(channel);
         }
-        
-        else if (command.equals("testnotification")) {
-            g.showTestNotification(parameter);
-        }
-        
-        // Misc
+
+        //------------
+        // System/Util
+        //------------
         else if (command.equals("dir")) {
             g.printSystem("Settings directory: '"+Chatty.getUserDataDirectory()+"'");
         }
@@ -802,8 +812,25 @@ public class TwitchClient {
         else if (command.equals("openbackupdir")) {
             MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
         }
+        else if (command.equals("copy")) {
+            MiscUtil.copyToClipboard(parameter);
+        }
+        else if (command.equals("releaseinfo")) {
+            g.openReleaseInfo();
+        }
+        else if (command.equals("echo")) {
+            g.printLine(parameter);
+        }
+        else if (command.equals("uptime")) {
+            g.printSystem("Chatty has been running for "+Chatty.uptime());
+        }
+        else if (command.equals("appinfo")) {
+            g.printSystem(LogUtil.getMemoryUsage());
+        }
         
-        // Settings
+        //-----------------------
+        // Settings/Customization
+        //-----------------------
         else if (command.equals("set")) {
             g.printSystem(settings.setTextual(parameter));
         }
@@ -829,10 +856,16 @@ public class TwitchClient {
             }
         }
         
-//        else if (command.equals("userlist")) {
-//            g.printSystem(addressbook.getEntries().toString());
-//        }
-        
+        else if (command.equals("setname")) {
+            g.printLine(customNames.commandSetCustomName(parameter));
+        }
+        else if (command.equals("resetname")) {
+            g.printLine(customNames.commandResetCustomname(parameter));
+        }
+        else if (command.equals("customcompletion")) {
+            commandCustomCompletion(parameter);
+        }
+
         else if (command.equals("users") || command.equals("ab")) {
             g.printSystem("[Addressbook] "
                     +addressbook.command(parameter != null ? parameter : ""));
@@ -841,9 +874,10 @@ public class TwitchClient {
             g.printSystem("[Addressbook] Importing from file..");
             addressbook.importFromFile();
         }
-        else if (command.equals("proc")) {
-            g.printSystem("[Proc] "+ProcessManager.command(parameter));
-        }
+        
+        //-------
+        // Ignore
+        //-------
         else if (command.equals("ignore")) {
             commandSetIgnored(parameter, null, true);
         }
@@ -863,60 +897,9 @@ public class TwitchClient {
             commandSetIgnored(parameter, "whisper", false);
         }
         
-        else if (command.equals("changetoken")) {
-            g.changeToken(parameter);
-        }
-        
-        else if (command.equals("reconnect")) {
-            commandReconnect();
-        }
-        else if (command.equals("fixserver")) {
-            commandFixServer(channel);
-        }
-        
-        else if (command.equals("refresh")) {
-            commandRefresh(channel, parameter);
-        }
-        
-        else if (command.equals("clearimagecache")) {
-            g.printLine("Clearing image cache (this can take a few seconds)");
-            ImageCache.clearCache(null);
-            g.printLine("Image cache cleared.");
-        }
-        
-        else if (command.equals("clearemotecache")) {
-            ImageCache.clearCache("emote_"+parameter);
-            g.printLine("Emoticon image cache for type "+parameter+" cleared.");
-        }
-        
-        else if (command.equals("refreshcase")) {
-            if (capitalizedNames != null) {
-                g.printLine(capitalizedNames.commandRefreshCase(parameter));
-            }
-        }
-        else if (command.equals("setcase")) {
-            if (capitalizedNames != null) {
-                g.printLine(capitalizedNames.commandSetCase(parameter));
-            }
-        }
-        else if (command.equals("getcase")) {
-            if (capitalizedNames != null) {
-                g.printLine(capitalizedNames.commandGetCase(parameter));
-            }
-        }
-        else if (command.equals("setname")) {
-            g.printLine(customNames.commandSetCustomName(parameter));
-        }
-        else if (command.equals("resetname")) {
-            g.printLine(customNames.commandResetCustomname(parameter));
-        }
-        else if (command.equals("customcompletion")) {
-            commandCustomCompletion(parameter);
-        }
-        else if (command.equals("copy")) {
-            MiscUtil.copyToClipboard(parameter);
-        }
-        
+        //--------------
+        // Emotes/Images
+        //--------------
         else if (command.equals("myemotes")) {
             commandMyEmotes();
         }
@@ -929,26 +912,39 @@ public class TwitchClient {
         else if (command.equals("ffzglobal")) {
             commandFFZ(null);
         }
-        
-        else if (command.equals("releaseinfo")) {
-            g.openReleaseInfo();
+        else if (command.equals("refresh")) {
+            commandRefresh(channel, parameter);
+        }
+        else if (command.equals("clearimagecache")) {
+            g.printLine("Clearing image cache (this can take a few seconds)");
+            ImageCache.clearCache(null);
+            g.printLine("Image cache cleared.");
+        }
+        else if (command.equals("clearemotecache")) {
+            ImageCache.clearCache("emote_"+parameter);
+            g.printLine("Emoticon image cache for type "+parameter+" cleared.");
         }
         
-        else if (command.equals("echo")) {
-            g.printLine(parameter);
-        }
-        
-        else if (command.equals("uptime")) {
-            g.printSystem("Chatty has been running for "+Chatty.uptime());
-        }
-        else if (command.equals("appinfo")) {
-            g.printSystem(LogUtil.getMemoryUsage());
-        }
+        //------
+        // Other
+        //------
         else if (command.equals("addstreamhighlight")) {
             commandAddStreamHighlight(channel, parameter);
         }
         else if (command.equals("openstreamhighlights")) {
             commandOpenStreamHighlights(channel);
+        }
+        else if (command.equals("testnotification")) {
+            g.showTestNotification(parameter);
+        }
+        else if (command.equals("clearchat")) {
+            g.clearChat();
+        }
+        else if (command.equals("resortuserlist")) {
+            g.resortUsers(channel);
+        }
+        else if (command.equals("proc")) {
+            g.printSystem("[Proc] "+ProcessManager.command(parameter));
         }
         
         else if (c.command(channel, command, parameter)) {
@@ -1252,6 +1248,20 @@ public class TwitchClient {
         }
     }
     
+    private void commandCustomMessage(String parameter) {
+        if (parameter != null && !parameter.isEmpty()) {
+            String[] split = parameter.split(" ", 2);
+            if (split.length == 2) {
+                String to = split[0];
+                String message = split[1];
+                c.sendSpamProtectedMessage(to, message, false);
+                g.printLine(String.format("-> %s: %s", to, message));
+                return;
+            }
+        }
+        g.printSystem("Invalid parameters.");
+    }
+    
     public void commandReconnect() {
         if (c.disconnect()) {
             c.reconnect();
@@ -1310,6 +1320,9 @@ public class TwitchClient {
     }
     
     private void commandRefresh(String channel, String parameter) {
+        if (!Helper.validateChannel(channel)) {
+            channel = null;
+        }
         if (parameter == null) {
             g.printLine("Usage: /refresh <type> (see help)");
         } else if (parameter.equals("emoticons")) {
@@ -1536,16 +1549,12 @@ public class TwitchClient {
         }
         
         private void followerInfoNames(FollowerInfo info) {
-            if (capitalizedNames != null && info.followers != null) {
-                for (Follower f : info.followers) {
-                    capitalizedNames.setName(StringUtil.toLowerCase(f.name), f.name);
-                }
-            }
+            
         }
 
         @Override
         public void receivedDisplayName(String name, String displayName) {
-            capitalizedNames.setName(name, displayName);
+            
         }
 
         @Override
@@ -1641,9 +1650,6 @@ public class TwitchClient {
                 }
             }
             streamStatusWriter.streamStatus(info);
-            if (capitalizedNames != null && info.hasDisplayName()) {
-                capitalizedNames.setName(info.stream, info.getDisplayName());
-            }
             if (info.isNotFound() && notFoundInfoDone.putIfAbsent(info, info) == null) {
                 g.printLine("** This channel doesn't seem to exist on Twitch. "
                         + "You may not be able to join this channel, but trying"
@@ -1906,9 +1912,6 @@ public class TwitchClient {
         
         LOGGER.info("Saving settings..");
         System.out.println("Saving settings..");
-        if (capitalizedNames != null) {
-            capitalizedNames.saveToFile();
-        }
         
         // Prepare saving settings
         if (g != null && g.guiCreated) {
@@ -1995,7 +1998,7 @@ public class TwitchClient {
                     if (settings.getBoolean("streamHighlightChannelRespond")) {
                         sendMessage(user.getChannel(), result);
                     } else {
-                        g.printLine(result);
+                        g.printLine(user.getChannel(), result);
                     }
                 }
             }
@@ -2177,6 +2180,11 @@ public class TwitchClient {
                 LOGGER.info(String.format("[Subscriber] Added '%s' with category '%s'",
                         name, cat));
             }
+        }
+
+        @Override
+        public void onSpecialMessage(String name, String message) {
+            g.printLine(name, message);
         }
         
     }
