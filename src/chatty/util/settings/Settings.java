@@ -174,7 +174,7 @@ public class Settings {
         add(settingName, value, Setting.MAP, type, true);
     }
     
-    public void addList(String settingName, List value, int type) {
+    public void addList(String settingName, Collection value, int type) {
         add(settingName, value, Setting.LIST, type, true);
     }
     
@@ -413,7 +413,7 @@ public class Settings {
      */
     public void getList(String settingName, List list) {
         synchronized (LOCK) {
-            list.addAll((List) get(settingName, Setting.LIST));
+            list.addAll((Collection) get(settingName, Setting.LIST));
         }
     }
     
@@ -428,7 +428,7 @@ public class Settings {
      */
     public void putList(String settingName, List list) {
         synchronized (LOCK) {
-            List settingList = (List) get(settingName, Setting.LIST);
+            Collection settingList = (Collection) get(settingName, Setting.LIST);
             settingList.clear();
             settingList.addAll(list);
         }
@@ -487,7 +487,7 @@ public class Settings {
      */
     public boolean setAdd(String settingName, Object value) {
         synchronized(LOCK) {
-            List settingList = (List)get(settingName, Setting.LIST);
+            Collection settingList = (Collection)get(settingName, Setting.LIST);
             if (!settingList.contains(value)) {
                 settingList.add(value);
                 return true;
@@ -517,28 +517,9 @@ public class Settings {
      * @param settingName
      * @return 
      */
-    private List getListInternal(String settingName) {
-        return (List) get(settingName, Setting.LIST);
+    private Collection getListInternal(String settingName) {
+        return (Collection) get(settingName, Setting.LIST);
     }
-    
-    
-    
-    
-//    public Map<String,Long> getIntegerMap(String settingName) {
-//        if (!isMapSetting(settingName) || !isOfSubtype(settingName, Setting.LONG)) {
-//            throw new SettingNotFoundException("Could not find setting: "+settingName);
-//        }
-//        return (Map)settings.get(settingName).getValue();
-//    }
-//    
-//
-//    
-//    public List getList2(String settingName, int subtype) {
-//         if (!isListSetting(settingName) || !isOfSubtype(settingName, subtype)) {
-//             throw new SettingNotFoundException("Could not find setting: "+settingName);
-//         }
-//         return (List)settings.get(settingName).getValue();
-//   }
     
     /**
      * Manually set a List or Map setting as changed, since those can't properly
@@ -827,7 +808,7 @@ public class Settings {
     }
     
     private void listFromJson(List list, SubtypeSetting setting) {
-        List settingList = (List)setting.getValue();
+        Collection settingList = (Collection)setting.getValue();
         settingList.clear();
         for (Object value : list) {
             if (getTypeFromObject(value) == setting.getSubType()) {

@@ -2,9 +2,13 @@
 package chatty.util.settings;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A single setting, holding one value of one of the specified types. The type
@@ -47,7 +51,7 @@ public class Setting {
         if (type == MAP) {
             this.defaultValue = new HashMap<>((Map)value);
         } else if (type == LIST) {
-            this.defaultValue = new ArrayList<>((List)value);
+            this.defaultValue = copyCollection((Collection)value);
         } else {
             this.defaultValue = value;
         }
@@ -118,7 +122,7 @@ public class Setting {
             return setValue(new HashMap<>((Map)defaultValue));
         }
         if (type == LIST) {
-            return setValue(new ArrayList<>((List)defaultValue));
+            return setValue(copyCollection((Collection)defaultValue));
         }
         return setValue(defaultValue);
     }
@@ -153,6 +157,36 @@ public class Setting {
     @Override
     public String toString() {
         return value.toString();
+    }
+    
+    /**
+     * Create a shallow copy of the collection using the same underlying class.
+     * 
+     * @param o
+     * @return 
+     */
+    private static Collection copyCollection(Collection o) {
+        try {
+            Collection copy = null;
+            copy = (Collection) o.getClass().newInstance();
+            copy.addAll(o);
+            return copy;
+        } catch (Exception ex) {
+            Logger.getLogger(Setting.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new ArrayList(o);
+    }
+    
+    private static Map copyMap(Map o) {
+        try {
+            Map copy = null;
+            copy = (Map) o.getClass().newInstance();
+            copy.putAll(o);
+            return copy;
+        } catch (Exception ex) {
+            Logger.getLogger(Setting.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new HashMap(o);
     }
     
 }

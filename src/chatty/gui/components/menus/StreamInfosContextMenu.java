@@ -29,7 +29,6 @@ public class StreamInfosContextMenu extends ContextMenu {
             
             ContextMenuHelper.addStreamsOptions(this, streams.size());
             
-            
             if (liveStreams) {
                 addSeparator();
             }

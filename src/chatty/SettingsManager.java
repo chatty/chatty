@@ -98,8 +98,8 @@ public class SettingsManager {
         // Seperate settings for commandline/temp so others can be saved
         settings.addString("server", "", false);
         settings.addString("port", "", false);
-        settings.addList("securedPorts", new ArrayList<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
-        settings.addList("securedPortsWhisper", new ArrayList<>(Arrays.asList()), Setting.LONG);
+        settings.addList("securedPorts", new LinkedHashSet<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
+        settings.addList("securedPortsWhisper", new LinkedHashSet<>(Arrays.asList()), Setting.LONG);
         
         settings.addBoolean("userlistConnection", true);
         settings.addList("userlistConnectionBlacklist", new ArrayList(), Setting.STRING);
@@ -364,7 +364,7 @@ public class SettingsManager {
         settings.addString("abUniqueCats", "");
         settings.addBoolean("abAutoImport", false);
         settings.addString("abSubMonthsChan", "");
-        settings.addList("abSubMonths", new ArrayList(), Setting.LONG);
+        settings.addList("abSubMonths", new TreeSet(), Setting.LONG);
         settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
 
         // Backup
@@ -536,7 +536,7 @@ public class SettingsManager {
             if (settings.getString("portDefault").equals("6667,443")) {
                 settings.setString("portDefault", "6697,6667,443,80");
             }
-            settings.listAdd("securedPorts", (long)443);
+            settings.setAdd("securedPorts", (long)443);
         }
     }
     

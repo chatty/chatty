@@ -1431,9 +1431,6 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
-            else if (cmd.equals("copy")) {
-                MiscUtil.copyToClipboard(Helper.toStream(channels.getActiveChannel().getName()));
-            }
             else if (cmd.equals("popoutChannel")) {
                 channels.popoutActiveChannel();
             }
@@ -1508,7 +1505,7 @@ public class MainGui extends JFrame implements Runnable {
             } else {
                 Collection<String> streams = new ArrayList<>();
                 for (StreamInfo info : streamInfos) {
-                    streams.add(info.getStream());
+                    streams.add(info.getDisplayName());
                 }
                 streamsMenuItemClicked(e, streams);
             }
@@ -1532,7 +1529,7 @@ public class MainGui extends JFrame implements Runnable {
          * stream parameter.
          */
         private final Set<String> streamCmds = new HashSet<>(
-                Arrays.asList("profile", "join"));
+                Arrays.asList("profile", "join", "hostchannel"));
         
         /**
          * Any commands starting with these Strings is supposed to have a stream
@@ -1573,6 +1570,10 @@ public class MainGui extends JFrame implements Runnable {
                 JOptionPane.showMessageDialog(getActiveWindow(), "Can't perform action: No stream/channel.",
                     "Info", JOptionPane.INFORMATION_MESSAGE);
                 return;
+            }
+            String firstStream = null;
+            if (!streams.isEmpty()) {
+                firstStream = streams.iterator().next();
             }
             if (cmd.equals("stream") || cmd.equals("streamPopout")
                     || cmd.equals("streamPopoutOld") || cmd.equals("profile")) {
@@ -1628,12 +1629,20 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 for (String stream : streams) {
-                    livestreamerDialog.open(stream, quality);
+                    livestreamerDialog.open(stream.toLowerCase(), quality);
                 }
             } else if (cmd.equals("showChannelEmotes")) {
-                if (streams.size() >= 1) {
-                    openEmotesDialogChannelEmotes(streams.iterator().next().toLowerCase());
+                if (firstStream != null) {
+                    openEmotesDialogChannelEmotes(firstStream.toLowerCase());
                 }
+            } else if (cmd.equals("hostchannel")) {
+                if (firstStream != null && streams.size() == 1) {
+                    client.command(null, "host2", firstStream.toLowerCase());
+                } else {
+                    printLine("Can't host more than one channel.");
+                }
+            } else if (cmd.equals("copy") && !streams.isEmpty()) {
+                MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             }
         }
 

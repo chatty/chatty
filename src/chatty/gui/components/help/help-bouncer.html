@@ -38,6 +38,13 @@
         also use the <code>/msg</code> command to directly write to that name
         (e.g. <code>/msg *perform list</code>).</p>
     
+    <p>If you want to connect via SSL to your Bouncer you will have to add the
+        port you use for connecting to the list of ports that Chatty will try to
+        connect to via SSL (<code>/add securedPorts &lt;port&gt;</code>). Note
+        that the Certificate has to be trusted by Java to work (otherwise you
+        have to add it to your local Java installation yourself). This can
+        especially be an issue with self-signed Certificates.</p>
+    
     <h2>Configuring the Bouncer</h2>
     <p>You have to configure your Bouncer to connect to Twitch Chat. There are
         probably guides out there how to configure your Bouncer. In regards to
@@ -52,8 +59,29 @@
 CAP REQ :twitch.tv/tags
 CAP REQ :twitch.tv/commands</pre>
     
-    <p>See <a href="https://github.com/justintv/Twitch-API/blob/master/IRC.md">more information on Twitch Chat</a>.
+    <p>To receive a userlist at all, you also need to send (Twitch Chat will
+        only send the userlist on join and under some circumstances it may not
+        send a userlist at all):</p>
     
+    <pre>
+CAP REQ :twitch.tv/membership</pre>
+    
+    <p><em>Note:</em> Channel names on Twitch Chat must be all-lowercase (Chatty
+        will automatically change the case accordingly, but if you configure
+        channels to join through the Bouncer directly you have to be careful
+        with this).</p>
+    
+    <p>See <a href="https://github.com/justintv/Twitch-API/blob/master/IRC.md">more information on Twitch Chat</a>.
+        
+    <h2>Notes</h2>
+    <ul>
+        <li>The Channel State (Subonly, Slowmode, ..) won't always be correct
+            because the Bouncer won't send the state on join if the channel is
+            already joined on the Bouncer.</li>
+        <li>Connecting to the Whisper servers directly won't work since that
+            connection will try to use the same password as you set for the
+            Bouncer.</li>
+    </ul>
 </body>
 </html>
 
