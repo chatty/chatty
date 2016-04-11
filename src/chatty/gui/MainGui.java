@@ -28,7 +28,7 @@ import chatty.Irc;
 import chatty.StatusHistory;
 import chatty.UsercolorItem;
 import chatty.Usericon;
-import chatty.WhisperConnection;
+import chatty.WhisperManager;
 import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
@@ -56,7 +56,6 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
-import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
@@ -65,8 +64,6 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.*;
 import java.util.logging.LogRecord;
 import javax.swing.AbstractAction;
@@ -2374,11 +2371,11 @@ public class MainGui extends JFrame implements Runnable {
                  * Check if special channel and change target according to
                  * settings
                  */
-                if (channel.equals(WhisperConnection.WHISPER_CHANNEL)) {
+                if (channel.equals(WhisperManager.WHISPER_CHANNEL)) {
                     int whisperSetting = (int)client.settings.getLong("whisperDisplayMode");
-                    if (whisperSetting == WhisperConnection.DISPLAY_ONE_WINDOW) {
+                    if (whisperSetting == WhisperManager.DISPLAY_ONE_WINDOW) {
                         chan = channels.getChannel(channel);
-                    } else if (whisperSetting == WhisperConnection.DISPLAY_PER_USER) {
+                    } else if (whisperSetting == WhisperManager.DISPLAY_PER_USER) {
                         if (!userIgnored(user, true)) {
                             chan = channels.getChannel("$"+user.getNick());
                         } else {
@@ -2753,6 +2750,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 Channel c = channels.getChannel(channel);
                 c.addUser(user);
                 if (channels.getActiveChannel() == c) {
@@ -2772,6 +2770,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 Channel c = channels.getChannel(channel);
                 c.removeUser(user);
                 if (channels.getActiveChannel() == c) {
@@ -2791,10 +2790,16 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 channels.getChannel(user.getChannel()).updateUser(user);
                 state.update();
             }
         });
+    }
+    
+    private boolean shouldUpdateUser(User user) {
+        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL)
+                || client.settings.getLong("whisperDisplayMode") == WhisperManager.DISPLAY_ONE_WINDOW;
     }
     
     /**

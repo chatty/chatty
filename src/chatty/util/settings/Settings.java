@@ -487,7 +487,7 @@ public class Settings {
      */
     public boolean setAdd(String settingName, Object value) {
         synchronized(LOCK) {
-            Collection settingList = (Collection)get(settingName, Setting.LIST);
+            Collection settingList = getListInternal(settingName);
             if (!settingList.contains(value)) {
                 settingList.add(value);
                 return true;

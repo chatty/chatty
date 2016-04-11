@@ -10,7 +10,7 @@ import chatty.util.api.StreamInfo;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
 import chatty.Version.VersionListener;
-import chatty.WhisperConnection.WhisperListener;
+import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.Channel;
@@ -150,7 +150,7 @@ public class TwitchClient {
     
     private final Set<String> refreshRequests = Collections.synchronizedSet(new HashSet<String>());
     
-    private final WhisperConnection w;
+    private final WhisperManager w;
     private final IrcLogger ircLogger = new IrcLogger();
     
     private boolean fixServer = false;
@@ -238,10 +238,7 @@ public class TwitchClient {
         c.addChannelStateListener(new ChannelStateUpdater());
         c.setSubNotificationPattern(settings.getString("subNotificationPattern"));
         
-        w = new WhisperConnection(new MyWhisperListener(), settings);
-        w.setUsericonManager(usericonManager);
-        w.setAddressbook(addressbook);
-        w.setUsercolorManager(usercolorManager);
+        w = new WhisperManager(new MyWhisperListener(), settings, c);
         
         streamStatusWriter = new StreamStatusWriter(Chatty.getUserDataDirectory(), api);
         streamStatusWriter.setSetting(settings.getString("statusWriter"));
@@ -630,12 +627,10 @@ public class TwitchClient {
         }
         
         c.connect(server, ports, name, password, autojoin);
-        w.connect(name, password);
         return true;
     }
     
     public boolean disconnect() {
-        w.disconnect();
         return c.disconnect();
     }
     
@@ -761,11 +756,7 @@ public class TwitchClient {
             commandReconnect();
         }
         else if (command.equals("connection")) {
-            if (!w.isOffline()) {
-                g.printLine(c.getConnectionInfo()+" {Whisper: "+w.getConnectionInfo()+"}");
-            } else {
-                g.printLine(c.getConnectionInfo());
-            }
+            g.printLine(c.getConnectionInfo());
         }
         else if (command.equals("join")) {
             commandJoinChannel(parameter);
@@ -1890,7 +1881,6 @@ public class TwitchClient {
         saveSettings(true);
         logAllViewerstats();
         c.disconnect();
-        w.disconnect();
         g.cleanUp();
         chatLog.close();
         System.exit(0);
@@ -2158,6 +2148,7 @@ public class TwitchClient {
 
         @Override
         public void onWhisper(User user, String message, String emotes) {
+            w.whisperReceived(user, message, emotes);
         }
 
         @Override
@@ -2239,10 +2230,8 @@ public class TwitchClient {
 
         @Override
         public void whisperReceived(User user, String message, String emotes) {
-            g.printMessage(WhisperConnection.WHISPER_CHANNEL, user, message, false, emotes);
-            if (settings.getLong("whisperDisplayMode") == WhisperConnection.DISPLAY_ONE_WINDOW) {
-                g.updateUser(user);
-            }
+            g.printMessage(WhisperManager.WHISPER_CHANNEL, user, message, false, emotes);
+            g.updateUser(user);
         }
 
         @Override
@@ -2252,19 +2241,8 @@ public class TwitchClient {
 
         @Override
         public void whisperSent(User to, String message) {
-            g.printMessage(WhisperConnection.WHISPER_CHANNEL, to, message, true, null);
+            g.printMessage(WhisperManager.WHISPER_CHANNEL, to, message, true, null);
         }
-
-        @Override
-        public void onRawSent(String text) {
-            ircLogger.onRawSent(text);
-        }
-
-        @Override
-        public void onRawReceived(String text) {
-            ircLogger.onRawReceived(text);
-        }
-        
     }
     
 }

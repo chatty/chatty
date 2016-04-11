@@ -6,7 +6,6 @@ import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,13 +23,6 @@ import java.util.regex.PatternSyntaxException;
  * @author tduva
  */
 public class TwitchConnection {
-    
-    /**
-     * Disable userlist connection altogether, since it should not be required
-     * anymore with the membership CAP, however still keeping the code around
-     * for now, just never actually connect.
-     */
-    private static final boolean USERLIST_CONNECTION = false;
     
     public enum JoinError {
         NOT_REGISTERED, ALREADY_JOINED, INVALID_NAME
@@ -54,7 +45,7 @@ public class TwitchConnection {
     /**
      * How many times to try to reconnect
      */
-    private final int maxReconnectionAttempts = 30;
+    private final int maxReconnectionAttempts = 40;
     /**
      * The time in seconds between reconnection attempts. The first entry is the
      * time for the first attempt, second entry for the second attempt and so
@@ -63,8 +54,6 @@ public class TwitchConnection {
     private final static int[] RECONNECTION_DELAY = new int[]{1, 5, 5, 10, 10, 60};
 
     private volatile Timer reconnectionTimer;
-    
-    private static final int SECONDARY_CONNECTION_UPDATE_DELAY = 10*1000;
 
     /**
      * The username to send to the server. This is stored to reconnect.
@@ -87,22 +76,16 @@ public class TwitchConnection {
     protected UserManager users = new UserManager();
 
     private final IrcConnection irc;
-    private final IrcConnection irc2;
-    private final IrcConnection userlistConnection;
 
     private final TwitchCommands twitchCommands;
     private final SpamProtection spamProtection;
     private final ChannelStateManager channelStates = new ChannelStateManager();
-    
-    private boolean whisperConnection;
     
     private Pattern subNotificationPattern;
 
     public TwitchConnection(final ConnectionListener listener, Settings settings,
             String label) {
         irc = new IrcConnection(label);
-        irc2 = new IrcConnection(label+"-secondary");
-        userlistConnection = irc;
         this.listener = listener;
         this.settings = settings;
         this.twitchCommands = new TwitchCommands(this);
@@ -120,19 +103,6 @@ public class TwitchConnection {
                 }
             }
         });
-        
-        // Start timer to update secondary connection
-        TimerTask updateSecondaryConnectionTask = new TimerTask() {
-
-            @Override
-            public void run() {
-                updateSecondaryConnection();
-            }
-        };
-        final Timer timer = new Timer("update secondary connection", true);
-        timer.schedule(updateSecondaryConnectionTask,
-                SECONDARY_CONNECTION_UPDATE_DELAY,
-                SECONDARY_CONNECTION_UPDATE_DELAY);
     }
     
     private TimerTask getReconnectionTimerTask() {
@@ -143,10 +113,6 @@ public class TwitchConnection {
                 reconnect();
             }
         };
-    }
-    
-    public void setWhisperConnection(boolean value) {
-        this.whisperConnection = value;
     }
     
     public void setSubNotificationPattern(String text) {
@@ -217,7 +183,7 @@ public class TwitchConnection {
     }
     
     public boolean isUserlistLoaded(String channel) {
-        return userlistConnection.isRegistered() && userlistConnection.userlistReceived.contains(channel);
+        return irc.isRegistered() && irc.userlistReceived.contains(channel);
     }
     
     public Set<String> getOpenChannels() {
@@ -270,6 +236,9 @@ public class TwitchConnection {
     }
     
     public void closeChannel(String channel) {
+        if (channel.equals(WhisperManager.WHISPER_CHANNEL)) {
+            return;
+        }
         partChannel(channel);
         openChannels.remove(channel);
         users.clear(channel);
@@ -365,8 +334,7 @@ public class TwitchConnection {
     }
     
     private Collection<Integer> getSecuredPorts() {
-        List setting = settings.getList(
-                whisperConnection ? "securedPortsWhisper" : "securedPorts");
+        List setting = settings.getList("securedPorts");
         Collection<Integer> result = new HashSet<>();
         for (Object value : setting) {
             result.add(((Long)value).intValue());
@@ -401,58 +369,17 @@ public class TwitchConnection {
             irc.connectionAttempts = 0;
         }
         boolean success = irc.disconnect();
-        irc2.disconnect();
         return success;
     }
     
     public void quit() {
         irc.disconnect();
-        irc2.disconnect();
     }
-    
-    /**
-     * Synchronizes the userlist connection with the primary connection, joining
-     * and leaving channels accordingly.
-     */
-    private void updateSecondaryConnection() {
-        if (!USERLIST_CONNECTION) {
-            return;
-        }
-        //LOGGER.info("Updating secondary connection..");
-        if (irc.isRegistered() && settings.getBoolean("userlistConnection")) {
-            if (irc2.isOffline()) {
-                int delay = getReconnectionDelay(irc2.connectionAttempts);
-                if (irc2.getLastConnectionAttemptAgo() > delay) {
-                    irc2.connect(server, serverPorts, username, password, getSecuredPorts());
-                }
-            } else if (irc2.isRegistered()) {
-                Set<String> currentChannels = irc.getJoinedChannels();
-                Set<String> toLeave = irc2.getJoinedChannels();
-                for (String channel : currentChannels) {
-                    if (!settings.listContains("userlistConnectionBlacklist", channel)) {
-                        if (!irc2.onChannel(channel)) {
-                            irc2.joinChannel(channel);
-                        }
-                        toLeave.remove(channel);
-                    }
-                }
-                for (String channel : toLeave) {
-                    irc2.partChannel(channel);
-                }
-            }
-        } else if (irc2.isRegistered()) {
-            irc2.disconnect();
-        }
-    }
-    
+
     public String getConnectionInfo() {
         String regular = irc.getConnectionInfo();
-        String secondary = irc2.getConnectionInfo();
         if (regular == null) {
             return "Not connected.";
-        }
-        if (secondary != null) {
-            return "Connected to: "+regular+" ("+secondary+")";
         }
         return "Connected to: "+regular;
     }
@@ -470,10 +397,6 @@ public class TwitchConnection {
     }
     
     public boolean command(String channel, String command, String parameters) {
-        if (command.equals("getsecondarychannels")) {
-            info(irc2.getJoinedChannels().toString());
-            return true;
-        }
         return twitchCommands.command(channel, command, parameters);
     }
     
@@ -499,7 +422,7 @@ public class TwitchConnection {
      * Tries to send a spam protected message, which will either be send or not,
      * depending on the status of the spam protection.
      * 
-     * This doesn't check if you're actually on the channel.
+     * <p>This doesn't check if you're actually on the channel.</p>
      *
      * @param channel The channel to send the message to
      * @param message The message to send
@@ -657,7 +580,7 @@ public class TwitchConnection {
         @Override
         void onUserlist(String channel, String[] nicknames) {
             channel = channel.toLowerCase();
-            if ((this == userlistConnection) && isChannelOpen(channel)) {
+            if (isChannelOpen(channel)) {
                 
                 /**
                  * Don't clear userlist just yet if only local name is in the
@@ -758,8 +681,6 @@ public class TwitchConnection {
                     connectionAttempts = 0;
                 }
                 listener.onDisconnect(reason, reasonMessage);
-            } else if (this == userlistConnection) {
-                //clearUserlist(null);
             }
         }
         
@@ -808,7 +729,7 @@ public class TwitchConnection {
                 /**
                  * Another user has joined a channel we are currently in.
                  */
-                if ((this == userlistConnection) && isChannelOpen(channel)) {
+                if (isChannelOpen(channel)) {
                     if (!userlistReceived.contains(channel)) {
                         clearUserlist(channel);
                         // Add local user again, must be on this channel but
@@ -859,20 +780,17 @@ public class TwitchConnection {
                     listener.onChannelLeft(channel);
                     channelStates.reset(channel);
                 }
-                if (this == userlistConnection) {
-                    // Leaving the channel on the userlist connection means
-                    // the userlist can no longer be considered as received for
-                    // this channel.
-                    userlistReceived.remove(channel);
-                }
+                // Leaving the channel on the userlist connection means
+                // the userlist can no longer be considered as received for
+                // this channel.
+                userlistReceived.remove(channel);
                 debug("PARTED: "+channel);
             } else {
-                if ((this == userlistConnection) && isChannelOpen(channel)) {
+                if (isChannelOpen(channel)) {
                     User user = userOffline(channel, nick);
                     listener.onPart(user);
                 }
             }
-
         }
 
         @Override
@@ -960,8 +878,8 @@ public class TwitchConnection {
             }
         }
         
-        private boolean checkTagsState(String state, Map<String, String> tags) {
-            return "1".equals(tags.get(state));
+        private boolean checkTagsState(String key, Map<String, String> tags) {
+            return "1".equals(tags.get(key));
         }
 
         @Override
@@ -994,8 +912,6 @@ public class TwitchConnection {
                             }
                         }
                     }
-                } else if (nick.equals("jtv")) {
-                    specialMessage(text, channel);
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
@@ -1020,8 +936,10 @@ public class TwitchConnection {
             if (this != irc) {
                 return;
             }
-            if (onChannel(channel) || whisperConnection) {
+            if (onChannel(channel)) {
                 infoMessage(channel, text);
+            } else if (channel.equals("#jtv")) {
+                listener.onInfo(text);
             } else {
                 listener.onInfo(String.format("[Info/%s] %s", channel, text));
             }
@@ -1032,48 +950,11 @@ public class TwitchConnection {
             if (this != irc) {
                 return;
             }
-            /**
-             * Any messages from jtv shown directly or used appropriatly, don't think
-             * there can be any private messages from other users anyway
-             * (although it might be renamed some time)
-             */
-            if (nick.equals("jtv")) {
-                specialMessage(text, null);
-            }
             if (nick.startsWith("*")) {
                 listener.onSpecialMessage(nick, text);
             }
         }
 
-        private void specialMessage(String text, String channel) {
-            String[] split = text.split(" ");
-            
-            /**
-             * This is still returned when changing color (instead of a
-             * USERSTATE command).
-             */
-            if (split[0].equals("USERCOLOR") && split.length == 3) {
-                String colorNick = split[1];
-                String color = split[2];
-                users.setColorForUsername(colorNick, color);
-            }
-            
-            // Decide whether to output the message directly to the user
-            if (split[0].length() > 2 && Helper.isAllUppercaseLetters(split[0])) {
-                /**
-                 * Commands are usually all uppercase letters with a length of
-                 * more than two, so don't show those to the user directly.
-                 */
-                return;
-            } else {
-                /**
-                 * Show anything else, since it's probably a message that's
-                 * useful to the user.
-                 */
-                infoMessage(channel, text);
-            }
-        }
-        
         /**
          * Any kind of info message. This can be either from jtv (legacy) or the
          * new NOTICE messages to the channel.
@@ -1154,7 +1035,7 @@ public class TwitchConnection {
 
         @Override
         void onWhoResponse(String channel, String nickname) {
-            
+            // Not working on Twitch Chat anyway
         }
 
         @Override
@@ -1173,8 +1054,6 @@ public class TwitchConnection {
             return openChannels.contains(channel);
         }
 
-        
-        
         @Override
         public void raw(String text) {
             listener.onRawReceived(idPrefix+text);
@@ -1307,7 +1186,7 @@ public class TwitchConnection {
                 return;
             }
             if (command.equals("WHISPER")) {
-                User user = userJoined(WhisperConnection.WHISPER_CHANNEL, nick);
+                User user = userJoined(WhisperManager.WHISPER_CHANNEL, nick);
                 updateUserFromTags(user, tags);
                 String emotesTag = tags != null ? tags.get("emotes") : null;
                 listener.onWhisper(user, text, emotesTag);
