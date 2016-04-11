@@ -13,7 +13,6 @@ import chatty.Version.VersionListener;
 import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
-import chatty.gui.components.Channel;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
@@ -34,7 +33,6 @@ import chatty.util.Webserver;
 import chatty.util.api.EmoticonSizeCache;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
-import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.TwitchApi.RequestResult;
@@ -43,13 +41,10 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -151,7 +146,7 @@ public class TwitchClient {
     private final Set<String> refreshRequests = Collections.synchronizedSet(new HashSet<String>());
     
     private final WhisperManager w;
-    private final IrcLogger ircLogger = new IrcLogger();
+    private final IrcLogger ircLogger;
     
     private boolean fixServer = false;
     
@@ -169,6 +164,9 @@ public class TwitchClient {
                 +" Classpath: "+System.getProperty("java.class.path")
                 +" Library Path: "+System.getProperty("java.library.path"));
         LOGGER.info("Retina Display: "+GuiUtil.hasRetinaDisplay());
+        
+        // Create after Logging is created, since that resets some stuff
+        ircLogger = new IrcLogger();
         
         createTestUser("tduva", "#bacon_donut");
         
@@ -2182,7 +2180,7 @@ public class TwitchClient {
     
     private class IrcLogger {
         
-        private final Logger IRC_LOGGER = Logger.getLogger(TwitchClient.Messages.class.getName()+"IRClog");
+        private final Logger IRC_LOGGER = Logger.getLogger(TwitchClient.IrcLogger.class.getName());
         
         IrcLogger() {
             IRC_LOGGER.setUseParentHandlers(false);

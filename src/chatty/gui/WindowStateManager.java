@@ -32,6 +32,7 @@ public class WindowStateManager {
     
     private static final String SETTING = "windows";
     private static final String MODE_SETTING = "restoreMode";
+    private static final String CHECK_ON_SCREEN_SETTING = "restoreOnlyIfOnScreen";
     
     public static final int DONT_RESTORE = 0;
     public static final int RESTORE_MAIN = 1;
@@ -160,11 +161,19 @@ public class WindowStateManager {
                 || (mode() >= RESTORE_MAIN && window == primaryWindow)) {
             // Set position and size
             
+            // Set size first, so width is set already for checking position
+            IntegerPair sizeTemp = Helper.getNumbersFromString(states[1]);
+            if (sizeTemp != null && item.saveSize) {
+                Dimension size = new Dimension(sizeTemp.a, sizeTemp.b);
+                window.setSize(size);
+            }
+            
             // Set position
             IntegerPair locationTemp = Helper.getNumbersFromString(states[0]);
             if (locationTemp != null) {
                 Point location = new Point(locationTemp.a, locationTemp.b);
-                if (GuiUtil.isPointOnScreen(location, 5)) {
+                if (!settings.getBoolean(CHECK_ON_SCREEN_SETTING)
+                        || isOnScreen(location, window.getWidth())) {
                     // If this is the window the others are attached to, ignore
                     // this movement.
                     if (window == defaultParent) {
@@ -176,16 +185,14 @@ public class WindowStateManager {
                     LOGGER.info("Location for "+item.id+" ["+location+"] not restored (not on screen)");
                 }
             }
-
-            // Set size
-            IntegerPair sizeTemp = Helper.getNumbersFromString(states[1]);
-            if (sizeTemp != null && item.saveSize) {
-                Dimension size = new Dimension(sizeTemp.a, sizeTemp.b);
-                window.setSize(size);
-            }
         }
         
         item.wasOpen = states[2].equals("1");
+    }
+    
+    private boolean isOnScreen(Point location, int width) {
+        return GuiUtil.isPointOnScreen(location, 100)
+            || GuiUtil.isPointOnScreen(location, width - 100);
     }
     
     /**

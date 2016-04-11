@@ -297,6 +297,7 @@ public class SettingsManager {
         // Window State
         settings.addMap("windows", new HashMap<>(), Setting.STRING);
         settings.addLong("restoreMode", WindowStateManager.RESTORE_ON_START);
+        settings.addBoolean("restoreOnlyIfOnScreen", true);
         
         // Popouts
         settings.addBoolean("popoutSaveAttributes", true);

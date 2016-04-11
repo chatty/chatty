@@ -745,14 +745,11 @@ public class Settings {
             if (setting.allowedToSave() && setting.getFile().equals(file)) {
                 String key = entry.getKey();
                 Object value = setting.getValue();
-//                if (setting.getType() == Setting.MAP) {
-//                    Map map = new HashMap<>();
-//                    synchronized(value) {
-//                        getMap2(entry.getKey(), map);
-//                    }
-//                    value = map;
-//                    //obj.put(entry.getKey(), getMap2(entry.getKey(), new HashMap()));
-//                }
+                
+                // JSON Simple only supports List in this version
+                if (value instanceof Collection) {
+                    value = new ArrayList((Collection)value);
+                }
                 obj.put(key, value);
             }
         }
