@@ -673,6 +673,8 @@ public class MainGui extends JFrame implements Runnable {
                 reopenWindows();
                 
                 newsDialog.autoRequestNews(true);
+                
+                client.init();
             }
         });
     }

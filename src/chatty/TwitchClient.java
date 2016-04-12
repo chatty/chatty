@@ -253,42 +253,6 @@ public class TwitchClient {
         g.loadSettings();
         g.showGui();
         
-        // Output any cached warning messages
-        warning(null);
-        
-        // Before checkNewVersion(), so "updateAvailable" is already updated
-        checkForVersionChange();
-        // Check version, if enabled in this build
-        if (Chatty.VERSION_CHECK_ENABLED) {
-            checkNewVersion();
-        }
-        
-        // Connect or open connect dialog
-        if (settings.getBoolean("connectOnStartup")) {
-            prepareConnection();
-        } else {
-            switch ((int)settings.getLong("onStart")) {
-                case 1:
-                    g.openConnectDialog(null);
-                    break;
-                case 2:
-                    prepareConnectionWithChannel(settings.getString("autojoinChannel"));
-                    break;
-                case 3:
-                    prepareConnectionWithChannel(settings.getString("previousChannel"));
-                    break;
-                case 4:
-                    prepareConnectionWithChannel(Helper.buildStreamsString(channelFavorites.getFavorites()));
-                    break;
-            }
-            
-        }
-        
-        new UpdateTimer(g);
-        
-        // Shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
-        
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,793,33,42");
             g.addUser("", new User("josh", ""));
@@ -324,6 +288,44 @@ public class TwitchClient {
                 //g.printLine(chan, "test");
             }
         }
+    }
+    
+    public void init() {
+        // Output any cached warning messages
+        warning(null);
+        
+        // Before checkNewVersion(), so "updateAvailable" is already updated
+        checkForVersionChange();
+        // Check version, if enabled in this build
+        if (Chatty.VERSION_CHECK_ENABLED) {
+            checkNewVersion();
+        }
+        
+        // Connect or open connect dialog
+        if (settings.getBoolean("connectOnStartup")) {
+            prepareConnection();
+        } else {
+            switch ((int)settings.getLong("onStart")) {
+                case 1:
+                    g.openConnectDialog(null);
+                    break;
+                case 2:
+                    prepareConnectionWithChannel(settings.getString("autojoinChannel"));
+                    break;
+                case 3:
+                    prepareConnectionWithChannel(settings.getString("previousChannel"));
+                    break;
+                case 4:
+                    prepareConnectionWithChannel(Helper.buildStreamsString(channelFavorites.getFavorites()));
+                    break;
+            }
+            
+        }
+        
+        new UpdateTimer(g);
+        
+        // Shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
     }
     
 
