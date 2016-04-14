@@ -128,3 +128,7 @@ table.files {
 .defList dt {
     margin-top: 5px;
 }
+
+.del {
+    text-decoration: line-through;
+}

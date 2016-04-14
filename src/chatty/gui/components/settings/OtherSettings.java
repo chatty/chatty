@@ -78,6 +78,12 @@ public class OtherSettings extends SettingsPanel {
         other.add(d.addSimpleBooleanSetting("autoUnhost", "Auto-Unhost when your stream goes live",
                 "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"), gbc);
         
+        gbc = d.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST);
+        other.add(new JLabel("Prepend to window title:"), gbc);
+        
+        gbc = d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST);
+        other.add(d.addSimpleStringSetting("titleAddition", 10, true), gbc);
+        
     }
     
 }

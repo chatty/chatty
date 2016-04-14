@@ -397,7 +397,7 @@ public abstract class Irc {
                 } else {
                     onChannelMessage(parameters[0], nick, prefix, trailing, tags, false);
                 }
-            } else {
+            } else if (parameters[0].equalsIgnoreCase(this.nick)) {
                 onQueryMessage(nick, prefix, trailing);
             }
         }

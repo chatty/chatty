@@ -953,6 +953,9 @@ public class TwitchConnection {
             if (nick.startsWith("*")) {
                 listener.onSpecialMessage(nick, text);
             }
+            if (nick.equals("jtv")) {
+                infoMessage(null, text);
+            }
         }
 
         /**

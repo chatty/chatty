@@ -47,12 +47,18 @@
         which you probably noticed due to some issues for some third-party
         tools. This however also brought some improvements.</p>
     
-        <p>Twitch Chat now supports SSL
-        on ports 6697 and 443 and Chatty will automatically add these to the default ports if
-        your port setting is still on the previous default (otherwise you might
-        have to add it yourself). The migration also got rid of Event Chat which
-        previously meant some big channels were on separate severs and not easily accesible from Chatty or
-        Mobile Chat. Now all channels should be on the same servers.</p>
+    <ul>
+        <li>Twitch Chat now supports SSL on ports 6697 and 443
+            <ul>
+                <li>Chatty will automatically add these to the default ports if
+                    your port setting is still on the previous default
+                    (otherwise you might have to add it yourself).</li>
+            </ul>
+        </li>
+        <li>No separate Event Chat servers anymore</li>
+        <li>Whispers (and Group Chat) got moved to AWS early April</li>
+    </ul>
+    
     <h3>Full Changelog</h3>
 <pre>
 Improvements
@@ -62,7 +68,7 @@ Improvements
   default)
 - Added single-instance mode, with the ability to join channels in the already
   running instance
-- Improved Emote Dialog info a bit
+- Emote Dialog: Improved displayed info a bit
 - Added `force_verify=true` parameter to Authorize URL (makes Twitch always ask
   if you want to Authorize, makes sure you are logged in to the right account)
 - Added new Twitch Player URL in context menu
@@ -75,9 +81,9 @@ Improvements
 - Added feature to automatically add Addressbook categories on Subscriber
   notifications (experimental)
 - Added feature to automatically copy messages into clipboard
-- Moved debug logs to down directory
-- Increased max reconnection attempts to 30
-- Added error message for setting invalid stream status in Admin Dialog
+- Moved debug logs into separate directory
+- Increased max reconnection attempts to 40
+- Admin Dialog: Added error message for tryint to set invalid stream status
 - Added in-app announcements (Help - Announcements), for more reliable
   communication of relevant news about Chatty (if new announcement is available
   a window will pop up on start and a notification will be shown in the main
@@ -85,24 +91,30 @@ Improvements
 - Added /proc command to start native processes out of Chatty
 - Added context menu entries to directly host channel
 - ShortenDisplayOfExcessivelyLongEmoteCodesLookingOutTheirWindow
+- Bouncer: Some changes allowing connection to a Bouncer
+- Made restoring window position a bit more lenient with it being off-screen
+- Whispering: Moved to main chat, hide userlist for Whisper tabs
 - Updated help
 
 Settings
 ========
-- Added more font sizes to GUI
+- Added more chat font size choices to GUI
 - Added input font setting to GUI
 - Added setting to prevent highlights from specific users (e.g. your own bots)
-- Added setting to toggle closing of Emote Dialog on double-click on Emote
+- Added setting to toggle closing of Emote Dialog when double-clicking on Emote
 - Added setting to remember Status History table sorting order
 - Added setting to toggle Usercolor correction
-- Added setting to display more detailed uptime in titlebar (enabled by default)
+- Added setting to display more verbose uptime in titlebar (enabled by default)
+- Added setting to toggle check for restoring off-screen window position
+- Added setting to prepend arbitrary text to the window title
 - Changed default for showing animated emotes to off
 - Changed default for Min. Userlist Width to 0
-- Changed defaults for server/port (actual values changed when updating to this
+- Changed default for Whisper Display Mode to per user
+- Changed defaults for server/port (actively changed when updating to this
   version, if setting values are on the previous default)
 - Changed default for Highlight Mod Command to !highlight, ignore case for both
   the channel and command setting
-- Made setting names case-insensitive (when using setting commands)
+- Made setting names case-insensitive (for use with setting commands)
 - Changed the process of saving settings in an attempt to make it more reliable
 - Added menu entry to save settings manually
 

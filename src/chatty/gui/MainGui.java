@@ -3097,6 +3097,12 @@ public class MainGui extends JFrame implements Runnable {
             }
 
             title += " - Chatty";
+            
+            String addition = client.settings.getString("titleAddition");
+            if (!addition.isEmpty()) {
+                title = addition+" "+title;
+            }
+            
             return title;
         }
     }
