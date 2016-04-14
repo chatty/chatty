@@ -50,11 +50,11 @@ public class TwitchUrl {
     }
     
     public static String makeTwitchProfileUrl(String channel) {
-        return "http://twitch.tv/" + channel + "/profile";
+        return "http://twitch.tv/" + channel.toLowerCase() + "/profile";
     }
     
     public static String makeTwitchStreamUrl(String channel, boolean popout) {
-        String url = "http://twitch.tv/" + channel + "";
+        String url = "http://twitch.tv/" + channel.toLowerCase() + "";
         if (popout) {
             url += "/popout";
         }
@@ -62,7 +62,7 @@ public class TwitchUrl {
     }
     
     public static String makeTwitchPlayerUrl(String channel) {
-        return "http://player.twitch.tv/?channel="+channel;
+        return "http://player.twitch.tv/?channel="+channel.toLowerCase();
     }
     
     public static String makeTwitchTurboUrl() {

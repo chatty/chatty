@@ -149,7 +149,6 @@ public class Logging {
                 }
             });
             file.setLevel(Level.INFO);
-            file.setFilter(new FileFilter());
             return file;
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(Logging.class.getName()).log(Level.WARNING, null, ex);

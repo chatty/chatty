@@ -28,7 +28,7 @@ import chatty.Irc;
 import chatty.StatusHistory;
 import chatty.UsercolorItem;
 import chatty.Usericon;
-import chatty.WhisperConnection;
+import chatty.WhisperManager;
 import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
@@ -56,7 +56,6 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
-import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
@@ -65,8 +64,6 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.*;
 import java.util.logging.LogRecord;
 import javax.swing.AbstractAction;
@@ -676,6 +673,8 @@ public class MainGui extends JFrame implements Runnable {
                 reopenWindows();
                 
                 newsDialog.autoRequestNews(true);
+                
+                client.init();
             }
         });
     }
@@ -1431,9 +1430,6 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
-            else if (cmd.equals("copy")) {
-                MiscUtil.copyToClipboard(Helper.toStream(channels.getActiveChannel().getName()));
-            }
             else if (cmd.equals("popoutChannel")) {
                 channels.popoutActiveChannel();
             }
@@ -1508,7 +1504,7 @@ public class MainGui extends JFrame implements Runnable {
             } else {
                 Collection<String> streams = new ArrayList<>();
                 for (StreamInfo info : streamInfos) {
-                    streams.add(info.getStream());
+                    streams.add(info.getDisplayName());
                 }
                 streamsMenuItemClicked(e, streams);
             }
@@ -1532,7 +1528,7 @@ public class MainGui extends JFrame implements Runnable {
          * stream parameter.
          */
         private final Set<String> streamCmds = new HashSet<>(
-                Arrays.asList("profile", "join"));
+                Arrays.asList("profile", "join", "hostchannel"));
         
         /**
          * Any commands starting with these Strings is supposed to have a stream
@@ -1573,6 +1569,10 @@ public class MainGui extends JFrame implements Runnable {
                 JOptionPane.showMessageDialog(getActiveWindow(), "Can't perform action: No stream/channel.",
                     "Info", JOptionPane.INFORMATION_MESSAGE);
                 return;
+            }
+            String firstStream = null;
+            if (!streams.isEmpty()) {
+                firstStream = streams.iterator().next();
             }
             if (cmd.equals("stream") || cmd.equals("streamPopout")
                     || cmd.equals("streamPopoutOld") || cmd.equals("profile")) {
@@ -1628,12 +1628,20 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 for (String stream : streams) {
-                    livestreamerDialog.open(stream, quality);
+                    livestreamerDialog.open(stream.toLowerCase(), quality);
                 }
             } else if (cmd.equals("showChannelEmotes")) {
-                if (streams.size() >= 1) {
-                    openEmotesDialogChannelEmotes(streams.iterator().next().toLowerCase());
+                if (firstStream != null) {
+                    openEmotesDialogChannelEmotes(firstStream.toLowerCase());
                 }
+            } else if (cmd.equals("hostchannel")) {
+                if (firstStream != null && streams.size() == 1) {
+                    client.command(null, "host2", firstStream.toLowerCase());
+                } else {
+                    printLine("Can't host more than one channel.");
+                }
+            } else if (cmd.equals("copy") && !streams.isEmpty()) {
+                MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             }
         }
 
@@ -2365,11 +2373,11 @@ public class MainGui extends JFrame implements Runnable {
                  * Check if special channel and change target according to
                  * settings
                  */
-                if (channel.equals(WhisperConnection.WHISPER_CHANNEL)) {
+                if (channel.equals(WhisperManager.WHISPER_CHANNEL)) {
                     int whisperSetting = (int)client.settings.getLong("whisperDisplayMode");
-                    if (whisperSetting == WhisperConnection.DISPLAY_ONE_WINDOW) {
+                    if (whisperSetting == WhisperManager.DISPLAY_ONE_WINDOW) {
                         chan = channels.getChannel(channel);
-                    } else if (whisperSetting == WhisperConnection.DISPLAY_PER_USER) {
+                    } else if (whisperSetting == WhisperManager.DISPLAY_PER_USER) {
                         if (!userIgnored(user, true)) {
                             chan = channels.getChannel("$"+user.getNick());
                         } else {
@@ -2744,6 +2752,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 Channel c = channels.getChannel(channel);
                 c.addUser(user);
                 if (channels.getActiveChannel() == c) {
@@ -2763,6 +2772,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 Channel c = channels.getChannel(channel);
                 c.removeUser(user);
                 if (channels.getActiveChannel() == c) {
@@ -2782,10 +2792,16 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (!shouldUpdateUser(user)) return;
                 channels.getChannel(user.getChannel()).updateUser(user);
                 state.update();
             }
         });
+    }
+    
+    private boolean shouldUpdateUser(User user) {
+        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL)
+                || client.settings.getLong("whisperDisplayMode") == WhisperManager.DISPLAY_ONE_WINDOW;
     }
     
     /**

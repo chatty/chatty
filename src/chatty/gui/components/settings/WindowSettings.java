@@ -29,10 +29,15 @@ public class WindowSettings extends SettingsPanel {
         d.addLongSetting("restoreMode", restoreMode);
         dialogs.add(restoreMode, d.makeGbc(1, 0, 1, 1));
         
+        dialogs.add(d.addSimpleBooleanSetting("restoreOnlyIfOnScreen",
+                "Restore position only if on screen",
+                "Opens on default position if not clearly visible in the current screen area."),
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
         dialogs.add(d.addSimpleBooleanSetting("attachedWindows",
                 "Attach dialogs position to main window",
                 "Moves the dialogs when you move the main window."),
-                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
 
         JPanel other = addTitledPanel("Other", 1);
         

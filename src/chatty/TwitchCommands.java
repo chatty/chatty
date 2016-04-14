@@ -98,6 +98,9 @@ public class TwitchCommands {
         else if (command.equals("host")) {
             commandHostmode(channel, parameter);
         }
+        else if (command.equals("host2")) {
+            commandHostmode2(Helper.toChannel(c.getUsername()), parameter);
+        }
         else if (command.equals("unhost")) {
             hostmodeOff(channel);
         }
@@ -209,9 +212,26 @@ public class TwitchCommands {
         }
     }
     
+    protected void commandHostmode2(String channel, String parameter) {
+        if (parameter == null) {
+            printLine("Usage: /host2 <stream>");
+        } else {
+            hostmode2(channel, parameter);
+        }
+    }
+    
     public void hostmode(String channel, String target) {
         if (onChannel(channel, true)) {
             sendMessage(channel, ".host "+target, "Trying to host "+target+"..");
+        }
+    }
+    
+    public void hostmode2(String channel, String target) {
+        if (c.isRegistered()) {
+            c.sendSpamProtectedMessage(channel, ".host "+target, false);
+            printLine(String.format("Trying to host %s from %s", target, channel));
+        } else {
+            printLine("Must be connected to chat to start hosting.");
         }
     }
     

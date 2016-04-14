@@ -23,6 +23,8 @@ public class ChannelContextMenu extends ContextMenu {
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
+        addItem("hostchannel", "Host Channel", MISC_MENU);
+        addSeparator(MISC_MENU);
         addItem("joinHostedChannel", "Join Hosted Channel", MISC_MENU);
         addItem("copy", "Copy Stream Name", MISC_MENU);
         addSeparator(MISC_MENU);

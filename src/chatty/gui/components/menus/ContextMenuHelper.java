@@ -67,6 +67,7 @@ public class ContextMenuHelper {
             count = String.valueOf(numStreams)+" ";
         }
         String streamSubmenu = "Twitch Stream" + s;
+        String miscSubmenu = "Miscellaneous";
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
         m.addItem("streamPopoutOld", "Popout (Old)", streamSubmenu);
@@ -78,6 +79,9 @@ public class ContextMenuHelper {
         if (join) {
             m.addSeparator();
             m.addItem("join", "Join " + count + "channel" + s);
+            m.addSeparator();
+            m.addItem("hostchannel", "Host Channel", miscSubmenu);
+            m.addItem("copy", "Copy Stream Name", miscSubmenu);
         }
     }
     

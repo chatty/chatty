@@ -70,12 +70,29 @@ public class SettingsManager {
         settings.addFile(historyFile);
         settings.addFile(statusPresetsFile);
         
-        // Global
-        settings.addBoolean("ontop", false);
+        //========
+        // General
+        //========
+        
         settings.addBoolean("dontSaveSettings",false);
         settings.addBoolean("debugCommands", false, false);
-        settings.addString("laf","default");
+        settings.addBoolean("debugLogIrc", false);
+        settings.addBoolean("debugLogIrcFile", false);
+        settings.addBoolean("autoRequestMods", false);
         
+        // Backup
+        settings.addLong("backupDelay", 1);
+        settings.addLong("backupCount", 5);
+        
+        // Version/News
+        settings.addLong("versionLastChecked", 0);
+        settings.addString("updateAvailable", "");
+        settings.addBoolean("checkNewVersion", true);
+        settings.addBoolean("newsAutoRequest", true);
+        settings.addLong("newsLastRead", 0);
+        settings.addString("currentVersion", "");
+
+        // Hotkeys
         addDefaultHotkeyAppWide("0.7.3", "dialog.streams", "ctrl L");
         addDefaultHotkey("0.7.3", "dialog.toggleEmotes", "ctrl E");
         addDefaultHotkey("0.7.3", "dialog.search", "ctrl F");
@@ -92,29 +109,25 @@ public class SettingsManager {
         settings.addList("hotkeys", getDefaultHotkeySettingValue(), Setting.LIST);
         settings.addBoolean("globalHotkeysEnabled", true);
         
-        // Connecting/Login data
+        
+        //===========
+        // Connecting
+        //===========
+        
         settings.addString("serverDefault", "irc.chat.twitch.tv");
         settings.addString("portDefault", "6697,6667,443,80");
+        
         // Seperate settings for commandline/temp so others can be saved
         settings.addString("server", "", false);
         settings.addString("port", "", false);
-        settings.addList("securedPorts", new ArrayList<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
-        settings.addList("securedPortsWhisper", new ArrayList<>(Arrays.asList()), Setting.LONG);
         
-        settings.addBoolean("userlistConnection", true);
-        settings.addList("userlistConnectionBlacklist", new ArrayList(), Setting.STRING);
+        settings.addList("securedPorts", new LinkedHashSet<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
         settings.addBoolean("membershipEnabled", true);
         
-        settings.addBoolean("botBadgeEnabled", true);
-        settings.addBoolean("botNamesBTTV", true);
-        settings.addBoolean("botNamesFFZ", true);
-        settings.addList("botNames", new ArrayList<>(Arrays.asList("nightbot", "moobot", "kabukibot", "slowton2", "xanbot")), Setting.STRING);
-        
-        settings.addBoolean("debugLogIrcFile", false);
-        
-        settings.addBoolean("tc3", false);
-        
+        // Auto-join channels
         settings.addString("channel", "");
+        
+        // Login Data
         settings.addString("username", "");
         settings.setFile("username", loginFile);
         settings.addString("password", "", false);
@@ -126,7 +139,8 @@ public class SettingsManager {
         settings.setFile("token", loginFile);
         // Don't save setting, login with password isn't possible anymore
         settings.addBoolean("usePassword", false, false);
-        // Scopes
+        
+        // Token
         settings.addBoolean("token_editor", false);
         settings.setFile("token_editor", loginFile);
         settings.addBoolean("token_commercials", false);
@@ -137,31 +151,17 @@ public class SettingsManager {
         settings.setFile("token_subs", loginFile);
         settings.addBoolean("token_chat", false);
         settings.setFile("token_chat", loginFile);
+
+        //=================
+        // Appearance / GUI
+        //=================
         
-        // Chat messages
-        // Not really used anymore, kept for compatability
-        settings.addBoolean("ignoreJoinsParts",false);
-        settings.addBoolean("showJoinsParts", false);
-        settings.addBoolean("showModMessages", false);
-        settings.addBoolean("debugLogIrc", false);
-        settings.addBoolean("showBanMessages", false);
-        settings.addBoolean("combineBanMessages", true);
-        settings.addBoolean("deleteMessages", false);
-        settings.addString("deletedMessagesMode", "keepShortened");
-        settings.addLong("deletedMessagesMaxLength", 50);
-        settings.addBoolean("clearChatOnChannelCleared", false);
-        settings.addLong("bufferSize", 500);
-        settings.addBoolean("twitchnotifyAsInfo", true);
-        settings.addBoolean("printStreamStatus", true);
-        settings.addLong("filterCombiningCharacters", Helper.FILTER_COMBINING_CHARACTERS_LENIENT);
+        settings.addBoolean("ontop", false);
+        settings.addString("laf","default");
         
-        // Chat appearance
-        settings.addBoolean("emoticonsEnabled",true);
-        settings.addLong("emoteMaxHeight", 0);
-        settings.addLong("emoteScale", 100);
-        settings.addLong("emoteScaleDialog", 100);
-        settings.addBoolean("closeEmoteDialogOnDoubleClick", false);
-        settings.addBoolean("usericonsEnabled",true);
+        settings.addLong("dialogFontSize", -1);
+        
+        // Chat Appearance
         settings.addString("font","Consolas");
         settings.addLong("fontSize",14);
         settings.addString("inputFont", "Dialog 14");
@@ -172,24 +172,32 @@ public class SettingsManager {
         settings.addBoolean("ircv3CapitalizedNames", true);
         settings.addBoolean("correctlyCapitalizedNames", false);
         settings.addMap("customNames", new HashMap<>(), Setting.STRING);
+        settings.addBoolean("actionColored", false);
+
+        // Badges/Emotes
+        settings.addBoolean("emoticonsEnabled",true);
+        settings.addLong("emoteMaxHeight", 0);
+        settings.addLong("emoteScale", 100);
+        settings.addLong("emoteScaleDialog", 100);
+        settings.addBoolean("closeEmoteDialogOnDoubleClick", false);
         settings.addBoolean("ffz", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
         settings.addBoolean("showAnimatedEmotes", false);
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
-        settings.addString("tabOrder", "normal");
-        settings.addBoolean("tabsMwheelScrolling", false);
-        settings.addBoolean("tabsMwheelScrollingAnywhere", false);
-        settings.addBoolean("actionColored", false);
         
-        settings.addBoolean("customUsercolors", false);
-        settings.addList("usercolors", new LinkedList(), Setting.STRING);
+        settings.addBoolean("usericonsEnabled",true);
         
         settings.addList("customUsericons", new ArrayList(), Setting.LIST);
         settings.addBoolean("customUsericonsEnabled", false);
         
-        settings.addLong("dialogFontSize", -1);
+        settings.addBoolean("botBadgeEnabled", true);
+        settings.addBoolean("botNamesBTTV", true);
+        settings.addBoolean("botNamesFFZ", true);
+        settings.addList("botNames", new LinkedHashSet<>(Arrays.asList(
+                "nightbot", "moobot", "kabukibot", "slowton2", "xanbot")),
+                Setting.STRING);
         
         settings.addBoolean("imageCache", true);
         
@@ -205,19 +213,53 @@ public class SettingsManager {
         settings.addString("searchResultColor2", "#FFFF80");
         settings.addBoolean("colorCorrection", true);
         
+        // Usercolors
+        settings.addBoolean("customUsercolors", false);
+        settings.addList("usercolors", new LinkedList(), Setting.STRING);
         
-        // History and Favorites
+        //====================
+        // Other Customization
+        //====================
+        
+        // Addressbook
+        settings.addString("abCommandsChannel", "");
+        settings.addString("abCommands", "add,set,remove");
+        settings.addString("abUniqueCats", "");
+        settings.addBoolean("abAutoImport", false);
+        settings.addString("abSubMonthsChan", "");
+        settings.addList("abSubMonths", new TreeSet(), Setting.LONG);
+        settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
+        
+        // Custom Commands
+        settings.addList("commands", new ArrayList(), Setting.STRING);
+        // Default entries, will only be set if setting is not loaded from file
+        settings.setAdd("commands", "/slap /me slaps $$1- around a bit with a large trout");
+        settings.setAdd("commands", "/permit !permit $$1");
+        
+        // Menu Entries
+        settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4]");
+        settings.addString("userContextMenu", "");
+        settings.addString("channelContextMenu", "");
+        
+        // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);
         settings.setFile("channelHistory", historyFile);
         settings.addList("channelFavorites", new ArrayList(), Setting.STRING);
         settings.setFile("channelFavorites", historyFile);
-        settings.addList("gamesFavorites",new ArrayList(), Setting.STRING);
-        settings.setFile("gamesFavorites", historyFile);
         settings.addLong("channelHistoryKeepDays", 30);
         settings.addBoolean("saveChannelHistory", true);
         settings.addBoolean("historyClear", true);
         settings.addLong("favoritesSorting", 20);
         
+        //=======================
+        // Channel Admin Features
+        //=======================
+        
+        // Game Presets
+        settings.addList("gamesFavorites",new ArrayList(), Setting.STRING);
+        settings.setFile("gamesFavorites", historyFile);
+        
+        // Stream Status Presets
         settings.addList("statusPresets", new ArrayList(), Setting.LIST);
         settings.setFile("statusPresets", statusPresetsFile);
 
@@ -230,28 +272,17 @@ public class SettingsManager {
         settings.addString("commercialHotkey","");
         settings.addBoolean("adDelay", false);
         settings.addLong("adDelayLength", 300);
-        
-        // Other
-        settings.addBoolean("channelsWarning", true);
-        settings.addBoolean("autoScroll", true);
-        settings.addLong("autoScrollTimeout", 30);
-        settings.addBoolean("pauseChatOnMouseMove", false);
-        settings.addBoolean("pauseChatOnMouseMoveCtrlRequired", false);
-        settings.addString("commandOnCtrlClick", "");
-        settings.addLong("versionLastChecked", 0);
-        settings.addString("updateAvailable", "");
-        settings.addBoolean("checkNewVersion", true);
-        settings.addString("liveStreamsSorting", "recent");
-        settings.addLong("historyRange", 0);
-        settings.addString("spamProtection", "18/30");
 
-        settings.addString("currentVersion", "");
+        //=======
+        // Window
+        //=======
         
+        // Open URLs
         settings.addBoolean("urlPrompt", true);
         settings.addBoolean("urlCommandEnabled", false);
         settings.addString("urlCommand", "");
 
-        // Window
+        // Main Window
         settings.addBoolean("attachedWindows", false);
         settings.addBoolean("maximized", false);
         settings.addBoolean("nod3d", true);
@@ -259,44 +290,44 @@ public class SettingsManager {
         settings.addBoolean("bufferStrategy1", false);
         settings.addBoolean("mainResizable", true);
         
+        // Tray
         settings.addBoolean("closeToTray", false);
         settings.addBoolean("minimizeToTray", false);
         
+        // Window State
         settings.addMap("windows", new HashMap<>(), Setting.STRING);
         settings.addLong("restoreMode", WindowStateManager.RESTORE_ON_START);
+        settings.addBoolean("restoreOnlyIfOnScreen", true);
         
+        // Popouts
         settings.addBoolean("popoutSaveAttributes", true);
         settings.addBoolean("popoutCloseLastChannel", true);
         settings.addList("popoutAttributes", new ArrayList(), Setting.STRING);
         
+        // Titlebar
         settings.addBoolean("simpleTitle", false);
         settings.addBoolean("titleShowUptime", true);
         settings.addBoolean("titleLongerUptime", true);
         settings.addBoolean("titleShowViewerCount", true);
         settings.addBoolean("titleShowChannelState", true);
+        
+        // Tabs
+        settings.addString("tabOrder", "normal");
+        settings.addBoolean("tabsMwheelScrolling", false);
+        settings.addBoolean("tabsMwheelScrollingAnywhere", false);
+        
+        // Chat Window
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
         settings.addLong("userlistMinWidth", 0);
+        settings.addLong("bufferSize", 500);
         
-        // Highlight
-        settings.addList("highlight",new ArrayList(), Setting.STRING);
-        settings.addBoolean("highlightEnabled", true);
-        settings.addBoolean("highlightUsername", true);
-        settings.addBoolean("highlightOwnText", false);
-        settings.addBoolean("highlightNextMessages", false);
-        settings.addBoolean("highlightIgnored", false);
-        settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
-        
-        // Ignore
-        settings.addList("ignore", new ArrayList(), Setting.STRING);
-        settings.addBoolean("ignoreEnabled", false);
-        settings.addBoolean("ignoreOwnText", false);
-        settings.addLong("ignoreMode", 1);
-        settings.addBoolean("ignoreShowNotDialog", false);
-        settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
-        settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
-        
+        settings.addString("liveStreamsSorting", "recent");
+        settings.addLong("historyRange", 0);
+
+        //=======
         // Sounds
+        //=======
         settings.addBoolean("sounds", false);
         settings.addString("highlightSound", "off");
         settings.addString("highlightSoundFile", "ding.wav");
@@ -320,7 +351,9 @@ public class SettingsManager {
         settings.addLong("followerSoundVolume",100);
         settings.addLong("followerSoundDelay", 10);
         
+        //==============
         // Notifications
+        //==============
         settings.addString("highlightNotification", "either");
         settings.addString("statusNotification", "either");
         settings.addBoolean("ignoreOfflineNotifications", false);
@@ -340,11 +373,66 @@ public class SettingsManager {
         
         settings.addList("notificationProperties", new ArrayList<>(), Setting.LIST);
         
-        settings.addLong("v0.5", 0);
         settings.addBoolean("tips", true);
         settings.addLong("lastTip", 0);
         
-        // Logging
+
+        //=====================
+        // Basic Chat Behaviour
+        //=====================
+        
+        settings.addString("spamProtection", "18/30");
+        
+        settings.addBoolean("autoScroll", true);
+        settings.addLong("autoScrollTimeout", 30);
+        settings.addBoolean("pauseChatOnMouseMove", false);
+        settings.addBoolean("pauseChatOnMouseMoveCtrlRequired", false);
+        settings.addString("commandOnCtrlClick", "");
+        
+        // Not really used anymore, kept for compatability
+        settings.addBoolean("ignoreJoinsParts",false);
+        
+        // Message Types
+        settings.addBoolean("showJoinsParts", false);
+        settings.addBoolean("showModMessages", false);
+        settings.addBoolean("twitchnotifyAsInfo", true);
+        settings.addBoolean("printStreamStatus", true);
+        
+        // Timeouts/Bans
+        settings.addBoolean("showBanMessages", false);
+        settings.addBoolean("combineBanMessages", true);
+        settings.addBoolean("deleteMessages", false);
+        settings.addString("deletedMessagesMode", "keepShortened");
+        settings.addLong("deletedMessagesMaxLength", 50);
+        settings.addBoolean("clearChatOnChannelCleared", false);
+
+        // Message filtering
+        settings.addLong("filterCombiningCharacters", Helper.FILTER_COMBINING_CHARACTERS_LENIENT);
+
+
+        //==============
+        // Chat Features
+        //==============
+        
+        // Highlight
+        settings.addList("highlight",new ArrayList(), Setting.STRING);
+        settings.addBoolean("highlightEnabled", true);
+        settings.addBoolean("highlightUsername", true);
+        settings.addBoolean("highlightOwnText", false);
+        settings.addBoolean("highlightNextMessages", false);
+        settings.addBoolean("highlightIgnored", false);
+        settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
+        
+        // Ignore
+        settings.addList("ignore", new ArrayList(), Setting.STRING);
+        settings.addBoolean("ignoreEnabled", false);
+        settings.addBoolean("ignoreOwnText", false);
+        settings.addLong("ignoreMode", 1);
+        settings.addBoolean("ignoreShowNotDialog", false);
+        settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
+        settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
+        
+        // Chat Logging
         settings.addString("logMode", "always");
         settings.addBoolean("logMod", true);
         settings.addBoolean("logJoinPart", false);
@@ -357,19 +445,37 @@ public class SettingsManager {
         settings.addList("logBlacklist",new ArrayList(), Setting.STRING);
         settings.addString("logPath", "");
         settings.addString("logTimestamp", "[HH:mm:ss]");
-
-        // Addressbook
-        settings.addString("abCommandsChannel", "");
-        settings.addString("abCommands", "add,set,remove");
-        settings.addString("abUniqueCats", "");
-        settings.addBoolean("abAutoImport", false);
-        settings.addString("abSubMonthsChan", "");
-        settings.addList("abSubMonths", new ArrayList(), Setting.LONG);
-        settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
-
-        // Backup
-        settings.addLong("backupDelay", 1);
-        settings.addLong("backupCount", 5);
+        
+        // TAB Completion
+        settings.addMap("customCompletion", new HashMap(), Setting.STRING);
+        settings.addLong("completionMaxItemsShown", 5);
+        settings.addBoolean("completionShowPopup", true);
+        settings.addBoolean("completionCommonPrefix", false);
+        settings.addString("completionSorting", "predictive");
+        
+        // Stream Chat
+        settings.addLong("streamChatMessageTimeout", -1);
+        settings.addList("streamChatChannels", new ArrayList(), Setting.STRING);
+        settings.addBoolean("streamChatBottom", true);
+        settings.addBoolean("streamChatResizable", true);
+        
+        // Whispering
+        settings.addBoolean("whisperEnabled", false);
+        settings.addBoolean("whisperWhitelist", false);
+        settings.addLong("whisperDisplayMode", WhisperManager.DISPLAY_PER_USER);
+        settings.addString("groupChatServer", "");
+        settings.addString("groupChatPort", "");
+        settings.addBoolean("whisperAutoRespond", false);
+        
+        // Copy Messages
+        settings.addBoolean("cmEnabled", false);
+        settings.addString("cmChannel", "");
+        settings.addString("cmTemplate", "{user}: {message}");
+        settings.addBoolean("cmHighlightedOnly", false);
+        
+        //===============
+        // Other Features
+        //===============
         
         // Livestreamer
         settings.addBoolean("livestreamer", false);
@@ -378,53 +484,18 @@ public class SettingsManager {
         settings.addBoolean("livestreamerUseAuth", false);
         settings.addBoolean("livestreamerShowDialog", true);
         
-        // Custom Commands and Menu Customization
-        settings.addList("commands", new ArrayList(), Setting.STRING);
-        // Default entries, will only be set if setting is not loaded from file
-        settings.setAdd("commands", "/slap /me slaps $$1- around a bit with a large trout");
-        settings.setAdd("commands", "/permit !permit $$1");
-        
-        settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4]");
-        settings.addString("userContextMenu", "");
-        settings.addString("channelContextMenu", "");
-        
-        settings.addBoolean("enableStatusWriter", false);
-        settings.addString("statusWriter", "");
-        
-        settings.addBoolean("autoRequestMods", false);
-        
-        settings.addLong("streamChatMessageTimeout", -1);
-        settings.addList("streamChatChannels", new ArrayList(), Setting.STRING);
-        settings.addBoolean("streamChatBottom", true);
-        settings.addBoolean("streamChatResizable", true);
-        
+        // Stream Highlights
         settings.addString("streamHighlightCommand", "!highlight");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
         
-        settings.addMap("customCompletion", new HashMap(), Setting.STRING);
-        settings.addLong("completionMaxItemsShown", 5);
-        settings.addBoolean("completionShowPopup", true);
-        settings.addBoolean("completionCommonPrefix", false);
-        settings.addString("completionSorting", "predictive");
+        // Stream Status Writer
+        settings.addBoolean("enableStatusWriter", false);
+        settings.addString("statusWriter", "");
         
-        settings.addBoolean("whisperEnabled", false);
-        settings.addBoolean("whisperWhitelist", false);
-        settings.addLong("whisperDisplayMode", WhisperConnection.DISPLAY_IN_CHAT);
-        settings.addString("groupChatServer", "");
-        settings.addString("groupChatPort", "");
-        settings.addBoolean("whisperAutoRespond", false);
-        
+        // Auto-Unhost
         settings.addBoolean("autoUnhost", false);
-        settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
-        
-        settings.addBoolean("cmEnabled", false);
-        settings.addString("cmChannel", "");
-        settings.addString("cmTemplate", "{user}: {message}");
-        settings.addBoolean("cmHighlightedOnly", false);
-        
-        settings.addBoolean("newsAutoRequest", true);
-        settings.addLong("newsLastRead", 0);
+        settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING); 
     }
     
     /**
@@ -536,7 +607,7 @@ public class SettingsManager {
             if (settings.getString("portDefault").equals("6667,443")) {
                 settings.setString("portDefault", "6697,6667,443,80");
             }
-            settings.listAdd("securedPorts", (long)443);
+            settings.setAdd("securedPorts", (long)443);
         }
     }
     
