@@ -1,4 +1,13 @@
+# Eclipse
 build/
 dist/
 nbproject/
 working_directory/
+
+# IntelliJ IDEA IDE
+out/
+.idea/
+chatty.iml
+chatty.properties
+chatty.xml
+src/META-INF/
