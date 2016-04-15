@@ -60,6 +60,13 @@ public class Sound {
                 volumeInfo = "no volume control";
             }
             
+            clip.addLineListener(
+                listener -> {
+                    if (listener.getType() == LineEvent.Type.STOP)
+                        clip.close();
+                }
+            );
+            
             clip.start();
             LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
         } catch (NullPointerException | LineUnavailableException | IOException | UnsupportedAudioFileException ex) {
