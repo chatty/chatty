@@ -45,7 +45,7 @@ public class Sound {
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             
             DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
-            Clip clip = (Clip)AudioSystem.getLine(info);
+            final Clip clip = (Clip)AudioSystem.getLine(info);
             clip.open(ais);
             
             // Volume, use what is available
@@ -59,6 +59,16 @@ public class Sound {
             } else {
                 volumeInfo = "no volume control";
             }
+            
+            clip.addLineListener(new LineListener() {
+
+                @Override
+                public void update(LineEvent event) {
+                    if (event.getType() == LineEvent.Type.STOP) {
+                        clip.close();
+                    }
+                }
+            });
             
             clip.start();
             LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
