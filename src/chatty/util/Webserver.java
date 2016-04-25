@@ -119,15 +119,20 @@ public class Webserver implements Runnable {
             try {
                 clientSocket = serverSocket.accept();
             } catch (SocketException ex) {
-                debug("Accept interrupted: "+ex.getLocalizedMessage());
+                debug("Accept interrupted: "+ex);
                 // After breaking out of the loop, there is a close() anyway
                 //close();
                 break;
             } catch (IOException ex) {
-                debug("ServerSocket accept failed: "+ex.getLocalizedMessage());
+                debug("ServerSocket accept failed: "+ex);
                 // TODO: close() necessary?
                 // Why return instead of break?
                 //return;
+                break;
+            } catch (NullPointerException ex) {
+                // serverSocket apparently may be null in some circumstances
+                // (possibly a race condition when stopping the server), if so
+                // just stop
                 break;
             }
             // Connection established, work with it
@@ -232,11 +237,8 @@ public class Webserver implements Runnable {
                 if (request != null) {
                     respond(request);
                 }
-                
-            } catch (SocketTimeoutException ex) {
-                debugConnection("SoTimeout: "+ex.getLocalizedMessage());
             } catch (IOException ex) {
-                debugConnection("Error reading: "+ex.getLocalizedMessage());
+                debugConnection("Error reading: "+ex);
             }
             debugConnection("Closed");
         }

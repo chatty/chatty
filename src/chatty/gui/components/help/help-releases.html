@@ -55,8 +55,18 @@
                     (otherwise you might have to add it yourself).</li>
             </ul>
         </li>
-        <li>No separate Event Chat servers anymore</li>
-        <li>Whispers (and Group Chat) got moved to AWS early April</li>
+        <li>No separate Event Chat servers anymore
+            <ul>
+                <li>Access all channels, including of big events, in Chatty
+                    without having to change servers.</li>
+            </ul>
+        </li>
+        <li>Whispers (and Group Chat) got moved to AWS early April
+            <ul>
+                <li>No Whisper server configuration required anymore, just
+                    enable Whispers in the settings if you want to use them.</li>
+            </ul>
+        </li>
     </ul>
     
     <h3>Full Changelog</h3>
@@ -66,35 +76,44 @@ Improvements
 - Added some account info to User Info Dialog (click on "More..")
 - Added auto-unhost feature (to unhost when your stream goes live, disabled by
   default)
-- Added single-instance mode, with the ability to join channels in the already
-  running instance
-- Emote Dialog: Improved displayed info a bit
-- Added `force_verify=true` parameter to Authorize URL (makes Twitch always ask
-  if you want to Authorize, makes sure you are logged in to the right account)
 - Added new Twitch Player URL in context menu
-- Added /emoteonly and /emoteonlyoff commands (in case they get enabled again)
-- Added "emotesets" parameter to /refresh command
-- Changed twitchemotes.com API URL (which is the source of emoteset information)
-- Added some support for selecting the correct chat server
-- Added auto-responses to whispers for ignored/non-whitelisted users (disabled
-  by default)
 - Added feature to automatically add Addressbook categories on Subscriber
   notifications (experimental)
 - Added feature to automatically copy messages into clipboard
-- Moved debug logs into separate directory
-- Increased max reconnection attempts to 40
-- Admin Dialog: Added error message for tryint to set invalid stream status
+- Admin Dialog: Added error message for trying to set invalid stream status
+- Added context menu entries to directly host channel
+- Updated help
+
+System
+======
+- Added single-instance mode, with the ability to join channels in the already
+  running instance
 - Added in-app announcements (Help - Announcements), for more reliable
   communication of relevant news about Chatty (if new announcement is available
   a window will pop up on start and a notification will be shown in the main
   menu bar)
+- Moved debug logs into separate directory
 - Added /proc command to start native processes out of Chatty
-- Added context menu entries to directly host channel
-- ShortenDisplayOfExcessivelyLongEmoteCodesLookingOutTheirWindow
-- Bouncer: Some changes allowing connection to a Bouncer
 - Made restoring window position a bit more lenient with it being off-screen
+
+Connection
+==========
+- Bouncer: Some changes allowing your to connect to a Bouncer
 - Whispering: Moved to main chat, hide userlist for Whisper tabs
-- Updated help
+- Added auto-responses to whispers for ignored/non-whitelisted users (disabled
+  by default)
+- Increased max reconnection attempts to 40
+- Added `force_verify=true` parameter to Authorize URL (makes Twitch always ask
+  if you want to Authorize, makes sure you are logged in to the right account)
+- Added some support for selecting the correct chat server
+
+Emotes
+======
+- Emote Dialog: Improved shown info a bit
+- Added /emoteonly and /emoteonlyoff commands (in case they get enabled again)
+- Added "emotesets" parameter to /refresh command
+- Changed twitchemotes.com API URL (which is the source of emoteset information)
+- ShortenDisplayOfExcessivelyLongEmoteCodesLookingOutTheirWindow
 
 Settings
 ========
@@ -128,6 +147,8 @@ Bugfixes
   prevents high CPU usage (displaying animated GIFs in Java is hard)
 - Check if Java supports opening URLs on the current platform and run native
   command if necessary
+- Fixed sounds not being closed when finished playing
+- Fixed tabs not changing correctly on System Look&Feel
 </pre>
     
     <h2>

@@ -59,9 +59,10 @@
 CAP REQ :twitch.tv/tags
 CAP REQ :twitch.tv/commands</pre>
     
-    <p>To receive a userlist at all, you also need to send (Twitch Chat will
-        only send the userlist on join and under some circumstances it may not
-        send a userlist at all):</p>
+    <p>To receive a userlist at all, you also need to send the following (even
+        then Twitch Chat will only send the userlist on join and then update it
+        via JOINs/PARTs, and under some circumstances it may not send a userlist
+        at all):</p>
     
     <pre>
 CAP REQ :twitch.tv/membership</pre>
@@ -78,9 +79,8 @@ CAP REQ :twitch.tv/membership</pre>
         <li>The Channel State (Subonly, Slowmode, ..) won't always be correct
             because the Bouncer won't send the state on join if the channel is
             already joined on the Bouncer.</li>
-        <li>Connecting to the Whisper servers directly won't work since that
-            connection will try to use the same password as you set for the
-            Bouncer.</li>
+        <li>Receiving Whispers may not work, depending on whether the Bouncer
+            forwards the WHISPER command to Chatty.</li>
     </ul>
 </body>
 </html>

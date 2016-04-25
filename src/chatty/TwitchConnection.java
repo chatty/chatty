@@ -927,7 +927,7 @@ public class TwitchConnection {
                 return;
             }
             // Should only be from the server for now
-            listener.onInfo("[Notice] " + text);
+            listener.onNotice(text);
         }
         
         @Override
@@ -954,7 +954,7 @@ public class TwitchConnection {
                 listener.onSpecialMessage(nick, text);
             }
             if (nick.equals("jtv")) {
-                infoMessage(null, text);
+                listener.onInfo("[Info] "+text);
             }
         }
 
@@ -1272,9 +1272,27 @@ public class TwitchConnection {
 
         void onNotice(String message);
 
+        /**
+         * An info message to a specific channel, usually intended to be
+         * directly output to the user.
+         * 
+         * <p>The channel should not be null. If no channel is associated, use
+         * {@link onInfo(String) onInfo(infoMessage)} instead.</p>
+         * 
+         * @param channel The channel the info message belongs to
+         * @param infoMessage The info message
+         */
         void onInfo(String channel, String infoMessage);
 
-        void onInfo(String message);
+        /**
+         * An info message, usually intended to be directly output to the user.
+         * 
+         * <p>Since no channel is associated, this is likely to be output to the
+         * currently active channel/tab.</p>
+         * 
+         * @param infoMessage The info message
+         */
+        void onInfo(String infoMessage);
         
         void onGlobalInfo(String message);
 

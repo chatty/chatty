@@ -93,7 +93,8 @@ public class MessageSettings extends SettingsPanel {
         gbc.anchor = GridBagConstraints.WEST;
         otherSettingsPanel.add(
                 d.addSimpleBooleanSetting("showModMessages", "Show mod/unmod messages",
-                        "Whether to show when someone was modded/unmodded."),
+                        "Whether to show when someone was modded/unmodded or a "
+                                + "mod joined/left the channel."),
                 gbc);
         
         gbc = d.makeGbc(2, 1, 2, 1);

@@ -49,6 +49,8 @@ public class Tabs extends JPanel {
     
     private TabOrder order = TabOrder.INSERTION;
     
+    private JPopupMenu popupMenu;
+    
     public Tabs() {
         setLayout(new BorderLayout());
         tabs.setOpaque(false);
@@ -75,17 +77,34 @@ public class Tabs extends JPanel {
             
             @Override
             public void mousePressed(MouseEvent e) {
-                /**
-                 * Switch to clicked tab.
-                 */
-                int index = tabs.indexAtLocation(e.getX(), e.getY());
-                if (index != -1) {
-                    tabs.setSelectedIndex(index);
-                }
+                openPopupMenu(e);
             }
             
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openPopupMenu(e);
+            }
         });
-        //tabs.setTabPlacement(JTabbedPane.LEFT);
+    }
+    
+    /**
+     * Open context menu manually instead of relying on the JTabbedPane, so we
+     * can check if it's the currently selected tab (since the context menu will
+     * trigger actions based on the currently selected tab).
+     * 
+     * @param e 
+     */
+    private void openPopupMenu(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
+        }
+        if (popupMenu == null) {
+            return;
+        }
+        final int index = tabs.indexAtLocation(e.getX(), e.getY());
+        if (tabs.getSelectedIndex() == index) {
+            popupMenu.show(tabs, e.getX(), e.getY());
+        }
     }
     
     private boolean isNearLastTab(Point p) {
@@ -103,7 +122,7 @@ public class Tabs extends JPanel {
     }
     
     public void setPopupMenu(JPopupMenu menu) {
-        tabs.setComponentPopupMenu(menu);
+        popupMenu = menu;
     }
     
     /**

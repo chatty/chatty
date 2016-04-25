@@ -207,20 +207,44 @@
     <p>If you are sure that the <code>Chatty.jar</code> is actually started with
         Java, but no program window appears, it may be that an error occured before
     the window (GUI) could be created.</p>
+    
+    <h3>Run from commandline</h3>
+    <p>Running Chatty from the commandline has the advantage of being able to
+    get messages from before the GUI is established. It also may work when Java
+    isn't integrated into the OS correctly (even when installed).</p>
+    
+    <ol>
+        <li>Open a commandline window on the directory where the
+            <code>Chatty.jar</code> is located
+            <ul>
+                <li>Windows: In the File Explorer, while holding <kbd>Shift</kbd>
+                    Right-Click into the folder where the
+                    <code>Chatty.jar</code> is located. Click on <code>Open
+                    command window here</code> in the context menu.</li>
+            </ul>
+       </li>
+       <li>In the commandline window, enter <code>java -jar Chatty.jar</code>
+           and press Enter.</li>
+    </ol>
+    
+    <p>When you enter the above command and Chatty starts correctly (but doesn't
+        when you double-click the <code>Chatty.jar</code>), this may mean that
+        Java isn't integrated into the OS properly. You can create a
+        <a href="help-guide_create_shortcut.html">shortcut</a> or a .bat-file to
+        start Chatty similiar to entering the command above, but much more
+        conveniently.</p>
 
     <h3>Check Association of .jar with Java (Windows)</h3>
+    <p>If the integration of Java into the OS may not be correct, and you want
+        to try to fix it, you can try this.</p>
+    
     <p>Open a commandline window and enter <code>assoc .jar</code> which should output
         <code>.jar=jarfile</code> and enter <code>ftype jarfile</code> which should
         output something like <code>"C:\Program Files\Java\jre7\bin\javaw.exe" -jar "%1" %*</code>
         (see also <a href="http://stackoverflow.com/questions/10875839/jar-file-keeps-giving-me-could-not-find-the-main-class-program-will-exit">
             Could not find the main class. Program will exit.</a>)</p>
     
-    <h3>Run from commandline</h3>
-    <p>Running Chatty from the commandline has the advantage of being able to
-    get messages from before the GUI is established. Open a commandline where
-    the <code>Chatty.jar</code> is located (Win7/8: Hold <kbd>Shift</kbd> while Right-Clicking to open
-    the context menu, click <code>Open command window here</code>) and enter
-    <code>java -jar Chatty.jar</code>.</p>
+
     
     <h3>Error: Java is not recognized as an internal or external command (Windows)</h3>
     <p>If you experience this when entering <code>java -jar Chatty.jar</code>
