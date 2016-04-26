@@ -40,19 +40,19 @@
     full list of changes.</p>
 
     <h2>
-        <a name="0.8.2">Version 0.8.2</a> <a name="latest">(This one!)</a> (2016-03-10)
+        <a name="0.8.2">Version 0.8.2</a> <a name="latest">(This one!)</a> (2016-04-26)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>During March Twitch migrated Twitch Chat to new servers (Amazon AWS),
         which you probably noticed due to some issues for some third-party
-        tools. This however also brought some improvements.</p>
+        tools. This however also brought some improvements:</p>
     
     <ul>
         <li>Twitch Chat now supports SSL on ports 6697 and 443
             <ul>
                 <li>Chatty will automatically add these to the default ports if
                     your port setting is still on the previous default
-                    (otherwise you might have to add it yourself).</li>
+                    (otherwise you might have to add them yourself).</li>
             </ul>
         </li>
         <li>No separate Event Chat servers anymore
@@ -77,11 +77,12 @@ Improvements
 - Added auto-unhost feature (to unhost when your stream goes live, disabled by
   default)
 - Added new Twitch Player URL in context menu
-- Added feature to automatically add Addressbook categories on Subscriber
+- Added feature to automatically add Addressbook categories based on Subscriber
   notifications (experimental)
 - Added feature to automatically copy messages into clipboard
 - Admin Dialog: Added error message for trying to set invalid stream status
 - Added context menu entries to directly host channel
+- Made URL detection a bit more lenient
 - Updated help
 
 System
@@ -94,14 +95,15 @@ System
   menu bar)
 - Moved debug logs into separate directory
 - Added /proc command to start native processes out of Chatty
-- Made restoring window position a bit more lenient with it being off-screen
+- Made restoring window position more lenient for partly off-screen positions
 
 Connection
 ==========
-- Bouncer: Some changes allowing your to connect to a Bouncer
-- Whispering: Moved to main chat, hide userlist for Whisper tabs
-- Added auto-responses to whispers for ignored/non-whitelisted users (disabled
-  by default)
+- Bouncer: Some changes allowing you to connect to a Bouncer
+- Whispers: Moved to main chat (AWS)
+- Whispers: Hidden userlist for Whisper tabs by default
+- Whispers: Added auto-responses for ignored/non-whitelisted users (disabled by
+  default)
 - Increased max reconnection attempts to 40
 - Added `force_verify=true` parameter to Authorize URL (makes Twitch always ask
   if you want to Authorize, makes sure you are logged in to the right account)
@@ -148,7 +150,8 @@ Bugfixes
 - Check if Java supports opening URLs on the current platform and run native
   command if necessary
 - Fixed sounds not being closed when finished playing
-- Fixed tabs not changing correctly on System Look&Feel
+- Fixed tabs not changing correctly on System Look&amp;Feel
+- Fixed error on host notification due to moving Whispers to AWS
 </pre>
     
     <h2>

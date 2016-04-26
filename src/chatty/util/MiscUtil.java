@@ -90,6 +90,14 @@ public class MiscUtil {
         return result;
     }
     
+    /**
+     * Attempt to move the file atomically, and if that fails try regular file
+     * replacing.
+     * 
+     * @param from The file to move
+     * @param to The target filename, which will be overwritten if it already
+     * exists
+     */
     public static void moveFile(Path from, Path to) {
         try {
             Files.move(from, to, ATOMIC_MOVE);
@@ -106,6 +114,12 @@ public class MiscUtil {
         }
     }
     
+    /**
+     * Returns the StackTrace of the given Throwable as a String.
+     * 
+     * @param e
+     * @return 
+     */
     public static String getStackTrace(Throwable e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));

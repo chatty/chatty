@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.DateTime;
 import chatty.util.DelayedActionQueue;
 import chatty.util.DelayedActionQueue.DelayedActionListener;
 import java.net.InetSocketAddress;
@@ -157,25 +158,7 @@ public abstract class Irc {
     }
     
     private String getConnectedSince() {
-        long duration = (System.currentTimeMillis() - connectedSince) / 1000;
-        String text = "";
-        if (duration > 60) {
-            long minutes = duration / 60;
-            if (minutes == 1) {
-                text += minutes + " minute";
-            }
-            else {
-                text += minutes + " minutes";
-            }
-        } else {
-            if (duration == 1) {
-                text = duration + " second";
-            }
-            else {
-                text = duration + " seconds";
-            }
-        }
-        return text;
+        return DateTime.ago(connectedSince);
     }
  
     /**
@@ -194,6 +177,7 @@ public abstract class Irc {
      * @param port The port of the server
      * @param nick The nick to connect with
      * @param pass The password (required at Twitch)
+     * @param securedPorts Which ports should be treated as SSL
      */
     public final void connect(final String server, final String port,
             final String nick, final String pass, Collection<Integer> securedPorts) {

@@ -1392,6 +1392,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param text 
      * @param user 
      * @param style 
+     * @param emotes 
      */
     protected void printSpecials(String text, User user, MutableAttributeSet style,
             TagEmotes emotes) {
@@ -1460,10 +1461,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             int end = urlMatcher.end() - 1;
             if (!inRanges(start, ranges) && !inRanges(end,ranges)) {
                 String foundUrl = urlMatcher.group();
-                
-                if (foundUrl.contains("..")) {
-                    continue;
-                }
                 
                 // Check if URL contains ( ) like http://example.com/test(abc)
                 // or is just contained in ( ) like (http://example.com)
