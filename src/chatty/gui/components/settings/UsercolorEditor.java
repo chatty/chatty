@@ -65,6 +65,15 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         }
         
         @Override
+        public String getSearchValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex == 0) {
+                return get(rowIndex).id;
+            } else {
+                return HtmlColors.getNamedColorString(get(rowIndex).getColor());
+            }
+        }
+        
+        @Override
         public Class getColumnClass(int c) {
             if (c == 0) {
                 return UsercolorItem.class;

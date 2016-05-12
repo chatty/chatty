@@ -987,6 +987,7 @@ public class MainGui extends JFrame implements Runnable {
         String username = client.settings.getString("username");
         String token = client.settings.getString("token");
         tokenDialog.update(username, token);
+        tokenDialog.setForeignToken(client.settings.getBoolean("foreignToken"));
     }
     
     private void updateFavoritesDialog() {
@@ -1096,6 +1097,7 @@ public class MainGui extends JFrame implements Runnable {
             //---------------------------
             else if (event.getSource() == tokenDialog.getDeleteTokenButton()) {
                 client.settings.setString("token", "");
+                client.settings.setBoolean("foreignToken", false);
                 client.settings.setString("username", "");
                 resetTokenScopes();
                 updateConnectionDialog(null);
@@ -1504,7 +1506,7 @@ public class MainGui extends JFrame implements Runnable {
             } else {
                 Collection<String> streams = new ArrayList<>();
                 for (StreamInfo info : streamInfos) {
-                    streams.add(info.getDisplayName());
+                    streams.add(info.getCapitalizedName());
                 }
                 streamsMenuItemClicked(e, streams);
             }
@@ -3224,6 +3226,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void tokenReceived(String token) {
         client.settings.setString("token", token);
+        client.settings.setBoolean("foreignToken", false);
         if (tokenGetDialog.isVisible()) {
             tokenGetDialog.tokenReceived();
         }
@@ -3327,8 +3330,7 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.setString("token", "");
             }
             else {
-                result = "Login data invalid. Should probably remove it and request "
-                        + "it again. [help:login-invalid What does this mean?]";
+                result = "Login data invalid. [help:login-invalid What does this mean?]";
             }
             if (!showInDialog && !changedTokenResponse) {
                 showTokenWarning();
@@ -3661,6 +3663,8 @@ public class MainGui extends JFrame implements Runnable {
                     streamChat.setResizable(bool);
                 } else if (setting.equals("closeEmoteDialogOnDoubleClick")) {
                     emotesDialog.setCloseOnDoubleClick(bool);
+                } else if (setting.equals("foreignToken")) {
+                    tokenDialog.setForeignToken(bool);
                 }
                 if (setting.startsWith("title")) {
                     updateState(true);

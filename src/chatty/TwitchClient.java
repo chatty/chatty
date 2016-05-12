@@ -17,8 +17,8 @@ import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
 import chatty.util.EmoticonListener;
-import chatty.util.FrankerFaceZ;
-import chatty.util.FrankerFaceZListener;
+import chatty.util.ffz.FrankerFaceZ;
+import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
@@ -174,9 +174,7 @@ public class TwitchClient {
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
         twitchemotes = new TwitchEmotes(new TwitchemotesListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener());
-        frankerFaceZ = new FrankerFaceZ(new EmoticonsListener());
-        frankerFaceZ.autoUpdateFeatureFridayEmotes();
-
+        
         // Settings
         settingsManager = new SettingsManager(settings);
         settingsManager.defineSettings();
@@ -185,6 +183,9 @@ public class TwitchClient {
         settingsManager.loadCommandLineSettings(args);
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
+        
+        frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings);
+        frankerFaceZ.autoUpdateFeatureFridayEmotes();
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
@@ -1077,6 +1078,10 @@ public class TwitchClient {
         } else if (command.equals("gc")) {
             Runtime.getRuntime().gc();
             LogUtil.logMemoryUsage();
+        } else if (command.equals("wsconnect")) {
+            frankerFaceZ.connectWs();
+        } else if (command.equals("wsdisconnect")) {
+            frankerFaceZ.disconnectWs();
         }
     }
     
@@ -1881,6 +1886,7 @@ public class TwitchClient {
         saveSettings(true);
         logAllViewerstats();
         c.disconnect();
+        frankerFaceZ.disconnectWs();
         g.cleanUp();
         chatLog.close();
         System.exit(0);
@@ -1941,12 +1947,14 @@ public class TwitchClient {
             // Icons and FFZ/BTTV Emotes
             api.requestChatIcons(Helper.toStream(channel), false);
             requestChannelEmotes(channel);
+            frankerFaceZ.joined(Helper.toStream(channel));
         }
 
         @Override
         public void onChannelLeft(String channel) {
             chatLog.info(channel, "You have left "+channel);
             closeChannel(channel);
+            frankerFaceZ.left(Helper.toStream(channel));
         }
 
         @Override

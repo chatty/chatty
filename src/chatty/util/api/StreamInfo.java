@@ -31,9 +31,14 @@ public class StreamInfo {
     public final String stream;
     
     /**
-     * Correctly capitalized name of the stream. May be null if no set.
+     * Display name of the stream, may contain spaces. May be null if not set.
      */
     private String display_name;
+    
+    /**
+     * Correctly capitalized name of the stream. May be null if not set.
+     */
+    private String capitalizedName;
     
     private long lastUpdated = 0;
     private long lastStatusChange = 0;
@@ -344,10 +349,11 @@ public class StreamInfo {
     }
     
     /**
-     * The correctly capitalized name of the stream, or the all lowercase name
-     * if correctly capitalized name is not set.
+     * The display name of the stream (which may contain spaces or be other
+     * different from the stream name), or the all lowercase name if display
+     * name is not set. Use {@link getCapitalizedName()} for just correct case.
      * 
-     * @return The correctly capitalized name or all lowercase name
+     * @return The display name or all lowercase stream name
      */
     public String getDisplayName() {
         return display_name != null ? display_name : stream;
@@ -370,6 +376,21 @@ public class StreamInfo {
      */
     public void setDisplayName(String name) {
         this.display_name = name;
+        if (name != null && name.toLowerCase().equals(stream)) {
+            capitalizedName = name;
+        }
+    }
+    
+    /**
+     * The correctly capitalized name, guaranteed to only have changed case
+     * compared to the stream name. If not set or if the display name doesn't
+     * just change case, this will be the all lowercase stream name. See also:
+     * {@link getDisplayName()}.
+     * 
+     * @return 
+     */
+    public String getCapitalizedName() {
+        return capitalizedName != null ? capitalizedName : stream;
     }
     
     public synchronized void setNotFound() {

@@ -699,13 +699,35 @@ public class EmotesDialog extends JDialog {
             if (stream == null) {
                 addTitle("No Channel.");
             } else {
+                // FFZ/BTTV
                 Set<Emoticon> channelEmotes = emoteManager.getEmoticons(stream);
+                Set<Emoticon> regular = new HashSet<>();
+                Map<String, Set<Emoticon>> event = new HashMap<>();
+                
+                for (Emoticon emote : channelEmotes) {
+                    if (emote.type == Emoticon.Type.FFZ
+                            && emote.subType == Emoticon.SubType.EVENT) {
+                        String info = emote.info;
+                        if (!event.containsKey(info)) {
+                            event.put(info, new HashSet<Emoticon>());
+                        }
+                        event.get(info).add(emote);
+                    }
+                    else {
+                        regular.add(emote);
+                    }
+                }
                 if (channelEmotes.isEmpty()) {
                     addTitle("No emotes found for #" + stream);
                     addSubtitle("No FFZ or BTTV emotes found.", false);
                 } else {
-                    addEmotes(channelEmotes, "Emotes specific to #" + stream);
+                    addEmotes(regular, "Emotes specific to #" + stream);
+                    for (String info : event.keySet()) {
+                        addEmotes(event.get(info), "Featured "+info);
+                    }
                 }
+                
+                // Subemotes
                 int emoteset = emoteManager.getEmotesetFromStream(stream);
                 if (emoteset != -1) {
                     Set<Emoticon> subEmotes = emoteManager.getEmoticons(emoteset);

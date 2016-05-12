@@ -1,5 +1,5 @@
 
-package chatty.util;
+package chatty.util.ffz;
 
 import chatty.Usericon;
 import chatty.util.api.EmoticonUpdate;

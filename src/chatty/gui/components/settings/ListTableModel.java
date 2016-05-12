@@ -189,4 +189,12 @@ public abstract class ListTableModel<T> extends AbstractTableModel {
         return columnNames[n];
     }
 
+    public String getSearchValueAt(int row, int column) {
+        return getValueAt(row, column).toString();
+    }
+    
+    public int getSearchColumn(int column) {
+        return column;
+    }
+    
 }

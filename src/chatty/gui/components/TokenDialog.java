@@ -30,7 +30,8 @@ public class TokenDialog extends JDialog {
     JButton deleteToken = new JButton("Remove login");
     JButton requestToken = new JButton("Request login data");
     JButton verifyToken = new JButton("Verify login");
-    LinkLabel tokenInfo;
+    private final LinkLabel tokenInfo;
+    private final LinkLabel foreignTokenInfo;
     JButton done = new JButton("Done");
     
     String currentUsername = "";
@@ -45,6 +46,9 @@ public class TokenDialog extends JDialog {
         accessLabel = new LinkLabel("Access [help:login (?)]:", owner.getLinkLabelListener());
         //tokenInfo = new JLabel();
         tokenInfo = new LinkLabel("", owner.getLinkLabelListener());
+        foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
+                    + "Login data set externally with -token parameter.", owner.getLinkLabelListener());
+        foreignTokenInfo.setVisible(false);
         
         GridBagConstraints gbc;
         
@@ -58,6 +62,9 @@ public class TokenDialog extends JDialog {
         
         gbc = makeGridBagConstraints(0,4,2,1,GridBagConstraints.WEST);
         add(tokenInfo, gbc);
+        
+        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
+        add(foreignTokenInfo, gbc);
         
         gbc = makeGridBagConstraints(0,6,1,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -182,6 +189,11 @@ public class TokenDialog extends JDialog {
                 pack();
             }
         });
+    }
+    
+    public void setForeignToken(boolean foreign) {
+        foreignTokenInfo.setVisible(foreign);
+        pack();
     }
     
     private GridBagConstraints makeGridBagConstraints(int x, int y,int w, int h, int anchor, Insets insets) {

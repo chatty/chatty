@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
@@ -49,6 +50,14 @@ public class JSONUtil {
             return (Boolean)value;
         }
         return errorValue;
+    }
+    
+    public static String listToJSON(String... args) {
+        JSONArray o = new JSONArray();
+        for (String a : args) {
+            o.add(a);
+        }
+        return o.toJSONString();
     }
     
 }

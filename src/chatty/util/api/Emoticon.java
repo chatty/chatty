@@ -55,7 +55,7 @@ public class Emoticon {
     }
     
     public static enum SubType {
-        FEATURE_FRIDAY
+        FEATURE_FRIDAY, EVENT
     }
     
     private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");

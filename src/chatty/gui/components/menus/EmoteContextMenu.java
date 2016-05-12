@@ -50,7 +50,11 @@ public class EmoteContextMenu extends ContextMenu {
                 addItem("", "Custom Emote");
             }
             if (emote.info != null) {
-                addItem("", emote.info);
+                if (emote.subType == Emoticon.SubType.EVENT) {
+                    addItem("", "Featured "+emote.info);
+                } else {
+                    addItem("", emote.info);
+                }
             }
             addStreamSubmenu(emote);
         }

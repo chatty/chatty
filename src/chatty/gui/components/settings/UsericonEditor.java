@@ -96,6 +96,16 @@ class UsericonEditor extends TableEditor<Usericon> {
         }
         
         @Override
+        public int getSearchColumn(int column) {
+            return 1;
+        }
+        
+        @Override
+        public String getSearchValueAt(int row, int column) {
+            return get(row).restriction;
+        }
+        
+        @Override
         public Class getColumnClass(int columnIndex) {
             if (columnIndex >= 1) {
                 return Usericon.class;

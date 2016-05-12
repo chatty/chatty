@@ -7,10 +7,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -18,7 +19,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -50,12 +51,18 @@ public class TableEditor<T> extends JPanel {
     
     private final ButtonAction buttonActionListener = new ButtonAction();
     
+    // Table State
     private final JTable table;
     private ListTableModel<T> data;
     private ItemEditor<T> editor;
     private TableRowSorter<ListTableModel<T>> sorter;
     private int sortingMode;
     private boolean currentlyFiltering;
+    
+    private String search = "";
+    private long searchTime = 0;
+    private int searchColumn;
+    private final Timer searchTimer;
     
     /**
      * Edit buttons
@@ -131,6 +138,22 @@ public class TableEditor<T> extends JPanel {
                 removeSelected();
             }
         });
+        
+        table.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                search(e.getKeyChar());
+            }
+        });
+        searchTimer = new Timer(500, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkResetSearch();
+            }
+        });
+        searchTimer.setRepeats(true);
 
         // Buttons Configuration
         configureButton(add, "list-add.png", "Add selected item");
@@ -719,6 +742,67 @@ public class TableEditor<T> extends JPanel {
          * Called when the user requested the data in the table to be refreshed.
          */
         public void refreshData();
+    }
+    
+    private void search(char input) {
+        // Reset search on backspace
+        if (input == '\b') {
+            resetSearch();
+            return;
+        }
+        
+        // Reset search if searching on other column
+        int column = data.getSearchColumn(table.getSelectedColumn());
+        if (column != searchColumn) {
+            resetSearch();
+        }
+        
+        // Update state
+        String pressed = String.valueOf(input);
+        search += pressed.toLowerCase();
+        searchColumn = column;
+        searchTime = System.currentTimeMillis();
+
+        System.out.println("'" + search + "'");
+
+        // Rename header to current search
+        table.getColumnModel().getColumn(column).setHeaderValue("[" + search + "]");
+        table.getTableHeader().repaint();
+        
+        // Start timer to reset search
+        if (!searchTimer.isRunning()) {
+            searchTimer.start();
+        }
+        
+        // Perform search and select first result
+        for (int i = 0; i < data.getRowCount(); i++) {
+            String item = data.getSearchValueAt(i, column);
+            System.out.println(item);
+            if (item.toLowerCase().startsWith(search)) {
+                setRowSelected(indexToView(i));
+                return;
+            }
+            if (item.toLowerCase().contains(search)) {
+                setRowSelected(indexToView(i));
+            }
+        }
+    }
+    
+    private void checkResetSearch() {
+        if (System.currentTimeMillis() - searchTime > 3000) {
+            resetSearch();
+        }
+    }
+    
+    private void resetSearch() {
+        if (searchColumn != -1) {
+            String originalValue = data.getColumnName(searchColumn);
+            table.getColumnModel().getColumn(searchColumn).setHeaderValue(originalValue);
+            table.getTableHeader().repaint();
+        }
+        searchColumn = -1;
+        search = "";
+        searchTimer.stop();
     }
     
 }

@@ -1,7 +1,8 @@
 
-package chatty.util;
+package chatty.util.ffz;
 
 import chatty.Usericon;
+import chatty.util.JSONUtil;
 import chatty.util.api.Emoticon;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,12 +106,13 @@ public class FrankerFaceZParsing {
      * @param subType
      * @return 
      */
-    public static Set<Emoticon> parseSetEmotes(String json, Emoticon.SubType subType) {
+    public static Set<Emoticon> parseSetEmotes(String json, Emoticon.SubType subType,
+            String room) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject)parser.parse(json);
             JSONObject setData = (JSONObject)root.get("set");
-            return parseEmoteSet(setData, null, subType);
+            return parseEmoteSet(setData, room, subType);
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             LOGGER.warning("Error parsing FFZ emotes: "+ex);
         }

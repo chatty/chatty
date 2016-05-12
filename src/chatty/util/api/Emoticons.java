@@ -124,8 +124,8 @@ public class Emoticons {
     
     public void updateEmoticons(EmoticonUpdate update) {
         removeEmoticons(update);
-        if (!update.emotes.isEmpty()) {
-            addEmoticons(update.emotes);
+        if (!update.emotesToAdd.isEmpty()) {
+            addEmoticons(update.emotesToAdd);
         }
     }
     
@@ -134,23 +134,37 @@ public class Emoticons {
         if (update.typeToRemove == null) {
             return;
         }
-        int removed = 0;
+        int removedCount = 0;
         if (update.typeToRemove == Emoticon.Type.FFZ) {
-            Iterator<Emoticon> it = otherGlobalEmotes.iterator();
+            Iterator<Emoticon> it;
+            if (update.roomToRemove == null) {
+                it = otherGlobalEmotes.iterator();
+            }
+            else {
+                if (!streamEmoticons.containsKey(update.roomToRemove)) {
+                    return;
+                }
+                it = streamEmoticons.get(update.roomToRemove).iterator();
+            }
             while (it.hasNext()) {
                 Emoticon emote = it.next();
                 if (emote.type == update.typeToRemove) {
                     if (update.subTypeToRemove == null
                             || emote.subType == update.subTypeToRemove) {
                         it.remove();
-                        removed++;
+                        emoteNames.remove(emote.code);
+                        emotesNamesPerStream.get(update.roomToRemove).remove(emote.code);
+                        removedCount++;
                     }
                 }
             }
         }
-        if (removed >= 0) {
-            LOGGER.info(String.format("Removed %d emotes (%s/%s)", removed,
-                    update.typeToRemove, update.subTypeToRemove));
+        if (removedCount >= 0) {
+            LOGGER.info(String.format("Removed %d emotes (%s/%s/%s)",
+                    removedCount,
+                    update.typeToRemove,
+                    update.subTypeToRemove,
+                    update.roomToRemove));
         }
     }
     

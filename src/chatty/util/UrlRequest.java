@@ -16,7 +16,7 @@ import java.util.zip.GZIPInputStream;
  * 
  * @author tduva
  */
-public abstract class UrlRequest implements Runnable {
+public class UrlRequest implements Runnable {
     
     private static final Logger LOGGER = Logger.getLogger(UrlRequest.class.getName());
     
@@ -84,7 +84,11 @@ public abstract class UrlRequest implements Runnable {
      * @param result The text returned by the request, with linebreaks preserved
      * @param responseCode The HTTP Response Code
      */
-    abstract public void requestResult(String result, int responseCode);
+    public void requestResult(String result, int responseCode) { }
+    
+    public final String getResult() {
+        return result;
+    }
 
     /**
      * Gets the given URL and reads the result line by line.

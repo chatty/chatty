@@ -1,10 +1,13 @@
 
-package chatty.util;
+package chatty.util.ffz;
 
 import chatty.Helper;
 import chatty.Usericon;
+import chatty.util.StringUtil;
+import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
+import chatty.util.settings.Settings;
 import java.util.*;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
@@ -49,9 +52,27 @@ public class FrankerFaceZ {
     private String featureFridayChannel;
     private int featureFridaySet = -1;
     
+    private final WebsocketManager ws;
     
-    public FrankerFaceZ(FrankerFaceZListener listener) {
+    public FrankerFaceZ(FrankerFaceZListener listener, Settings settings) {
         this.listener = listener;
+        this.ws = new WebsocketManager(listener, settings);
+    }
+    
+    public void connectWs() {
+        ws.connect();
+    }
+    
+    public void disconnectWs() {
+        ws.disconnect();
+    }
+    
+    public void joined(String room) {
+        ws.addRoom(room);
+    }
+    
+    public void left(String room) {
+        ws.removeRoom(room);
     }
     
     /**
@@ -203,7 +224,7 @@ public class FrankerFaceZ {
                 usericons.add(modIcon);
             }
         } else if (type == Type.FEATURE_FRIDAY) {
-            emotes = FrankerFaceZParsing.parseSetEmotes(result, Emoticon.SubType.FEATURE_FRIDAY);
+            emotes = FrankerFaceZParsing.parseSetEmotes(result, Emoticon.SubType.FEATURE_FRIDAY, null);
             for (Emoticon emote : emotes) {
                 if (featureFridayChannel != null) {
                     emote.setStream(featureFridayChannel);
@@ -220,7 +241,7 @@ public class FrankerFaceZ {
         EmoticonUpdate emotesUpdate;
         if (type == Type.FEATURE_FRIDAY) {
             emotesUpdate = new EmoticonUpdate(emotes, Emoticon.Type.FFZ,
-                     Emoticon.SubType.FEATURE_FRIDAY);
+                     Emoticon.SubType.FEATURE_FRIDAY, null);
         } else {
             emotesUpdate = new EmoticonUpdate(emotes);
         }
@@ -289,7 +310,8 @@ public class FrankerFaceZ {
     private void clearFeatureFridayEmotes() {
         listener.channelEmoticonsReceived(new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
-                Emoticon.SubType.FEATURE_FRIDAY));
+                Emoticon.SubType.FEATURE_FRIDAY,
+                null));
     }
 
     /**

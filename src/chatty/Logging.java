@@ -25,6 +25,8 @@ public class Logging {
      */
     private static final int MAX_LOG_SIZE = 1024*1024*2;
     
+    private static final int MAX_SESSION_LOG_SIZE = 1024*1024*100;
+    
     /**
      * How many log files to rotate through when the file reaches maximum size.
      */
@@ -58,7 +60,7 @@ public class Logging {
             file.setFilter(new FileFilter());
             Logger.getLogger("").addHandler(file);
             
-            FileHandler file2 = new FileHandler(LOG_FILE2);
+            FileHandler file2 = new FileHandler(LOG_FILE2, MAX_SESSION_LOG_SIZE, 1);
             file2.setFormatter(new TextFormatter());
             file2.setLevel(Level.INFO);
             file2.setFilter(new FileFilter());

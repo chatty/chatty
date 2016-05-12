@@ -137,6 +137,8 @@ public class SettingsManager {
         settings.addString("previousChannel", "");
         settings.addString("token","");
         settings.setFile("token", loginFile);
+        settings.addBoolean("allowTokenOverride", false);
+        settings.addBoolean("foreignToken", false);
         // Don't save setting, login with password isn't possible anymore
         settings.addBoolean("usePassword", false, false);
         
@@ -181,6 +183,7 @@ public class SettingsManager {
         settings.addLong("emoteScaleDialog", 100);
         settings.addBoolean("closeEmoteDialogOnDoubleClick", false);
         settings.addBoolean("ffz", true);
+        settings.addBoolean("ffzEvent", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
         settings.addBoolean("showAnimatedEmotes", false);
@@ -543,7 +546,12 @@ public class SettingsManager {
                     break;
                 case "token":
                     if (!value.isEmpty()) {
-                        settings.setString("token", value);
+                        if (settings.getBoolean("allowTokenOverride")
+                                || settings.getString("token").isEmpty()
+                                || settings.getBoolean("foreignToken")) {
+                            settings.setString("token", value);
+                            settings.setBoolean("foreignToken", true);
+                        }
                     }
                     settings.setBoolean("usePassword", false);
                     break;
