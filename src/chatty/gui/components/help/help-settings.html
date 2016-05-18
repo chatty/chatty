@@ -154,39 +154,55 @@
     
     
     <h3>Other</h3>
-    <ul>
-        <li><strong>Timestamp</strong>: Whether to show a timestamp in front of
+    <dl class="dl-settings">
+        <dt>Timestamp</dt>
+        <dd>Whether to show a timestamp in front of
         chat messages and what format it should have. If you want a different
         format from the ones provided here, you can use the command
         <code>/set timestamp &lt;format&gt;</code>. The format can be anything
         specified by the Java
         <a href="http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>
-        class.</li>
-        <li><strong>Show mod/unmod messages</strong>: Whether to show the MOD/UNMOD
+        class.</dd>
+        
+        <dt>Show mod/unmod messages</dt>
+        <dd>Whether to show the MOD/UNMOD
             messages as they come in from Twitch Chat. These messages are send
             not only when someone was modded/unmodded but also when a mod joins
-            or leaves the chat.</li>
-        <li><strong>Show joins/parts</strong>: Show joins/parts, which
+            or leaves the chat.</dd>
+        
+        <dt>Show joins/parts</dt>
+        <dd>Show joins/parts, which
         are always kind of delayed, so don't take them too seriously (only works
-        when <code>Advanced - Correct Userlist</code> is enabled).</li>
-        <li><strong>Show stream status in chat</strong> outputs the stream status
-        (title and game) in the chat window on join and when it changes
-        (when the stream goes offline or online or changes the title or game).</li>
-        <li><strong>/me messages colored</strong>: Show action messages colored
-        like in webchat.</li>
-        <li><strong>Filter combining characters</strong>: Replaces certain ranges of
+        when <code>Advanced - Correct Userlist</code> is enabled).</dd>
+        
+        <dt>Show stream status in chat</dt>
+        <dd>Outputs the stream status (title and game) in the chat window on
+            join and when it changes (when the stream goes offline or online or
+            changes the title or game).</dd>
+        
+        <dt>/me messages colored</dt>
+        <dd>Show action messages in the color of the user like in webchat.</dd>
+        
+        <dt>Filter combining characters</dt>
+        <dd>Replaces certain ranges of
         Unicode characters. Those characters are used in some
         languages to combine characters, but can apparently cause errors in some
         cases. The filter applies to the main chat window and the recent messages
         in the User Info Dialog (but not e.g. the chatlog written to file).
-            <ul>
-                <li><strong>Off</strong> - Do nothing</li>
-                <li><strong>Lenient</strong> - Replaces at least 3 characters in a row with stars (****), which preserves some legitimate use</li>
-                <li><strong>Strict</strong> - Replaces any number of characters in a row with stars (****), use this if you have performance
-                problems when someone posts these kind of characters</li>
-            </ul>
-        </li>
-    </ul>
+            <dl class="dl-settings dl-settings-sub">
+                <dt>Off</dt>
+                <dd>Do nothing</dd>
+                
+                <dt>Lenient</dt>
+                <dd>Replaces at least 3 characters in a row with stars (****), which preserves some legitimate use</dd>
+                
+                <dt>Strict</dt>
+                <dd>Replaces any number of characters in a row with stars (****), use this if you have performance
+                problems when someone posts these kind of characters</dd>
+            </dl>
+        
+        </dd>
+    </dl>
     
     <h3><a name="capitalization">Name Capitalization</a></h3>
     <p>Names in Twitch Chat are send all-lowercase by default, however there is

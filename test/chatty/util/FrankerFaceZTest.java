@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import chatty.util.ffz.FrankerFaceZParsing;
 import chatty.util.api.Emoticon;
 import java.io.BufferedReader;
 import java.io.IOException;

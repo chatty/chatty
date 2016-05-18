@@ -482,15 +482,34 @@ public class User implements Comparable {
         }
     }
     
+    /**
+     * Returns true if this user has channel moderator rights, which includes
+     * either being a Moderator or the Broadcaster.
+     * 
+     * @return true if this user is a moderator or the broadcaster, false
+     * otherwise
+     */
     public synchronized boolean hasChannelModeratorRights() {
         return isModerator() || isBroadcaster();
     }
     
+    /**
+     * Returns true if this user has any kind of moderator rights, this includes
+     * Moderator, Broadcaster, Global Mod, Admin and Staff.
+     * 
+     * @return true if this user has moderator powers, false otherwise
+     */
     public synchronized boolean hasModeratorRights() {
         return isAdmin() || isBroadcaster() || isGlobalMod() || isModerator()
                 || isStaff();
     }
 
+    /**
+     * Returns true if this user is a channel moderator. This may not apply to
+     * the broadcaster.
+     * 
+     * @return true if this user is a moderator, false otherwise
+     */
     public synchronized boolean isModerator() {
         return isModerator;
     }

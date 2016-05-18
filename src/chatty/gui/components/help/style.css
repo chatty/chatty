@@ -131,7 +131,7 @@ table.files {
 
 .dl-settings {
     margin-left: 20px;
-    margin-top: 2px;
+    margin-top: 10px;
 }
 .dl-settings dt {
     font-weight: bold;
@@ -142,6 +142,10 @@ table.files {
     margin-bottom: 3px;
     margin-top: 2px;
     margin-left: 20px;
+}
+
+.dl-settings-sub {
+    margin-top: 4px;
 }
 
 .del {
