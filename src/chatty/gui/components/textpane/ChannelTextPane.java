@@ -106,8 +106,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private static StyleServer styleServer;
     
     public enum Attribute {
-        BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, USER_MESSAGE,
-        URL_DELETED, DELETED_LINE, EMOTICON
+        IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
+        URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
+        BAN_MESSAGE
     }
     
     public enum MessageType {
@@ -121,8 +122,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     public enum Setting {
         TIMESTAMP_ENABLED, EMOTICONS_ENABLED, AUTO_SCROLL, USERICONS_ENABLED, 
+        
         SHOW_BANMESSAGES, COMBINE_BAN_MESSAGES, DELETE_MESSAGES,
-        DELETED_MESSAGES_MODE, ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
+        DELETED_MESSAGES_MODE, BAN_DURATION_APPENDED, BAN_REASON_APPENDED,
+        BAN_DURATION_MESSAGE, BAN_REASON_MESSAGE,
+        
+        ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED,
@@ -267,21 +272,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     /**
      * Gets the first element containing the given key in it's attributes, or
-     * the last element if it wasn't found.
+     * null if it wasn't found.
      * 
      * @param parent The Element whose subelements are searched
      * @param key The key of the attributes the searched element should have
      * @return The found Element
      */
     private static Element getElementContainingAttributeKey(Element parent, Object key) {
-        Element result = null;
         for (int i = 0; i < parent.getElementCount(); i++) {
-            result = parent.getElement(i);
-            if (result.getAttributes().getAttribute(key) != null) {
-                break;
+            Element element = parent.getElement(i);
+            if (element.getAttributes().getAttribute(key) != null) {
+                return element;
             }
         }
-        return result;
+        return null;
     }
 
     /**
@@ -289,25 +293,76 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param line 
      */
-    private void increasePreviousBanMessage(Element line) {
-        try {
-            // Find the element that should contain the number
-            Element countElement = getElementContainingAttributeKey(line,
-                    Attribute.BAN_MESSAGE_COUNT);
-            // Find out the number, if it exists
-            Integer count = (Integer) countElement.getAttributes().getAttribute(Attribute.BAN_MESSAGE_COUNT);
-            if (count == null) {
-                // If it doesn't exist set to 2, because this will be the second
-                // timeout this message represents
-                count = 2;
-            } else {
-                // Otherwise increase number and removet text of previous number
-                count++;
-                doc.remove(countElement.getStartOffset(),
-                        countElement.getEndOffset() - countElement.getStartOffset());
+    private void increasePreviousBanMessage(Element line, final long duration, final String reason) {
+        changeInfo(line, new InfoChanger() {
+
+            @Override
+            public void changeInfo(MutableAttributeSet attributes) {
+                Integer count = (Integer)attributes.getAttribute(Attribute.BAN_MESSAGE_COUNT);
+                if (count == null) {
+                    // If it doesn't exist set to 2, because this will be the second
+                    // timeout this message represents
+                    count = 2;
+                } else {
+                    // Otherwise increase number and removet text of previous number
+                    count++;
+                }
+                attributes.addAttribute(Attribute.BAN_MESSAGE_COUNT, count);
             }
-            // Add number at the beginning of the count element, with the
-            // appropriate attributes
+        });
+    }
+    
+    private interface InfoChanger {
+        public void changeInfo(MutableAttributeSet attributes);
+    }
+    
+    /**
+     * Changes the info at  the end of a line.
+     * 
+     * @param line 
+     * @param changer 
+     */
+    private void changeInfo(Element line, InfoChanger changer) {
+        try {
+            Element infoElement = getElementContainingAttributeKey(line,
+                    Attribute.IS_APPENDED_INFO);
+            
+            boolean isNew = false;
+            
+            MutableAttributeSet attributes;
+            if (infoElement == null) {
+                infoElement = line.getElement(line.getElementCount() - 1);
+                attributes = new SimpleAttributeSet(styles.info());
+                isNew = true;
+            } else {
+                attributes = new SimpleAttributeSet(infoElement.getAttributes());
+            }
+            
+            int start = infoElement.getStartOffset();
+            int length = infoElement.getEndOffset() - infoElement.getStartOffset();
+            
+//            String currentText = StringUtil.removeLinebreakCharacters(getElementText(infoElement));
+//            System.out.println(String.format("'%s' %d %s %d", currentText, start, infoElement, doc.getLength()));
+            
+            // Change attributes
+            changer.changeInfo(attributes);
+            attributes.addAttribute(Attribute.IS_APPENDED_INFO, true);
+            
+            if (!isNew) {
+                doc.remove(start, length);
+            }
+            
+            // Make text based on current attributes
+            String text = "";
+            Integer banCount = (Integer)attributes.getAttribute(Attribute.BAN_MESSAGE_COUNT);
+            if (banCount != null && banCount > 1) {
+                text += String.format("(%d)", banCount);
+            }
+            
+            String infoText = (String)attributes.getAttribute(Attribute.INFO_TEXT);
+            if (infoText != null && !infoText.isEmpty()) {
+                text = StringUtil.append(text, " ", infoText);
+            }
             
             /**
              * Insert at the end of the countElement (which is either the last
@@ -331,19 +386,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
              * '[17:02] ''tduva'' has been banned from talking'' (2)''
              * '
              */
-            int start = countElement.getEndOffset();
-            if (getText(countElement).contains("\n")) {
-                start--;
+            
+            int insertStart = infoElement.getEndOffset();
+            if (getElementText(infoElement).contains("\n")) {
+                insertStart--;
             }
-            doc.insertString(start, " (" + count + ")",
-                    styles.banMessageCount(count));
+            // Add with space
+            doc.insertString(insertStart, " "+text, attributes);
         } catch (BadLocationException ex) {
-            LOGGER.warning("Bad location");
+            LOGGER.warning("Bad location: "+ex);
         }
         scrollDownIfNecessary();
     }
     
-    private String getText(Element element) {
+    private String getElementText(Element element) {
         try {
             return doc.getText(element.getStartOffset(), element.getEndOffset() - element.getStartOffset());
         } catch (BadLocationException ex) {
@@ -360,7 +416,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user
      * @return 
      */
-    private Element findPreviousBanMessage(User user) {
+    private Element findPreviousBanMessage(User user, String newMessage) {
         Element root = doc.getDefaultRootElement();
         for (int i=root.getElementCount()-1;i>=0;i--) {
             Element line = root.getElement(i);
@@ -374,9 +430,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Element firstElement = line.getElement(0);
             if (firstElement != null) {
                 AttributeSet attr = firstElement.getAttributes();
-                if (attr.containsAttribute(Attribute.BAN_MESSAGE, user)
+                if (attr.containsAttribute(Attribute.IS_BAN_MESSAGE, user)
                         && getTimeAgo(firstElement) < MAX_BAN_MESSAGE_COMBINE_TIME) {
-                    return line;
+                    if (attr.getAttribute(Attribute.BAN_MESSAGE).equals(newMessage)) {
+                        return line;
+                    } else {
+                        return null;
+                    }
                 }
             }
         }
@@ -389,22 +449,43 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param user 
      */
-    public void userBanned(User user) {
+    public void userBanned(User user, long duration, String reason) {
         if (styles.showBanMessages()) {
+            String banInfo = Helper.makeBanInfo(duration, reason,
+                    styles.isEnabled(Setting.BAN_DURATION_MESSAGE),
+                    styles.isEnabled(Setting.BAN_REASON_MESSAGE),
+                    false);
+            
+            String message = "has been banned";
+            if (duration > 0) {
+                message = "has been timed out";
+            }
+            if (!banInfo.isEmpty()) {
+                message = message+" "+banInfo;
+            }
+
             Element prevMessage = null;
             if (styles.combineBanMessages()) {
-                prevMessage = findPreviousBanMessage(user);
+                prevMessage = findPreviousBanMessage(user, message);
             }
             if (prevMessage != null) {
-                increasePreviousBanMessage(prevMessage);
+                increasePreviousBanMessage(prevMessage, duration, reason);
             } else {
+
+                
                 closeCompactMode();
-                print(getTimePrefix(), styles.banMessage(user));
+                print(getTimePrefix(), styles.banMessage(user, message));
                 print(user.getCustomNick(), styles.nick(user, styles.info()));
-                print(" has been banned from talking", styles.info());
+                print(" "+message, styles.info());
                 printNewline();
             }
         }
+        
+        String banInfo = Helper.makeBanInfo(duration, reason,
+                styles.isEnabled(Setting.BAN_DURATION_APPENDED),
+                styles.isEnabled(Setting.BAN_REASON_APPENDED),
+                true);
+
         ArrayList<Integer> lines = getLinesFromUser(user);
         Iterator<Integer> it = lines.iterator();
         /**
@@ -413,13 +494,41 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * value < 0 means delete message
          */
         boolean delete = styles.deletedMessagesMode() < DELETED_MESSAGES_KEEP;
+        int i = 0;
         while (it.hasNext()) {
+            int lineId = it.next();
+            Element line = doc.getDefaultRootElement().getElement(lineId);
             if (delete) {
-                deleteMessage(it.next());
+                deleteMessage(lineId);
             } else {
-                deleteLine(it.next(), styles.deletedMessagesMode());
+                strikeThroughMessage(lineId, styles.deletedMessagesMode());
             }
+            if (i == lines.size() - 1) {
+                setInfoText(line, banInfo);
+            }
+            i++;
         }
+    }
+    
+    /**
+     * Changes the free-form text behind a message.
+     * 
+     * @param line
+     * @param info 
+     */
+    private void setInfoText(Element line, String info) {
+        Element firstElement = line.getElement(0);
+        if (firstElement != null && getTimeAgo(firstElement) > 60*1000) {
+            info += "*";
+        }
+        final String info2 = info;
+        changeInfo(line, new InfoChanger() {
+
+            @Override
+            public void changeInfo(MutableAttributeSet attributes) {
+                attributes.addAttribute(Attribute.INFO_TEXT, info2);
+            }
+        });
     }
     
     /**
@@ -491,8 +600,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private User getUserFromElement(Element element) {
         if (element != null) {
             User elementUser = (User)element.getAttributes().getAttribute(Attribute.USER);
-            Boolean isMessage = (Boolean)element.getAttributes().getAttribute(Attribute.USER_MESSAGE);
-            if (isMessage != null && isMessage.booleanValue() == true) {
+            Boolean isMessage = (Boolean)element.getAttributes().getAttribute(Attribute.IS_USER_MESSAGE);
+            if (isMessage != null && isMessage == true) {
                 return elementUser;
             }
         }
@@ -508,14 +617,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param maxLength The maximum number of characters to shorten the message
      *  to. If maxLength <= 0 then it is not shortened.
      */
-    private void deleteLine(int line, int maxLength) {
+    private void strikeThroughMessage(int line, int maxLength) {
         Element elementToRemove = doc.getDefaultRootElement().getElement(line);
         if (elementToRemove == null) {
             LOGGER.warning("Line "+line+" is unexpected null.");
             return;
         }
         if (isLineDeleted(elementToRemove)) {
-            //System.out.println(line+"already deleted");
             return;
         }
         
@@ -545,7 +653,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         doc.setCharacterAttributes(startOffset, length, styles.deleted(), false);
         setLineDeleted(startOffset);
-        //styles.deleted().
     }
     
     /**
@@ -1101,7 +1208,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private void printRainbowUser(User user, String userName, boolean action,
             SpecialColor type) {
         SimpleAttributeSet userStyle = new SimpleAttributeSet(styles.nick());
-        userStyle.addAttribute(Attribute.USER_MESSAGE, true);
+        userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
         userStyle.addAttribute(Attribute.USER, user);
 
         int length = userName.length();
@@ -2224,6 +2331,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.DELETE_MESSAGES, false);
             addSetting(Setting.ACTION_COLORED, false);
             addSetting(Setting.COMBINE_BAN_MESSAGES, true);
+            addSetting(Setting.BAN_DURATION_APPENDED, true);
+            addSetting(Setting.BAN_REASON_APPENDED, true);
+            addSetting(Setting.BAN_DURATION_MESSAGE, true);
+            addSetting(Setting.BAN_REASON_MESSAGE, true);
             addSetting(Setting.BOT_BADGE_ENABLED, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
@@ -2363,10 +2474,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return styles.get("standard");
         }
         
-        public MutableAttributeSet banMessage(User user) {
+        public MutableAttributeSet banMessage(User user, String message) {
             MutableAttributeSet style = new SimpleAttributeSet(standard());
-            style.addAttribute(Attribute.BAN_MESSAGE, user);
+            style.addAttribute(Attribute.IS_BAN_MESSAGE, user);
             style.addAttribute(Attribute.TIMESTAMP, System.currentTimeMillis());
+            style.addAttribute(Attribute.BAN_MESSAGE, message);
             return style;
         }
         
@@ -2433,7 +2545,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             SimpleAttributeSet userStyle;
             if (style == null) {
                 userStyle = new SimpleAttributeSet(nick());
-                userStyle.addAttribute(Attribute.USER_MESSAGE, true);
+                userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
                 Color userColor = user.getColor();
                 // Only correct color if no custom color is defined
                 if (!user.hasCustomColor() && isEnabled(Setting.COLOR_CORRECTION)) {

@@ -346,6 +346,7 @@ public abstract class Irc {
      * length, so checking there may be necessary
      * @param trailing The trailing of the raw message (usually the message
      * text), can not be null, only empty
+     * @param tags The IRCv3 tags, can be null
      */
     private void receivedCommand(String prefix, String command,
             String[] parameters, String trailing, Map<String, String> tags) {
@@ -461,9 +462,9 @@ public abstract class Irc {
             if (parameters.length == 1 && parameters[0].startsWith("#")) {
                 String channel = parameters[0];
                 if (trailing.isEmpty()) {
-                    onClearChat(channel, null);
+                    onClearChat(tags, channel, null);
                 } else {
-                    onClearChat(channel, trailing);
+                    onClearChat(tags, channel, trailing);
                 }
             }
         }
@@ -681,7 +682,7 @@ public abstract class Irc {
     
     void onGlobalUserstate(Map<String, String> tags) { }
     
-    void onClearChat(String channel, String name) { }
+    void onClearChat(Map<String, String> tags, String channel, String name) { }
     
     void onChannelCommand(Map<String, String> tags, String nick, String channel, String command, String trailing) { }
     

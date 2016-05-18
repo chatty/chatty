@@ -33,7 +33,8 @@ public class StyleManager implements StyleServer {
             "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
-            "colorCorrection"
+            "colorCorrection", "banReasonAppended", "banDurationAppended",
+            "banDurationMessage", "banReasonMessage"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -117,6 +118,10 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.ACTION_COLORED, "actionColored");
         addLongSetting(Setting.BUFFER_SIZE, "bufferSize");
         addBooleanSetting(Setting.COMBINE_BAN_MESSAGES, "combineBanMessages");
+        addBooleanSetting(Setting.BAN_DURATION_APPENDED, "banDurationAppended");
+        addBooleanSetting(Setting.BAN_REASON_APPENDED, "banReasonAppended");
+        addBooleanSetting(Setting.BAN_DURATION_MESSAGE, "banDurationMessage");
+        addBooleanSetting(Setting.BAN_REASON_MESSAGE, "banReasonMessage");
         addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");

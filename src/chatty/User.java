@@ -220,8 +220,8 @@ public class User implements Comparable {
     /**
      * Adds a single ban with the current time.
      */
-    public synchronized void addBan() {
-        addLine(new BanMessage(System.currentTimeMillis()));
+    public synchronized void addBan(long duration, String reason) {
+        addLine(new BanMessage(System.currentTimeMillis(), duration, reason));
     }
     
     /**
@@ -485,6 +485,11 @@ public class User implements Comparable {
     public synchronized boolean hasChannelModeratorRights() {
         return isModerator() || isBroadcaster();
     }
+    
+    public synchronized boolean hasModeratorRights() {
+        return isAdmin() || isBroadcaster() || isGlobalMod() || isModerator()
+                || isStaff();
+    }
 
     public synchronized boolean isModerator() {
         return isModerator;
@@ -745,8 +750,14 @@ public class User implements Comparable {
     }
     
     public static class BanMessage extends Message {
-        public BanMessage(Long time) {
+        
+        public final long duration;
+        public final String reason;
+        
+        public BanMessage(Long time, long duration, String reason) {
             super(BAN, time);
+            this.duration = duration;
+            this.reason = reason;
         }
         
     }

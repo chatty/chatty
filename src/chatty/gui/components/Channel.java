@@ -356,8 +356,8 @@ public class Channel extends JPanel {
         text.printLine(line);
     }
     
-    public void userBanned(User user) {
-        text.userBanned(user);
+    public void userBanned(User user, long duration, String reason) {
+        text.userBanned(user, duration, reason);
     }
     
     public void printCompact(String type, User user) {

@@ -404,6 +404,10 @@ public class SettingsManager {
         
         // Timeouts/Bans
         settings.addBoolean("showBanMessages", false);
+        settings.addBoolean("banDurationAppended", true);
+        settings.addBoolean("banReasonAppended", true);
+        settings.addBoolean("banDurationMessage", true);
+        settings.addBoolean("banReasonMessage", true);
         settings.addBoolean("combineBanMessages", true);
         settings.addBoolean("deleteMessages", false);
         settings.addString("deletedMessagesMode", "keepShortened");

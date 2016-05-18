@@ -10,10 +10,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,6 +30,7 @@ import javax.swing.JPanel;
 public class MessageSettings extends SettingsPanel {
     
     
+    private final Set<JCheckBox> timeoutMessageSettings = new HashSet<>();
     
     public MessageSettings(final SettingsDialog d) {
 
@@ -144,30 +150,70 @@ public class MessageSettings extends SettingsPanel {
         /**
          * Timeout settings
          */
-        gbc = d.makeGbc(0, 0, 2, 1);
+        gbc = d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST);
         DeletedMessagesModeSetting deletedMessagesModeSetting = new DeletedMessagesModeSetting(d);
         timeoutSettingsPanel.add(deletedMessagesModeSetting, gbc);
+        
+        gbc = d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST);
+        timeoutSettingsPanel.add(
+                d.addSimpleBooleanSetting(
+                        "banDurationAppended",
+                        "Show ban duration",
+                        "Shows the duration in seconds for timeouts behind the latest deleted message [BETA]"),
+                gbc);
+        
+        gbc = d.makeGbcSub(1, 1, 1, 1, GridBagConstraints.WEST);
+        gbc.anchor = GridBagConstraints.WEST;
+        timeoutSettingsPanel.add(
+                d.addSimpleBooleanSetting("banReasonAppended", "Show ban reason (mod only)",
+                        "Shows the reason of a ban behind the latest deleted message (mod only, except for your own bans) [BETA]"),
+                gbc);
 
-        gbc = d.makeGbc(0, 1, 1, 1);
+        final JCheckBox timeoutMessages = d.addSimpleBooleanSetting("showBanMessages", "Show separate ban messages, with following options:",
+                        "Shows separate '<user> has been banned from talking' messages for bans/timeouts");
+        timeoutMessages.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                for (JCheckBox cb : timeoutMessageSettings) {
+                    cb.setEnabled(timeoutMessages.isSelected());
+                }
+            }
+        });
+        gbc = d.makeGbc(0, 3, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        timeoutSettingsPanel.add(
-                d.addSimpleBooleanSetting("showBanMessages", "Show ban messages",
-                        "If enabled, shows '<user> has been banned from talking' for bans/timeouts"),
-                gbc);
+        timeoutSettingsPanel.add(timeoutMessages, gbc);
         
-        gbc = d.makeGbc(1, 1, 1, 1);
+        JCheckBox banDuration = d.addSimpleBooleanSetting("banDurationMessage", "Show ban duration",
+                        "Shows the duration in seconds for timeouts in separate ban messages [BETA]");
+        timeoutMessageSettings.add(banDuration);
+        gbc = d.makeGbcSub(0, 4, 1, 1, GridBagConstraints.WEST);
+        timeoutSettingsPanel.add(banDuration, gbc);
+        
+        JCheckBox banReason = d.addSimpleBooleanSetting("banReasonMessage", "Show ban reason (mod only)",
+                        "Shows the reason of a ban in separate ban messages (mod only, except for your own bans) [BETA]");
+        timeoutMessageSettings.add(banReason);
+        gbc = d.makeGbcSub(1, 4, 1, 1, GridBagConstraints.WEST);
         gbc.anchor = GridBagConstraints.WEST;
-        timeoutSettingsPanel.add(
-                d.addSimpleBooleanSetting("combineBanMessages", "Combine ban messages",
-                        "If enabled, combines ban messages for the same user into one, appending the number of bans"),
-                gbc);
+        timeoutSettingsPanel.add(banReason, gbc);
         
-        gbc = d.makeGbc(0, 2, 2, 1);
+        JCheckBox timeoutsCombine = d.addSimpleBooleanSetting("combineBanMessages", "Combine ban messages",
+                        "Combines similiar ban messages into one, appending the number of bans");
+        timeoutMessageSettings.add(timeoutsCombine);
+        gbc = d.makeGbcSub(0, 5, 1, 1, GridBagConstraints.WEST);
+        timeoutSettingsPanel.add(timeoutsCombine, gbc);
+        
+        gbc = d.makeGbc(0, 6, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         timeoutSettingsPanel.add(
                 d.addSimpleBooleanSetting("clearChatOnChannelCleared", "Clear chat when cleared by a moderator",
                         "If enabled, removes all text from the channel when a moderator clears the channel."),
                 gbc);
+        
+        
+        for (JCheckBox cb : timeoutMessageSettings) {
+            cb.setEnabled(false);
+        }
         
     }
     

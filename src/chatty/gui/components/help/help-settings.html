@@ -65,28 +65,91 @@
     </h2>
     <h3>Deleted Messages (Timeouts/Bans)</h3>
     <p>This allows you to define how timeouts or bans are displayed in Chatty.</p>
+    <p><em>Tip:</em> Click on a username in chat to open the User Info Dialog,
+        which also shows the timeouts/bans and the original messages.</p>
+    <p><strong>Please Note:</strong> The timeout duration/reason is in Beta at
+        Twitch, so stuff <em>may or may not</em> change at some point and break
+        the display in Chatty. Telling the difference between a timeout and
+        permanent ban also depends on this, so if this info isn't available
+        users who were just timed out may be shown as banned.</p>
     <ul>
-        <li>There are three options for deleted messages:<ul>
-        <li><strong>Delete Message</strong> completely replaces the message with
-            <code>&lt;message deleted&gt;</code>.</li>
-        <li><strong>Strike through</strong> will keep the whole message displayed, but
-        crossed out.</li>
-        <li><strong>Strike through, shorten</strong> is same as the previous one, but
-        it will also shorten the message to the defined number of characters, so long
-        spam messages don't take as much space, but can mostly still be identified what
-        they were about. Shortened messages are indicated by the points at the end
-        that are <em>not</em> crossed out (e.g. <span style="text-decoration: line-through">Deleted spam message Long copy pas</span>..).</li>
-    </ul></li>
-    <li><strong>Show ban messages</strong>: In addition to handling the deleted
-        message, Chatty can also show a message like
-        <code>&lt;name&gt; has been banned from talking</code> once the timeout
-    or ban is issued.</li>
-    <li><strong>Combine ban messages</strong>: Chatty can combine ban messages,
-    which means if several bans/timeouts are issued for the same user within 10
-    seconds, only one message is shown for them, with the number of bans shown
-    after the message, e.g. <code>&lt;name&gt; has been banned from talking (3)</code>.
-    Ban messages are not combined if a new message from the banned user was
-    received in the meantime.</li>
+        <li>There are three options on how to handle deleted messages in chat:
+            <dl class="dl-settings">
+                <dt>Delete Message</dt>
+                <dd>Completely replaces the message with <code>&lt;message deleted&gt;</code>.</dd>
+                
+                <dt>Strike through</dt>
+                <dd>Keeps the whole message displayed, but crossed out.</dd>
+                
+                <dt>Strike through, shorten</dt>
+                <dd>Crosses out the message but also shortens the message to the
+                    given number of characters, so long spam messages don't take
+                    up much space, but you can still kind of tell what they were
+                    about.</dd>
+                <dd>Shortened messages are indicated by the points at the end
+                    that are <em>not</em> crossed out:
+                    <code><span style="text-decoration: line-through">[12:30] Spammer: Deleted spam message Long copy pas</span>..</code></dd>
+            </dl>
+        </li>
+        <li>Ban duration/reason:
+            <dl class="dl-settings">
+                <dt>Show ban duration</dt>
+                <dd>Appends the length of timeouts in seconds (s) or minutes (m)
+                    and "banned" for bans to the most recent message of the
+                    banned user.</dd>
+                <dd><code><span style="text-decoration: line-through">[23:12] Spammer: spam message</span> (10m)</code></dd>
+                <dd><code><span style="text-decoration: line-through">[23:12] Spammer: spam message</span> (banned)</code> (permanent ban)</dd>
+                <dd>If more than one timeout is issued, the appended info will update
+                    with the length of the latest timeout, again always applied to the most recent
+                    message of that user.</dd>
+                <dd>Timeouts that happen more than a minute after the
+                    offending message was originally received will cause the
+                    appended info to include an asterisk at the end (*).</dd>
+                <dd><code><span style="text-decoration: line-through">[23:12] Spammer: spam message</span> (10m)*</code></dd>
+            
+                <dt>Show ban reason (mod only)</dt>
+                <dd>Show the reason for the timeout (if the mod has given one),
+                    appended and updated together with the duration.</dd>
+                <dd><code><span style="text-decoration: line-through">[23:12] Spammer: spam message</span> (banned) [rude tbh]</code></dd>
+                <dd><code><span style="text-decoration: line-through">[23:12] Spammer: spam message</span> (10m) [emote spam]</code></dd>
+                <dd>This is only available for mods of the channel as well as for
+                    the user that was banned/timed out.</dd>
+            </dl>
+        </li>
+        <li>In addition to handling the deleted message, Chatty can also show a
+            separate message with info about the ban:
+            <dl class="dl-settings">
+                <dt>Show separate ban messages</dt>
+                <dd>Enable separate ban/timeout info messages.</dd>
+                <dd><code>&lt;name&gt; has been timed out</code></dd>
+                <dd><code>&lt;name&gt; has been banned</code> (permanent ban)</dd>
+            
+                <dt>Combine ban messages</dt>
+                <dd>Chatty can combine ban messages, which means if several
+                    similiar bans/timeouts are issued for the same user within
+                    10 seconds, only one message is shown, with the number of
+                    included bans shown after the message, e.g.
+                    <code>&lt;name&gt; has been timed out (3)</code>.</dd>
+                <dd>Ban messages are not combined if a new message from the banned user was
+                    received in the meantime.</dd>
+                <dd>This is particularly useful when moderation bots want to
+                    more reliably remove a message and issue several identical
+                    timeouts a few seconds apart.</dd>
+                
+                <dt>Show ban duration</dt>
+                <dd>Appends the length of timeouts in seconds (s) or minutes (m)
+                    to the separate timeout info message.</dd>
+                <dd><code>&lt;name&gt; has been timed out (60s)</code></dd>
+            
+                <dt>Show ban reason (mod only)</dt>
+                <dd>Appends the reason for the timeout/ban (if the mod has given
+                    one) to the separate info message.</dd>
+                <dd><code>&lt;name&gt; has been banned [rude tbh]</code></dd>
+                <dd><code>&lt;name&gt; has been timed out (600s) [emote spam]</code>
+                <dd>This is only available for mods of the channel as well as for
+                    the user that was banned/timed out.</dd>
+            </dl>
+        </li>
     </ul>
     
     

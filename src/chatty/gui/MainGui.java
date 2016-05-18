@@ -2517,16 +2517,16 @@ public class MainGui extends JFrame implements Runnable {
         return ownUsername != null && ownUsername.equalsIgnoreCase(name);
     }
     
-    public void userBanned(final String channel, final User user) {
+    public void userBanned(final User user, final long duration, final String reason) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                channels.getChannel(channel).userBanned(user);
-                user.addBan();
+                channels.getChannel(user.getChannel()).userBanned(user, duration, reason);
+                user.addBan(duration, reason);
                 updateUserInfoDialog(user);
-                if (client.settings.listContains("streamChatChannels", channel)) {
-                    streamChat.userBanned(user);
+                if (client.settings.listContains("streamChatChannels", user.getChannel())) {
+                    streamChat.userBanned(user, duration, reason);
                 }
             }
         });

@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.User.BanMessage;
 import chatty.User.Message;
 import chatty.User.TextMessage;
 import chatty.gui.GuiUtil;
@@ -534,8 +535,18 @@ public class UserInfo extends JDialog {
                 b.append("\n");
             }
             else if (m.getType() == Message.BAN) {
+                BanMessage bm = (User.BanMessage)m;
                 b.append(DateTime.format(m.getTime(), TIMESTAMP_SPECIAL));
-                b.append("Banned from talking");
+                if (bm.duration > 0) {
+                    b.append("Timed out (").append(bm.duration).append("s)");
+                }
+                else {
+                    b.append("Banned permanently");
+                }
+                if (bm.reason != null && !bm.reason.isEmpty()) {
+                    b.append(" [").append(bm.reason).append("]");
+                }
+                
                 b.append("\n");
             }
         }

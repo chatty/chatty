@@ -168,7 +168,7 @@ public class TwitchClient {
         // Create after Logging is created, since that resets some stuff
         ircLogger = new IrcLogger();
         
-        createTestUser("tduva", "#bacon_donut");
+        createTestUser("tduva", "");
         
         settings = new Settings(Chatty.getUserDataDirectory()+"settings");
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
@@ -1003,9 +1003,27 @@ public class TwitchClient {
         //            g.printLine("\u0E07");
         //        }
         else if (command.equals("bantest")) {
-            g.userBanned("", testUser);
+            int duration = -1;
+            String reason = "";
+            if (parameter != null) {
+                String[] split = parameter.split(" ", 2);
+                duration = Integer.parseInt(split[0]);
+                if (split.length > 1) {
+                    reason = split[1];
+                }
+            }
+            g.userBanned(testUser, duration, reason);
         } else if (command.equals("bantest2")) {
-            g.userBanned(channel, c.getUser(channel, parameter));
+            String[] split = parameter.split(" ", 3);
+            int duration = -1;
+            if (split.length > 1) {
+                duration = Integer.parseInt(split[1]);
+            }
+            String reason = "";
+            if (split.length > 2) {
+                reason = split[2];
+            }
+            g.userBanned(c.getUser(channel, split[0]), duration, reason);
         } else if (command.equals("userjoined")) {
             c.userJoined("#test", parameter);
         } else if (command.equals("echomessage")) {
@@ -1964,7 +1982,7 @@ public class TwitchClient {
                 g.printCompact(channel,"JOIN", user);
             }
             g.playSound("joinPart", channel);
-            chatLog.compact(channel, "JOIN", user);
+            chatLog.compact(channel, "JOIN", user.getDisplayNick());
         }
 
         @Override
@@ -1972,7 +1990,7 @@ public class TwitchClient {
             if (settings.getBoolean("showJoinsParts")) {
                 g.printCompact(user.getChannel(), "PART", user);
             }
-            chatLog.compact(user.getChannel(), "PART", user);
+            chatLog.compact(user.getChannel(), "PART", user.getDisplayNick());
             g.playSound("joinPart", user.getChannel());
         }
 
@@ -2045,9 +2063,14 @@ public class TwitchClient {
         }
 
         @Override
-        public void onBan(User user) {
-            g.userBanned(user.getChannel(), user);
-            chatLog.compact(user.getChannel(), "BAN", user);
+        public void onBan(User user, long duration, String reason) {
+            User localUser = c.getLocalUser(user.getChannel());
+            if (localUser != user && !localUser.hasModeratorRights()) {
+                reason = "";
+            }
+            g.userBanned(user, duration, reason);
+            chatLog.userBanned(user.getChannel(), user.getDisplayNick(),
+                    duration, reason);
         }
         
         @Override
@@ -2062,7 +2085,7 @@ public class TwitchClient {
             if (modMessagesEnabled) {
                 g.printCompact(channel, "MOD", user);
             }
-            chatLog.compact(channel, "MOD", user);
+            chatLog.compact(channel, "MOD", user.getDisplayNick());
         }
 
         @Override
@@ -2072,7 +2095,7 @@ public class TwitchClient {
             if (modMessagesEnabled) {
                 g.printCompact(channel, "UNMOD", user);
             }
-            chatLog.compact(channel, "UNMOD", user);
+            chatLog.compact(channel, "UNMOD", user.getDisplayNick());
         }
 
         @Override

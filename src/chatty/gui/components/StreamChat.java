@@ -55,8 +55,8 @@ public class StreamChat extends JDialog {
         textPane.printMessage(message);
     }
     
-    public void userBanned(User user) {
-        textPane.userBanned(user);
+    public void userBanned(User user, long duration, String reason) {
+        textPane.userBanned(user, duration, reason);
     }
     
     public void setMessageTimeout(int seconds) {

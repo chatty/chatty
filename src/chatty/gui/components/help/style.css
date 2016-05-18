@@ -129,6 +129,21 @@ table.files {
     margin-top: 5px;
 }
 
+.dl-settings {
+    margin-left: 20px;
+    margin-top: 2px;
+}
+.dl-settings dt {
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+.dl-settings dd {
+    margin-bottom: 3px;
+    margin-top: 2px;
+    margin-left: 20px;
+}
+
 .del {
     text-decoration: line-through;
 }

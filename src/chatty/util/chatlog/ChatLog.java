@@ -131,19 +131,30 @@ public class ChatLog {
         }
     }
     
-    public void compact(String channel, String type, User user) {
+    public void userBanned(String channel, String nick, long duration, String reason) {
+        String text = nick;
+        if (duration > 0) {
+            text += " ("+duration+"s)";
+        }
+        if (reason != null && !reason.isEmpty()) {
+            text += " ["+reason+"]";
+        }
+        compact(channel, "BAN", text);
+    }
+    
+    public void compact(String channel, String type, String info) {
         if (isEnabled(channel)) {
             if ((type.equals("MOD") || type.equals("UNMOD")) && isTypeEnabled("Mod")
                     || (type.equals("JOIN") || type.equals("PART")) && isTypeEnabled("JoinPart")
                     || type.equals("BAN") && isTypeEnabled("Ban")) {
-                compactAdd(channel, type, user);
+                compactAdd(channel, type, info);
             }
         }
     }
     
-    private void compactAdd(String channel, String tpye, User user) {
+    private void compactAdd(String channel, String type, String info) {
         synchronized(compactForChannels) {
-            getCompact(channel).add(tpye, user);
+            getCompact(channel).add(type, info);
         }
     }
     
@@ -248,7 +259,7 @@ public class ChatLog {
          * @param type
          * @param user
          */
-        protected void add(String type, User user) {
+        protected void add(String type, String info) {
             String seperator = SEPERATOR;
             if (start(type)) {
                 // If compact mode has actually been started for this print,
@@ -260,7 +271,7 @@ public class ChatLog {
                 seperator = "";
             }
             text.append(seperator);
-            text.append(user.getDisplayNick());
+            text.append(info);
 
             length++;
             // If max number of compact prints happened, close compact mode to

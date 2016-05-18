@@ -392,6 +392,10 @@ public class TwitchConnection {
         return userJoined(channel, username);
     }
     
+    public User getLocalUser(String channel) {
+        return users.getUser(channel, username);
+    }
+    
     public void sendRaw(String text) {
         irc.send(text);
     }
@@ -878,6 +882,14 @@ public class TwitchConnection {
             }
         }
         
+        /**
+         * Returns true if the given key in the tags Map is equal to "1", false
+         * otherwise.
+         * 
+         * @param key The key to check
+         * @param tags The tags to lookup the key from
+         * @return True if equal to 1, false otherwise
+         */
         private boolean checkTagsState(String key, Map<String, String> tags) {
             return "1".equals(tags.get(key));
         }
@@ -1013,18 +1025,6 @@ public class TwitchConnection {
         }
 
         /**
-         * When a user is banned, and the channel is known, thus an actual User
-         * object can be used (that is associated with a channel).
-         *
-         * @param user The {@literal User} that was banned
-         */
-        private void userBanned(User user) {
-            if (isChannelOpen(user.getChannel())) {
-                listener.onBan(user);
-            }
-        }
-
-        /**
          * Inform the user that a channel was cleared. If {@literal channel} is
          * not {@literal null}, then it is output to that channel. Otherwise it
          * is output to the current channel.
@@ -1125,12 +1125,30 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onClearChat(String channel, String nick) {
+        public void onClearChat(Map<String, String> tags, String channel, 
+                String nick) {
             channel = channel.toLowerCase();
             if (nick != null) {
+                // A single user was timed out/banned
                 User user = users.getUserIfExists(channel, nick);
                 if (user != null) {
-                    userBanned(user);
+                    long duration = -1;
+                    String reason = "";
+                    if (tags != null) {
+                        if (tags.containsKey("ban-reason")) {
+                            reason = tags.get("ban-reason");
+                        }
+                        if (tags.containsKey("ban-duration")) {
+                            try {
+                                duration = Long.parseLong(tags.get("ban-duration"));
+                            } catch (NumberFormatException ex) {
+                                // Just don't use value
+                            }
+                        }
+                    }
+                    if (isChannelOpen(user.getChannel())) {
+                        listener.onBan(user, duration, reason);
+                    }
                 }
             } else {
                 // No nick specified means the channel is cleared
@@ -1163,6 +1181,9 @@ public class TwitchConnection {
                      */
                     if (tags.containsKey("r9k")) {
                         channelStates.setR9kMode(channel, checkTagsState("r9k", tags));
+                    }
+                    if (tags.containsKey("emote-only")) {
+                        channelStates.setEmoteOnly(channel, checkTagsState("emote-only", tags));
                     }
                     if (tags.containsKey("subs-only")) {
                         channelStates.setSubmode(channel, checkTagsState("subs-only", tags));
@@ -1296,7 +1317,7 @@ public class TwitchConnection {
         
         void onGlobalInfo(String message);
 
-        void onBan(User user);
+        void onBan(User user, long length, String reason);
 
         void onRegistered();
         

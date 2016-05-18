@@ -1,9 +1,11 @@
 
 package chatty;
 
+import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -399,6 +401,10 @@ public class Helper {
         
         System.out.println(getServer("server"));
         System.out.println(getPort("server"));
+        
+        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+        nf.setMaximumFractionDigits(1);
+        System.out.println(nf.format(Math.round(74/30.0)*30/60.0));
     }
     
     /**
@@ -543,6 +549,35 @@ public class Helper {
         } catch (NumberFormatException ex) {
             return -1;
         }
+    }
+    
+    private static String makeBanInfoDuration(long duration) {
+        if (duration < 120) {
+            return String.format("%ds", duration);
+        }
+        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+        nf.setMaximumFractionDigits(1);
+        return String.format("%sm", nf.format(Math.round(duration/30.0)*30/60.0));
+    }
+    
+    
+    
+    public static String makeBanInfo(long duration, String reason,
+            boolean durationEnabled, boolean reasonEnabled, boolean includeBan) {
+        String banInfo = "";
+        if (durationEnabled) {
+            if (duration > 0) {
+                banInfo = String.format("(%s)", makeBanInfoDuration(duration));
+            } else if (includeBan) {
+                banInfo = "(banned)";
+            }
+        }
+        if (reasonEnabled) {
+            if (reason != null && !reason.isEmpty()) {
+                banInfo = StringUtil.append(banInfo, " ", "[" + reason + "]");
+            }
+        }
+        return banInfo;
     }
     
 }

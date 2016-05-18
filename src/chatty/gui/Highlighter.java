@@ -470,9 +470,7 @@ public class Highlighter {
             if (req.contains(Status.BOT) && user.isBot()) {
                 return or;
             }
-            if (req.contains(Status.ANY_MOD) && (user.isAdmin()
-                    || user.isBroadcaster() || user.isGlobalMod()
-                    || user.isModerator() || user.isStaff())) {
+            if (req.contains(Status.ANY_MOD) && user.hasModeratorRights()) {
                 return or;
             }
             return !or;

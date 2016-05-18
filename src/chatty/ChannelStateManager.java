@@ -33,6 +33,12 @@ public class ChannelStateManager {
         }
     }
     
+    /**
+     * Tells all listeners that the channel state for this channel has been
+     * updated.
+     * 
+     * @param channel 
+     */
     private void updated(String channel) {
         ChannelState s = getState(channel);
         for (ChannelStateListener l : listeners) {
@@ -77,6 +83,12 @@ public class ChannelStateManager {
     
     public void setR9kMode(String channel, boolean enabled) {
         if (getState(channel).setR9kMode(enabled)) {
+            updated(channel);
+        }
+    }
+    
+    public void setEmoteOnly(String channel, boolean enabled) {
+        if (getState(channel).setEmoteOnly(enabled)) {
             updated(channel);
         }
     }

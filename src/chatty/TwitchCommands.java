@@ -130,23 +130,28 @@ public class TwitchCommands {
     }
     
     protected void commandTimeout(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( [0-9]+)?", parameter);
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( [0-9]+( .+)?)?", parameter);
         if (parameter == null) {
-            printLine("Usage: /to <nick> [time]");
+            printLine("Usage: /to <nick> [time] [reason]");
             return;
         }
-        String[] parts = parameter.split(" ");
-        if (parts.length < 2) {
-            timeout(channel, parts[0], 0);
-        } else {
+        String[] parts = parameter.split(" ", 3);
+        String nick = parts[0];
+        long duration = 0;
+        String reason = null;
+        if (parts.length > 1) {
             try {
-                long time = Long.parseLong(parts[1]);
-                timeout(channel, parts[0], time);
+                duration = Long.parseLong(parts[1]);
             } catch (NumberFormatException ex) {
                 // If the regex is correct, this may never happen
-                printLine("Usage: /to <nick> [time] (no valid time specified)");
+                printLine("Usage: /to <nick> [time] [reason] (no valid time specified)");
+                return;
             }
         }
+        if (parts.length > 2) {
+            reason = parts[2];
+        }
+        timeout(channel, nick, duration, reason);
     }
     
     protected void commandSlowmodeOn(String channel, String parameter) {
@@ -172,10 +177,15 @@ public class TwitchCommands {
     }
     
     protected void commandBan(String channel, String parameter) {
-        if (prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter) == null) {
-            printLine("Usage: /ban <nick>");
+        if (prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter) == null) {
+            printLine("Usage: /ban <nick> [reason]");
         } else {
-            ban(channel, parameter);
+            String[] split = parameter.split(" ", 2);
+            if (split.length == 2) {
+                ban(channel, split[0], split[1]);
+            } else {
+                ban(channel, split[0], null);
+            }
         }
     }
     
@@ -324,9 +334,13 @@ public class TwitchCommands {
         }
     }
 
-    public void ban(String channel, String name) {
+    public void ban(String channel, String name, String reason) {
         if (onChannel(channel, true)) {
-            sendMessage(channel,".ban "+name, "Trying to ban "+name+"..");
+            if (reason == null || reason.isEmpty()) {
+                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..");
+            } else {
+                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")");
+            }
         }
     }
     
@@ -349,7 +363,7 @@ public class TwitchCommands {
      * @param name
      * @param time 
      */
-    public void timeout(String channel, String name, long time) {
+    public void timeout(String channel, String name, long time, String reason) {
         if (onChannel(channel, true)) {
             if (time <= 0) {
                 sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..");
@@ -359,8 +373,13 @@ public class TwitchCommands {
                 String onlySeconds = time+"s";
                 String timeString = formatted.equals(onlySeconds)
                         ? onlySeconds : onlySeconds+"/"+formatted;
-                sendMessage(channel,".timeout "+name+" "+time,
+                if (reason == null || reason.isEmpty()) {
+                    sendMessage(channel,".timeout "+name+" "+time,
                         "Trying to timeout "+name+" ("+timeString+")");
+                } else {
+                    sendMessage(channel,".timeout "+name+" "+time+" "+reason,
+                        "Trying to timeout "+name+" ("+timeString+", "+reason+")");
+                }
             }
             
         }

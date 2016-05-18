@@ -28,6 +28,8 @@ public class ChannelState {
     
     private boolean r9kMode;
     
+    private boolean emoteOnly;
+    
     /**
      * The name of the channel that is being hosted. Can be null to indicate no
      * channe is being hosted.
@@ -66,6 +68,9 @@ public class ChannelState {
             changed = true;
         }
         if (setR9kMode(false)) {
+            changed = true;
+        }
+        if (setEmoteOnly(false)) {
             changed = true;
         }
         return changed;
@@ -136,6 +141,19 @@ public class ChannelState {
         return r9kMode;
     }
     
+    public synchronized boolean setEmoteOnly(boolean enabled) {
+        if (emoteOnly != enabled) {
+            emoteOnly = enabled;
+            updateInfo();
+            return true;
+        }
+        return false;
+    }
+    
+    public synchronized boolean emoteOnly() {
+        return emoteOnly;
+    }
+    
     /**
      * Set the channel that is being hosted.
      * 
@@ -199,6 +217,9 @@ public class ChannelState {
         }
         if (r9kMode) {
             result = StringUtil.append(result, sep, "r9k");
+        }
+        if (emoteOnly) {
+            result = StringUtil.append(result, sep, "EmoteOnly");
         }
         if (hosting != null && !hosting.isEmpty()) {
             result = StringUtil.append(result, sep, "Hosting: "+hosting);
