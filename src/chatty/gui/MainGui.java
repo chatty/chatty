@@ -1577,13 +1577,13 @@ public class MainGui extends JFrame implements Runnable {
                 firstStream = streams.iterator().next();
             }
             if (cmd.equals("stream") || cmd.equals("streamPopout")
-                    || cmd.equals("streamPopoutOld") || cmd.equals("profile")) {
+                    || cmd.equals("streamPopoutOld") || cmd.equals("streamChat") || cmd.equals("profile")) {
                 List<String> urls = new ArrayList<>();
                 for (String stream : streams) {
                     String url;
                     switch (cmd) {
                         case "stream":
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, false);
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, null);
                             break;
                         case "profile":
                             url = TwitchUrl.makeTwitchProfileUrl(stream);
@@ -1591,9 +1591,11 @@ public class MainGui extends JFrame implements Runnable {
                         case "streamPopout":
                             url = TwitchUrl.makeTwitchPlayerUrl(stream);
                             break;
-                        default:
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, true);
+                        case "streamChat":
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, "chat");
                             break;
+                        default:
+                            url = TwitchUrl.makeTwitchStreamUrl(stream, null);
                     }
                     urls.add(url);
                 }
