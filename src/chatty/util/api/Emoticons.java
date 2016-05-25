@@ -920,7 +920,7 @@ public class Emoticons {
      * @return The info text
      */
     public String getCustomEmotesInfo() {
-        if (customEmotes.size() == 0) {
+        if (customEmotes.isEmpty()) {
             return "No custom emotes loaded";
         }
         StringBuilder b = new StringBuilder(customEmotes.size()+" custom emotes loaded:\n");

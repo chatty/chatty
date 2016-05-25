@@ -39,6 +39,12 @@ External Libraries/Resources
 	(for the license text see the APACHE_LICENSE file
 	or http://www.apache.org/licenses/LICENSE-2.0).
 
+* Tyrus:
+  * Files: `assets/lib/tyrus-standalone-client-1.12.jar`
+  * Website: https://tyrus.java.net
+  * License: "CDDL 1.1" and "GPL 2 with CPE"
+	(see https://tyrus.java.net/license.html)
+
 * Favorites Icon by Everaldo Coelho:
   * File: `star.png`
   * Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 

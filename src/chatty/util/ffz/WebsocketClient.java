@@ -1,6 +1,7 @@
 
 package chatty.util.ffz;
 
+import chatty.util.DateTime;
 import static chatty.util.MiscUtil.getStackTrace;
 import chatty.util.SSLUtil;
 import chatty.util.ffz.WebsocketClient.MyConfigurator;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ClientEndpointConfig;
@@ -24,7 +26,8 @@ import org.glassfish.tyrus.client.ClientProperties;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
 
 /**
- *
+ * Maintain the connection and handle sending/receiving commands correctly.
+ * 
  * @author tduva
  */
 @ClientEndpoint(configurator = MyConfigurator.class)
@@ -32,48 +35,126 @@ public class WebsocketClient {
     
     private final static Logger LOGGER = Logger.getLogger(WebsocketClient.class.getName());
 
-    private volatile Session s;
     private final MessageHandler handler;
+    
     private volatile boolean requestedDisconnect;
     private int connectionAttempts;
+    private volatile boolean ssl;
+    private ClientManager clientManager;
+    private String[] servers;
     
-    private int commandCount;
     private boolean connecting;
-    
+    private volatile Session s;
+    private int commandCount;
+    private long timeConnected;
+    private long timeLastMessageReceived;
+
     public WebsocketClient(MessageHandler handler) {
         this.handler = handler;
     }
 
-    public void connect(String server, String alternateServer) {
+    /**
+     * The way it is now, this will only work once, because this is intended to
+     * stay connected.
+     * 
+     * @param servers 
+     */
+    public synchronized void connect(String[] servers) {
         if (connecting) {
             return;
         }
         connecting = true;
-        ClientManager client = ClientManager.createClient();
-        try {
-            client.getProperties().put(ClientProperties.RECONNECT_HANDLER, new Reconnect());
-            
-            try {
-                if (server.startsWith("wss://")) {
-                    SslEngineConfigurator sslEngineConfigurator = new SslEngineConfigurator(
-                            SSLUtil.getSSLContextWithLE(), true, false, false);
-                    client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslEngineConfigurator);
-                }
-            } catch (Exception ex) {
-                LOGGER.warning("Failed adding support for Lets Encrypt: "+ex);
-                if (alternateServer != null) {
-                    server = alternateServer;
-                }
-            }
+        this.servers = servers;
+        new Thread(new Runnable() {
 
-            client.asyncConnectToServer(this, new URI(server));
+            @Override
+            public void run() {
+                prepareConnection();
+                connectToRandomServer();
+            }
+        }).start();
+    }
+    
+    /**
+     * Get Websocket status in text form, with some basic formatting.
+     * 
+     * @return 
+     */
+    public synchronized String getStatus() {
+        if (!connecting) {
+            return "Not connected";
+        }
+        if (s != null && s.isOpen()) {
+            return String.format("Connected for %s\n"
+                    + "\tServer: %s\n"
+                    + "\tCommands sent: %d\n"
+                    + "\tLast message received: %s ago",
+                    DateTime.ago(timeConnected),
+                    s.getRequestURI(),
+                    commandCount,
+                    DateTime.ago(timeLastMessageReceived));
+        }
+        return "Connecting..";
+    }
+    
+    /**
+     * Create and configure a Client Manager.
+     */
+    private void prepareConnection() {
+        clientManager = ClientManager.createClient();
+        clientManager.getProperties().put(ClientProperties.RECONNECT_HANDLER, new Reconnect());
+
+        // Try to add Let's Encrypt cert for SSL
+        try {
+            SslEngineConfigurator sslEngineConfigurator = new SslEngineConfigurator(
+                    SSLUtil.getSSLContextWithLE(), true, false, false);
+            clientManager.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslEngineConfigurator);
+            ssl = true;
+        } catch (Exception ex) {
+            LOGGER.warning("Failed adding support for Lets Encrypt: " + ex);
+            ssl = false;
+        }
+    }
+    
+    /**
+     * Randomly select a server from the given list of servers. Prepend ws:// or
+     * wss:// depending on whether this should use SSL or not.
+     * 
+     * @param servers Array of servers, without protocol prefix
+     * @param ssl 
+     * @return The server, including protocol prefix
+     */
+    private static String getRandomServer(String[] servers, boolean ssl) {
+        String server = servers[ThreadLocalRandom.current().nextInt(servers.length)];
+        if (ssl) {
+            server = "wss://" + server;
+        } else {
+            server = "ws://" + server;
+        }
+        return server;
+    }
+    
+    private void connectToRandomServer() {
+        connect(getRandomServer(servers, ssl));
+    }
+    
+    private void connect(String server) {
+        try {
             LOGGER.info("[FFZ-WS] Connecting to "+server);
+            clientManager.asyncConnectToServer(this, new URI(server));
         } catch (Exception ex) {
             LOGGER.warning("[FFZ-WS] Error connecting: "+ex);
         }
     }
     
-    public void disonnect() {
+    /**
+     * Disconnect from the server.
+     * 
+     * Currently connecting to the server only works once, since it's intended
+     * to stay connected all the time, so using this should only be done when
+     * the program is closed.
+     */
+    public synchronized void disonnect() {
         try {
             requestedDisconnect = true;
             if (s != null) {
@@ -99,10 +180,7 @@ public class WebsocketClient {
         @Override
         public boolean onConnectFailure(Exception exception) {
             if (requestedDisconnect) {
-                LOGGER.warning("[FFZ-WS] Cancelled reconnecting..");
-                return false;
-            }
-            if (connectionAttempts > 30) {
+                LOGGER.info("[FFZ-WS] Cancelled reconnecting..");
                 return false;
             }
             connectionAttempts++;
@@ -111,7 +189,18 @@ public class WebsocketClient {
                     getDelay(),
                     exception,
                     exception.getCause().toString()));
-            return true;
+            
+            // Reconnect manually, so that the server can be changed
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            connectToRandomServer();
+                        }
+                    },
+                    getDelay()*1000
+            );
+            return false;
         }
 
         @Override
@@ -124,29 +213,50 @@ public class WebsocketClient {
         
         @Override
         public void beforeRequest(Map<String, List<String>> headers) {
-            headers.put("Origin", Arrays.asList("www.twitch.tv"));
+            // Empty Origin, otherwise would default to server name
+            headers.put("Origin", Arrays.asList(""));
         }
 
         @Override
         public void afterResponse(HandshakeResponse hr) {
-            //process the handshake response
         }
     }
     
+    /**
+     * Send a message to the server. Does nothing if the connection is not open.
+     * 
+     * @param text 
+     */
     public synchronized void send(String text) {
         if (s != null && s.isOpen()) {
             s.getAsyncRemote().sendText(text);
             System.out.println("SENT: "+text);
+            handler.handleSent(text);
         }
     }
     
-    public void sendCommand(String command, String param) {
+    /**
+     * Send a command to the server. Does nothing if the connection is not open.
+     * 
+     * <p>Automatically increases and prefixes the command counter.</p>
+     * 
+     * @param command
+     * @param param 
+     */
+    public synchronized void sendCommand(String command, String param) {
         if (s != null && s.isOpen()) {
             commandCount += 1;
             send(String.format("%d %s %s", commandCount, command, param));
         }
     }
     
+    /**
+     * Handle message already parsed into id, command and parameters.
+     * 
+     * @param id The message id
+     * @param command The command
+     * @param params The parameters
+     */
     private void handleCommand(int id, String command, String params) {
         handler.handleCommand(id, command, params);
         if (command.equals("error")) {
@@ -162,12 +272,14 @@ public class WebsocketClient {
         connectionAttempts = 0;
         LOGGER.info("[FFZ-WS] Connected");
         handler.handleConnect();
+        timeConnected = System.currentTimeMillis();
     }
 
     @OnMessage
     public synchronized void onMessage(String message, Session session) {
         System.out.println("RECEIVED: " + message);
-        handler.handleMessage(message);
+        timeLastMessageReceived = System.currentTimeMillis();
+        handler.handleReceived(message);
         try {
             String[] split = message.split(" ", 3);
             int id = Integer.parseInt(split[0]);
@@ -194,7 +306,8 @@ public class WebsocketClient {
     }
     
     public static interface MessageHandler {
-        public void handleMessage(String text);
+        public void handleReceived(String text);
+        public void handleSent(String sent);
         public void handleCommand(int id, String command, String params);
         public void handleConnect();
     }

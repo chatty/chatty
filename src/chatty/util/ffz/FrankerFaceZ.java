@@ -67,6 +67,10 @@ public class FrankerFaceZ {
         ws.disconnect();
     }
     
+    public String getWsStatus() {
+        return ws.getStatus();
+    }
+    
     public void joined(String room) {
         ws.addRoom(room);
     }

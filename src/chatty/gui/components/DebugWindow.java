@@ -26,6 +26,7 @@ public class DebugWindow extends JFrame {
     private final JCheckBox logIrc = new JCheckBox("Irc log", false);
     private final JTextArea text;
     private final JTextArea textIrcLog;
+    private final JTextArea textFFZLog;
     
     public DebugWindow(ItemListener listener) {
         setTitle("Debug");
@@ -50,10 +51,17 @@ public class DebugWindow extends JFrame {
         textIrcLog.setCaret(caret);
         JScrollPane scrollIrcLog = new JScrollPane(textIrcLog);
         
+        // Irc log
+        textFFZLog = new JTextArea();
+        textFFZLog.setEditable(false);
+        textFFZLog.setCaret(caret);
+        JScrollPane scrollFFZLog = new JScrollPane(textFFZLog);
+        
         // Tabs
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Log", scroll);
         tabs.addTab("Irc log", scrollIrcLog);
+        tabs.addTab("FFZ-WS", scrollFFZLog);
         
         // Settings (Checkboxes)
         logIrc.setToolTipText("Logging IRC traffic can reduce performance");
@@ -78,6 +86,10 @@ public class DebugWindow extends JFrame {
     
     public void printLineIrc(String line) {
         printLine(textIrcLog, line);
+    }
+    
+    public void printLineFFZ(String line) {
+        printLine(textFFZLog, line);
     }
     
     private void printLine(JTextArea text, String line) {

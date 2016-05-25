@@ -50,9 +50,11 @@ public class Chatty {
     public static final String REDIRECT_URI = "http://127.0.0.1:61324/token/";
     
     /**
-     * Version number of this version of Chatty
+     * Version number of this version of Chatty, consisting of numbers seperated
+     * by points. May contain a single "b" for beta versions, anything following
+     * it will be ignored for version checking.
      */
-    public static final String VERSION = "0.8.3b";
+    public static final String VERSION = "0.8.3b2";
     
     /**
      * Enable Version Checker (if you compile and distribute this yourself, you

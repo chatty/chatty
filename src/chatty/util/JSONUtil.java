@@ -52,9 +52,9 @@ public class JSONUtil {
         return errorValue;
     }
     
-    public static String listToJSON(String... args) {
+    public static String listToJSON(Object... args) {
         JSONArray o = new JSONArray();
-        for (String a : args) {
+        for (Object a : args) {
             o.add(a);
         }
         return o.toJSONString();

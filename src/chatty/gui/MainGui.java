@@ -2724,6 +2724,16 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
+    public void printDebugFFZ(final String line) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                debugWindow.printLineFFZ(line);
+            }
+        });
+    }
+    
     /**
      * Outputs a line to the debug window
      * 

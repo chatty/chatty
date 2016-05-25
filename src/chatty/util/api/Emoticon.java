@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -106,10 +107,10 @@ public class Emoticon {
     public final String stringId;
     public final String urlX2;
     public final String creator;
-    public final String info;
     public final boolean isAnimated;
     
     private String stream;
+    private Set<String> infos;
     
     private volatile int width;
     private volatile int height;
@@ -137,11 +138,11 @@ public class Emoticon {
         private boolean literal = false;
         private String stream;
         private Set<String> streamRestrictions;
+        private Set<String> infos;
         private int emoteset = SET_UNDEFINED;
         private int numericId = ID_UNDEFINED;
         private String stringId = null;
         private String creator;
-        private String info;
         private boolean isAnimated = false;
         
         public Builder(Type type, String search, String url) {
@@ -201,8 +202,13 @@ public class Emoticon {
             return this;
         }
         
-        public Builder setInfo(String info) {
-            this.info = info;
+        public Builder addInfo(String info) {
+            if (info != null) {
+                if (infos == null) {
+                    infos = new HashSet<>();
+                }
+                infos.add(info);
+            }
             return this;
         }
         
@@ -312,7 +318,7 @@ public class Emoticon {
         this.numericId = builder.numericId;
         this.stringId = builder.stringId;
         this.creator = builder.creator;
-        this.info = builder.info;
+        this.infos = builder.infos;
         this.isAnimated = builder.isAnimated;
         this.subType = builder.subtype;
     }
@@ -382,6 +388,30 @@ public class Emoticon {
      */
     public boolean hasStreamSet() {
         return stream != null;
+    }
+    
+    public synchronized void addInfos(Set<String> infosToAdd) {
+        if (infos == null) {
+            infos = new HashSet<>();
+        }
+        infos.addAll(infosToAdd);
+    }
+    
+    /**
+     * Creates a copy of the info strings.
+     * 
+     * <p>Info strings are intended to be displayed to the user along with other
+     * information about the emote. This is probably mainly going to be used for
+     * FFZ/BTTV emotes.</p>
+     * 
+     * @return A TreeSet of info strings (defensive copying), or an empty Set if
+     * no info strings are available
+     */
+    public synchronized Set<String> getInfos() {
+        if (infos == null) {
+            return new TreeSet<>();
+        }
+        return new TreeSet<>(infos);
     }
     
     public boolean hasGlobalEmoteset() {

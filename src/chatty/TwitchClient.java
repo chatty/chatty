@@ -904,6 +904,9 @@ public class TwitchClient {
         else if (command.equals("ffzglobal")) {
             commandFFZ(null);
         }
+        else if (command.equals("ffzws")) {
+            g.printSystem("[FFZ-WS] Status: "+frankerFaceZ.getWsStatus());
+        }
         else if (command.equals("refresh")) {
             commandRefresh(channel, parameter);
         }
@@ -1831,6 +1834,11 @@ public class TwitchClient {
             if (settings.getBoolean("botNamesFFZ")) {
                 botNameManager.addBotNames(null, botNames);
             }
+        }
+
+        @Override
+        public void wsInfo(String info) {
+            g.printDebugFFZ(info);
         }
     }
     

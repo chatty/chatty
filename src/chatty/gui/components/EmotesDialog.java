@@ -701,33 +701,35 @@ public class EmotesDialog extends JDialog {
             } else {
                 // FFZ/BTTV
                 Set<Emoticon> channelEmotes = emoteManager.getEmoticons(stream);
+                
+                // Split Event/Regular emotes into separate structures
                 Set<Emoticon> regular = new HashSet<>();
                 Map<String, Set<Emoticon>> event = new HashMap<>();
-                
                 for (Emoticon emote : channelEmotes) {
                     if (emote.type == Emoticon.Type.FFZ
                             && emote.subType == Emoticon.SubType.EVENT) {
-                        String info = emote.info;
-                        if (!event.containsKey(info)) {
-                            event.put(info, new HashSet<Emoticon>());
+                        for (String info : emote.getInfos()) {
+                            if (!event.containsKey(info)) {
+                                event.put(info, new HashSet<Emoticon>());
+                            }
+                            event.get(info).add(emote);
                         }
-                        event.get(info).add(emote);
-                    }
-                    else {
+                    } else {
                         regular.add(emote);
                     }
                 }
+                
                 if (channelEmotes.isEmpty()) {
                     addTitle("No emotes found for #" + stream);
                     addSubtitle("No FFZ or BTTV emotes found.", false);
                 } else {
                     addEmotes(regular, "Emotes specific to #" + stream);
                     for (String info : event.keySet()) {
-                        addEmotes(event.get(info), "Featured "+info);
+                        addEmotes(event.get(info), "Featured " + info);
                     }
                 }
                 
-                // Subemotes
+                // Subscriber Emotes
                 int emoteset = emoteManager.getEmotesetFromStream(stream);
                 if (emoteset != -1) {
                     Set<Emoticon> subEmotes = emoteManager.getEmoticons(emoteset);
@@ -833,7 +835,8 @@ public class EmotesDialog extends JDialog {
             lgbc.insets = new Insets(4, 4, 4, 4);
             
             addInfo(panel2, "Code:", emote.code);
-            addInfo(panel2, "Type:", emote.type.toString());
+            String featured = emote.subType == Emoticon.SubType.EVENT ? " (Featured)" : "";
+            addInfo(panel2, "Type:", emote.type.toString()+featured);
             if (emote.numericId > Emoticon.ID_UNDEFINED) {
                 addInfo(panel2, "Emote ID:", ""+emote.numericId);
             }
@@ -855,8 +858,11 @@ public class EmotesDialog extends JDialog {
             if (emote.creator != null) {
                 addInfo(panel2, "Emote by:", emote.creator);
             }
-            if (emote.info != null) {
-                addInfo(panel2, "Info:", emote.info);
+            
+            // Info
+            featured = emote.subType == Emoticon.SubType.EVENT ? "Featured " : "";
+            for (String info : emote.getInfos()) {
+                addInfo(panel2, featured+info);
             }
             
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -886,6 +892,13 @@ public class EmotesDialog extends JDialog {
             lgbc.gridx++;
         }
         
+        /**
+         * Adds a info line with separated key and value.
+         * 
+         * @param panel
+         * @param key
+         * @param value 
+         */
         private void addInfo(JPanel panel, String key, String value) {
             lgbc.gridx = 0;
             lgbc.anchor = GridBagConstraints.WEST;
@@ -896,6 +909,23 @@ public class EmotesDialog extends JDialog {
             
             panel.add(new JLabel(StringUtil.shortenTo(value, 35, 20)), lgbc);
             
+            lgbc.gridy++;
+        }
+        
+        /**
+         * Adds a full-width info line.
+         * 
+         * @param panel
+         * @param value 
+         */
+        private void addInfo(JPanel panel, String value) {
+            lgbc.gridx = 0;
+            lgbc.gridwidth = 2;
+            lgbc.anchor = GridBagConstraints.CENTER;
+            
+            panel.add(new JLabel(StringUtil.shortenTo(value, 35, 20)), lgbc);
+            
+            lgbc.gridwidth = 1;
             lgbc.gridy++;
         }
         

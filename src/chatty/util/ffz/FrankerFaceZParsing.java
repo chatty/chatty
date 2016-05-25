@@ -214,7 +214,7 @@ public class FrankerFaceZParsing {
             b.setCreator(creator);
             b.setNumericId(id);
             b.addStreamRestriction(streamRestriction);
-            b.setInfo(info);
+            b.addInfo(info);
             b.setSubType(subType);
             return b.build();
         } catch (ClassCastException | NullPointerException ex) {

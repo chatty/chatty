@@ -89,6 +89,11 @@ External Libraries
 	License: "Apache License 2.0"
 	http://www.apache.org/licenses/LICENSE-2.0
 
+* Tyrus [lib/tyrus-standalone-client-1.12.jar]
+	Website: https://tyrus.java.net
+	License: "CDDL 1.1" and "GPL 2 with CPE"
+	https://tyrus.java.net/license.html
+
 * Favorites Icon [star.png] by Everaldo Coelho
 	Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
 	License: LGPL

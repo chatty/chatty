@@ -49,13 +49,18 @@ public class EmoteContextMenu extends ContextMenu {
             } else if (emote.type == Emoticon.Type.CUSTOM) {
                 addItem("", "Custom Emote");
             }
-            if (emote.info != null) {
-                if (emote.subType == Emoticon.SubType.EVENT) {
-                    addItem("", "Featured "+emote.info);
-                } else {
-                    addItem("", emote.info);
+            
+            // Info
+            if (emote.subType == Emoticon.SubType.EVENT) {
+                for (String info : emote.getInfos()) {
+                    addItem("", "Featured " + info);
+                }
+            } else {
+                for (String info : emote.getInfos()) {
+                    addItem("", info);
                 }
             }
+            
             addStreamSubmenu(emote);
         }
         

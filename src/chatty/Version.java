@@ -60,8 +60,8 @@ public class Version {
         String currentVersion = VERSION;
         // Check if current is beta version
         boolean isBetaVersion = false;
-        if (currentVersion.endsWith("b")) {
-            currentVersion = currentVersion.substring(0, currentVersion.length() - 1);
+        if (currentVersion.contains("b")) {
+            currentVersion = currentVersion.substring(0, currentVersion.indexOf("b"));
             isBetaVersion = true;
         }
         int compare = compareVersions(currentVersion, newVersion);
