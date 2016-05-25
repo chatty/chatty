@@ -45,9 +45,11 @@ public class WebsocketClient {
     
     private boolean connecting;
     private volatile Session s;
-    private int commandCount;
+    private int sentCount;
+    private int receivedCount;
     private long timeConnected;
     private long timeLastMessageReceived;
+    private long timeLastMessageSent;
 
     public WebsocketClient(MessageHandler handler) {
         this.handler = handler;
@@ -87,11 +89,14 @@ public class WebsocketClient {
         if (s != null && s.isOpen()) {
             return String.format("Connected for %s\n"
                     + "\tServer: %s\n"
-                    + "\tCommands sent: %d\n"
-                    + "\tLast message received: %s ago",
+                    + "\tCommands sent: %d (last %s ago)\n"
+                    + "\tMessages received: %d (last %s ago)",
+                    
                     DateTime.ago(timeConnected),
                     s.getRequestURI(),
-                    commandCount,
+                    sentCount,
+                    DateTime.ago(timeLastMessageSent),
+                    receivedCount,
                     DateTime.ago(timeLastMessageReceived));
         }
         return "Connecting..";
@@ -232,6 +237,7 @@ public class WebsocketClient {
             s.getAsyncRemote().sendText(text);
             System.out.println("SENT: "+text);
             handler.handleSent(text);
+            timeLastMessageSent = System.currentTimeMillis();
         }
     }
     
@@ -245,8 +251,8 @@ public class WebsocketClient {
      */
     public synchronized void sendCommand(String command, String param) {
         if (s != null && s.isOpen()) {
-            commandCount += 1;
-            send(String.format("%d %s %s", commandCount, command, param));
+            sentCount++;
+            send(String.format("%d %s %s", sentCount, command, param));
         }
     }
     
@@ -267,7 +273,8 @@ public class WebsocketClient {
     @OnOpen
     public synchronized void onOpen(Session session) {
         s = session;
-        commandCount = 0;
+        sentCount = 0;
+        receivedCount = 0;
         requestedDisconnect = false;
         connectionAttempts = 0;
         LOGGER.info("[FFZ-WS] Connected");
@@ -280,6 +287,7 @@ public class WebsocketClient {
         System.out.println("RECEIVED: " + message);
         timeLastMessageReceived = System.currentTimeMillis();
         handler.handleReceived(message);
+        receivedCount++;
         try {
             String[] split = message.split(" ", 3);
             int id = Integer.parseInt(split[0]);

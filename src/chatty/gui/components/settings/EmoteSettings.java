@@ -25,6 +25,10 @@ public class EmoteSettings extends SettingsPanel {
     
     protected EmoteSettings(SettingsDialog d) {
         
+        //=================
+        // General Settings
+        //=================
+        
         JPanel main = addTitledPanel("General Settings", 0);
         
         GridBagConstraints gbc;
@@ -35,40 +39,52 @@ public class EmoteSettings extends SettingsPanel {
                         + "Changing this only affects new lines."),
                 d.makeGbcCloser(0, 0, 2, 1, GridBagConstraints.WEST));
         
+        //---------
+        // FFZ/BTTV
+        //---------
         main.add(d.addSimpleBooleanSetting("bttvEmotes",
                 "Enable BetterTTV Emotes",
                 "Show BetterTTV emoticons"),
                 d.makeGbcCloser(2, 0, 3, 1, GridBagConstraints.WEST));
 
-        
-        gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
-        final JCheckBox ffz = d.addSimpleBooleanSetting("ffz","Enable FrankerFaceZ (FFZ)",
+        final JCheckBox ffz = d.addSimpleBooleanSetting(
+                "ffz",
+                "Enable FrankerFaceZ (FFZ)",
                 "Retrieve custom emotes and possibly mod icon.");
         main.add(ffz,
-                gbc);
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
-        
-        final JCheckBox ffzMod = d.addSimpleBooleanSetting("ffzModIcon",
+        final JCheckBox ffzMod = d.addSimpleBooleanSetting(
+                "ffzModIcon",
                 "Enable FFZ Mod Icon",
                 "Show custom mod icon for some channels (only works if FFZ is enabled).");
-        gbc = d.makeGbc(2, 1, 3, 1, GridBagConstraints.WEST);
         main.add(ffzMod,
-                gbc);
+                d.makeGbcSub(0, 2, 2, 1, GridBagConstraints.WEST));
         
-        main.add(d.addSimpleBooleanSetting("showAnimatedEmotes",
+        final JCheckBox ffzEvent = d.addSimpleBooleanSetting(
+                "ffzEvent",
+                "Enable FFZ Featured Emotes",
+                "Show Featured Emotes available in some Event channels (like Speedrunning Marathons)");
+        main.add(ffzEvent,
+                d.makeGbcCloser(2, 2, 3, 1, GridBagConstraints.WEST));
+        
+        main.add(d.addSimpleBooleanSetting(
+                "showAnimatedEmotes",
                 "Allow animated emotes",
-                "Show animated BetterTTV emoticons"),
-                d.makeGbc(2, 2, 3, 1, GridBagConstraints.WEST));
+                "Show animated emotes (currently only BTTV has GIF emotes)"),
+                d.makeGbc(2, 3, 3, 1, GridBagConstraints.WEST));
         
+        //-----------
+        // Emote Size
+        //-----------
         main.add(new JLabel("Maximum Height:"),
-                d.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(2, 4, 1, 1, GridBagConstraints.WEST));
         main.add(d.addSimpleLongSetting("emoteMaxHeight", 3, true),
-                d.makeGbc(3, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(3, 4, 1, 1, GridBagConstraints.WEST));
         main.add(new JLabel("pixels"),
-                d.makeGbc(4, 3, 1, 1, GridBagConstraints.WEST));
-        //main.add(new JLabel("(Max height of 0 means no max height.)"), d.makeGbc(2, 3, 3, 1));
+                d.makeGbc(4, 4, 1, 1, GridBagConstraints.WEST));
         
-        main.add(new JLabel("Scale:"), d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+        main.add(new JLabel("Scale:"), d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
         
         final Map<Long, String> scaleDef = new LinkedHashMap<>();
         for (int i=50;i<=200;i += 10) {
@@ -80,28 +96,39 @@ public class EmoteSettings extends SettingsPanel {
         }
         ComboLongSetting emoteScale = new ComboLongSetting(scaleDef);
         d.addLongSetting("emoteScale", emoteScale);
-        main.add(emoteScale, d.makeGbc(1, 2, 1, 1, GridBagConstraints.CENTER));
+        main.add(emoteScale, d.makeGbc(1, 3, 1, 1, GridBagConstraints.CENTER));
         
-        main.add(new JLabel("Emotes Dialog:"), d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
+        main.add(new JLabel("Emotes Dialog:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
         
         ComboLongSetting emoteScaleDialog = new ComboLongSetting(scaleDef);
         d.addLongSetting("emoteScaleDialog", emoteScaleDialog);
-        main.add(emoteScaleDialog, d.makeGbc(1, 3, 1, 1, GridBagConstraints.CENTER));
+        main.add(emoteScaleDialog, d.makeGbc(1, 4, 1, 1, GridBagConstraints.CENTER));
         
-        main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick",
+        //------
+        // Other
+        //------
+        main.add(d.addSimpleBooleanSetting(
+                "closeEmoteDialogOnDoubleClick",
                 "Double-click on emote closes Emote Dialog",
                 "Double-clicking on an emote in the Emotes Dialog closes the Dialog"),
-                d.makeGbc(0, 4, 3, 1));
+                d.makeGbc(0, 5, 3, 1));
         
+        // Checkbox status
         ffzMod.setEnabled(false);
+        ffzEvent.setEnabled(false);
         ffz.addItemListener(new ItemListener() {
 
             @Override
             public void itemStateChanged(ItemEvent e) {
                 ffzMod.setEnabled(ffz.isSelected());
+                ffzEvent.setEnabled(ffz.isSelected());
             }
         });
         
+        
+        //===============
+        // Ignored Emotes
+        //===============
         
         JPanel ignored = addTitledPanel("Ignored Emotes", 1, true);
         

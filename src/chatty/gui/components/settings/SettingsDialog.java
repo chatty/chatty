@@ -46,7 +46,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "userlistWidth", "userlistMinWidth", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
             "logPath", "logTimestamp",
             "botNamesBTTV", "botNamesFFZ", "ircv3CapitalizedNames",
-            "tabsMwheelScrolling", "inputFont"));
+            "tabsMwheelScrolling", "inputFont", "ffzEvent"));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(
         "membershipEnabled"));
