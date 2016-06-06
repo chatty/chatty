@@ -863,6 +863,12 @@ public class Emoticon {
             return false;
         }
         final Emoticon other = (Emoticon) obj;
+        if (this.type != other.type) {
+            return false;
+        }
+        if (this.subType != other.subType) {
+            return false;
+        }
         if (!Objects.equals(this.code, other.code)) {
             return false;
         }
@@ -877,10 +883,12 @@ public class Emoticon {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.code);
-        hash = 79 * hash + this.emoteSet;
-        hash = 79 * hash + Objects.hashCode(this.streamRestrictions);
+        int hash = 3;
+        hash = 59 * hash + Objects.hashCode(this.type);
+        hash = 59 * hash + Objects.hashCode(this.subType);
+        hash = 59 * hash + Objects.hashCode(this.code);
+        hash = 59 * hash + this.emoteSet;
+        hash = 59 * hash + Objects.hashCode(this.streamRestrictions);
         return hash;
     }
 

@@ -99,7 +99,10 @@ public class Webserver implements Runnable {
     public void run() {
         debug("Trying to start webserver at port "+port);
         try {
-            serverSocket = new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
+            // Since 127.0.0.1 is registered with Twitch, hardcode that instead
+            // of using InetAddress.getLoopbackAddress() which may also return
+            // "::1".
+            serverSocket = new ServerSocket(port, 0, InetAddress.getByName("127.0.0.1"));
         } catch (IOException ex) {
             debug("Could not listen to port "+port+" ("+ex.getLocalizedMessage()+")");
             if (listener != null) {
@@ -114,7 +117,7 @@ public class Webserver implements Runnable {
         }
         
         while (running) {
-            debug("Waiting for connections");
+            debug("Waiting for connections on "+serverSocket.toString());
             Socket clientSocket = null;
             try {
                 clientSocket = serverSocket.accept();

@@ -5,6 +5,7 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.DateTime;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ItemListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,38 +31,21 @@ public class DebugWindow extends JFrame {
     
     public DebugWindow(ItemListener listener) {
         setTitle("Debug");
-        
-        // Caret to prevent scrolling
-        DefaultCaret caret = new DefaultCaret();
-        caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        
+
         // Normal log
-        text = new JTextArea();
-        text.setCaret(caret);
-        text.setEditable(false);
-        JScrollPane scroll = new JScrollPane(text);
-        
-        // Caret to prevent scrolling
-        caret = new DefaultCaret();
-        caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        
+        text = createLogArea();
+
         // Irc log
-        textIrcLog = new JTextArea();
-        textIrcLog.setEditable(false);
-        textIrcLog.setCaret(caret);
-        JScrollPane scrollIrcLog = new JScrollPane(textIrcLog);
-        
-        // Irc log
-        textFFZLog = new JTextArea();
-        textFFZLog.setEditable(false);
-        textFFZLog.setCaret(caret);
-        JScrollPane scrollFFZLog = new JScrollPane(textFFZLog);
-        
+        textIrcLog = createLogArea();
+
+        // FFZ WS log
+        textFFZLog = createLogArea();
+
         // Tabs
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Log", scroll);
-        tabs.addTab("Irc log", scrollIrcLog);
-        tabs.addTab("FFZ-WS", scrollFFZLog);
+        tabs.addTab("Log", new JScrollPane(text));
+        tabs.addTab("Irc log", new JScrollPane(textIrcLog));
+        tabs.addTab("FFZ-WS", new JScrollPane(textFFZLog));
         
         // Settings (Checkboxes)
         logIrc.setToolTipText("Logging IRC traffic can reduce performance");
@@ -78,6 +62,18 @@ public class DebugWindow extends JFrame {
         logIrc.addItemListener(listener);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setSize(new Dimension(600,500));
+    }
+    
+    private static JTextArea createLogArea() {
+        // Caret to prevent scrolling
+        DefaultCaret caret = new DefaultCaret();
+        caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+
+        JTextArea text = new JTextArea();
+        text.setEditable(false);
+        text.setFont(Font.decode(Font.MONOSPACED));
+        text.setCaret(caret);
+        return text;
     }
     
     public void printLine(String line) {

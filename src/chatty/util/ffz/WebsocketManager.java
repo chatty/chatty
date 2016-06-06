@@ -8,10 +8,12 @@ import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.settings.Settings;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -29,7 +31,7 @@ public class WebsocketManager {
     
     private final static String VERSION = "chatty_"+Chatty.VERSION;
     
-    private final Set<String> rooms = new HashSet<>();
+    private final Set<String> rooms = Collections.synchronizedSet(new HashSet<String>());
     private final Map<String, Set<Integer>> prevEmotesets = new HashMap<>();
     private final WebsocketClient c;
     
@@ -45,11 +47,21 @@ public class WebsocketManager {
         this.listener = listener;
         this.settings = settings;
         
+        /**
+         * These methods may be called out of a lock on the WebsocketClient
+         * instance, so to be safe this usually shouldn't call anything that
+         * creates a lock which may also access the WebsocketClient instance.
+         */
         c = new WebsocketClient(new WebsocketClient.MessageHandler() {
 
             @Override
             public void handleReceived(String text) {
-                listener.wsInfo(">> "+text);
+                listener.wsInfo("<-- "+text);
+            }
+            
+            @Override
+            public void handleSent(String sent) {
+                listener.wsInfo("--> "+sent);
             }
 
             @Override
@@ -64,19 +76,20 @@ public class WebsocketManager {
                 }
             }
 
+            /**
+             * This is still locked with the WebsocketClient instance, which
+             * ensures this is completed before anything else can be send (e.g.
+             * by addRoom()).
+             */
             @Override
             public void handleConnect() {
                 c.sendCommand("hello", JSONUtil.listToJSON(VERSION, false));
-                for (String room : rooms) {
+                for (String room : getRooms()) {
                     subRoom(room);
                 }
                 c.sendCommand("ready", "0");
             }
             
-            @Override
-            public void handleSent(String sent) {
-                listener.wsInfo("SENT: "+sent);
-            }
         });
     }
     
@@ -88,18 +101,29 @@ public class WebsocketManager {
         };
     }
     
+    /**
+     * Thread-safe defensive copy of the current set of rooms.
+     * 
+     * @return 
+     */
+    private Set<String> getRooms() {
+        synchronized (rooms) {
+            return new HashSet<>(rooms);
+        }
+    }
+    
     public String getStatus() {
         return c.getStatus();
     }
     
-    public synchronized void connect() {
+    public void connect() {
         if (!settings.getBoolean("ffz") || !settings.getBoolean("ffzEvent")) {
             return;
         }
         c.connect(getServers());
     }
     
-    public synchronized void disconnect() {
+    public void disconnect() {
         c.disonnect();
     }
     
@@ -153,7 +177,7 @@ public class WebsocketManager {
             serverTimeOffset = System.currentTimeMillis() - serverTime;
             LOGGER.info("[FFZ-WS] Server Time Offset: "+serverTimeOffset);
         } catch (Exception ex) {
-            LOGGER.warning("Error parsing 'hello' response: "+ex);
+            LOGGER.warning(String.format("[FFZ-WS] Error parsing 'hello' response: %s [%s]", ex, json));
         }
     }
     
@@ -178,7 +202,7 @@ public class WebsocketManager {
                 }
             }
         } catch (Exception ex) {
-            LOGGER.warning("[FFZ] Error parsing 'follow_sets': "+ex+" ["+json+"]");
+            LOGGER.warning(String.format("[FFZ-WS] Error parsing 'follow_sets': %s [%s]", ex, json));
         }
     }
     

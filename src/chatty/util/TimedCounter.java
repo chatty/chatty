@@ -35,6 +35,10 @@ public class TimedCounter {
         this.accuracy = accuracy;
     }
     
+    public int getCount() {
+        return getCount(true);
+    }
+    
     /**
      * Gets the current count of elements.
      * 

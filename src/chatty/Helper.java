@@ -155,7 +155,7 @@ public class Helper {
     }
     
     /**
-     * Removes any # from the String.
+     * Removes a leading # from the channel, if present.
      * 
      * @param channel
      * @return 
@@ -164,7 +164,10 @@ public class Helper {
         if (channel == null) {
             return null;
         }
-        return channel.replace("#", "");
+        if (channel.startsWith("#")) {
+            return channel.substring(1);
+        }
+        return channel;
     }
     
     /**
@@ -555,9 +558,14 @@ public class Helper {
         if (duration < 120) {
             return String.format("%ds", duration);
         }
-        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
+        NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(1);
-        return String.format("%sm", nf.format(Math.round(duration/30.0)*30/60.0));
+        
+        if (duration < DateTime.HOUR*2) {
+            return String.format("%sm", nf.format(Math.round(duration/30.0)*30/60.0));
+        }
+        duration = duration / 60;
+        return String.format("%sh", nf.format(Math.round(duration/30.0)*30/60.0));
     }
     
     

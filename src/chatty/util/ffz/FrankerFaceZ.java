@@ -72,10 +72,12 @@ public class FrankerFaceZ {
     }
     
     public void joined(String room) {
+        room = Helper.toStream(room);
         ws.addRoom(room);
     }
     
     public void left(String room) {
+        room = Helper.toStream(room);
         ws.removeRoom(room);
     }
     

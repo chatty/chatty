@@ -17,7 +17,7 @@ public class Logging {
     public static final Level USERINFO = new UserinfoLevel();
     
     private static final String LOG_FILE = Chatty.getDebugLogDirectory()+"debug%g.log";
-    private static final String LOG_FILE2 = Chatty.getDebugLogDirectory()+"debug_session.log";
+    private static final String LOG_FILE_SESSION = Chatty.getDebugLogDirectory()+"debug_session.log";
     private static final String LOG_FILE_IRC = Chatty.getDebugLogDirectory()+"debug_irc%g.log";
     
     /**
@@ -25,7 +25,7 @@ public class Logging {
      */
     private static final int MAX_LOG_SIZE = 1024*1024*2;
     
-    private static final int MAX_SESSION_LOG_SIZE = 1024*1024*100;
+    private static final int MAX_SESSION_LOG_SIZE = 1024*1024*20;
     
     /**
      * How many log files to rotate through when the file reaches maximum size.
@@ -60,11 +60,11 @@ public class Logging {
             file.setFilter(new FileFilter());
             Logger.getLogger("").addHandler(file);
             
-            FileHandler file2 = new FileHandler(LOG_FILE2, MAX_SESSION_LOG_SIZE, 1);
-            file2.setFormatter(new TextFormatter());
-            file2.setLevel(Level.INFO);
-            file2.setFilter(new FileFilter());
-            Logger.getLogger("").addHandler(file2);
+            FileHandler fileSession = new FileHandler(LOG_FILE_SESSION, MAX_SESSION_LOG_SIZE, 1);
+            fileSession.setFormatter(new TextFormatter());
+            fileSession.setLevel(Level.INFO);
+            fileSession.setFilter(new FileFilter());
+            Logger.getLogger("").addHandler(fileSession);
         } catch (IOException | SecurityException ex) {
             Logger.getLogger(Logging.class.getName()).log(Level.WARNING, null, ex);
         }
@@ -76,6 +76,10 @@ public class Logging {
             public void publish(LogRecord record) {
                 if (record.getLevel() != USERINFO) {
                     client.debug(record.getMessage());
+                    // WebsocketClient/WebsocketManager
+                    if (record.getSourceClassName().startsWith("chatty.util.ffz.Websocket")) {
+                        client.debugFFZ(record.getMessage());
+                    }
                 }
                 if (record.getLevel() == Level.SEVERE) {
                     if (client.g != null) {

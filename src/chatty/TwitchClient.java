@@ -457,6 +457,7 @@ public class TwitchClient {
         else { // Always remove channel (or try to), so it can be closed even if it bugged out
             logViewerstats(channel);
             c.closeChannel(channel);
+            frankerFaceZ.left(channel);
             g.removeChannel(channel);
             chatLog.closeChannel(channel);
         }
@@ -1103,6 +1104,16 @@ public class TwitchClient {
             frankerFaceZ.connectWs();
         } else if (command.equals("wsdisconnect")) {
             frankerFaceZ.disconnectWs();
+        } else if (command.equals("loadsoferrors")) {
+            for (int i=0;i<10000;i++) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Helper.unhandledException();
+                    }
+                });
+            }
         }
     }
     
@@ -1465,6 +1476,13 @@ public class TwitchClient {
                 g.printDebug(line);
             }
         }
+    }
+    
+    public void debugFFZ(String line) {
+        if (shuttingDown || g == null) {
+            return;
+        }
+        g.printDebugFFZ(line);
     }
     
     /**
@@ -1973,14 +1991,14 @@ public class TwitchClient {
             // Icons and FFZ/BTTV Emotes
             api.requestChatIcons(Helper.toStream(channel), false);
             requestChannelEmotes(channel);
-            frankerFaceZ.joined(Helper.toStream(channel));
+            frankerFaceZ.joined(channel);
         }
 
         @Override
         public void onChannelLeft(String channel) {
             chatLog.info(channel, "You have left "+channel);
             closeChannel(channel);
-            frankerFaceZ.left(Helper.toStream(channel));
+            frankerFaceZ.left(channel);
         }
 
         @Override

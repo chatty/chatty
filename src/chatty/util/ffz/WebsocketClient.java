@@ -4,12 +4,16 @@ package chatty.util.ffz;
 import chatty.util.DateTime;
 import static chatty.util.MiscUtil.getStackTrace;
 import chatty.util.SSLUtil;
+import chatty.util.TimedCounter;
 import chatty.util.ffz.WebsocketClient.MyConfigurator;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import javax.websocket.ClientEndpoint;
@@ -20,6 +24,7 @@ import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
@@ -35,7 +40,11 @@ public class WebsocketClient {
     
     private final static Logger LOGGER = Logger.getLogger(WebsocketClient.class.getName());
 
+    private static final long PING_INTERVAL = 10*60*1000; // 10 minutes
+    
     private final MessageHandler handler;
+    
+    private final TimedCounter disconnectsPerHour = new TimedCounter(60*60*1000, 0);
     
     private volatile boolean requestedDisconnect;
     private int connectionAttempts;
@@ -50,6 +59,9 @@ public class WebsocketClient {
     private long timeConnected;
     private long timeLastMessageReceived;
     private long timeLastMessageSent;
+    private long lastMeasuredLatency;
+    private long timeLatencyMeasured;
+    private int totalConnects;
 
     public WebsocketClient(MessageHandler handler) {
         this.handler = handler;
@@ -59,9 +71,11 @@ public class WebsocketClient {
      * The way it is now, this will only work once, because this is intended to
      * stay connected.
      * 
-     * @param servers 
+     * @param servers Connect to one of these servers, randomly selected
      */
     public synchronized void connect(String[] servers) {
+        // Stuff may have to be changed to only run once/be stopped if this is
+        // removed
         if (connecting) {
             return;
         }
@@ -75,6 +89,16 @@ public class WebsocketClient {
                 connectToRandomServer();
             }
         }).start();
+        
+        // Ping Timer (should only be started once)
+        Timer ping = new Timer(true);
+        ping.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                sendPing();
+            }
+        }, PING_INTERVAL, PING_INTERVAL);
     }
     
     /**
@@ -90,14 +114,17 @@ public class WebsocketClient {
             return String.format("Connected for %s\n"
                     + "\tServer: %s\n"
                     + "\tCommands sent: %d (last %s ago)\n"
-                    + "\tMessages received: %d (last %s ago)",
+                    + "\tMessages received: %d (last %s ago)\n"
+                    + "\tLatency: %dms (%s)",
                     
                     DateTime.ago(timeConnected),
                     s.getRequestURI(),
                     sentCount,
                     DateTime.ago(timeLastMessageSent),
                     receivedCount,
-                    DateTime.ago(timeLastMessageReceived));
+                    DateTime.ago(timeLastMessageReceived),
+                    lastMeasuredLatency,
+                    timeLatencyMeasured == 0 ? "not yet measured" : "measured "+DateTime.ago(timeLatencyMeasured)+" ago");
         }
         return "Connecting..";
     }
@@ -177,9 +204,11 @@ public class WebsocketClient {
             if (requestedDisconnect) {
                 return false;
             }
+            disconnectsPerHour.increase();
             connectionAttempts++;
             LOGGER.info("[FFZ-WS] Reconnecting in "+getDelay()+"s");
-            return true;
+            reconnect(getDelay());
+            return false;
         }
 
         @Override
@@ -195,6 +224,22 @@ public class WebsocketClient {
                     exception,
                     exception.getCause().toString()));
             
+            reconnect(getDelay());
+            return false;
+        }
+
+        @Override
+        public long getDelay() {
+            /**
+             * Wait longer if connection doesn't succeed, however too many
+             * disconnects after a successful connections in a short period of
+             * time should slow down connecting as well, just in case.
+             */
+            int disconnects = disconnectsPerHour.getCount();
+            return connectionAttempts*connectionAttempts+disconnects*disconnects;
+        }
+        
+        private void reconnect(long delay) {
             // Reconnect manually, so that the server can be changed
             new java.util.Timer().schedule(
                     new java.util.TimerTask() {
@@ -203,14 +248,8 @@ public class WebsocketClient {
                             connectToRandomServer();
                         }
                     },
-                    getDelay()*1000
+                    delay*1000
             );
-            return false;
-        }
-
-        @Override
-        public long getDelay() {
-            return connectionAttempts*connectionAttempts;
         }
     }
     
@@ -230,9 +269,12 @@ public class WebsocketClient {
     /**
      * Send a message to the server. Does nothing if the connection is not open.
      * 
+     * <p>You normally shouldn't use this directly. Use {@link sendCommand(String, String) sendCommand}
+     * instead.</p>
+     * 
      * @param text 
      */
-    public synchronized void send(String text) {
+    private synchronized void send(String text) {
         if (s != null && s.isOpen()) {
             s.getAsyncRemote().sendText(text);
             System.out.println("SENT: "+text);
@@ -246,13 +288,34 @@ public class WebsocketClient {
      * 
      * <p>Automatically increases and prefixes the command counter.</p>
      * 
-     * @param command
-     * @param param 
+     * @param command The command
+     * @param param The parameter
      */
     public synchronized void sendCommand(String command, String param) {
         if (s != null && s.isOpen()) {
             sentCount++;
-            send(String.format("%d %s %s", sentCount, command, param));
+            if (param == null) {
+                send(String.format("%d %s", sentCount, command));
+            } else {
+                send(String.format("%d %s %s", sentCount, command, param));
+            }
+        }
+    }
+    
+    /**
+     * Send a protocol-level Ping message with the current time as payload. Does
+     * nothing if not currently connected.
+     */
+    private synchronized void sendPing() {
+        if (s != null && s.isOpen()) {
+            try {
+                ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+                buffer.putLong(0, System.currentTimeMillis());
+                s.getAsyncRemote().sendPing(buffer);
+                System.out.println("Sending"+buffer);
+            } catch (Exception ex) {
+                LOGGER.warning("[FFZ-WS] Failed to send ping: "+ex);
+            }
         }
     }
     
@@ -273,11 +336,12 @@ public class WebsocketClient {
     @OnOpen
     public synchronized void onOpen(Session session) {
         s = session;
+        connectionAttempts = 0;
         sentCount = 0;
         receivedCount = 0;
         requestedDisconnect = false;
-        connectionAttempts = 0;
-        LOGGER.info("[FFZ-WS] Connected");
+        totalConnects++;
+        LOGGER.info("[FFZ-WS] Connected ("+totalConnects+")");
         handler.handleConnect();
         timeConnected = System.currentTimeMillis();
     }
@@ -298,14 +362,38 @@ public class WebsocketClient {
             }
             handleCommand(id, command, params);
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException ex) {
-            LOGGER.warning("Invalid message: "+message);
+            LOGGER.warning("[FFZ-WS] Invalid message: "+message);
+        }
+    }
+    
+    /**
+     * Receive Pong response, take the time from the payload and calculate
+     * latency.
+     * 
+     * @param message 
+     */
+    @OnMessage
+    public synchronized void onPong(PongMessage message) {
+        try {
+            long timeSent = message.getApplicationData().getLong();
+            long latency = System.currentTimeMillis() - timeSent;
+            lastMeasuredLatency = latency;
+            timeLatencyMeasured = System.currentTimeMillis();
+            if (latency > 200) {
+                LOGGER.info(String.format("[FFZ-WS] High Latency (%dms)",
+                        System.currentTimeMillis() - timeSent));
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("[FFZ-WS] Invalid Pong message: "+ex);
         }
     }
 
     @OnClose
     public synchronized void onClose(Session session, CloseReason closeReason) {
         s = null;
-        LOGGER.info(String.format("[FFZ-WS] Session closed [%s]", closeReason));
+        LOGGER.info(String.format("[FFZ-WS] Session closed after %s [%s]",
+                DateTime.ago(timeConnected),
+                closeReason));
     }
     
     @OnError
