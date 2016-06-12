@@ -153,6 +153,8 @@ public class SettingsManager {
         settings.setFile("token_subs", loginFile);
         settings.addBoolean("token_chat", false);
         settings.setFile("token_chat", loginFile);
+        settings.addBoolean("token_follow", false);
+        settings.setFile("token_follow", loginFile);
 
         //=================
         // Appearance / GUI

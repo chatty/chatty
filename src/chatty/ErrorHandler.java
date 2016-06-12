@@ -1,6 +1,7 @@
     
 package chatty;
 
+import chatty.util.TimedCounter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -15,9 +16,15 @@ public class ErrorHandler implements UncaughtExceptionHandler {
 
     private final static Logger LOGGER = Logger.getLogger(ErrorHandler.class.getName());
 
+    private final TimedCounter counter = new TimedCounter(60*1000, 0);
     
     @Override
     public void uncaughtException(Thread t, Throwable e) {
+        counter.increase();
+        if (counter.getCount(false) > 1000) {
+            LOGGER.warning("Over 1000 errors in a minute, exiting application.");
+            System.exit(1);
+        }
         if (e == null && t != null) {
             LOGGER.severe("Unknown exception in thread "+t.toString());
             return;

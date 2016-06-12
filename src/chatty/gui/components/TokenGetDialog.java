@@ -42,7 +42,8 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     private final JCheckBox includeReadUserAccess = new JCheckBox("Read user info (followed streams)");
     private final JCheckBox includeEditorAccess = new JCheckBox("Editor access (edit stream title/game)");
     private final JCheckBox includeCommercialAccess = new JCheckBox("Allow running ads");
-    private final JCheckBox includeShowSubsAccess = new JCheckBox("Show your subscribers");
+    private final JCheckBox includeShowSubsAccess = new JCheckBox("View your subscribers");
+    private final JCheckBox includeFollowAccess = new JCheckBox("Follow channels");
     
     private String currentUrl = TwitchClient.REQUEST_TOKEN_URL;
     
@@ -64,6 +65,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         includeEditorAccess.setSelected(true);
         includeCommercialAccess.setSelected(true);
         includeShowSubsAccess.setSelected(true);
+        includeFollowAccess.setSelected(true);
         
         // Options
         gbc = makeGridBagConstraints(0, 1, 2, 1, GridBagConstraints.WEST);
@@ -71,35 +73,43 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         includeReadUserAccess.setToolTipText("To get notified when streams you "
                 + "follow go online.");
         add(includeReadUserAccess, gbc);
+        
         gbc = makeGridBagConstraints(0, 2, 2, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(0,5,0,5);
         includeEditorAccess.setToolTipText("To be able to edit your channel's title and game.");
         add(includeEditorAccess,gbc);
+        
         gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.WEST);
         gbc.insets = new Insets(0,5,0,5);
         includeCommercialAccess.setToolTipText("To be able to run commercials on your stream.");
         add(includeCommercialAccess,gbc);
+        
         gbc = makeGridBagConstraints(0,4,2,1,GridBagConstraints.WEST);
-        gbc.insets = new Insets(0,5,5,5);
+        gbc.insets = new Insets(0,5,0,5);
         includeShowSubsAccess.setToolTipText("To be able to show the list of your subscribers.");
         add(includeShowSubsAccess,gbc);
         
+        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
+        gbc.insets = new Insets(0,5,5,5);
+        includeFollowAccess.setToolTipText("To be able to follow channels.");
+        add(includeFollowAccess,gbc);
+        
         // URL Display and Buttons
-        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.CENTER);
+        gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.CENTER);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         urlField.setEditable(false);
         add(urlField, gbc);
-        gbc = makeGridBagConstraints(0,6,1,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(0,7,1,1,GridBagConstraints.EAST);
         gbc.insets = new Insets(0,5,10,5);
         add(copyUrl,gbc);
-        gbc = makeGridBagConstraints(1,6,1,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(1,7,1,1,GridBagConstraints.EAST);
         gbc.insets = new Insets(0,0,10,5);
         add(openUrl,gbc);
         
         // Status and Close Button
-        add(status,makeGridBagConstraints(0,7,2,1,GridBagConstraints.CENTER));
-        add(close,makeGridBagConstraints(1,8,1,1,GridBagConstraints.EAST));
+        add(status,makeGridBagConstraints(0,8,2,1,GridBagConstraints.CENTER));
+        add(close,makeGridBagConstraints(1,9,1,1,GridBagConstraints.EAST));
         
         openUrl.addActionListener(this);
         copyUrl.addActionListener(this);
@@ -109,6 +119,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         includeCommercialAccess.addItemListener(this);
         includeReadUserAccess.addItemListener(this);
         includeShowSubsAccess.addItemListener(this);
+        includeFollowAccess.addItemListener(this);
         
         reset();
         updateUrl();
@@ -171,6 +182,9 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         }
         if (includeShowSubsAccess.isSelected()) {
             url += "+channel_subscriptions";
+        }
+        if (includeFollowAccess.isSelected()) {
+            url += "+user_follows_edit";
         }
         currentUrl = url;
         urlField.setText(url);

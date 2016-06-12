@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.Usericon;
+import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.FollowerManager.Type;
@@ -42,7 +43,7 @@ public class TwitchApi {
     enum RequestType {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
-        SUBSCRIBERS, USERINFO, CHAT_SERVER
+        SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW
     }
     
     public enum RequestResult {
@@ -368,6 +369,30 @@ public class TwitchApi {
         }
     }
     
+    public void followChannel(String user, String target) {
+        String url = String.format(
+                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
+                user,
+                target.toLowerCase());
+        if (attemptRequest(url, target)) {
+            TwitchApiRequest request = new TwitchApiRequest(this, RequestType.FOLLOW, url, defaultToken);
+            request.setRequestType("PUT");
+            executor.execute(request);
+        }
+    }
+    
+    public void unfollowChannel(String user, String target) {
+        String url = String.format(
+                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
+                user,
+                target.toLowerCase());
+        if (attemptRequest(url, target)) {
+            TwitchApiRequest request = new TwitchApiRequest(this, RequestType.UNFOLLOW, url, defaultToken);
+            request.setRequestType("DELETE");
+            executor.execute(request);
+        }
+    }
+    
     /**
      * Called by the request thread to work on the result of the request.
      * 
@@ -505,6 +530,39 @@ public class TwitchApi {
             String stream = removeRequest(url);
             subscriberManager.received(responseCode, stream, result);
         }
+        else if (type == RequestType.FOLLOW) {
+            String target = removeRequest(url);
+            System.out.println(result);
+            if (responseCode == 200) {
+                long followTime = followGetTime(result);
+                if (followTime != -1 && System.currentTimeMillis() - followTime > 5000) {
+                    resultListener.followResult(String.format("Already following '%s' (since %s)",
+                            target,
+                            DateTime.ago(followTime, 0, 1, 0, DateTime.Formatting.VERBOSE)));
+                } else {
+                    resultListener.followResult("Now following '"+target+"'");
+                }
+            } else if (responseCode == 404) {
+                resultListener.followResult("Couldn't follow '"+target+"' (channel not found)");
+            } else if (responseCode == 401) {
+                resultListener.followResult("Couldn't follow '"+target+"' (access denied)");
+            } else {
+                resultListener.followResult("Couldn't follow '"+target+"' (unknown error)");
+            }
+        }
+        else if (type == RequestType.UNFOLLOW) {
+            String target = removeRequest(url);
+            System.out.println(result);
+            if (responseCode == 204) {
+                resultListener.followResult("No longer following '"+target+"'");
+            } else if (responseCode == 404) {
+                resultListener.followResult("Couldn't unfollow '"+target+"' (channel not found)");
+            } else if (responseCode == 401) {
+                resultListener.followResult("Couldn't unfollow '"+target+"' (access denied)");
+            } else {
+                resultListener.followResult("Couldn't unfollow '"+target+"' (unknown error)");
+            }
+        }
     }
     
     /**
@@ -633,8 +691,9 @@ public class TwitchApi {
             boolean chatAccess = scopes.contains("chat_login");
             boolean userAccess = scopes.contains("user_read");
             boolean readSubscriptions = scopes.contains("channel_subscriptions");
+            boolean userEditFollows = scopes.contains("user_follows_edit");
             
-            return new TokenInfo(username, chatAccess, allowEditor, allowCommercials, userAccess, readSubscriptions);
+            return new TokenInfo(username, chatAccess, allowEditor, allowCommercials, userAccess, readSubscriptions, userEditFollows);
         }
         catch (ParseException e) {
             return null;
@@ -812,5 +871,16 @@ public class TwitchApi {
             LOGGER.warning("Error parsing server: "+ex);
         }
         return null;
+    }
+    
+    private long followGetTime(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(json);
+            long time = Util.parseTime((String)root.get("created_at"));
+            return time;
+        } catch (Exception ex) {
+            return -1;
+        }
     }
 }

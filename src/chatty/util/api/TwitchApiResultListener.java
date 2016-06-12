@@ -35,4 +35,11 @@ public interface TwitchApiResultListener {
     void receivedDisplayName(String name, String displayName);
     
     void receivedServer(String channel, String server);
+    
+    /**
+     * Human-readable result message.
+     * 
+     * @param message 
+     */
+    void followResult(String message);
 }

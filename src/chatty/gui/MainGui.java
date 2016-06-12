@@ -1642,6 +1642,14 @@ public class MainGui extends JFrame implements Runnable {
                 } else {
                     printLine("Can't host more than one channel.");
                 }
+            } else if (cmd.equals("follow")) {
+                for (String stream : streams) {
+                    client.commandFollow(null, stream);
+                }
+            } else if (cmd.equals("unfollow")) {
+                for (String stream : streams) {
+                    client.commandUnfollow(null, stream);
+                }
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             }
@@ -3391,6 +3399,7 @@ public class MainGui extends JFrame implements Runnable {
             client.settings.setBoolean("token_commercials", info.channel_commercials);
             client.settings.setBoolean("token_user", info.user_read);
             client.settings.setBoolean("token_subs", info.channel_subscriptions);
+            client.settings.setBoolean("token_follow", info.user_follows_edit);
         }
         else {
             resetTokenScopes();
@@ -3407,7 +3416,8 @@ public class MainGui extends JFrame implements Runnable {
         boolean editor = client.settings.getBoolean("token_editor");
         boolean user = client.settings.getBoolean("token_user");
         boolean subscriptions = client.settings.getBoolean("token_subs");
-        tokenDialog.updateAccess(chat, editor, commercials, user, subscriptions);
+        boolean follow = client.settings.getBoolean("token_follow");
+        tokenDialog.updateAccess(chat, editor, commercials, user, subscriptions, follow);
         adminDialog.updateAccess(editor, commercials);
     }
     
@@ -3417,6 +3427,7 @@ public class MainGui extends JFrame implements Runnable {
         client.settings.setBoolean("token_editor", false);
         client.settings.setBoolean("token_user", false);
         client.settings.setBoolean("token_subs", false);
+        client.settings.setBoolean("token_follow", false);
     }
     
     public void showTokenWarning() {

@@ -81,7 +81,11 @@ public class ContextMenuHelper {
             m.addItem("join", "Join " + count + "channel" + s);
             m.addSeparator();
             m.addItem("hostchannel", "Host Channel", miscSubmenu);
+            m.addSeparator(miscSubmenu);
             m.addItem("copy", "Copy Stream Name", miscSubmenu);
+            m.addSeparator(miscSubmenu);
+            m.addItem("follow", "Follow Channel", miscSubmenu);
+            m.addItem("unfollow", "Unfollow Channel", miscSubmenu);
         }
     }
     

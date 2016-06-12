@@ -136,7 +136,7 @@ public class TokenDialog extends JDialog {
      * @param subs 
      */
     public void updateAccess(boolean chat, boolean editor, boolean commercial,
-            boolean user, boolean subs) {
+            boolean user, boolean subs, boolean follow) {
         boolean empty = currentUsername.isEmpty() || currentToken.isEmpty();
         access.setVisible(!empty);
         accessLabel.setVisible(!empty);
@@ -146,7 +146,8 @@ public class TokenDialog extends JDialog {
         b.append(accessStatusImage(user)).append("&nbsp;Read user info<br />");
         b.append(accessStatusImage(editor)).append("&nbsp;Editor access<br />");
         b.append(accessStatusImage(commercial)).append("&nbsp;Run commercials<br />");
-        b.append(accessStatusImage(subs)).append("&nbsp;Show subscribers");
+        b.append(accessStatusImage(subs)).append("&nbsp;Show subscribers<br />");
+        b.append(accessStatusImage(follow)).append("&nbsp;Follow channels");
 
         access.setText(b.toString());
         update();

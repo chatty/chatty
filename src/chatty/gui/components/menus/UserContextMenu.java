@@ -17,7 +17,7 @@ public class UserContextMenu extends ContextMenu {
     private final ContextMenuListener listener;
     private final User user;
     
-    private static final String MISC = "Miscellaneous";
+    private static final String MISC_MENU = "Miscellaneous";
     
     public UserContextMenu(User user, ContextMenuListener listener) {
         this.listener = listener;
@@ -30,10 +30,14 @@ public class UserContextMenu extends ContextMenu {
         addItem("join","Join #"+user.getNick());
         addSeparator();
         
-        addItem("copy", "Copy Name", MISC);
-        addSeparator(MISC);
-        ContextMenuHelper.addIgnore(this, user.nick, MISC, false);
-        ContextMenuHelper.addIgnore(this, user.nick, MISC, true);
+        // Misc Submenu
+        addItem("copy", "Copy Name", MISC_MENU);
+        addSeparator(MISC_MENU);
+        ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, false);
+        ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, true);
+        addSeparator(MISC_MENU);
+        addItem("follow", "Follow", MISC_MENU);
+        addItem("unfollow", "Unfollow", MISC_MENU);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user

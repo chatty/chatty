@@ -71,7 +71,7 @@ public class StreamInfo {
     // How long a stats range can be at most
     private static final int VIEWERSTATS_MAX_LENGTH = 35*60*1000;
     
-    private static final int RECHECK_OFFLINE_DELAY = 10*1000;
+    private static final int RECHECK_OFFLINE_DELAY = 20*1000;
     
     /**
      * Maximum length in seconds of what should count as a PICNIC (short stream

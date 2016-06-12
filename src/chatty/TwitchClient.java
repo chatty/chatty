@@ -924,6 +924,12 @@ public class TwitchClient {
         //------
         // Other
         //------
+        else if (command.equals("follow")) {
+            commandFollow(channel, parameter);
+        }
+        else if (command.equals("unfollow")) {
+            commandUnfollow(channel, parameter);
+        }
         else if (command.equals("addstreamhighlight")) {
             commandAddStreamHighlight(channel, parameter);
         }
@@ -1339,6 +1345,47 @@ public class TwitchClient {
         }
     }
     
+    /**
+     * Follows the stream given in the parameter, or the channel if no parameter
+     * is given.
+     * 
+     * @param channel
+     * @param parameter 
+     */
+    public void commandFollow(String channel, String parameter) {
+        String user = settings.getString("username");
+        String target = Helper.toStream(channel);
+        if (parameter != null && !parameter.isEmpty()) {
+            target = Helper.toStream(parameter.trim());
+        }
+        if (!Helper.validateStream(target)) {
+            g.printSystem("No valid channel to follow.");
+            return;
+        }
+        if (!Helper.validateStream(user)) {
+            g.printSystem("No valid username.");
+            return;
+        }
+        api.followChannel(user, target);
+    }
+    
+    public void commandUnfollow(String channel, String parameter) {
+        String user = settings.getString("username");
+        String target = Helper.toStream(channel);
+        if (parameter != null && !parameter.isEmpty()) {
+            target = Helper.toStream(parameter.trim());
+        }
+        if (!Helper.validateStream(target)) {
+            g.printSystem("No valid channel to unfollow.");
+            return;
+        }
+        if (!Helper.validateStream(user)) {
+            g.printSystem("No valid username.");
+            return;
+        }
+        api.unfollowChannel(user, target);
+    }
+    
     public void commandAddStreamHighlight(String channel, String parameter) {
         g.printLine(channel, streamHighlights.addHighlight(channel, parameter));
     }
@@ -1604,6 +1651,11 @@ public class TwitchClient {
             else {
                 g.printLine(channel, "An error occured requesting server info.");
             }
+        }
+
+        @Override
+        public void followResult(String message) {
+            g.printSystem(message);
         }
     }
     

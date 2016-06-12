@@ -109,12 +109,12 @@ public class Logging {
 
         @Override
         public String format(LogRecord record) {
-            return String.format("[%1$tT %5$s] %2$s [%3$s/%4$s]\n",
+            return String.format("[%1$tF %1$tT %5$s] %2$s [%3$s/%4$s]\n",
                     new Date(record.getMillis()),
                     record.getMessage(),
                     record.getSourceClassName(),
                     record.getSourceMethodName(),
-                    record.getLevel().getLocalizedName());
+                    record.getLevel().getName());
         }
         
     }

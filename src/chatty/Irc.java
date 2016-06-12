@@ -397,6 +397,11 @@ public abstract class Irc {
                 LOGGER.info("Unknown info message: "+trailing);
             }
         }
+        if (command.equals("USERNOTICE")) {
+            if (parameters.length == 1 && parameters[0].startsWith("#")) {
+                onUsernotice(parameters[0], trailing, tags);
+            }
+        }
         if (command.equals("JOIN")) {
             if (trailing.isEmpty() && parameters.length > 0) {
                 onJoin(parameters[0], nick, prefix);
@@ -687,4 +692,6 @@ public abstract class Irc {
     void onChannelCommand(Map<String, String> tags, String nick, String channel, String command, String trailing) { }
     
     void onCommand(String nick, String command, String parameter, String text, Map<String, String> tags) { }
+    
+    void onUsernotice(String channel, String message, Map<String, String> tags) { }
 }

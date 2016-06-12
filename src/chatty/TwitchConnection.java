@@ -956,6 +956,23 @@ public class TwitchConnection {
                 listener.onInfo(String.format("[Info/%s] %s", channel, text));
             }
         }
+        
+        @Override
+        void onUsernotice(String channel, String text, Map<String, String> tags) {
+            if ("resub".equals(tags.get("msg-id"))) {
+                if (text.isEmpty()) {
+                    listener.onInfo(channel, "[Notification] "+tags.get("system-msg"));
+                } else {
+                    listener.onInfo(channel, "[Notification] "+tags.get("system-msg")+" ["+text+"]");
+                }
+                try {
+                    int months = Integer.parseInt(tags.get("msg-param-months"));
+                    listener.onSubscriberNotification(channel, tags.get("login"), months);
+                } catch (Exception ex) {
+                    // Do nothing
+                }
+            }
+        }
 
         @Override
         void onQueryMessage(String nick, String from, String text) {
