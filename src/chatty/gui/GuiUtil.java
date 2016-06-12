@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.util.MiscUtil;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
@@ -20,6 +21,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -31,6 +33,7 @@ import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
@@ -238,6 +241,7 @@ public class GuiUtil {
             }
             LOGGER.info("Setting LAF to " + laf);
             UIManager.setLookAndFeel(laf);
+            addMacCopyPaste();
         } catch (Exception ex) {
             LOGGER.warning("Failed setting LAF: "+ex);
         }
@@ -318,6 +322,30 @@ public class GuiUtil {
         } catch (IllegalArgumentException ex) {
             // Don't change sorting
         }
+    }
+    
+    /**
+     * Adds the Copy/Paste/Cut shortcuts for Mac (Command instead of Ctrl).
+     * 
+     * <p>Normally the Look&Feel should do that automatically, but for some
+     * reason it doesn't seem to do it.</p>
+     */
+    public static void addMacCopyPaste() {
+        if (MiscUtil.OS_MAC) {
+            addMacCopyPasteTo("TextField.focusInputMap");
+            addMacCopyPasteTo("TextArea.focusInputMap");
+            addMacCopyPasteTo("TextPane.focusInputMap");
+        }
+    }
+    
+    /**
+     * Based on: http://stackoverflow.com/a/7253059/2375667
+     */
+    private static void addMacCopyPasteTo(String key) {
+        InputMap im = (InputMap) UIManager.get(key);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
     }
     
 }
