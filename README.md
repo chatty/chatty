@@ -105,8 +105,9 @@ THE SOFTWARE.
 Notes on building the program yourself
 ======================================
 
-Just create your own Ant/Maven files to build the project or import the sources
-into an IDE. Add the libraries from the /lib folder to your project (as needed).
+The project is compiled using Gradle. Once you've checked it out, you can run
+`gradlew build` to compile and run the tests, and `gradlew release` to package
+the release artifacts.
 
 If you have Hotkey Support enabled (Windows only), you need to include the
 JIntellitype32.dll or the JIntellitype64.dll for the 32/64bit versions of Java
