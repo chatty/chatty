@@ -6,3 +6,4 @@ out/
 chatty.iml
 .idea/
 META-INF/
+.gradle
