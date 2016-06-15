@@ -7,3 +7,4 @@ chatty.iml
 .idea/
 META-INF/
 .gradle
+.nb-gradle

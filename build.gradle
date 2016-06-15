@@ -4,10 +4,11 @@ plugins {
 
 apply plugin: 'java'
 
-/*
- * Gets the version name from the latest Git tag
- */
-def getVersionName = { ->
+// Tells Netbeans what the main class is
+ext.mainClass = 'chatty.Chatty'
+
+// Method that gets the version name from the latest Git tag
+def computeGitVersion = { ->
     def stdout = new ByteArrayOutputStream()
     exec {
         commandLine 'git', 'describe', '--tags'
@@ -16,7 +17,7 @@ def getVersionName = { ->
     return stdout.toString().trim()
 }
 
-version = getVersionName()
+version = computeGitVersion()
 archivesBaseName = 'Chatty'
 
 repositories {
@@ -54,6 +55,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+// The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
+// installed. It allows you to specify the project's Gradle version for everyone that has checked out the project.
 wrapper {
     gradleVersion = '2.13'
 }
@@ -63,11 +66,13 @@ jar {
 
     manifest {
         attributes(
-                'Main-Class': 'chatty.Chatty',
+                'Main-Class': mainClass,
         )
     }
 }
 
+// Builds a jar that includes not only the compiled files from this project, but also the .class files from the
+// dependencies. This removes the need for a separate 'libs' directory when Chatty is installed.
 shadowJar {
     // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
     classifier = null
@@ -76,6 +81,9 @@ shadowJar {
         inheritFrom project.tasks.jar.manifest
     }
 }
+
+// The following are a series of tasks for building the release artifacts. They are bundled into zip files and placed
+// in the 'build/releases' directory.
 
 def releasesDir = new File(buildDir, 'releases')
 
@@ -115,10 +123,12 @@ task hotkey64Zip(type: Zip, group: 'build') {
     archiveName = "${archivesBaseName}_${version}_hotkey_64bit.zip"
 }
 
+// Builds all the release zips
 task releaseZips(group: 'build') {
     dependsOn allPlatformsZip, hotkey32Zip, hotkey64Zip
 }
 
+// Builds the full project, runs the unit tests and packages the release zips.
 task release(group: 'build') {
     dependsOn releaseZips, build
 }
