@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class FollowerInfo {
     
+    public final Follower.Type type;
+    
     /**
      * The list of followers (not necessarily all followers).
      */
@@ -46,11 +48,13 @@ public class FollowerInfo {
     /**
      * Creates a new follower info object.
      * 
+     * @param type
      * @param stream
      * @param followers
      * @param total 
      */
-    public FollowerInfo(String stream, List<Follower> followers, int total) {
+    public FollowerInfo(Follower.Type type, String stream, List<Follower> followers, int total) {
+        this.type = type;
         this.followers = followers;
         this.total = total;
         this.time = System.currentTimeMillis();
@@ -62,10 +66,12 @@ public class FollowerInfo {
     /**
      * Creates a new follower info object for when an error occured.
      * 
+     * @param type
      * @param stream The name of the stream
      * @param error The error message
      */
-    public FollowerInfo(String stream, String error) {
+    public FollowerInfo(Follower.Type type, String stream, String error) {
+        this.type = type;
         this.followers = null;
         this.total = -1;
         this.time = System.currentTimeMillis();

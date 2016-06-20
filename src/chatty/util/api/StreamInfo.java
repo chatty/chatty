@@ -56,6 +56,12 @@ public class StreamInfo {
     private volatile boolean notFound = false;
     
     /**
+     * Other info, added from other sources
+     */
+    private int followerCount = 0;
+    private int subscriberCount = 0;
+    
+    /**
      * The time the stream was changed from online -> offline, so recheck if
      * that actually is correct after some time. If this is -1, then do nothing.
      * Should be set to -1 with EVERY update (received data), except when it's
@@ -734,5 +740,29 @@ public class StreamInfo {
                     + " max:"+Helper.formatViewerCount(max)
                     + " ["+count+"/"+history+"]";
         }
+    }
+    
+    public synchronized boolean setFollowerCount(int followers) {
+        if (followers != this.followerCount) {
+            this.followerCount = followers;
+            return true;
+        }
+        return false;
+    }
+    
+    public synchronized boolean setSubscriberCount(int subscribers) {
+        if (subscribers != this.subscriberCount) {
+            this.subscriberCount = subscribers;
+            return true;
+        }
+        return false;
+    }
+    
+    public synchronized int getFollowerCount() {
+        return followerCount;
+    }
+    
+    public synchronized int getSubscriberCount() {
+        return subscriberCount;
     }
 }

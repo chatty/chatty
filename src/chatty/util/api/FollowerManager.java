@@ -23,10 +23,6 @@ public class FollowerManager {
     
     private static final Logger LOGGER = Logger.getLogger(FollowerManager.class.getName());
 
-    protected enum Type {
-        FOLLOWERS, SUBSCRIBERS
-    }
-
     /**
      * The minimum delay between requests per channel.
      */
@@ -60,12 +56,12 @@ public class FollowerManager {
      * The type of this FollowerManager, which can be either for followers or
      * subscribers.
      */
-    private final Type type;
+    private final Follower.Type type;
     
     private final TwitchApi api;
     private final TwitchApiResultListener listener;
 
-    public FollowerManager(Type type, TwitchApi api, TwitchApiResultListener listener) {
+    public FollowerManager(Follower.Type type, TwitchApi api, TwitchApiResultListener listener) {
         this.type = type;
         this.api = api;
         this.listener = listener;
@@ -118,15 +114,15 @@ public class FollowerManager {
         stream = stream.toLowerCase(Locale.ENGLISH);
         FollowerInfo cachedInfo = cached.get(stream);
         if (cachedInfo == null || checkTimePassed(cachedInfo)) {
-            if (type == Type.FOLLOWERS) {
+            if (type == Follower.Type.FOLLOWER) {
                 api.requestFollowers(stream);
-            } else if (type == Type.SUBSCRIBERS) {
+            } else if (type == Follower.Type.SUBSCRIBER) {
                 api.requestSubscribers(stream);
             }
         } else {
-            if (type == Type.FOLLOWERS) {
+            if (type == Follower.Type.FOLLOWER) {
                 listener.receivedFollowers(cachedInfo);
-            } else if (type == Type.SUBSCRIBERS) {
+            } else if (type == Follower.Type.SUBSCRIBER) {
                 listener.receivedSubscribers(cachedInfo);
             }
         }
@@ -165,12 +161,12 @@ public class FollowerManager {
         if (result != null) {
             noError(stream);
             cached.put(stream, result);
-            if (type == Type.FOLLOWERS) {
+            if (type == Follower.Type.FOLLOWER) {
                 listener.receivedFollowers(result);
                 if (hasNewFollowers(result.followers)) {
                     listener.newFollowers(result);
                 }
-            } else if (type == Type.SUBSCRIBERS) {
+            } else if (type == Follower.Type.SUBSCRIBER) {
                 listener.receivedSubscribers(result);
             }
             requested.add(stream);
@@ -192,11 +188,11 @@ public class FollowerManager {
                 errorMessage = "Request error.";
                 error(stream, 1);
             }
-            FollowerInfo errorResult = new FollowerInfo(stream, errorMessage);
+            FollowerInfo errorResult = new FollowerInfo(type, stream, errorMessage);
             cached.put(stream, errorResult);
-            if (type == Type.FOLLOWERS) {
+            if (type == Follower.Type.FOLLOWER) {
                 listener.receivedFollowers(errorResult);
-            } else if (type == Type.SUBSCRIBERS) {
+            } else if (type == Follower.Type.SUBSCRIBER) {
                 listener.receivedSubscribers(errorResult);
             }
         }
@@ -219,7 +215,7 @@ public class FollowerManager {
             JSONObject data = (JSONObject)root;
             
             Object follows = data.get("follows");
-            if (type == Type.SUBSCRIBERS) {
+            if (type == Follower.Type.SUBSCRIBER) {
                 follows = data.get("subscriptions");
             }
             if (!(follows instanceof JSONArray)) {
@@ -240,7 +236,7 @@ public class FollowerManager {
             LOGGER.warning("Error parsing "+type+": "+ex);
             return null;
         }
-        return new FollowerInfo(stream, result, total);
+        return new FollowerInfo(type, stream, result, total);
     }
     
     private Follower parseFollower(String stream, Object o) {
@@ -291,7 +287,7 @@ public class FollowerManager {
         if (!requested.contains(stream)) {
             newFollow = false;
         }
-        Follower newEntry = new Follower(name, time, refollow, newFollow);
+        Follower newEntry = new Follower(type, name, time, refollow, newFollow);
         if (existingEntry == null) {
             alreadyFollowed.get(stream).put(name.toLowerCase(), newEntry);
         }

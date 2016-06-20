@@ -292,6 +292,8 @@
                 effect when you change it.</em></li>
         <li><strong>Enable FFZ Mod Icon</strong>: Show the FFZ Mod Icon instead of the regular
             Mod Icon (where available). <em>Requires FrankerFaceZ setting to be enabled.</em></li>
+        <li><strong>Enable FFZ Featured Emotes</strong>: Show special FFZ emotes
+            available in some channels (mainly Speedrunning Events).</li>
         <li><strong>Allow animated emotes</strong>: Show animated emotes (BTTV GIF emotes).</li>
         <li><strong>Scale</strong>: The relative size of how emotes are displayed in chat (100% is regular size).</li>
         <li><strong>Maximum Height</strong>: The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</li>
@@ -1068,10 +1070,12 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <h3>Other</h3>
-    <ul>
-        <li><strong>Inform me about new versions</strong>: Checks for new
-        versions every few days and outputs a message about it.</li>
-        <li><strong>Auto-Unhost when your stream goes live</strong>: Automatically
+    <dl class="dl-settings">
+        <dt>Inform me about new versions</dt>
+        <dd>Checks for new versions every few days and outputs a message about it.</dd>
+        
+        <dt>Auto-Unhost when your stream goes live</dt>
+        <dd>Automatically
             sends the <code>/unhost</code> command to your channel if you started
             your stream session in the last 15 minutes and the stream status
             changes (usually from offline -> live).<br />
@@ -1082,11 +1086,14 @@
             <code>autoUnhostStreams</code> setting, via
             <code>/add autoUnhostStreams &lt;streamName&gt;</code>, in order to
             tell Chatty that you are authorized/want to use the automatic <code>/unhost</code>
-            feature in that channel).</li>
-        <li><strong>Titlebar Addition</strong>: Prepend some arbitrary text to
-            the window title. This can be useful if you run several instances of
-            Chatty (to be able to tell them apart more easily).</li>
-    </ul>
+            feature in that channel).</dd>
+        
+        <dt>Prepend to window title</dt>
+        <dd>Add some arbitrary text to the beginning of the window title. This
+            can be useful if you run several instances of Chatty (to be able to
+            tell them apart more easily).</dd>
+    </dl>
+    
     <h3>Write Stream Status</h3>
     <p>You can let Chatty write information (title, game, viewercount) of a
         certain stream to a file. The file will be written to the subfolder <code>exported</code> of the settings directory
@@ -1115,6 +1122,14 @@
         <li><code>%title</code> - The title of the stream</li>
         <li><code>%game</code> - The game of the stream</li>
         <li><code>%viewers</code> - The current viewercount</li>
+        <li><code>%followers</code> - The current number of followers, only
+            updates correctly when the Followers Dialog for this channel is open
+            (Main Menu - Extra - Followers)</li>
+        <li><code>%subscribers</code> - The current number of subscribers, only
+            updates correctly when the Subscribers Dialog for this channel is
+            open (Main Menu - Extra - Subscribers)</li>
+        <li><code>%viewersf</code>, <code>%followersf</code>, <code>%subscribersf</code>
+            - The same as above, but formatted numbers (e.g. <code>1,532</code>)</li>
     </ul>
     <p>Example which will write two files (if joined to #joshimuz):</p>
     <p style="padding-left:10px;">

@@ -7,6 +7,10 @@ package chatty.util.api;
  */
 public class Follower {
     
+    public enum Type { FOLLOWER, SUBSCRIBER }
+    
+    public final Type type;
+    
     /**
      * The name of the follower (display name, so it might not be all
      * lowercase).
@@ -39,7 +43,8 @@ public class Follower {
      * @param refollow Whether it was detected as a refollow
      * @param newFollower Whether it is a new follower in this request
      */
-    public Follower(String name, long time, boolean refollow, boolean newFollower) {
+    public Follower(Type type, String name, long time, boolean refollow, boolean newFollower) {
+        this.type = type;
         this.name = name;
         this.time = time;
         this.refollow = refollow;

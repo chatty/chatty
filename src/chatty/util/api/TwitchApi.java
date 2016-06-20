@@ -7,7 +7,6 @@ import chatty.Usericon;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
-import chatty.util.api.FollowerManager.Type;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -75,8 +74,8 @@ public class TwitchApi {
         this.resultListener = apiResultListener;
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
         emoticonManager = new EmoticonManager(apiResultListener);
-        followerManager = new FollowerManager(Type.FOLLOWERS, this, resultListener);
-        subscriberManager = new FollowerManager(Type.SUBSCRIBERS, this, resultListener);
+        followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
+        subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
         
         executor = Executors.newCachedThreadPool();
     }

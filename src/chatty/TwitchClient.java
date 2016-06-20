@@ -33,6 +33,7 @@ import chatty.util.Webserver;
 import chatty.util.api.EmoticonSizeCache;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
+import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.TwitchApi.RequestResult;
@@ -1616,7 +1617,29 @@ public class TwitchClient {
         public void receivedFollowers(FollowerInfo followerInfo) {
             g.setFollowerInfo(followerInfo);
             followerInfoNames(followerInfo);
-            
+            receivedFollowerOrSubscriberCount(followerInfo);
+        }
+        
+        /**
+         * Set follower/subscriber count in StreamInfo and send to Stream Status
+         * Writer.
+         * 
+         * @param followerInfo 
+         */
+        private void receivedFollowerOrSubscriberCount(FollowerInfo followerInfo) {
+            if (followerInfo.requestError) {
+                return;
+            }
+            StreamInfo streamInfo = api.getStreamInfo(followerInfo.stream, null);
+            boolean changed = false;
+            if (followerInfo.type == Follower.Type.SUBSCRIBER) {
+                changed = streamInfo.setSubscriberCount(followerInfo.total);
+            } else if (followerInfo.type == Follower.Type.FOLLOWER) {
+                changed = streamInfo.setFollowerCount(followerInfo.total);
+            }
+            if (changed && streamInfo.isValid()) {
+                streamStatusWriter.streamStatus(streamInfo);
+            }
         }
 
         @Override
@@ -1628,6 +1651,7 @@ public class TwitchClient {
         public void receivedSubscribers(FollowerInfo info) {
             g.setSubscriberInfo(info);
             followerInfoNames(info);
+            receivedFollowerOrSubscriberCount(info);
         }
         
         private void followerInfoNames(FollowerInfo info) {
@@ -2056,7 +2080,7 @@ public class TwitchClient {
         @Override
         public void onJoin(User user) {
             String channel = user.getChannel();
-            if (settings.getBoolean("showJoinsParts")) {
+            if (settings.getBoolean("showJoinsParts") && showUserInGui(user)) {
                 g.printCompact(channel,"JOIN", user);
             }
             g.playSound("joinPart", channel);
@@ -2074,7 +2098,9 @@ public class TwitchClient {
 
         @Override
         public void onUserUpdated(User user) {
-            g.updateUser(user);
+            if (showUserInGui(user)) {
+                g.updateUser(user);
+            }
             g.updateUserinfo(user);
         }
 
@@ -2132,7 +2158,16 @@ public class TwitchClient {
 
         @Override
         public void onUserAdded(User user) {
-            g.addUser(user.getChannel(), user);
+            if (showUserInGui(user)) {
+                g.addUser(user.getChannel(), user);
+            }
+        }
+        
+        private boolean showUserInGui(User user) {
+            if (!settings.getBoolean("ignoredUsersHideInGUI")) {
+                return true;
+            }
+            return !settings.listContains("ignoredUsers", user.nick);
         }
 
         @Override

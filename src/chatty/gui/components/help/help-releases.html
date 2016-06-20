@@ -44,6 +44,36 @@
         <a name="0.8.3">Version 0.8.3b</a> <a name="latest">(This one!)</a> (2016-??-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p></p>
+    
+    <h3>Full Changelog</h3>
+<pre>
+Improvements
+============
+- Added info to login dialog when token was set through -token parameter
+- Added setting to prevent token from being set through -token parameter when
+  login data is already available in Chatty
+- Added support for FFZ Featured Emotes, which are frequently available in
+  channels of Speedrunning events (not to confuse with FFZ Feature Friday)
+- Added ability to follow/unfollow channels, either through the context menus
+  (under Miscellaneous) or the new commands /follow and /unfollow
+- Added simple search to tables in the Settings Dialog (click into a table
+  column and start typing, Backspace or wait to reset search)
+
+- Restrict size of session debug log file
+- Automatically exit application when too many errors occur (which should never
+  happen, but if it does, this should prevent affecting the rest of the system)
+
+- Added state display for emote-only in titlebar
+- Added display of timeout duration/reason (can be configured in the settings)
+
+- Added some Mac specific shortcuts
+
+Bugfixes
+========
+- Fix not being able to join (and other actions) through context menu for
+  channels that contain spaces in the display name
+</pre>
     
     <h2>
         <a name="0.8.2">Version 0.8.2</a> (2016-04-26)

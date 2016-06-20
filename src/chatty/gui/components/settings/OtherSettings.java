@@ -34,6 +34,8 @@ public class OtherSettings extends SettingsPanel {
             + "<li><code>%title</code> - The stream title</li>"
             + "<li><code>%game</code> - The game being played</li>"
             + "<li><code>%viewers</code> - The viewercount</li>"
+            + "<li><code>%followers</code> / <code>%subscribers</code> - The follower/subscriber count (only when Follower/Subscriber List is open)</li>"
+            + "<li><code>%viewersf</code> / <code>%followersf</code> / <code>%subscribersf</code> - Formatted numbers (e.g. 1,342)</li>"
             + "</ul>"
             + "<p>Example:</p>"
             + "<p><code> joshimuz status.txt %title %game (%viewers)<br />"

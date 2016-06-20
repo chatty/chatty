@@ -441,6 +441,7 @@ public class SettingsManager {
         settings.addBoolean("ignoreShowNotDialog", false);
         settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
         settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
+        settings.addBoolean("ignoredUsersHideInGUI", true);
         
         // Chat Logging
         settings.addString("logMode", "always");

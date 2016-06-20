@@ -169,7 +169,12 @@ public class StreamStatusWriter implements SettingChangeListener {
     private String makeContent(StreamInfo info, String content) {
         content = content.replace("%title", info.getTitle());
         content = content.replace("%game", info.getGame());
+        content = content.replace("%viewersf", Helper.formatViewerCount(info.getViewers()));
+        content = content.replace("%followersf", Helper.formatViewerCount(info.getFollowerCount()));
+        content = content.replace("%subscribersf", Helper.formatViewerCount(info.getSubscriberCount()));
         content = content.replace("%viewers", String.valueOf(info.getViewers()));
+        content = content.replace("%followers", String.valueOf(info.getFollowerCount()));
+        content = content.replace("%subscribers", String.valueOf(info.getSubscriberCount()));
         return content;
     }
     
