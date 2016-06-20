@@ -241,7 +241,7 @@ public class GuiUtil {
             }
             LOGGER.info("Setting LAF to " + laf);
             UIManager.setLookAndFeel(laf);
-            addMacCopyPaste();
+            addMacKeyboardActions();
         } catch (Exception ex) {
             LOGGER.warning("Failed setting LAF: "+ex);
         }
@@ -330,22 +330,39 @@ public class GuiUtil {
      * <p>Normally the Look&Feel should do that automatically, but for some
      * reason it doesn't seem to do it.</p>
      */
-    public static void addMacCopyPaste() {
+    public static void addMacKeyboardActions() {
         if (MiscUtil.OS_MAC) {
-            addMacCopyPasteTo("TextField.focusInputMap");
-            addMacCopyPasteTo("TextArea.focusInputMap");
-            addMacCopyPasteTo("TextPane.focusInputMap");
+            addMacKeyboardActionsTo("TextField.focusInputMap");
+            addMacKeyboardActionsTo("TextArea.focusInputMap");
+            addMacKeyboardActionsTo("TextPane.focusInputMap");
         }
     }
     
     /**
      * Based on: http://stackoverflow.com/a/7253059/2375667
      */
-    private static void addMacCopyPasteTo(String key) {
+    private static void addMacKeyboardActionsTo(String key) {
         InputMap im = (InputMap) UIManager.get(key);
+
+        // Copy/paste actions
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+
+        // Navigation actions
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.META_DOWN_MASK), DefaultEditorKit.beginLineAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.META_DOWN_MASK), DefaultEditorKit.endLineAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK), DefaultEditorKit.previousWordAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK), DefaultEditorKit.nextWordAction);
+
+        // Navigation selection actions
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.selectionBeginLineAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.selectionEndLineAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.selectionPreviousWordAction);
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), DefaultEditorKit.selectionNextWordAction);
+
+        // Other actions
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), DefaultEditorKit.selectAllAction);
     }
     
 }
