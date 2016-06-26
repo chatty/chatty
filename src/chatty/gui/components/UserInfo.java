@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.User.BanMessage;
 import chatty.User.Message;
+import chatty.User.SubMessage;
 import chatty.User.TextMessage;
 import chatty.gui.GuiUtil;
 import chatty.gui.HtmlColors;
@@ -36,6 +37,7 @@ public class UserInfo extends JDialog {
     private static final SimpleDateFormat TIMESTAMP_MESSAGE = new SimpleDateFormat("[HH:mm:ss] ");
     private static final SimpleDateFormat TIMESTAMP_ACTION_MESSAGE = new SimpleDateFormat("[HH:mm:ss]* ");
     private static final SimpleDateFormat TIMESTAMP_SPECIAL = new SimpleDateFormat("[HH:mm:ss]>");
+    private static final SimpleDateFormat TIMESTAMP_SUB = new SimpleDateFormat("[HH:mm:ss]$ ");
     
     public enum Action {
         NONE, TIMEOUT, MOD, UNMOD, COMMAND
@@ -547,6 +549,18 @@ public class UserInfo extends JDialog {
                     b.append(" [").append(bm.reason).append("]");
                 }
                 
+                b.append("\n");
+            }
+            else if (m.getType() == Message.SUB) {
+                SubMessage sm = (SubMessage)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP_SUB));
+                if (sm.months == 1) {
+                    b.append("[new sub] ");
+                }
+                else if (sm.months > 1) {
+                    b.append("[").append(sm.months).append(" months sub] ");
+                }
+                b.append(sm.message);
                 b.append("\n");
             }
         }

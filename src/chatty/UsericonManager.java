@@ -86,6 +86,8 @@ public class UsericonManager {
         addFallbackIcon(Usericon.Type.TURBO, "icon_turbo.png");
         addFallbackIcon(Usericon.Type.GLOBAL_MOD, "icon_globalmod.png");
         addFallbackIcon(Usericon.Type.BOT, "icon_bot.png");
+//        addFallbackIcon(Usericon.Type.RESUB, "icon_sub.png");
+//        addFallbackIcon(Usericon.Type.NEWSUB, "icon_sub.png");
     }
     
     private void addFallbackIcon(Usericon.Type type, String fileName) {

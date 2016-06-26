@@ -33,6 +33,9 @@ public class UserManager {
     private final Map<Integer, String> emotesets = Collections.synchronizedMap(new HashMap<Integer, String>());
     
     private final User errorUser = new User("[Error]", "#[error]");
+    
+    // Stupid hack to get Usericons in ChannelTextPane without a user (twitchnotify messages)
+    public final User dummyUser = new User("", "#[error]");
 
     private CapitalizedNames capitalizedNamesManager;
     private CustomNames customNamesManager;
@@ -89,6 +92,7 @@ public class UserManager {
     
     public void setUsericonManager(UsericonManager manager) {
         usericonManager = manager;
+        dummyUser.setUsericonManager(manager);
     }
     
     public void setUsercolorManager(UsercolorManager manager) {

@@ -3,7 +3,7 @@ package chatty.gui.components;
 
 import chatty.User;
 import chatty.gui.MainGui;
-import chatty.gui.Message;
+import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.StyleServer;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -83,8 +83,8 @@ public class HighlightedMessages extends JDialog {
     public void addMessage(String channel, User user, String text, boolean action,
             TagEmotes emotes, boolean whisper) {
         messageAdded(channel);
-        Message message = new Message(user, text, emotes);
-        message.setWhisper(whisper);
+        UserMessage message = new UserMessage(user, text, emotes);
+        message.whisper = whisper;
         messages.printMessage(message);
     }
     

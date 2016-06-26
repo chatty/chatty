@@ -5,8 +5,6 @@ import chatty.gui.HtmlColors;
 import chatty.util.ImageCache;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,6 +53,8 @@ public class Usericon implements Comparable {
         ADDON(6, "Addon", "ADD", null),
         GLOBAL_MOD(7, "Global Moderator", "GLM", HtmlColors.decode("#0c6f20")),
         BOT(8, "Bot", "BOT", null),
+//        RESUB(9, "Resub", "RSB", null),
+//        NEWSUB(10, "Newsub", "NSB", null),
         UNDEFINED(-1, "Undefined", "UDF", null);
         
         public Color color;

@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.components.UserInfo;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
@@ -44,6 +45,7 @@ import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
+import chatty.gui.components.textpane.SubscriberMessage;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
 import chatty.util.CopyMessages;
@@ -1849,7 +1851,7 @@ public class MainGui extends JFrame implements Runnable {
             if (parameter != null && !parameter.isEmpty()) {
                 message = parameter;
             }
-            Message m = new Message(client.getSpecialUser(), message, null);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null);
             streamChat.printMessage(m);
         } else if (command.equals("livestreamer")) {
             String stream = null;
@@ -2451,12 +2453,12 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 } else {
                     // Print message, but determine how exactly
-                    Message message = new Message(user, text, tagEmotes);
+                    UserMessage message = new UserMessage(user, text, tagEmotes);
                     message.color = highlighter.getLastMatchColor();
                     message.whisper = whisper;
                     message.action = action;
                     if (highlighted) {
-                        message.setHighlighted(highlighted);
+                        message.highlighted = highlighted;
                     } else if (ignored && ignoreMode == IgnoredMessages.MODE_COMPACT) {
                         message.ignored_compact = true;
                     }
@@ -2474,6 +2476,32 @@ public class MainGui extends JFrame implements Runnable {
                     user.setHighlighted();
                 }
                 updateUserInfoDialog(user);
+            }
+        });
+    }
+    
+    public void printSubscriberMessage(final String channel, final User user,
+            final String text, final String message, final int months,
+            final String emotes) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                // Chat window
+                Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
+                SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes);
+                channels.getChannel(channel).printMessage(m);
+                
+                // Chatlog/User Info
+                if (StringUtil.isNullOrEmpty(message)) {
+                    client.chatLog.info(channel, "[Notification] "+text);
+                } else {
+                    client.chatLog.info(channel, String.format("[Notification] %s [%s]", text, message));
+                }
+                if (!user.nick.isEmpty()) {
+                    user.addSub(message != null ? processMessage(message) : "", months);
+                    updateUserInfoDialog(user);
+                }
             }
         });
     }
@@ -2803,9 +2831,8 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Updates a user on the given channel.
+     * Updates a user.
      * 
-     * @param channel
      * @param user 
      */
     public void updateUser(final User user) {

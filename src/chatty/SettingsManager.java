@@ -233,7 +233,6 @@ public class SettingsManager {
         settings.addBoolean("abAutoImport", false);
         settings.addString("abSubMonthsChan", "");
         settings.addList("abSubMonths", new TreeSet(), Setting.LONG);
-        settings.addString("subNotificationPattern", "([^\\s]+) (?:just )?subscribed(?: for (\\d+) months in a row)?!");
         
         // Custom Commands
         settings.addList("commands", new ArrayList(), Setting.STRING);

@@ -52,6 +52,7 @@ public class StyleManager implements StyleServer {
     private Color highlightColor;
     private Color searchResultColor;
     private Color searchResultColor2;
+    private Color infoColor;
     
     private final Settings settings;
     
@@ -82,6 +83,7 @@ public class StyleManager implements StyleServer {
         highlightColor = makeColor("highlightColor");
         searchResultColor = makeColor("searchResultColor");
         searchResultColor2 = makeColor("searchResultColor2");
+        infoColor = makeColor("infoColor");
         
         Style defaultStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
         
@@ -199,6 +201,8 @@ public class StyleManager implements StyleServer {
                 return searchResultColor;
             case "searchResult2":
                 return searchResultColor2;
+            case "info":
+                return infoColor;
         }
         return foregroundColor;
     }

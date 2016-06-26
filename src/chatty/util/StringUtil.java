@@ -162,6 +162,25 @@ public class StringUtil {
         return a+sep+b;
     }
     
+    /**
+     * Checks if any of the String arguments is null or empty.
+     * 
+     * @param input A number of String arguments
+     * @return true if at least one of the arguments is null or empty, false
+     * otherwise
+     */
+    public static boolean isNullOrEmpty(String... input) {
+        if (input == null) {
+            return true;
+        }
+        for (String s : input) {
+            if (s == null || s.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
     }

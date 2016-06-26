@@ -12,7 +12,6 @@ import chatty.gui.UrlOpener;
 import chatty.gui.MainGui;
 import chatty.User;
 import chatty.Usericon;
-import chatty.gui.Message;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -220,12 +219,65 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
  
     /**
-     * Prints a message from a user to the main text area.
+     * Outputs some type of message.
      * 
      * @param message Message object containing all the data
      */
     public void printMessage(Message message) {
+        if (message instanceof UserMessage) {
+            printUserMessage((UserMessage)message);
+        } else if (message instanceof SubscriberMessage) {
+            printSubscriberMessage((SubscriberMessage)message);
+        }
+    }
+    
+    /**
+     * Print the notification when a user has subscribed, which may contain an
+     * attached message from the user which requires special handling.
+     * 
+     * @param message 
+     */
+    private void printSubscriberMessage(SubscriberMessage message) {
+        closeCompactMode();
+        print(getTimePrefix(), styles.info());
+        
+        // Can't decide what to do with the icon yet, so comment out for now
+//        Usericon.Type icon = message.months > 1
+//                ? Usericon.Type.RESUB
+//                : Usericon.Type.NEWSUB;
+//        print("$", styles.getIconStyle(message.user, icon));
+        
+        MutableAttributeSet style;
+        if (message.user.nick.isEmpty()) {
+            // Only dummy User attached (so no custom message attached as well)
+            style = styles.info();
+        } else {
+            /**
+             * This is kind of a hack to allow this message to be clicked and
+             * deleted.
+             * 
+             * Note: For shortening/deleting messages, everything after the User
+             * element is affected, so in this case just the attached message.
+             */
+            style = styles.nick(message.user, styles.info());
+            style.addAttribute(Attribute.IS_USER_MESSAGE, true);
+        }
+        print("[Notification] "+message.text+" ", style);
+        if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
+            print("[", styles.info());
+            // Output with emotes, but don't turn URLs into clickable links
+            printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true);
+            print("]", styles.info());
+        }
+        printNewline();
+    }
 
+    /**
+     * Output a regular message from a user.
+     * 
+     * @param message The object contain all the data
+     */
+    public void printUserMessage(UserMessage message) {
         User user = message.user;
         boolean ignored = message.ignored_compact;
         if (ignored) {
@@ -237,7 +289,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         boolean action = message.action;
         String text = message.text;
         TagEmotes emotes = message.emotes;
-        boolean highlighted = message.isHighlighted();
+        boolean highlighted = message.highlighted;
         if (message.whisper && message.action) {
             color = StyleConstants.getForeground(styles.info());
             highlighted = true;
@@ -258,7 +310,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!highlighted && action && styles.actionColored()) {
             style = styles.standard(user.getDisplayColor());
         }
-        printSpecials(text, user, style, emotes);
+        printSpecials(text, user, style, emotes, false);
         printNewline();
     }
     
@@ -768,6 +820,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          */
         private Component shouldReturnFocusTo;
         
+        /**
+         * If true, don't mark the currently selected line with a different
+         * color.
+         */
+        private boolean subduedHl;
+        
         private LineSelection(final UserListener userListener) {
             
             addFocusListener(new FocusAdapter() {
@@ -912,6 +970,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          */
         private void move(int jump, boolean exitAtBottom) {
             
+            subduedHl = false;
+            
             int count = doc.getDefaultRootElement().getElementCount();
             if (currentSelection != null && !doesLineExist(currentSelection)) {
                 currentSelection = null;
@@ -1004,6 +1064,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             int startOffset = element.getStartOffset();
             int endOffset = element.getEndOffset() - 1;
             int length = endOffset - startOffset;
+//            MutableAttributeSet style = primary && !subduedHl ? styles.searchResult2(primary) : styles.searchResult(primary);
             MutableAttributeSet style = primary ? styles.searchResult2(primary) : styles.searchResult(primary);
             doc.setCharacterAttributes(startOffset, length, style, false);
             if (primary) {
@@ -1044,6 +1105,28 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 }
                 select(line);
             }
+            
+            /**
+             * Mark lines when clicking on User top open User Info Dialog (needs
+             * more testing and probably a setting). This would replace the code
+             * above.
+             */
+//            if (e != null) {
+//                subduedHl = true;
+//                if ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown()) {
+//                    subduedHl = false;
+//                }
+//
+//                Element element = LinkController.getElement(e);
+//                Element line = null;
+//                while (element.getParentElement() != null) {
+//                    line = element;
+//                    element = element.getParentElement();
+//                }
+//                if (line != null) {
+//                    select(line);
+//                }
+//            }
         }
         
         public User getSelectedUser() {
@@ -1263,7 +1346,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     private void printUserIcons(User user) {
         addAddonIcons(user, true);
-        
+
         if (user.isBroadcaster()) {
             print("~", styles.getIconStyle(user, Usericon.Type.BROADCASTER));
         }
@@ -1500,15 +1583,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user 
      * @param style 
      * @param emotes 
+     * @param ignoreLinks 
      */
     protected void printSpecials(String text, User user, MutableAttributeSet style,
-            TagEmotes emotes) {
+            TagEmotes emotes, boolean ignoreLinks) {
         // Where stuff was found
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         // The style of the stuff (basicially metadata)
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
         
-        findLinks(text, ranges, rangesStyle);
+        if (!ignoreLinks) {
+            findLinks(text, ranges, rangesStyle);
+        }
         
         if (styles.showEmoticons()) {
             findEmoticons(text, user, ranges, rangesStyle, emotes);

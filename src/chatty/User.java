@@ -224,6 +224,10 @@ public class User implements Comparable {
         addLine(new BanMessage(System.currentTimeMillis(), duration, reason));
     }
     
+    public synchronized void addSub(String message, int months) {
+        addLine(new SubMessage(System.currentTimeMillis(), message, months));
+    }
+    
     /**
      * Adds a Message.
      * 
@@ -401,6 +405,10 @@ public class User implements Comparable {
      * Sets the default color based on the nick. Based on what bGeorge posted.
      */
     private void setDefaultColor() {
+        // Shouldn't happen expect for the stupid hack to get a User for submessage usericons
+        if (nick.isEmpty()) {
+            return;
+        }
         String name = nick.toLowerCase();
         int n = name.codePointAt(0) + name.codePointAt(name.length() - 1);
         color = defaultColors[n % defaultColors.length];
@@ -731,6 +739,7 @@ public class User implements Comparable {
         
         public static final int MESSAGE = 0;
         public static final int BAN = 1;
+        public static final int SUB = 2;
         
         private final Long time;
         private final int type;
@@ -779,6 +788,18 @@ public class User implements Comparable {
             this.reason = reason;
         }
         
+    }
+    
+    public static class SubMessage extends Message {
+        
+        public final String message;
+        public final int months;
+        
+        public SubMessage(Long time, String message, int months) {
+            super(SUB, time);
+            this.message = message;
+            this.months = months;
+        }
     }
     
 //    public static final void main(String[] args) {

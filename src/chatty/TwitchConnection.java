@@ -80,8 +80,6 @@ public class TwitchConnection {
     private final TwitchCommands twitchCommands;
     private final SpamProtection spamProtection;
     private final ChannelStateManager channelStates = new ChannelStateManager();
-    
-    private Pattern subNotificationPattern;
 
     public TwitchConnection(final ConnectionListener listener, Settings settings,
             String label) {
@@ -113,15 +111,6 @@ public class TwitchConnection {
                 reconnect();
             }
         };
-    }
-    
-    public void setSubNotificationPattern(String text) {
-        try {
-            subNotificationPattern = Pattern.compile(text);
-        } catch (PatternSyntaxException ex) {
-            LOGGER.warning("Invalid sub notification pattern ("+text+"): "+ex);
-            subNotificationPattern = null;
-        }
     }
     
     public void simulate(String data) {
@@ -906,24 +895,7 @@ public class TwitchConnection {
             }
             if (onChannel(channel)) {
                 if (settings.getBoolean("twitchnotifyAsInfo") && nick.equals("twitchnotify")) {
-                    listener.onInfo(channel, "[Notification] " + text);
-                    if (subNotificationPattern != null) {
-                        Pattern p = subNotificationPattern;
-                        Matcher m = p.matcher(text);
-                        if (m.find()) {
-                            String name = null;
-                            int months = 1;
-                            try {
-                                name = m.group(1);
-                                months = Integer.parseInt(m.group(2));
-                            } catch (Exception ex) {
-                                // Do nothing
-                            }
-                            if (name != null) {
-                                listener.onSubscriberNotification(channel, name, months);
-                            }
-                        }
-                    }
+                    listener.onSubscriberNotification(channel, users.dummyUser, text, null, 1, null);
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
@@ -958,19 +930,29 @@ public class TwitchConnection {
         }
         
         @Override
-        void onUsernotice(String channel, String text, Map<String, String> tags) {
+        void onUsernotice(String channel, String message, Map<String, String> tags) {
+            if (tags == null) {
+                return;
+            }
+            if (!onChannel(channel)) {
+                return;
+            }
             if ("resub".equals(tags.get("msg-id"))) {
-                if (text.isEmpty()) {
-                    listener.onInfo(channel, "[Notification] "+tags.get("system-msg"));
-                } else {
-                    listener.onInfo(channel, "[Notification] "+tags.get("system-msg")+" ["+text+"]");
-                }
+                String login = tags.get("login");
+                String text = tags.get("system-msg");
+                String emotes = tags.get("emotes");
+                int months = -1;
                 try {
-                    int months = Integer.parseInt(tags.get("msg-param-months"));
-                    listener.onSubscriberNotification(channel, tags.get("login"), months);
+                    months = Integer.parseInt(tags.get("msg-param-months"));
                 } catch (Exception ex) {
-                    // Do nothing
+                    // Just go with default value
                 }
+                if (StringUtil.isNullOrEmpty(login, text)) {
+                    return;
+                }
+                User user = userJoined(channel, login);
+                updateUserFromTags(user, tags);
+                listener.onSubscriberNotification(channel, user, text, message, months, emotes);
             }
         }
 
@@ -1360,7 +1342,18 @@ public class TwitchConnection {
         
         void onChannelCleared(String channel);
         
-        void onSubscriberNotification(String channel, String name, int months);
+        /**
+         * A notification in chat for a new subscriber or resub.
+         * 
+         * @param channel The channel (never null)
+         * @param user The User object (may be dummy user object with empty
+         * name, but never null)
+         * @param text The notification text (never null or empty)
+         * @param message The attached message (may be null or empty)
+         * @param months The number of subscribed months (may be -1 if invalid)
+         * @param emotes The emotes tag, yet to be parsed (may be null)
+         */
+        void onSubscriberNotification(String channel, User user, String text, String message, int months, String emotes);
         
         void onSpecialMessage(String name, String message);
         

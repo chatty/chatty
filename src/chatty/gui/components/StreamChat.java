@@ -3,17 +3,15 @@ package chatty.gui.components;
 
 import chatty.User;
 import chatty.gui.MainGui;
-import chatty.gui.Message;
 import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.gui.components.textpane.Message;
 import chatty.util.api.Emoticon.EmoticonImage;
-import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
