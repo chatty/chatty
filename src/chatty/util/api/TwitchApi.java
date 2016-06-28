@@ -531,13 +531,12 @@ public class TwitchApi {
         }
         else if (type == RequestType.FOLLOW) {
             String target = removeRequest(url);
-            System.out.println(result);
             if (responseCode == 200) {
                 long followTime = followGetTime(result);
                 if (followTime != -1 && System.currentTimeMillis() - followTime > 5000) {
                     resultListener.followResult(String.format("Already following '%s' (since %s)",
                             target,
-                            DateTime.ago(followTime, 0, 1, 0, DateTime.Formatting.VERBOSE)));
+                            DateTime.ago(followTime, 0, 2, 0, DateTime.Formatting.VERBOSE)));
                 } else {
                     resultListener.followResult("Now following '"+target+"'");
                 }
@@ -551,7 +550,6 @@ public class TwitchApi {
         }
         else if (type == RequestType.UNFOLLOW) {
             String target = removeRequest(url);
-            System.out.println(result);
             if (responseCode == 204) {
                 resultListener.followResult("No longer following '"+target+"'");
             } else if (responseCode == 404) {

@@ -38,6 +38,13 @@ public class AdvancedSettings extends SettingsPanel {
                 "Enables the membership capability while connecting, which allows receiving of joins/parts/userlist"),
                 d.makeGbc(0, 4, 2, 1, GridBagConstraints.NORTHWEST));
         
+        JPanel login = addTitledPanel("Login Settings (login under <Main Menu - Login>)", 2);
+        
+        login.add(d.addSimpleBooleanSetting("allowTokenOverride",
+                "<html><body>Allow <code>-token</code> parameter to override existing token", 
+                "If enabled, the -token commandline argument will replace an existing token (which can cause issues)"),
+                d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
+        
         JPanel whisper = addTitledPanel("Whisper (experimental, read help!)", 3);
         
         whisper.add(

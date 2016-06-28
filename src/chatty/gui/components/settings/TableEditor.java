@@ -763,7 +763,7 @@ public class TableEditor<T> extends JPanel {
         searchColumn = column;
         searchTime = System.currentTimeMillis();
 
-        System.out.println("'" + search + "'");
+        //System.out.println("'" + search + "'");
 
         // Rename header to current search
         table.getColumnModel().getColumn(column).setHeaderValue("[" + search + "]");
@@ -777,7 +777,6 @@ public class TableEditor<T> extends JPanel {
         // Perform search and select first result
         for (int i = 0; i < data.getRowCount(); i++) {
             String item = data.getSearchValueAt(i, column);
-            System.out.println(item);
             if (item.toLowerCase().startsWith(search)) {
                 setRowSelected(indexToView(i));
                 return;

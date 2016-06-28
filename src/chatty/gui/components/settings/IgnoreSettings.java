@@ -176,8 +176,8 @@ public class IgnoreSettings extends SettingsPanel {
             
             gbc = d.makeGbc(0, 3, 2, 1);
             add(d.addSimpleBooleanSetting("ignoredUsersHideInGUI",
-                    "Hide ignored users (chat) from the userlist and joins/parts",
-                    ""),
+                    "Hide 'Ignored in chat' users from the userlist/joins/parts",
+                    "This only applies to users that are not already on the userlist when you ignore them"),
                     gbc);
             
             JButton closeButton = new JButton("Close");

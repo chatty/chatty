@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.3b4)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.3)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -14,7 +14,7 @@
                     <li><a href="#title">Title and Tabs</a></li>
                     <li><a href="#shortcuts">Shortcuts</a></li>
                     <li><a href="#commands">Commands</a></li>
-                    <li><a href="#login">Login data</a></li>
+                    <li><a href="#login">Twitch Login</a></li>
                 </ul>
 
                 <strong>Chat basics</strong>
@@ -112,6 +112,7 @@
         <li><code>Sub</code> for Subscriber-Only Mode</li>
         <li><code>Slow: &lt;time&gt;</code> for Slowmode</li>
         <li><code>R9k</code> for R9Kbeta Mode</li>
+        <li><code>EmoteOnly</code> for Emote-Only Mode</li>
         <li>A language code if Broadcaster Language Mode is enabled</li>
     </ul>
     <p>You can toggle showing some information under <code>View - Options - Titlebar</code>.</p>
@@ -244,7 +245,7 @@
     </ul>
     
     <h2>
-        <a name="login">Login data</a>
+        <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>The login data consists of a <em>username</em> (or account name) and most
@@ -271,6 +272,11 @@
         <dt><code>Show subscribers</code></dt>
         <dd>Required to view the list of your subscribers 
             via the <a href="#followers">Subscribers Dialog</a> (if you have a sub button).</dd>
+        
+        <dt><code>Follow channels</code>
+        <dd>Gives you access to use the context menu (right-click) entries
+            <code>Miscellaneous - Follow/Unfollow Channel</code> and use the
+            <code>/follow</code> and <code>/unfollow</code> commands.</dd>
     </dl>
     
     <p>Once requested from Twitch, the login data is stored locally on your
@@ -278,7 +284,9 @@
         <span style="text-decoration: line-through">Since Twitch gives out the
         access token per application, any access token for the same account
         requested with Chatty will be invalidated when you request a new access
-        token</span>. (This doesn't seem to be the case anymore.)</p>
+        token</span>.
+        <span style="text-decoration: underline">This doesn't seem to be the
+            case anymore.</span></p>
     
     <p>If getting login data fails, read <a href="help-guide2.html">this guide</a>.
         If your login was determined invalid, read <a href="#login-invalid">down below</a>.</p>
@@ -314,21 +322,51 @@
     <h3><a name="login-invalid">Invalid Login</a></h3>
     <p>If your login is determined invalid (either by checking it manually or
     when Chatty performed an automatic check), this can mean one of two things:</p>
-    <ul>
-        <li>Twitch returned false data and your login is actually still valid
-        (which rarely happens, but it is possible).</li>
+    <ol>
+        <li>Your login is actually still valid, Twitch is just derping:
+            <ul>
+                <li>Sometimes the Twitch API won't recognize any login as valid,
+                    for a while. This is likely the reason if other users have
+                    the same issue at the same time.</li>
+                <li>How to proceed:
+                <ul>
+                    <li>In this case, requesting new login data from Twitch probably
+                        won't help at all. Go to <code>&lt;Main - Login..&gt;</code>
+                        to open the <code>Login configuration</code> and click on <code>[Verify login]</code> a few times
+                        (with a few minutes in between attempts).</li>
+                    <li>If you are already connected to chat, you can just stay
+                        connected. Just try <code>[Verify login]</code> a bit later to
+                        be able to use the features that require Twitch
+                        authorization again.</li>
+                    <li>If <code>[Verify login]</code> keeps returning invalid,
+                        even after a while (especially without other users
+                        having the same issue), your login may actually be
+                        invalid.</li>
+                </ul></li>
+            </ul>
+        </li>
         <li>Your login is actually invalid:
             <ul>
-                <li>You have requested new login data for the same Twitch Account from
+                <li><span style="text-decoration: line-through">You have requested new login data for the same Twitch Account from
                     another instance of Chatty, for example on another Computer, which
                     has automatically invalidated the previously requested login data
-                    (access token).</li>
+                    (access token).</span>
+                    <span style="text-decoration: underline">This may or may not
+                        be the case anymore.</span></li>
                 <li>You have just requested login data and something went wrong, or it
                     wasn't loaded properly from the settings.</li>
                 <li>The token was invalidated for some other reason.</li>
+                <li>How to proceed:
+                    <ul>
+                        <li>Go to <code>&lt;Main - Login..&gt;</code> to open
+                            the <code>Login configuration</code> (you may
+                            already have it open), click <code>[Remove login]</code>
+                            and create a new login.</li>
+                    </ul>
+                </li>
             </ul>
         </li>
-    </ul>
+    </ol>
     
     <p>What happens when your login is no longer valid:</p>
     <ul>
@@ -339,22 +377,6 @@
         first place).</li>
         <li>Other features that require authentication won't work properly anymore, like
         the Admin Dialog.</li>
-    </ul>
-    
-    <p>How to proceed:</p>
-    <ul>
-        <li>If it is known or reasonable to assume that Twitch is currently derping,
-        then you can manually try to verify the login at a later time.
-        <ul><li>Go to <code>&lt;Main - Login..&gt;</code> to open the <code>Login configuration</code>
-                and click on <code>[Verify login]</code>.</li></ul>
-        </li>
-        <li>Request new login data.
-        <ul><li>Go to <code>&lt;Main - Login..&gt;</code> to open the <code>Login configuration</code>
-            (unless you are already there), <code>[Remove login]</code> and create
-            a new login.</li></ul></li>
-        <li>If you want to use more than one instance of Chatty with the
-            same account, check out the
-            <a href="help-guide1.html">Guide about running more than one instance of Chatty</a>.</li>
     </ul>
     
     <h2>
@@ -630,16 +652,37 @@
     <h2>
         <a name="emoticons">Emoticons/Emote Dialog</a>
         <a href="#top" class="top">[back to menu]</a>
-     </h2>
-    <p>Chatty supports the default Twitch Emoticons (Normal/Turbo/Subscriber),
-    which should work the same as in normal Twitch Chat. It however also
-    supports <a href="http://frankerfacez.com/">FrankerFaceZ</a>, a custom
-    set of emotes that is normally made available in normal Twitch Chat by use of browser
-    extensions. It also supports <a href="http://www.nightdev.com/betterttv/">BetterTTV</a> emotes.</p>
+    </h2>
+    <p>Chatty supports the following types of emoticons:</p>
+    <ul>
+        <li>Twitch Emoticons (Global, Turbo, Subscriber)</li>
+        <li><a href="http://frankerfacez.com/">FrankerFaceZ</a> Emoticons
+            <ul>
+                <li>Global and Channel-specific Emotes</li>
+                <li>Feature Friday Emotes</li>
+                <li>Featured Emotes (usually available in Speedrunning Marathons)
+                    <br /><em>Note:</em> These emotes require being connected to
+                    the FFZ Socket Server to be updated. There is an issue where
+                    reconnecting to the server sometimes doesn't work. If you
+                    enter the command <code>/ffzws</code> and it is stuck at
+                    <code>Connecting..</code> for a longer period of time, you
+                    may have to restart Chatty for it to work again.</li>
+            </ul>
+        </li>
+        <li><a href="http://www.nightdev.com/betterttv/">BetterTTV</a> Emoticons
+            <ul>
+                <li>Global and Channel-specific Emotes
+                    <br /><em>Note:</em> BTTV can also contain GIF emotes, some
+                    of which don't work very well in Chatty. (You also have to
+                    opt-in to show them in the settings in the first place.)</li>
+                <li><strong>Not supported</strong> are Personal Emotes</li>
+            </ul>
+        </li>
+    </ul>
     
-    <p>You can enable/disable Emoticons in general (displaying the icons instead
+    <p>You can enable/disable Emoticons in general (displaying the images instead
         of the text) in the settings under <code>Emoticons</code>. You can also
-    ignore specific emotes in the same place in the settings.</p>
+        ignore specific emotes in the same place in the settings.</p>
     
     <p>In chat you can right-click on an emoticon to show some info about it.
         Click on the emote code (e.g. <code>FrankerZ</code>) in the context menu
@@ -1173,7 +1216,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     <p>These need to be defined after the <code>Chatty.jar</code>, for example:
         <code>javaw -jar Chatty.jar -channel lotsofs</code></p>
     
-    <dl class="defList">
+    <dl class="dl-settings">
         <dt><code>-server &lt;host/ip&gt;</code></dt>
         <dd>Specify a different server to connect to</dd>
         
@@ -1189,7 +1232,11 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
                     password login anymore.</em></dd>
                     
         <dt><code>-token [token]</code></dt>
-        <dd>Login with the given token</dd>
+        <dd>Login with the given token.</dd>
+        <dd>The username currently saved in Chatty must match the account
+            associated with the given token. If no login data is currently
+            saved in Chatty or the username is different, you have to use
+            <code>-user</code> to set the correct username.</dd>
         
         <dt><code>-connect</code></dt>
         <dd>Connect immediately when starting Chatty</dd>

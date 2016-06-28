@@ -2088,7 +2088,7 @@ public class TwitchClient {
 
         @Override
         public void onPart(User user) {
-            if (settings.getBoolean("showJoinsParts")) {
+            if (settings.getBoolean("showJoinsParts") && showUserInGui(user)) {
                 g.printCompact(user.getChannel(), "PART", user);
             }
             chatLog.compact(user.getChannel(), "PART", user.getDisplayNick());
@@ -2178,6 +2178,8 @@ public class TwitchClient {
         public void onBan(User user, long duration, String reason) {
             User localUser = c.getLocalUser(user.getChannel());
             if (localUser != user && !localUser.hasModeratorRights()) {
+                // Remove reason if not the affected user and not a mod, to be
+                // consistent with other applications
                 reason = "";
             }
             g.userBanned(user, duration, reason);
@@ -2194,7 +2196,7 @@ public class TwitchClient {
         public void onMod(User user) {
             boolean modMessagesEnabled = settings.getBoolean("showModMessages");
             String channel = user.getChannel();
-            if (modMessagesEnabled) {
+            if (modMessagesEnabled && showUserInGui(user)) {
                 g.printCompact(channel, "MOD", user);
             }
             chatLog.compact(channel, "MOD", user.getDisplayNick());
@@ -2204,7 +2206,7 @@ public class TwitchClient {
         public void onUnmod(User user) {
             boolean modMessagesEnabled = settings.getBoolean("showModMessages");
             String channel = user.getChannel();
-            if (modMessagesEnabled) {
+            if (modMessagesEnabled && showUserInGui(user)) {
                 g.printCompact(channel, "UNMOD", user);
             }
             chatLog.compact(channel, "UNMOD", user.getDisplayNick());

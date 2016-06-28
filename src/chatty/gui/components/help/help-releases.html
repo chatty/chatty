@@ -41,40 +41,65 @@
     full list of changes.</p>
 
     <h2>
-        <a name="0.8.3">Version 0.8.3b</a> <a name="latest">(This one!)</a> (2016-??-??)
+        <a name="0.8.3">Version 0.8.3</a> <a name="latest">(This one!)</a> (2016-06-28)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p></p>
+    <p>Twitch has added information on the length of timeouts, which Chatty will
+        now output by default behind deleted messages. Twitch Chat now also
+        supports reason messages for timeouts/bans, which will be shown in
+        Chatty only to the affected person as well as all mods.</p>
+    
+    <p>You can now follow people directly out of Chatty using the commands
+        <code>/follow</code> and <code>/unfollow</code> and via context menus
+        under <code>Miscellaneous</code>. If you try to follow someone you are
+        already following, it will show how long you are already following.</p>
+    
+    <p><em>Important:</em> To be able to follow/unfollow channels you first need
+        to request new login data, because this feature requires the
+        <code>Follow channels</code> access which Chatty didn't request before.</p>
+    
+    <p>This version also adds initial support for the new re-sub notifications
+        with attached messages.</p>
     
     <h3>Full Changelog</h3>
 <pre>
 Improvements
 ============
+- Added display of timeout duration/reason (can be configured in the settings)
+- Updated commands /ban and /timeout (/to) to allow giving a reason
+- Added intitial support for new re-subscription messages
+- Added ability to follow/unfollow channels, either through the context menus
+  (under Miscellaneous) or the new commands /follow and /unfollow
+- Added support for FFZ Featured Emotes, which are frequently available in
+  channels of Speedrunning events (not to confuse with FFZ Feature Friday)
+- Added setting (under Ignore - Ignored Users) to hide users ignored on chat
+  from joins/parts and userlist as well
+- Added state display for emote-only mode in titlebar
+- Added simple search to tables in the Settings Dialog (click into a table
+  column and start typing, Backspace or wait to reset search)
+- Extended Stream Status Writer to include number of Followers/Subscribers
+  (only updates correctly when the Follower/Subscribers dialog is open)
+- Updated help
+
+Login
+=====
 - Added info to login dialog when token was set through -token parameter
 - Added setting to prevent token from being set through -token parameter when
   login data is already available in Chatty
-- Added support for FFZ Featured Emotes, which are frequently available in
-  channels of Speedrunning events (not to confuse with FFZ Feature Friday)
-- Added ability to follow/unfollow channels, either through the context menus
-  (under Miscellaneous) or the new commands /follow and /unfollow
-- Added simple search to tables in the Settings Dialog (click into a table
-  column and start typing, Backspace or wait to reset search)
-- Added intitial support for new re-subscription messages
+- Added "Follow channels" access (you need to re-request login data to get it)
+
+System
+======
 - Restrict size of session debug log file
 - Automatically exit application when too many errors occur (which should never
   happen, but if it does, this should prevent affecting the rest of the system)
-- Added setting (under Ignore - Ignored Users) to hide users ignored on chat
-  from joins/parts and userlist as well
-- Added state display for emote-only in titlebar
-- Extended Stream Status Writer to include number of Followers/Subscribers
-- Added display of timeout duration/reason (can be configured in the settings)
-
 - Added some Mac specific shortcuts
+- Improved debug logging
 
 Bugfixes
 ========
-- Fix not being able to join (and other actions) through context menu for
-  channels that contain spaces in the display name
+- Fixed not being able to join (and perform some other actions) through context
+  menu, for channels that contain spaces in the display name
 </pre>
     
     <h2>

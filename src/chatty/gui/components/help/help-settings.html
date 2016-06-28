@@ -293,7 +293,8 @@
         <li><strong>Enable FFZ Mod Icon</strong>: Show the FFZ Mod Icon instead of the regular
             Mod Icon (where available). <em>Requires FrankerFaceZ setting to be enabled.</em></li>
         <li><strong>Enable FFZ Featured Emotes</strong>: Show special FFZ emotes
-            available in some channels (mainly Speedrunning Events).</li>
+            available in some channels (mainly Speedrunning Events). To receive
+            these emotes Chatty maintains a connection to the FFZ Socket Server.</li>
         <li><strong>Allow animated emotes</strong>: Show animated emotes (BTTV GIF emotes).</li>
         <li><strong>Scale</strong>: The relative size of how emotes are displayed in chat (100% is regular size).</li>
         <li><strong>Maximum Height</strong>: The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</li>
@@ -404,6 +405,9 @@
         don't want to use the dedicated image folder. A filename starting with
         <code>http</code> is interpreted as URL.</dd>
     </dl>
+    
+    <p><em>Tip:</em> Jump to entries in the table by clicking into a column and
+        start to type. Backspace or wait to get out of the search mode.</p>
     
     <h2>
         <a name="Usercolors">Usercolors</a>
@@ -681,6 +685,8 @@
         when the ignored messages dialog isn't currently open.</li>
     </ul>
     
+    <h3>Ignored Users</h3>
+    
     <p>The <code>Ignored Users</code> list allows you to ignore
         users in chat or prevent them from whispering you, which is possible via
         the main ignore list as well, but was added as a separate function to be
@@ -689,6 +695,17 @@
     
     <p>Ignored users are independant of the main ignore list, so they also apply
         if ignore is disabled.</p>
+    
+    <dl class="dl-settings">
+        <dt>Hide 'Ignored in chat' users from the userlist/joins/parts</dt>
+        <dd>If enabled, prevents users on the 'Ignored in chat' list from
+            showing up in the userlist and JOIN/PART/MOD/UNMOD events (which
+            aren't enabled by default to be shown anyway).</dd>
+        <dd>This only applies to the 'Ignored in chat' list, not to entries with
+            the <code>user:</code> prefix on the main Ignore list.</dd>
+        <dd>Users who are already on the userlist when you ignore them stay on
+            it until they leave, you rejoin the channel or restart Chatty.</dd>
+    </dl>
     
     <h2>
         <a name="Sounds">Sounds</a>
@@ -810,27 +827,55 @@
     <h3>Messages Types</h3>
     <p>Normal chat messages are always logged, however you can log additional
     information:</p>
-    <ul>
-        <li><strong>Chat Info</strong> refers to general chat releated info messages
-        like connecting/disconnecting/trying to timeout someone/stream title..</li>
-        <li><strong>Bans/Timeouts</strong> refers to bans/timeouts in chat, which
-            will be logged like this: <code>[12:32:25] BAN: name, name2</code></li>
-        <li><strong>Mod/Unmod</strong> refers to when someone in chat is modded/
-            unmodded, which will be logged like this: <code>[12:32:25] MOD: name1, name2</code></li>
-        <li><strong>Joins/Parts</strong> refers to when someone joins/parts the
-        channel, which will be logged like this: <code>[12:32:25] JOIN: name1, name2</code></li>
-        <li><strong>System Info</strong> means any info messages that are related
-        more to Chatty than chat itself, like info about new versions, if you use
-        settings commands..</li>
-        <li><strong>Viewerstats</strong> are stats about the viewercount which
-        are logged in a semi-regular interval to give some idea about the viewercount
-        during that time. It shows which interval it refers to, the min/max/avg viewers,
-        the number of values and the development (first value/after offline is absolute, then +-
-        relative change, _ means offline before/in between/after that value, e.g.
-        <code>[21:06:21] Viewerstats (21:03-21:06): avg:28.612 min:28.432 max:28.887 [3/28.519-87+455_]</code>).</li>
-        <li><strong>Viewercount</strong> will log the viewercount as it is updated,
-            like this: <code>[15:23:58] VIEWERS: 12521</code></li>
-    </ul>
+    
+    <dl class="dl-settings">
+        <dt>Chat Info</dt>
+        <dd>General chat releated info messages like connecting, disconnecting,
+            trying to timeout someone, stream title..</dd>
+        
+        <dt>Bans/Timeouts</dt>
+        <dd>Bans and Timeouts in chat. Timeout length and reason will be added
+            if available.</dd>
+        <dd><code>BAN: name1, name2 (30s) [reason], name3 (600s)</code></dd>
+        <dd>The reason is specified by the mod taking the action, so it may be
+            consist of any text.</dd>
+        
+        <dt>Mod/Unmod</dt>
+        <dd>When someone in chat is modded or unmodded. Remember that this info
+            may be inaccurate, since mod/unmod events are not send immediately
+            by Twitch Chat.</dd>
+        <dd><code>MOD: name1, name2</code></dd>
+        <dd><code>UNMOD: name3, name4</code></dd>
+        
+        <dt>Joins/Parts</dt>
+        <dd>When someone enters/leaves the channel. Remember that this info may
+            be inaccurate, since joins/parts are not send immediately by Twitch
+            Chat (and sometimes not at all).</dd>
+        <dd><code>JOIN: name1, name2</code></dd>
+        <dd><code>PART: name3, name4</code></dd>
+        
+        <dt>System Info</dt>
+        <dd>Any info messages that are related more to Chatty itself than to
+            chat, like info about new versions, when you use setting commands..</dd>
+        
+        <dt>Viewerstats</dt>
+        <dd>Stats about the viewercount which are logged in a semi-regular
+            interval to give you an idea about the viewercount during that time.</dd>
+        <dd>Each Viewerstats line shows which interval it refers to, the
+            min/max/avg viewers, the number of values and the development:
+            First value/after offline is absolute, then +- relative change, _
+            means offline before/in between/after that value.</dd>
+        <dd><code>Viewerstats (21:03-21:06): avg:28.612 min:28.432 max:28.887 [3/28.519-87+455_]</code></dd>
+        <dd>In the example, the stats were recorded between 21:03 and 21:06 and
+            the Viewercount started out at 28.519, then went down (-87) and then
+            up (+455). After that the stream went offline (<code>_</code>).</dd>
+        
+        <dt>Viewercount</dt>
+        <dd>Directly logs the viewercount as it is received from Twitch, without
+            any processing, except being formatted depending on the current
+            locale.</dd>
+        <dd><code>VIEWERS: 12,521</code></dd>
+    </dl>
     
     <h2>
         <a name="Window">Window</a>
@@ -1169,7 +1214,27 @@
     here). You should know if you set a server or port with a commandline
     parameter, but you can also check that by using <code>/get server</code>
     and <code>/get port</code>.</p>
-
+    
+    <h3>Login Settings</h3>
+    <p>Manage the actual login data under <code>Main Menu - Login..</code>.</p>
+    
+    <dl class="dl-settings">
+        <dt>Allow <code>-token</code> parameter to override existing token</dt>
+        <dd>When specifying <a href="help.html#launch">launch options</a> you
+            the <code>-token</code> parameter sets the login token used in
+            Chatty. If a token is already saved in Chatty, then the <code>-token</code>
+            parameter will have no effect, unless this setting is enabled.</dd>
+        <dd>Overriding the token can be any issue if external programs like the
+            Livestreamer GUI provide a token that has less access than the one
+            already saved in Chatty (e.g. doesn't allow you to change your
+            stream title).</dd>
+        <dd>If the saved token is already marked as a token set through the
+            <code>-token</code> parameter, then it will be overriden anyway.</dd>
+        <dd>If a token set through the <code>-token</code> parameter is in use,
+            it will be shown as such in the <code>Main Menu - Login..</code>
+            dialog.</dd>
+    </dl>
+    
     <h3>Whisper Feature</h3>
     <div class="moreInfo">Help: <a href="help-whisper.html">Whisper Feature</a></div>
     

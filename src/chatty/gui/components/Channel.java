@@ -297,7 +297,7 @@ public class Channel extends JPanel {
             public int compare(User o1, User o2) {
                 int s1 = o1.getActivityScore();
                 int s2 = o2.getActivityScore();
-                System.out.println(o1+" "+s1+" "+o2+" "+s2);
+                //System.out.println(o1+" "+s1+" "+o2+" "+s2);
                 if (s1 == s2) {
                     return o1.compareTo(o2);
                 } else if (s1 > s2) {
