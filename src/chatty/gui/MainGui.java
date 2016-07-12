@@ -844,6 +844,7 @@ public class MainGui extends JFrame implements Runnable {
                 (int)client.settings.getLong("userlistWidth"),
                 (int)client.settings.getLong("userlistMinWidth"));
         channels.setChatScrollbarAlways(client.settings.getBoolean("chatScrollbarAlways"));
+        channels.setDefaultUserlistVisableState(!client.settings.getBoolean("disableUserlist"));
     }
     
     /**
