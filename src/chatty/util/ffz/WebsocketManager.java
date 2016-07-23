@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -42,6 +41,12 @@ public class WebsocketManager {
     
     private final Settings settings;
     
+    /**
+     * The username that was send with the "setuser" command, during this
+     * connection.
+     */
+    private String setUser;
+    
     public WebsocketManager(final FrankerFaceZListener listener,
             final Settings settings) {
         this.listener = listener;
@@ -65,14 +70,28 @@ public class WebsocketManager {
             }
 
             @Override
-            public void handleCommand(int id, String command, String params) {
+            public void handleCommand(int id, String command, String params,
+                    String originCommand) {
                 if (id == 1 && command.equals("ok")) {
                     // ok ["uuid",serverTime]
                     parseHelloResponse(params);
                 }
-                if (command.equals("follow_sets")) {
+                else if (command.equals("follow_sets")) {
                     // follow_sets {\"sirstendec\": [3779]}
                     parseFollowsets(params);
+                }
+                else if (command.equals("do_authorize")) {
+                    // do_authorize "string"
+                    parseDoAuthorize(params);
+                }
+                else if (originCommand.equals("update_follow_buttons")) {
+                    if (command.equals("ok")) {
+                        // ok {"updated_clients":1}
+                        parseFollowingResponse(params);
+                    }
+                    else if (command.equals("error")) {
+                        listener.wsUserInfo("Failed updating follow buttons: "+params);
+                    }
                 }
             }
 
@@ -83,6 +102,7 @@ public class WebsocketManager {
              */
             @Override
             public void handleConnect() {
+                setUser = null;
                 c.sendCommand("hello", JSONUtil.listToJSON(VERSION, false));
                 for (String room : getRooms()) {
                     subRoom(room);
@@ -161,6 +181,25 @@ public class WebsocketManager {
         }
     }
     
+    public synchronized void setFollowing(String user, String room, String following) {
+        String[] split = following.split(",");
+        JSONArray rooms = new JSONArray();
+        for (String item : split) {
+            item = item.trim();
+            if (Helper.validateStream(item)) {
+                rooms.add(item);
+            }
+        }
+        JSONArray root = new JSONArray();
+        root.add(room);
+        root.add(rooms);
+        if (!user.equals(setUser)) {
+            c.sendCommand("setuser", "\""+user+"\"");
+            setUser = user;
+        }
+        c.sendCommand("update_follow_buttons", root.toJSONString());
+    }
+    
     private void subRoom(String room) {
         c.sendCommand("sub", "\"room."+room+"\"");
     }
@@ -178,6 +217,30 @@ public class WebsocketManager {
             LOGGER.info("[FFZ-WS] Server Time Offset: "+serverTimeOffset);
         } catch (Exception ex) {
             LOGGER.warning(String.format("[FFZ-WS] Error parsing 'hello' response: %s [%s]", ex, json));
+        }
+    }
+    
+    private void parseDoAuthorize(String json) {
+        try {
+            String code = (String) parser.parse(json);
+            listener.authorizeUser(code);
+        } catch (Exception ex) {
+            LOGGER.warning(String.format("[FFZ-WS] Error parsing 'do_authorize' response: %s [%s]", ex, json));
+        }
+    }
+    
+    /**
+     * Parses the response to the "/ffz following" command.
+     * 
+     * @param json 
+     */
+    private void parseFollowingResponse(String json) {
+        try {
+            JSONObject root = (JSONObject) parser.parse(json);
+            int updatedClients = ((Number)root.get("updated_clients")).intValue();
+            listener.wsUserInfo("Updated following buttons for "+updatedClients+" users.");
+        } catch (Exception ex) {
+            LOGGER.warning(String.format("[FFZ-WS] Error parsing 'update_follow_buttons' response: %s [%s]", ex, json));
         }
     }
     

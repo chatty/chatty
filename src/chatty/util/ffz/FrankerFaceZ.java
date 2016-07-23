@@ -81,6 +81,10 @@ public class FrankerFaceZ {
         ws.removeRoom(room);
     }
     
+    public void setFollowing(String user, String room, String following) {
+        ws.setFollowing(user, room, following);
+    }
+    
     /**
      * Requests the emotes for the given channel and global emotes. It only
      * requests each set of emotes once, unless {@code forcedUpdate} is true.

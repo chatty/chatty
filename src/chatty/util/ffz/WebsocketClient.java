@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -62,6 +63,8 @@ public class WebsocketClient {
     private long lastMeasuredLatency;
     private long timeLatencyMeasured;
     private int totalConnects;
+    
+    private final Map<Integer, String> commandId = new HashMap<>();
 
     public WebsocketClient(MessageHandler handler) {
         this.handler = handler;
@@ -299,6 +302,7 @@ public class WebsocketClient {
             } else {
                 send(String.format("%d %s %s", sentCount, command, param));
             }
+            commandId.put(sentCount, command);
         }
     }
     
@@ -327,7 +331,11 @@ public class WebsocketClient {
      * @param params The parameters
      */
     private void handleCommand(int id, String command, String params) {
-        handler.handleCommand(id, command, params);
+        String originCommand = commandId.get(id);
+        if (originCommand == null) {
+            originCommand = "";
+        }
+        handler.handleCommand(id, command, params, originCommand);
         if (command.equals("error")) {
             LOGGER.warning("[FFZ-WS] Error: "+params);
         }
@@ -404,7 +412,7 @@ public class WebsocketClient {
     public static interface MessageHandler {
         public void handleReceived(String text);
         public void handleSent(String sent);
-        public void handleCommand(int id, String command, String params);
+        public void handleCommand(int id, String command, String params, String originCommand);
         public void handleConnect();
     }
 }

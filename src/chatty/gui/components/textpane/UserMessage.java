@@ -20,8 +20,9 @@ public class UserMessage extends Message {
     public boolean ignored_compact;
     public boolean action;
     
-    public UserMessage(User user, String text, Emoticons.TagEmotes emotes) {
-        super(text);
+    public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
+            String id) {
+        super(id, text);
         this.user = user;
         this.emotes = emotes;
     }

@@ -47,6 +47,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 
 /**
@@ -900,7 +902,11 @@ public class TwitchClient {
             g.printSystem(g.emoticons.getEmoteInfo(parameter));
         }
         else if (command.equals("ffz")) {
-            commandFFZ(channel);
+            if (parameter != null && parameter.startsWith("following")) {
+                commandFFZFollowing(channel, parameter);
+            } else {
+                commandFFZ(channel);
+            }
         }
         else if (command.equals("ffzglobal")) {
             commandFFZ(null);
@@ -1022,7 +1028,7 @@ public class TwitchClient {
                     reason = split[1];
                 }
             }
-            g.userBanned(testUser, duration, reason);
+            g.userBanned(testUser, duration, reason, "abc");
         } else if (command.equals("bantest2")) {
             String[] split = parameter.split(" ", 3);
             int duration = -1;
@@ -1033,7 +1039,7 @@ public class TwitchClient {
             if (split.length > 2) {
                 reason = split[2];
             }
-            g.userBanned(c.getUser(channel, split[0]), duration, reason);
+            g.userBanned(c.getUser(channel, split[0]), duration, reason, null);
         } else if (command.equals("userjoined")) {
             c.userJoined("#test", parameter);
         } else if (command.equals("echomessage")) {
@@ -1495,6 +1501,21 @@ public class TwitchClient {
         }
         g.printLine(channel, b.toString());
     }
+    
+    private void commandFFZFollowing(String channel, String parameter) {
+        String stream = Helper.toStream(channel);
+        if (stream == null) {
+            g.printSystem("FFZ: No valid channel.");
+        } else if (!c.isRegistered()) {
+            g.printSystem("FFZ: You have to be connected to use this command.");
+        } else {
+            if (!stream.equals(c.getUsername())) {
+                g.printSystem("FFZ: You may only be able to run this command on your own channel.");
+            }
+            parameter = parameter.substring("following".length()).trim();
+            frankerFaceZ.setFollowing(c.getUsername(), stream, parameter);
+        }
+    }
 
     /**
      * Add a debugmessage to the GUI. If the GUI wasn't created yet, add it
@@ -1933,6 +1954,16 @@ public class TwitchClient {
         public void wsInfo(String info) {
             g.printDebugFFZ(info);
         }
+
+        @Override
+        public void authorizeUser(String code) {
+            c.sendSpamProtectedMessage("#frankerfacezauthorizer", "AUTH "+code, false);
+        }
+
+        @Override
+        public void wsUserInfo(String info) {
+            g.printSystem("FFZ: "+info);
+        }
     }
     
     /**
@@ -2105,8 +2136,8 @@ public class TwitchClient {
 
         @Override
         public void onChannelMessage(User user, String message, boolean action,
-                String emotes) {
-            g.printMessage(user.getChannel(), user, message, action, emotes);
+                String emotes, String id) {
+            g.printMessage(user.getChannel(), user, message, action, emotes, id);
             if (!action) {
                 addressbookCommands(user.getChannel(), user, message);
                 
@@ -2173,16 +2204,26 @@ public class TwitchClient {
         public void onUserRemoved(User user) {
             g.removeUser(user.getChannel(), user);
         }
+        
+        private final Pattern findId = Pattern.compile(
+                        "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+                        Pattern.CASE_INSENSITIVE);
 
         @Override
         public void onBan(User user, long duration, String reason) {
             User localUser = c.getLocalUser(user.getChannel());
+            Matcher m = findId.matcher(reason);
+            String id = null;
+            if (m.find()) {
+                id = m.group();
+                reason = reason.replace(id, "").trim();
+            }
             if (localUser != user && !localUser.hasModeratorRights()) {
                 // Remove reason if not the affected user and not a mod, to be
                 // consistent with other applications
                 reason = "";
             }
-            g.userBanned(user, duration, reason);
+            g.userBanned(user, duration, reason, id);
             chatLog.userBanned(user.getChannel(), user.getDisplayNick(),
                     duration, reason);
         }

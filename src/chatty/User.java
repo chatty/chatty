@@ -220,8 +220,8 @@ public class User implements Comparable {
     /**
      * Adds a single ban with the current time.
      */
-    public synchronized void addBan(long duration, String reason) {
-        addLine(new BanMessage(System.currentTimeMillis(), duration, reason));
+    public synchronized void addBan(long duration, String reason, String id) {
+        addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id));
     }
     
     public synchronized void addSub(String message, int months) {
@@ -781,11 +781,13 @@ public class User implements Comparable {
         
         public final long duration;
         public final String reason;
+        public final String id;
         
-        public BanMessage(Long time, long duration, String reason) {
+        public BanMessage(Long time, long duration, String reason, String id) {
             super(BAN, time);
             this.duration = duration;
             this.reason = reason;
+            this.id = id;
         }
         
     }

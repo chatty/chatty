@@ -900,7 +900,8 @@ public class TwitchConnection {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
                     String emotesTag = tags != null ? tags.get("emotes") : null;
-                    listener.onChannelMessage(user, text, action, emotesTag);
+                    String id = tags != null ? tags.get("id") : null;
+                    listener.onChannelMessage(user, text, action, emotesTag, id);
                 }
             }
         }
@@ -1286,7 +1287,7 @@ public class TwitchConnection {
 
         void onUserUpdated(User user);
 
-        void onChannelMessage(User user, String message, boolean action, String emotes);
+        void onChannelMessage(User user, String message, boolean action, String emotes, String id);
         
         void onWhisper(User user, String message, String emotes);
 

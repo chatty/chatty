@@ -4,6 +4,7 @@ package chatty;
 import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
+import java.awt.Dimension;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -586,6 +587,24 @@ public class Helper {
             }
         }
         return banInfo;
+    }
+    
+    public static Dimension getDimensionFromParameter(String parameter) {
+        if (parameter != null && !parameter.trim().isEmpty()) {
+            String[] split = parameter.trim().split("x|\\s");
+            if (split.length == 2) {
+                try {
+                    int width = Integer.parseInt(split[0]);
+                    int height = Integer.parseInt(split[1]);
+                    if (width > 0 && height > 0) {
+                        return new Dimension(width, height);
+                    }
+                } catch (NumberFormatException ex) {
+                    // Do nothing, will return null for invalid format
+                }
+            }
+        }
+        return null;
     }
     
 }

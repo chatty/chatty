@@ -545,6 +545,9 @@ public class UserInfo extends JDialog {
                 else {
                     b.append("Banned permanently");
                 }
+                if (bm.id != null) {
+                    b.append(" (single message)");
+                }
                 if (bm.reason != null && !bm.reason.isEmpty()) {
                     b.append(" [").append(bm.reason).append("]");
                 }

@@ -6,7 +6,6 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.MainGui;
 import chatty.User;
-import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
@@ -198,7 +197,8 @@ public class Channel extends JPanel {
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
-            "follow", "unfollow", "ffzws"
+            "follow", "unfollow", "ffzws",
+            "setcolor"
         }));
         
         private void updateSettings() {
@@ -358,8 +358,8 @@ public class Channel extends JPanel {
         text.printLine(line);
     }
     
-    public void userBanned(User user, long duration, String reason) {
-        text.userBanned(user, duration, reason);
+    public void userBanned(User user, long duration, String reason, String id) {
+        text.userBanned(user, duration, reason, id);
     }
     
     public void printCompact(String type, User user) {

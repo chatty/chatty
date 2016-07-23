@@ -107,7 +107,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public enum Attribute {
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
-        BAN_MESSAGE
+        BAN_MESSAGE, ID
     }
     
     public enum MessageType {
@@ -304,7 +304,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.standard();
         }
         print(getTimePrefix(), style);
-        printUser(user, action, ignored, message.whisper);
+        printUser(user, action, ignored, message.whisper, message.id);
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && action && styles.actionColored()) {
@@ -472,7 +472,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         Element root = doc.getDefaultRootElement();
         for (int i=root.getElementCount()-1;i>=0;i--) {
             Element line = root.getElement(i);
-            if (isLineFromUser(line, user)) {
+            if (isLineFromUserAndId(line, user, null)) {
                 // Stop immediately a message from that user is found first
                 return null;
             }
@@ -500,8 +500,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * as deletes the lines of the user.
      * 
      * @param user 
+     * @param duration 
+     * @param reason 
+     * @param id The id of the deleted message, null if no specific message
      */
-    public void userBanned(User user, long duration, String reason) {
+    public void userBanned(User user, long duration, String reason, String id) {
         if (styles.showBanMessages()) {
             String banInfo = Helper.makeBanInfo(duration, reason,
                     styles.isEnabled(Setting.BAN_DURATION_MESSAGE),
@@ -511,6 +514,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             String message = "has been banned";
             if (duration > 0) {
                 message = "has been timed out";
+            }
+            if (!StringUtil.isNullOrEmpty(id)) {
+                message += " (single message)";
             }
             if (!banInfo.isEmpty()) {
                 message = message+" "+banInfo;
@@ -523,8 +529,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (prevMessage != null) {
                 increasePreviousBanMessage(prevMessage, duration, reason);
             } else {
-
-                
                 closeCompactMode();
                 print(getTimePrefix(), styles.banMessage(user, message));
                 print(user.getCustomNick(), styles.nick(user, styles.info()));
@@ -538,7 +542,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 styles.isEnabled(Setting.BAN_REASON_APPENDED),
                 true);
 
-        ArrayList<Integer> lines = getLinesFromUser(user);
+        ArrayList<Integer> lines = getLinesFromUser(user, id);
         Iterator<Integer> it = lines.iterator();
         /**
          * values > 0 mean strike through, shorten message
@@ -589,12 +593,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param nick
      * @return 
      */
-    private ArrayList<Integer> getLinesFromUser(User user) {
+    private ArrayList<Integer> getLinesFromUser(User user, String id) {
         Element root = doc.getDefaultRootElement();
         ArrayList<Integer> result = new ArrayList<>();
         for (int i=0;i<root.getElementCount();i++) {
             Element line = root.getElement(i);
-            if (isLineFromUser(line, user)) {
+            if (isLineFromUserAndId(line, user, id)) {
                 result.add(i);
             }
         }
@@ -624,15 +628,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param line
      * @param user
+     * @param id If non-null, only messages with this id will return true
      * @return 
      */
-    private boolean isLineFromUser(Element line, User user) {
-        for (int j = 0; j < 10; j++) {
+    private boolean isLineFromUserAndId(Element line, User user, String id) {
+        for (int j = 0; j < 20; j++) {
             Element element = line.getElement(j);
             User elementUser = getUserFromElement(element);
             // If the User object matches, we're done
             if (elementUser == user) {
-                return true;
+                if (id == null || id.equals(getIdFromElement(element))) {
+                    return true;
+                }
             }
             // Stop if any User object was found
             if (elementUser != null) {
@@ -656,6 +663,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (isMessage != null && isMessage == true) {
                 return elementUser;
             }
+        }
+        return null;
+    }
+    
+    /**
+     * Gets the id attached to the message.
+     * 
+     * @param element
+     * @return The ID element, or null if none was found
+     */
+    private String getIdFromElement(Element element) {
+        if (element != null) {
+            return (String)element.getAttributes().getAttribute(Attribute.ID);
         }
         return null;
     }
@@ -1040,7 +1060,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 currentSelection = line;
 
                 currentUser = user;
-                ArrayList<Integer> lines = getLinesFromUser(user);
+                ArrayList<Integer> lines = getLinesFromUser(user, null);
                 for (Integer lineNumber : lines) {
                     Element otherLine = doc.getDefaultRootElement().getElement(lineNumber);
                     if (otherLine != currentSelection) {
@@ -1082,7 +1102,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          */
         private void onLineAdded(Element element) {
             //GuiUtil.debugLineContents(element);
-            if (currentUser != null && isLineFromUser(element, currentUser)) {
+            if (currentUser != null && isLineFromUserAndId(element, currentUser, null)) {
                 highlightLine(element, false);
             }
         }
@@ -1248,27 +1268,32 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user
      * @param action 
      */
-    public void printUser(User user, boolean action, boolean ignore, boolean whisper) {
+    public void printUser(User user, boolean action, boolean ignore,
+            boolean whisper, String id) {
         String userName = user.toString();
         if (styles.showUsericons() && !ignore) {
             printUserIcons(user);
             userName = user.getCustomNick();
         }
         if (user.hasCategory("rainbow")) {
-            printRainbowUser(user, userName, action, SpecialColor.RAINBOW);
+            printRainbowUser(user, userName, action, SpecialColor.RAINBOW, id);
         } else if (user.hasCategory("golden")) {
-            printRainbowUser(user, userName, action, SpecialColor.GOLD);
+            printRainbowUser(user, userName, action, SpecialColor.GOLD, id);
         } else {
+            MutableAttributeSet style = styles.nick(user, null);
+            if (id != null) {
+                style.addAttribute(Attribute.ID, id);
+            }
             if (whisper) {
                 if (action) {
-                    print(">>["+userName + "] ", styles.nick(user, null));
+                    print(">>["+userName + "] ", style);
                 } else {
-                    print("-["+userName + "]- ", styles.nick(user, null));
+                    print("-["+userName + "]- ", style);
                 }
             } else if (action) {
-                print("* " + userName + " ", styles.nick(user, null));
+                print("* " + userName + " ", style);
             } else {
-                print(userName + ": ", styles.nick(user, null));
+                print(userName + ": ", style);
             }
         }
     }
@@ -1289,10 +1314,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param action 
      */
     private void printRainbowUser(User user, String userName, boolean action,
-            SpecialColor type) {
+            SpecialColor type, String id) {
         SimpleAttributeSet userStyle = new SimpleAttributeSet(styles.nick());
         userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
         userStyle.addAttribute(Attribute.USER, user);
+        if (id != null) {
+            userStyle.addAttribute(Attribute.ID, id);
+        }
 
         int length = userName.length();
         if (action) {
@@ -1678,6 +1706,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes) {
         
         findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle);
+        //findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
         
         if (tagEmotes != null) {
             // Add emotes from tags
@@ -1790,9 +1819,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle) {
         // Find emoticons
         Iterator<Emoticon> it = emoticons.iterator();
-        while (it.hasNext()) {
+        for (Emoticon emoticon : emoticons) {
             // Check the text for every single emoticon
-            Emoticon emoticon = it.next();
             if (!emoticon.matchesUser(user)) {
                 continue;
             }

@@ -16,8 +16,8 @@ public class SubscriberMessage extends Message {
     public final Emoticons.TagEmotes emotes;
     
     public SubscriberMessage(User user, String text, String message, int months,
-            Emoticons.TagEmotes emotes) {
-        super(text);
+            Emoticons.TagEmotes emotes, String id) {
+        super(id, text);
         this.user = user;
         this.attachedMessage = message;
         this.months = months;

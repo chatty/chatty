@@ -781,6 +781,7 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
         emoticons.loadCustomEmotes();
+        //emoticons.addEmoji(client.settings.getString("emoji"));
         client.api.setToken(client.settings.getString("token"));
         
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
@@ -1350,7 +1351,11 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 updateUserInfoDialog(user);
-            } else if (cmd.startsWith("command")) {
+            }
+            else if (cmd.equals("setcolor")) {
+                setColor(user.nick);
+            }
+            else if (cmd.startsWith("command")) {
                 String command = cmd.substring(7);
                 client.command(user.getChannel(), command, user.getRegularDisplayNick());
             } else if (cmd.equals("copy")) {
@@ -1851,7 +1856,7 @@ public class MainGui extends JFrame implements Runnable {
             if (parameter != null && !parameter.isEmpty()) {
                 message = parameter;
             }
-            UserMessage m = new UserMessage(client.getSpecialUser(), message, null);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null);
             streamChat.printMessage(m);
         } else if (command.equals("livestreamer")) {
             String stream = null;
@@ -1875,26 +1880,24 @@ public class MainGui extends JFrame implements Runnable {
         } else if (command.equals("help")) {
             openHelp(null);
         } else if (command.equals("setstreamchatsize")) {
-            if (parameter != null && !parameter.trim().isEmpty()) {
-                String[] split = parameter.trim().split("x");
-                if (split.length == 2) {
-                    try {
-                        int width = Integer.parseInt(split[0]);
-                        int height = Integer.parseInt(split[1]);
-                        if (width > 0 && height > 0) {
-                            setStreamChatSize(width, height);
-                            printSystem("Set StreamChat size to "+width+"x"+height);
-                            return true;
-                        }
-                    } catch (NumberFormatException ex) {
-                        // Do nothing, will output "Invalid parameters." message
-                    }
-                }
+            Dimension size = Helper.getDimensionFromParameter(parameter);
+            if (size != null) {
+                setStreamChatSize(size.width, size.height);
+                printSystem("Set StreamChat size to " + size.width + "x" + size.height);
+                return true;
             }
             printSystem("Invalid parameters.");
         } else if (command.equals("getstreamchatsize")) {
             Dimension d = streamChat.getSize();
             printSystem("StreamChat size: "+d.width+"x"+d.height);
+        } else if (command.equals("setsize")) {
+            Dimension size = Helper.getDimensionFromParameter(parameter);
+            if (size != null) {
+                setSize(size);
+                printSystem(String.format("Set Window size to %dx%d", size.width, size.height));
+                return true;
+            }
+            printSystem("Invalid parameters.");
         } else {
             return false;
         }
@@ -2372,8 +2375,14 @@ public class MainGui extends JFrame implements Runnable {
      * # Messages #
      */
     
+    public void printMessage(String toChan, User user, String text, boolean action,
+            String emotes) {
+        printMessage(toChan, user, text, action, emotes, null);
+    }
+    
     public void printMessage(final String toChan, final User user,
-            final String text, final boolean action, final String emotes) {
+            final String text, final boolean action, final String emotes,
+            final String id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -2453,7 +2462,7 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 } else {
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes);
+                    UserMessage message = new UserMessage(user, text, tagEmotes, id);
                     message.color = highlighter.getLastMatchColor();
                     message.whisper = whisper;
                     message.action = action;
@@ -2489,7 +2498,7 @@ public class MainGui extends JFrame implements Runnable {
             public void run() {
                 // Chat window
                 Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-                SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes);
+                SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
                 channels.getChannel(channel).printMessage(m);
                 
                 // Chatlog/User Info
@@ -2553,16 +2562,16 @@ public class MainGui extends JFrame implements Runnable {
         return ownUsername != null && ownUsername.equalsIgnoreCase(name);
     }
     
-    public void userBanned(final User user, final long duration, final String reason) {
+    public void userBanned(final User user, final long duration, final String reason, final String id) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                channels.getChannel(user.getChannel()).userBanned(user, duration, reason);
-                user.addBan(duration, reason);
+                channels.getChannel(user.getChannel()).userBanned(user, duration, reason, id);
+                user.addBan(duration, reason, id);
                 updateUserInfoDialog(user);
                 if (client.settings.listContains("streamChatChannels", user.getChannel())) {
-                    streamChat.userBanned(user, duration, reason);
+                    streamChat.userBanned(user, duration, reason, id);
                 }
             }
         });
@@ -3737,7 +3746,9 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (setting.equals("laf")) {
                     GuiUtil.setLookAndFeel((String)value);
                     GuiUtil.updateLookAndFeel();
-                }
+                } //else if (setting.equals("emoji")) {
+                  //  emoticons.addEmoji((String)value);
+                //}
             }
             if (type == Setting.LIST) {
                 if (setting.equals("highlight")) {
