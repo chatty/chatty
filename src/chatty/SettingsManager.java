@@ -326,7 +326,7 @@ public class SettingsManager {
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
         settings.addLong("userlistMinWidth", 0);
-        settings.addBoolean("disableUserlist", false);
+        settings.addBoolean("userlistEnabled", true);
         settings.addLong("bufferSize", 500);
         
         settings.addString("liveStreamsSorting", "recent");

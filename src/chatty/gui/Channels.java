@@ -59,7 +59,7 @@ public class Channels {
      */
     private int defaultUserlistWidth = 140;
     private int minUserlistWidth = 0;
-    private boolean defaultUserlistVisableState = true;
+    private boolean defaultUserlistVisibleState = true;
     private boolean chatScrollbarAlaways;
     private Channel lastActiveChannel = null;
     
@@ -161,7 +161,7 @@ public class Channels {
         channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
         channel.setMouseClickedListener(mouseClickedListener);
         channel.setScrollbarAlways(chatScrollbarAlaways);
-        channel.setUserlistEnabled(defaultUserlistVisableState);
+        channel.setUserlistEnabled(defaultUserlistVisibleState);
         if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
             channel.setUserlistEnabled(false);
         }
@@ -632,8 +632,8 @@ public class Channels {
         }
     }
 
-    public void setDefaultUserlistVisableState(boolean state){
-        defaultUserlistVisableState = state;
+    public void setDefaultUserlistVisibleState(boolean state){
+        defaultUserlistVisibleState = state;
         if (defaultChannel != null) {
             defaultChannel.setUserlistEnabled(state);
         }
