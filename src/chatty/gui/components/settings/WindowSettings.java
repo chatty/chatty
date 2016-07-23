@@ -77,6 +77,9 @@ public class WindowSettings extends SettingsPanel {
                 d.makeGbc(2, 4, 1, 1, GridBagConstraints.WEST));
         other.add(d.addSimpleLongSetting("userlistMinWidth", 3, true),
                 d.makeGbc(3, 4, 1, 1, GridBagConstraints.WEST));
+
+        other.add(d.addSimpleBooleanSetting("userlistEnabled", "Enable user list by default",
+                "Enables the user list by default when joining a channel"), d.makeGbc(0,5,1,1, GridBagConstraints.WEST));
         
         
         JPanel popout = addTitledPanel("Popout", 2);

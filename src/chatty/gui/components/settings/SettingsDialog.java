@@ -43,7 +43,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private final Set<String> restartRequiredDef = new HashSet<>(Arrays.asList(
             "capitalizedNames", "ffz", "nod3d", "noddraw",
-            "userlistWidth", "userlistMinWidth", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
+            "userlistWidth", "userlistMinWidth", "userlistEnabled", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
             "logPath", "logTimestamp",
             "botNamesBTTV", "botNamesFFZ", "ircv3CapitalizedNames",
             "tabsMwheelScrolling", "inputFont", "ffzEvent"));

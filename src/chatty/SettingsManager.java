@@ -178,6 +178,7 @@ public class SettingsManager {
         settings.addMap("customNames", new HashMap<>(), Setting.STRING);
         settings.addBoolean("actionColored", false);
 
+
         // Badges/Emotes
         settings.addBoolean("emoticonsEnabled",true);
         settings.addLong("emoteMaxHeight", 0);
@@ -325,6 +326,7 @@ public class SettingsManager {
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);
         settings.addLong("userlistMinWidth", 0);
+        settings.addBoolean("userlistEnabled", true);
         settings.addLong("bufferSize", 500);
         
         settings.addString("liveStreamsSorting", "recent");
