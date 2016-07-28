@@ -418,6 +418,7 @@ public class Addressbook {
         addCategories(categories);
         if (!entries.containsKey(name)) {
             set(name, categories);
+            saveOnChange();
             return null;
         } else {
             AddressbookEntry current = entries.get(name);
