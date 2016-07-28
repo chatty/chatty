@@ -4,6 +4,7 @@ package chatty;
 import chatty.util.FileWatcher;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
+import chatty.util.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -37,6 +38,8 @@ public class Addressbook {
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
     
+    private final Settings settings;
+    
     /**
      * Map of entries.
      */
@@ -66,9 +69,10 @@ public class Addressbook {
      */
     private boolean saved;
     
-    public Addressbook(String fileName, String importFilename) {
+    public Addressbook(String fileName, String importFilename,Settings settings) {
         this.fileName = fileName;
         this.importFileName = importFilename;
+        this.settings = settings;
     }
     
     /**
@@ -258,6 +262,7 @@ public class Addressbook {
             } else if (previousEntry.getCategories().equals(categories)) {
                 return "Didn't change '"+name+"', categories already "+categoriesOutput+".";
             }
+            saveOnChange();
             return "Set '"+name+"' to categories "+categoriesOutput+".";
         }
         return "Set: Invalid number of parameters.";
@@ -297,6 +302,7 @@ public class Addressbook {
             if (result == null) {
                 return "Didn't remove anything from '" + name + "' (entry not present).";
             }
+            saveOnChange();
             return "Removed categories " + categoriesToString(categories)
                     + " from '" + name + "' (categories now "
                     + categoriesToString(result.getCategories()) + ").";
@@ -319,6 +325,7 @@ public class Addressbook {
         String oldCategoryName = parameters[0];
         String newCategoryName = parameters[1];
         int result = renameCategory(oldCategoryName, newCategoryName);
+        saveOnChange();
         return "Renamed category '"+oldCategoryName+"'->'"+newCategoryName+"' "
                 + "in "+result+" entries.";
     }
@@ -337,6 +344,7 @@ public class Addressbook {
             return "Remove category: Invalid number of parameters.";
         }
         int result = removeCategory(parameters[0]);
+        saveOnChange();
         return "Removed category '"+parameters[0]+"' from "+result+" entries.";
     }
     
@@ -410,11 +418,13 @@ public class Addressbook {
         addCategories(categories);
         if (!entries.containsKey(name)) {
             set(name, categories);
+            saveOnChange();
             return null;
         } else {
             AddressbookEntry current = entries.get(name);
             AddressbookEntry changed = new AddressbookEntry(current, categories);
             entries.put(name, changed);
+            saveOnChange();
             return changed;
         }
     }
@@ -707,6 +717,13 @@ public class Addressbook {
     
     public synchronized void saveToFileOnce() {
         if (!saved) {
+            saveToFile();
+        }
+    }
+    
+    public synchronized void saveOnChange() {
+        if ( settings.getBoolean("saveAddressOnChange") ) {
+            //Save only if the setting is enabled
             saveToFile();
         }
     }
