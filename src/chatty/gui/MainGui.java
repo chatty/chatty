@@ -658,6 +658,12 @@ public class MainGui extends JFrame implements Runnable {
                 notificationManager.clearAllShown();
             }
         });
+        hotkeyManager.registerAction("application.Exit", "Exit Chatty!!", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                client.exit();
+            }
+        });
     }
     
     public void showGui() {
