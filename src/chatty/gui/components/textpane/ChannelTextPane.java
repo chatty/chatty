@@ -1706,7 +1706,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes) {
         
         findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle);
-        //findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
+        findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
         
         if (tagEmotes != null) {
             // Add emotes from tags

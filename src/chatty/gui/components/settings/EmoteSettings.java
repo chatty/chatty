@@ -125,6 +125,22 @@ public class EmoteSettings extends SettingsPanel {
             }
         });
         
+        //------
+        // Emoji
+        //------
+        
+        Map<String, String> emojiSetDef = new LinkedHashMap<>();
+        emojiSetDef.put("twemoji", "Twitter Emoji");
+        emojiSetDef.put("e1", "Emoji One");
+        emojiSetDef.put("none", "None");
+        ComboStringSetting emojiSet = new ComboStringSetting(emojiSetDef);
+        
+        d.addStringSetting("emoji", emojiSet);
+        
+        main.add(new JLabel("Emoji Set:"),
+                d.makeGbc(0, 6, 1, 1, GridBagConstraints.WEST));
+        main.add(emojiSet,
+                d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
         
         //===============
         // Ignored Emotes

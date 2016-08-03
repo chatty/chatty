@@ -52,7 +52,7 @@ public class Emoticon {
     public static final int ID_UNDEFINED = -1;
     
     public static enum Type {
-        TWITCH, FFZ, BTTV, CUSTOM
+        TWITCH, FFZ, BTTV, CUSTOM, EMOJI
     }
     
     public static enum SubType {
@@ -241,6 +241,8 @@ public class Emoticon {
             return getBttvEmoteUrl(stringId, factor);
         } else if (type == Type.FFZ) {
             return getFFZUrl(factor);
+        } else if (type == Type.EMOJI) {
+            return url;
         }
         return null;
     }
@@ -329,7 +331,7 @@ public class Emoticon {
             // isn't a word character
             String search = code;
             int flags = 0;
-            if (literal && NOT_WORD.matcher(code).find()) {
+            if ((literal && NOT_WORD.matcher(code).find()) || type == Type.EMOJI) {
                 flags = Pattern.LITERAL;
             } else {
                 search = "(?<=^|\\s)"+code+"(?=$|\\s)";
@@ -657,7 +659,7 @@ public class Emoticon {
             // Determine which URL to load the image from
             String url = Emoticon.this.url;
             int urlFactor = 1;
-            if (type == Type.TWITCH || type == Type.BTTV || type == Type.FFZ) {
+            if (type == Type.TWITCH || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
                 if (scaledSize.width > defaultSize.width) {
                     urlFactor = 2;
                 }

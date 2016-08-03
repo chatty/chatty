@@ -48,6 +48,8 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             } else if (emote.type == Emoticon.Type.CUSTOM) {
                 addItem("", "Custom Emote");
+            } else if (emote.type == Emoticon.Type.EMOJI) {
+                addItem("", "Emoji ("+emote.creator+")");
             }
             
             // Info

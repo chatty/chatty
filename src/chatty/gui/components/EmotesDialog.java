@@ -67,6 +67,7 @@ public class EmotesDialog extends JDialog {
     private static final String CHANNEL_EMOTES = "Channel";
     private static final String TWITCH_EMOTES = "Twitch";
     private static final String OTHER_EMOTES = "Other";
+    private static final String EMOJI = "Emoji";
     private static final String EMOTE_DETAILS = "Emote Details";
     
     private final JPanel emotesPanel;
@@ -135,6 +136,8 @@ public class EmotesDialog extends JDialog {
                 UPDATE_CHANNEL_CHANGED | UPDATE_EMOTESET_CHANGED));
         panels.add(new TwitchEmotesPanel(TWITCH_EMOTES,0));
         panels.add(new OtherEmotesPanel(OTHER_EMOTES,0));
+        // Not quite ready yet
+        //panels.add(new EmojiPanel(EMOJI, 0));
         defaultPanel = panels.get(1);
         
         // Buttons/Button Panel
@@ -171,8 +174,8 @@ public class EmotesDialog extends JDialog {
                     if (e.getClickCount() == 2 && closeOnDoubleClick) {
                         setVisible(false);
                     } else {
-                        JLabel label = (JLabel) e.getSource();
-                        main.insert(Emoticons.toWriteable(label.getToolTipText()), true);
+                        Emote label = (Emote) e.getSource();
+                        main.insert(Emoticons.toWriteable(label.code), true);
                     }
                 }
             }
@@ -424,6 +427,7 @@ public class EmotesDialog extends JDialog {
         
         private static final Border BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
         
+        public final String code;
         public final EmoticonImage emote;
 
         public Emote(Emoticon emote, MouseListener mouseListener, float scale,
@@ -431,9 +435,13 @@ public class EmotesDialog extends JDialog {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(mouseListener);
             EmoticonImage emoteImage = emote.getIcon(scale, 0, emoteUser);
+            this.code = emote.code;
             this.emote = emoteImage;
             setIcon(emoteImage.getImageIcon());
             setToolTipText(emote.code);
+            if (emote.type == Emoticon.Type.EMOJI) {
+                setToolTipText(emote.getInfos().toString());
+            }
             setBorder(BORDER);
             
         }
@@ -789,6 +797,39 @@ public class EmotesDialog extends JDialog {
             addEmotes(ffzRegular, "Global FFZ Emotes");
             addEmotes(ffzFeatured, "Global FFZ Emotes [Feature Friday]");
             addEmotes(bttv, "Global BTTV Emotes");
+            
+            relayout();
+        }
+    }
+    
+    private class EmojiPanel extends EmotesPanel {
+
+        public EmojiPanel(String name, int updateOn) {
+            super(name, updateOn);
+        }
+
+        @Override
+        protected void updateEmotes() {
+            reset();
+            
+            Map<String, Set<Emoticon>> categories = new HashMap<>();
+            Set<Emoticon> emotes = emoteManager.getEmoji();
+            for (Emoticon emote : emotes) {
+                for (String info : emote.getInfos()) {
+                    if (!info.startsWith("Category: ")) {
+                        continue;
+                    }
+                    if (!categories.containsKey(info)) {
+                        categories.put(info, new HashSet<Emoticon>());
+                    }
+                    categories.get(info).add(emote);
+                }
+            }
+            for (String category : categories.keySet()) {
+                addEmotes(categories.get(category), category);
+            }
+            
+            //addEmotes(emoteManager.getEmoji(), "Emoji");
             
             relayout();
         }

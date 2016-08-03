@@ -193,6 +193,8 @@ public class SettingsManager {
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         
+        settings.addString("emoji", "twemoji");
+        
         settings.addBoolean("usericonsEnabled",true);
         
         settings.addList("customUsericons", new ArrayList(), Setting.LIST);

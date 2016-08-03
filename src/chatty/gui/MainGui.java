@@ -781,7 +781,7 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
         emoticons.loadCustomEmotes();
-        //emoticons.addEmoji(client.settings.getString("emoji"));
+        emoticons.addEmoji(client.settings.getString("emoji"));
         client.api.setToken(client.settings.getString("token"));
         
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
@@ -3746,9 +3746,9 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (setting.equals("laf")) {
                     GuiUtil.setLookAndFeel((String)value);
                     GuiUtil.updateLookAndFeel();
-                } //else if (setting.equals("emoji")) {
-                  //  emoticons.addEmoji((String)value);
-                //}
+                } else if (setting.equals("emoji")) {
+                    emoticons.addEmoji((String)value);
+                }
             }
             if (type == Setting.LIST) {
                 if (setting.equals("highlight")) {

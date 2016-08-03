@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.gui.emoji.EmojiUtil;
 import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.io.BufferedReader;
@@ -15,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 /**
@@ -78,6 +81,18 @@ public class Emoticons {
     private final Set<Emoticon> customEmotes = new HashSet<>();
     
     private final Map<Integer, Emoticon> customEmotesById = new HashMap<>();
+    
+    /**
+     * Emoji should be sorted by length, so that longer Emoji (which can be
+     * combinations of several short Emoji characters) are checked first.
+     */
+    private final Set<Emoticon> emoji = new TreeSet<>(new Comparator<Emoticon>() {
+            @Override
+            public int compare(Emoticon s1, Emoticon s2) {
+                int cmp = Integer.compare(s2.code.length(), s1.code.length());
+                return cmp != 0 ? cmp : s1.code.compareTo(s2.code);
+            }
+        });
     
     /**
      * Only global Twitch emotes.
@@ -272,6 +287,10 @@ public class Emoticons {
     
     public Emoticon getCustomEmoteById(int id) {
         return customEmotesById.get(id);
+    }
+    
+    public Set<Emoticon> getEmoji() {
+        return emoji;
     }
     
     /**
@@ -667,6 +686,7 @@ public class Emoticons {
         int count = favoritesNotFound.size();
         findFavorites(twitchEmotesById.values());
         findFavorites(otherGlobalEmotes);
+        findFavorites(emoji);
         if (favoritesNotFound.isEmpty()) {
             LOGGER.info("Emoticons: Found all remaining " + count + " favorites");
         } else {
@@ -1054,6 +1074,11 @@ public class Emoticons {
         public String toString() {
             return ">"+id+":"+end;
         }
+    }
+    
+    public void addEmoji(String sourceId) {
+        emoji.clear();
+        emoji.addAll(EmojiUtil.makeEmoticons(sourceId));
     }
             
 }
