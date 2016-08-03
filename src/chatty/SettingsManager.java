@@ -236,6 +236,7 @@ public class SettingsManager {
         settings.addBoolean("abAutoImport", false);
         settings.addString("abSubMonthsChan", "");
         settings.addList("abSubMonths", new TreeSet(), Setting.LONG);
+        settings.addBoolean("saveAddressOnChange", false);
         
         // Custom Commands
         settings.addList("commands", new ArrayList(), Setting.STRING);

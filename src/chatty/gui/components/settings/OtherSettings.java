@@ -86,6 +86,12 @@ public class OtherSettings extends SettingsPanel {
         gbc = d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST);
         other.add(d.addSimpleStringSetting("titleAddition", 10, true), gbc);
         
+        
+        gbc = d.makeGbc(0, 8, 1, 1, GridBagConstraints.WEST);
+        other.add(new JLabel("Save Addressbook on change:"), gbc);
+        
+        gbc = d.makeGbc(1, 8, 2, 1, GridBagConstraints.WEST);
+        other.add(d.addSimpleBooleanSetting("saveAddressOnChange","Save immediately after updating addressbook","Save immediately after updating addressbook. Including changes via commands"), gbc);
     }
     
 }
