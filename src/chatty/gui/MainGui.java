@@ -2857,8 +2857,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private boolean shouldUpdateUser(User user) {
-        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL)
-                || client.settings.getLong("whisperDisplayMode") == WhisperManager.DISPLAY_ONE_WINDOW;
+        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL);
     }
     
     /**

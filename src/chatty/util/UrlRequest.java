@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import chatty.Chatty;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,8 @@ public class UrlRequest implements Runnable {
     private static final Charset CHARSET = Charset.forName("UTF-8");
     private static final int CONNECT_TIMEOUT = 10000;
     private static final int READ_TIMEOUT = 10000;
+    
+    private static final String VERSION = "Chatty "+Chatty.VERSION;
     
     private String url;
     private int responseCode;
@@ -102,10 +105,13 @@ public class UrlRequest implements Runnable {
         try {
             URL url = new URL(targetUrl);
             connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", VERSION);
+            connection.setRequestProperty("Accept-Encoding", "gzip");
+            
             connection.setConnectTimeout(CONNECT_TIMEOUT);
             connection.setReadTimeout(READ_TIMEOUT);
             encoding = connection.getContentEncoding();
-
+            
             // Read response
             InputStream input = connection.getInputStream();
             if ("gzip".equals(connection.getContentEncoding())) {

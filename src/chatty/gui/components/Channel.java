@@ -466,6 +466,9 @@ public class Channel extends JPanel {
      * @param enable 
      */
     public final void setUserlistEnabled(boolean enable) {
+        if (enable == userlistEnabled) {
+            return;
+        }
         if (enable) {
             userlist.setVisible(true);
             mainPane.setDividerSize(DIVIDER_SIZE);
