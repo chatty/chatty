@@ -4,6 +4,7 @@ package chatty;
 import chatty.util.FileWatcher;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
+import chatty.util.settings.Settings;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -37,6 +38,8 @@ public class Addressbook {
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
     
+    private final Settings settings;
+    
     /**
      * Map of entries.
      */
@@ -66,9 +69,10 @@ public class Addressbook {
      */
     private boolean saved;
     
-    public Addressbook(String fileName, String importFilename) {
+    public Addressbook(String fileName, String importFilename, Settings settings) {
         this.fileName = fileName;
         this.importFileName = importFilename;
+        this.settings = settings;
     }
     
     /**
@@ -293,9 +297,13 @@ public class Addressbook {
             String name = parameters[0].trim();
             Set<String> categories
                     = getCategoriesFromString(parameters[1].trim());
+            AddressbookEntry currentEntry = get(name);
             AddressbookEntry result = remove(name, categories);
             if (result == null) {
                 return "Didn't remove anything from '" + name + "' (entry not present).";
+            }
+            if (result.equalsFully(currentEntry)) {
+                return "Didn't remove anything from '" + name + "', categories are "+categoriesToString(currentEntry.getCategories());
             }
             return "Removed categories " + categoriesToString(categories)
                     + " from '" + name + "' (categories now "
@@ -406,16 +414,19 @@ public class Addressbook {
      * if it didn't.
      */
     public synchronized AddressbookEntry add(String name, Set<String> categories) {
-        name = name.toLowerCase(Locale.ENGLISH);
-        addCategories(categories);
+        name = StringUtil.toLowerCase(name);
+        addPresetCategories(categories);
         if (!entries.containsKey(name)) {
             set(name, categories);
             return null;
         } else {
-            AddressbookEntry current = entries.get(name);
-            AddressbookEntry changed = new AddressbookEntry(current, categories);
-            entries.put(name, changed);
-            return changed;
+            AddressbookEntry currentEntry = entries.get(name);
+            AddressbookEntry changedEntry = new AddressbookEntry(currentEntry, categories);
+            entries.put(name, changedEntry);
+            if (!changedEntry.equalsFully(currentEntry)) {
+                saveOnChange();
+            }
+            return changedEntry;
         }
     }
     
@@ -427,8 +438,8 @@ public class Addressbook {
      * @param categories The categories, can be empty, but not null
      */
     public synchronized void set(String name, Set<String> categories) {
-        addCategories(categories);
-        entries.put(StringUtil.toLowerCase(name), new AddressbookEntry(name, categories));
+        AddressbookEntry entry = new AddressbookEntry(name, categories);
+        set(entry);
     }
     
     /**
@@ -437,8 +448,11 @@ public class Addressbook {
      * @param entry The entry, can't be null.
      */
     public synchronized void set(AddressbookEntry entry) {
-        addCategories(entry.getCategories());
-        entries.put(entry.getName(), entry);
+        addPresetCategories(entry.getCategories());
+        AddressbookEntry previousEntry = entries.put(entry.getName(), entry);
+        if (!entry.equalsFully(previousEntry)) {
+            saveOnChange();
+        }
     }
     
     /**
@@ -447,7 +461,7 @@ public class Addressbook {
      * @param entry 
      */
     public synchronized void remove(AddressbookEntry entry) {
-        entries.remove(entry.getName());
+        remove(entry.getName());
     }
     
     /**
@@ -457,7 +471,11 @@ public class Addressbook {
      * @return The entry that was removed.
      */
     public synchronized AddressbookEntry remove(String name) {
-        return entries.remove(name.toLowerCase());
+        AddressbookEntry removedEntry = entries.remove(StringUtil.toLowerCase(name));
+        if (removedEntry != null) {
+            saveOnChange();
+        }
+        return removedEntry;
     }
     
     public AddressbookEntry remove(String name, String categories) {
@@ -473,15 +491,18 @@ public class Addressbook {
      */
     public synchronized AddressbookEntry remove(String name, Set<String> categoriesToRemove) {
         name = StringUtil.toLowerCase(name);
-        AddressbookEntry entry = entries.get(name);
-        if (entry != null) {
-            Set<String> currentCategories = entry.getCategories();
+        AddressbookEntry currentEntry = entries.get(name);
+        if (currentEntry != null) {
+            Set<String> currentCategories = currentEntry.getCategories();
             for (String category : categoriesToRemove) {
                 currentCategories.remove(category);
             }
-            AddressbookEntry changed = new AddressbookEntry(name, currentCategories);
-            entries.put(name, changed);
-            return changed;
+            AddressbookEntry changedEntry = new AddressbookEntry(name, currentCategories);
+            entries.put(name, changedEntry);
+            if (!currentEntry.equalsFully(changedEntry)) {
+                saveOnChange();
+            }
+            return changedEntry;
         }
         return null;
     }
@@ -516,6 +537,9 @@ public class Addressbook {
                 count++;
             }
         }
+        if (count > 0) {
+            saveOnChange();
+        }
         return count;
     }
     
@@ -535,13 +559,16 @@ public class Addressbook {
                 count++;
             }
         }
+        if (count > 0) {
+            saveOnChange();
+        }
         return count;
     }
     
     /**
      * Creates a new AddressbookEntry from <tt>entry</tt> that contains the
      * renamed version of <tt>oldCategoryName</tt>, or doesn't contain the
-     * category at all if <tt>newCategoryName</tt> was null.
+     * category at all if <tt>newCategoryName</tt> is null.
      * 
      * @param entry The entry to change.
      * @param oldCategoryName The name of the category to change.
@@ -711,6 +738,12 @@ public class Addressbook {
         }
     }
     
+    private void saveOnChange() {
+        if (settings.getBoolean("abSaveOnChange")) {
+            saveToFile();
+        }
+    }
+    
     /**
      * Saves all entries to file.
      */
@@ -747,7 +780,7 @@ public class Addressbook {
     private void scanCategories() {
         presetCategories.clear();
         for (AddressbookEntry entry : entries.values()) {
-            addCategories(entry.getCategories());
+            addPresetCategories(entry.getCategories());
         }
     }
     
@@ -756,7 +789,7 @@ public class Addressbook {
      * 
      * @param categories The categories to add (if not already present)
      */
-    private void addCategories(Collection<String> categories) {
+    private void addPresetCategories(Collection<String> categories) {
         presetCategories.addAll(categories);
     }
     

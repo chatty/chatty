@@ -109,4 +109,11 @@ public class AddressbookEntry {
         return hash;
     }
     
+    public boolean equalsFully(AddressbookEntry o) {
+        if (o == null) {
+            return false;
+        }
+        return o.equals(this) && o.getCategories().equals(this.categories);
+    }
+    
 }

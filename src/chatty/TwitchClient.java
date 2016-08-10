@@ -214,7 +214,7 @@ public class TwitchClient {
         testUser.setUsercolorManager(usercolorManager);
         
         addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
-            Chatty.getUserDataDirectory()+"addressbookImport.txt");
+            Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
         addressbook.loadFromFile();
         addressbook.setSomewhatUniqueCategories(settings.getString("abUniqueCats"));
         if (settings.getBoolean("abAutoImport")) {

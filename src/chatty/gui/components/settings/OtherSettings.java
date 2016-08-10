@@ -60,7 +60,8 @@ public class OtherSettings extends SettingsPanel {
         
         // Other settings
         gbc = d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST);
-        JCheckBox versionCheck = d.addSimpleBooleanSetting("checkNewVersion", "Inform me about new versions",
+        JCheckBox versionCheck = d.addSimpleBooleanSetting("checkNewVersion",
+                "Inform me about new versions",
                 "Automatically check for a new version every few days and output a message "
                 + "if a new one is available.");
         other.add(versionCheck, gbc);
@@ -70,15 +71,18 @@ public class OtherSettings extends SettingsPanel {
         }
         
         gbc = d.makeGbc(0, 5, 2, 1);
-        other.add(d.addSimpleBooleanSetting("enableStatusWriter", "Write Stream Status:", ""), gbc);
+        other.add(d.addSimpleBooleanSetting("enableStatusWriter",
+                "Write Stream Status:", ""), gbc);
         
         gbc = d.makeGbc(2, 5, 1, 1);
         other.add(d.addEditorStringSetting("statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER), gbc);
         
         
         gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleBooleanSetting("autoUnhost", "Auto-Unhost when your stream goes live",
-                "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"), gbc);
+        other.add(d.addSimpleBooleanSetting("autoUnhost",
+                "Auto-Unhost when your stream goes live",
+                "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"),
+                gbc);
         
         gbc = d.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST);
         other.add(new JLabel("Prepend to window title:"), gbc);
@@ -86,6 +90,11 @@ public class OtherSettings extends SettingsPanel {
         gbc = d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST);
         other.add(d.addSimpleStringSetting("titleAddition", 10, true), gbc);
         
+        gbc = d.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST);
+        other.add(d.addSimpleBooleanSetting("abSaveOnChange",
+                "Save Addressbook immediately after changing entries",
+                "Save immediately after updating addressbook (including changes via commands)"),
+                gbc);
     }
     
 }
