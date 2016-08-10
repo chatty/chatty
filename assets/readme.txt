@@ -79,40 +79,68 @@ Chatty is released under the MIT License, except for the parts mentioned below.
 External Libraries
 ------------------
 
-* JSON-Simple [lib/json-simple-*.jar]
-	Website: https://code.google.com/p/json-simple/)
-	License: "Apache License 2.0"
-	http://www.apache.org/licenses/LICENSE-2.0
+* JSON-Simple:
+  * File: `assets/lib/json-simple-*.jar`
+  * Website: https://code.google.com/p/json-simple/
+  * License: "Apache License 2.0"
+	(for the license text see the APACHE_LICENSE file
+	or http://www.apache.org/licenses/LICENSE-2.0).
 
-* JIntellitype [lib/jintellitype-*.jar, Jintellitype*.dll] (only some versions)
-	Website: https://code.google.com/p/jintellitype/
-	License: "Apache License 2.0"
-	http://www.apache.org/licenses/LICENSE-2.0
+* JIntellitype:
+  * Files: `assets/lib/jintellitype-*.jar, Jintellitype*.dll`
+  * Website: https://code.google.com/p/jintellitype/
+  * License: "Apache License 2.0"
+	(for the license text see the APACHE_LICENSE file
+	or http://www.apache.org/licenses/LICENSE-2.0).
 
-* Tyrus [lib/tyrus-standalone-client-1.12.jar]
-	Website: https://tyrus.java.net
-	License: "CDDL 1.1" and "GPL 2 with CPE"
-	https://tyrus.java.net/license.html
+* Tyrus:
+  * Files: `assets/lib/tyrus-standalone-client-1.12.jar`
+  * Website: https://tyrus.java.net
+  * License: "CDDL 1.1" and "GPL 2 with CPE"
+	(see https://tyrus.java.net/license.html)
 
-* Favorites Icon [star.png] by Everaldo Coelho
-	Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
-	License: LGPL
-	http://www.gnu.org/licenses/lgpl.html
+* Favorites Icon by Everaldo Coelho:
+  * File: `star.png`
+  * Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
+  * License: LGPL
+	(for the license text see the LGPL file or
+	http://www.gnu.org/licenses/lgpl.html)
 
-* Misc Icons [list-add.png, list-remove.png, view-refresh.png,
+* Misc Icons from the Tango Icon Theme:
+  * Files: `list-add.png, list-remove.png, view-refresh.png,
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
-		go-previous.png, go-home.png, go-web.png] from the Tango Icon Theme
-	Source: http://tango.freedesktop.org/Tango_Icon_Library
-	License: Released into the Public Domain
+		go-previous.png, go-home.png, go-web.png`
+  * Source: http://tango.freedesktop.org/Tango_Icon_Library
+  * License: Released into the Public Domain
 
-* Misc Icons [edit.png, ok.png, no.png] from NUVOLA ICON THEME for KDE 3.x
-		by David Vignoni
-	Source: http://www.icon-king.com/projects/nuvola/
-	License: LGPL
-	http://www.gnu.org/licenses/lgpl.html
+* Misc Icons from NUVOLA ICON THEME for KDE 3.x
+		by David Vignoni:
+  * Files: `edit.png, ok.png, no.png`
+  * Source: http://www.icon-king.com/projects/nuvola/
+  * License: LGPL
+	(for the license text see the LGPL file or
+	http://www.gnu.org/licenses/lgpl.html)
 
-* Robot Icon [icon_bot.png] by Yusuke Kamiyamane
-	Source: https://www.iconfinder.com/icons/46205/robot_icon
-	License: CC-BY 3.0
+* Robot Icon by Yusuke Kamiyamane:
+  * File: `icon_bot.png`
+  * Source: https://www.iconfinder.com/icons/46205/robot_icon
+  * License: CC-BY 3.0
 	(http://creativecommons.org/licenses/by/3.0/)
+
+* Twitter Emoji Images
+  * Files: `gui/emoji/twemoji`
+  * Source: https://github.com/twitter/twemoji
+  * License: CC-BY 4.0
+	(https://creativecommons.org/licenses/by/4.0/)
+
+* Emoji One Images
+  * Files: `gui/emoji/e1`
+  * Source: http://emojione.com/
+  * License: CC-BY 4.0
+	(https://creativecommons.org/licenses/by/4.0/)
+
+* Emoji Metadata based on EmojiOne emoji.json
+  * Source: https://github.com/Ranks/emojione/blob/master/emoji.json
+  * License: MIT
+	(https://opensource.org/licenses/MIT)

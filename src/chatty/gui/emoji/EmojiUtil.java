@@ -8,13 +8,24 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- *
+ * Creates Emoticon objects for the selected Emoji Set.
+ * 
+ * The code in this file has been pre-processed since it appears to be kind of
+ * inconvenient to get a list of assets from a jar file.
+ * 
+ * Emoji Metadata (description/category) in this file based on
+ * https://github.com/Ranks/emojione/blob/master/emoji.json (MIT License)
+ * 
  * @author tduva
  */
 public class EmojiUtil {
     
     private static final Logger LOGGER = Logger.getLogger(EmojiUtil.class.getName());
     
+    /**
+     * One Emoji set specifiying an identifier, human-readable name and image
+     * path in the jar relative to this file.
+     */
     public enum EmojiSet {
         
         TWEMOJI("twemoji", "Twitter Emoji", "twemoji/72x72/"),
@@ -31,6 +42,17 @@ public class EmojiUtil {
         }
     }
     
+    /**
+     * Creates an Emoticon of type EMOJI with the given info and adds it to the
+     * Collection.
+     * 
+     * @param set The Emoji Set containing info on which set it is
+     * @param emotes The Collection to add the Emoticon to
+     * @param code The unicode characters as escaped string
+     * @param filename The filename of the image
+     * @param name A short description of the Emoji, or null
+     * @param category The category of the Emoji, or null
+     */
     public static void add(EmojiSet set, Collection<Emoticon> emotes, String code,
             String filename, String name, String category) {
         String url = EmojiUtil.class.getResource(set.internalPath+filename).toString();
@@ -49,7 +71,15 @@ public class EmojiUtil {
         emotes.add(b.build());
     }
     
-    
+    /**
+     * Create Emoticon objects for the Emoji in the given set.
+     * 
+     * If no valid set is given, then the returned Set will be empty (used for
+     * example when no Emoji are to be used).
+     * 
+     * @param sourceId The name of the Emoji set
+     * @return A Set of Emoticon objects representing the selected Emoji
+     */
     public static Set<Emoticon> makeEmoticons(String sourceId) {
         Set<Emoticon> result = new HashSet<>();
         
@@ -68,7 +98,11 @@ public class EmojiUtil {
     }
     
     
-    
+    /**
+     * For testing.
+     * 
+     * @param args 
+     */
     public static void main(String[] args) {
         Set<Emoticon> emotes = makeEmoticons("e1");
         System.out.println(emotes.size());

@@ -74,6 +74,22 @@ External Libraries/Resources
   * License: CC-BY 3.0
 	(http://creativecommons.org/licenses/by/3.0/)
 
+* Twitter Emoji Images
+  * Files: `gui/emoji/twemoji`
+  * Source: https://github.com/twitter/twemoji
+  * License: CC-BY 4.0
+	(https://creativecommons.org/licenses/by/4.0/)
+
+* Emoji One Images
+  * Files: `gui/emoji/e1`
+  * Source: http://emojione.com/
+  * License: CC-BY 4.0
+	(https://creativecommons.org/licenses/by/4.0/)
+
+* Emoji Metadata based on EmojiOne emoji.json
+  * Source: https://github.com/Ranks/emojione/blob/master/emoji.json
+  * License: MIT
+	(https://opensource.org/licenses/MIT)
 
 Chatty
 ------
