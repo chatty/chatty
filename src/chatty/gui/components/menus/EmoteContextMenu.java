@@ -25,7 +25,11 @@ public class EmoteContextMenu extends ContextMenu {
         this.listener = listener;
         this.emoteImage = emoteImage;
         
-        addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
+        if (emote.subType == Emoticon.SubType.CHEER) {
+            addItem("cheer","Cheering Emote");
+        } else {
+            addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
+        }
         addItem("emoteImage", emoteImage.getSizeString());
         if (emote.numericId != Emoticon.ID_UNDEFINED) {
             addItem("emoteId", "ID: "+emote.numericId);
@@ -85,8 +89,12 @@ public class EmoteContextMenu extends ContextMenu {
         addSeparator();
         addItem("emoteDetails", "Show Details");
         
+        if (emote.subType == Emoticon.SubType.CHEER) {
+            return;
+        }
         addSeparator();
         addItem("ignoreEmote", "Ignore");
+        
         if (!emote.hasStreamRestrictions()) {
             if (emoteManager.isFavorite(emote)) {
                 addItem("unfavoriteEmote", "UnFavorite");

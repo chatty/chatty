@@ -142,6 +142,23 @@ public class EmoteSettings extends SettingsPanel {
         main.add(emojiSet,
                 d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
         
+        //---------
+        // Cheering
+        //---------
+        
+        Map<String, String> cheeringTypeDef = new LinkedHashMap<>();
+        cheeringTypeDef.put("none", "Text Only");
+        cheeringTypeDef.put("static", "Static Images");
+        cheeringTypeDef.put("animated", "Animated");
+        ComboStringSetting cheersType = new ComboStringSetting(cheeringTypeDef);
+        
+        d.addStringSetting("cheersType", cheersType);
+        
+        main.add(new JLabel("Cheers (Bits):"),
+                d.makeGbc(2, 6, 1, 1, GridBagConstraints.CENTER));
+        main.add(cheersType,
+                d.makeGbc(3, 6, 2, 1, GridBagConstraints.EAST));
+        
         //===============
         // Ignored Emotes
         //===============

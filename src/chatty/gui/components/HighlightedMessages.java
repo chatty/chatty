@@ -81,9 +81,9 @@ public class HighlightedMessages extends JDialog {
     }
     
     public void addMessage(String channel, User user, String text, boolean action,
-            TagEmotes emotes, boolean whisper) {
+            TagEmotes emotes, int bits, boolean whisper) {
         messageAdded(channel);
-        UserMessage message = new UserMessage(user, text, emotes, null);
+        UserMessage message = new UserMessage(user, text, emotes, null, bits);
         message.whisper = whisper;
         messages.printMessage(message);
     }

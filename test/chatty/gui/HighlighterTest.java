@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Addressbook;
 import chatty.User;
+import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.Arrays;
 import org.junit.After;
@@ -30,7 +31,9 @@ public class HighlighterTest {
     @BeforeClass
     public static void setUpClass() {
         highlighter = new Highlighter();
-        ab = new Addressbook(null, null);
+        Settings settings = new Settings("");
+        settings.addBoolean("abSaveOnChange", false);
+        ab = new Addressbook(null, null, settings);
         user.setAddressbook(ab);
         user2.setAddressbook(ab);
         ab.add("testUser", "testCat");

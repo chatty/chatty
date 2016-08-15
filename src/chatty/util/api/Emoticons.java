@@ -99,6 +99,8 @@ public class Emoticons {
      */
     private final Set<Emoticon> globalTwitchEmotes = new HashSet<>();
     
+    private final Map<String, Emoticon> cheerEmotes = new HashMap<>();
+    
     /**
      * Only other (FFZ/BTTV) global emotes.
      */
@@ -301,6 +303,10 @@ public class Emoticons {
      */
     public Set<Emoticon> getGlobalTwitchEmotes() {
         return globalTwitchEmotes;
+    }
+    
+    public Map<String, Emoticon> getCheerEmotes() {
+        return cheerEmotes;
     }
     
     public Set<Emoticon> getOtherGlobalEmotes() {
@@ -1080,5 +1086,22 @@ public class Emoticons {
         emoji.clear();
         emoji.addAll(EmojiUtil.makeEmoticons(sourceId));
     }
-            
+    
+    public void addCheerEmotes(String type) {
+        cheerEmotes.clear();
+        if (type.equals("animated") || type.equals("static")) {
+            for (CheersUtil.CHEER c : CheersUtil.CHEER.values()) {
+                addCheerEmote(type, c.image, c.info);
+            }
+        }
+    }
+    
+    private void addCheerEmote(String type, String color, String info) {
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "", "http://static-cdn.jtvnw.net/bits/light/"+type+"/");
+        b.setSubType(Emoticon.SubType.CHEER);
+        b.setStringId(color);
+        b.addInfo(info);
+        cheerEmotes.put(color, b.build());
+    }
+    
 }

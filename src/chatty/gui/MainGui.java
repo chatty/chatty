@@ -782,6 +782,7 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.loadFavoritesFromSettings(client.settings);
         emoticons.loadCustomEmotes();
         emoticons.addEmoji(client.settings.getString("emoji"));
+        emoticons.addCheerEmotes(client.settings.getString("cheersType"));
         client.api.setToken(client.settings.getString("token"));
         
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
@@ -1669,6 +1670,8 @@ public class MainGui extends JFrame implements Runnable {
             String url = null;
             if (e.getActionCommand().equals("code")) {
                 channels.getActiveChannel().insertText(emote.code, true);
+            } else if (e.getActionCommand().equals("cheer")) {
+                url = "http://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {
                 url = emoteImage.getLoadedFrom();
             } else if (e.getActionCommand().equals("ffzlink")) {
@@ -1857,7 +1860,7 @@ public class MainGui extends JFrame implements Runnable {
             if (parameter != null && !parameter.isEmpty()) {
                 message = parameter;
             }
-            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0);
             streamChat.printMessage(m);
         } else if (command.equals("livestreamer")) {
             String stream = null;
@@ -2377,13 +2380,13 @@ public class MainGui extends JFrame implements Runnable {
      */
     
     public void printMessage(String toChan, User user, String text, boolean action,
-            String emotes) {
-        printMessage(toChan, user, text, action, emotes, null);
+            String emotes, int bits) {
+        printMessage(toChan, user, text, action, emotes, bits, null);
     }
     
     public void printMessage(final String toChan, final User user,
             final String text, final boolean action, final String emotes,
-            final String id) {
+            final int bits, final String id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -2431,7 +2434,7 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
                     highlightedMessages.addMessage(channel, user, text, action,
-                            tagEmotes, whisper);
+                            tagEmotes, bits, whisper);
                     if (!highlighter.getLastMatchNoSound()) {
                         playHighlightSound(channel);
                     }
@@ -2449,7 +2452,7 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if ignored, without printing message
                 if (ignored) {
                     ignoredMessages.addMessage(channel, user, text, action,
-                            tagEmotes, whisper);
+                            tagEmotes, bits, whisper);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -2463,7 +2466,7 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 } else {
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes, id);
+                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits);
                     message.color = highlighter.getLastMatchColor();
                     message.whisper = whisper;
                     message.action = action;
@@ -3748,6 +3751,8 @@ public class MainGui extends JFrame implements Runnable {
                     GuiUtil.updateLookAndFeel();
                 } else if (setting.equals("emoji")) {
                     emoticons.addEmoji((String)value);
+                } else if (setting.equals("cheersType")) {
+                    emoticons.addCheerEmotes((String)value);
                 }
             }
             if (type == Setting.LIST) {

@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +34,9 @@ public class AddressbookTest {
     
     @Before
     public void setUp() {
-        ab = new Addressbook("addressbookTest", "addressbookTestImport");
+        Settings settings = new Settings("");
+        settings.addBoolean("abSaveOnChange", false);
+        ab = new Addressbook("addressbookTest", "addressbookTestImport", settings);
     }
     
     @After

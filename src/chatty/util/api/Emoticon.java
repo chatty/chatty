@@ -56,7 +56,7 @@ public class Emoticon {
     }
     
     public static enum SubType {
-        FEATURE_FRIDAY, EVENT
+        FEATURE_FRIDAY, EVENT, CHEER
     }
     
     private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");
@@ -235,8 +235,13 @@ public class Emoticon {
      * applicable type
      */
     private String getEmoteUrl(int factor) {
-        if (type == Type.TWITCH && numericId != ID_UNDEFINED) {
-            return getTwitchEmoteUrlById(numericId, factor);
+        if (type == Type.TWITCH) {
+            if (subType == SubType.CHEER) {
+                return getCheerEmoteUrl(url, stringId, factor);
+            }
+            if (numericId != ID_UNDEFINED) {
+                return getTwitchEmoteUrlById(numericId, factor);
+            }
         } else if (type == Type.BTTV && stringId != null) {
             return getBttvEmoteUrl(stringId, factor);
         } else if (type == Type.FFZ) {
@@ -249,6 +254,10 @@ public class Emoticon {
     
     public static String getTwitchEmoteUrlById(int id, int factor) {
         return "http://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
+    }
+    
+    public static String getCheerEmoteUrl(String baseUrl, String color, int factor) {
+        return baseUrl+color+"/"+factor;
     }
     
     public String getBttvEmoteUrl(String id, int factor) {

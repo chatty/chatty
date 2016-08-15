@@ -15,6 +15,7 @@ import chatty.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.CheersUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticon.EmoticonUser;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import static javax.swing.JComponent.WHEN_FOCUSED;
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
@@ -266,7 +268,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print("[", styles.info());
             // Output with emotes, but don't turn URLs into clickable links
-            printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true);
+            printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true, false);
             print("]", styles.info());
         }
         printNewline();
@@ -310,7 +312,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!highlighted && action && styles.actionColored()) {
             style = styles.standard(user.getDisplayColor());
         }
-        printSpecials(text, user, style, emotes, false);
+        printSpecials(text, user, style, emotes, false, message.bits > 0);
         printNewline();
     }
     
@@ -1614,7 +1616,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param ignoreLinks 
      */
     protected void printSpecials(String text, User user, MutableAttributeSet style,
-            TagEmotes emotes, boolean ignoreLinks) {
+            TagEmotes emotes, boolean ignoreLinks, boolean containsBits) {
         // Where stuff was found
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         // The style of the stuff (basicially metadata)
@@ -1626,6 +1628,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         if (styles.showEmoticons()) {
             findEmoticons(text, user, ranges, rangesStyle, emotes);
+            if (containsBits) {
+                findBits(text, ranges, rangesStyle);
+            }
         }
         
         // Actually print everything
@@ -1843,6 +1848,33 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
     }
     
+    private void findBits(String text,
+            Map<Integer, Integer> ranges,
+            Map<Integer, MutableAttributeSet> rangesStyle) {
+        Matcher m = CheersUtil.PATTERN.matcher(text);
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end() - 1;
+            try {
+                int bits = Integer.parseInt(m.group(1));
+                int bitsLength = m.group(1).length();
+                CheersUtil.CHEER cheer = CheersUtil.getCheerFromBits(bits);
+                if (cheer == null) {
+                    continue;
+                }
+                Emoticon emote = main.emoticons.getCheerEmotes().get(cheer.image);
+                if (emote != null) {
+                    addEmoticon(emote, start, end-bitsLength, ranges, rangesStyle);
+                    addFormattedText(cheer.color, end-bitsLength+1, end, ranges, rangesStyle);
+                } else {
+                    //addFormattedText(cheer.color, start, end, ranges, rangesStyle);
+                }
+            } catch (NumberFormatException ex) {
+                System.out.println("Error parsing cheer: "+ex);
+            }
+        }
+    }
+    
     private void addEmoticon(Emoticon emoticon, int start, int end,
             Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle) {
@@ -1856,6 +1888,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 attr.addAttribute("start", start);
                 rangesStyle.put(start, attr);
             }
+        }
+    }
+    
+    private void addFormattedText(Color color, int start, int end,
+            Map<Integer, Integer> ranges,
+            Map<Integer, MutableAttributeSet> rangesStyle) {
+        if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
+            ranges.put(start, end);
+            MutableAttributeSet attr = styles.standard(color);
+            StyleConstants.setBold(attr, true);
+            attr.addAttribute("start", start);
+            rangesStyle.put(start,attr);
         }
     }
     

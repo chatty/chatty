@@ -14,6 +14,7 @@ public class UserMessage extends Message {
     
     public final User user;
     public final Emoticons.TagEmotes emotes;
+    public final int bits;
     public Color color;
     public boolean whisper;
     public boolean highlighted;
@@ -21,9 +22,10 @@ public class UserMessage extends Message {
     public boolean action;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
-            String id) {
+            String id, int bits) {
         super(id, text);
         this.user = user;
         this.emotes = emotes;
+        this.bits = bits;
     }
 }

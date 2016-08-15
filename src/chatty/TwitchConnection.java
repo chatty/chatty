@@ -882,6 +882,17 @@ public class TwitchConnection {
         private boolean checkTagsState(String key, Map<String, String> tags) {
             return "1".equals(tags.get(key));
         }
+        
+        private int getIntegerFromTags(Map<String, String> tags, String key, int defaultValue) {
+            if (tags != null && tags.get(key) != null) {
+                try {
+                    return Integer.parseInt(tags.get(key));
+                } catch (NumberFormatException ex) {
+                    // Do nothing
+                }
+            }
+            return defaultValue;
+        }
 
         @Override
         void onChannelMessage(String channel, String nick, String from, String text,
@@ -901,7 +912,8 @@ public class TwitchConnection {
                     updateUserFromTags(user, tags);
                     String emotesTag = tags != null ? tags.get("emotes") : null;
                     String id = tags != null ? tags.get("id") : null;
-                    listener.onChannelMessage(user, text, action, emotesTag, id);
+                    int bits = getIntegerFromTags(tags, "bits", 0);
+                    listener.onChannelMessage(user, text, action, emotesTag, id, bits);
                 }
             }
         }
@@ -1287,7 +1299,7 @@ public class TwitchConnection {
 
         void onUserUpdated(User user);
 
-        void onChannelMessage(User user, String message, boolean action, String emotes, String id);
+        void onChannelMessage(User user, String message, boolean action, String emotes, String id, int bits);
         
         void onWhisper(User user, String message, String emotes);
 

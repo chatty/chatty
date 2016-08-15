@@ -875,7 +875,11 @@ public class EmotesDialog extends JDialog {
             lgbc.gridx = 0;
             lgbc.insets = new Insets(4, 4, 4, 4);
             
-            addInfo(panel2, "Code:", emote.code);
+            if (emote.subType == Emoticon.SubType.CHEER) {
+                addInfo(panel2, "", "Cheering Emote");
+            } else {
+                addInfo(panel2, "Code:", emote.code);
+            }
             String featured = emote.subType == Emoticon.SubType.EVENT ? " (Featured)" : "";
             addInfo(panel2, "Type:", emote.type.toString()+featured);
             if (emote.numericId > Emoticon.ID_UNDEFINED) {

@@ -681,7 +681,7 @@ public class TwitchClient {
                 // For testing:
                 // (Also creates a channel with an empty string)
                 if (Chatty.DEBUG) {
-                    g.printMessage(channel,testUser,text,false,null);
+                    g.printMessage(channel,testUser,text,false,null,1);
                 }
             }
         }     
@@ -689,7 +689,7 @@ public class TwitchClient {
     
     private void sendMessage(String channel, String text) {
         if (c.sendSpamProtectedMessage(channel, text, false)) {
-            g.printMessage(channel, c.localUserJoined(channel), text, false, null);
+            g.printMessage(channel, c.localUserJoined(channel), text, false, null, 0);
         } else {
             g.printLine("# Message not sent to prevent ban: " + text);
         }
@@ -1028,7 +1028,7 @@ public class TwitchClient {
                     reason = split[1];
                 }
             }
-            g.userBanned(testUser, duration, reason, "abc");
+            g.userBanned(testUser, duration, reason, null);
         } else if (command.equals("bantest2")) {
             String[] split = parameter.split(" ", 3);
             int duration = -1;
@@ -1044,7 +1044,7 @@ public class TwitchClient {
             c.userJoined("#test", parameter);
         } else if (command.equals("echomessage")) {
             String[] parts = parameter.split(" ");
-            g.printMessage(parts[0], testUser, parts[1], false, null);
+            g.printMessage(parts[0], testUser, parts[1], false, null, 0);
         } else if (command.equals("loadffz")) {
             frankerFaceZ.requestEmotes(parameter, true);
         } else if (command.equals("testtw")) {
@@ -1070,8 +1070,8 @@ public class TwitchClient {
         } else if (command.equals("usericonsInfo")) {
             usericonManager.debug();
         } else if (command.equals("userlistTest")) {
-            g.printMessage("test1", testUser, "short message", false, null);
-            g.printMessage("test2", testUser, "short message2", false, null);
+            g.printMessage("test1", testUser, "short message", false, null, 0);
+            g.printMessage("test2", testUser, "short message2", false, null, 0);
             g.printCompact("test3", "MOD", testUser);
             g.printCompact("test3", "MOD", testUser);
             g.printCompact("test3", "MOD", testUser);
@@ -1080,11 +1080,11 @@ public class TwitchClient {
             g.printCompact("test3", "MOD", testUser);
             g.printCompact("test3", "MOD", testUser);
             g.printMessage("test3", testUser, "longer message abc hmm fwef wef wef wefwe fwe ewfwe fwef wwefwef"
-                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null);
+                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
             g.printMessage("test3", testUser, "longer message abc hmm fwef wef wef wefwe fwe ewfwe fwef wwefwef"
-                    + "fjwfjfwjefjwefjwoeifjwefiowejfef wefjoiwefj", false, null);
+                    + "fjwfjfwjefjwefjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
             g.printMessage("test3", testUser, "longer wef wef wefwe fwe ewfwe fwef wwefwef"
-                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null);
+                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
             g.printCompact("test4", "MOD", testUser);
             g.printCompact("test5", "MOD", testUser);
             g.printCompact("test6", "MOD", testUser);
@@ -1092,7 +1092,7 @@ public class TwitchClient {
             g.printCompact("test8", "MOD", testUser);
             g.printCompact("test9", "MOD", testUser);
             g.printMessage("test10", testUser, "longer message abc hmm fwef wef wef wefwe fwe ewfwe fwef wwefwef"
-                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null);
+                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
         } else if (command.equals("requestfollowers")) {
             api.getFollowers(parameter);
         } else if (command.equals("simulate")) {
@@ -1281,7 +1281,7 @@ public class TwitchClient {
     public void sendActionMessage(String channel, String message) {
         if (c.onChannel(channel, true)) {
             if (c.sendSpamProtectedMessage(channel, message, true)) {
-                g.printMessage(channel, c.localUserJoined(channel), message, true, null);
+                g.printMessage(channel, c.localUserJoined(channel), message, true, null, 0);
             } else {
                 g.printLine("# Action Message not sent to prevent ban: " + message);
             }
@@ -2136,8 +2136,8 @@ public class TwitchClient {
 
         @Override
         public void onChannelMessage(User user, String message, boolean action,
-                String emotes, String id) {
-            g.printMessage(user.getChannel(), user, message, action, emotes, id);
+                String emotes, String id, int bits) {
+            g.printMessage(user.getChannel(), user, message, action, emotes, bits, id);
             if (!action) {
                 addressbookCommands(user.getChannel(), user, message);
                 
@@ -2424,7 +2424,7 @@ public class TwitchClient {
 
         @Override
         public void whisperReceived(User user, String message, String emotes) {
-            g.printMessage(WhisperManager.WHISPER_CHANNEL, user, message, false, emotes);
+            g.printMessage(WhisperManager.WHISPER_CHANNEL, user, message, false, emotes, 0);
             g.updateUser(user);
         }
 
@@ -2435,7 +2435,7 @@ public class TwitchClient {
 
         @Override
         public void whisperSent(User to, String message) {
-            g.printMessage(WhisperManager.WHISPER_CHANNEL, to, message, true, null);
+            g.printMessage(WhisperManager.WHISPER_CHANNEL, to, message, true, null, 0);
         }
     }
     
