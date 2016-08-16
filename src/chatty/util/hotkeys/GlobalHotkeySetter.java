@@ -20,6 +20,12 @@ public class GlobalHotkeySetter implements HotkeyListener {
     private static final Logger LOGGER = Logger.getLogger(GlobalHotkeySetter.class.getName());
     
     private boolean initialized = false;
+    
+    /**
+     * Error that occured when initializing (usually the correct dll not found).
+     */
+    private String error;
+    
     private final GlobalHotkeyListener listener;
 
     /**
@@ -46,15 +52,29 @@ public class GlobalHotkeySetter implements HotkeyListener {
             JIntellitype.getInstance().addHotKeyListener(this);
             initialized = true;
         } catch (JIntellitypeException ex) {
-            String info = "Failed adding HotKeyListener: "+ex.getLocalizedMessage();
-            LOGGER.log(Logging.USERINFO, info+" (if you don't use global "
-                    + "hotkeys you can just ignore this)");
-            LOGGER.warning(info);
+            error = "Failed adding global hotkeys listener: "+ex.getLocalizedMessage();
+            LOGGER.warning(error);
         }
     }
     
+    /**
+     * Whether the listener has been added without an error. If false, then an
+     * error occured which can be retrieved with the
+     * {@link #getError() getError} method.
+     * 
+     * @return true if global hotkeys can be added, false if an error occured
+     */
     public boolean isInitalized() {
         return initialized;
+    }
+    
+    /**
+     * Returns an error message if an error occured while initializing.
+     * 
+     * @return The error message, or null if no error occured
+     */
+    public String getError() {
+        return error;
     }
     
     /**

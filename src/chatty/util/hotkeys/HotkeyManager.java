@@ -72,6 +72,13 @@ public class HotkeyManager {
     
     private GlobalHotkeySetter globalHotkeys;
     
+    /**
+     * Warning text intended to be output to the user, about an error of the
+     * global hotkey feature. Should be set to null if warning was output, so
+     * it's only shown once.
+     */
+    private String globalHotkeyErrorWarning;
+    
     public HotkeyManager(MainGui main) {
         this.main = main;
                 
@@ -87,13 +94,12 @@ public class HotkeyManager {
                 // If an error occured during initialization, then set to null
                 // which means it's not going to be used.
                 if (!globalHotkeys.isInitalized()) {
+                    globalHotkeyErrorWarning = globalHotkeys.getError();
                     globalHotkeys = null;
                 }
             } catch (NoClassDefFoundError ex) {
                 LOGGER.warning("Failed to initialize hotkey setter [" + ex + "]");
-                LOGGER.log(Logging.USERINFO, "Failed to initialize global "
-                        + "hotkeys (if you don't use global hotkeys you can "
-                        + "just ignore this).");
+                globalHotkeyErrorWarning = "Failed to initialize global hotkeys (jintellitype-xx.jar not found).";
                 globalHotkeys = null;
             }
         }
@@ -400,6 +406,7 @@ public class HotkeyManager {
             }
         }
         updateHotkeys();
+        checkGlobalHotkeyWarning();
     }
     
     /**
@@ -450,6 +457,26 @@ public class HotkeyManager {
         } catch (IndexOutOfBoundsException | NullPointerException | ClassCastException ex) {
             LOGGER.warning("Error loading hotkey: "+list+" ["+ex+"]");
             return null;
+        }
+    }
+    
+    /**
+     * Output warning of error when initializing global hotkey feature. Only
+     * output once and only when a global hotkey is currently configured.
+     */
+    private void checkGlobalHotkeyWarning() {
+        if (globalHotkeyErrorWarning == null) {
+            return;
+        }
+        for (Hotkey hotkey : hotkeys) {
+            if (doesHotkeyHaveAction(hotkey) && hotkey.type == Type.GLOBAL) {
+                LOGGER.log(Logging.USERINFO, globalHotkeyErrorWarning+" "
+                        + "[You are getting this message because you have a "
+                        + "global hotkey configured. If you don't use it you "
+                        + "can ignore this warning.]");
+                globalHotkeyErrorWarning = null;
+                return;
+            }
         }
     }
     
