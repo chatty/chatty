@@ -1,0 +1,137 @@
+import java.util.regex.Matcher
+
+plugins {
+    id "com.github.johnrengelman.shadow" version "1.2.3"
+}
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+// Tells Netbeans what the main class is
+ext.mainClass = 'chatty.Chatty'
+
+archivesBaseName = 'Chatty'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+        resources {
+            srcDirs = ['test']
+        }
+    }
+}
+
+// Method that gets the version name from Chatty.java. It's defined after the sourceSets block because it uses its path
+def extractVersion = { ->
+    File chattyClassFile = new File((File) sourceSets.main.java.srcDirs.first(), 'chatty/Chatty.java');
+
+    // Use this regex to extract the version from the file
+    Matcher matcher = chattyClassFile.text =~ /(?m)^\s*public static final String VERSION = "(.*)";\s*$/
+
+    // From the first matching line, return the first capture (the version)
+    return matcher[0][1]
+}
+
+version = extractVersion()
+
+dependencies {
+    // Take the .jar files from the assets/lib directory and add them to the compile-time classpath
+    compile fileTree(dir: 'assets/lib', include: ['*.jar'])
+
+    testCompile 'junit:junit:4.12'
+}
+
+// The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
+// installed. It allows you to specify the project's Gradle version for everyone that has checked out the project.
+wrapper {
+    gradleVersion = '2.13'
+}
+
+jar {
+    archiveName = "${archivesBaseName}.jar"
+
+    manifest {
+        attributes(
+                'Main-Class': mainClass,
+        )
+    }
+}
+
+// Builds a jar that includes not only the compiled files from this project, but also the .class files from the
+// dependencies. This removes the need for a separate 'libs' directory when Chatty is installed.
+shadowJar {
+    // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
+    classifier = null
+
+    version = null
+
+    manifest {
+        inheritFrom project.tasks.jar.manifest
+    }
+}
+
+// The following are a series of tasks for building the release artifacts. They are bundled into zip files and placed
+// in the 'build/releases' directory.
+
+def releasesDir = new File(buildDir, 'releases')
+
+task allPlatformsZip(type: Zip, group: 'build') {
+    dependsOn shadowJar
+
+    from tasks.shadowJar.archivePath
+    from ('assets') {
+        exclude 'lib'
+    }
+
+    destinationDir = releasesDir
+    archiveName = "${archivesBaseName}_${version}.zip"
+}
+
+task hotkey32Zip(type: Zip, group: 'build') {
+    dependsOn shadowJar
+
+    with allPlatformsZip
+
+    from 'assets/lib/dlls/JIntellitype32.dll'
+    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
+
+    destinationDir = releasesDir
+    archiveName = "${archivesBaseName}_${version}_hotkey_32bit.zip"
+}
+
+task hotkey64Zip(type: Zip, group: 'build') {
+    dependsOn shadowJar
+
+    with allPlatformsZip
+
+    from 'assets/lib/dlls/JIntellitype64.dll'
+    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
+
+    destinationDir = releasesDir
+    archiveName = "${archivesBaseName}_${version}_hotkey_64bit.zip"
+}
+
+// Builds all the release zips
+task releaseZips(group: 'build') {
+    dependsOn allPlatformsZip, hotkey32Zip, hotkey64Zip
+}
+
+// Builds the full project, runs the unit tests and packages the release zips.
+task release(group: 'build') {
+    dependsOn releaseZips, build
+}
