@@ -1,3 +1,5 @@
+import java.util.regex.Matcher
+
 plugins {
     id "com.github.johnrengelman.shadow" version "1.2.3"
 }
@@ -7,17 +9,6 @@ apply plugin: 'java'
 // Tells Netbeans what the main class is
 ext.mainClass = 'chatty.Chatty'
 
-// Method that gets the version name from the latest Git tag
-def computeGitVersion = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
-
-version = computeGitVersion()
 archivesBaseName = 'Chatty'
 
 repositories {
@@ -27,21 +18,34 @@ repositories {
 sourceSets {
     main {
         java {
-            srcDir 'src'
+            srcDirs = ['src']
         }
         resources {
-            srcDir 'src'
+            srcDirs = ['src']
         }
     }
     test {
         java {
-            srcDir 'test'
+            srcDirs = ['test']
         }
         resources {
-            srcDir 'test'
+            srcDirs = ['test']
         }
     }
 }
+
+// Method that gets the version name from Chatty.java. It's defined after the sourceSets block because it uses its path
+def extractVersion = { ->
+    File chattyClassFile = new File((File) sourceSets.main.java.srcDirs.first(), 'chatty/Chatty.java');
+
+    // Use this regex to extract the version from the file
+    Matcher matcher = chattyClassFile.text =~ /(?m)^\s*public static final String VERSION = "(.*)";\s*$/
+
+    // From the first matching line, return the first capture (the version)
+    return matcher[0][0]
+}
+
+version = extractVersion()
 
 dependencies {
     // Take the .jar files from the assets/lib directory and add them to the compile-time classpath
