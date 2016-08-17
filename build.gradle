@@ -6,6 +6,8 @@ plugins {
 
 apply plugin: 'java'
 
+sourceCompatibility = 1.8
+
 // Tells Netbeans what the main class is
 ext.mainClass = 'chatty.Chatty'
 
