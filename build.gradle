@@ -44,7 +44,7 @@ def extractVersion = { ->
     Matcher matcher = chattyClassFile.text =~ /(?m)^\s*public static final String VERSION = "(.*)";\s*$/
 
     // From the first matching line, return the first capture (the version)
-    return matcher[0][0]
+    return matcher[0][1]
 }
 
 version = extractVersion()
@@ -77,6 +77,8 @@ jar {
 shadowJar {
     // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
     classifier = null
+
+    version = null
 
     manifest {
         inheritFrom project.tasks.jar.manifest
