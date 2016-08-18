@@ -37,6 +37,7 @@ public class TwitchConnection {
      * Channels that should be joined after connecting.
      */
     private volatile String[] autojoin;
+    
     /**
      * Channels that are open in the program (in tabs if it's more than one).
      */
@@ -46,6 +47,7 @@ public class TwitchConnection {
      * How many times to try to reconnect
      */
     private final int maxReconnectionAttempts = 40;
+    
     /**
      * The time in seconds between reconnection attempts. The first entry is the
      * time for the first attempt, second entry for the second attempt and so
@@ -188,10 +190,10 @@ public class TwitchConnection {
      * @return The delay in seconds
      */
     private int getReconnectionDelay(int attempt) {
-        if (attempt < 0 || attempt >= RECONNECTION_DELAY.length) {
+        if (attempt < 1 || attempt > RECONNECTION_DELAY.length) {
             return getMaxReconnectionDelay();
         }
-        return RECONNECTION_DELAY[attempt];
+        return RECONNECTION_DELAY[attempt-1];
     }
     
     public int getState() {

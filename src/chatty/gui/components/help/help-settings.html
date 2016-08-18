@@ -282,27 +282,56 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <h3>General Settings</h3>
-    <ul>
-        <li><strong>Show emoticons</strong>: Shows emoticons as images instead
-        of just the text</li>
-        <li><strong>Enable BetterTTV Emotes</strong>: Shows some of the BetterTTV emotes.
-        <em>Requires a restart to take effect when you change it.</em></li>
-        <li><strong>Enable FrankerFaceZ (FFZ)</strong>: Downloads <a href="help.html#emoticons">FrankerFaceZ</a>
-            emotes and Mod Icons (where available). <em>Requires a restart to take
-                effect when you change it.</em></li>
-        <li><strong>Enable FFZ Mod Icon</strong>: Show the FFZ Mod Icon instead of the regular
-            Mod Icon (where available). <em>Requires FrankerFaceZ setting to be enabled.</em></li>
-        <li><strong>Enable FFZ Featured Emotes</strong>: Show special FFZ emotes
-            available in some channels (mainly Speedrunning Events). To receive
-            these emotes Chatty maintains a connection to the FFZ Socket Server.</li>
-        <li><strong>Allow animated emotes</strong>: Show animated emotes (BTTV GIF emotes).</li>
-        <li><strong>Scale</strong>: The relative size of how emotes are displayed in chat (100% is regular size).</li>
-        <li><strong>Maximum Height</strong>: The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</li>
-        <li><strong>Emotes Dialog</strong>: The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</li>
-        <li><strong>Double-click on emote closes Emote Dialog</strong>: If
-            enabled, double-clicking on an emote in the Emote Dialog closes the
-            Emote Dialog.</li>
-    </ul>
+    
+    <dl class="dl-settings">
+        <dt>Show emoticons</dt>
+        <dd>Turns emoticon codes into images. This needs to be enabled for any
+            emotes to show up.</dd>
+        
+        <dt>Enable BetterTTV Emotes</dt>
+        <dd>Shows BetterTTV emotes (Personal Emotes not supported at this time).</dd>
+        
+        <dt>Enable FrankerFaceZ (FFZ)</dt>
+        <dd>Downloads <a href="help.html#emoticons">FrankerFaceZ</a> emotes and
+            Mod Icons (where available).</dd>
+        <dd><em>Requires a restart to take full effect when you change it.</em></dd>
+        
+        <dt>Enable FFZ Mod Icon</dt>
+        <dd>Show the FFZ Mod Icon in place of the default Mod Icon (where available).</dd>
+        
+        <dt>Enable FFZ Featured Emotes</dt>
+        <dd>Show special FFZ emotes available in some channels (mainly
+            Speedrunning Events). To receive these emotes Chatty maintains a
+            connection to the FFZ Socket Server.</dd>
+        
+        <dt>Allow animated emotes</dt>
+        <dd>Show animated emotes (BTTV GIF emotes).</dd>
+        
+        <dt>Scale</dt>
+        <dd>The relative size of how emotes are displayed in chat (100% is regular size).</dd>
+        
+        <dt>Maximum Height</dt>
+        <dd>The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</dd>
+        
+        <dt>Emotes Dialog</dt>
+        <dd>The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</dd>
+        
+        <dt>Double-click on emote closes Emote Dialog</dt>
+        <dd>If enabled, double-clicking on an emote in the Emote Dialog closes
+            the Emote Dialog.</dd>
+        
+        <dt>Emoji Set</dt>
+        <dd>Turns Emoji characters into images. You can choose between different
+            sets of Emoji images, or choose <code>None</code> to turn off Emoji
+            images altogether.</dd>
+        
+        <dt>Cheers (Bits)</dt>
+        <dd>You can choose whether to show <a href="https://help.twitch.tv/customer/portal/articles/2449458">Cheering</a>
+            emotes in chat animated, as static images (like other emotes) or
+            not at all (so they'll just show up as text).</dd>
+        <dd>Showing Cheering Badges and sending Cheers is not supported at this
+            point.</dd>
+    </dl>
     
     <h3>Ignored Emotes</h3>
     <p>Emotes added to this list will not be turned into an image, but instead

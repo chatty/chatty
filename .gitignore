@@ -8,3 +8,4 @@ chatty.iml
 META-INF/
 .gradle
 .nb-gradle
+build.xml

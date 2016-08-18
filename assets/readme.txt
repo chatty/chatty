@@ -9,7 +9,7 @@ YouTube: http://www.youtube.com/user/chattyclient
 Requirements
 ------------
 
-This is a Java program, so you need to have the JRE 7 (Java Runtime Environment) or later installed.
+This is a Java program, so you need to have the JRE 8 (Java Runtime Environment) or later installed.
 
 Installation
 ------------
