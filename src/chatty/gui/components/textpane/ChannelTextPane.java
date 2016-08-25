@@ -1298,9 +1298,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
             if (whisper) {
                 if (action) {
-                    print(">>["+userName + "] ", style);
+                    print(">>["+userName + "]", style);
                 } else {
-                    print("-["+userName + "]- ", style);
+                    print("-["+userName + "]-", style);
                 }
             } else if (action) {
                 print("* " + userName, style);
@@ -1323,7 +1323,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         // Requires user style because it needs the metadata to detect the end
         // of the nick when deleting messages (and possibly other stuff)
-        if (!action) {
+        if (!action && !whisper) {
             print(": ", styles.nick(user, null));
         } else {
             print(" ", styles.nick(user, null));
