@@ -34,7 +34,7 @@ public class StyleManager implements StyleServer {
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
             "colorCorrection", "banReasonAppended", "banDurationAppended",
-            "banDurationMessage", "banReasonMessage"
+            "banDurationMessage", "banReasonMessage", "displayNamesMode"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -139,6 +139,7 @@ public class StyleManager implements StyleServer {
             deletedMessagesModeNumeric = settings.getLong("deletedMessagesMaxLength");
         }
         other.addAttribute(Setting.DELETED_MESSAGES_MODE, deletedMessagesModeNumeric);
+        addLongSetting(Setting.DISPLAY_NAMES_MODE, "displayNamesMode");
     }
     
     private void addBooleanSetting(Setting key, String name) {

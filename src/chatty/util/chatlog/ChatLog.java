@@ -87,10 +87,14 @@ public class ChatLog {
     public void message(String channel, User user, String message, boolean action) {
         if (isEnabled(channel)) {
             String line;
+            String name = user.toString();
+            if (!user.hasRegularDisplayNick()) {
+                name += " ("+user.getNick()+")";
+            }
             if (action) {
-                line = timestamp()+"<"+user+">* "+message;
+                line = timestamp()+"<"+name+">* "+message;
             } else {
-                line = timestamp()+"<"+user+"> "+message;
+                line = timestamp()+"<"+name+"> "+message;
             }
             writeLine(channel, line);
         }

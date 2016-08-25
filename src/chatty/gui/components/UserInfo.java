@@ -459,6 +459,7 @@ public class UserInfo extends JDialog {
         String displayNickInfo = user.hasDisplayNickSet() ? "" : "*";
         this.setTitle("User: "+user.toString()
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
+                +(!user.hasRegularDisplayNick() ? " ("+user.getNick()+")" : "")
                 +displayNickInfo
                 +" / "+user.getChannel()
                 +" "+categoriesString);

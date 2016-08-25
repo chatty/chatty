@@ -1360,8 +1360,10 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.startsWith("command")) {
                 String command = cmd.substring(7);
                 client.command(user.getChannel(), command, user.getRegularDisplayNick());
-            } else if (cmd.equals("copy")) {
-                MiscUtil.copyToClipboard(user.getRegularDisplayNick());
+            } else if (cmd.equals("copyNick")) {
+                MiscUtil.copyToClipboard(user.getNick());
+            } else if (cmd.equals("copyDisplayNick")) {
+                MiscUtil.copyToClipboard(user.getDisplayNick());
             } else if (cmd.equals("ignore")) {
                 client.commandSetIgnored(user.nick, "chat", true);
             } else  if (cmd.equals("ignoreWhisper")) {
@@ -2860,7 +2862,8 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private boolean shouldUpdateUser(User user) {
-        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL);
+        return !user.getChannel().equals(WhisperManager.WHISPER_CHANNEL)
+            || channels.isChannel(WhisperManager.WHISPER_CHANNEL);
     }
     
     /**

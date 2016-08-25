@@ -63,6 +63,10 @@ public class User implements Comparable {
      */
     private String fullNick;
     private boolean hasDisplayNickSet;
+    
+    /**
+     * True if the displayNick only differs in case from the username.
+     */
     private boolean hasRegularDisplayNick;
     private final String channel;
     
@@ -266,6 +270,10 @@ public class User implements Comparable {
         return nick;
     }
     
+    public synchronized boolean hasRegularDisplayNick() {
+        return hasRegularDisplayNick;
+    }
+    
     public synchronized boolean setDisplayNick(String newDisplayNick) {
         if (newDisplayNick == null || newDisplayNick.isEmpty()) {
             return false;
@@ -288,6 +296,12 @@ public class User implements Comparable {
         return hasDisplayNickSet;
     }
     
+    /**
+     * Gets the Custom Nick of this user, or the display nick of no custom nick
+     * is set.
+     * 
+     * @return 
+     */
     public synchronized String getCustomNick() {
         if (customNick != null) {
             return customNick;

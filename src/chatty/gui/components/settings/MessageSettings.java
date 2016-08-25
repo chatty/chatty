@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.SettingsManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.util.DateTime;
@@ -146,6 +147,21 @@ public class MessageSettings extends SettingsPanel {
                 d.addSimpleBooleanSetting("colorCorrection", "Correct readability of usercolors",
                         "If enabled, changes some usercolors to make them more readable on the current background"),
                 gbc);
+        
+        otherSettingsPanel.add(new JLabel("Localized names:"),
+                d.makeGbc(0, 4, 1, 1));
+
+        Map<Long, String> displayNamesModeSettings = new LinkedHashMap<>();
+        displayNamesModeSettings.put(SettingsManager.DISPLAY_NAMES_MODE_BOTH, "Localized+Original Name");
+        displayNamesModeSettings.put(SettingsManager.DISPLAY_NAMES_MODE_REGULAR, "Only Original Name");
+        displayNamesModeSettings.put(SettingsManager.DISPLAY_NAMES_MODE_LOCALIZED, "Only Localized Name");
+        ComboLongSetting displayNamesMode = new ComboLongSetting(displayNamesModeSettings);
+        d.addLongSetting("displayNamesMode", displayNamesMode);
+
+        otherSettingsPanel.add(displayNamesMode,
+                d.makeGbc(1, 4, 2, 1));
+        
+        
         
         /**
          * Timeout settings

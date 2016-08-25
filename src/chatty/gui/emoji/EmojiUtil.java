@@ -111,7 +111,7 @@ public class EmojiUtil {
         }
     }
     
-    private static void twemoji(EmojiSet set, Set<Emoticon> result) {
+        private static void twemoji(EmojiSet set, Set<Emoticon> result) {
         add(set, result, "\uD83C\uDC04","1f004.png","mahjong","symbols");
         add(set, result, "\uD83C\uDCCF","1f0cf.png","black joker","symbols");
         add(set, result, "\uD83C\uDD70","1f170.png","a","symbols");
@@ -1737,7 +1737,6 @@ public class EmojiUtil {
         add(set, result, "\uD83E\uDDC0","1f9c0.png","cheese wedge","food");
         add(set, result, "\u203C","203c.png","bangbang","symbols");
         add(set, result, "\u2049","2049.png","interrobang","symbols");
-        add(set, result, "\u2122","2122.png","trade mark sign","symbols");
         add(set, result, "\u2139","2139.png","information source","symbols");
         add(set, result, "\u2194","2194.png","left right arrow","symbols");
         add(set, result, "\u2195","2195.png","up down arrow","symbols");
@@ -3571,7 +3570,6 @@ public class EmojiUtil {
         add(set, result, "\uD83E\uDDC0","1f9c0.png","cheese wedge","food");
         add(set, result, "\u203C","203c.png","bangbang","symbols");
         add(set, result, "\u2049","2049.png","interrobang","symbols");
-        add(set, result, "\u2122","2122.png","trade mark sign","symbols");
         add(set, result, "\u2139","2139.png","information source","symbols");
         add(set, result, "\u2194","2194.png","left right arrow","symbols");
         add(set, result, "\u2195","2195.png","up down arrow","symbols");

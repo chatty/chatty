@@ -3,6 +3,7 @@ package chatty.gui.components.textpane;
 
 import chatty.gui.components.ChannelEditBox;
 import chatty.Helper;
+import chatty.SettingsManager;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.UserListener;
 import chatty.gui.HtmlColors;
@@ -132,7 +133,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED,
-        COLOR_CORRECTION
+        COLOR_CORRECTION,
+        
+        DISPLAY_NAMES_MODE
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
@@ -1269,13 +1272,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param user
      * @param action 
+     * @param whisper 
+     * @param id 
      */
     public void printUser(User user, boolean action, boolean ignore,
             boolean whisper, String id) {
         String userName = user.toString();
         if (styles.showUsericons() && !ignore) {
             printUserIcons(user);
-            userName = user.getCustomNick();
+            if (user.hasRegularDisplayNick() || user.hasCustomNickSet()
+                    || styles.displayNamesMode() != SettingsManager.DISPLAY_NAMES_MODE_REGULAR) {
+                userName = user.getCustomNick();
+            } else {
+                userName = user.getNick();
+            }
         }
         if (user.hasCategory("rainbow")) {
             printRainbowUser(user, userName, action, SpecialColor.RAINBOW, id);
@@ -1293,10 +1303,30 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     print("-["+userName + "]- ", style);
                 }
             } else if (action) {
-                print("* " + userName + " ", style);
+                print("* " + userName, style);
             } else {
-                print(userName + ": ", style);
+                print(userName, style);
             }
+        }
+        
+        if (!user.hasRegularDisplayNick()
+                && styles.displayNamesMode() == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
+            MutableAttributeSet style = styles.nick(user, null);
+            StyleConstants.setBold(style, false);
+            int fontSize = StyleConstants.getFontSize(style) - 2;
+            if (fontSize <= 0) {
+                fontSize = StyleConstants.getFontSize(style);
+            }
+            StyleConstants.setFontSize(style, fontSize);
+            print(" ("+user.getNick()+")", style);
+        }
+        
+        // Requires user style because it needs the metadata to detect the end
+        // of the nick when deleting messages (and possibly other stuff)
+        if (!action) {
+            print(": ", styles.nick(user, null));
+        } else {
+            print(" ", styles.nick(user, null));
         }
     }
     
@@ -1337,13 +1367,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
             StyleConstants.setForeground(userStyle, c);
             print(userName.substring(i, i+1), userStyle);
-        }
-        // Requires user style because it needs the metadata to detect the end
-        // of the nick when deleting messages (and possibly other stuff)
-        if (!action) {
-            print(": ", styles.nick(user, null));
-        } else {
-            print(" ", styles.nick(user, null));
         }
     }
     
@@ -2504,6 +2527,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addNumericSetting(Setting.AUTO_SCROLL_TIME, 30, 5, 1234);
             addNumericSetting(Setting.EMOTICON_MAX_HEIGHT, 200, 0, 300);
             addNumericSetting(Setting.EMOTICON_SCALE_FACTOR, 100, 1, 200);
+            addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 2);
             timestampFormat = styleServer.getTimestampFormat();
         }
         
@@ -2857,6 +2881,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         public int bufferSize() {
             return (int)numericSettings.get(Setting.BUFFER_SIZE);
+        }
+        
+        public long displayNamesMode() {
+            return numericSettings.get(Setting.DISPLAY_NAMES_MODE);
         }
     }
     

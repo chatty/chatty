@@ -31,7 +31,8 @@ public class UserContextMenu extends ContextMenu {
         addSeparator();
         
         // Misc Submenu
-        addItem("copy", "Copy Name", MISC_MENU);
+        addItem("copyNick", "Copy Name", MISC_MENU);
+        addItem("copyDisplayNick", "Copy Display Name", MISC_MENU);
         addSeparator(MISC_MENU);
         ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, false);
         ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, true);

@@ -419,7 +419,7 @@ public class TwitchClient {
      * @param channel 
      */
     private void createTestUser(String name, String channel) {
-        testUser = new User(name, channel);
+        testUser = new User(name, "abc" ,channel);
         testUser.setColor("blue");
         testUser.setGlobalMod(true);
         testUser.setBot(true);
@@ -2114,7 +2114,7 @@ public class TwitchClient {
                 g.printCompact(channel,"JOIN", user);
             }
             g.playSound("joinPart", channel);
-            chatLog.compact(channel, "JOIN", user.getDisplayNick());
+            chatLog.compact(channel, "JOIN", user.getRegularDisplayNick());
         }
 
         @Override
@@ -2122,7 +2122,7 @@ public class TwitchClient {
             if (settings.getBoolean("showJoinsParts") && showUserInGui(user)) {
                 g.printCompact(user.getChannel(), "PART", user);
             }
-            chatLog.compact(user.getChannel(), "PART", user.getDisplayNick());
+            chatLog.compact(user.getChannel(), "PART", user.getRegularDisplayNick());
             g.playSound("joinPart", user.getChannel());
         }
 
@@ -2224,7 +2224,7 @@ public class TwitchClient {
                 reason = "";
             }
             g.userBanned(user, duration, reason, id);
-            chatLog.userBanned(user.getChannel(), user.getDisplayNick(),
+            chatLog.userBanned(user.getChannel(), user.getRegularDisplayNick(),
                     duration, reason);
         }
         
@@ -2240,7 +2240,7 @@ public class TwitchClient {
             if (modMessagesEnabled && showUserInGui(user)) {
                 g.printCompact(channel, "MOD", user);
             }
-            chatLog.compact(channel, "MOD", user.getDisplayNick());
+            chatLog.compact(channel, "MOD", user.getRegularDisplayNick());
         }
 
         @Override
@@ -2250,7 +2250,7 @@ public class TwitchClient {
             if (modMessagesEnabled && showUserInGui(user)) {
                 g.printCompact(channel, "UNMOD", user);
             }
-            chatLog.compact(channel, "UNMOD", user.getDisplayNick());
+            chatLog.compact(channel, "UNMOD", user.getRegularDisplayNick());
         }
 
         @Override
