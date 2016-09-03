@@ -44,6 +44,15 @@ public interface AutoCompletionServer {
     public static class CompletionItems {
 
         public final List<String> items;
+        
+        /**
+         * Can store info on certain items. The key is an item that may or may
+         * not be in the list of matched items. The key is the value that can be
+         * used for display.
+         * 
+         * This may be null. The methods {@link hasInfo(String) hasInfo()} and
+         * {@link getInfo(String) getInfo()} can be used for more convenience.
+         */
         public final Map<String, String> info;
         public final String prefixToRemove;
 
@@ -59,6 +68,7 @@ public interface AutoCompletionServer {
          * actually matter. It must not be longer than the actual prefix was.
          *
          * @param items
+         * @param info
          * @param prefixToRemove 
          */
         public CompletionItems(List<String> items, Map<String, String> info, String prefixToRemove) {
@@ -78,6 +88,29 @@ public interface AutoCompletionServer {
             this.items = new ArrayList<>();
             this.prefixToRemove = "";
             this.info = null;
+        }
+        
+        /**
+         * Checks if there is an info String for the given item.
+         *
+         * @param item The item, usually a match result
+         * @return true if there is an info for the given item, false otherwise
+         */
+        public boolean hasInfo(String item) {
+            return info != null && info.containsKey(item);
+        }
+        
+        /**
+         * Returns the info for the given item.
+         * 
+         * @param item The item, usually a match result
+         * @return The info, or null if no info is set
+         */
+        public String getInfo(String item) {
+            if (info == null) {
+                return null;
+            }
+            return info.get(item);
         }
     }
 }

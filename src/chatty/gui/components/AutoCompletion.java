@@ -360,7 +360,8 @@ public class AutoCompletion {
         textField.setCaretPosition(newEnd);
 
         if (showPopup) {
-            // Will only do something if more than one item was found
+            // Will only do something if more than one item was found or item
+            // info has to be displayed
             showCompletionInfo(index, prevCompletion == null,
                     results, commonPrefix);
         }
@@ -409,7 +410,7 @@ public class AutoCompletion {
         final List<String> items = results.items;
         final int size = items.size();
         // Don't show info popup if there is only one entry and no info for it
-        if (size == 1 && !results.info.containsKey(items.get(0))) {
+        if (size == 1 && !results.hasInfo(items.get(0))) {
             return;
         }
         /**
@@ -510,8 +511,8 @@ public class AutoCompletion {
                     b.append(item);
                 }
             }
-            if (results.info != null && results.info.containsKey(item)) {
-                b.append(" <span style='color:#555555'>(").append(results.info.get(item)).append(")</span>");
+            if (results.hasInfo(item)) {
+                b.append(" <span style='color:#555555'>(").append(results.getInfo(item)).append(")</span>");
             }
             b.append("</span><br />");
         }
