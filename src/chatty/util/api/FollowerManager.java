@@ -246,8 +246,9 @@ public class FollowerManager {
             long time = Util.parseTime(created_at);
             JSONObject user = (JSONObject)data.get("user");
             String display_name = (String)user.get("display_name");
+            String name = (String)user.get("name");
             
-            return createFollowerItem(stream, display_name, time);
+            return createFollowerItem(stream, name, display_name, time);
         } catch (ClassCastException | NullPointerException
                 | java.text.ParseException | NumberFormatException ex) {
             LOGGER.warning("Error parsing entry of "+type+": "+o+" ["+ex+"]");
@@ -264,7 +265,14 @@ public class FollowerManager {
      * @param time
      * @return 
      */
-    private Follower createFollowerItem(String stream, String name, long time) {
+    private Follower createFollowerItem(String stream, String name, String display_name, long time) {
+        if (name == null) {
+            return null;
+        }
+        if (display_name == null || display_name.trim().isEmpty()) {
+            display_name = name;
+        }
+        
         stream = StringUtil.toLowerCase(stream);
         // Add map for this stream if not already added
         if (!alreadyFollowed.containsKey(stream)) {
@@ -272,7 +280,7 @@ public class FollowerManager {
         }
         // Check if this follower is already present
         Map<String,Follower> entries = alreadyFollowed.get(stream);
-        Follower existingEntry = entries.get(name.toLowerCase());
+        Follower existingEntry = entries.get(name);
         boolean refollow = false;
         boolean newFollow = true;
         if (existingEntry != null) {
@@ -287,9 +295,9 @@ public class FollowerManager {
         if (!requested.contains(stream)) {
             newFollow = false;
         }
-        Follower newEntry = new Follower(type, name, time, refollow, newFollow);
+        Follower newEntry = new Follower(type, name, display_name, time, refollow, newFollow);
         if (existingEntry == null) {
-            alreadyFollowed.get(stream).put(name.toLowerCase(), newEntry);
+            alreadyFollowed.get(stream).put(name, newEntry);
         }
         return newEntry;
     }

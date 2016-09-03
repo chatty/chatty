@@ -26,8 +26,9 @@ public class SettingsManager {
     private final List<DefaultHotkey> hotkeys = new ArrayList<>();
     
     public static final long DISPLAY_NAMES_MODE_BOTH = 0;
-    public static final long DISPLAY_NAMES_MODE_REGULAR = 1;
+    public static final long DISPLAY_NAMES_MODE_CAPITALIZED = 1;
     public static final long DISPLAY_NAMES_MODE_LOCALIZED = 2;
+    public static final long DISPLAY_NAMES_MODE_USERNAME = 3;
     
     private final String[] debugSettings = {
         "server",
@@ -182,6 +183,7 @@ public class SettingsManager {
         settings.addMap("customNames", new HashMap<>(), Setting.STRING);
         settings.addBoolean("actionColored", false);
         settings.addLong("displayNamesMode", DISPLAY_NAMES_MODE_BOTH);
+        settings.addLong("displayNamesModeUserlist", DISPLAY_NAMES_MODE_CAPITALIZED);
 
         // Badges/Emotes
         settings.addBoolean("emoticonsEnabled",true);
@@ -472,6 +474,9 @@ public class SettingsManager {
         settings.addBoolean("completionShowPopup", true);
         settings.addBoolean("completionCommonPrefix", false);
         settings.addString("completionSorting", "predictive");
+        settings.addBoolean("completionAllNameTypes", true);
+        settings.addBoolean("completionPreferUsernames", true);
+        settings.addBoolean("completionAllNameTypesRestriction", true);
         
         // Stream Chat
         settings.addLong("streamChatMessageTimeout", -1);
@@ -633,6 +638,9 @@ public class SettingsManager {
                 settings.setString("portDefault", "6697,6667,443,80");
             }
             settings.setAdd("securedPorts", (long)443);
+        }
+        if (updatedFromBefore("0.8.4")) {
+            settings.setBoolean("ircv3CapitalizedNames", true);
         }
     }
     

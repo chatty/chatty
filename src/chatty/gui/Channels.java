@@ -608,6 +608,12 @@ public class Channels {
         }
     }
     
+    public void updateUserlistSettings() {
+        for (Channel channel : getChannels()) {
+            channel.updateUserlistSettings();
+        }
+    }
+    
     public void switchToChannel(String channel) {
         if (isChannel(channel)) {
             tabs.setSelectedComponent(get(channel));

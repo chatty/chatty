@@ -1,24 +1,19 @@
 
 package chatty.gui.components.settings;
 
-import chatty.UsercolorItem;
-import chatty.gui.HtmlColors;
 import chatty.gui.RegexDocumentFilter;
 import chatty.gui.components.settings.StringTableEditor.StringMapItem;
-import static chatty.gui.components.settings.TableEditor.SORTING_MODE_MANUAL;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -42,6 +37,16 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         setModel(data);
         editor = new MyItemEditor(owner);
         setItemEditor(editor);
+    }
+    
+    public void edit(String item) {
+        StringMapItem preset = new StringMapItem(item, "");
+        int index = data.indexOf(preset);
+        if (index == -1) {
+            addItem(preset);
+        } else {
+            editItem(index);
+        }
     }
     
     public void setKeyFilter(String p) {
@@ -77,6 +82,11 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         return false;
     }
     
+    /**
+     * Simple key/value String pair. Counts as equal if the key is equal
+     * (intended to be used in the context of a table where each key should only
+     * occur once).
+     */
     static class StringMapItem {
         private final String key;
         private final String value;
@@ -84,6 +94,28 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         public StringMapItem(String key, String value) {
             this.key = key;
             this.value = value;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final StringMapItem other = (StringMapItem) obj;
+            if (!Objects.equals(this.key, other.key)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.key);
+            return hash;
         }
     }
     

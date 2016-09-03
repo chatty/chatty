@@ -41,6 +41,7 @@ public class UserContextMenu extends ContextMenu {
         addItem("unfollow", "Unfollow", MISC_MENU);
         addSeparator(MISC_MENU);
         addItem("setcolor", "Set color", MISC_MENU);
+        addItem("setname", "Set name", MISC_MENU);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user

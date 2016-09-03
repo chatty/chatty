@@ -98,6 +98,7 @@ public class LiveStreamsDialog extends JFrame {
             List<StreamInfo> testData = new ArrayList<>();
             StreamInfo testEntry1 = new StreamInfo("joshimuz", null);
             testEntry1.set("Crash Nitro Kart WR Attempts - GTA:SA in December hopefully possibly maybe", "Crash Nitro Kart", 140, -1);
+            testEntry1.setDisplayName("Joshimoose");
             testData.add(testEntry1);
             StreamInfo testEntry2 = new StreamInfo("mrnojojojo", null);
             testEntry2.set("GTA3 Wintermod Race", "Grand Theft Auto III", 123, -1);

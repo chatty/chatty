@@ -29,7 +29,6 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -45,14 +44,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.*;
 import static javax.swing.JComponent.WHEN_FOCUSED;
-import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 import javax.swing.border.Border;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
-
 
 
 /**
@@ -309,7 +305,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.standard();
         }
         print(getTimePrefix(), style);
-        printUser(user, action, ignored, message.whisper, message.id);
+        printUser(user, action, message.whisper, message.id);
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && action && styles.actionColored()) {
@@ -1275,18 +1271,43 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param whisper 
      * @param id 
      */
-    public void printUser(User user, boolean action, boolean ignore,
+    public void printUser(User user, boolean action,
             boolean whisper, String id) {
-        String userName = user.toString();
-        if (styles.showUsericons() && !ignore) {
-            printUserIcons(user);
-            if (user.hasRegularDisplayNick() || user.hasCustomNickSet()
-                    || styles.displayNamesMode() != SettingsManager.DISPLAY_NAMES_MODE_REGULAR) {
-                userName = user.getCustomNick();
-            } else {
-                userName = user.getNick();
-            }
+        
+        // Decide on name based on settings and available names
+        String userName;
+        if (user.hasCustomNickSet()) {
+            userName = user.getCustomNick();
         }
+        else if (styles.namesMode() == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
+            userName = user.getNick();
+        }
+        else if (styles.namesMode() != SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED
+                || user.hasRegularDisplayNick()) {
+            userName = user.getDisplayNick();
+        }
+        else {
+            userName = user.getNick();
+        }
+        
+//        if (user.hasCustomNickSet()
+//                || styles.namesMode() != SettingsManager.NAMES_MODE_USERNAME 
+//                || (user.hasRegularDisplayNick()
+//                    || styles.namesMode() != SettingsManager.NAMES_MODE_CAPITALIZED)) {
+//            userName = user.getCustomNick();
+//        } else {
+//            userName = user.getNick();
+//        }
+        
+        // Badges or Status Symbols
+        if (styles.showUsericons()) {
+            printUserIcons(user);
+        }
+        else {
+            userName = user.getModeSymbol()+userName;
+        }
+        
+        // Output name
         if (user.hasCategory("rainbow")) {
             printRainbowUser(user, userName, action, SpecialColor.RAINBOW, id);
         } else if (user.hasCategory("golden")) {
@@ -1309,8 +1330,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
-        if (!user.hasRegularDisplayNick()
-                && styles.displayNamesMode() == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
+        // Add username in parentheses behind, if necessary
+        if (!user.hasRegularDisplayNick() && !user.hasCustomNickSet()
+                && styles.namesMode() == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
             MutableAttributeSet style = styles.nick(user, null);
             StyleConstants.setBold(style, false);
             int fontSize = StyleConstants.getFontSize(style) - 2;
@@ -1321,6 +1343,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             print(" ("+user.getNick()+")", style);
         }
         
+        // Finish up
         // Requires user style because it needs the metadata to detect the end
         // of the nick when deleting messages (and possibly other stuff)
         if (!action && !whisper) {
@@ -2527,7 +2550,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addNumericSetting(Setting.AUTO_SCROLL_TIME, 30, 5, 1234);
             addNumericSetting(Setting.EMOTICON_MAX_HEIGHT, 200, 0, 300);
             addNumericSetting(Setting.EMOTICON_SCALE_FACTOR, 100, 1, 200);
-            addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 2);
+            addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 10);
             timestampFormat = styleServer.getTimestampFormat();
         }
         
@@ -2883,7 +2906,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return (int)numericSettings.get(Setting.BUFFER_SIZE);
         }
         
-        public long displayNamesMode() {
+        public long namesMode() {
             return numericSettings.get(Setting.DISPLAY_NAMES_MODE);
         }
     }

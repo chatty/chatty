@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -51,6 +52,23 @@ public class CompletionSettings extends SettingsPanel {
                 max.setEnabled(popup.isSelected());
             }
         });
+        
+        main.add(d.addSimpleBooleanSetting(
+                "completionPreferUsernames",
+                "Prefer Regular name for username-based commands",
+                "Prefer Regular name for commands like /ban even when entering a Localized or Custom name"),
+                d.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST));
+        
+        main.add(d.addSimpleBooleanSetting(
+                "completionAllNameTypes",
+                "Include all name types in result (Regular/Localized/Custom)",
+                "For example entering the Localized name will also put the Regular name in the results"),
+                d.makeGbcCloser(0, 3, 4, 1, GridBagConstraints.WEST));
+        
+        main.add(d.addSimpleBooleanSetting("completionAllNameTypesRestriction",
+                "Only when no more than two matches",
+                ""),
+                d.makeGbcSub(0, 4, 4, 1, GridBagConstraints.WEST));
         
         
         /**

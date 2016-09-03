@@ -42,14 +42,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final JButton cancel = new JButton("Cancel");
     
     private final Set<String> restartRequiredDef = new HashSet<>(Arrays.asList(
-            "capitalizedNames", "ffz", "nod3d", "noddraw",
-            "userlistWidth", "userlistMinWidth", "userlistEnabled", "tabOrder","bttvEmotes","correctlyCapitalizedNames",
-            "logPath", "logTimestamp",
-            "botNamesBTTV", "botNamesFFZ", "ircv3CapitalizedNames",
-            "tabsMwheelScrolling", "inputFont", "ffzEvent"));
+            "ffz", "nod3d", "noddraw",
+            "userlistWidth", "userlistMinWidth", "userlistEnabled",
+            "capitalizedNames", "correctlyCapitalizedNames", "ircv3CapitalizedNames",
+            "tabOrder", "tabsMwheelScrolling", "inputFont",
+            "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
+            "logPath", "logTimestamp"
+    ));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(
-        "membershipEnabled"));
+            "membershipEnabled"
+    ));
     
     private boolean restartRequired = false;
     private boolean reconnectRequired = false;
@@ -73,6 +76,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final UsercolorSettings usercolorSettings;
     private final ImageSettings imageSettings;
     private final HotkeySettings hotkeySettings;
+    private final NameSettings nameSettings;
 
     private static final String PANEL_MAIN = "Main";
     private static final String PANEL_MESSAGES = "Messages";
@@ -93,6 +97,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_HOTKEYS = "Hotkeys";
     private static final String PANEL_COMPLETION = "Completion";
     private static final String PANEL_CHAT = "Chat";
+    private static final String PANEL_NAMES = "Names";
     
     private String currentlyShown;
     
@@ -110,6 +115,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         PANEL_IMAGES,
         PANEL_COLORS,
         PANEL_USERCOLORS,
+        PANEL_NAMES,
         PANEL_HIGHLIGHT,
         PANEL_IGNORE,
         PANEL_HISTORY,
@@ -202,6 +208,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(hotkeySettings, PANEL_HOTKEYS);
         cards.add(new CompletionSettings(this), PANEL_COMPLETION);
         cards.add(new ChatSettings(this), PANEL_CHAT);
+        nameSettings = new NameSettings(this);
+        cards.add(nameSettings, PANEL_NAMES);
         
         currentlyShown = PANEL_MAIN;
         selection.addListSelectionListener(new ListSelectionListener() {
@@ -267,6 +275,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
             if (action.equals("editUsercolorItem")) {
                 editUsercolorItem(parameter);
             }
+            else if (action.equals("editCustomNameItem")) {
+                editCustomNameItem(parameter);
+            }
         }
         stuffBasedOnPanel();
         selection.requestFocusInWindow();
@@ -287,6 +298,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
             public void run() {
                 showPanel(PANEL_USERCOLORS);
                 usercolorSettings.editItem(item);
+            }
+        });
+    }
+    
+    private void editCustomNameItem(final String item) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                showPanel(PANEL_NAMES);
+                nameSettings.editCustomName(item);
             }
         });
     }

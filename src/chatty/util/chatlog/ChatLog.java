@@ -87,7 +87,7 @@ public class ChatLog {
     public void message(String channel, User user, String message, boolean action) {
         if (isEnabled(channel)) {
             String line;
-            String name = user.toString();
+            String name = user.getFullNick();
             if (!user.hasRegularDisplayNick()) {
                 name += " ("+user.getNick()+")";
             }

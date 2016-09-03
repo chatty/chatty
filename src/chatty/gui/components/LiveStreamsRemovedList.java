@@ -164,7 +164,7 @@ public class LiveStreamsRemovedList extends JPanel {
         
         @Override
         public String toString() {
-            return DateTime.format(time)+" "+info.getDisplayName()
+            return DateTime.format(time)+" "+info.getCapitalizedName()
                     +(info.getFollowed() ? " (followed)" : "");
         }
         

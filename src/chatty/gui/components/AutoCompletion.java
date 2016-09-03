@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.gui.HtmlColors;
+import chatty.gui.components.AutoCompletionServer.CompletionItems;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -42,7 +43,7 @@ public class AutoCompletion {
      * Word pattern to be used to find the start/end of the word to be
      * completed.
      */
-    private static final Pattern WORD = Pattern.compile("\\w+");
+    private static final Pattern WORD = Pattern.compile("[^\\s,.:-@#+~!\"'$§%&\\/]+");
 
     /**
      * The JTextField the completion is performed in.
@@ -360,8 +361,8 @@ public class AutoCompletion {
 
         if (showPopup) {
             // Will only do something if more than one item was found
-            showCompletionInfo(index, items.size(), prevCompletion == null,
-                    items, commonPrefix);
+            showCompletionInfo(index, prevCompletion == null,
+                    results, commonPrefix);
         }
 
         /**
@@ -401,10 +402,14 @@ public class AutoCompletion {
      * @param items
      * @param commonPrefix
      */
-    private void showCompletionInfo(final int index, final int size,
-            final boolean newPosition, final List<String> items,
+    private void showCompletionInfo(final int index,
+            final boolean newPosition, final CompletionItems results,
             final String commonPrefix) {
-        if (size == 1) {
+        
+        final List<String> items = results.items;
+        final int size = items.size();
+        // Don't show info popup if there is only one entry and no info for it
+        if (size == 1 && !results.info.containsKey(items.get(0))) {
             return;
         }
         /**
@@ -420,7 +425,7 @@ public class AutoCompletion {
                 StringBuilder b = new StringBuilder("<html><body style='padding:0 2 0 1;color:black'>");
                 int end = -1;
                 if (maxShown > 0) {
-                    end = addNames(b, index, maxShown, items, commonPrefix);
+                    end = addNames(b, index, maxShown, results, commonPrefix);
                 }
                 String more = "";
                 if (end != -1 && size - 1 > end) {
@@ -462,7 +467,10 @@ public class AutoCompletion {
      * @return The index of the last item that was added
      */
     private int addNames(StringBuilder b, int index, int maxShown,
-            List<String> items, String commonPrefix) {
+            CompletionItems results, String commonPrefix) {
+        
+        List<String> items = results.items;
+        
         int left = maxShown - 1;
 
         int start = index - left / 2;
@@ -501,6 +509,9 @@ public class AutoCompletion {
                 } else {
                     b.append(item);
                 }
+            }
+            if (results.info != null && results.info.containsKey(item)) {
+                b.append(" <span style='color:#555555'>(").append(results.info.get(item)).append(")</span>");
             }
             b.append("</span><br />");
         }

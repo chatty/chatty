@@ -8,6 +8,7 @@ import chatty.util.DateTime;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -27,6 +28,7 @@ import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
@@ -311,20 +313,23 @@ public class LiveStreamsList extends JList<StreamInfo> {
                 int index, boolean isSelected, boolean cellHasFocus) {
             //System.out.println("Getting rubberstamp for "+value);
             StreamInfo info = (StreamInfo)value;
+            
             // Make Text
             String text = info.getTitle();
             if (!info.getGame().isEmpty()) {
                 text += "\n("+info.getGame()+")";
             }
             area.setText(text);
+            
             // Adjust size
             int width = list.getWidth();
             if (width > 0) {
                 area.setSize(width, Short.MAX_VALUE);
             }
+            
             // Add Borders
             String title = String.format("%s (%s | %s)",
-                    info.getDisplayName(),
+                    info.getCapitalizedName(),
                     Helper.formatViewerCount(info.getViewers()),
                     DateTime.agoUptimeCompact(info.getTimeStartedWithPicnic()));
             Border titleBaseBorder = isSelected ? TITLE_SELECTED : TITLE;
@@ -336,6 +341,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
             Border innerBorder = BorderFactory.createCompoundBorder(titleBorder, PADDING);
             Border border = BorderFactory.createCompoundBorder(MARGIN, innerBorder);
             area.setBorder(border);
+            
             // Selected Color
             if (isSelected) {
                 area.setBackground(list.getSelectionBackground());

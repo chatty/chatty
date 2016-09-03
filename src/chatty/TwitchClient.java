@@ -262,6 +262,7 @@ public class TwitchClient {
             g.addUser("", new User("joshua", ""));
             User j = new User("joshimuz", "Joshimuz", "");
             j.addMessage("abc", false);
+            j.setDisplayNick("Joshimoose");
             g.addUser("", j);
             g.addUser("", new User("jolzi", ""));
             g.addUser("", new User("john", ""));

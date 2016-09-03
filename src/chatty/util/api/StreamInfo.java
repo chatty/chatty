@@ -399,6 +399,16 @@ public class StreamInfo {
         return capitalizedName != null ? capitalizedName : stream;
     }
     
+    /**
+     * Whether the value returned by {@link getDisplayName()} only differs in
+     * case from the stream name.
+     * 
+     * @return 
+     */
+    public boolean hasRegularDisplayName() {
+        return !hasDisplayName() || capitalizedName != null;
+    }
+    
     public synchronized void setNotFound() {
         notFound = true;
     }

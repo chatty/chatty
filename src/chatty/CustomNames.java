@@ -2,9 +2,8 @@
 package chatty;
 
 import chatty.util.StringUtil;
+import chatty.util.settings.SettingChangeListener;
 import chatty.util.settings.Settings;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +22,15 @@ public class CustomNames {
     
     public CustomNames(Settings settings) {
         this.settings = settings;
+        settings.addSettingChangeListener(new SettingChangeListener() {
+
+            @Override
+            public void settingChanged(String setting, int type, Object value) {
+                if (setting.equals(SETTING_NAME)) {
+                    informListenersAllChanged();
+                }
+            }
+        });
     }
     
     public void setCustomName(String nick, String customNick) {
@@ -79,6 +87,13 @@ public class CustomNames {
     private void informListeners(String name, String capitalizedName) {
         for (CustomNamesListener listener : listeners) {
             listener.setName(name, capitalizedName);
+        }
+    }
+    
+    private void informListenersAllChanged() {
+        Map<String, String> customNames = settings.getMap(SETTING_NAME);
+        for (String username : customNames.keySet()) {
+            informListeners(username, customNames.get(username));
         }
     }
     

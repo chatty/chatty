@@ -135,8 +135,11 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
      * @param streamInfo 
      */
     public void set(StreamInfo streamInfo) {
-        this.setTitle("Channel Info: "+streamInfo.getDisplayName()
-            +(streamInfo.getFollowed() ? " (followed)" : ""));
+        String name = streamInfo.getDisplayName();
+        if (!streamInfo.hasRegularDisplayName()) {
+            name += " ("+streamInfo.getCapitalizedName()+")";
+        }
+        this.setTitle("Channel: "+name+(streamInfo.getFollowed() ? " (followed)" : ""));
         if (streamInfo.isValid() && streamInfo.getOnline()) {
             statusText = streamInfo.getTitle();
             gameText = streamInfo.getGame();

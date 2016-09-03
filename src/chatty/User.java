@@ -263,6 +263,12 @@ public class User implements Comparable {
         return displayNick;
     }
     
+    /**
+     * Gets the display nick if it is equal to the username except for case, or
+     * the username.
+     * 
+     * @return 
+     */
     public synchronized String getRegularDisplayNick() {
         if (hasRegularDisplayNick) {
             return displayNick;
@@ -270,6 +276,12 @@ public class User implements Comparable {
         return nick;
     }
     
+    /**
+     * Whether this user has a display nick set that only differs from the
+     * username by case.
+     * 
+     * @return 
+     */
     public synchronized boolean hasRegularDisplayNick() {
         return hasRegularDisplayNick;
     }
@@ -292,6 +304,12 @@ public class User implements Comparable {
         hasRegularDisplayNick = displayNick != null && displayNick.equalsIgnoreCase(nick);
     }
     
+    /**
+     * Whether a display nick has been set. {@link getDisplayNick()} will still
+     * return a default value even if this is false.
+     * 
+     * @return 
+     */
     public synchronized boolean hasDisplayNickSet() {
         return hasDisplayNickSet;
     }
@@ -496,6 +514,10 @@ public class User implements Comparable {
         return fullNick;
     }
     
+    public synchronized String getFullNick() {
+        return fullNick;
+    }
+    
     public synchronized void setMode(String mode) {
         if (mode.equals("o")) {
             setModerator(true);
@@ -636,7 +658,7 @@ public class User implements Comparable {
         fullNick = getModeSymbol()+getCustomNick();
     }
     
-    private String getModeSymbol() {
+    public synchronized String getModeSymbol() {
         String result = "";
         if (isSubscriber()) {
             result += "%";

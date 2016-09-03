@@ -66,8 +66,18 @@ public class UserlistModel<T extends Comparable> extends AbstractListModel {
         }
     }
     
+    /**
+     * Manually sort entries. This may sometimes fix the sorting.
+     */
     public void sort() {
         Collections.sort(data);
+        super.fireContentsChanged(this, 0, data.size() - 1);
+    }
+    
+    /**
+     * Mark all entries as changed, so they get repainted.
+     */
+    public void update() {
         super.fireContentsChanged(this, 0, data.size() - 1);
     }
 }

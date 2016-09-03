@@ -17,6 +17,8 @@ public class Follower {
      */
     public final String name;
     
+    public final String display_name;
+    
     /**
      * The time the user followed at.
      */
@@ -43,9 +45,10 @@ public class Follower {
      * @param refollow Whether it was detected as a refollow
      * @param newFollower Whether it is a new follower in this request
      */
-    public Follower(Type type, String name, long time, boolean refollow, boolean newFollower) {
+    public Follower(Type type, String name, String display_name, long time, boolean refollow, boolean newFollower) {
         this.type = type;
         this.name = name;
+        this.display_name = display_name;
         this.time = time;
         this.refollow = refollow;
         this.newFollower = newFollower;

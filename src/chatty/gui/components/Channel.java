@@ -18,9 +18,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
@@ -94,6 +97,7 @@ public class Channel extends JPanel {
         
         // User list
         users = new UserList(contextMenuListener, main.getUserListener());
+        updateUserlistSettings();
         userlist = new JScrollPane(users);
         
         
@@ -182,6 +186,10 @@ public class Channel extends JPanel {
     public int getNumUsers() {
         return users.getNumUsers();
     }
+    
+    public final void updateUserlistSettings() {
+        users.setDisplayNamesMode(main.getSettings().getLong("displayNamesModeUserlist"));
+    }
 
     private class InputCompletionServer implements AutoCompletionServer {
         
@@ -199,6 +207,12 @@ public class Channel extends JPanel {
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
             "follow", "unfollow", "ffzws",
             "setcolor"
+        }));
+        
+        private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
+            "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ", "/host ",
+            "/unban ", "/ignore ", "/unignore ", "/ignoreChat ", "/unignoreChat ",
+            "/ignoreWhisper ", "/unignoreWhisper ", "/follow ", "/unfollow "
         }));
         
         private void updateSettings() {
@@ -231,7 +245,9 @@ public class Channel extends JPanel {
             } else if (prefix.equals("/")) {
                 items = filterCompletionItems(commands, search);
             } else {
-                items = getCompletionItemsNames(search);
+                boolean preferUsernames = prefixesPreferUsernames.contains(prefix)
+                        && main.getSettings().getBoolean("completionPreferUsernames");
+                return getCompletionItemsNames(search, preferUsernames);
             }
             return new CompletionItems(items, "");
         }
@@ -267,28 +283,117 @@ public class Channel extends JPanel {
             return matched;
         }
             
-        private List<String> getCompletionItemsNames(String search) {
-            List<User> matched = new ArrayList<>();
+        private CompletionItems getCompletionItemsNames(String search, boolean preferUsernames) {
+            List<User> matchedUsers = new ArrayList<>();
+            Set<User> regularMatched = new HashSet<>();
+            Set<User> customMatched = new HashSet<>();
+            Set<User> localizedMatched = new HashSet<>();
             for (User user : users.getData()) {
+                boolean matched = false;
                 if (user.nick.startsWith(search)) {
-                    matched.add(user);
+                    matched = true;
+                    regularMatched.add(user);
+                }
+                if (!user.hasRegularDisplayNick() && user.getDisplayNick().toLowerCase(Locale.ROOT).startsWith(search)) {
+                    matched = true;
+                    localizedMatched.add(user);
+                }
+                if (user.hasCustomNickSet() && user.getCustomNick().toLowerCase(Locale.ROOT).startsWith(search)) {
+                    matched = true;
+                    customMatched.add(user);
+                }
+                
+                if (matched) {
+                    matchedUsers.add(user);
                 }
             }
             switch (main.getSettings().getString("completionSorting")) {
                 case "predictive":
-                    Collections.sort(matched, userSorterNew);
+                    Collections.sort(matchedUsers, userSorterNew);
                     break;
                 case "alphabetical":
-                    Collections.sort(matched, userSorterAlphabetical);
+                    Collections.sort(matchedUsers, userSorterAlphabetical);
                     break;
                 default:
-                    Collections.sort(matched);
+                    Collections.sort(matchedUsers);
             }
+            boolean includeAllNameTypes = main.getSettings().getBoolean("completionAllNameTypes");
+            boolean includeAllNameTypesRestriction = main.getSettings().getBoolean("completionAllNameTypesRestriction");
             List<String> nicks = new ArrayList<>();
-            for (User user : matched) {
-                nicks.add(user.getRegularDisplayNick());
+            Map<String, String> info = new HashMap<>();
+            for (User user : matchedUsers) {
+                if (includeAllNameTypes
+                        && (!includeAllNameTypesRestriction || matchedUsers.size() <= 2)) {
+                    if (customMatched.contains(user) && !preferUsernames) {
+                        nicks.add(user.getCustomNick());
+                        if (!user.hasRegularDisplayNick()) {
+                            nicks.add(user.getDisplayNick());
+                        }
+                        if (user.hasCustomNickSet() && !user.getCustomNick().equalsIgnoreCase(user.getRegularDisplayNick())) {
+                            nicks.add(user.getRegularDisplayNick());
+                        }
+                    }
+                    else if (localizedMatched.contains(user) && !preferUsernames) {
+                        nicks.add(user.getDisplayNick());
+                        if (user.hasCustomNickSet() && !user.getCustomNick().equalsIgnoreCase(user.getRegularDisplayNick())) {
+                            nicks.add(user.getCustomNick());
+                        }
+                        nicks.add(user.getRegularDisplayNick());
+                    }
+                    else {
+                        nicks.add(user.getRegularDisplayNick());
+                        if (!user.hasRegularDisplayNick()) {
+                            nicks.add(user.getDisplayNick());
+                        }
+                        if (user.hasCustomNickSet() && !user.getCustomNick().equalsIgnoreCase(user.getRegularDisplayNick())) {
+                            nicks.add(user.getCustomNick());
+                        }
+                    }
+                }
+                else {
+                    if (regularMatched.contains(user) || preferUsernames) {
+                        nicks.add(user.getRegularDisplayNick());
+                    }
+                    if (localizedMatched.contains(user) && !preferUsernames) {
+                        nicks.add(user.getDisplayNick());
+                    }
+                    if (customMatched.contains(user) && !preferUsernames) {
+                        nicks.add(user.getCustomNick());
+                    }
+                }
+                
+                if (!user.hasRegularDisplayNick()) {
+                    info.put(user.getDisplayNick(), user.getRegularDisplayNick());
+                    info.put(user.getRegularDisplayNick(), user.getDisplayNick());
+                }
+                if (user.hasCustomNickSet()) {
+                    info.put(user.getCustomNick(), user.getRegularDisplayNick());
+                    info.put(user.getRegularDisplayNick(), user.getCustomNick());
+                }
+                
+                
+//                if (!user.hasRegularDisplayNick()) {
+//                    if (localizedMatched.contains(user) && !preferUsernames) {
+//                        nicks.add(user.getDisplayNick());
+//                        if (localizedBoth) {
+//                            nicks.add(user.getRegularDisplayNick());
+//                        }
+//                    } else {
+//                        nicks.add(user.getRegularDisplayNick());
+//                        if (localizedBoth) {
+//                            nicks.add(user.getDisplayNick());
+//                        }
+//                    }
+//                    info.put(user.getDisplayNick(), user.getRegularDisplayNick());
+//                    info.put(user.getRegularDisplayNick(), user.getDisplayNick());
+//                } else {
+//                    nicks.add(user.getRegularDisplayNick());
+//                    if (!user.hasRegularDisplayNick()) {
+//                        info.put(user.getRegularDisplayNick(), user.getDisplayNick());
+//                    }
+//                }
             }
-            return nicks;
+            return new CompletionItems(nicks, info, "");
         }
         
         private class UserSorterNew implements Comparator<User> {

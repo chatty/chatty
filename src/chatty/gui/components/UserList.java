@@ -1,15 +1,18 @@
 
 package chatty.gui.components;
 
+import chatty.SettingsManager;
 import chatty.User;
 import chatty.gui.UserListener;
 import chatty.gui.UserlistModel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
 /**
@@ -22,10 +25,52 @@ public class UserList extends JList<User> {
     private final ContextMenuListener contextMenuListener;
     private final UserListener userListener;
     
+    private long displayNamesMode = SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED;
+    
     public UserList(ContextMenuListener contextMenuListener,
             UserListener userListener) {
         data = new UserlistModel<>();
         this.setModel(data);
+        this.setCellRenderer(new DefaultListCellRenderer() {
+            
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                /**
+                 * In rare cases apparently value can be null (even if that
+                 * shouldn't be possible).
+                 */
+                if (value == null) {
+                    setText("");
+                    setToolTipText("error");
+                    return this;
+                }
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                
+                User user = (User)value;
+                if (user.hasCustomNickSet()) {
+                    setText(user.getFullNick());
+                }
+                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
+                    if (user.hasRegularDisplayNick()) {
+                        setText(user.getFullNick());
+                    } else {
+                        setText(user.getFullNick()+" ("+user.getRegularDisplayNick()+")");
+                    }
+                }
+                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_LOCALIZED) {
+                    setText(user.getFullNick());
+                }
+                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED) {
+                    setText(user.getModeSymbol()+user.getRegularDisplayNick());
+                }
+                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
+                    setText(user.getModeSymbol()+user.getNick());
+                }
+                return this;
+            }
+            
+        });
         this.addMouseListener(new MouseListener() {
 
             @Override
@@ -55,6 +100,11 @@ public class UserList extends JList<User> {
         });
         this.contextMenuListener = contextMenuListener;
         this.userListener = userListener;
+    }
+    
+    public void setDisplayNamesMode(long mode) {
+        this.displayNamesMode = mode;
+        data.update();
     }
     
     public void addUser(User user) {

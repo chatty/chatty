@@ -485,9 +485,13 @@ public class FollowersDialog extends JDialog {
             
             // Text
             if (type == Type.NAME) {
-                setText(f.name);
-                // In case name is cut off
-                setToolTipText(f.name);
+                if (f.name.equalsIgnoreCase(f.display_name)) {
+                    setText(f.display_name);
+                    setToolTipText(f.display_name);
+                } else {
+                    setText(f.display_name+" ("+f.name+")");
+                    setToolTipText(f.display_name+" ("+f.name+")");
+                }
             } else {
                 setText(DateTime.agoSingleVerbose(f.time));
                 setToolTipText(DateTime.formatFullDatetime(f.time));

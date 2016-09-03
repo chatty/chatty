@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Defines the CompletionServer, which creates the actual search result used
@@ -43,6 +44,7 @@ public interface AutoCompletionServer {
     public static class CompletionItems {
 
         public final List<String> items;
+        public final Map<String, String> info;
         public final String prefixToRemove;
 
         /**
@@ -59,9 +61,14 @@ public interface AutoCompletionServer {
          * @param items
          * @param prefixToRemove 
          */
-        public CompletionItems(List<String> items, String prefixToRemove) {
+        public CompletionItems(List<String> items, Map<String, String> info, String prefixToRemove) {
             this.items = items;
             this.prefixToRemove = prefixToRemove;
+            this.info = info;
+        }
+        
+        public CompletionItems(List<String> items, String prefixToRemove) {
+            this(items, null, prefixToRemove);
         }
         
         /**
@@ -70,6 +77,7 @@ public interface AutoCompletionServer {
         public CompletionItems() {
             this.items = new ArrayList<>();
             this.prefixToRemove = "";
+            this.info = null;
         }
     }
 }

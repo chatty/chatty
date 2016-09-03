@@ -1357,6 +1357,9 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.equals("setcolor")) {
                 setColor(user.nick);
             }
+            else if (cmd.equals("setname")) {
+                setCustomName(user.nick);
+            }
             else if (cmd.startsWith("command")) {
                 String command = cmd.substring(7);
                 client.command(user.getChannel(), command, user.getRegularDisplayNick());
@@ -2939,6 +2942,16 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
     }
+    
+    public void setCustomName(final String item) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                getSettingsDialog().showSettings("editCustomNameItem", item);
+            }
+        });
+    }
 
     public void updateChannelInfo() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -3743,6 +3756,9 @@ public class MainGui extends JFrame implements Runnable {
                 streamChat.refreshStyles();
                 //menu.setForeground(styleManager.getColor("foreground"));
                 //menu.setBackground(styleManager.getColor("background"));
+            }
+            if (setting.equals("displayNamesModeUserlist")) {
+                channels.updateUserlistSettings();
             }
             if (type == Setting.STRING) {
                 if (setting.equals("timeoutButtons")) {
