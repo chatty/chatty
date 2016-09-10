@@ -80,6 +80,9 @@ public class Logging {
                     if (record.getSourceClassName().startsWith("chatty.util.ffz.Websocket")) {
                         client.debugFFZ(record.getMessage());
                     }
+                    if (record.getSourceClassName().startsWith("chatty.util.api.pubsub.")) {
+                        client.debugPubSub(record.getMessage());
+                    }
                 }
                 if (record.getLevel() == Level.SEVERE) {
                     if (client.g != null) {

@@ -1,0 +1,43 @@
+
+package chatty.util.api.pubsub;
+
+import java.util.Map;
+import org.json.simple.JSONObject;
+
+/**
+ *
+ * @author tduva
+ */
+public class Helper {
+    
+    public static String createOutgoingMessage(String type, String nonce, Object data) {
+        JSONObject object = new JSONObject();
+        object.put("type", type);
+        if (nonce != null) {
+            object.put("nonce", nonce);
+        }
+        if (data != null) {
+            object.put("data", data);
+        }
+        return object.toJSONString();
+    }
+    
+    public static String getStreamFromTopic(String topic, Map<Long, String> userIds) {
+        try {
+            long userId = Long.valueOf(topic.substring(topic.indexOf(".")+1));
+            return userIds.get(userId);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+    
+    public static String removeToken(String token, String message) {
+        return message.replace(token, "<censored>");
+    }
+    
+    public static void main(String[] args) {
+        String topic = "abc.123";
+        System.out.println(Long.valueOf(topic.substring(topic.indexOf(".")+1)));
+    }
+    
+}

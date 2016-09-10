@@ -128,6 +128,7 @@ public class SettingsManager {
         
         settings.addList("securedPorts", new LinkedHashSet<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
         settings.addBoolean("membershipEnabled", true);
+        settings.addString("pubsub", "wss://pubsub-edge.twitch.tv");
         
         // Auto-join channels
         settings.addString("channel", "");
@@ -414,6 +415,7 @@ public class SettingsManager {
         settings.addBoolean("showModMessages", false);
         settings.addBoolean("twitchnotifyAsInfo", true);
         settings.addBoolean("printStreamStatus", true);
+        settings.addBoolean("showModActions", false);
         
         // Timeouts/Bans
         settings.addBoolean("showBanMessages", false);
@@ -463,6 +465,7 @@ public class SettingsManager {
         settings.addBoolean("logInfo", true);
         settings.addBoolean("logViewerstats", true);
         settings.addBoolean("logViewercount", false);
+        settings.addBoolean("logModAction", true);
         settings.addList("logWhitelist",new ArrayList(), Setting.STRING);
         settings.addList("logBlacklist",new ArrayList(), Setting.STRING);
         settings.addString("logPath", "");

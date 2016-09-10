@@ -12,6 +12,7 @@ import chatty.util.StringUtil;
  */
 public class ChannelInfo {
     
+    public final long id;
     public final long time;
     public final String name;
     public final long createdAt;
@@ -21,10 +22,10 @@ public class ChannelInfo {
     public final String game;
     
     public ChannelInfo(String name, String status, String game) {
-        this(name, status, game, -1, -1, -1);
+        this(name, -1, status, game, -1, -1, -1);
     }
     
-    public ChannelInfo(String name, String status, String game, long createdAt,
+    public ChannelInfo(String name, long id, String status, String game, long createdAt,
             int followers, int views) {
         this.status = status;
         this.game = game;
@@ -32,6 +33,7 @@ public class ChannelInfo {
         this.views = views;
         this.followers = followers;
         this.name = StringUtil.toLowerCase(name);
+        this.id = id;
         this.time = System.currentTimeMillis();
     }
     
@@ -45,7 +47,7 @@ public class ChannelInfo {
     
     @Override
     public String toString() {
-        return name+"/"+status+"/"+game+"/"+createdAt+"/"+followers+"/"+views;
+        return name+"/"+id+"/"+status+"/"+game+"/"+createdAt+"/"+followers+"/"+views;
     }
     
 }

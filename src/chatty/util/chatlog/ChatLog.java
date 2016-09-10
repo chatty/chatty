@@ -5,7 +5,9 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.User;
 import chatty.util.DateTime;
+import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo.ViewerStats;
+import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.settings.Settings;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -103,6 +105,19 @@ public class ChatLog {
     public void info(String channel, String message) {
         if (isTypeEnabled("Info") && isEnabled(channel)) {
             writeLine(channel, timestamp()+message);
+        }
+    }
+    
+    public void modAction(ModeratorActionData data) {
+        if (!Helper.validateStream(data.stream)) {
+            return;
+        }
+        String channel = Helper.toChannel(data.stream);
+        if (isTypeEnabled("ModAction") && isEnabled(channel)) {
+            writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
+                    data.created_by,
+                    data.moderation_action,
+                    data.args.isEmpty() ? "" : " "+StringUtil.join(data.args, " ")));
         }
     }
     

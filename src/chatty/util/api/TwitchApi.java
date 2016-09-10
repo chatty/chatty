@@ -56,6 +56,7 @@ public class TwitchApi {
     private final EmoticonManager emoticonManager;
     private final FollowerManager followerManager;
     private final FollowerManager subscriberManager;
+    private final UserIDs userIDs;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -76,6 +77,7 @@ public class TwitchApi {
         emoticonManager = new EmoticonManager(apiResultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
+        userIDs = new UserIDs(this);
         
         executor = Executors.newCachedThreadPool();
     }
@@ -243,6 +245,10 @@ public class TwitchApi {
             executor.execute(request);
             //new Thread(request).start();
         }
+    }
+    
+    public long getUserId(String username, UserIDs.UserIDListener listener) {
+        return userIDs.getUserId(username, listener);
     }
     
     public void getGameSearch(String game) {
@@ -592,6 +598,7 @@ public class TwitchApi {
         }
         resultListener.receivedChannelInfo(stream, info, RequestResult.SUCCESS);
         cachedChannelInfo.put(stream, info);
+        userIDs.channelInfoReceived(info);
     }
     
     /**
@@ -769,6 +776,7 @@ public class TwitchApi {
             JSONObject root = (JSONObject)parser.parse(json);
             
             String name = (String)root.get("name");
+            long id = ((Number)root.get("_id")).longValue();
             String status = (String)root.get("status");
             String game = (String)root.get("game");
             int views = JSONUtil.getInteger(root, "views", -1);
@@ -779,7 +787,7 @@ public class TwitchApi {
             } catch (java.text.ParseException ex) {
                 LOGGER.warning("Error parsing ChannelInfo: "+ex);
             }
-            return new ChannelInfo(name, status,game, createdAt, followers, views);
+            return new ChannelInfo(name, id, status, game, createdAt, followers, views);
         }
         catch (ParseException ex) {
             LOGGER.warning("Error parsing ChannelInfo.");

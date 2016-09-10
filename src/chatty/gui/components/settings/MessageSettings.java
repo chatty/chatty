@@ -99,6 +99,12 @@ public class MessageSettings extends SettingsPanel {
                 "Correct readability of usercolors",
                 "If enabled, changes some usercolors to make them more readable on the current background"),
                 d.makeGbc(2, 3, 2, 1, GridBagConstraints.WEST));
+        
+        otherSettingsPanel.add(d.addSimpleBooleanSetting(
+                "showModActions",
+                "Show moderator actions in chat (Broadcaster only)",
+                "Show what commands mods perform in your channel (you can also open Extra - Moderation Log)"),
+                d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
 
         
         /**

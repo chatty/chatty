@@ -28,6 +28,7 @@ public class DebugWindow extends JFrame {
     private final JTextArea text;
     private final JTextArea textIrcLog;
     private final JTextArea textFFZLog;
+    private final JTextArea textPubSubLog;
     
     public DebugWindow(ItemListener listener) {
         setTitle("Debug");
@@ -40,12 +41,16 @@ public class DebugWindow extends JFrame {
 
         // FFZ WS log
         textFFZLog = createLogArea();
+        
+        // PubSub WS log
+        textPubSubLog = createLogArea();
 
         // Tabs
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Log", new JScrollPane(text));
         tabs.addTab("Irc log", new JScrollPane(textIrcLog));
         tabs.addTab("FFZ-WS", new JScrollPane(textFFZLog));
+        tabs.addTab("PubSub", new JScrollPane(textPubSubLog));
         
         // Settings (Checkboxes)
         logIrc.setToolTipText("Logging IRC traffic can reduce performance");
@@ -86,6 +91,10 @@ public class DebugWindow extends JFrame {
     
     public void printLineFFZ(String line) {
         printLine(textFFZLog, line);
+    }
+    
+    public void printLinePubSub(String line) {
+        printLine(textPubSubLog, line);
     }
     
     private void printLine(JTextArea text, String line) {

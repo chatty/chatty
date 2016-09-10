@@ -144,6 +144,8 @@ public class MainMenu extends JMenuBar {
         addItem(extra,"dialog.followers","Followers");
         addItem(extra,"dialog.subscribers","Subscribers");
         extra.addSeparator();
+        addItem(extra,"dialog.moderationLog", "Moderation Log");
+        extra.addSeparator();
         JMenu streamChat = new JMenu("Stream Chat");
         addItem(streamChat,"dialog.streamchat", "Open");
         addCheckboxItem(streamChat, "streamChatResizable", "Resizable");

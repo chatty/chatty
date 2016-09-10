@@ -37,6 +37,10 @@ import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.TwitchApi.RequestResult;
+import chatty.util.api.UserIDs;
+import chatty.util.api.pubsub.Message;
+import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.pubsub.PubSubListener;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
@@ -93,6 +97,8 @@ public class TwitchClient {
      * Holds the TwitchApi object, which is used to make API requests
      */
     public final TwitchApi api;
+    
+    public final chatty.util.api.pubsub.Manager pubsub;
     
     public final TwitchEmotes twitchemotes;
     
@@ -186,6 +192,9 @@ public class TwitchClient {
         settingsManager.loadCommandLineSettings(args);
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
+        
+        pubsub = new chatty.util.api.pubsub.Manager(
+                settings.getString("pubsub"), new PubSubResults(), api);
         
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings);
         frankerFaceZ.autoUpdateFeatureFridayEmotes();
@@ -915,6 +924,9 @@ public class TwitchClient {
         else if (command.equals("ffzws")) {
             g.printSystem("[FFZ-WS] Status: "+frankerFaceZ.getWsStatus());
         }
+        else if (command.equals("pubsubstatus")) {
+            g.printSystem("[PubSub] Status: "+pubsub.getStatus());
+        }
         else if (command.equals("refresh")) {
             commandRefresh(channel, parameter);
         }
@@ -1117,6 +1129,16 @@ public class TwitchClient {
             frankerFaceZ.connectWs();
         } else if (command.equals("wsdisconnect")) {
             frankerFaceZ.disconnectWs();
+        } else if (command.equals("psconnect")) {
+            pubsub.connect();
+        } else if (command.equals("psdisconnect")) {
+            pubsub.disconnect();
+        } else if (command.equals("modactiontest")) {
+            List<String> args = new ArrayList<String>();
+            args.add("tirean");
+            args.add("300");
+            args.add("still not using LiveSplit Autosplitter D:");
+            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva"));
         } else if (command.equals("loadsoferrors")) {
             for (int i=0;i<10000;i++) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -1127,6 +1149,14 @@ public class TwitchClient {
                     }
                 });
             }
+        } else if (command.equals("getuserid")) {
+            g.printSystem(parameter+": "+api.getUserId(parameter, new UserIDs.UserIDListener() {
+
+                @Override
+                public void setUserId(String username, long userId) {
+                    g.printSystem(username+": "+userId);
+                }
+            }));
         }
     }
     
@@ -1554,6 +1584,13 @@ public class TwitchClient {
         g.printDebugFFZ(line);
     }
     
+    public void debugPubSub(String line) {
+        if (shuttingDown || g == null) {
+            return;
+        }
+        g.printDebugPubSub(line);
+    }
+    
     /**
      * Output a warning.
      * 
@@ -1580,6 +1617,23 @@ public class TwitchClient {
         }
     }
     
+    private class PubSubResults implements PubSubListener {
+
+        @Override
+        public void messageReceived(Message message) {
+            if (message.data != null && message.data instanceof ModeratorActionData) {
+                ModeratorActionData data = (ModeratorActionData)message.data;
+                g.printModerationAction(data);
+                chatLog.modAction(data);
+            }
+        }
+
+        @Override
+        public void info(String info) {
+            g.printDebugPubSub(info);
+        }
+        
+    }
     
     /**
      * Redirects request results from the API.
@@ -2038,6 +2092,7 @@ public class TwitchClient {
         logAllViewerstats();
         c.disconnect();
         frankerFaceZ.disconnectWs();
+        pubsub.disconnect();
         g.cleanUp();
         chatLog.close();
         System.exit(0);
@@ -2232,6 +2287,7 @@ public class TwitchClient {
         @Override
         public void onRegistered() {
             g.updateHighlightSetUsername(c.getUsername());
+            pubsub.listenModLog(c.getUsername(), settings.getString("token"));
         }
 
         @Override

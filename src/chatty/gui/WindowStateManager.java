@@ -9,6 +9,7 @@ import java.awt.Point;
 import java.awt.Window;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -80,6 +81,10 @@ public class WindowStateManager {
     public void addWindow(Window window, String id, boolean saveSize, boolean reopen) {
         windows.put(window, new StateItem(id, saveSize, reopen));
         attachedWindowManager.attach(window);
+    }
+    
+    public Set<Window> getWindows() {
+        return new HashSet<>(windows.keySet());
     }
     
     /**
@@ -239,7 +244,9 @@ public class WindowStateManager {
      * @return {@code true} if it should be reopened, {@code false} otherwise
      */
     public boolean shouldReopen(Window window) {
-        return mode() >= REOPEN_ON_START && wasOpen(window);
+        StateItem item = windows.get(window);
+        return mode() >= REOPEN_ON_START
+                && item != null && item.reopen && item.wasOpen;
     }
     
     /**

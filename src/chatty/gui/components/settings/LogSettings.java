@@ -83,20 +83,46 @@ public class LogSettings extends SettingsPanel {
         
         JPanel types = createTitledPanel("Message Types");
         
-        types.add(d.addSimpleBooleanSetting("logInfo", "Chat Info",
-                "Log infos like stream title, messages from twitch, connecting, disconnecting."), d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.NORTHWEST));
-        types.add(d.addSimpleBooleanSetting("logBan", "Bans/Timeouts",
-                "Log Bans/Timeouts as BAN messages."), d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting("logMod", "Mod/Unmod",
-                "Log MOD/UNMOD messages."), d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting("logJoinPart", "Joins/Parts",
-                "Log JOIN/PART messages."), d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting("logSystem", "System Info",
-                "Messages that concern Chatty rather than chat."), d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting("logViewerstats", "Viewerstats",
-                "Log viewercount stats in a semi-regular interval."), d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting("logViewercount", "Viewercount",
-                "Log the viewercount as it is updated."), d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logInfo",
+                "Chat Info",
+                "Log infos like stream title, messages from twitch, connecting, disconnecting."),
+                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.NORTHWEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logBan",
+                "Bans/Timeouts",
+                "Log Bans/Timeouts as BAN messages."),
+                d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logMod",
+                "Mod/Unmod",
+                "Log MOD/UNMOD messages."),
+                d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logJoinPart",
+                "Joins/Parts",
+                "Log JOIN/PART messages."),
+                d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logSystem",
+                "System Info",
+                "Messages that concern Chatty rather than chat."),
+                d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logViewerstats",
+                "Viewerstats",
+                "Log viewercount stats in a semi-regular interval."),
+                d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logViewercount",
+                "Viewercount",
+                "Log the viewercount as it is updated."),
+                d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logModAction",
+                "Mod Actions",
+                "Log who performed which command (only your own channel)."),
+                d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
 
 
         JPanel otherSettings = createTitledPanel("Other Settings");

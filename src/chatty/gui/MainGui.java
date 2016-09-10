@@ -36,6 +36,7 @@ import chatty.gui.components.ErrorMessage;
 import chatty.gui.components.FollowersDialog;
 import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.LivestreamerDialog;
+import chatty.gui.components.ModerationLog;
 import chatty.gui.components.NewsDialog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
@@ -59,6 +60,7 @@ import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi.RequestResult;
+import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -125,6 +127,7 @@ public class MainGui extends JFrame implements Runnable {
     private FollowersDialog followerDialog;
     private FollowersDialog subscribersDialog;
     private StreamChat streamChat;
+    private ModerationLog moderationLog;
     
     // Helpers
     private final Highlighter highlighter = new Highlighter();
@@ -252,6 +255,8 @@ public class MainGui extends JFrame implements Runnable {
         streamChat = new StreamChat(this, styleManager, contextMenuListener,
             client.settings.getBoolean("streamChatBottom"));
         
+        moderationLog = new ModerationLog(this);
+        
         //this.getContentPane().setBackground(new Color(0,0,0,0));
 
         getSettingsDialog();
@@ -286,6 +291,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(emotesDialog, "emotes", true, true);
         windowStateManager.addWindow(followerDialog, "followers", true, true);
         windowStateManager.addWindow(subscribersDialog, "subscribers", true, true);
+        windowStateManager.addWindow(moderationLog, "moderationLog", true, true);
         windowStateManager.addWindow(streamChat, "streamChat", true, true);
         
         guiCreated = true;
@@ -464,6 +470,15 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleSubscriberDialog();
+            }
+        });
+        
+        addMenuAction("dialog.moderationLog", "Dialog: Toggle Moderation Log",
+                "Moderation Log", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleModerationLog();
             }
         });
         
@@ -905,14 +920,21 @@ public class MainGui extends JFrame implements Runnable {
      * Reopen some windows if enabled.
      */
     private void reopenWindows() {
-        reopenWindow(liveStreamsDialog);
-        reopenWindow(highlightedMessages);
-        reopenWindow(ignoredMessages);
-        reopenWindow(channelInfoDialog);
-        reopenWindow(addressbookDialog);
-        reopenWindow(adminDialog);
-        reopenWindow(emotesDialog);
-        reopenWindow(streamChat);
+//        reopenWindow(liveStreamsDialog);
+//        reopenWindow(highlightedMessages);
+//        reopenWindow(ignoredMessages);
+//        reopenWindow(channelInfoDialog);
+//        reopenWindow(addressbookDialog);
+//        reopenWindow(adminDialog);
+//        reopenWindow(emotesDialog);
+//        reopenWindow(streamChat);
+//        reopenWindow(moderationLog);
+//        reopenWindow(followerDialog);
+//        reopenWindow(subscribersDialog);
+        
+        for (Window window : windowStateManager.getWindows()) {
+            reopenWindow(window);
+        }
     }
     
     /**
@@ -940,6 +962,8 @@ public class MainGui extends JFrame implements Runnable {
                 openFollowerDialog();
             } else if (window == subscribersDialog) {
                 openSubscriberDialog();
+            } else if (window == moderationLog) {
+                openModerationLog();
             } else if (window == streamChat) {
                 openStreamChat();
             }
@@ -2102,6 +2126,17 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
+    private void openModerationLog() {
+        windowStateManager.setWindowPosition(moderationLog);
+        moderationLog.showDialog();
+    }
+    
+    private void toggleModerationLog() {
+        if (!closeDialog(moderationLog)) {
+            openModerationLog();
+        }
+    }
+    
     private void openUpdateDialog() {
         updateMessage.setLocationRelativeTo(this);
         updateMessage.showDialog();
@@ -2784,6 +2819,33 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 debugWindow.printLineFFZ(line);
+            }
+        });
+    }
+    
+    public void printDebugPubSub(final String line) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                debugWindow.printLinePubSub(line);
+            }
+        });
+    }
+    
+    public void printModerationAction(final ModeratorActionData data) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                moderationLog.add(data);
+                String channel = Helper.toValidChannel(data.stream);
+                if (client.settings.getBoolean("showModActions") && channels.isChannel(channel)) {
+                    channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
+                            data.created_by,
+                            data.moderation_action,
+                            StringUtil.join(data.args, " ")));
+                }
             }
         });
     }
