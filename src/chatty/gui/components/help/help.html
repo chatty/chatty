@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.4b4)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.4b5)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -874,20 +874,28 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         </ul>
     
     <h2>
-        <a name="customNames">Custom Usernames</a>
+        <a name="customNames">Custom Names</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>You can give people in chat custom names that will appear in chat and
     in the userlist instead of the regular Twitch username and in the User Info
     Dialog in addition to the regular Twitch username. In other places (like
-    the User Context Menu or auto-completion) the regular Twitch username is
-    used.</p>
+    the User Context Menu) the regular Twitch username is used.</p>
+    
+    <p>TAB Completion also allows you to complete Custom Names and by default
+        also includes the original name in the results.</p>
     
     <p>The following commands are used to set custom names:</p>
     <ul>
-        <li><code>/setname &lt;name&gt; &lt;custom name&gt;</code> - to set a custom name</li>
-        <li><code>/resetname &lt;name&gt;</code> - to remove a custom name</li>
+        <li><code>/setname &lt;username&gt; &lt;custom name&gt;</code> - to set a custom name</li>
+        <li><code>/resetname &lt;username&gt;</code> - to remove a custom name</li>
     </ul>
+    
+    <p>In addition to these commands, you can also view and change Custom Names
+        via the Settings GUI under <code>Names</code>. You can also right-click
+        on a user in chat to open the User Context Menu and choose
+        <code>Miscellaneous - Set name</code> to open the Settings with the name
+        preset.</p>
     
     <h2>
         <a name="pausechat">Pause Chat / One-click moderation</a>

@@ -205,28 +205,7 @@
     </dl>
     
     <h3><a name="capitalization">Name Capitalization</a></h3>
-    <p>Names in Twitch Chat are send all-lowercase by default, however there is
-        an IRCv3 tag send with each message with the display name which Chatty
-        can use to show correct capitalization. You have the following settings:</p>
-    <ul>
-        <li><strong>Capitalized Names (First Letter)</strong> simply makes the
-        first letter of names uppercase. This will be correct for many names,
-        but by far not for all (names might have capital letters in the middle
-        or be all-lowercase). You can enable this if you simply prefer it this
-        way.</li>
-        <li><strong>Correctly Capitalized Names</strong> uses the capitalization
-        send in the IRCv3 tag with each message and should be what the user
-        configured. In very rare cases the display nick may differ more than the
-        capitalization. This is enabled by default.</li>
-    </ul>
-    
-    <p><em>The previous function that requested correctly capitalized names from the
-    Twitch API has been removed. This also means that the associated commands
-    (<code>/refreshCase</code>, <code>/setCase</code> and <code>/getCase</code>)
-    have been removed as well. If you want to customize the capitalization of someone else's
-    name locally, you can now use the <a href="help.html#customNames">Custom Names feature</a>.
-    The names in the userlist will not be correctly capitalized until Chatty has
-    received a message from that user during this session.</em></p>
+    <p>This has been moved to it's own <a href="#Names">settings page</a>.</p>
     
     <h2>
         <a name="Chat">Chat</a>
@@ -476,6 +455,51 @@
     been used instead of a colon, so "$color:Blue" would be correct. This can
     also happen if it doesn't recognize the given color or the item is just in
     an invalid format.</p>
+    
+    
+    <h2>
+        <a name="Names">Names</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>Names / Localized Names</h3>
+    
+    <p>Users can customize the capitalization of their name, or set a localized
+        name for some locales, like Japanese.</p>
+    
+    <p><strong>Chat</strong> messages and the <strong>Userlist</strong> can be
+        configured separately with the following options:</p>
+    
+    <dl class="dl-settings">
+        <dt>Username Only</dt>
+        <dd>Always show the non-capitalized username for all users.</dd>
+
+        <dt>Capitalized Only</dt>
+        <dd>Show the capitalized name, if available (but never localized names).</dd>
+
+        <dt>Localized Only</dt>
+        <dd>Show the localized name, if set by the user, or the capitalized name
+            otherwise.</dd>
+
+        <dt>Localized+Username</dt>
+        <dd>If the user has a localized name set, show both the localized
+            name and the original username in parentheses, or the capitalized
+            name otherwise.</dd>
+    </dl>
+    
+    <p>If you have a <a href="help.html#customNames">Custom Name</a> set for a
+        user, then only that Custom Name will be shown.</p>
+    
+    <p>Other related settings:</p>
+    <dl class="dl-settings">
+        <dt>Capitalize First Letter if no display name available</dt>
+        <dd>If there is no capitalized/localized name for a user available then
+            capitalize the first letter. This especially applies to names in the
+            userlist of people who haven't said anything in chat yet.</dd>
+    </dl>
+    
+    <h3>Custom Names</h3>
+    <div class="moreInfo">More information: <a href="help.html#customNames">Custom Names</a></div>
+    
     
     <h2>
         <a name="Highlight">Highlight</a>
@@ -904,6 +928,10 @@
             any processing, except being formatted depending on the current
             locale.</dd>
         <dd><code>VIEWERS: 12,521</code></dd>
+        
+        <dt>Mod Actions</dt>
+        <dd>Logs the commands performed by mods in your channel (Broadcaster only).</dd>
+        <dd><code>MOD_ACTION: tduva (host coollertmb)</code></dd>
     </dl>
     
     <h2>
