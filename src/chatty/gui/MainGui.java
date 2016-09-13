@@ -1771,6 +1771,7 @@ public class MainGui extends JFrame implements Runnable {
             state.update(true);
             updateChannelInfoDialog();
             emotesDialog.updateStream(channels.getLastActiveChannel().getStreamName());
+            moderationLog.setChannel(channels.getLastActiveChannel().getStreamName());
         }
     }
     
@@ -2833,14 +2834,15 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void printModerationAction(final ModeratorActionData data) {
+    public void printModerationAction(final ModeratorActionData data,
+            final boolean ownAction) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 moderationLog.add(data);
                 String channel = Helper.toValidChannel(data.stream);
-                if (client.settings.getBoolean("showModActions") && channels.isChannel(channel)) {
+                if (!ownAction && client.settings.getBoolean("showModActions") && channels.isChannel(channel)) {
                     channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
                             data.created_by,
                             data.moderation_action,

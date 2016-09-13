@@ -102,8 +102,8 @@ public class MessageSettings extends SettingsPanel {
         
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
                 "showModActions",
-                "Show moderator actions in chat (Broadcaster only)",
-                "Show what commands mods perform in your channel (you can also open Extra - Moderation Log)"),
+                "Show moderator actions in chat (Broadcaster/Mods only) [Beta]",
+                "Show what commands mods perform, except your own (you can also open Extra - Moderation Log)"),
                 d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
 
         

@@ -24,7 +24,7 @@ public class Helper {
     
     public static String getStreamFromTopic(String topic, Map<Long, String> userIds) {
         try {
-            long userId = Long.valueOf(topic.substring(topic.indexOf(".")+1));
+            long userId = Long.valueOf(topic.substring(topic.lastIndexOf(".")+1));
             return userIds.get(userId);
         } catch (NumberFormatException ex) {
             return null;

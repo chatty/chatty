@@ -1138,7 +1138,7 @@ public class TwitchClient {
             args.add("tirean");
             args.add("300");
             args.add("still not using LiveSplit Autosplitter D:");
-            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva"));
+            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva"), false);
         } else if (command.equals("loadsoferrors")) {
             for (int i=0;i<10000;i++) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -1623,8 +1623,13 @@ public class TwitchClient {
         public void messageReceived(Message message) {
             if (message.data != null && message.data instanceof ModeratorActionData) {
                 ModeratorActionData data = (ModeratorActionData)message.data;
-                g.printModerationAction(data);
-                chatLog.modAction(data);
+                if (data.stream != null) {
+                    g.printModerationAction(data, data.created_by.equals(c.getUsername()));
+                    chatLog.modAction(data);
+                    User user = c.getUser(Helper.toChannel(data.stream), data.created_by);
+                    user.addModAction(data.getCommandAndParameters());
+                    g.updateUserinfo(user);
+                }
             }
         }
 
@@ -2144,8 +2149,16 @@ public class TwitchClient {
     
     private class Messages implements TwitchConnection.ConnectionListener {
 
+        private void checkModLogListen(User user) {
+            if (user.hasChannelModeratorRights() && user.nick.equals(c.getUsername())) {
+                pubsub.setLocalUsername(c.getUsername());
+                pubsub.listenModLog(Helper.toStream(user.getChannel()), settings.getString("token"));
+            }
+        }
+        
         @Override
-        public void onChannelJoined(String channel) {
+        public void onChannelJoined(User user) {
+            String channel = user.getChannel();
             channelFavorites.addChannelToHistory(channel);
             
             g.printLine(channel,"You have joined " + channel);
@@ -2154,6 +2167,7 @@ public class TwitchClient {
             api.requestChatIcons(Helper.toStream(channel), false);
             requestChannelEmotes(channel);
             frankerFaceZ.joined(channel);
+            checkModLogListen(user);
         }
 
         @Override
@@ -2161,6 +2175,7 @@ public class TwitchClient {
             chatLog.info(channel, "You have left "+channel);
             closeChannel(channel);
             frankerFaceZ.left(channel);
+            pubsub.unlistenModLog(Helper.toStream(channel));
         }
 
         @Override
@@ -2188,6 +2203,7 @@ public class TwitchClient {
                 g.updateUser(user);
             }
             g.updateUserinfo(user);
+            checkModLogListen(user);
         }
 
         @Override
@@ -2287,7 +2303,7 @@ public class TwitchClient {
         @Override
         public void onRegistered() {
             g.updateHighlightSetUsername(c.getUsername());
-            pubsub.listenModLog(c.getUsername(), settings.getString("token"));
+            //pubsub.listenModLog(c.getUsername(), settings.getString("token"));
         }
 
         @Override

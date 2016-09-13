@@ -64,4 +64,9 @@ public class Message {
         }
     }
     
+    @Override
+    public String toString() {
+        return type+"["+nonce+"/"+error+"/"+data+"]";
+    }
+    
 }

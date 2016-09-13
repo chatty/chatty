@@ -1,6 +1,7 @@
 
 package chatty.util.api.pubsub;
 
+import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,10 @@ public class ModeratorActionData extends MessageData {
         String stream = Helper.getStreamFromTopic(topic, userIds);
         
         return new ModeratorActionData(topic, message, stream, moderation_action, args, created_by);
+    }
+    
+    public String getCommandAndParameters() {
+        return moderation_action+" "+StringUtil.join(args, " ");
     }
     
 }

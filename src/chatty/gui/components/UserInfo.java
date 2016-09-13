@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.User.BanMessage;
 import chatty.User.Message;
+import chatty.User.ModAction;
 import chatty.User.SubMessage;
 import chatty.User.TextMessage;
 import chatty.gui.GuiUtil;
@@ -565,6 +566,13 @@ public class UserInfo extends JDialog {
                     b.append("[").append(sm.months).append(" months sub] ");
                 }
                 b.append(sm.message);
+                b.append("\n");
+            }
+            else if (m.getType() == Message.MOD_ACTION) {
+                ModAction ma = (ModAction)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP_SPECIAL));
+                b.append("ModAction: /");
+                b.append(ma.commandAndParameters);
                 b.append("\n");
             }
         }

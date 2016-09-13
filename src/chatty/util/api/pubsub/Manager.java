@@ -6,8 +6,10 @@ import chatty.util.api.TwitchApi;
 import chatty.util.api.UserIDs;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -22,15 +24,18 @@ public class Manager {
     
     private final static Logger LOGGER = Logger.getLogger(Manager.class.getName());
     
+    private final TwitchApi api;
+    
     private final Client c;
-    
     private final String server;
-    
+
     private final Map<Long, String> userIds = Collections.synchronizedMap(new HashMap<Long, String>());
     private final Map<String, Long> modLogListen = Collections.synchronizedMap(new  HashMap<String, Long>());
-    private Timer pingTimer;
-    private String token;
-    private final TwitchApi api;
+    
+    private volatile Timer pingTimer;
+    private volatile String token;
+    private volatile long localUserId = -1;
+    private volatile String localUsername;
     
     public Manager(String server, final PubSubListener listener, TwitchApi api) {
         this.api = api;
@@ -44,6 +49,9 @@ public class Manager {
                 if (message.type.equals("MESSAGE")) {
                     listener.messageReceived(message);
                 }
+                if (message.error != null && !message.error.isEmpty()) {
+                    LOGGER.warning("[PubSub] Errror: "+message);
+                }
             }
 
             @Override
@@ -54,12 +62,7 @@ public class Manager {
             @Override
             public void handleConnect() {
                 startPinging();
-                
-                for (Long userId : modLogListen.values()) {
-                    if (userId != -1) {
-                        sendListenModLog(userId);
-                    }
-                }
+                sendAllTopics();
             }
 
             @Override
@@ -67,6 +70,20 @@ public class Manager {
                 
             }
         });
+    }
+    
+    private void sendAllTopics() {
+        Set<Long> listenTo = new HashSet<>();
+        synchronized (modLogListen) {
+            for (Long userId : modLogListen.values()) {
+                if (userId != -1) {
+                    listenTo.add(userId);
+                }
+            }
+        }
+        for (Long userId : listenTo) {
+            sendListenModLog(userId, true);
+        }
     }
     
     /**
@@ -77,6 +94,13 @@ public class Manager {
      */
     public String getStatus() {
         return c.getStatus();
+    }
+    
+    public void setLocalUsername(String username) {
+        if (localUsername == null || !localUsername.equals(username)) {
+            this.localUsername = username;
+            this.localUserId = getUserId(username);
+        }
     }
     
     public void listenModLog(String username, String token) {
@@ -90,8 +114,20 @@ public class Manager {
         this.token = token;
         long userId = getUserId(username);
         modLogListen.put(username, userId);
+        LOGGER.info("[PubSub] LISTEN ModLog "+username+" "+userId);
         if (userId != -1) {
-            sendListenModLog(userId);
+            sendListenModLog(userId, true);
+        }
+    }
+    
+    public void unlistenModLog(String username) {
+        synchronized(modLogListen) {
+            if (modLogListen.containsKey(username)) {
+                if (modLogListen.get(username) != -1) {
+                    sendListenModLog(modLogListen.get(username), false);
+                }
+                modLogListen.remove(username);
+            }
         }
     }
     
@@ -107,30 +143,45 @@ public class Manager {
             userIds.put(userId, username);
             return userId;
         }
-        LOGGER.info("[PubSub] Pending userId request for "+username);
         return -1;
     }
 
-    
+    /**
+     * The given userId is now known, so act on it if necessary.
+     * 
+     * @param username
+     * @param userId 
+     */
     private void setUserId(String username, long userId) {
         userIds.put(userId, username);
         
         // Topics to still request
-        if (modLogListen.get(username) == -1) {
+        if (modLogListen.containsKey(username) && modLogListen.get(username) == -1) {
             modLogListen.put(username, userId);
-            sendListenModLog(userId);
+            sendListenModLog(userId, true);
+        }
+        
+        // If local userId hasn't been set yet, request everything now
+        if (localUserId == -1 && username.equals(localUsername)) {
+            localUserId = userId;
+            sendAllTopics();
         }
     }
     
-    private void sendListenModLog(Long userId) {
+    private void sendListenModLog(Long userId, boolean listen) {
+        if (localUserId == -1) {
+            return;
+        }
+        
         JSONArray topics = new JSONArray();
-        topics.add("chat_moderator_actions."+userId);
+        topics.add("chat_moderator_actions."+localUserId+"."+userId);
         
         JSONObject data = new JSONObject();
         data.put("topics", topics);
         data.put("auth_token", token);
         connect();
-        c.send(Helper.createOutgoingMessage("LISTEN", "", data));
+        c.send(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));
+        LOGGER.info("[PubSub] "+(listen ? "LISTEN" : "UNLISTEN")+" ModLog "+userId);
     }
     
     private void startPinging() {

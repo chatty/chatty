@@ -232,6 +232,10 @@ public class User implements Comparable {
         addLine(new SubMessage(System.currentTimeMillis(), message, months));
     }
     
+    public synchronized void addModAction(String commandAndParameters) {
+        addLine(new ModAction(System.currentTimeMillis(), commandAndParameters));
+    }
+    
     /**
      * Adds a Message.
      * 
@@ -776,6 +780,7 @@ public class User implements Comparable {
         public static final int MESSAGE = 0;
         public static final int BAN = 1;
         public static final int SUB = 2;
+        public static final int MOD_ACTION = 3;
         
         private final Long time;
         private final int type;
@@ -838,6 +843,17 @@ public class User implements Comparable {
             this.message = message;
             this.months = months;
         }
+    }
+    
+    public static class ModAction extends Message {
+
+        public final String commandAndParameters;
+        
+        public ModAction(Long time, String commandAndParameters) {
+            super(MOD_ACTION, time);
+            this.commandAndParameters = commandAndParameters;
+        }
+        
     }
     
 //    public static final void main(String[] args) {

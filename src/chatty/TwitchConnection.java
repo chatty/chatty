@@ -715,10 +715,10 @@ public class TwitchConnection {
                  */
                 joinChecker.cancel(channel);
                 debug("JOINED: " + channel);
+                User user = userJoined(channel, nick);
                 if (this == irc && !onChannel(channel)) {
-                    listener.onChannelJoined(channel);
+                    listener.onChannelJoined(user);
                 }
-                userJoined(channel, nick);
                 joinedChannels.add(channel);
             } else {
                 /**
@@ -1285,7 +1285,7 @@ public class TwitchConnection {
 
         void onJoinAttempt(String channel);
 
-        void onChannelJoined(String channel);
+        void onChannelJoined(User channel);
 
         void onChannelLeft(String channel);
 

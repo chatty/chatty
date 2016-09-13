@@ -6,6 +6,10 @@ import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JDialog;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -26,6 +30,10 @@ public class ModerationLog extends JDialog {
     private final JTextArea log;
     private final JScrollPane scroll;
     
+    private final Map<String, List<String>> cache = new HashMap<>();
+    
+    private String currentChannel;
+
     public ModerationLog(MainGui owner) {
         super(owner);
         log = createLogArea();
@@ -50,31 +58,66 @@ public class ModerationLog extends JDialog {
         return text;
     }
     
-    public void add(ModeratorActionData data) {
-        if (data.stream != null) {
-            setTitle("Moderator Actions ("+data.stream+")");
+    public void setChannel(String channel) {
+        if (channel != null && !channel.equals(currentChannel)) {
+            currentChannel = channel;
+            setTitle("Moderation Actions ("+channel+")");
+            
+            List<String> cached = cache.get(channel);
+            if (cached != null) {
+                StringBuilder b = new StringBuilder();
+                for (String line : cached) {
+                    b.append(line);
+                    b.append("\n");
+                }
+                log.setText(b.toString());
+                scrollDown();
+            } else {
+                log.setText(null);
+            }
         }
-        String line = String.format("%s: /%s %s",
+    }
+    
+    public void add(ModeratorActionData data) {
+        if (data.stream == null) {
+            return;
+        }
+        String channel = data.stream;
+        
+        String line = String.format("[%s] %s: /%s %s",
+                DateTime.currentTime(),
                 data.created_by,
                 data.moderation_action,
                 StringUtil.join(data.args," "));
-        printLine(log, line);
+        
+        if (channel.equals(currentChannel)) {
+            printLine(log, line);
+        }
+        
+        if (!cache.containsKey(channel)) {
+            cache.put(channel, new ArrayList<String>());
+        }
+        cache.get(channel).add(line);
     }
     
     private void printLine(JTextArea text, String line) {
         try {
             Document doc = text.getDocument();
-            String linebreak = doc.getLength() > 0 ? "\n" : "";
-            doc.insertString(doc.getLength(), linebreak+"["+DateTime.currentTime()+"] "+line, null);
+            String linebreak = "\n";
+            doc.insertString(doc.getLength(), line+linebreak, null);
             JScrollBar bar = scroll.getVerticalScrollBar();
             boolean scrollDown = bar.getValue() == bar.getMaximum() - bar.getVisibleAmount();
             if (scrollDown) {
-                text.setCaretPosition(doc.getLength());
+                scrollDown();
             }
             clearSomeChat(doc);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+    
+    private void scrollDown() {
+        log.setCaretPosition(log.getDocument().getLength());
     }
     
     /**
@@ -96,7 +139,7 @@ public class ModerationLog extends JDialog {
      * @param doc
      * @param amount 
      */
-    public void removeFirstLines(Document doc, int amount) {
+    private void removeFirstLines(Document doc, int amount) {
         if (amount < 1) {
             amount = 1;
         }
