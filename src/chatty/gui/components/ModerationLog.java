@@ -6,10 +6,12 @@ import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -37,11 +39,12 @@ public class ModerationLog extends JDialog {
     public ModerationLog(MainGui owner) {
         super(owner);
         log = createLogArea();
-        log.setSize(300, 200);
         setTitle("Moderator Actions");
         
         scroll = new JScrollPane(log);
+        scroll.setPreferredSize(new Dimension(300, 200));
         add(scroll, BorderLayout.CENTER);
+        
         pack();
     }
 
@@ -55,6 +58,7 @@ public class ModerationLog extends JDialog {
         text.setWrapStyleWord(true);
         text.setEditable(false);
         text.setCaret(caret);
+        text.setBorder(BorderFactory.createEmptyBorder(1, 2, 3, 2));
         return text;
     }
     
@@ -66,9 +70,11 @@ public class ModerationLog extends JDialog {
             List<String> cached = cache.get(channel);
             if (cached != null) {
                 StringBuilder b = new StringBuilder();
+                String linebreak = "";
                 for (String line : cached) {
+                    b.append(linebreak);
                     b.append(line);
-                    b.append("\n");
+                    linebreak = "\n";
                 }
                 log.setText(b.toString());
                 scrollDown();
@@ -84,7 +90,7 @@ public class ModerationLog extends JDialog {
         }
         String channel = data.stream;
         
-        String line = String.format("[%s] %s: /%s %s",
+        String line = String.format("[%s] <%s> /%s %s",
                 DateTime.currentTime(),
                 data.created_by,
                 data.moderation_action,
@@ -103,10 +109,10 @@ public class ModerationLog extends JDialog {
     private void printLine(JTextArea text, String line) {
         try {
             Document doc = text.getDocument();
-            String linebreak = "\n";
-            doc.insertString(doc.getLength(), line+linebreak, null);
+            String linebreak = doc.getLength() > 0 ? "\n" : "";
+            doc.insertString(doc.getLength(), linebreak+line, null);
             JScrollBar bar = scroll.getVerticalScrollBar();
-            boolean scrollDown = bar.getValue() == bar.getMaximum() - bar.getVisibleAmount();
+            boolean scrollDown = bar.getValue() > bar.getMaximum() - bar.getVisibleAmount() - 4;
             if (scrollDown) {
                 scrollDown();
             }
@@ -117,7 +123,8 @@ public class ModerationLog extends JDialog {
     }
     
     private void scrollDown() {
-        log.setCaretPosition(log.getDocument().getLength());
+        scroll.validate();
+        scroll.getVerticalScrollBar().setValue(scroll.getVerticalScrollBar().getMaximum());
     }
     
     /**

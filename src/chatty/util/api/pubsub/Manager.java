@@ -196,7 +196,7 @@ public class Manager {
 
             @Override
             public void run() {
-                c.send(Helper.createOutgoingMessage("PING", null, null));
+                sendPing();
                 schedulePing();
                 pingTimer.schedule(new TimerTask() {
 
@@ -215,6 +215,10 @@ public class Manager {
         }, 280*1000+(new Random()).nextInt(5000)); // Random Jitter
     }
     
+    private void sendPing() {
+        c.send(Helper.createOutgoingMessage("PING", null, null));
+    }
+    
     private boolean hasServer() {
         return server != null && !server.isEmpty();
     }
@@ -227,6 +231,10 @@ public class Manager {
     
     public void disconnect() {
         c.disconnect();
+    }
+    
+    public void checkConnection() {
+        sendPing();
     }
     
 }

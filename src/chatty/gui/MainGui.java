@@ -2480,7 +2480,7 @@ public class MainGui extends JFrame implements Runnable {
                         playHighlightSound(channel);
                     }
                     if (!highlighter.getLastMatchNoNotification()) {
-                        showHighlightNotification(channel, user, (whisper ? "[Whísper] " : "")+text);
+                        showHighlightNotification(channel, user, (whisper ? "[Whisper] " : "")+text);
                         channels.setChannelHighlighted(chan);
                     } else {
                         channels.setChannelNewMessage(chan);

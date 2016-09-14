@@ -2332,6 +2332,9 @@ public class TwitchClient {
             if (reason == Irc.ERROR_REGISTRATION_FAILED) {
                 checkToken();
             }
+            if (reason == Irc.ERROR_CONNECTION_CLOSED) {
+                pubsub.checkConnection();
+            }
         }
 
         @Override
