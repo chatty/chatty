@@ -673,6 +673,15 @@ public class MainGui extends JFrame implements Runnable {
                 notificationManager.clearAllShown();
             }
         });
+        
+        addMenuAction("application.exit", "Exit Chatty",
+                "Exit", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exit();
+            }
+        });
     }
     
     public void showGui() {
@@ -1268,8 +1277,6 @@ public class MainGui extends JFrame implements Runnable {
                 openConnectDialogInternal(null);
             } else if (cmd.equals("disconnect")) {
                 client.disconnect();
-            } else if (cmd.equals("exit")) {
-                exit();
             } else if (cmd.equals("about")) {
                 openHelp("");
             } else if (cmd.equals("news")) {

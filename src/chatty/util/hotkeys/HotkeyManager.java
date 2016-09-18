@@ -250,7 +250,7 @@ public class HotkeyManager {
     }
     
     /**
-     * Removes and readds all hotkeys according to the current data.
+     * Removes and reads all hotkeys according to the current data.
      */
     private void updateHotkeys() {
         removeAllHotkeys();

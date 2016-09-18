@@ -93,7 +93,7 @@ public class MainMenu extends JMenuBar {
         main.addSeparator();
         addItem(main,"saveSettings","Save..");
         main.addSeparator();
-        addItem(main,"exit","Exit");
+        addItem(main,"application.exit","Exit");
         
         // View
         addCheckboxItem(view,"ontop","Always on top");
