@@ -29,7 +29,16 @@ public class Manager {
     private final Client c;
     private final String server;
 
+    /**
+     * Storage of user ids for easier lookup to turn an id into a channel name.
+     */
     private final Map<Long, String> userIds = Collections.synchronizedMap(new HashMap<Long, String>());
+    
+    /**
+     * Channels to listen on for the modlog, storing the id of the channel as
+     * well. If the id is -1, still waiting for the user id and not listening
+     * yet.
+     */
     private final Map<String, Long> modLogListen = Collections.synchronizedMap(new  HashMap<String, Long>());
     
     private volatile Timer pingTimer;
@@ -96,6 +105,12 @@ public class Manager {
         return c.getStatus();
     }
     
+    /**
+     * Set the username of this Chatty user, which is used for listening to the
+     * correct mod log topic (which requires the mod user id).
+     * 
+     * @param username 
+     */
     public void setLocalUsername(String username) {
         if (localUsername == null || !localUsername.equals(username)) {
             this.localUsername = username;
@@ -103,6 +118,13 @@ public class Manager {
         }
     }
     
+    /**
+     * Start receiving the modlog for the given channel (username). The token is
+     * requires to authenticate.
+     * 
+     * @param username
+     * @param token 
+     */
     public void listenModLog(String username, String token) {
         if (!hasServer()) {
             return;
@@ -120,6 +142,11 @@ public class Manager {
         }
     }
     
+    /**
+     * Stop reciving the modlog for the given channel (username).
+     * 
+     * @param username 
+     */
     public void unlistenModLog(String username) {
         synchronized(modLogListen) {
             if (modLogListen.containsKey(username)) {
@@ -131,11 +158,22 @@ public class Manager {
         }
     }
     
+    /**
+     * Get the user id for the given username, or wait until it has been
+     * requested and act on it then.
+     * 
+     * @param username A valid Twitch username
+     * @return The user id, or -1 if user id still has to be requested
+     */
     private long getUserId(String username) {
         long userId = api.getUserId(username, new UserIDs.UserIDListener() {
 
             @Override
             public void setUserId(String username, long userId) {
+                /**
+                 * When the user id has been requested. If the user id is
+                 * already cached, this listener won't be stored.
+                 */
                 Manager.this.setUserId(username, userId);
             }
         });

@@ -122,6 +122,11 @@ public class Client {
     }
     
     public synchronized void connect(String server) {
+        /**
+         * Only connect once, which is intended to stay connected forever. If
+         * manually disconnecting/connecting again should be a thing, some stuff
+         * may have to be changed.
+         */
         if (connecting) {
             return;
         }
@@ -159,11 +164,10 @@ public class Client {
         }
     }
     
-    public synchronized void send(String mesage) {
+    public synchronized void send(String message) {
         if (s != null && s.isOpen()) {
-            s.getAsyncRemote().sendText(mesage);
-            handler.handleSent(mesage);
-            System.out.println("SENT:"+mesage);
+            s.getAsyncRemote().sendText(message);
+            handler.handleSent(message);
         }
     }
     
