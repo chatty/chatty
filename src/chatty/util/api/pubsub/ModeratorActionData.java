@@ -5,6 +5,7 @@ import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -62,6 +63,44 @@ public class ModeratorActionData extends MessageData {
     
     public String getCommandAndParameters() {
         return moderation_action+" "+StringUtil.join(args, " ");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ModeratorActionData other = (ModeratorActionData) obj;
+        if (!Objects.equals(this.topic, other.topic)) {
+            return false;
+        }
+        if (!Objects.equals(this.moderation_action, other.moderation_action)) {
+            return false;
+        }
+        if (!Objects.equals(this.args, other.args)) {
+            return false;
+        }
+        if (!Objects.equals(this.created_by, other.created_by)) {
+            return false;
+        }
+        if (!Objects.equals(this.stream, other.stream)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + Objects.hashCode(this.topic);
+        hash = 53 * hash + Objects.hashCode(this.moderation_action);
+        hash = 53 * hash + Objects.hashCode(this.args);
+        hash = 53 * hash + Objects.hashCode(this.created_by);
+        hash = 53 * hash + Objects.hashCode(this.stream);
+        return hash;
     }
     
 }

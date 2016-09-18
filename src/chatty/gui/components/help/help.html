@@ -121,7 +121,8 @@
         <a name="shortcuts">Shortcuts</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>You can customize some shortcuts/hotkeys in the settings.</p>
+    <p><em>You can customize most of these shortcuts in the settings, and also
+            add shortcuts for some functions not listed here.</em></p>
     <p>Default shortcuts which can't be changed:</p>
     <ul>
         <li><kbd>F1</kbd> - Open help</li>
@@ -154,6 +155,9 @@
         work properly (you don't enter the surrounding <code>&lt; &gt;</code>,
         they are just there to show it's a parameter). Equivalently <code>[parameter]</code>
     represents an optional parameter.</p>
+    
+    <p><em>Tip:</em> You can also use TAB Completion for many commands.</p>
+    
     <p>Chat commands:</p>
     <ul>
 	    <li><code>/me &lt;message&gt;</code> - Send an action message (* nickname says something) to the channel</li>
@@ -451,14 +455,21 @@
     </h2>
     <p>When you type in the inputbox, you can TAB-complete different types of
     things:</p>
+    
     <ul>
-        <li>Nicknames of who is currently in the userlist (using <kbd>TAB</kbd>)</li>
-        <li>Chatty setting names when you use a setting command (using <kbd>TAB</kbd>)</li>
-        <li>Some comands after <code>/</code> (using <kbd>TAB</kbd>, e.g. <code>/sub</code> then <kbd>TAB</kbd> to complete to <code>/subscribers</code>)</li>
-        <li>Emoticon names (using <kbd>Shift-TAB</kbd>, e.g. <code>Datsh</code> then <kbd>Shift-TAB</kbd> to complete to <code>DatSheffy</code>)</li>
-        <li><a href="help-settings.html#Completion-custom">Custom completion</a>
-            that is prepended with a dot and for which items can be added in the
-            settings (using <kbd>Shift-TAB</kbd>)</li>
+        <li>Using <kbd>TAB</kbd>
+            <ul>
+                <li>Names of who is currently in the userlist</li>
+                <li>Chatty setting names (after a setting command)</li>
+                <li>Some commands (after <code>/</code>)</li>
+            </ul>
+        </li>
+        <li>Using <kbd>Shift-TAB</kbd>
+            <ul>
+                <li>Emoticons</li>
+                <li><a href="help-settings.html#Completion-custom">Custom completion</a></li>
+            </ul>
+        </li>
     </ul>
     
     <h3>How it works</h3>
@@ -469,7 +480,7 @@
 
     <ol>
         <li>Enter the beginning of an item (name, setting, emote).</li>
-        <li>Press <kbd>TAB</kbd> for a nickname/setting/command or <kbd>Shift-TAB</kbd>
+        <li>Press <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd> (see above)
             to enter the completion mode, which will:
             <ul>
                 <li>Complete to the full item (e.g. full name) if there is only

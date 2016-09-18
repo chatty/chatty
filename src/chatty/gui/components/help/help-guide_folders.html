@@ -125,14 +125,17 @@
     </table>
     
     <h3><a name="wdir">Working Directory</a></h3>
-    <p>This directory is associated with Chatty when you start it. This is usually
-    the directory the program is started from. If you created a shortcut to start
-    Chatty with, this may point to the Java-executable instead of Chatty itself,
-    which can lead to errors. In Windows, you can change the Working Directory
-    in the shortcut settings by changing what is defined under <code>Run in</code>.
-    Make sure this points to the same folder the <code>Chatty.jar</code> is in
-    (or something else if you want to customize it, just make sure the files you
-    need are there).</p>
+    <p>This directory is associated with Chatty when you start it. This is
+        usually the directory the program is started from. In some cases,
+        depending on how Chatty is started, this may point to a different
+        directory, which can cause issues.</p>
+    
+    <p>You can change the Working Directory by specifying it when you start
+        Chatty, usually by <a href="help-guide_create_shortcut.html">creating a shortcut</a>
+        and changing what is defined under <code>Run in</code> in the shortcut
+        settings. Make sure this points to the same folder the <code>Chatty.jar</code>
+        is in (or something else if you want to customize it, just make sure the
+        files you need are there).</p>
 
     <p>Use the command <code>/wdir</code> to display and <code>/openWdir</code>
         to open the Working Directory.</p>

@@ -180,8 +180,8 @@ public class Manager {
         data.put("topics", topics);
         data.put("auth_token", token);
         connect();
-        c.send(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));
         LOGGER.info("[PubSub] "+(listen ? "LISTEN" : "UNLISTEN")+" ModLog "+userId);
+        c.send(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));
     }
     
     private void startPinging() {

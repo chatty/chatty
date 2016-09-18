@@ -1142,7 +1142,7 @@
         <dd>Underscores in command names are replaced with a space for display
         in a Context Menu or on a button.</dd>
     </dl>
-    
+
     <p>In addition, you can define for the <strong>User Dialog Buttons</strong>:</p>
     <dl>
         <dt><code>5, 2m, 10m, 24h</code></dt>
@@ -1384,73 +1384,101 @@
         <a name="Completion">Completion</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-                <p>TAB Completion allows you to write the beginning characters
-                of a nickname in chat and then press TAB to complete it. To learn how to
-                use TAB Completion <a href="help.html#nickCompletion">check out the general help</a>.</p>
+    <p>TAB Completion allows you to write the beginning characters
+        of a nickname in chat and then press TAB to complete it. To learn how to
+        use TAB Completion <a href="help.html#nickCompletion">check out the general help</a>.</p>
                 
-                <h3>TAB Completion</h3>
-                <ul>
-                    <li><strong>Show popup:</strong>
-                    If enabled, shows a small window with information about the
-                    current completion if there is more than one matching result.
-                    It shows at which result of how many you are when cycling
-                    through results as well as a limited overview of which results
-                    there actually are.</li>
-                    <li><strong>Max Items Shown:</strong> How many items
-                        (e.g. names that match what you entered) to show
-                    in the popup at once. You can set this to 0 to not show any
-                    items.</li>
-                    <li><strong>Complete to common prefix</strong>:
-                        Pressing TAB only completes up to the common prefix for
-                        all found matches, giving you the opportunity to add
-                        more characters and then press TAB again to refine the
-                        results or just press TAB again to start cycling through
-                        the results.
-                        <br /><br />
-                    With this
-                    setting disabled, it immediately completes the first found
-                    result, allowing you to directly cycle through by pressing TAB repeatedly.</li>
-                    <li><strong>Sorting:</strong> Changes how the matching usernames
-                        are sorted for completion (only applies to usernames,
-                        not for other stuff like emotes or setting names which
-                        are always alphabetical).
-                        <ul>
-                            <li>Predictive: Gives names of users that were recently
-                            active in chat higher priority, with users who send
-                            a message that was highlighted the highest. This way
-                            people you talk to probably appear under the first
-                            few results.</li>
-                            <li>Alphabetical: Sort names alphabetical.</li>
-                            <li>Userlist: Sort names the same as in the userlist.</li>
-                        </ul></li>
-                </ul>
+    <h3>TAB Completion</h3>
+    <dl class="dl-settings">
+        <dt>Show popup</dt>
+        <dd>Shows a small window with information about the current completion
+            if there is more than one matching result. It shows your position in
+            the results when cycling through them (and how many there are in
+            total) as well as a limited list of results.</dd>
+        
+        <dt>Max Items Shown</dt>
+        <dd>How many items (results) are shown in the popup at once.</dd>
+        <dd>You can set this to 0 to not show any items (and thus only your
+            position in the results when cycling through and how many results
+            there are in total).</dd>
+        
+        <dt>Complete to common prefix</dt>
+        <dd>Pressing <kbd>TAB</kbd> only completes up to the common prefix for
+            all found matches, giving you the opportunity to refine your search
+            by adding more characters and then pressing <kbd>TAB</kbd> again, or
+            just press TAB again to start cycling through the results.</dd>
+        <dd>With this setting disabled, it immediately completes to the first
+            found result, allowing you to directly cycle through by pressing
+            <kbd>TAB</kbd> repeatedly.</dd>
+        
+        <dt>Sorting</dt>
+        <dd>Changes how the matching usernames are sorted for completion (only
+            applies to usernames, not to other stuff like emotes or setting
+            names, which are always alphabetical).</dd>
+        <dd>
+            <dl class="dl-settings-sub">
+                <dt>Predictive</dt>
+                <dd>Gives users that were recently active in chat a higher
+                    priority, and users with highlighted messages the highest.
+                    This way people you currently talk to (or that mentioned
+                    you) probably appear under the first few results.</dd>
                 
-                    <h3><a name="Completion-custom">Custom Completion Items</a></h3>
-                <p>Custom Completion allows you to add terms and their completion,
-                    allowing you to not only complete names in chat (<kbd>TAB</kbd>) or emotes
-                (<kbd>Shift-TAB</kbd>) but also custom stuff you added to the list by prepending the term with a
-                point and using <kbd>Shift-TAB</kbd>.</p>
+                <dt>Alphabetical</dt>
+                <dd>Sorts names alphabetical.</dd>
                 
-                <p>Example: Add <code>chatty</code> as <em>Key</em> and
-                    <code>http://chatty.github.io</code> as <em>Value</em>
-                    and then in the inputbox type <code>.chatty</code> (notice the dot in front) and press
-                    <kbd>Shift-TAB</kbd> to complete it to the URL.</p>
+                <dt>Userlist</dt>
+                <dd>Sorts names the same as in the userlist.</dd>
+            </dl>
+        </dd>
+        
+        <dt>Include all name types in result</dt>
+        <dd>If a user has a Localized name, or you have a
+            <a href="help.html#customNames">Custom name</a> set, then not only
+            the name that matched, but also the other types of names are added
+            to the result.</dd>
+        <dd><em>Example:</em> If a user is called <code>test</code> and has the
+            Localized Name <code>名前</code>, then entering
+            <code>tes</code> and <kbd>TAB</kbd> will show in the results both
+            <code>test (名前)</code> and
+            <code>名前 (test)</code>, so you can select either name by cycling
+            through the results via <kbd>TAB</kbd> as usual.</dd>
+        <dd>
+            <dl class="dl-settings-sub">
+                <dt>Only when no more than two matches</dt>
+                <dd>Only include all name types when no more than two names
+                    match, so that you don't have to cycle through all the
+                    different name types when you have a larger list.</dd>
+                <dd><em>Tip:</em> Once you found the right name, you can move the cursor
+                    to leave completion, and then press <kbd>TAB</kbd> again to
+                    complete the name again to get the other name types again.</dd>
+            </dl>
+        </dd>
+    </dl>
                 
-                <p>Custom Completion items can only have one completion, so you
-                    can't have <code>.chatty</code> complete to several things
-                    as it could be the case with a nickname.</p>
+    <h3><a name="Completion-custom">Custom Completion Items</a></h3>
+    
+    <p>Custom Completion allows you to add user-specified keywords, that if
+        prepended with a dot (<code>.</code>) can be completed to their defined
+        value using <kbd>Shift-TAB</kbd>.</p>
+
+    <p><em>Example:</em> Add <code>chatty</code> as <em>Key</em> and
+        <code>http://chatty.github.io</code> as <em>Value</em> and then in the
+        inputbox type <code>.chatty</code> (notice the dot in front) and press
+        <kbd>Shift-TAB</kbd> to complete it to the URL.</p>
                 
-                <p>Besides the Settings Dialog, you can also use the
-                    <code>/customCompletion</code> command to modify custom
-                completion items:</p>
+    <p>Custom Completion items can only have one completion, so you can't have
+        <code>.chatty</code> complete to several different values.</p>
                 
-                <ul>
-                    <li><code>/customCompletion add &lt;item&gt; &lt;value&gt;</code> - Add an item</li>
-                    <li><code>/customCompletion set &lt;item&gt; &lt;value&gt;</code> - Change an item that already exists</li>
-                    <li><code>/customCompletion remove &lt;item&gt;</code> - Remove an item</li>
-                </ul>
+    <p>Besides the Settings Dialog, you can also use the <code>/customCompletion</code>
+        command to modify custom completion items:</p>
                 
-                <p>Remember that you can also use TAB Completion for commands. Kappab</p>
+    <ul>
+        <li><code>/customCompletion add &lt;item&gt; &lt;value&gt;</code> - Add an item</li>
+        <li><code>/customCompletion set &lt;item&gt; &lt;value&gt;</code> - Change an item if it already exists (or otherwise add it)</li>
+        <li><code>/customCompletion remove &lt;item&gt;</code> - Remove an item</li>
+    </ul>
+                
+    <p>Remember that you can also use TAB Completion for commands. Kappab</p>
 </body>
 </html>
 

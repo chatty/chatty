@@ -22,8 +22,10 @@ public class Util {
      * @throws java.text.ParseException if the time could not be parsed
      */
     public static long parseTime(String time) throws java.text.ParseException {
-        Date parsed = PARSE_DATE.parse(time);
-        return parsed.getTime();
+        synchronized(PARSE_DATE) {
+            Date parsed = PARSE_DATE.parse(time);
+            return parsed.getTime();
+        }
     }
     
     public static final void main(String[] args) {

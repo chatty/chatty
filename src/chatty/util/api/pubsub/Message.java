@@ -2,6 +2,7 @@
 package chatty.util.api.pubsub;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -67,6 +68,40 @@ public class Message {
     @Override
     public String toString() {
         return type+"["+nonce+"/"+error+"/"+data+"]";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Message other = (Message) obj;
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        if (!Objects.equals(this.nonce, other.nonce)) {
+            return false;
+        }
+        if (!Objects.equals(this.data, other.data)) {
+            return false;
+        }
+        if (!Objects.equals(this.error, other.error)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.type);
+        hash = 61 * hash + Objects.hashCode(this.nonce);
+        hash = 61 * hash + Objects.hashCode(this.data);
+        hash = 61 * hash + Objects.hashCode(this.error);
+        return hash;
     }
     
 }
