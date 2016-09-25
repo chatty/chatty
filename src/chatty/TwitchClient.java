@@ -30,6 +30,7 @@ import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.Webserver;
+import chatty.util.api.ChatInfo;
 import chatty.util.api.EmoticonSizeCache;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
@@ -1760,6 +1761,11 @@ public class TwitchClient {
         @Override
         public void followResult(String message) {
             g.printSystem(message);
+        }
+
+        @Override
+        public void receivedChatInfo(ChatInfo chatInfo) {
+            g.setChatInfo(chatInfo);
         }
     }
     

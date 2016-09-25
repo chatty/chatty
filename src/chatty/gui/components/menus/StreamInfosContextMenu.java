@@ -39,6 +39,8 @@ public class StreamInfosContextMenu extends ContextMenu {
             addItem("sortGame", "Game", SORT_SUBMENU);
             addItem("sortViewers", "Viewers", SORT_SUBMENU);
             addItem("showRemovedList", "Removed Streams..");
+            addSeparator();
+            addItem("manualRefreshStreams", "Refresh");
         }
     }
     

@@ -53,6 +53,7 @@ public class Channels {
     private final StyleManager styleManager;
     private final ContextMenuListener contextMenuListener;
     private final MouseClickedListener mouseClickedListener = new MyMouseClickedListener();
+    private Channel.OnceOffEditListener onceOffEditListener;
     
     /**
      * Default width of the userlist, given to Channel objects when created.
@@ -87,6 +88,13 @@ public class Channels {
         //tabs.setOpaque(false);
         //tabs.setBackground(new Color(0,0,0,0));
         addDefaultChannel();
+    }
+    
+    public void setOnceOffEditListener(Channel.OnceOffEditListener listener) {
+        this.onceOffEditListener = listener;
+        if (defaultChannel != null) {
+            defaultChannel.setOnceOffEditListener(listener);
+        }
     }
     
     public void setChangeListener(ChangeListener listener) {
@@ -162,6 +170,7 @@ public class Channels {
         channel.setMouseClickedListener(mouseClickedListener);
         channel.setScrollbarAlways(chatScrollbarAlaways);
         channel.setUserlistEnabled(defaultUserlistVisibleState);
+        channel.setOnceOffEditListener(onceOffEditListener);
         if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
             channel.setUserlistEnabled(false);
         }

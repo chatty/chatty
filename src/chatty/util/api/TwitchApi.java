@@ -42,7 +42,7 @@ public class TwitchApi {
     enum RequestType {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
-        SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW
+        SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW, CHAT_INFO
     }
     
     public enum RequestResult {
@@ -103,6 +103,10 @@ public class TwitchApi {
     
     public void getFollowedStreams(String token) {
         streamInfoManager.getFollowedStreams(token);
+    }
+    
+    public void manualRefreshStreams() {
+        streamInfoManager.manualRefresh();
     }
     
     public void setToken(String token) {
@@ -294,6 +298,17 @@ public class TwitchApi {
         }
     }
     
+    public void requestChatInfo(String stream) {
+        if (stream == null || !Helper.validateStream(stream)) {
+            return;
+        }
+        String url = "https://api.twitch.tv/api/channels/"+stream+"/chat_properties";
+        if (attemptRequest(url, stream)) {
+            TwitchApiRequest request = new TwitchApiRequest(this, RequestType.CHAT_INFO, url);
+            executor.execute(request);
+        }
+    }
+    
     /**
      * Checks if a request with the given url can be made. Returns true if no
      * request with that url is currently waiting for a response, false
@@ -474,7 +489,9 @@ public class TwitchApi {
         else if (type == RequestType.CHAT_SERVER) {
             resultListener.receivedServer(stream, parseServer(result));
         }
-        
+        else if (type == RequestType.CHAT_INFO) {
+            resultListener.receivedChatInfo(ChatInfo.decode(stream, result));
+        }
     }
     
     /**

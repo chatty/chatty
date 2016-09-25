@@ -501,6 +501,9 @@ public class SettingsManager {
         settings.addString("cmTemplate", "{user}: {message}");
         settings.addBoolean("cmHighlightedOnly", false);
         
+        settings.addBoolean("rulesAutoShow", true);
+        settings.addList("rulesShown", new HashSet(), Setting.STRING);
+        
         //===============
         // Other Features
         //===============

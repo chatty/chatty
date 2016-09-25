@@ -113,6 +113,11 @@ public class StreamInfoManager {
         invalidStreamInfo.setRequested();
     }
     
+    public synchronized void manualRefresh() {
+        followsLastRequested = 0;
+        streamsInfoLastRequested = 0;
+    }
+    
     public synchronized void getFollowedStreams(String token) {
         if (token == null || token.isEmpty()) {
             return;

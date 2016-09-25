@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.components.settings.EditorStringSetting;
 import chatty.util.Livestreamer;
 import chatty.util.Livestreamer.LivestreamerListener;
 import chatty.util.StringUtil;
@@ -16,8 +17,6 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +30,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -51,7 +52,7 @@ public class LivestreamerDialog extends JDialog {
     private final JCheckBox openDialog = new JCheckBox("Show dialog when opening stream");
     private final JTextField qualities = new JTextField(20);
     
-    private final JTextField commandDef = new JTextField(20);
+    private final EditorStringSetting commandDef;
     private final JCheckBox useAuth = new JCheckBox("Use Authorization (Twitch Oauth Token)");
     
     private final JTextField streamInput = new JTextField(30);
@@ -61,6 +62,18 @@ public class LivestreamerDialog extends JDialog {
             + "you have to install seperately that allows you to watch "
             + "streams of many websites in a player like VLC. "
             + "[help-livestreamer:top More information..]";
+    
+    private static final String BASE_COMMAND_INFO = "<html><body style='width:340px;font-weight:normal;'>"
+            + "Example Usage (setting the window title for VLC):<br />"
+            + "<code>livestreamer -p \"'C:\\Program Files (x86)\\VideoLAN\\VLC\\vlc.exe' --meta-title '$stream/$quality'\"</code>"
+            + "<br /><br />"
+            + "This should point to the Livestreamer executable and can contain "
+            + "parameters that should always be included when you run "
+            + "Livestreamer via Chatty.<br /><br />"
+            + "The url and quality are <em>automatically</em> appended when "
+            + "you run Livestreamer via Chatty, but you can use them in other parameters "
+            + "via <code>$stream</code>, <code>$url</code> and <code>$quality</code>.</p>";
+            
     
     private final Settings settings;
     
@@ -112,11 +125,15 @@ public class LivestreamerDialog extends JDialog {
         
         gbc = GuiUtil.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(5, 5, 0, 5);
-        infoPanel.add(new JLabel("Base command or commandline options:"), gbc);
+        infoPanel.add(new JLabel("Base command (Livestreamer path and parameters):"), gbc);
 
         gbc = GuiUtil.makeGbc(0, 6, 1, 1, GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
         gbc.insets = new Insets(4, 5, 4, 30);
+        commandDef = new EditorStringSetting(this,
+                "Base command (Livestreamer path and paramters)",
+                24, false, false, BASE_COMMAND_INFO);
         infoPanel.add(commandDef, gbc);
         
         gbc = GuiUtil.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST);
@@ -173,11 +190,11 @@ public class LivestreamerDialog extends JDialog {
         useAuth.addActionListener(buttonAction);
         openDialog.addActionListener(buttonAction);
         
-        commandDef.addFocusListener(new FocusAdapter() {
-            
+        commandDef.setChangeListener(new ChangeListener() {
+
             @Override
-            public void focusLost(FocusEvent e) {
-                settings.setString("livestreamerCommand", commandDef.getText());
+            public void stateChanged(ChangeEvent e) {
+                settings.setString("livestreamerCommand", commandDef.getSettingValue());
             }
         });
         
@@ -204,7 +221,7 @@ public class LivestreamerDialog extends JDialog {
                 existingItem.start();
                 tabs.setSelectedComponent(existingItem);
             } else {
-                Item newItem = new Item(url, quality);
+                Item newItem = new Item(url, quality, stream);
                 tabs.add(StringUtil.shortenTo(stream, -20), newItem);
                 tabs.setSelectedComponent(newItem);
                 tabs.setToolTipTextAt(tabs.getSelectedIndex(), stream);
@@ -244,7 +261,7 @@ public class LivestreamerDialog extends JDialog {
     private void loadSettings() {
         enableContextMenu.setSelected(settings.getBoolean("livestreamer"));
         this.qualities.setText(settings.getString("livestreamerQualities"));
-        commandDef.setText(settings.getString("livestreamerCommand"));
+        commandDef.setSettingValue(settings.getString("livestreamerCommand"));
         useAuth.setSelected(settings.getBoolean("livestreamerUseAuth"));
         openDialog.setSelected(settings.getBoolean("livestreamerShowDialog"));
     }
@@ -263,6 +280,7 @@ public class LivestreamerDialog extends JDialog {
         private final JTextArea messages = new JTextArea();
         private final JLabel info = new JLabel();
         private final String url;
+        private final String stream;
         
         /**
          * The quality of the stream, which is just another parameter that is
@@ -291,9 +309,10 @@ public class LivestreamerDialog extends JDialog {
          * @param quality The {@code quality}, can be {@code null}, which means
          * it is supposed to be selected in the dialog
          */
-        private Item(String url, String quality) {
+        private Item(String url, String quality, String stream) {
             this.url = url;
             this.quality = quality;
+            this.stream = stream;
             if (quality != null) {
                 info.setText("Selected quality: "+quality);
             }
@@ -397,7 +416,7 @@ public class LivestreamerDialog extends JDialog {
                 info.setText("Selected quality: "+quality);
             }
             StringBuilder command = new StringBuilder();
-            command.append(settings.getString("livestreamerCommand"));
+            command.append(makeBaseCommand());
             if (url.contains("twitch.tv") && settings.getBoolean("livestreamerUseAuth")
                     && !settings.getString("token").isEmpty()) {
                 command.append(" --twitch-oauth-token ");
@@ -412,6 +431,16 @@ public class LivestreamerDialog extends JDialog {
             Livestreamer ls = new Livestreamer(command.toString(), this);
             this.ls = ls;
             ls.start();
+        }
+        
+        private String makeBaseCommand() {
+            String command = settings.getString("livestreamerCommand");
+            command = command.replace("$stream", stream);
+            command = command.replace("$url", url);
+            if (quality != null) {
+                command = command.replace("$quality", quality);
+            }
+            return command;
         }
         
         /**

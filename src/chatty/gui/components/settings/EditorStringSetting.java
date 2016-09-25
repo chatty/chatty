@@ -2,13 +2,16 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import java.awt.FlowLayout;
+import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -21,10 +24,11 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     private final JButton editButton;
     
     private String value;
+    private ChangeListener listener;
     
-    public EditorStringSetting(Window parent, final String title, int size, boolean allowEmpty, boolean allowLinebreaks, final String info) {
-        ((FlowLayout)getLayout()).setHgap(2);
-        ((FlowLayout)getLayout()).setVgap(0);
+    public EditorStringSetting(Window parent, final String title, int size,
+            boolean allowEmpty, boolean allowLinebreaks, final String info) {
+        setLayout(new BorderLayout(2, 0));
         
         editor = new Editor(parent);
         editor.setAllowEmpty(allowEmpty);
@@ -46,12 +50,16 @@ public class EditorStringSetting extends JPanel implements StringSetting {
             }
         });
         
-        add(preview);
-        add(editButton);
+        add(preview, BorderLayout.CENTER);
+        add(editButton, BorderLayout.EAST);
     }
     
     public void setFormatter(DataFormatter<String> formatter) {
         editor.setFormatter(formatter);
+    }
+    
+    public void setChangeListener(ChangeListener listener) {
+        this.listener = listener;
     }
     
     @Override
@@ -61,8 +69,13 @@ public class EditorStringSetting extends JPanel implements StringSetting {
 
     @Override
     public void setSettingValue(String value) {
-        this.value = value;
-        preview.setText(value);
+        if (!Objects.equals(this.value, value)) {
+            this.value = value;
+            preview.setText(value);
+            if (listener != null) {
+                listener.stateChanged(new ChangeEvent(this));
+            }
+        }
     }
     
 }

@@ -84,6 +84,7 @@ public class Editor {
         
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);
         gbc.insets = new Insets(5, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.CENTER;
         info = new JLabel();
         dialog.add(info, gbc);
         /**
@@ -155,7 +156,7 @@ public class Editor {
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
         // This will block until closed, during that time stuff can be changed
-
+        
         return result;
     }
     

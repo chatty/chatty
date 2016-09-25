@@ -13,6 +13,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,7 +67,7 @@ public class Channel extends JPanel {
     
     private String name;
 
-    public Channel(String name, Type type, MainGui main, StyleManager styleManager,
+    public Channel(final String name, Type type, MainGui main, StyleManager styleManager,
             ContextMenuListener contextMenuListener) {
         this.setLayout(new BorderLayout());
         this.styleManager = styleManager;
@@ -118,6 +120,18 @@ public class Channel extends JPanel {
 
         input.requestFocusInWindow();
         setStyles();
+        
+        input.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                String name = Channel.this.name;
+                if (onceOffEditListener != null && !name.isEmpty()) {
+                    onceOffEditListener.edited(name);
+                    onceOffEditListener = null;
+                }
+            }
+        });
     }
     
     public void cleanUp() {
@@ -159,6 +173,7 @@ public class Channel extends JPanel {
         return null;
     }
     
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -624,6 +639,16 @@ public class Channel extends JPanel {
     @Override
     public String toString() {
         return String.format("%s '%s'", type, name);
+    }
+    
+    private OnceOffEditListener onceOffEditListener;
+    
+    public void setOnceOffEditListener(OnceOffEditListener listener) {
+        onceOffEditListener = listener;
+    }
+    
+    public interface OnceOffEditListener {
+        public void edited(String channel);
     }
     
 }
