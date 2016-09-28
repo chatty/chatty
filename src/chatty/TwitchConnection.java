@@ -7,6 +7,7 @@ import chatty.util.settings.Settings;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -828,6 +829,7 @@ public class TwitchConnection {
              * Any and all tag values may be null, so account for that when
              * checking against them.
              */
+            LinkedHashMap<String, String> badges = Helper.parseBadges(tags.get("badges"));
             
             // Whether anything in the user changed to warrant an update
             boolean changed = false;
@@ -845,7 +847,8 @@ public class TwitchConnection {
             }
             
             // Update user status
-            if (user.setTurbo(checkTagsState("turbo", tags))) {
+            boolean turbo = checkTagsState("turbo", tags) || badges.containsKey("turbo");
+            if (user.setTurbo(turbo)) {
                 changed = true;
             }
             if (user.setSubscriber(checkTagsState("subscriber", tags))) {

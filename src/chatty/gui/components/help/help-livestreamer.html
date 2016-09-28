@@ -35,52 +35,83 @@
     
     <h2><a name="settings">Settings</a></h2>
     <p>The settings can be changed in the Livestreamer dialog.</p>
-    <ul>
-        <li><strong>Enable context menu entry</strong>: Adds Livestreamer to all
-        context menus that can be used to open streams (like User Context Menu,
-        Channel Context Menu or Live Streams Context Menu).</li>
-        <li><strong>Show dialog when opening stream</strong>: Automatically open
-        the Livestreamer Dialog when you open a stream out of the context menu.</li>
-        <li><strong>Context menu qualities</strong>: You can customize which
-        quality options appear in the context menu. The options you enter here
-        are directly given as a parameter to Livestreamer, except <code>Select</code>
-        which tells Chatty you want to select a quality in the dialog. Seperate
-        qualities by space or comma. Add a <code>|</code> (vertical bar) to add
-        a seperator to the menu.
+    <dl class="dl-settings">
+        <dt>Enable context menu entry</dt>
+        <dd>Adds a Livestreamer submenu to all context menus that can be used to
+            open streams (for example right-click on channel, username or Live
+            Streams dialog).</dd>
         
-        <br /><br />
-        Examples:
-        <ul>
-            <li><code>Best, High, Worst | Select</code></li>
-            <li><code>Source High Medium Low Mobile | Select</code></li>
-        </ul>
-        </li>
-        <li><strong>Base command or commandline options</strong>: This is used to
-        construct the command to run Livestreamer and is basicially the part
-        before the URL and the quality. This should point to the Livestreamer
-        program itself, including any commandline options you always want to have included. The default is just <code>livestreamer</code>, which
-        should usually be sufficient if the program is correctly included in
-        the systems PATH variable (or similiar), but it may also include the
-        full path to Livestreamer. Surround the path or any other parameter with quotes if it contains
-        spaces (e.g. <code>"C:\My Programs\Livestreamer\livestreamer.exe"</code>).
-        <br /><br />
-        Examples:
-        <ul>
-            <li><code>"C:\My Programs\Livestreamer\livestreamer.exe" --player "C:\Program
-                    Files\MPC-HC\mpc-hc64.exe"</code> (specify full path to Livestreamer
-            and use a different player)</li>
-            <li><code>/usr/local/bin/livestreamer</code> (this might work on Linux/Mac
-            if it can't find Livestreamer without the full path)</li>
-        </ul>
+        <dt>Show dialog when opening stream</dt>
+        <dd>Auto-opens the Livestreamer Dialog when you open a stream out of a
+            context menu.</dd>
         
-        </li>
-        <li><strong>Use Authorization (Twitch Oauth Token)</strong>: Supplies to
-        Twitch Access Token that is used for Chatty to Livestreamer to authenticate
-        you when watching a stream via Livestreamer (probably only necessary to
-        be able to watch sub-only streams).</li>
-    </ul>
-
+        <dt>Context menu qualities</dt>
+        <dd>You can customize which quality options appear in the context menu.
+            The options you enter here are directly given as a parameter to
+            Livestreamer, except <code>Select</code> which tells Chatty you want
+            to select a quality in the dialog.</dd>
+        <dd>Separate qualities by space or comma, add a <code>|</code> (vertical
+            bar) to add a separator to the menu.</dd>
+        <dd><em>Examples:</em>
+            <ul>
+                <li><code>Best, High, Worst | Select</code></li>
+                <li><code>Source High Medium Low Mobile | Select</code></li>
+            </ul>
+        </dd>
+        
+        <dt>Base command (Livestreamer path and parameters)</dt>
+        <dd>This must contain the Livestreamer executable, including any
+            commandline options that you always want to be included when running
+            Livestreamer out of Chatty.</dd>
+        <dd>The URL and quality are automatically appended to this when running
+            Livestreamer, so the overall command that is executed is build like
+            this:
+            <code>&lt;Base&nbsp;command&gt; &lt;url&gt;&nbsp;&lt;quality&gt;</code>.</dd>
+        <dd>You can use the variables <code>$stream</code>, <code>$url</code>
+            and <code>$quality</code> in this setting (see Examples).</dd>
+        <dd>The default is just <code>livestreamer</code>, which is sufficient
+            if Livestreamer is correctly included in the systems PATH variable,
+            but you may also specify the full path.</dd>
+        <dd>Remember to surround the path or any parameters with quotes if they
+            contain spaces, so the commandline knows they belong together.</dd>
+        <dd><em>Examples:</em>
+            <ul class="example-list">
+                <li><code>"C:\My&nbsp;Programs\Livestreamer\livestreamer.exe"</code><br />
+                    (specify full path to the Livestreamer executable)</li>
+                <li><code>"C:\My Programs\Livestreamer\livestreamer.exe" --player "C:\Program Files\MPC-HC\mpc-hc64.exe"</code><br />
+                    (specify full path to Livestreamer and use a different player)</li>
+                <li><code>/usr/local/bin/livestreamer</code><br />
+                    (this might work on Linux/Mac if it can't find Livestreamer
+                    without the full path)</li>
+                <li><code>livestreamer -p "C:\Program Files (x86)\VideoLAN\VLC\vlc.exe --meta-title $stream/$quality"</code><br />
+                    (change VLC Player window title to something more descriptive)</li>
+            </ul>
+        </dd>
+        
+        <dt>Use Authorization (Twitch Oauth Token)</dt>
+        <dd>Tell Livestreamer to authenticate at Twitch with your Chatty access
+            token.</dd>
+        <dd>Enabling this may help if you get an error when running Livestreamer
+            (Bad Request).</dd>
+        <dd>This is necessary for sub-only streams.</dd>
+    </dl>
+    
     <h2><a name="troubleshooting">Troubleshooting</a></h2>
+    <h3>Bad Request</h3>
+    <p>Recently Twitch changed their API to require a Client ID being supplied,
+        which Livestreamer doesn't do by default, so may get a Bad Request
+        error. You can fix this either by:</p>
+    <ul>
+        <li>Enabling the <code>Use Authorization</code> setting to authenticate
+            with Twitch, which makes the Twitch API derive the Client ID from
+            the access token.</li>
+        <li>Adding a Client ID to the <code>Base command</code>, for eaxmple to
+            add Livestreamer's Client ID:<br />
+            <code>livestreamer --http-header Client-ID=ewvlchtxgqq88ru9gmfp1gmyt6h2b93</code>
+        </li>
+    </ul>
+    
+    <h3>Can't run Livestreamer</h3>
     <p>If you get an error like <code>Error: java.io.IOException: Cannot run
             program "&lt;...&gt;": CreateProcess error=2 [..]</code>, then
     Chatty probably can't find Livestreamer on your system.</p>
@@ -90,8 +121,8 @@
     not come bundled with Chatty. If you are sure it is installed (and you maybe can
     run it from the commandline just fine), you may have to tell Chatty the full
     path to the Livestreamer executable for it to work by entering it in the
-    <code>Base command or commandline options</code> field. See the Settings section
-    above for examples and help on that.</p>
+    <code>Base command</code> field. See the Settings section above for examples
+    and help on that.</p>
 </body>
 </html>
 
