@@ -1,7 +1,9 @@
 
-package chatty;
+package chatty.util.api.usericons;
 
-import chatty.Usericon.Type;
+import chatty.Helper;
+import chatty.User;
+import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;

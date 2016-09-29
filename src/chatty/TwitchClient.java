@@ -1,6 +1,8 @@
 
 package chatty;
 
+import chatty.util.api.usericons.Usericon;
+import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.api.TwitchApiResultListener;
 import chatty.util.api.Emoticon;

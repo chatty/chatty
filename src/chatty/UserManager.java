@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
 import java.util.Map.Entry;
 import java.util.*;

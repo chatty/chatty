@@ -1,7 +1,7 @@
 
 package chatty.gui.components.settings;
 
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;

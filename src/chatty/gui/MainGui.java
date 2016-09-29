@@ -28,7 +28,7 @@ import chatty.User;
 import chatty.Irc;
 import chatty.StatusHistory;
 import chatty.UsercolorItem;
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
 import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.ChatRulesDialog;

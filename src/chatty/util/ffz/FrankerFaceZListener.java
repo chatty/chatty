@@ -1,7 +1,7 @@
 
 package chatty.util.ffz;
 
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.api.EmoticonUpdate;
 import java.util.List;
 import java.util.Set;

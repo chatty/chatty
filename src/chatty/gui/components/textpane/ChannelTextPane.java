@@ -12,7 +12,7 @@ import chatty.gui.StyleServer;
 import chatty.gui.UrlOpener;
 import chatty.gui.MainGui;
 import chatty.User;
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;

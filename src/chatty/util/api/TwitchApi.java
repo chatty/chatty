@@ -3,7 +3,7 @@ package chatty.util.api;
 
 import chatty.Chatty;
 import chatty.Helper;
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;

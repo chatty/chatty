@@ -1,7 +1,7 @@
 
 package chatty.util.api;
 
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.api.TwitchApi.RequestResult;
 import java.util.HashMap;
 import java.util.HashSet;

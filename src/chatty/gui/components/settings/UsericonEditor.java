@@ -2,8 +2,8 @@
 package chatty.gui.components.settings;
 
 import chatty.Chatty;
-import chatty.Usericon;
-import chatty.Usericon.Type;
+import chatty.util.api.usericons.Usericon;
+import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.GuiUtil;
 import chatty.util.MiscUtil;
 import java.awt.Color;

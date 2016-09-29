@@ -2,7 +2,7 @@
 package chatty.util.ffz;
 
 import chatty.Helper;
-import chatty.Usericon;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;

@@ -1,5 +1,6 @@
 package chatty;
 
+import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.BotNameManager;
 import chatty.util.StringUtil;
