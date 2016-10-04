@@ -37,6 +37,8 @@ import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * A single channel window, combining styled text pane, userlist and input box.
@@ -121,15 +123,23 @@ public class Channel extends JPanel {
         input.requestFocusInWindow();
         setStyles();
         
-        input.addKeyListener(new KeyAdapter() {
+        input.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void insertUpdate(DocumentEvent e) {
                 String name = Channel.this.name;
                 if (onceOffEditListener != null && !name.isEmpty()) {
                     onceOffEditListener.edited(name);
                     onceOffEditListener = null;
                 }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
             }
         });
     }

@@ -2851,16 +2851,12 @@ public class MainGui extends JFrame implements Runnable {
      * @param line 
      */
     public void printDebug(final String line) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            debugWindow.printLine(line);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    debugWindow.printLine(line);
-                }
-            });
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                debugWindow.printLine(line);
+            }
+        });
     }
     
     public void printDebugFFZ(final String line) {

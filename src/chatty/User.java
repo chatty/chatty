@@ -9,7 +9,9 @@ import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
@@ -91,6 +93,8 @@ public class User implements Comparable {
     private boolean hasTurbo;
     private boolean isSubscriber;
     private boolean isBot;
+    
+    private volatile Map<String, String> twitchBadges;
 
     private final long createdAt = System.currentTimeMillis();
     private int numberOfMessages;
@@ -126,16 +130,45 @@ public class User implements Comparable {
         return iconManager;
     }
     
-    public List<ImageIcon> getAddonIcons(boolean first) {
+    public List<Usericon> getAddonIcons(boolean first) {
         if (iconManager != null) {
-            return iconManager.getCustomIcons(Usericon.Type.ADDON, this, first);
+            return iconManager.getAddonIcons(this, first);
         }
         return new ArrayList<>();
     }
     
-    public ImageIcon getIcon(Usericon.Type type) {
+    public Usericon getIcon(Usericon.Type type) {
         if (iconManager != null) {
-            return iconManager.getIcon(type, this);
+            Usericon icon = iconManager.getIcon(type, null, null, this);
+            if (icon != null) {
+                return icon;
+            }
+        }
+        return null;
+    }
+    
+    public void setTwitchBadges(Map<String, String> badges) {
+        this.twitchBadges = badges;
+    }
+    
+    /**
+     * Get the ordered Map of Twitch Badge this user has. The Map must not be
+     * modified.
+     * 
+     * @return 
+     */
+    public Map<String, String> getTwitchBadges() {
+        return twitchBadges;
+    }
+    
+    /**
+     * Get list of Usericon objects for the Twitch Badges this user has.
+     * 
+     * @return List of Usericon objects in order, or null
+     */
+    public List<Usericon> getTwitchBadgeUsericons() {
+        if (iconManager != null && twitchBadges != null) {
+            return iconManager.getTwitchBadges(twitchBadges, this);
         }
         return null;
     }

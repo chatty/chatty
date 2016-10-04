@@ -1423,33 +1423,26 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private void printUserIcons(User user) {
         addAddonIcons(user, true);
 
-        if (user.isBroadcaster()) {
-            print("~", styles.getIconStyle(user, Usericon.Type.BROADCASTER));
-        }
-        else if (user.isStaff()) {
-            print("&", styles.getIconStyle(user, Usericon.Type.STAFF));
-        }
-        else if (user.isAdmin()) {
-            print("!", styles.getIconStyle(user, Usericon.Type.ADMIN));
-        }
-        else if (user.isGlobalMod()) {
-            print("*", styles.getIconStyle(user, Usericon.Type.GLOBAL_MOD));
-        }
-        else if (user.isModerator()) {
-            print("@", styles.getIconStyle(user, Usericon.Type.MOD));
-        }
-        if (user.hasTurbo()) {
-            //print("+", styles.turboIcon());
-            print("+", styles.getIconStyle(user, Usericon.Type.TURBO));
-        }
-        if (user.isSubscriber()) {
-            print("%", styles.getIconStyle(user, Usericon.Type.SUB));
-        }
+        addTwitchBadges(user);
         if (user.isBot() && styles.botBadgeEnabled()) {
-            print("^", styles.getIconStyle(user, Usericon.Type.BOT));
+            Usericon icon = user.getIcon(Usericon.Type.BOT);
+            if (icon != null && !icon.removeBadge) {
+                print("^", styles.makeIconStyle(icon.image));
+            }
         }
 
         addAddonIcons(user, false);
+    }
+    
+    private void addTwitchBadges(User user) {
+        java.util.List<Usericon> badges = user.getTwitchBadgeUsericons();
+        if (badges != null) {
+            for (Usericon badge : badges) {
+                if (badge.image != null && !badge.removeBadge) {
+                    print(badge.getSymbol(), styles.makeIconStyle(badge.image));
+                }
+            }
+        }
     }
     
     private void addAddonIcons(User user, boolean first) {
@@ -2771,16 +2764,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         
         public java.util.List<MutableAttributeSet> getAddonIconStyles(User user, boolean first) {
-            java.util.List<ImageIcon> icons = user.getAddonIcons(first);
+            java.util.List<Usericon> icons = user.getAddonIcons(first);
             java.util.List<MutableAttributeSet> iconStyles = new ArrayList<>();
-            for (ImageIcon icon : icons) {
-                iconStyles.add(makeIconStyle(icon));
+            for (Usericon icon : icons) {
+                iconStyles.add(makeIconStyle(icon.image));
             }
             return iconStyles;
-        }
-        
-        public MutableAttributeSet getIconStyle(User user, Usericon.Type type) {
-            return makeIconStyle(user.getIcon(type));
         }
         
         /**

@@ -31,6 +31,7 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
     private final JCheckBox autoShowCheckbox;
     private final MainGui g;
     private String currentRoom;
+    private boolean autoShow;
     
     public ChatRulesDialog(MainGui parent) {
         super(parent);
@@ -139,6 +140,9 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
             return;
         }
         List<String> rules = info.rules;
+        if (!autoShow && !isVisible()) {
+            return;
+        }
         if (rules == null) {
             if (!isVisible()) {
                 // If dialog not yet visible, don't show it if no rules
@@ -171,6 +175,7 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
         String room = Helper.toStream(channel);
         if (autoShowEnabled() && !alreadyShown(room)) {
             setRoom(room);
+            autoShow = true;
             g.getChatInfo(room);
         }
     }

@@ -1,22 +1,20 @@
 
 package chatty.util.api.usericons;
 
-import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.HtmlColors;
 import chatty.util.ImageCache;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 
 /**
@@ -46,29 +44,36 @@ public class Usericon implements Comparable {
      */
     public enum Type {
         
-        MOD(0, "Moderator", "MOD", HtmlColors.decode("#34ae0a")),
-        TURBO(1, "Turbo", "TRB", HtmlColors.decode("#6441a5")),
-        BROADCASTER(2, "Broadcaster", "BRC", HtmlColors.decode("#e71818")),
-        STAFF(3, "Staff", "STA", HtmlColors.decode("#200f33")),
-        ADMIN(4, "Admin", "ADM", HtmlColors.decode("#faaf19")),
-        SUB(5, "Subscriber", "SUB", null),
-        ADDON(6, "Addon", "ADD", null),
-        GLOBAL_MOD(7, "Global Moderator", "GLM", HtmlColors.decode("#0c6f20")),
-        BOT(8, "Bot", "BOT", null),
+        MOD(0, "Moderator", "MOD", "@", "moderator", HtmlColors.decode("#34ae0a")),
+        TURBO(1, "Turbo", "TRB", "+", "turbo", HtmlColors.decode("#6441a5")),
+        BROADCASTER(2, "Broadcaster", "BRC", "~", "broadcaster", HtmlColors.decode("#e71818")),
+        STAFF(3, "Staff", "STA", "&", "staff", HtmlColors.decode("#200f33")),
+        ADMIN(4, "Admin", "ADM", "!", "admin", HtmlColors.decode("#faaf19")),
+        SUB(5, "Subscriber", "SUB", "%", "subscriber", null),
+        ADDON(6, "Addon", "ADD", "*", null, null),
+        GLOBAL_MOD(7, "Global Moderator", "GLM", "*", "global_mod", HtmlColors.decode("#0c6f20")),
+        BOT(8, "Bot", "BOT", "^", null, null),
 //        RESUB(9, "Resub", "RSB", null),
 //        NEWSUB(10, "Newsub", "NSB", null),
-        UNDEFINED(-1, "Undefined", "UDF", null);
+        TWITCH(11, "Twitch Badge", "TWB", null, null, null),
+        PRIME(12, "Twitch Prime", "TPR", "$", "premium", null),
+        UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
         public String label;
         public String shortLabel;
         public int id;
+        public String symbol;
+        public String badgeId;
         
-        Type(int id, String label, String shortLabel, Color color) {
+        Type(int id, String label, String shortLabel, String symbol,
+                String badgeId, Color color) {
             this.color = color;
             this.label = label;
             this.shortLabel = shortLabel;
             this.id = id;
+            this.symbol = symbol;
+            this.badgeId = badgeId;
         }
         
         public static Type getTypeFromId(int typeId) {
@@ -96,15 +101,12 @@ public class Usericon implements Comparable {
      */
     public static final int SOURCE_FALLBACK = 0;
     public static final int SOURCE_TWITCH = 5;
+    public static final int SOURCE_TWITCH2 = 6;
     public static final int SOURCE_FFZ = 10;
     public static final int SOURCE_CUSTOM = 20;
     
     /**
-     * Fields directly saved from the constructor arguments (or only slightly
-     * modified).
-     */
-    /**
-     * Which kind of icon (replacing mod, sub, turbo, .. or addon).
+     * Which kind of icon (replacing mod, sub, turbo, .. or Addon).
      */
     public final Type type;
     
@@ -121,6 +123,12 @@ public class Usericon implements Comparable {
     public final String channelRestriction;
     
     /**
+     * The actual channel from the channel restriction. If no or an invalid
+     * channel is specified in the channel restriction, then this is empty.
+     */
+    public final String channel;
+    
+    /**
      * The URL the image is loaded from
      */
     public final URL url;
@@ -135,6 +143,24 @@ public class Usericon implements Comparable {
      * more easily load/save that setting.
      */
     public final String fileName;
+    
+    /**
+     * Which badge id/version this Usericon should match. This is mostly used
+     * when a Twitch Badge is requested, to match up the id/version.
+     */
+    public final BadgeType badgeType;
+    
+    /**
+     * This is a user restriction, which checks if that user has the given
+     * Twitch Badge id/version.
+     */
+    public final BadgeType badgeTypeRestriction;
+    
+    /**
+     * Whether this Usericon has no image because it's supposed to remove the
+     * matching badge.
+     */
+    public final boolean removeBadge;
     
     
     /**
@@ -158,12 +184,6 @@ public class Usericon implements Comparable {
     public final String category;
     
     /**
-     * The actual channel from the channel restriction. If no or an invalid
-     * channel is specified in the channel restriction, then this is empty.
-     */
-    public final String channel;
-    
-    /**
      * This is {@code true} if the channel restriction should be reversed, which
      * means all channels BUT the one specified should match.
      */
@@ -179,128 +199,29 @@ public class Usericon implements Comparable {
     public final boolean stop;
     public final boolean first;
     
-    
-    /**
-     * Creates a new Icon from the Twitch API, which the appropriate default
-     * values for the stuff that isn't specified in the arguments.
-     * 
-     * @param type
-     * @param channel
-     * @param urlString
-     * @return 
-     */
-    public static Usericon createTwitchIcon(Type type, String channel, String urlString) {
-        //return createTwitchLikeIcon(type, channel, urlString, SOURCE_TWITCH);
-        return createIconFromUrl(type, channel, urlString, SOURCE_TWITCH, null);
-    }
-    
-    /**
-     * Creates a new icon with the given values, with appropriate default values
-     * for the stuff that isn't specified in the arguments. It determines the
-     * background color based on the default Twitch settings, so it should only
-     * be used for icons that should match that behaviour.
-     * 
-     * @param type
-     * @param channel
-     * @param urlString
-     * @param source
-     * @return 
-     */
-    public static Usericon createTwitchLikeIcon(Type type, String channel,
-            String urlString, int source) {
-        return createIconFromUrl(type, channel, urlString, source,
-                getColorFromType(type));
-    }
-    
-    public static Usericon createIconFromUrl(Type type, String channel,
-            String urlString, int source, Color color) {
-        try {
-            URL url = new URL(Helper.checkHttpUrl(urlString));
-            Usericon icon = new Usericon(type, channel, url, color, source);
-            return icon;
-        } catch (MalformedURLException ex) {
-            LOGGER.warning("Invalid icon url: " + urlString);
-        }
-        return null;
-    }
-    
-    /**
-     * Creates an icon based on a filename, which is resolved with the image
-     * directory (if necessary). It also takes a restriction parameter and
-     * stuff and sets the other values to appropriate values for custom icons.
-     * 
-     * @param type
-     * @param restriction
-     * @param fileName
-     * @param channel
-     * @return 
-     */
-    public static Usericon createCustomIcon(Type type, String restriction, String fileName, String channel) {
-        if (fileName == null) {
-            return null;
-        }
-        try {
-            URL url;
-            if (fileName.startsWith("http")) {
-                url = new URL(fileName);
-            } else {
-                Path path = Paths.get(Chatty.getImageDirectory()).resolve(Paths.get(fileName));
-                url = path.toUri().toURL();
-            }
-            Usericon icon = new Usericon(type, channel, url, null, SOURCE_CUSTOM, restriction, fileName);
-            return icon;
-        } catch (MalformedURLException | InvalidPathException ex) {
-            LOGGER.warning("Invalid icon file: " + fileName);
-        }
-        return null;
-    }
-
-    public static Usericon createFallbackIcon(Type type, URL url) {
-        Usericon icon = new Usericon(type, null, url, getColorFromType(type), SOURCE_FALLBACK);
-        return icon;
-    }
-    
-    /**
-     * Convenience constructor which simply omits the two arguments mainly used
-     * for custom icons.
-     * 
-     * @param type
-     * @param channel
-     * @param url
-     * @param color
-     * @param source 
-     */
-    public Usericon(Type type, String channel, URL url, Color color, int source) {
-        this(type, channel, url, color, source, null, null);
-    }
-    
     /**
      * Creates a new {@literal Userimage}, which will try to load the image from
      * the given URL. If the loading fails, the {@literal image} field will be
      * {@literal null}.
      * 
-     * @param type The type of userimage (Addon, Mod, Sub, etc.)
-     * @param channel The channelRestriction the image applies to
-     * @param url The url to load the image from
-     * @param color The color to use as background
-     * @param source The source of the image (like Twitch, Custom, FFZ)
-     * @param restriction Additional restrictions (like $mod, $sub, $cat)
-     * @param fileName The name of the file to load the icon from (this is used
-     * for further reference, probably only for custom icons)
+     * @param builder
      */
-    public Usericon(Type type, String channel, URL url, Color color, int source,
-            String restriction, String fileName) {
-        this.type = type;
-        this.fileName = fileName;
-        this.source = source;
+    public Usericon(Builder builder) {
+        this.type = builder.type;
+        this.fileName = builder.fileName;
+        this.source = builder.source;
+        this.badgeType = builder.badgeType != null ? builder.badgeType : BadgeType.EMPTY;
 
+        //--------------------
         // Channel Restriction
-        if (channel != null) {
-            channel = channel.trim();
-            channelRestriction = channel;
-            if (channel.startsWith("!")) {
+        //--------------------
+        String chan = builder.channel;
+        if (chan != null) {
+            chan = chan.trim();
+            channelRestriction = chan;
+            if (chan.startsWith("!")) {
                 channelInverse = true;
-                channel = channel.substring(1);
+                chan = chan.substring(1);
             } else {
                 channelInverse = false;
             }
@@ -308,64 +229,85 @@ public class Usericon implements Comparable {
             channelRestriction = "";
             channelInverse = false;
         }
-        channel = Helper.toValidChannel(channel);
-        if (channel == null) {
-            channel = "";
+        chan = Helper.toValidChannel(chan);
+        if (chan == null) {
+            chan = "";
         }
-        this.channel = channel;
+        this.channel = chan;
+
+        //---------------------
+        // Image/Image Location
+        //---------------------
+        this.url = builder.url;
         
-        
-        this.url = url;
-        
+        // If no url is set, assume that no image is supposed to be used
+        if (builder.url == null) {
+            removeBadge = true;
+        } else {
+            removeBadge = false;
+        }
         if (fileName != null && fileName.startsWith("$")) {
             image = null;
         } else {
-            image = addColor(getIcon(url), color);
+            image = addColor(getIcon(url), builder.color);
         }
         
+        //------------
         // Restriction
-        if (restriction != null) {
-            restriction = restriction.trim();
-            this.restriction = restriction;
-            if (restriction.contains("$stop")) {
-                restriction = restriction.replace("$stop", "").trim();
+        //------------
+        String restrict = builder.restriction;
+        if (restrict != null) {
+            restrict = restrict.trim();
+            this.restriction = restrict;
+            if (restrict.contains("$stop")) {
+                restrict = restrict.replace("$stop", "").trim();
                 stop = true;
             } else {
                 stop = false;
             }
-            if (restriction.contains("$first")) {
-                restriction = restriction.replace("$first", "").trim();
+            if (restrict.contains("$first")) {
+                restrict = restrict.replace("$first", "").trim();
                 first = true;
             } else {
                 first = false;
             }
-            restrictionValue = restriction;
+            Pattern p = Pattern.compile(".*(\\$badge:([^\\s]+)).*");
+            Matcher m = p.matcher(restrict);
+            if (restrict.contains("$badge:") && m.matches()) {
+                restrict = restrict.replace(m.group(1), "").trim();
+                badgeTypeRestriction = BadgeType.parse(m.group(2));
+            } else {
+                badgeTypeRestriction = BadgeType.EMPTY;
+            }
+            
+            // From this point on, the restriction itself isn't modified
+            restrictionValue = restrict;
             
             // Check if a category was specified as id
-            if (restriction.startsWith("$cat:") && restriction.length() > 5) {
-                category = restriction.substring(5);
+            if (restrict.startsWith("$cat:") && restrict.length() > 5) {
+                category = restrict.substring(5);
             } else {
                 category = null;
             }
             
-            if (restriction.startsWith("#") && restriction.length() == 7) {
-                colorRestriction = HtmlColors.decode(restriction, null);
-            } else if (restriction.startsWith("$color:") && restriction.length() > 7) {
-                colorRestriction = HtmlColors.decode(restriction.substring(7), null);
+            if (restrict.startsWith("#") && restrict.length() == 7) {
+                colorRestriction = HtmlColors.decode(restrict, null);
+            } else if (restrict.startsWith("$color:") && restrict.length() > 7) {
+                colorRestriction = HtmlColors.decode(restrict.substring(7), null);
             } else {
                 colorRestriction = null;
             }
             
             // Save the type
-            if (restriction.startsWith("$cat:") && restriction.length() > 5) {
+            if (restrict.startsWith("$cat:") && restrict.length() > 5) {
                 matchType = MatchType.CATEGORY;
             } else if (colorRestriction != null) {
                 matchType = MatchType.COLOR;
-            } else if (statusDef.contains(restriction)) {
+            } else if (statusDef.contains(restrict)) {
                 matchType = MatchType.STATUS;
-            } else if (Helper.validateStream(restriction)) {
+            } else if (Helper.validateStream(restrict)) {
                 matchType = MatchType.NAME;
-            } else if (restriction.equals("$all") || restriction.isEmpty()) {
+            } else if (restrict.equals("$all") || restrict.isEmpty()) {
                 matchType = MatchType.ALL;
             } else {
                 matchType = MatchType.UNDEFINED;
@@ -378,6 +320,7 @@ public class Usericon implements Comparable {
             colorRestriction = null;
             stop = false;
             first = false;
+            badgeTypeRestriction = BadgeType.EMPTY;
         }
     }
     
@@ -392,8 +335,6 @@ public class Usericon implements Comparable {
         if (url == null) {
             return null;
         }
-        //ImageIcon icon = new ImageIcon(url);
-        //ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
         ImageIcon icon = ImageCache.getImage(url, "usericon", CACHE_TIME);
         if (icon != null) {
             return icon;
@@ -415,13 +356,13 @@ public class Usericon implements Comparable {
         if (icon == null || color == null) {
             return icon;
         }
-        BufferedImage image = new BufferedImage(icon.getIconWidth(),
+        BufferedImage newImage = new BufferedImage(icon.getIconWidth(),
                 icon.getIconWidth(), BufferedImage.TYPE_INT_ARGB);
-        Graphics g = image.getGraphics();
+        Graphics g = newImage.getGraphics();
         g.setColor(color);
         g.drawImage(icon.getImage(), 0, 0, color, null);
         g.dispose();
-        return new ImageIcon(image);
+        return new ImageIcon(newImage);
     }
 
     /**
@@ -449,6 +390,8 @@ public class Usericon implements Comparable {
                 return -1;
             } else if (icon.type != type) {
                 return icon.type.compareTo(type);
+            } else if (!Objects.equals(icon.badgeType, badgeType)) {
+                return badgeType.compareTo(icon.badgeType);
             } else {
                 return icon.channelRestriction.compareTo(channelRestriction);
             }
@@ -456,39 +399,146 @@ public class Usericon implements Comparable {
         return 0;
     }
     
+    
+    
     @Override
     public String toString() {
-        return typeToString(type)+"/"+source+"/"+channelRestriction+"/"+restriction+"("+(image != null ? "L" : "E")+")";
+        return String.format("%s[%s,%s]/%s/%s/%s(%s)", 
+                typeToString(type),
+                badgeType.id,
+                badgeType.version,
+                source,
+                channelRestriction,
+                restriction,
+                image != null ? "L" : (removeBadge ? "R" : "E"));
     }
     
     public static String typeToString(Type type) {
         return type.shortLabel;
-//        switch (type) {
-//            case MOD: return "MOD";
-//            case ADDON: return "ADD";
-//            case ADMIN: return "ADM";
-//            case BROADCASTER: return "BRC";
-//            case STAFF: return "STA";
-//            case SUB: return "SUB";
-//            case TURBO: return "TRB";
-//        }
-//        return "UDF";
     }
     
     public static Color getColorFromType(Type type) {
         return type.color;
-//        switch (type) {
-//            case TYPE_MOD:
-//                return TWITCH_MOD_COLOR;
-//            case TYPE_TURBO:
-//                return TWITCH_TURBO_COLOR;
-//            case TYPE_ADMIN:
-//                return TWITCH_ADMIN_COLOR;
-//            case TYPE_BROADCASTER:
-//                return TWITCH_BROADCASTER_COLOR;
-//            case TYPE_STAFF:
-//                return TWITCH_STAFF_COLOR;
-//        }
-//        return null;
     }
+    
+    public String getSymbol() {
+        if (type.symbol != null) {
+            return type.symbol;
+        }
+        if (typeFromBadgeId(badgeType.id) != null) {
+            return typeFromBadgeId(badgeType.id).symbol;
+        }
+        return "$";
+    }
+    
+    public String getIdAndVersion() {
+        return badgeType.toString();
+    }
+    
+    public static Type typeFromBadgeId(String badgeId) {
+        if (badgeId == null) {
+            return null;
+        }
+        for (Type type : Type.values()) {
+            if (badgeId.equals(type.badgeId)) {
+                return type;
+            }
+        }
+        return null;
+    }
+    
+    
+    public static class Builder {
+
+        private final Usericon.Type type;
+        private final int source;
+
+        private String channel;
+        private URL url;
+        private Color color;
+        private String restriction;
+        private String fileName;
+        private BadgeType badgeType;
+
+        public Builder(Usericon.Type type, int source) {
+            this.type = type;
+            this.source = source;
+        }
+
+        /**
+         * Restrict badge to this channel.
+         * 
+         * @param channel
+         * @return 
+         */
+        public Builder setChannel(String channel) {
+            this.channel = channel;
+            return this;
+        }
+
+        /**
+         * The URL (can be a local file) used to load the image.
+         * 
+         * @param url
+         * @return 
+         */
+        public Builder setUrl(URL url) {
+            this.url = url;
+            return this;
+        }
+
+        /**
+         * If set, the transparent background of the image will be filled with
+         * this color.
+         * 
+         * @param color
+         * @return 
+         */
+        public Builder setColor(Color color) {
+            this.color = color;
+            return this;
+        }
+
+        /**
+         * The restriction can contain a number of different identifiers that
+         * have to match the user this badge will be displayed for.
+         * 
+         * @param restriction
+         * @return 
+         */
+        public Builder setRestriction(String restriction) {
+            this.restriction = restriction;
+            return this;
+        }
+
+        /**
+         * Mostly for custom badges, this is used for saving the original
+         * setting, as well as for special images like ($ffz). A url has to be
+         * set as well to specify the actual image location (which won't be used
+         * if the fileName starts with $).
+         * 
+         * @param fileName
+         * @return 
+         */
+        public Builder setFileName(String fileName) {
+            this.fileName = fileName;
+            return this;
+        }
+
+        public Builder setBadgeType(String id, String version) {
+            this.badgeType = new BadgeType(id, version);
+            return this;
+        }
+
+        public Builder setBadgeType(BadgeType badgeType) {
+            this.badgeType = badgeType;
+            return this;
+        }
+
+        public Usericon build() {
+            return new Usericon(this);
+        }
+
+    }
+
 }

@@ -36,7 +36,7 @@ public class About extends JFrame implements ActionListener {
     
     private static final Logger LOGGER = Logger.getLogger(About.class.getName());
     
-    private static final String BASE_HELP_URL = Chatty.WEBSITE+"/help/"+Chatty.VERSION+"/";
+    private static final String BASE_HELP_URL = Chatty.WEBSITE+"/help/";
     private static final String DEFAULT_PAGE = "help.html";
     
     private final JButton historyBackButton;

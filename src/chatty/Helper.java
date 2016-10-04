@@ -607,15 +607,15 @@ public class Helper {
         return null;
     }
     
-    private static final LinkedHashMap<String, String> EMPTY_BADGES = new LinkedHashMap<>();
+    private static final Map<String, String> EMPTY_BADGES = Collections.unmodifiableMap(new LinkedHashMap<String, String>());
     
     /**
-     * Parses the badges tag. The resulting map must not be modified.
+     * Parses the badges tag. The resulting map is unmodifiable.
      * 
      * @param data
      * @return 
      */
-    public static LinkedHashMap<String, String> parseBadges(String data) {
+    public static Map<String, String> parseBadges(String data) {
         if (data == null || data.isEmpty()) {
             return EMPTY_BADGES;
         }
@@ -629,7 +629,7 @@ public class Helper {
                 result.put(id, version);
             }
         }
-        return result;
+        return Collections.unmodifiableMap(result);
     }
     
 }

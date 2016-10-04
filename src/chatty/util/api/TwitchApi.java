@@ -7,6 +7,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
+import chatty.util.api.usericons.UsericonFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -42,7 +43,8 @@ public class TwitchApi {
     enum RequestType {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
-        SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW, CHAT_INFO
+        SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW, CHAT_INFO,
+        GLOBAL_BADGES, ROOM_BADGES
     }
     
     public enum RequestResult {
@@ -56,6 +58,7 @@ public class TwitchApi {
     private final EmoticonManager emoticonManager;
     private final FollowerManager followerManager;
     private final FollowerManager subscriberManager;
+    private final BadgeManager badgeManager;
     private final UserIDs userIDs;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
@@ -77,6 +80,7 @@ public class TwitchApi {
         emoticonManager = new EmoticonManager(apiResultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
+        badgeManager = new BadgeManager(this);
         userIDs = new UserIDs(this);
         
         executor = Executors.newCachedThreadPool();
@@ -165,6 +169,30 @@ public class TwitchApi {
                 TwitchApiRequest request = new TwitchApiRequest(this, RequestType.CHAT_ICONS, url);
                 executor.execute(request);
             }
+        }
+    }
+    
+    public void getGlobalBadges(boolean forceRefresh) {
+        badgeManager.requestGlobalBadges(forceRefresh);
+    }
+    
+    public void getRoomBadges(String room, boolean forceRefresh) {
+        badgeManager.requestBadges(room, forceRefresh);
+    }
+    
+    protected void requestGlobalBadges() {
+        String url = "https://badges.twitch.tv/v1/badges/global/display?language=en";
+        if (attemptRequest(url, null)) {
+            TwitchApiRequest request = new TwitchApiRequest(this, RequestType.GLOBAL_BADGES, url);
+            executor.execute(request);
+        }
+    }
+    
+    protected void requestRoomBadges(long roomId, String stream) {
+        String url = "https://badges.twitch.tv/v1/badges/channels/"+roomId+"/display?language=en";
+        if (attemptRequest(url, stream)) {
+            TwitchApiRequest request = new TwitchApiRequest(this, RequestType.ROOM_BADGES, url);
+            executor.execute(request);
         }
     }
     
@@ -461,6 +489,12 @@ public class TwitchApi {
                 requestedChatIcons.add(stream);
             }
         }
+        else if (type == RequestType.GLOBAL_BADGES) {
+            resultListener.receivedUsericons(badgeManager.handleGlobalBadgesResult(result));
+        }
+        else if (type == RequestType.ROOM_BADGES) {
+            resultListener.receivedUsericons(badgeManager.handleRoomBadgesResult(result, stream));
+        }
         else if (type == RequestType.CHANNEL || type == RequestType.CHANNEL_PUT) {
             handleChannelInfoResult(type, url, result, responseCode, stream);
         }
@@ -752,12 +786,14 @@ public class TwitchApi {
     
     private void addUsericon(List<Usericon> icons, Usericon.Type type, String stream, String url) {
         if (url != null && !url.isEmpty()) {
-            Usericon icon = Usericon.createTwitchIcon(type, stream, url);
+            Usericon icon = UsericonFactory.createTwitchIcon(type, stream, url);
             if (icon != null) {
                 icons.add(icon);
             }
         }
     }
+    
+    
     
     /**
      * Returns the URL for a single icon, read from the given JSONObject.

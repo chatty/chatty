@@ -7,10 +7,12 @@ import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 /**
@@ -55,6 +57,7 @@ public class UsericonManager {
                 defaultIcons.add(icon);
             }
         }
+//        debug();
     }
     
     /**
@@ -90,10 +93,17 @@ public class UsericonManager {
         addFallbackIcon(Usericon.Type.BOT, "icon_bot.png");
 //        addFallbackIcon(Usericon.Type.RESUB, "icon_sub.png");
 //        addFallbackIcon(Usericon.Type.NEWSUB, "icon_sub.png");
+//        List<Usericon> test = new ArrayList<>();
+//        Usericon blah = UsericonFactory.createTwitchBadge("premium", "1",
+//                "https://static-cdn.jtvnw.net/badges/v1/a1dd5073-19c3-4911-8cb4-c464a7bc1510/1",
+//                null);
+//        System.out.println(blah);
+//        test.add(blah);
+//        addDefaultIcons(test);
     }
     
     private void addFallbackIcon(Usericon.Type type, String fileName) {
-        defaultIcons.add(Usericon.createFallbackIcon(type,
+        defaultIcons.add(UsericonFactory.createFallbackIcon(type,
                 MainGui.class.getResource(fileName)));
     }
     
@@ -108,6 +118,28 @@ public class UsericonManager {
     }
     
     /**
+     * Get Twitch Badges.
+     * 
+     * @param badgesDef
+     * @param user
+     * @return 
+     */
+    public synchronized List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user) {
+        if (badgesDef == null || badgesDef.isEmpty()) {
+            return null;
+        }
+        List<Usericon> result = new ArrayList<>();
+        for (String id : badgesDef.keySet()) {
+            String value = badgesDef.get(id);
+            Usericon icon = getIcon(Type.TWITCH, id, value, user);
+            if (icon != null) {
+                result.add(icon);
+            }
+        }
+        return result;
+    }
+    
+    /**
      * Returns the first matching {@code ImageIcon} for the given type and user.
      * It first checks if there are any matching custom icons, then checks the
      * default icons. It also only returns an icon that actually has an image
@@ -115,37 +147,42 @@ public class UsericonManager {
      * 
      * <p>Should always return an icon, since fallback icons are added.</p>
      * 
+     * <p>The returned icon, if non-null, will always have a valid image, unless
+     * the removeBadge-property is true.</p>
+     * 
      * @param type The type to retrieve
      * @param user The user the returned icon has to match
      * @return The matching icon or {@code null} if none matched
      */
-    public synchronized ImageIcon getIcon(Usericon.Type type, User user) {
+    public synchronized Usericon getIcon(Usericon.Type type,
+            String id, String version, User user) {
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
-                if (icon.type == type && iconMatchesUser(icon, user)) {
-                    if (icon.image != null) {
-                        return icon.image;
+                //System.out.println("A:"+" "+type+" "+icon.type+" "+iconsMatchesAdvancedType(icon, type, id, version)+" "+icon);
+                if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)) {
+                    if (icon.image != null || icon.removeBadge) {
+                        return icon;
                     } else if (icon.fileName.equalsIgnoreCase("$ffz")) {
                         // If fileName is a reference, then check if an icon
                         // for that exists (only really applicable for FFZ Mod
                         // Icon at the moment)
-                        ImageIcon refImage = getDefaultIcon(type, user, Usericon.SOURCE_FFZ);
-                        if (refImage != null) {
-                            return refImage;
+                        Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_FFZ);
+                        if (refIcon != null && refIcon.image != null) {
+                            return refIcon;
                         }
                     } else if (icon.fileName.equalsIgnoreCase("$twitch")) {
                         // This is a very special case, which only applies if
                         // the Twitch Icon wasn't loaded or not loaded yet, and
                         // it should be replaced only when that happens.
-                        ImageIcon refImage = getDefaultIcon(type, user, Usericon.SOURCE_TWITCH);
-                        if (refImage != null) {
-                            return refImage;
+                        Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_TWITCH);
+                        if (refIcon != null && refIcon.image != null) {
+                            return refIcon;
                         }
                     }
                 }
             }
         }
-        return getDefaultIcon(type, user, -1);
+        return getDefaultIcon(type, id, version, user, -1);
     }
     
     /**
@@ -156,14 +193,14 @@ public class UsericonManager {
      * @param source The source, can be -1 to match any source
      * @return The {@code ImageIcon} or {@code null} if none was found
      */
-    private ImageIcon getDefaultIcon(Usericon.Type type, User user, int source) {
+    private Usericon getDefaultIcon(Usericon.Type type, String id, String version, User user, int source) {
         for (Usericon icon : defaultIcons) {
-            if (icon.type == type && iconMatchesUser(icon, user) && (source == -1 || icon.source == source)) {
+            if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user) && (source == -1 || icon.source == source)) {
                 // Skip FFZ if disabled
                 if (icon.source == Usericon.SOURCE_FFZ && !settings.getBoolean("ffzModIcon")) {
                     continue;
                 }
-                return icon.image;
+                return icon;
             }
         }
         return null;
@@ -176,18 +213,18 @@ public class UsericonManager {
     /**
      * Gets all icons with the given type that match the given {@code User}.
      * 
-     * @param type The type of the icon
      * @param user The user the returned icons have to match
+     * @param first
      * @return A {@code List} of {@code Usericon} objects, can be empty if no
      * icon matched or custom icons are disabled
      */
-    public synchronized List<ImageIcon> getCustomIcons(Usericon.Type type, User user, boolean first) {
-        List<ImageIcon> result = new ArrayList<>();
+    public synchronized List<Usericon> getAddonIcons(User user, boolean first) {
+        List<Usericon> result = new ArrayList<>();
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
-                if (icon.type == type && iconMatchesUser(icon, user)
-                        && icon.image != null && first == icon.first) {
-                    result.add(icon.image);
+                if (icon.type == Type.ADDON && iconMatchesUser(icon, user)
+                        && first == icon.first && icon.image != null) {
+                    result.add(icon);
                     if (icon.stop) {
                         break;
                     }
@@ -208,6 +245,20 @@ public class UsericonManager {
      * otherwise
      */
     private boolean iconMatchesUser(Usericon icon, User user) {
+        if (icon.badgeTypeRestriction.id != null) {
+            Map<String, String> badges = user.getTwitchBadges();
+            String id = icon.badgeTypeRestriction.id;
+            String version = icon.badgeTypeRestriction.version;
+            if (badges == null) {
+                return false;
+            }
+            if (!badges.containsKey(id)) {
+                return false;
+            }
+            if (version != null && !badges.get(id).equals(version)) {
+                return false;
+            }
+        }
         
         // If channelRestriction doesn't match, don't have to continue
         if (!icon.channel.isEmpty()) {
@@ -246,6 +297,43 @@ public class UsericonManager {
         return false;
     }
     
+    private boolean iconsMatchesAdvancedType(Usericon icon,
+            Usericon.Type requestedType, String id, String version) {
+        if (icon.type == requestedType) {
+            if (id == null && version == null) {
+                return true;
+            }
+            if (Objects.equals(id, icon.badgeType.id) && Objects.equals(version, icon.badgeType.version)) {
+                return true;
+            }
+        }
+        
+        /**
+         * If we're looking for a TWITCH badge (id/version), but this is an icon
+         * with a regular type (MOD, ..), then check if and when there is a
+         * mapping for the badgeId for this type.
+         * 
+         * This is so that icons with a type of e.g. MOD can still match a
+         * TWITCH badge with mod/1 (for custom and fallback icons).
+         */
+        else if (requestedType == Usericon.Type.TWITCH && icon.type.badgeId != null) {
+            if (icon.badgeType.equals(id, version)) {
+                return true;
+            }
+            if (icon.badgeType.matchesLenient(id, version)) {
+                return true;
+            }
+//            if (Objects.equals(id, icon.badgeId) && icon.badgeVersion == null) {
+//                return true;
+//            }
+            if (icon.type == Usericon.typeFromBadgeId(id) && icon.badgeType.equals(null, null)) {
+                //System.out.println("B:"+icon);
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private synchronized void loadFromSettings() {
         List<List> entriesToLoad = settings.getList(SETTING_NAME);
         customIcons.clear();
@@ -276,16 +364,21 @@ public class UsericonManager {
         list.add(icon.restriction);
         list.add(icon.fileName);
         list.add(icon.channelRestriction);
+        list.add(icon.getIdAndVersion());
         return list;
     }
     
     private Usericon listToEntry(List list) {
         try {
             Type type = Type.getTypeFromId(((Number)list.get(0)).intValue());
-            String id = (String)list.get(1);
+            String restriction = (String)list.get(1);
             String fileName = (String)list.get(2);
             String channel = (String)list.get(3);
-            return Usericon.createCustomIcon(type, id, fileName, channel);
+            String idVersion = null;
+            if (list.size() > 4) {
+                idVersion = (String)list.get(4);
+            }
+            return UsericonFactory.createCustomIcon(type, idVersion, restriction, fileName, channel);
         } catch (ClassCastException | IndexOutOfBoundsException ex) {
             return null;
         }

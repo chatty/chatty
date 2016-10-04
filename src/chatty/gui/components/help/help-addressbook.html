@@ -16,6 +16,7 @@
             <a href="#advanced">Advanced Usage</a>
             <ul>
                 <li><a href="#modcommands">Mod Commands</a></li>
+                <li><a href="#saveOnChange">Save to file on change</a></li>
                 <li><a href="#file">Change via file</a></li>
                 <li><a href="#unique-cats">Unique Categories</a></li>
                 <li><a href="#subs-cats">Automatic Subscriber Categories</a></li>
@@ -133,6 +134,13 @@
         actual response, you need to have Chatty on stream (which means the response
         is also affected by stream delay of course).</p>
     
+    <h3><a name="saveOnChange">Save to file on change</a></h3>
+    <p>If you enable the <code>abSaveOnChange</code> setting, the Addressbook
+        will be saved to file on each change (like adding a user, changing a
+        category). This can be useful if e.g. some other program is using
+        information from that file.</p>
+    
+    <p>Example: <code>/set abSaveOnChange 1</code> to enable</p>
     
     <h3><a name="file">Change Addressbook via file</a></h3>
     <p><em>This is a rather experimental feature, so it might not work reliably.</em></p>

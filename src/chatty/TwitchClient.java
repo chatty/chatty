@@ -443,6 +443,11 @@ public class TwitchClient {
         //testUser.setAdmin(true);
         //testUser.setStaff(true);
         //testUser.setBroadcaster(true);
+        LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
+        badgesTest.put("moderator", "1");
+        badgesTest.put("premium", "1");
+        badgesTest.put("bits", "100");
+        testUser.setTwitchBadges(badgesTest);
     }
     
     /**
@@ -1083,9 +1088,9 @@ public class TwitchClient {
         } else if (command.equals("tsaon")) {
             StreamInfo info = api.getStreamInfo(g.getActiveStream(), null);
             info.set("Test", "Game", 12, System.currentTimeMillis() - 1000);
-        } else if (command.equals("usericonsInfo")) {
+        } else if (command.equals("usericonsinfo")) {
             usericonManager.debug();
-        } else if (command.equals("userlistTest")) {
+        } else if (command.equals("userlisttest")) {
             g.printMessage("test1", testUser, "short message", false, null, 0);
             g.printMessage("test2", testUser, "short message2", false, null, 0);
             g.printCompact("test3", "MOD", testUser);
@@ -2172,7 +2177,9 @@ public class TwitchClient {
             g.printLine(channel,"You have joined " + channel);
             
             // Icons and FFZ/BTTV Emotes
-            api.requestChatIcons(Helper.toStream(channel), false);
+            //api.requestChatIcons(Helper.toStream(channel), false);
+            api.getGlobalBadges(false);
+            api.getRoomBadges(channel, false);
             requestChannelEmotes(channel);
             frankerFaceZ.joined(channel);
             checkModLogListen(user);
