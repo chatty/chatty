@@ -70,12 +70,11 @@ public class ContextMenuHelper {
         String miscSubmenu = "Miscellaneous";
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
-        m.addItem("streamPopoutOld", "Popout (Old)", streamSubmenu);
+        m.addSeparator(streamSubmenu);
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
         m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
         m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);
         addLivestreamerOptions(m);
-        m.addItem("profile", "Twitch Profile" + s);
         if (join) {
             m.addSeparator();
             m.addItem("join", "Join " + count + "channel" + s);

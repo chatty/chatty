@@ -139,10 +139,7 @@ public class User implements Comparable {
     
     public Usericon getIcon(Usericon.Type type) {
         if (iconManager != null) {
-            Usericon icon = iconManager.getIcon(type, null, null, this);
-            if (icon != null) {
-                return icon;
-            }
+            return iconManager.getIcon(type, null, null, this);
         }
         return null;
     }

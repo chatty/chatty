@@ -11,7 +11,9 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
+import chatty.gui.components.menus.UsericonContextMenu;
 import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.usericons.Usericon;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -137,6 +139,12 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
                 }
                 return;
             }
+            Usericon usericon = getUsericon(e);
+            if (usericon != null) {
+                for (UserListener listener : userListener) {
+                    listener.usericonClicked(usericon, e);
+                }
+            }
         }
         else if (e.isPopupTrigger()) {
             openContextMenu(e);
@@ -172,7 +180,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         
         String url = getUrl(e);
         if ((url != null && !isUrlDeleted(e)) || getUser(e) != null ||
-                getEmoticon(e) != null) {
+                getEmoticon(e) != null || getUsericon(e) != null) {
             text.setCursor(HAND_CURSOR);
         } else {
             text.setCursor(NORMAL_CURSOR);
@@ -223,6 +231,14 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         AttributeSet attributes = getAttributes(e);
         if (attributes != null) {
             return (EmoticonImage)(attributes.getAttribute(ChannelTextPane.Attribute.EMOTICON));
+        }
+        return null;
+    }
+    
+    private Usericon getUsericon(MouseEvent e) {
+        AttributeSet attributes = getAttributes(e);
+        if (attributes != null) {
+            return (Usericon)(attributes.getAttribute(ChannelTextPane.Attribute.USERICON));
         }
         return null;
     }
@@ -289,6 +305,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         User user = getUser(e);
         String url = getUrl(e);
         EmoticonImage emote = getEmoticon(e);
+        Usericon usericon = getUsericon(e);
         JPopupMenu m;
         if (user != null) {
             m = new UserContextMenu(user, contextMenuListener);
@@ -298,6 +315,9 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         }
         else if (emote != null) {
             m = new EmoteContextMenu(emote, contextMenuListener);
+        }
+        else if (usericon != null) {
+            m = new UsericonContextMenu(usericon, contextMenuListener);
         }
         else {
             if (defaultContextMenu == null) {

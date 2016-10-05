@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.User;
 import chatty.util.api.Emoticon;
+import chatty.util.api.usericons.Usericon;
 import java.awt.event.MouseEvent;
 
 /**
@@ -18,4 +19,6 @@ public interface UserListener {
      */
     public void userClicked(User user, MouseEvent e);
     public void emoteClicked(Emoticon emote, MouseEvent e);
+    public void usericonClicked(Usericon usericon, MouseEvent e);
+
 }

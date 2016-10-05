@@ -5,6 +5,7 @@ import chatty.User;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
+import chatty.util.api.usericons.Usericon;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.List;
@@ -42,6 +43,10 @@ public class ContextMenuAdapter implements ContextMenuListener {
 
     @Override
     public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
+    }
+
+    @Override
+    public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
     }
     
 }

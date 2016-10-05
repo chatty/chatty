@@ -5,6 +5,7 @@ import chatty.User;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
+import chatty.util.api.usericons.Usericon;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.List;
@@ -20,4 +21,5 @@ public interface ContextMenuListener {
     public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams);
     public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos);
     public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote);
+    public void usericonMenuItemClicked(ActionEvent e, Usericon usericon);
 }

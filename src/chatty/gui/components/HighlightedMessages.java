@@ -11,6 +11,7 @@ import chatty.gui.components.menus.HighlightsContextMenu;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
+import chatty.util.api.usericons.Usericon;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -198,6 +199,11 @@ public class HighlightedMessages extends JDialog {
         @Override
         public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
             contextMenuListener.emoteMenuItemClicked(e, emote);
+        }
+
+        @Override
+        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+            contextMenuListener.usericonMenuItemClicked(e, usericon);
         }
     }
     

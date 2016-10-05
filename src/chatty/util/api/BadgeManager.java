@@ -84,8 +84,12 @@ public class BadgeManager {
                             
                             String version = (String)key2;
                             String url = (String)versionData.get("image_url_1x");
+                            String title = (String)versionData.get("title");
+                            String description = (String)versionData.get("description");
+                            String clickUrl = (String)versionData.get("click_url");
                             
-                            Usericon icon = UsericonFactory.createTwitchBadge(id, version, url, room);
+                            Usericon icon = UsericonFactory.createTwitchBadge(id, version, url, room,
+                                    title, description, clickUrl);
                             if (icon != null) {
                                 result.add(icon);
                             }

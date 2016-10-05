@@ -106,7 +106,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public enum Attribute {
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
-        BAN_MESSAGE, ID
+        BAN_MESSAGE, ID, USERICON
     }
     
     public enum MessageType {
@@ -1160,6 +1160,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         @Override
         public void emoteClicked(Emoticon emote, MouseEvent e) {
         }
+
+        @Override
+        public void usericonClicked(Usericon usericon, MouseEvent e) {
+        }
         
     }
     
@@ -1427,7 +1431,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (user.isBot() && styles.botBadgeEnabled()) {
             Usericon icon = user.getIcon(Usericon.Type.BOT);
             if (icon != null && !icon.removeBadge) {
-                print("^", styles.makeIconStyle(icon.image));
+                print("^", styles.makeIconStyle(icon));
             }
         }
 
@@ -1439,7 +1443,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (badge.image != null && !badge.removeBadge) {
-                    print(badge.getSymbol(), styles.makeIconStyle(badge.image));
+                    print(badge.getSymbol(), styles.makeIconStyle(badge));
                 }
             }
         }
@@ -2436,7 +2440,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * Icons that have been modified for use and saved into a style. Should
          * only be done once per icon.
          */
-        private final HashMap<ImageIcon, MutableAttributeSet> savedIcons = new HashMap<>();
+        private final HashMap<Usericon, MutableAttributeSet> savedIcons = new HashMap<>();
         
         /**
          * Creates a new ImageIcon based on the given ImageIcon that has a small
@@ -2767,7 +2771,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             java.util.List<Usericon> icons = user.getAddonIcons(first);
             java.util.List<MutableAttributeSet> iconStyles = new ArrayList<>();
             for (Usericon icon : icons) {
-                iconStyles.add(makeIconStyle(icon.image));
+                iconStyles.add(makeIconStyle(icon));
             }
             return iconStyles;
         }
@@ -2781,13 +2785,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * @param icon
          * @return The created style (or read from the cache)
          */
-        public MutableAttributeSet makeIconStyle(ImageIcon icon) {
+        public MutableAttributeSet makeIconStyle(Usericon icon) {
             MutableAttributeSet style = savedIcons.get(icon);
             if (style == null) {
                 //System.out.println("Creating icon style: "+icon);
                 style = new SimpleAttributeSet(nick());
-                if (icon != null) {
-                    StyleConstants.setIcon(style, addSpaceToIcon(icon));
+                if (icon != null && icon.image != null) {
+                    StyleConstants.setIcon(style, addSpaceToIcon(icon.image));
+                    style.addAttribute(Attribute.USERICON, icon);
                 }
                 savedIcons.put(icon, style);
             }

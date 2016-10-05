@@ -5,6 +5,7 @@ import chatty.util.api.usericons.Usericon;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -52,6 +53,9 @@ public class ImageSettings extends SettingsPanel {
         gbc.weighty = 1;
         gbc.weightx = 1;
         usericons.add(usericonsData, gbc);
+        
+        gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
+        usericons.add(new JLabel("Tip: Add Usericon with no image to hide badges of that type"), gbc);
     }
     
     public void setData(List<Usericon> data) {

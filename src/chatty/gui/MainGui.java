@@ -1781,8 +1781,15 @@ public class MainGui extends JFrame implements Runnable {
                 UrlOpener.openUrlPrompt(getActiveWindow(), url, true);
             }
         }
-        
-        
+
+        @Override
+        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+            if (e.getActionCommand().equals("usericonUrl")) {
+                if (!usericon.metaUrl.isEmpty()) {
+                    UrlOpener.openUrlPrompt(MainGui.this, usericon.metaUrl);
+                }
+            }
+        }
         
     }
 
@@ -1826,6 +1833,13 @@ public class MainGui extends JFrame implements Runnable {
         @Override
         public void emoteClicked(Emoticon emote, MouseEvent e) {
             openEmotesDialogEmoteDetails(emote);
+        }
+
+        @Override
+        public void usericonClicked(Usericon usericon, MouseEvent e) {
+            if (!usericon.metaUrl.isEmpty()) {
+                UrlOpener.openUrlPrompt(MainGui.this, usericon.metaUrl);
+            }
         }
     }
     

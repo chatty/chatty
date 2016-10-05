@@ -11,6 +11,7 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
+import chatty.util.api.usericons.Usericon;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -120,6 +121,11 @@ public class StreamChat extends JDialog {
         @Override
         public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
             contextMenuListener.emoteMenuItemClicked(e, emote);
+        }
+
+        @Override
+        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+            contextMenuListener.usericonMenuItemClicked(e, usericon);
         }
     }
     

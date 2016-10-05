@@ -72,13 +72,17 @@ public class UsericonFactory {
     }
     
     public static Usericon createTwitchBadge(String id, String version,
-            String urlString, String channel) {
+            String urlString, String channel, String title, String description,
+            String clickUrl) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.TWITCH, SOURCE_TWITCH2);
             b.setChannel(channel);
             b.setBadgeType(id, version);
             b.setUrl(url);
+            b.setMetaTitle(title);
+            b.setMetaDescription(description);
+            b.setMetaUrl(clickUrl);
             return b.build();
         } catch (MalformedURLException ex) {
             LOGGER.warning("Invalid icon url: " + urlString);

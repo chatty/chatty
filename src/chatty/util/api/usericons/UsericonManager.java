@@ -151,6 +151,8 @@ public class UsericonManager {
      * the removeBadge-property is true.</p>
      * 
      * @param type The type to retrieve
+     * @param id
+     * @param version
      * @param user The user the returned icon has to match
      * @return The matching icon or {@code null} if none matched
      */
@@ -303,7 +305,7 @@ public class UsericonManager {
             if (id == null && version == null) {
                 return true;
             }
-            if (Objects.equals(id, icon.badgeType.id) && Objects.equals(version, icon.badgeType.version)) {
+            if (icon.badgeType.matchesLenient(id, version)) {
                 return true;
             }
         }

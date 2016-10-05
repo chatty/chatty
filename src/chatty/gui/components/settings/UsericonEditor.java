@@ -62,6 +62,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames.put(Usericon.Type.MOD, "Moderator");
         typeNames.put(Usericon.Type.SUB, "Subscriber");
         typeNames.put(Usericon.Type.TURBO, "Turbo");
+        typeNames.put(Usericon.Type.PRIME, "Prime");
         typeNames.put(Usericon.Type.ADMIN, "Admin");
         typeNames.put(Usericon.Type.STAFF, "Staff");
         typeNames.put(Usericon.Type.BROADCASTER, "Broadcaster");
@@ -176,6 +177,9 @@ class UsericonEditor extends TableEditor<Usericon> {
             if (icon.fileName != null && icon.fileName.startsWith("$")) {
                 setIcon(null);
                 setText(icon.fileName.substring(1));
+            } else if (icon.removeBadge) {
+                setIcon(null);
+                setText("No image");
             } else {
                 setIcon(icon.image);
                 setText(null);
@@ -221,7 +225,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         
         private final JDialog dialog;
         
-        private final JComboBox<String> fileName;
+        private final GenericComboSetting<String> fileName;
         private final GenericComboSetting<Type> type;
         private final JTextField restriction = new JTextField();
         private final JTextField stream = new JTextField();
@@ -263,7 +267,7 @@ class UsericonEditor extends TableEditor<Usericon> {
             
             //((PlainDocument)idVersion.getDocument()).setDocumentFilter(new RegexDocumentFilter("\\s+"));
             
-            fileName = new JComboBox<>();
+            fileName = new GenericComboSetting<>(new String[0]);
             fileName.setEditable(true);
             fileName.addActionListener(new ActionListener() {
 
@@ -437,7 +441,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         }
         
         private void createIcon(boolean preview) {
-            String file = (String)fileName.getSelectedItem();
+            String file = (String)fileName.getSettingValue();
             if (preview) {
                 currentIcon = UsericonFactory.createCustomIcon(Type.UNDEFINED, null, null, file, null);
             } else if (type.getSettingValue() != null) {
@@ -490,15 +494,14 @@ class UsericonEditor extends TableEditor<Usericon> {
                 restriction.setText(preset.restriction);
                 type.setSettingValue(preset.type);
                 idVersion.setText(preset.getIdAndVersion());
-                System.out.println(preset.getIdAndVersion());
-                fileName.setSelectedItem(preset.fileName);
+                fileName.setSettingValue(preset.fileName);
                 stream.setText(preset.channelRestriction);
                 currentIcon = preset;
             } else {
                 restriction.setText(null);
                 type.setSelectedIndex(0);
                 idVersion.setText(null);
-                fileName.setSelectedItem(null);
+                fileName.setSelectedIndex(0);
                 stream.setText(null);
                 currentIcon = null;
             }
@@ -540,8 +543,9 @@ class UsericonEditor extends TableEditor<Usericon> {
                 
                 String selected = (String) fileName.getSelectedItem();
                 fileName.removeAllItems();
+                fileName.add("", "<no image>");
                 for (String item : fileNames) {
-                    fileName.addItem(item);
+                    fileName.add(item);
                 }
                 fileName.setSelectedItem(selected);
             }

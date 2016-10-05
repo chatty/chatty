@@ -56,7 +56,7 @@ public class Usericon implements Comparable {
 //        RESUB(9, "Resub", "RSB", null),
 //        NEWSUB(10, "Newsub", "NSB", null),
         TWITCH(11, "Twitch Badge", "TWB", null, null, null),
-        PRIME(12, "Twitch Prime", "TPR", "$", "premium", null),
+        PRIME(12, "Prime", "TPR", "$", "premium", null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -173,8 +173,8 @@ public class Usericon implements Comparable {
     public final ImageIcon image;
     
     /**
-     * The match type is derived from {@literal id}, to make it easier to check
-     * what to match later.
+     * The match type is derived from {@literal restriction}, to make it easier
+     * to check what to match later.
      */
     public final MatchType matchType;
     
@@ -199,6 +199,10 @@ public class Usericon implements Comparable {
     public final boolean stop;
     public final boolean first;
     
+    public final String metaTitle;
+    public final String metaDescription;
+    public final String metaUrl;
+    
     /**
      * Creates a new {@literal Userimage}, which will try to load the image from
      * the given URL. If the loading fails, the {@literal image} field will be
@@ -211,6 +215,9 @@ public class Usericon implements Comparable {
         this.fileName = builder.fileName;
         this.source = builder.source;
         this.badgeType = builder.badgeType != null ? builder.badgeType : BadgeType.EMPTY;
+        this.metaTitle = builder.metaTitle;
+        this.metaDescription = builder.metaDescription;
+        this.metaUrl = builder.metaUrl;
 
         //--------------------
         // Channel Restriction
@@ -459,6 +466,9 @@ public class Usericon implements Comparable {
         private String restriction;
         private String fileName;
         private BadgeType badgeType;
+        private String metaTitle = "";
+        private String metaDescription = "";
+        private String metaUrl = "";
 
         public Builder(Usericon.Type type, int source) {
             this.type = type;
@@ -532,6 +542,30 @@ public class Usericon implements Comparable {
 
         public Builder setBadgeType(BadgeType badgeType) {
             this.badgeType = badgeType;
+            return this;
+        }
+        
+        public Builder setMetaTitle(String title) {
+            if (title == null) {
+                title = "";
+            }
+            this.metaTitle = title.trim();
+            return this;
+        }
+        
+        public Builder setMetaDescription(String description) {
+            if (description == null) {
+                description = "";
+            }
+            this.metaDescription = description.trim();
+            return this;
+        }
+        
+        public Builder setMetaUrl(String url) {
+            if (url == null) {
+                url = "";
+            }
+            this.metaUrl = url.trim();
             return this;
         }
 
