@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
@@ -125,6 +126,13 @@ public class ModerationLog extends JDialog {
     private void scrollDown() {
         scroll.validate();
         scroll.getVerticalScrollBar().setValue(scroll.getVerticalScrollBar().getMaximum());
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                scroll.getVerticalScrollBar().setValue(scroll.getVerticalScrollBar().getMaximum());
+            }
+        });
     }
     
     /**

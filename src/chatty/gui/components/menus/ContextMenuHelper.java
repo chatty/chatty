@@ -2,9 +2,11 @@
 package chatty.gui.components.menus;
 
 import chatty.Helper;
+import chatty.gui.components.help.About;
 import chatty.util.settings.Settings;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.ImageIcon;
 
 /**
  * Provides some useful functions for several different context menus.
@@ -12,6 +14,11 @@ import java.util.regex.Pattern;
  * @author tduva
  */
 public class ContextMenuHelper {
+    
+    protected static final ImageIcon ICON_SPACING = new ImageIcon(ContextMenuHelper.class.getResource("transparent-10x1.png"));
+    protected static final ImageIcon ICON_WEB = new ImageIcon(About.class.getResource("go-web.png"));
+    protected static final ImageIcon ICON_IMAGE = new ImageIcon(ContextMenuHelper.class.getResource("image-icon.png"));
+    protected static final ImageIcon ICON_COMMANDLINE = new ImageIcon(ContextMenuHelper.class.getResource("commandline.png"));
 
     public static boolean enableLivestreamer = true;
     public static String livestreamerQualities;
@@ -68,23 +75,24 @@ public class ContextMenuHelper {
         }
         String streamSubmenu = "Twitch Stream" + s;
         String miscSubmenu = "Miscellaneous";
-        m.addItem("stream", "Normal", streamSubmenu);
-        m.addItem("streamPopout", "Popout", streamSubmenu);
+        m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
+        m.addSubItem("stream", "Normal", streamSubmenu);
+        m.addSubItem("streamPopout", "Popout", streamSubmenu);
         m.addSeparator(streamSubmenu);
-        m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
-        m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
-        m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);
+        m.addSubItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
+        m.addSubItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
+        m.addSubItem("streamsKadgar", "Kadgar.net", streamSubmenu);
         addLivestreamerOptions(m);
         if (join) {
             m.addSeparator();
             m.addItem("join", "Join " + count + "channel" + s);
             m.addSeparator();
-            m.addItem("hostchannel", "Host Channel", miscSubmenu);
+            m.addSubItem("hostchannel", "Host Channel", miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addItem("copy", "Copy Stream Name", miscSubmenu);
+            m.addSubItem("copy", "Copy Stream Name", miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addItem("follow", "Follow Channel", miscSubmenu);
-            m.addItem("unfollow", "Unfollow Channel", miscSubmenu);
+            m.addSubItem("follow", "Follow Channel", miscSubmenu);
+            m.addSubItem("unfollow", "Unfollow Channel", miscSubmenu);
         }
     }
     
@@ -97,6 +105,7 @@ public class ContextMenuHelper {
     public static void addLivestreamerOptions(ContextMenu m) {
         if (enableLivestreamer) {
             String livestreamerMenu = "Livestreamer";
+            m.setSubMenuIcon(livestreamerMenu, ICON_COMMANDLINE);
             
             Matcher matcher = LIVESTREAMER_PATTERN.matcher(livestreamerQualities);
             boolean sep = false;
@@ -108,7 +117,7 @@ public class ContextMenuHelper {
                     if (sep) {
                         m.addSeparator(livestreamerMenu);
                     }
-                    m.addItem("livestreamerQ"+match, match, livestreamerMenu);
+                    m.addSubItem("livestreamerQ"+match, match, livestreamerMenu);
                     sep = false;
                 }
             }
@@ -160,7 +169,7 @@ public class ContextMenuHelper {
                 if (sep) {
                     m.addSeparator(submenu);
                 }
-                m.addItem("command" + command, Helper.replaceUnderscoreWithSpace(command),
+                m.addSubItem("command" + command, Helper.replaceUnderscoreWithSpace(command),
                         submenu);
                 sep = false;
             }
@@ -174,9 +183,9 @@ public class ContextMenuHelper {
             String label = whisper ? "(whisper)" : "(chat)";
             String item = whisper ? "Whisper" : "";
             if (settings.listContains(setting, name)) {
-                m.addItem("unignore"+item, "Unignore "+label, submenu);
+                m.addSubItem("unignore"+item, "Unignore "+label, submenu);
             } else {
-                m.addItem("ignore"+item, "Ignore "+label, submenu);
+                m.addSubItem("ignore"+item, "Ignore "+label, submenu);
             }
         }
     }

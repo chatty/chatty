@@ -55,7 +55,7 @@ public class ImageSettings extends SettingsPanel {
         usericons.add(usericonsData, gbc);
         
         gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
-        usericons.add(new JLabel("Tip: Add Usericon with no image to hide badges of that type"), gbc);
+        usericons.add(new JLabel("Tip: Add a Usericon with no image to hide badges of that type"), gbc);
     }
     
     public void setData(List<Usericon> data) {

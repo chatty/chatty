@@ -33,9 +33,9 @@ public class UsericonFactory {
      * @param urlString
      * @return 
      */
-    public static Usericon createTwitchIcon(Usericon.Type type, String channel, String urlString) {
+    public static Usericon createTwitchIcon(Usericon.Type type, String channel, String urlString, String title) {
         //return createTwitchLikeIcon(type, channel, urlString, SOURCE_TWITCH);
-        return createIconFromUrl(type, channel, urlString, SOURCE_TWITCH, null);
+        return createIconFromUrl(type, channel, urlString, SOURCE_TWITCH, null, title);
     }
     
     /**
@@ -51,19 +51,20 @@ public class UsericonFactory {
      * @return 
      */
     public static Usericon createTwitchLikeIcon(Usericon.Type type, String channel,
-            String urlString, int source) {
+            String urlString, int source, String title) {
         return createIconFromUrl(type, channel, urlString, source,
-                getColorFromType(type));
+                getColorFromType(type), title);
     }
     
     public static Usericon createIconFromUrl(Usericon.Type type, String channel,
-            String urlString, int source, Color color) {
+            String urlString, int source, Color color, String title) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
             Usericon.Builder b = new Usericon.Builder(type, source);
             b.setChannel(channel);
             b.setUrl(url);
             b.setColor(color);
+            b.setMetaTitle(title);
             return b.build();
         } catch (MalformedURLException ex) {
             LOGGER.warning("Invalid icon url: " + urlString);

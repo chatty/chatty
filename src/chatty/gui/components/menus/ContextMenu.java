@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -22,10 +23,13 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     private final Map<String, JMenu> subMenus = new HashMap<>();
     private final Set<ContextMenuListener> listeners = new HashSet<>();
     
-    private JMenuItem makeItem(String action, String text) {
+    private JMenuItem makeItem(String action, String text, ImageIcon icon) {
         JMenuItem item = new JMenuItem(text);
         item.setActionCommand(action);
         item.addActionListener(this);
+        if (icon != null) {
+            item.setIcon(icon);
+        }
         return item;
     }
     
@@ -43,8 +47,12 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
      * listener
      * @param text The label of the menu item
      */
+    protected void addItem(String action, String text, ImageIcon icon) {
+        add(makeItem(action, text, icon));
+    }
+    
     protected void addItem(String action, String text) {
-        add(makeItem(action, text));
+        addItem(action, text, null);
     }
     
     /**
@@ -58,12 +66,16 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
      * it isn't added to a submenu
      * @see addItem(String, String)
      */
-    protected void addItem(String action, String text, String parent) {
+    protected void addSubItem(String action, String text, String parent, ImageIcon icon) {
         if (parent != null) {
-            getSubmenu(parent).add(makeItem(action, text));
+            getSubmenu(parent).add(makeItem(action, text, icon));
         } else {
             addItem(action, text);
         }
+    }
+    
+    protected void addSubItem(String action, String text, String parent) {
+        addSubItem(action, text, parent, null);
     }
     
     protected void addCheckboxItem(String action, String text, boolean selected) {
@@ -113,6 +125,10 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             subMenus.put(name, menu);
         }
         return subMenus.get(name);
+    }
+    
+    protected void setSubMenuIcon(String name, ImageIcon icon) {
+        getSubmenu(name).setIcon(icon);
     }
     
 }

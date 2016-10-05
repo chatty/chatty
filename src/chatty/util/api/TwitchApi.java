@@ -786,7 +786,7 @@ public class TwitchApi {
     
     private void addUsericon(List<Usericon> icons, Usericon.Type type, String stream, String url) {
         if (url != null && !url.isEmpty()) {
-            Usericon icon = UsericonFactory.createTwitchIcon(type, stream, url);
+            Usericon icon = UsericonFactory.createTwitchIcon(type, stream, url, null);
             if (icon != null) {
                 icons.add(icon);
             }

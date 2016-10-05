@@ -3,6 +3,8 @@ package chatty.gui.components.menus;
 
 import chatty.Chatty;
 import chatty.Helper;
+import static chatty.gui.components.menus.ContextMenuHelper.ICON_IMAGE;
+import static chatty.gui.components.menus.ContextMenuHelper.ICON_WEB;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -30,21 +32,21 @@ public class EmoteContextMenu extends ContextMenu {
         } else {
             addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
         }
-        addItem("emoteImage", emoteImage.getSizeString());
+        addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
         if (emote.numericId != Emoticon.ID_UNDEFINED) {
-            addItem("emoteId", "ID: "+emote.numericId);
+            addItem("emoteId", "ID: "+emote.numericId, ICON_WEB);
         }
         
         // Non-Twitch Emote Information
         if (emote.type != Emoticon.Type.TWITCH) {
             addSeparator();
             if (emote.type == Emoticon.Type.FFZ) {
-                addItem("ffzlink", "FrankerFaceZ Emote");
+                addItem("ffzlink", "FrankerFaceZ Emote", ICON_WEB);
                 if (emote.creator != null) {
                     addItem("emoteCreator", "Emote by: "+emote.creator);
                 }
             } else if (emote.type == Emoticon.Type.BTTV) {
-                addItem("bttvlink", "BetterTTV Emote");
+                addItem("bttvlink", "BetterTTV Emote", ICON_WEB);
                 if (emote.hasStreamSet()
                         && emote.emoteSet == Emoticon.SET_UNDEFINED
                         && Helper.validateStream(emote.getStream())) {
@@ -122,10 +124,10 @@ public class EmoteContextMenu extends ContextMenu {
     private void addStreamSubmenu(Emoticon emote) {
         if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
             String subMenu = emote.getStream();
-            addItem("profile", "Twitch Profile", subMenu);
-            addItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);
+            addSubItem("profile", "Twitch Profile", subMenu);
+            addSubItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);
             addSeparator(subMenu);
-            addItem("showChannelEmotes", "Show Emotes", subMenu);
+            addSubItem("showChannelEmotes", "Show Emotes", subMenu);
         }
     }
     

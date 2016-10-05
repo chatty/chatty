@@ -2,6 +2,7 @@
 package chatty.gui.components.menus;
 
 import chatty.Chatty;
+import static chatty.gui.components.menus.ContextMenuHelper.ICON_WEB;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.Usericon;
 import java.awt.event.ActionEvent;
@@ -20,9 +21,9 @@ public class UsericonContextMenu extends ContextMenu {
         this.usericon = usericon;
         
         if (usericon.metaTitle.isEmpty()) {
-            addItem("", "Badge: "+usericon.type.label);
+            addItem("", "Badge: "+usericon.type.label, ContextMenuHelper.ICON_SPACING);
         } else {
-            addItem("", "Badge: "+usericon.metaTitle);
+            addItem("", "Badge: "+usericon.metaTitle, ContextMenuHelper.ICON_SPACING);
             if (!usericon.metaTitle.equals(usericon.metaDescription) && !usericon.metaDescription.isEmpty()) {
                 addItem("", StringUtil.shortenTo(usericon.metaDescription, 30));
             }
@@ -32,7 +33,7 @@ public class UsericonContextMenu extends ContextMenu {
         }
         if (!usericon.metaUrl.isEmpty()) {
             addSeparator();
-            addItem("usericonUrl", "Click for info");
+            addItem("usericonUrl", "Click for info", ICON_WEB);
         }
         if (Chatty.DEBUG) {
             addItem("", usericon.toString());
