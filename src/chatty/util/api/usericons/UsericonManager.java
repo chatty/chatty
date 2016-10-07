@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -115,6 +116,17 @@ public class UsericonManager {
         customIcons.clear();
         customIcons.addAll(data);
         saveToSettings();
+    }
+    
+    public synchronized Set<String> getTwitchBadgeTypes() {
+        Set<String> result = new TreeSet<>();
+        for (Usericon icon : defaultIcons) {
+            if (icon.type == Usericon.Type.TWITCH) {
+                result.add(icon.badgeType.id);
+                result.add(icon.badgeType.toString());
+            }
+        }
+        return result;
     }
     
     /**
@@ -302,9 +314,6 @@ public class UsericonManager {
     private boolean iconsMatchesAdvancedType(Usericon icon,
             Usericon.Type requestedType, String id, String version) {
         if (icon.type == requestedType) {
-            if (id == null && version == null) {
-                return true;
-            }
             if (icon.badgeType.matchesLenient(id, version)) {
                 return true;
             }
@@ -319,17 +328,7 @@ public class UsericonManager {
          * TWITCH badge with mod/1 (for custom and fallback icons).
          */
         else if (requestedType == Usericon.Type.TWITCH && icon.type.badgeId != null) {
-            if (icon.badgeType.equals(id, version)) {
-                return true;
-            }
-            if (icon.badgeType.matchesLenient(id, version)) {
-                return true;
-            }
-//            if (Objects.equals(id, icon.badgeId) && icon.badgeVersion == null) {
-//                return true;
-//            }
             if (icon.type == Usericon.typeFromBadgeId(id) && icon.badgeType.equals(null, null)) {
-                //System.out.println("B:"+icon);
                 return true;
             }
         }

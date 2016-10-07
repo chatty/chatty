@@ -5,6 +5,7 @@ import chatty.util.api.usericons.Usericon;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -60,6 +61,10 @@ public class ImageSettings extends SettingsPanel {
     
     public void setData(List<Usericon> data) {
         usericonsData.setData(data);
+    }
+    
+    public void setTwitchBadgeTypes(Set<String> data) {
+        usericonsData.setTwitchBadgeTypes(data);
     }
     
     public List<Usericon> getData() {

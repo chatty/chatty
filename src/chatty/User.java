@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
@@ -144,8 +145,13 @@ public class User implements Comparable {
         return null;
     }
     
-    public void setTwitchBadges(Map<String, String> badges) {
-        this.twitchBadges = badges;
+    public boolean setTwitchBadges(Map<String, String> badges) {
+        if (!Objects.equals(badges, this.twitchBadges)) {
+            this.twitchBadges = badges;
+            updateFullNick();
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -156,6 +162,17 @@ public class User implements Comparable {
      */
     public Map<String, String> getTwitchBadges() {
         return twitchBadges;
+    }
+    
+    /**
+     * Check if the User currently has a Twitch Badge with the given id.
+     * 
+     * @param id The badge id
+     * @return true if the user has a badge with that id (any version), false
+     * otherwise
+     */
+    public boolean hasTwitchBadge(String id) {
+        return twitchBadges != null && twitchBadges.containsKey(id);
     }
     
     /**
@@ -698,6 +715,9 @@ public class User implements Comparable {
         String result = "";
         if (isSubscriber()) {
             result += "%";
+        }
+        if (hasTwitchBadge("bits")) {
+            result += "$";
         }
         if (hasTurbo()) {
             result += "+";

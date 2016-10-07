@@ -328,25 +328,18 @@ public class FrankerFaceZ {
      * Request and parse FFZ bot names.
      */
     public void requestBotNames() {
-        UrlRequest request = new UrlRequest("http://cdn.frankerfacez.com/script/bots.txt") {
+        UrlRequest request = new UrlRequest("https://api.frankerfacez.com/v1/badge/bot") {
             
             @Override
             public void requestResult(String result, int responseCode) {
                 if (result != null && responseCode == 200) {
-                    String[] lines = result.split("\n");
-                    Set<String> botNames = new HashSet<>();
-                    for (String line : lines) {
-                        line = line.trim();
-                        if (!line.isEmpty()) {
-                            botNames.add(line);
-                        }
-                    }
-                    LOGGER.info("FFZ Bots: Found "+botNames.size()+" names");
+                    Set<String> botNames = FrankerFaceZParsing.getBotNames(result);
+                    LOGGER.info("[FFZ Bots] Found "+botNames.size()+" names");
                     listener.botNamesReceived(botNames);
                 }
             }
         };
-        request.setLabel("FFZ Bots");
+        request.setLabel("[FFZ Bots]");
         new Thread(request).start();
     }
 }

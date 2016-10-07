@@ -830,11 +830,13 @@ public class TwitchConnection {
              * Any and all tag values may be null, so account for that when
              * checking against them.
              */
-            Map<String, String> badges = Helper.parseBadges(tags.get("badges"));
-            user.setTwitchBadges(badges);
-            
             // Whether anything in the user changed to warrant an update
             boolean changed = false;
+            
+            Map<String, String> badges = Helper.parseBadges(tags.get("badges"));
+            if (user.setTwitchBadges(badges)) {
+                changed = true;
+            }
             
             if (settings.getBoolean("ircv3CapitalizedNames")) {
                 if (user.setDisplayNick(StringUtil.trim(tags.get("display-name")))) {
@@ -849,7 +851,7 @@ public class TwitchConnection {
             }
             
             // Update user status
-            boolean turbo = checkTagsState("turbo", tags) || badges.containsKey("turbo");
+            boolean turbo = checkTagsState("turbo", tags) || badges.containsKey("turbo") || badges.containsKey("premium");
             if (user.setTurbo(turbo)) {
                 changed = true;
             }

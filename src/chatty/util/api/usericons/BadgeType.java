@@ -90,9 +90,18 @@ public class BadgeType {
         return Objects.equals(this.id, id) && Objects.equals(this.version, version);
     }
     
+    /**
+     * Returns {@code true} if both the id and version in the arguments and of
+     * this object are equal respectively, or if the id is equal but the version
+     * of this object is {@code null}.
+     * 
+     * @param id
+     * @param version
+     * @return 
+     */
     public boolean matchesLenient(String id, String version) {
         if (Objects.equals(this.id, id)) {
-            if (version == null || this.version == null) {
+            if (this.version == null) {
                 return true;
             }
             if (Objects.equals(this.version, version)) {

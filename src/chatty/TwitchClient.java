@@ -275,6 +275,7 @@ public class TwitchClient {
             User j = new User("joshimuz", "Joshimuz", "");
             j.addMessage("abc", false);
             j.setDisplayNick("Joshimoose");
+            j.setTurbo(true);
             g.addUser("", j);
             g.addUser("", new User("jolzi", ""));
             g.addUser("", new User("john", ""));
@@ -285,7 +286,11 @@ public class TwitchClient {
             g.addUser("", new User("lotsofs", "LotsOfS", ""));
             g.addUser("", new User("anders", ""));
             g.addUser("", new User("apex1", ""));
-            g.addUser("", new User("applefan", ""));
+            User af = new User("applefan", "");
+            Map<String, String> badges = new LinkedHashMap<>();
+            badges.put("bits", "100");
+            af.setTwitchBadges(badges);
+            g.addUser("", af);
             g.addUser("", new User("austrian_", ""));
             g.addUser("", new User("adam_ak", ""));
             g.addUser("", new User("astroman", ""));

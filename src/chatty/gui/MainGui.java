@@ -1875,6 +1875,10 @@ public class MainGui extends JFrame implements Runnable {
         return client.usericonManager.getData();
     }
     
+    public Set<String> getTwitchBadgeTypes() {
+        return client.usericonManager.getTwitchBadgeTypes();
+    }
+    
     public void setUsericonData(java.util.List<Usericon> data) {
         client.usericonManager.setData(data);
     }

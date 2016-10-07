@@ -1,85 +1,92 @@
 
 package chatty.gui.components.settings;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.HashMap;
+import chatty.gui.components.settings.GenericComboSetting.Entry;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Vector;
+import java.util.Objects;
 import javax.swing.JComboBox;
 
 /**
- *
+ * Warning:
+ * This should only be set editable when the generic type is String, since there
+ * is no way to convert what is manually entered into the generic type.
+ * 
  * @author tduva
+ * @param <E>
  */
-public class GenericComboSetting<E> extends JComboBox<String> {
+public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
 
-    private final Map<E, String> items;
-    private final Map<String, String> commands = new HashMap<>();
-    private ActionListener actionListener;
-    private int lastSelected;
+    public GenericComboSetting() {
+        // Empty list
+    }
     
     public GenericComboSetting(E[] initialItems) {
-        items = new HashMap<>();
         for (E item : initialItems) {
-            add(String.valueOf(item));
-            items.put(item, String.valueOf(item));
+            add(item);
         }
         if (initialItems.length > 0) {
             setSelectedIndex(0);
         }
-        //addListener();
     }
     
     public GenericComboSetting(Map<E, String> items) {
-        super(new Vector<>(items.values()));
-        this.items = items;
-        //addListener();
+        for (E value : items.keySet()) {
+            String label = items.get(value);
+            add(value, label);
+        }
     }
     
     public E getSettingValue() {
-        String selected = (String)getSelectedItem();
+        Entry<E> selected = (Entry<E>)getSelectedItem();
         if (selected == null) {
             return null;
         }
-        E value = this.getKeyFromItem(selected);
-        if (value != null) {
-            return value;
-        }
-        return null;
-    }
-
-    public void setSettingValue(E value) {
-        if (!items.containsKey(value)) {
-            items.put(value, String.valueOf(value));
-            add(String.valueOf(value));
-        }
-        setSelectedItem(items.get(value));
+        return selected.value;
     }
     
-    public void addCommand(String command, String label) {
-        commands.put(command, label);
-        addItem(label);
+    public boolean containsItem(E item) {
+        for (int i=0;i<getItemCount();i++) {
+            if (Objects.equals(getItemAt(i).value, item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void setSettingValue(E item) {
+        Entry entry = new Entry<>(item, item == null ? "" : String.valueOf(item));
+        if (!isEditable() && !containsItem(item)) {
+            addItem(entry);
+        }
+        setSelectedItem(entry);
     }
 
     public void add(E item) {
-        items.put(item, String.valueOf(item));
-        add(String.valueOf(item));
+        Entry entry = new Entry<>(item, String.valueOf(item));
+        addItem(entry);
+    }
+    
+    /**
+     * Adds an item and adds the label to the list.
+     *
+     * @param item
+     * @param label
+     */
+    public void add(E item, String label) {
+        Entry entry = new Entry<>(item, label);
+        addItem(entry);
     }
     
     /**
      * Removes all items from the list.
      */
     public void clear() {
-        items.clear();
         removeAllItems();
     }
     
     /**
      * Removes all items from the list and replaces them with the given ones.
+     * 
      * @param data 
      */
     public void setData(Map<E, String> data) {
@@ -100,84 +107,45 @@ public class GenericComboSetting<E> extends JComboBox<String> {
         }
     }
     
-    /**
-     * Adds an item and adds the label to the list.
-     * 
-     * @param item
-     * @param label 
-     */
-    public void add(E item, String label) {
-        items.put(item, label);
-        add(label);
-    }
-    
-    /**
-     * Adds an item to the list, before any commands.
-     * 
-     * @param item 
-     */
-    private void add(String item) {
-        int insertAt = getItemCount() - commands.size();
-        if (insertAt < 0) {
-            insertAt = 0;
+    public static class Entry<E> {
+        private final E value;
+        private final String label;
+        
+        public Entry(E value, String label) {
+            this.value = value;
+            this.label = label;
         }
-        insertItemAt(item, insertAt);
+        
+        @Override
+        public String toString() {
+            return label;
+        }
+        
+        public static Object valueOf(String value) {
+            return new Entry(value, value);
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Entry<?> other = (Entry<?>) obj;
+            if (!Objects.equals(this.value, other.value)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 89 * hash + Objects.hashCode(this.value);
+            return hash;
+        }
     }
 
-    private E getKeyFromItem(String item) {
-        for (Entry<E, String> entry : items.entrySet()) {
-            if (item.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-    
-    private String getCommandFromItem(String item) {
-        for (Entry<String, String> entry : commands.entrySet()) {
-            if (item.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        return null;
-    }
-    
-    private boolean contains(E value) {
-        for (int i=0; i < getItemCount(); i++) {
-            if (getItemAt(i).equals(value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public void setActionListener(ActionListener listener) {
-        actionListener = listener;
-    }
-    
-    private void addListener() {
-        this.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() != ItemEvent.SELECTED) {
-                    return;
-                }
-                String selected = (String) getSelectedItem();
-                if (selected != null) {
-                    String command = getCommandFromItem(selected);
-                    if (command != null) {
-                        if (getSelectedIndex() != lastSelected) {
-                            setSelectedIndex(lastSelected);
-                        }
-                        if (actionListener != null) {
-                            actionListener.actionPerformed(new ActionEvent(this, 0, command));
-                        }
-                    } else {
-                        lastSelected = getSelectedIndex();
-                    }
-                }
-            }
-        });
-    }
 }

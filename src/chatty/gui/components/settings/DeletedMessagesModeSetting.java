@@ -49,8 +49,8 @@ public class DeletedMessagesModeSetting extends JPanel {
      * Activate/Deactivate the max character input.
      */
     private void update() {
-        String selected = (String) combo.getSelectedItem();
-        boolean shorten = selected == OPTION_STRIKE_THROUGH_SHORTEN;
+        String selected = combo.getSettingValue();
+        boolean shorten = selected.equals("keepShortened");
         maxLength.setEnabled(shorten);
         maxLengthLabel.setEnabled(shorten);
         maxLengthLabel2.setEnabled(shorten);

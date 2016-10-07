@@ -331,6 +331,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         loadMapSettings();
         usercolorSettings.setData(owner.getUsercolorData());
         imageSettings.setData(owner.getUsericonData());
+        imageSettings.setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
         hotkeySettings.setData(owner.hotkeyManager.getActionsMap(),
                 owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
     }

@@ -21,6 +21,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,11 +44,14 @@ class UsericonEditor extends TableEditor<Usericon> {
     
     private static final Map<Usericon.Type, String> typeNames;
     
+    private final MyItemEditor editor;
+    
     public UsericonEditor(JDialog owner) {
         super(SORTING_MODE_MANUAL, false);
         
+        editor = new MyItemEditor(owner);
         setModel(new MyTableModel());
-        setItemEditor(new MyItemEditor(owner));
+        setItemEditor(editor);
         setRendererForColumn(1, new IdRenderer(getForeground()));
         setRendererForColumn(2, new ImageRenderer());
         setRendererForColumn(3, new ChannelRenderer(getForeground()));
@@ -69,6 +73,10 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames.put(Usericon.Type.GLOBAL_MOD, "Global Moderator");
         typeNames.put(Usericon.Type.BOT, "Bot");
         typeNames.put(Usericon.Type.TWITCH, "Other Twitch");
+    }
+    
+    public void setTwitchBadgeTypes(Set<String> types) {
+        editor.setTwitchBadgeTypes(types);
     }
     
     private static String getTypeName(Type type) {
@@ -229,7 +237,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         private final GenericComboSetting<Type> type;
         private final JTextField restriction = new JTextField();
         private final JTextField stream = new JTextField();
-        private final JTextField idVersion = new JTextField();
+        private final GenericComboSetting<String> idVersion;
         
         private final JButton okButton = new JButton("Done");
         private final JButton cancelButton = new JButton("Cancel");
@@ -260,36 +268,25 @@ class UsericonEditor extends TableEditor<Usericon> {
                         idVersion.setEnabled(true);
                     } else {
                         idVersion.setEnabled(false);
-                        idVersion.setText(null);
+                        idVersion.setSettingValue("");
                     }
                 }
             });
             
-            //((PlainDocument)idVersion.getDocument()).setDocumentFilter(new RegexDocumentFilter("\\s+"));
-            
-            fileName = new GenericComboSetting<>(new String[0]);
+            idVersion = new GenericComboSetting<>();
+            idVersion.setEditable(true);
+
+            fileName = new GenericComboSetting<>();
             fileName.setEditable(true);
             fileName.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    //System.out.println(e);
                     if (e.getActionCommand().equals("comboBoxChanged")) {
                         update();
                     }
                 }
             });
-            
-//            ActionListener changeListener = new ActionListener() {
-//
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    System.out.println("changed");
-//                    updateOkButton();
-//                }
-//            };
-//            type.addActionListener(changeListener);
-//            fileName.addActionListener(changeListener);
 
             GridBagConstraints gbc;
             
@@ -445,7 +442,9 @@ class UsericonEditor extends TableEditor<Usericon> {
             if (preview) {
                 currentIcon = UsericonFactory.createCustomIcon(Type.UNDEFINED, null, null, file, null);
             } else if (type.getSettingValue() != null) {
-                currentIcon = UsericonFactory.createCustomIcon(type.getSettingValue(), idVersion.getText(), restriction.getText(), file, stream.getText());
+                currentIcon = UsericonFactory.createCustomIcon(
+                        type.getSettingValue(), idVersion.getSettingValue(),
+                        restriction.getText(), file, stream.getText());
             } else {
                 currentIcon = null;
             }
@@ -493,14 +492,14 @@ class UsericonEditor extends TableEditor<Usericon> {
             if (preset != null) {
                 restriction.setText(preset.restriction);
                 type.setSettingValue(preset.type);
-                idVersion.setText(preset.getIdAndVersion());
+                idVersion.setSettingValue(preset.getIdAndVersion());
                 fileName.setSettingValue(preset.fileName);
                 stream.setText(preset.channelRestriction);
                 currentIcon = preset;
             } else {
                 restriction.setText(null);
                 type.setSelectedIndex(0);
-                idVersion.setText(null);
+                idVersion.setSettingValue(null);
                 fileName.setSelectedIndex(0);
                 stream.setText(null);
                 currentIcon = null;
@@ -541,7 +540,7 @@ class UsericonEditor extends TableEditor<Usericon> {
                 }
                 Arrays.sort(fileNames);
                 
-                String selected = (String) fileName.getSelectedItem();
+                Object selected = fileName.getSelectedItem();
                 fileName.removeAllItems();
                 fileName.add("", "<no image>");
                 for (String item : fileNames) {
@@ -550,6 +549,13 @@ class UsericonEditor extends TableEditor<Usericon> {
                 fileName.setSelectedItem(selected);
             }
             scanResult.setText(resultText);
+        }
+        
+        public void setTwitchBadgeTypes(Set<String> types) {
+            idVersion.clear();
+            for (String type : types) {
+                idVersion.add(type);
+            }
         }
     }
 

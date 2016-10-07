@@ -224,4 +224,26 @@ public class FrankerFaceZParsing {
         }
     }
     
+    public static Set<String> getBotNames(String json) {
+        Set<String> result = new HashSet<>();
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject)parser.parse(json);
+            JSONObject badge = (JSONObject)root.get("badge");
+            if (badge.get("name").equals("bot")) {
+                int badgeId = ((Number)badge.get("id")).intValue();
+                JSONObject users = (JSONObject)root.get("users");
+                JSONArray names = (JSONArray)users.get(String.valueOf(badgeId));
+                for (Object item : names) {
+                    if (item != null && item instanceof String) {
+                        result.add((String)item);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing bot names: "+ex);
+        }
+        return result;
+    }
+    
 }
