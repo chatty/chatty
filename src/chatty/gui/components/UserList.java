@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.Helper;
 import chatty.SettingsManager;
 import chatty.User;
 import chatty.gui.UserListener;
@@ -48,25 +49,7 @@ public class UserList extends JList<User> {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 
                 User user = (User)value;
-                if (user.hasCustomNickSet()) {
-                    setText(user.getFullNick());
-                }
-                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
-                    if (user.hasRegularDisplayNick()) {
-                        setText(user.getFullNick());
-                    } else {
-                        setText(user.getFullNick()+" ("+user.getRegularDisplayNick()+")");
-                    }
-                }
-                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_LOCALIZED) {
-                    setText(user.getFullNick());
-                }
-                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED) {
-                    setText(user.getModeSymbol()+user.getRegularDisplayNick());
-                }
-                else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
-                    setText(user.getModeSymbol()+user.getNick());
-                }
+                setText(Helper.makeDisplayNick(user, displayNamesMode));
                 return this;
             }
             

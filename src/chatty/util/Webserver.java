@@ -365,7 +365,7 @@ public class Webserver implements Runnable {
                 content = buffer.toString();
 
             } catch (Exception ex) {
-                debug(ex.getMessage());
+                debug(ex.toString());
                 content = "<html><body>An error occured (couldn't read file)</body></html>";
             }
             return makeHeader(true) + content;

@@ -1451,9 +1451,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private void addAddonIcons(User user, boolean first) {
         // Output addon usericons (if there are any)
-        java.util.List<MutableAttributeSet> addonIcons = styles.getAddonIconStyles(user, first);
-        for (MutableAttributeSet style : addonIcons) {
-            print("*", style);
+        java.util.List<Usericon> icons = user.getAddonIcons(first);
+        for (Usericon icon : icons) {
+            print(icon.getSymbol(), styles.makeIconStyle(icon));
         }
     }
     
@@ -2761,19 +2761,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
             userStyle.addAttribute(Attribute.USER, user);
             return userStyle;
-        }
-        
-        public MutableAttributeSet subscriberIcon() {
-            return styles.get("subscriber");
-        }
-        
-        public java.util.List<MutableAttributeSet> getAddonIconStyles(User user, boolean first) {
-            java.util.List<Usericon> icons = user.getAddonIcons(first);
-            java.util.List<MutableAttributeSet> iconStyles = new ArrayList<>();
-            for (Usericon icon : icons) {
-                iconStyles.add(makeIconStyle(icon));
-            }
-            return iconStyles;
         }
         
         /**

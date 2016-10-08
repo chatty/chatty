@@ -50,13 +50,12 @@ public class Usericon implements Comparable {
         STAFF(3, "Staff", "STA", "&", "staff", HtmlColors.decode("#200f33")),
         ADMIN(4, "Admin", "ADM", "!", "admin", HtmlColors.decode("#faaf19")),
         SUB(5, "Subscriber", "SUB", "%", "subscriber", null),
-        ADDON(6, "Addon", "ADD", "*", null, null),
+        ADDON(6, "Addon", "ADD", "'", null, null),
         GLOBAL_MOD(7, "Global Moderator", "GLM", "*", "global_mod", HtmlColors.decode("#0c6f20")),
         BOT(8, "Bot", "BOT", "^", null, null),
-//        RESUB(9, "Resub", "RSB", null),
-//        NEWSUB(10, "Newsub", "NSB", null),
-        TWITCH(11, "Twitch Badge", "TWB", null, null, null),
-        PRIME(12, "Prime", "TPR", "$", "premium", null),
+        TWITCH(9, "Twitch Badge", "TWB", null, null, null),
+        PRIME(10, "Prime", "TPR", "+", "premium", null),
+        BITS(11, "Bits", "BIT", "$", "bits", null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -435,7 +434,7 @@ public class Usericon implements Comparable {
         if (typeFromBadgeId(badgeType.id) != null) {
             return typeFromBadgeId(badgeType.id).symbol;
         }
-        return "$";
+        return "?";
     }
     
     public String getIdAndVersion() {

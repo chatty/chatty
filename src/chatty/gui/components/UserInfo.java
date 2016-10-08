@@ -444,8 +444,10 @@ public class UserInfo extends JDialog {
     
     private void setUser(User user, String localUsername) {
         if (currentUser != user) {
-            removeInfo();
             currentUser = user;
+            if (infoAdded) {
+                showInfo();
+            }
             
         }
         currentLocalUsername = localUsername;
@@ -645,20 +647,19 @@ public class UserInfo extends JDialog {
     }
     
     private void showInfo() {
-        ChannelInfo info = owner.getCachedChannelInfo(currentUser.nick);
-        if (info == null) {
+        ChannelInfo requestedInfo = owner.getCachedChannelInfo(currentUser.nick);
+        if (requestedInfo == null) {
             addInfo();
             createdAt.setText("Loading..");
             createdAt.setToolTipText(null);
             followers.setText(null);
         } else {
-            setChannelInfo(info);
+            setChannelInfo(requestedInfo);
         }
     }
     
     public void setChannelInfo(ChannelInfo info) {
         if (info == null || currentUser == null || !currentUser.nick.equals(info.name)) {
-            removeInfo();
             return;
         }
         addInfo();

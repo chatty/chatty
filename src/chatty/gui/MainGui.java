@@ -2381,7 +2381,10 @@ public class MainGui extends JFrame implements Runnable {
     private void showHighlightNotification(String channel, User user, String text) {
         String setting = client.settings.getString("highlightNotification");
         if (checkRequirements(setting, channel)) {
-            showNotification("[Highlight] " + user.getDisplayNick() + " in " + channel, text, channel);
+            long displayNamesMode = getSettings().getLong("displayNamesMode");
+            String name = Helper.makeDisplayNick(user, displayNamesMode);
+            String title = String.format("[Highlight] %s in %s", name, channel);
+            showNotification(title, text, channel);
         }
     }
     

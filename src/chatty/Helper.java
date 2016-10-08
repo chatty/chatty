@@ -632,4 +632,23 @@ public class Helper {
         return Collections.unmodifiableMap(result);
     }
     
+    public static String makeDisplayNick(User user, long displayNamesMode) {
+        if (user.hasCustomNickSet()) {
+            return user.getFullNick();
+        } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
+            if (user.hasRegularDisplayNick()) {
+                return user.getFullNick();
+            } else {
+                return user.getFullNick() + " (" + user.getRegularDisplayNick() + ")";
+            }
+        } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_LOCALIZED) {
+            return user.getFullNick();
+        } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED) {
+            return user.getModeSymbol() + user.getRegularDisplayNick();
+        } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
+            return user.getModeSymbol() + user.getNick();
+        }
+        return user.getFullNick();
+    }
+    
 }
