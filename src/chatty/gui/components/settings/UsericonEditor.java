@@ -184,7 +184,11 @@ class UsericonEditor extends TableEditor<Usericon> {
             
             if (icon.fileName != null && icon.fileName.startsWith("$")) {
                 setIcon(null);
-                setText(icon.fileName.substring(1));
+                if (icon.fileName.equalsIgnoreCase("$default")) {
+                    setText("Default badge");
+                } else {
+                    setText(icon.fileName.substring(1));
+                }
             } else if (icon.removeBadge) {
                 setIcon(null);
                 setText("No image");
@@ -500,6 +504,8 @@ class UsericonEditor extends TableEditor<Usericon> {
                 restriction.setText(null);
                 type.setSelectedIndex(0);
                 idVersion.setSettingValue(null);
+                // Must contain items to set to index 0, which it always should
+                // due to <no image> and stuff
                 fileName.setSelectedIndex(0);
                 stream.setText(null);
                 currentIcon = null;
@@ -525,6 +531,12 @@ class UsericonEditor extends TableEditor<Usericon> {
             File file = new File(Chatty.getImageDirectory());
             File[] files = file.listFiles(new ImageFilenameFilter());
             String resultText = "";
+            
+            Object selected = fileName.getSelectedItem();
+            fileName.removeAllItems();
+            fileName.add("", "<no image>");
+            fileName.add("$default", "$default");
+            
             if (files == null) {
                 resultText = "Error scanning folder.";
             }
@@ -539,15 +551,11 @@ class UsericonEditor extends TableEditor<Usericon> {
                     fileNames[i] = files[i].getName();
                 }
                 Arrays.sort(fileNames);
-                
-                Object selected = fileName.getSelectedItem();
-                fileName.removeAllItems();
-                fileName.add("", "<no image>");
                 for (String item : fileNames) {
                     fileName.add(item);
                 }
-                fileName.setSelectedItem(selected);
             }
+            fileName.setSelectedItem(selected);
             scanResult.setText(resultText);
         }
         

@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
+import static chatty.util.api.usericons.Usericon.SOURCE_ANY;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -188,7 +189,13 @@ public class UsericonManager {
                         // This is a very special case, which only applies if
                         // the Twitch Icon wasn't loaded or not loaded yet, and
                         // it should be replaced only when that happens.
-                        Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_TWITCH);
+                        
+                        Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_TWITCH2);
+                        if (refIcon != null && refIcon.image != null) {
+                            return refIcon;
+                        }
+                    } else if (icon.fileName.equalsIgnoreCase("$default")) {
+                        Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_ANY);
                         if (refIcon != null && refIcon.image != null) {
                             return refIcon;
                         }
@@ -196,7 +203,7 @@ public class UsericonManager {
                 }
             }
         }
-        return getDefaultIcon(type, id, version, user, -1);
+        return getDefaultIcon(type, id, version, user, Usericon.SOURCE_ANY);
     }
     
     /**
@@ -209,7 +216,8 @@ public class UsericonManager {
      */
     private Usericon getDefaultIcon(Usericon.Type type, String id, String version, User user, int source) {
         for (Usericon icon : defaultIcons) {
-            if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user) && (source == -1 || icon.source == source)) {
+            if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)
+                    && (source == Usericon.SOURCE_ANY || icon.source == source)) {
                 // Skip FFZ if disabled
                 if (icon.source == Usericon.SOURCE_FFZ && !settings.getBoolean("ffzModIcon")) {
                     continue;

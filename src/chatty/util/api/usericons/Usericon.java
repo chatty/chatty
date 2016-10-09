@@ -4,6 +4,7 @@ package chatty.util.api.usericons;
 import chatty.Helper;
 import chatty.gui.HtmlColors;
 import chatty.util.ImageCache;
+import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
@@ -98,6 +99,7 @@ public class Usericon implements Comparable {
     /**
      * The type of icon based on the source.
      */
+    public static final int SOURCE_ANY = -1;
     public static final int SOURCE_FALLBACK = 0;
     public static final int SOURCE_TWITCH = 5;
     public static final int SOURCE_TWITCH2 = 6;
@@ -530,7 +532,7 @@ public class Usericon implements Comparable {
          * @return 
          */
         public Builder setFileName(String fileName) {
-            this.fileName = fileName;
+            this.fileName = StringUtil.trim(fileName);
             return this;
         }
 

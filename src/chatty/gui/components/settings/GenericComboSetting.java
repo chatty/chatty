@@ -44,36 +44,51 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
         return selected.value;
     }
     
-    public boolean containsItem(E item) {
+    public Entry<E> getEntry(E value) {
         for (int i=0;i<getItemCount();i++) {
-            if (Objects.equals(getItemAt(i).value, item)) {
-                return true;
+            if (Objects.equals(getItemAt(i).value, value)) {
+                return getItemAt(i);
             }
         }
-        return false;
+        return null;
+    }
+    
+    public boolean containsValue(E value) {
+        return getEntry(value) != null;
     }
 
-    public void setSettingValue(E item) {
-        Entry entry = new Entry<>(item, item == null ? "" : String.valueOf(item));
-        if (!isEditable() && !containsItem(item)) {
-            addItem(entry);
+    public void setSettingValue(E value) {
+        Entry<E> entry = getEntry(value);
+        if (entry == null) {
+            // If not already in the list, create default one
+            entry = new Entry<>(value, value == null ? "" : String.valueOf(value));
+            if (!isEditable()) {
+                // So it doesn't get lost, if editable it can be in the editor
+                addItem(entry);
+            }
         }
         setSelectedItem(entry);
     }
 
-    public void add(E item) {
-        Entry entry = new Entry<>(item, String.valueOf(item));
+    /**
+     * Adds a value and uses the String representation of that value as label
+     * for display.
+     * 
+     * @param value The value to add to the list
+     */
+    public void add(E value) {
+        Entry entry = new Entry<>(value, String.valueOf(value));
         addItem(entry);
     }
     
     /**
-     * Adds an item and adds the label to the list.
+     * Adds a value and uses the given label for display.
      *
-     * @param item
-     * @param label
+     * @param value The value to add to the list
+     * @param label The label to display for this value
      */
-    public void add(E item, String label) {
-        Entry entry = new Entry<>(item, label);
+    public void add(E value, String label) {
+        Entry entry = new Entry<>(value, label);
         addItem(entry);
     }
     
