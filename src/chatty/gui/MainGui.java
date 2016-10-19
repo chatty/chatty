@@ -299,6 +299,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(subscribersDialog, "subscribers", true, true);
         windowStateManager.addWindow(moderationLog, "moderationLog", true, true);
         windowStateManager.addWindow(streamChat, "streamChat", true, true);
+        windowStateManager.addWindow(userInfoDialog, "userInfo", true, false);
         
         guiCreated = true;
     }
@@ -2019,6 +2020,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void openUserInfoDialog(User user) {
+        windowStateManager.setWindowPosition(userInfoDialog, getActiveWindow());
         userInfoDialog.show(getActiveWindow(), user, client.getUsername());
     }
     
@@ -2611,17 +2613,25 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                // Chat window
-                Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-                SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
-                channels.getChannel(channel).printMessage(m);
-                
-                // Chatlog/User Info
+                // Prepare, check ignore
+                String fullMessage;
                 if (StringUtil.isNullOrEmpty(message)) {
-                    client.chatLog.info(channel, "[Notification] "+text);
+                    fullMessage = "[Notification] "+text;
                 } else {
-                    client.chatLog.info(channel, String.format("[Notification] %s [%s]", text, message));
+                    fullMessage = String.format("[Notification] %s [%s]", text, message);
                 }
+                
+                // Chat window
+                if (!ignoreChecker.check(null, fullMessage)) {
+                    Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
+                    SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
+                    channels.getChannel(channel).printMessage(m);
+                } else {
+                    ignoredMessages.addInfoMessage(channel, fullMessage);
+                }
+
+                // Chatlog/User Info
+                client.chatLog.info(channel, fullMessage);
                 if (!user.nick.isEmpty()) {
                     user.addSub(message != null ? processMessage(message) : "", months);
                     updateUserInfoDialog(user);

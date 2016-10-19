@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Logging;
+import chatty.util.JSONUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -488,6 +489,7 @@ public class StreamInfoManager {
         String name;
         String display_name;
         long timeStarted = -1;
+        long userId = -1;
         boolean noChannelObject = false;
         try {
             // Get stream data
@@ -503,6 +505,7 @@ public class StreamInfoManager {
             game = (String) channel.get("game");
             name = (String) channel.get("name");
             display_name = (String) channel.get("display_name");
+            userId = JSONUtil.getLong(channel, "_id", -1);
             if (!channel.containsKey("status")) {
                 LOGGER.warning("Error parsing StreamInfo: no channel object ("+name+")");
                 noChannelObject = true;
@@ -545,6 +548,10 @@ public class StreamInfoManager {
             game = streamInfo.getGame();
         }
         streamInfo.setDisplayName(display_name);
+        if (streamInfo.setUserId(userId)) {
+            // If not already done, send userId to UserIDs manager
+            api.setUserId(name, userId);
+        }
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted);
         } else {

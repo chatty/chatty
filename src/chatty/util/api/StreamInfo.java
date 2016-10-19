@@ -35,6 +35,8 @@ public class StreamInfo {
      */
     private String display_name;
     
+    private long userId = -1;
+    
     /**
      * Correctly capitalized name of the stream. May be null if not set.
      */
@@ -338,7 +340,7 @@ public class StreamInfo {
     private String makeFullStatus() {
         if (online) {
             String fullStatus = status;
-            if (status == null) {
+            if (status == null || status.isEmpty()) {
                 fullStatus = "No stream title set";
             }
             if (game != null && !game.isEmpty()) {
@@ -407,6 +409,14 @@ public class StreamInfo {
      */
     public boolean hasRegularDisplayName() {
         return !hasDisplayName() || capitalizedName != null;
+    }
+    
+    public synchronized boolean setUserId(long userId) {
+        if (this.userId != userId && userId != -1) {
+            this.userId = userId;
+            return true;
+        }
+        return false;
     }
     
     public synchronized void setNotFound() {

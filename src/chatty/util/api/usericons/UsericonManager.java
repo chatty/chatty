@@ -5,13 +5,10 @@ import chatty.Helper;
 import chatty.User;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
-import static chatty.util.api.usericons.Usericon.SOURCE_ANY;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -394,8 +391,10 @@ public class UsericonManager {
     }
  
     public synchronized void debug() {
-        LOGGER.info("Default usericons: "+defaultIcons);
-        LOGGER.info("Custom usericons: "+customIcons);
+        LOGGER.info(String.format("Default usericons (%d): %s",
+                defaultIcons.size(), defaultIcons));
+        LOGGER.info(String.format("Custom usericons (%d): %s",
+                customIcons.size(), customIcons));
     }
     
 }

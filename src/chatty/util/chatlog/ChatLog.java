@@ -5,7 +5,9 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.User;
 import chatty.util.DateTime;
+import chatty.util.DateTime.Formatting;
 import chatty.util.StringUtil;
+import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.settings.Settings;
@@ -150,13 +152,17 @@ public class ChatLog {
         }
     }
     
-    public void userBanned(String channel, String nick, long duration, String reason) {
+    public void userBanned(String channel, String nick, long duration,
+            String reason, ChannelInfo info) {
         String text = nick;
         if (duration > 0) {
             text += " ("+duration+"s)";
         }
         if (reason != null && !reason.isEmpty()) {
             text += " ["+reason+"]";
+        }
+        if (info != null) {
+            text += " {"+DateTime.formatAccountAge(info.createdAt, Formatting.COMPACT)+"}";
         }
         compact(channel, "BAN", text);
     }

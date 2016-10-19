@@ -375,11 +375,8 @@ public class Emoticons {
      * @return true when it is a turbo emoteset, false otherwise
      */
     public static boolean isTurboEmoteset(int emoteSet) {
-        if (emoteSet == 33 || emoteSet == 42
-                    || emoteSet == 457 || emoteSet == 793) {
-            return true;
-        }
-        return false;
+        return emoteSet == 33 || emoteSet == 42 || emoteSet == 457
+                || emoteSet == 793 || emoteSet == 19194;
     }
     
     /**
@@ -402,10 +399,11 @@ public class Emoticons {
      */
     public String getStreamFromEmoteset(int emoteset) {
         String stream = emotesetStreams.get(emoteset);
-        if ("--twitch-turbo--".equals(stream) || "turbo".equals(stream)) {
-            return "Turbo Emotes";
+        if ("--twitch-turbo--".equals(stream) || "turbo".equals(stream)
+                || isTurboEmoteset(emoteset)) {
+            return "Turbo/Prime Emotes";
         }
-        return emotesetStreams.get(emoteset);
+        return stream;
     }
     
     /**
@@ -557,6 +555,33 @@ public class Emoticons {
             }
         }
         return filtered;
+    }
+    
+    public boolean equalsByCode(int setA, int setB) {
+        Collection<Emoticon> a = getEmoticons(setA);
+        Collection<Emoticon> b = getEmoticons(setB);
+        return equalsByCode(a, b);
+    }
+    
+    public static final boolean equalsByCode(Collection<Emoticon> a, Collection<Emoticon> b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (Emoticon emoteA : a) {
+            boolean found = false;
+            for (Emoticon emoteB : b) {
+                if (emoteA.code.equals(emoteB.code)) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
     }
     
     public static final String toWriteable(String emoteCode) {
@@ -1022,6 +1047,17 @@ public class Emoticons {
     
     public static void main(String[] args) {
         System.out.println(parseEmotesTag("131:1-2,4-5/43:1-7"));
+        Set<Emoticon> a = new HashSet<>();
+        Set<Emoticon> b = new HashSet<>();
+        a.add(testBuild("abc"));
+        b.add(testBuild("abc"));
+        b.add(testBuild("abcd"));
+        System.out.println(equalsByCode(a, b));
+    }
+    
+    private static Emoticon testBuild(String code) {
+       Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code, "");
+       return b.build();
     }
     
     /**

@@ -583,7 +583,6 @@ public class UserInfo extends JDialog {
     
     public void show(Component owner, User user, String localUsername) {
         setUser(user, localUsername);
-        setLocationRelativeTo(owner);
         closeButton.requestFocusInWindow();
         setVisible(true);
     }
@@ -663,7 +662,7 @@ public class UserInfo extends JDialog {
             return;
         }
         addInfo();
-        createdAt.setText("Registered: "+DateTime.ago(info.createdAt, 0, 1, 0, Formatting.VERBOSE)+" ago");
+        createdAt.setText("Registered: "+DateTime.formatAccountAge(info.createdAt, Formatting.VERBOSE)+" ago");
         createdAt.setToolTipText("Account created: "+DateTime.formatFullDatetime(info.createdAt));
         
         followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));

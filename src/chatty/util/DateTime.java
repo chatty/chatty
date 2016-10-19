@@ -65,6 +65,10 @@ public class DateTime {
     public static String format2(long time) {
         return format(time, SDF2);
     }
+    
+    public static String formatAccountAge(long time, Formatting... options) {
+        return ago(time, 0, 2, DateTime.H, options);
+    }
 
     public static String agoText(long time) {
         long seconds = (System.currentTimeMillis() - time) / 1000;

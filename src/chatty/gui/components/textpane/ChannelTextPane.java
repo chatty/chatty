@@ -1431,7 +1431,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (user.isBot() && styles.botBadgeEnabled()) {
             Usericon icon = user.getIcon(Usericon.Type.BOT);
             if (icon != null && !icon.removeBadge) {
-                print("^", styles.makeIconStyle(icon));
+                print(icon.getSymbol(), styles.makeIconStyle(icon));
             }
         }
 

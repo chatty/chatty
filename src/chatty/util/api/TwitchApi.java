@@ -254,6 +254,10 @@ public class TwitchApi {
         return url;
     }
     
+    public ChannelInfo getOnlyCachedChannelInfo(String stream) {
+        return cachedChannelInfo.get(stream);
+    }
+    
     public ChannelInfo getCachedChannelInfo(String stream) {
         ChannelInfo info = cachedChannelInfo.get(stream);
         if (info != null) {
@@ -686,28 +690,9 @@ public class TwitchApi {
         }
     }
     
-    /**
-     * Read out the error from JSON, although this shouldn't happen with how
-     * the data is requested. Probably not even needed.
-     * 
-     * @param json The JSON to parse from
-     * @return true if no error occured, false otherwise
-     */
-//    private boolean checkStatus(String json) {
-//        try {
-//            JSONParser parser = new JSONParser();
-//            JSONObject root = (JSONObject)parser.parse(json);
-//            Number status = (Number)root.get("status");
-//            if (status == null) {
-//                return true;
-//            }
-//            LOGGER.warning((String)root.get("message"));
-//            return false;
-//        } catch (ParseException ex) {
-//            LOGGER.warning("Error parsing for status: "+json+" "+ex.getLocalizedMessage());
-//            return false;
-//        }
-//    }
+    public void setUserId(String userName, long userId) {
+        userIDs.setUserId(userName, userId);
+    }
     
     /**
      * Parses the JSON returned from the TwitchAPI that contains the token

@@ -25,6 +25,7 @@ import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
+import chatty.util.RawMessageTest;
 import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
@@ -269,7 +270,7 @@ public class TwitchClient {
         g.showGui();
         
         if (Chatty.DEBUG) {
-            getSpecialUser().setEmoteSets("130,4280,793,33,42");
+            getSpecialUser().setEmoteSets("130,4280,33,42,19194");
             g.addUser("", new User("josh", ""));
             g.addUser("", new User("joshua", ""));
             User j = new User("joshimuz", "Joshimuz", "");
@@ -303,6 +304,7 @@ public class TwitchClient {
             g.addUser("", new User("brett", ""));
             g.addUser("", new User("bll", ""));
             g.addUser("", new User("bzp______________", ""));
+            g.addUser("", new User("7_dm", ""));
             
             String[] chans = new String[]{"europeanspeedsterassembly","esamarathon2","heinki","joshimuz","lotsofs","test","a","b","c"};
             for (String chan : chans) {
@@ -1123,6 +1125,11 @@ public class TwitchClient {
             api.getFollowers(parameter);
         } else if (command.equals("simulate")) {
             c.simulate(parameter);
+        } else if (command.equals("simulate2")) {
+            String raw = RawMessageTest.simulateIRC(channel, parameter);
+            if (raw != null) {
+                c.simulate(raw);
+            }
         } else if (command.equals("lb")) {
             String[] split = parameter.split("&");
             String message = "";
@@ -1455,13 +1462,22 @@ public class TwitchClient {
             refreshRequests.add("emoticons");
             //Emoticons.clearCache(Emoticon.Type.TWITCH);
             api.requestEmoticons(true);
+        } else if (parameter.equals("badges2")) {
+            if (!Helper.validateChannel(channel)) {
+                g.printLine("Must be on a channel to use this.");
+            } else {
+                g.printLine("Refreshing badges2 for " + channel + "..");
+                refreshRequests.add("badges2");
+                api.requestChatIcons(Helper.toStream(channel), true);
+            }
         } else if (parameter.equals("badges")) {
-            if (channel == null || channel.isEmpty()) {
+            if (!Helper.validateChannel(channel)) {
                 g.printLine("Must be on a channel to use this.");
             } else {
                 g.printLine("Refreshing badges for " + channel + "..");
                 refreshRequests.add("badges");
-                api.requestChatIcons(Helper.toStream(channel), true);
+                api.getGlobalBadges(true);
+                api.getRoomBadges(Helper.toStream(channel), true);
             }
         } else if (parameter.equals("ffz")) {
             if (channel == null || channel.isEmpty()) {
@@ -1507,8 +1523,8 @@ public class TwitchClient {
             String sep = "";
             for (Integer emoteset : emotesets) {
                 b.append(sep);
-                if (emoteset == 33 || emoteset == 42 || emoteset == 457) {
-                    b.append("Turbo emotes");
+                if (Emoticons.isTurboEmoteset(emoteset)) {
+                    b.append("Turbo/Prime emotes");
                 } else {
                     String sep2 = "";
                     for (Emoticon emote : g.emoticons.getEmoticons(emoteset)) {
@@ -1700,6 +1716,10 @@ public class TwitchClient {
         @Override
         public void receivedUsericons(List<Usericon> icons) {
             usericonManager.addDefaultIcons(icons);
+            if (refreshRequests.contains("badges2")) {
+                g.printLine("Badges2 updated.");
+                refreshRequests.remove("badges2");
+            }
             if (refreshRequests.contains("badges")) {
                 g.printLine("Badges updated.");
                 refreshRequests.remove("badges");
@@ -2316,8 +2336,9 @@ public class TwitchClient {
                 reason = "";
             }
             g.userBanned(user, duration, reason, id);
+            ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.nick);
             chatLog.userBanned(user.getChannel(), user.getRegularDisplayNick(),
-                    duration, reason);
+                    duration, reason, channelInfo);
         }
         
         @Override

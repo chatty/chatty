@@ -44,6 +44,14 @@ public class JSONUtil {
         return errorValue;
     }
     
+    public static long getLong(JSONObject data, Object key, long errorValue) {
+        Object value = data.get(key);
+        if (value != null && value instanceof Number) {
+            return ((Number)value).longValue();
+        }
+        return errorValue;
+    }
+    
     public static boolean getBoolean(JSONObject data, Object key, boolean errorValue) {
         Object value = data.get(key);
         if (value != null && value instanceof Boolean) {

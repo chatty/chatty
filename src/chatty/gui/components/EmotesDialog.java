@@ -687,7 +687,16 @@ public class EmotesDialog extends JDialog {
                     addEmotes(emoteset);
                 }
             }
+
+            int turboSetA = 793;
+            int turboSetB = 19194;
             for (Integer emoteset : turboEmotes) {
+                if (emoteset == turboSetB && turboEmotes.contains(turboSetA)
+                        && emoteManager.equalsByCode(turboSetA, turboSetB)) {
+                    // Don't show these Turbo/Prime emotes if the user has the
+                    // other set as well, and the emotes are equal
+                    continue;
+                }
                 addEmotes(emoteset);
             }
             relayout();

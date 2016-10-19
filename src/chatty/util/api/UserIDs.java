@@ -108,7 +108,7 @@ public class UserIDs {
         }
     }
     
-    private void setUserId(String username, long userId) {
+    protected void setUserId(String username, long userId) {
         username = username.toLowerCase(Locale.ENGLISH);
         if (userId != -1) {
             userIDs.put(username, userId);
