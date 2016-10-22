@@ -3,7 +3,9 @@ package chatty.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
@@ -26,6 +28,9 @@ public class Sound {
     
     private static final Map<String, Long> lastPlayed = new HashMap<>();
     
+    private static Mixer mixer;
+    private static String mixerName;
+    
     public static void play(String fileName, float volume, String id, int delay) {
         
         if (lastPlayed.containsKey(id)) {
@@ -45,7 +50,12 @@ public class Sound {
             AudioInputStream ais = AudioSystem.getAudioInputStream(file);
             
             DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
-            final Clip clip = (Clip)AudioSystem.getLine(info);
+            final Clip clip;
+            if (mixer != null) {
+                clip = (Clip)mixer.getLine(info);
+            } else {
+                clip = (Clip)AudioSystem.getLine(info);
+            }
             clip.open(ais);
             
             // Volume, use what is available
@@ -103,6 +113,43 @@ public class Sound {
         float range = max - min;
         float gain = ((range * volume / (MAX_VOLUME - MIN_VOLUME)) + min);
         return gain;
+    }
+    
+    public static List<String> getDeviceNames() {
+        List<String> result = new ArrayList<>();
+        try {
+            for (Mixer.Info info : AudioSystem.getMixerInfo()) {
+                for (Line.Info info2 : AudioSystem.getMixer(info).getSourceLineInfo()) {
+                    if (info2.getLineClass() == Clip.class) {
+                        result.add(info.getName());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("Error getting list of sound devices: "+ex);
+        }
+        return result;
+    }
+    
+    public static void setDeviceName(String name) {
+        if (mixerName != null && mixerName.equals(name)) {
+            return;
+        }
+        mixerName = name;
+        if (name == null || name.isEmpty()) {
+            mixer = null;
+            LOGGER.info("Set to default sound device");
+            return;
+        }
+        for (Mixer.Info info : AudioSystem.getMixerInfo()) {
+            if (info.getName().equals(name)) {
+                mixer = AudioSystem.getMixer(info);
+                LOGGER.info("Set sound device to "+name);
+                return;
+            }
+        }
+        mixer = null;
+        LOGGER.info("Could not find sound device "+name);
     }
     
 }

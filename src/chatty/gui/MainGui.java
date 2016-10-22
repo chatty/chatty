@@ -836,6 +836,8 @@ public class MainGui extends JFrame implements Runnable {
         emotesDialog.setCloseOnDoubleClick(client.settings.getBoolean("closeEmoteDialogOnDoubleClick"));
         
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
+        
+        Sound.setDeviceName(client.settings.getString("soundDevice"));
     }
     
     private static final String[] menuBooleanSettings = new String[]{
@@ -3930,6 +3932,8 @@ public class MainGui extends JFrame implements Runnable {
                     emoticons.addEmoji((String)value);
                 } else if (setting.equals("cheersType")) {
                     emoticons.addCheerEmotes((String)value);
+                } else if (setting.equals("soundDevice")) {
+                    Sound.setDeviceName((String)value);
                 }
             }
             if (type == Setting.LIST) {

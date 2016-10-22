@@ -143,9 +143,9 @@ public class TwitchApiRequest implements Runnable {
             }
             
             connection.setRequestMethod(requestMethod);
-            connection.setRequestProperty("Content-Type", contentType);
             if (data != null) {
                 // Send data if necessary
+                connection.setRequestProperty("Content-Type", contentType);
                 connection.setDoOutput(true);
                 try (OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream(), charset)) {
                     out.write(data);

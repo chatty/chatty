@@ -353,21 +353,43 @@
     </ul>
     
     <h3>Custom Usericons</h3>
-    <p>By adding entries to the table you can either replace the default icons (Mod, Turbo, Subscriber, ..)
-    or add additional icons for certain users or addressbook categories. The order
-    of the entries can matter, they are matched from the top, so if more than one
-    icon matches that is supposed to replace a default icon, then the first one
-    is used. If more than one <code>Addon</code> icon matches, then all are used
-    (unless you use the <code>$stop</code> restriction, see section <em>Restriction</em> below).</p>
+    <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
+        or replace the default icons (all other Types).</p>
+    <p>The order of the entries can matter, they are looked at from the top:</p>
+    <ul>
+        <li>All <code>Addon</code> icons that match are shown, unless you use
+            the <code>$stop</code> restriction (see section <em>Restriction</em>
+            below).</li>
+        <li>When replacing default icons (all other Types), the first entry that
+            matches is used. For example if you have several entries for
+            replacing the Turbo badge, then the first one from the top that
+            matches is used.</li>
+    </ul>
     
-    <p>You have the following options when you add/edit an item:</p>
-    <dl class="paragraphs">
+    <h3>Custom Usericon Properties</h3>
+    <dl class="dl-settings">
         <dt>Type</dt>
-        <dd>The type determines whether a default icon will be replaced
-            (if you choose <code>Moderator, Subscriber, Turbo, ..</code>) or if
-            it should be an additional icon added after the default ones (<code>Addon</code>).
-            Currently, you can have as many Addon-Icons as you want and they are
-            all displayed at once (if they match the requirements of course).</dd>
+        <dd>A type of <code>Addon</code> will add an additional badge. All
+            Addon-badges that matche the Restrictions are shown at once.</dd>
+        <dd>Other types replace an already shown default badge. For example
+            adding an entry of Type <code>Turbo</code> allows you to define a
+            custom icon for all Turbo badges shown in chat.</dd>
+        <dd>The Type <code>Other Twitch</code> allows you to directly select a
+            default icon via Twitch's own Badge ID/Version, which allows you to
+            target badges that are not a supported Type.</dd>
+        
+        <dt>ID/Version</dt>
+        <dd>You can only use this when you have the <code>Other Twitch</code>
+            Type selected. This specifies the Badge ID/Version that Twitch uses
+            to identify Badges, which gives you a bit more flexibilities on what
+            badges you match.</dd>
+        <dd>For example if you wanted to replace the 100-Bits Badge, you'd want
+            to use <code>bits/100</code>. If you don't specify a Version, for
+            example just <code>bits</code>, then it matches all versions, in
+            this case it would match all Bits Badges.</dd>
+        <dd>If you are already connected to a channel, it should automatically
+            populate the list with known ID/Version combinations. Note that some
+            of these may only be used in some channels.</dd>
         
         <dt>Restriction</dt>
         <dd>This is similiar to the <a href="#Usercolors">Usercolors</a> settings,
@@ -381,8 +403,7 @@
         implicit restriction, since e.g. the default moderator icons are only
         displayed if the user is a moderator.</dd>
         <dd>Normally you can only specify <em>one</em> restriction, but you can
-            also add  <strong>special restrictions</strong> for <code>Addon</code>
-            icons:
+            also add <strong>special restrictions</strong>:
             <ul>
                 <li><code>$stop</code> means if this icon matches (and is thus used),
                     it stops searching for further <code>Addon</code> icons. So
@@ -393,33 +414,45 @@
                     the regular icons. The <code>$stop</code> restriction only
                     applies to one group of <code>Addon</code> icons separately
                     (before or after the regular icons).</li>
+                <li><code>$badge:&lt;ID/Version&gt;</code> matches a Twitch
+                    Badge a user has. For example <code>$badge:bits/100</code>
+                    will only target users that currently have the 100-Bits
+                    Badge</li>
             </ul>
         </dd>
-        <dd>Examples: <code>$cat:streamer $first</code>, <code>lotsofs</code></dd>
+        <dd><em>Example:</em> <code>$cat:streamer $first</code> - Matches users
+            in the Addressbook category <code>streamer</code> and puts the badge
+            in front of the default ones.</dd>
+        <dd><em>Example:</em> <code>lotsofs</code> - Matches a user by the name
+            <code>lotsofs</code>.</dd>
+        <dd><em>Example:</em> <code>$cat:vip $badge:bits</code> - Matches users
+            in the Addresbook category <code>vip</code>, but only if they also
+            have a Bits-Badge displayed.</dd>
         
         <dt>Channel</dt>
-        <dd>This is another requirement that also has to be met in order for the
-        icon to be displayed. You can entere a channel name here, so that the
-        icon will only be displayed in that channel. You can add an exclamation
-        mark in front of the channel name (like <code>!#channel</code>) to have
-        it displayed in all channels except the one you specified. If you keep
-        this empty, then it will be displayed in all channels.</dd>
+        <dd>You can enter a channel name here, so that the icon will only be
+            displayed in that channel. You can add an exclamation mark in front
+            of the channel name (like <code>!#channel</code>) to have it
+            displayed in all channels <em>except</em> the one you specified.</dd>
+        <dd>If you keep this empty, then it will be displayed in all channels.</dd>
         
         <dt>Image File</dt>
-        <dd>The image file to use for the icon. Must be a <code>.png</code> and
-        should usually be about 18x18 pixels (because that is the size of the
-        default icons). The image files are looked for in the <code>/img</code>
-        subfolder of the working directory (similiar to the <code>/sounds</code>
-        folder). You can click on <code>Image Folder</code> to show information
-        about it and rescan it to update the list of images in the dropdown menu.</dd>
-        <dd>You can add the special Image File name <code>$ffz</code> which will
-        make it use a FrankerFaceZ icon for that, if available (this only really
-        applies if you use the <em>Type</em> <code>Moderator</code> and want to
-        replace the moderator icon in all channels execept the ones that have a
-        FFZ Mod Icon).</dd>
-        <dd>You should also be able to specify the full path to an image, if you
-        don't want to use the dedicated image folder. A filename starting with
-        <code>http</code> is interpreted as URL.</dd>
+        <dd>The image to use. Must be a <code>.png</code> and is recommended to
+            be about 18x18 pixels (because that is the default size). If you
+            specify no image, then the matching default icon is removed.</dd>
+        <dd>Chatty lookes for images in <code>&lt;working_directory&gt;/img/</code>
+            (<a href="help-guide_folders.html#wdir">Chatty directories help</a>).
+            You can click on <code>Image Folder</code> to show information about
+            it and rescan to update the list.</dd>
+        <dd>The <em>special image file name</em> <code>$default</code> will use
+            the default image file, that would be shown without defining
+            Custom Usericons. This can be useful if you e.g. want to replace all
+            Badge Types, except for one, so you can define that one to use the
+            default.</dd>
+        <dd><em>Tip:</em> You should also be able to manually enter the full
+            path to an image, in case you don't want to use the dedicated image
+            folder. A filename starting with <code>http</code> is interpreted as
+            URL.</dd>
     </dl>
     
     <p><em>Tip:</em> Jump to entries in the table by clicking into a column and

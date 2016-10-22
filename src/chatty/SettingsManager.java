@@ -347,6 +347,7 @@ public class SettingsManager {
         // Sounds
         //=======
         settings.addBoolean("sounds", false);
+        settings.addString("soundDevice", "");
         settings.addString("highlightSound", "off");
         settings.addString("highlightSoundFile", "ding.wav");
         settings.addLong("highlightSoundDelay", 15);

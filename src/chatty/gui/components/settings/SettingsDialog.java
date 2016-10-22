@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.util.Sound;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.awt.CardLayout;
@@ -723,6 +724,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     private void cancel() {
+        Sound.setDeviceName(settings.getString("soundDevice"));
         close();
     }
     

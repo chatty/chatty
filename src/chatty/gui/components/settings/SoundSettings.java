@@ -14,7 +14,9 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -86,6 +88,27 @@ public class SoundSettings extends SettingsPanel {
         openFolderButton.addActionListener(buttonListener);
         openFolderButton.setActionCommand("openFolder");
         general.add(openFolderButton, gbc);
+        
+        // Output Device
+        JPanel devicePanel = new JPanel();
+        devicePanel.add(new JLabel("Output Device: "));
+        
+        Map<String, String> devicePresets = new HashMap<>();
+        devicePresets.put("", "<default>");
+        for (String dev : Sound.getDeviceNames()) {
+            devicePresets.put(dev, dev);
+        }
+        final ComboStringSetting device = new ComboStringSetting(devicePresets);
+        device.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Sound.setDeviceName(device.getSettingValue());
+            }
+        });
+        d.addStringSetting("soundDevice", device);
+        devicePanel.add(device);
+        general.add(devicePanel, d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
         // Tabs
         JTabbedPane tabs = new JTabbedPane();

@@ -15,27 +15,27 @@
     <h1><a name="top">Release Information</a></h1>
     
     <p>
-    <a href="#0.8.4">0.8.4</a> |
-    <a href="#0.8.3">0.8.3</a> |
-    <a href="#0.8.2">0.8.2</a> |
-    <a href="#0.8.1">0.8.1</a> |
-    <a href="#0.8">0.8</a> |
-    <a href="#0.7.3">0.7.3</a> |
-    <a href="#0.7.2">0.7.2</a> |
-    <a href="#0.7.1">0.7.1</a> |
-    <a href="#0.7">0.7</a> |
-    <a href="#0.6.7">0.6.7</a> |
-    <a href="#0.6.6">0.6.6</a> |
-    <a href="#0.6.5">0.6.5</a> |
-    <a href="#0.6.4">0.6.4</a> |
-    <a href="#0.6.3">0.6.3</a> |
-    <a href="#0.6.2">0.6.2</a> |
-    <a href="#0.6.1">0.6.1</a> |
-    <a href="#0.6">0.6</a> |
-    <a href="#0.5.1">0.5.1</a> |
-    <a href="#0.5">0.5</a> |
-    <a href="#0.4">0.4</a> |
-    <a href="#0.3">0.3</a>
+        <a href="#0.8.4">0.8.4</a> |
+        <a href="#0.8.3">0.8.3</a> |
+        <a href="#0.8.2">0.8.2</a> |
+        <a href="#0.8.1">0.8.1</a> |
+        <a href="#0.8">0.8</a> |
+        <a href="#0.7.3">0.7.3</a> |
+        <a href="#0.7.2">0.7.2</a> |
+        <a href="#0.7.1">0.7.1</a> |
+        <a href="#0.7">0.7</a> |
+        <a href="#0.6.7">0.6.7</a> |
+        <a href="#0.6.6">0.6.6</a> |
+        <a href="#0.6.5">0.6.5</a> |
+        <a href="#0.6.4">0.6.4</a> |
+        <a href="#0.6.3">0.6.3</a> |
+        <a href="#0.6.2">0.6.2</a> |
+        <a href="#0.6.1">0.6.1</a> |
+        <a href="#0.6">0.6</a> |
+        <a href="#0.5.1">0.5.1</a> |
+        <a href="#0.5">0.5</a> |
+        <a href="#0.4">0.4</a> |
+        <a href="#0.3">0.3</a>
     </p>
     
     <p>This page shows important information about new versions as well as the
@@ -45,22 +45,65 @@
         <a name="0.8.4">Version 0.8.4</a> <a name="latest">(This one!)</a> (2016-??-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p></p>
+    
     <p>As broadcaster or mod you can now view the actions of other mods in a
         separate window via <code>Extra - Moderation&nbsp;Log</code> or enable mod
         actions to appear as extra messages directly in chat (<code>Main - Settings - Messages</code>).</p>
+    
 <pre>
-- Added Emoji support
-- Added displaying of received Cheers/Bits (sending Cheers is not possible)
-- Added support for new Twitch Badge system (e.g. Bit Badge, Prime Badge)
-- Added "/ffz following" command
+### Emotes/Badges
+- Added Emoji support (are shown in chat and can be favorited as Emotes)
+- Added displaying of received Cheering emotes (sending Cheers is not possible)
+- Added support for new Twitch Badge system (e.g. Bits Badge, Prime Badge)
+  - Update Custom Usericon settings, added $badge: restriction, added ref images
+  - Allow Custom Usericons without an image, to hide the matching default badge
+  - Recognize users with Prime Badge as Turbo users for some stuff like status
+    smybol (+) or matching users
+  - Added Status Symbols: $ (Bits), + (Prime Turbo), ' (Addon), ? (Unknown)
+    (last two only being used in chat, when you copy&paste the message)
+- Implement proper FFZ Bots API
+- Only show one set of emotes in Emote Dialog if user has both Prime and Turbo
+
+### Settings
 - Added setting whether to show the userlist by default
 - Added setting to save Addressbook to file on change
-- Added some variables to Livestreamer base command
-- Added automatic showing of Chat Rules and menu entries
-- Some changes to the build process
-- Fixed bug with empty Whisper TAB appearing
+- Livestreamer: Added some variables to base command ($stream, $url, $quality)
+- Added Sound Output Device selection
+
+### Commands
+- Added "/ffz following" command
+- Added /setsize command to set size of main window
+- Added Hotkey action to close Chatty
+
+### Moderation
 - Added initial support for displaying mod actions (Broadcaster/Mods only)
+- Added initial support for unofficial way of deleting single messages
 - Fixed some dialogs not reopening even with the appropriate setting
+- Added automatic showing of Chat Rules and menu entries to show manually
+- Change "More.." info in User Info Dialog to not be hidden unless clicked again
+- Change account age to show years and days
+- Add User Info Dialog to window manager, so it can keep position
+- Chatlog: Add account age to BAN messages, but only if info was loaded before
+
+### Other
+- Add support for Localized Names (you can configure how these are shown)
+- Some changes to the build process
+- Updated Context Menus:
+  - Removed entries for pages that Twitch removed (Twitch Profile, old Popout)
+  - Added some icons to some Context Menus, added some margin so mouse doesn't
+    hide entries
+  - Added Context Menu for badges, showing some info
+  - Added "Set color" and "Set name" User Context Menu entries
+  - Add Livestreams Dialog Context Menu entry to manually refresh streams
+- Removed version from URL when opening Help website out of Chatty
+
+### Bugfixes
+- Fixed bug with empty Whisper TAB appearing
+- Fix reconnect delay off-by-one error
+- Fix Whisper notification typo/encoding
+- Only send Content-Type header to Twitch API when sending data, which otherwise
+  may trip up the API
 </pre>
 
     <h2>
