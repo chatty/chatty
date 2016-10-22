@@ -14,8 +14,8 @@ This is a Java program, so you need to have the JRE 8 (Java Runtime Environment)
 Installation
 ------------
 
-No real need for installation, just have the Chatty.jar and the /lib-Folder with the
-contained files in the same folder.
+No real need for installation, just extract the Chatty_*.zip file into a
+folder and start the Chatty.jar with Java.
 
 If your version has Hotkey support for Windows, you also need the JIntellitype.dll in the
 folder you execute Chatty from.
@@ -58,12 +58,8 @@ option.
 Logfile
 -------
 
-There is a debugging logfile saved in the same folder as the settings named "debug.log",
-which is overwritten everytime you start Chatty. If you experience a crash or any other
-bugs it is usually prudent to copy it before starting Chatty again. There are however also
-other debug logfiles named "debug<number>.log", which are rotated once they reach a certain
-size, so even if the other logfile is overwritten, there may still be relevant info in one
-of those files.
+There is a /debugging subfolder in the settings directory which contains a
+number of different debug logs. There is more information on them in the help.
 
 More Help
 ---------
@@ -110,7 +106,8 @@ External Libraries
   * Files: `list-add.png, list-remove.png, view-refresh.png,
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
-		go-previous.png, go-home.png, go-web.png`
+		go-previous.png, go-home.png, go-web.png,
+		image-icon.png, commandline.png`
   * Source: http://tango.freedesktop.org/Tango_Icon_Library
   * License: Released into the Public Domain
 

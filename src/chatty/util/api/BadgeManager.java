@@ -79,21 +79,7 @@ public class BadgeManager {
                     String id = (String)key;
                     JSONObject versions = (JSONObject)data.get("versions");
                     if (versions != null) {
-                        for (Object key2 : versions.keySet()) {
-                            JSONObject versionData = (JSONObject)versions.get(key2);
-                            
-                            String version = (String)key2;
-                            String url = (String)versionData.get("image_url_1x");
-                            String title = (String)versionData.get("title");
-                            String description = (String)versionData.get("description");
-                            String clickUrl = (String)versionData.get("click_url");
-                            
-                            Usericon icon = UsericonFactory.createTwitchBadge(id, version, url, room,
-                                    title, description, clickUrl);
-                            if (icon != null) {
-                                result.add(icon);
-                            }
-                        }
+                        parseBadgeVersions(result, versions, room, id);
                     }
                 }
             }
@@ -101,6 +87,27 @@ public class BadgeManager {
             LOGGER.warning("Error parsing badges: "+ex);
         }
         return result;
+    }
+    
+    private static void parseBadgeVersions(List<Usericon> result,
+                JSONObject data, String room, String id) {
+        for (Object key : data.keySet()) {
+            JSONObject versionData = (JSONObject) data.get(key);
+
+            String version = (String) key;
+            String url = (String) versionData.get("image_url_1x");
+            String title = (String) versionData.get("title");
+            String description = (String) versionData.get("description");
+            String clickUrl = (String) versionData.get("click_url");
+
+            if (id != null && version != null && url != null) {
+                Usericon icon = UsericonFactory.createTwitchBadge(id, version, 
+                        url, room, title, description, clickUrl);
+                if (icon != null) {
+                    result.add(icon);
+                }
+            }
+        }
     }
     
 }

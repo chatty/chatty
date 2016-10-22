@@ -267,6 +267,12 @@ public class DateTime {
         return result;
     }
     
+    public static boolean isAprilFirst() {
+        Calendar cal = Calendar.getInstance();
+        return cal.get(Calendar.MONTH) == Calendar.APRIL
+                && cal.get(Calendar.DAY_OF_MONTH) == 1;
+    }
+    
     public static final void main(String[] args) {
 //        System.out.println("'"+dur(HOUR*2+1, Formatting.COMPACT, 0, -2, 2, 2, 2)+"'");
 //        System.out.println("'"+duration(1000*MINUTE*1+1000, Formatting.COMPACT, N, 0, 0, 0, 2)+"'");

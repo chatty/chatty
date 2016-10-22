@@ -56,7 +56,8 @@ External Libraries/Resources
   * Files: `list-add.png, list-remove.png, view-refresh.png,
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
-		go-previous.png, go-home.png, go-web.png`
+		go-previous.png, go-home.png, go-web.png,
+		image-icon.png, commandline.png`
   * Source: http://tango.freedesktop.org/Tango_Icon_Library
   * License: Released into the Public Domain
 

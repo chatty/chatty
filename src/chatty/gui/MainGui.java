@@ -2624,7 +2624,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 
                 // Chat window
-                if (!ignoreChecker.check(null, fullMessage)) {
+                if (!checkInfoIgnore(fullMessage)) {
                     Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
                     SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
                     channels.getChannel(channel).printMessage(m);
@@ -2668,6 +2668,10 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         return false;
+    }
+    
+    private boolean checkInfoIgnore(String text) {
+        return checkHighlight(null, text, ignoreChecker, "ignore", false);
     }
     
     protected void ignoredMessagesCount(String channel, String message) {
@@ -2801,14 +2805,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void printInfo(Channel channel, String line) {
-        if (!ignoreChecker.check(null, line)) {
-            // Add here so it only affects the display, but not ignoring or
-            // logging
-            Calendar cal = Calendar.getInstance();
-            if (cal.get(Calendar.MONTH) == Calendar.APRIL
-                    && cal.get(Calendar.DAY_OF_MONTH) == 1) {
-                line = line.replace("months in a row", "years in a row");
-            }
+        if (!checkInfoIgnore(line)) {
             channel.printLine(line);
             if (channel.getType() == Channel.Type.SPECIAL) {
                 channels.setChannelNewMessage(channel);

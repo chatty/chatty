@@ -242,12 +242,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         closeCompactMode();
         print(getTimePrefix(), styles.info());
         
-        // Can't decide what to do with the icon yet, so comment out for now
-//        Usericon.Type icon = message.months > 1
-//                ? Usericon.Type.RESUB
-//                : Usericon.Type.NEWSUB;
-//        print("$", styles.getIconStyle(message.user, icon));
-        
         MutableAttributeSet style;
         if (message.user.nick.isEmpty()) {
             // Only dummy User attached (so no custom message attached as well)
@@ -263,7 +257,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.nick(message.user, styles.info());
             style.addAttribute(Attribute.IS_USER_MESSAGE, true);
         }
-        print("[Notification] "+message.text+" ", style);
+        
+        String text = message.text;
+        if (DateTime.isAprilFirst()) {
+            text = text.replace("months in a row", "years in a row");
+        }
+        print("[Notification] "+text+" ", style);
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print("[", styles.info());
             // Output with emotes, but don't turn URLs into clickable links

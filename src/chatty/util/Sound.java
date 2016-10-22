@@ -82,8 +82,8 @@ public class Sound {
             
             clip.start();
             LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
-        } catch (NullPointerException | LineUnavailableException | IOException | UnsupportedAudioFileException ex) {
-            LOGGER.warning("Couldn't play sound ("+id+"/"+fileName+"): "+ex.getLocalizedMessage());
+        } catch (Exception ex) {
+            LOGGER.warning("Couldn't play sound ("+id+"/"+fileName+"): "+ex);
         }
     }
     
