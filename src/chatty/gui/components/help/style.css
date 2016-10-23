@@ -155,3 +155,20 @@ table.files {
 .example-list li {
     margin-top: 4px;
 }
+
+table.compact {
+    border-collapse: collapse;
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+table.compact td {
+    padding: 3px;
+    margin: 0;
+    border: 0;
+}
+
+td.symbol {
+    font-size: 1.1em;
+    text-align: center;
+}

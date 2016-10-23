@@ -947,18 +947,6 @@ public class MainGui extends JFrame implements Runnable {
      * Reopen some windows if enabled.
      */
     private void reopenWindows() {
-//        reopenWindow(liveStreamsDialog);
-//        reopenWindow(highlightedMessages);
-//        reopenWindow(ignoredMessages);
-//        reopenWindow(channelInfoDialog);
-//        reopenWindow(addressbookDialog);
-//        reopenWindow(adminDialog);
-//        reopenWindow(emotesDialog);
-//        reopenWindow(streamChat);
-//        reopenWindow(moderationLog);
-//        reopenWindow(followerDialog);
-//        reopenWindow(subscribersDialog);
-        
         for (Window window : windowStateManager.getWindows()) {
             reopenWindow(window);
         }

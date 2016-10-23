@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.4b7)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.4)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -19,7 +19,7 @@
 
                 <strong>Chat basics</strong>
                 <ul class="menu">
-                    <li><a href="#symbols">Symbols used in chat</a></li>
+                    <li><a href="#symbols">User Status Symbols</a></li>
                     <li><a href="#userlist">Userlist</a></li>
                     <li><a href="#favorites">Favorites / History</a></li>
                     <li><a href="help-whisper.html">Whisper Feature</a></li>
@@ -384,21 +384,66 @@
     </ul>
     
     <h2>
-        <a name="symbols">Symbols used in chat</a>
+        <a name="symbols">User Status Symbols</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>There are a few special symbols that are used for users in chat. These
-    are displayed in the userlist and - if usericons are disabled - also in chat.</p>
-    <ul style="list-style-type: none;">
-        <li>~ The Streamer</li>
-        <li>@ Moderators</li>
-        <li>* Global Moderators</li>
-        <li>! Admins</li>
-        <li>&amp; Staff</li>
-        <li>+ Turbo users</li>
-        <li>% Subscribers</li>
-        <li>^ Bots as recognized by local setting, FFZ API and BTTV API</li>
-    </ul>
+    are displayed in the userlist and - if usericons are disabled - also in chat:</p>
+    
+    <table class="compact" style="border-collapse: collapse;">
+        <tr>
+            <td class="symbol">~</td>
+            <td>The Broadcaster</td>
+        </tr>
+        <tr>
+            <td class="symbol">@</td>
+            <td>Moderator</td>
+        </tr>
+        <tr>
+            <td class="symbol">+</td>
+            <td>Turbo/Prime</td>
+        </tr>
+        <tr>
+            <td class="symbol">%</td>
+            <td>Subscriber</td>
+        </tr>
+        <tr>
+            <td class="symbol">$</td>
+            <td>Donated Bits</td>
+        </tr>
+        <tr>
+            <td class="symbol">^</td>
+            <td>Bot (as recognized by <a href="help-setting_commands.html#bots">local setting</a>, FFZ API and BTTV API)</td>
+        </tr>
+        <tr>
+            <td class="symbol">*</td>
+            <td>Global Moderator</td>
+        </tr>
+        <tr>
+            <td class="symbol">!</td>
+            <td>Admin</td>
+        </tr>
+        <tr>
+            <td class="symbol">&amp;</td>
+            <td>Staff</td>
+        </tr>
+    </table>
+    
+    <p>When you copy&amp;paste a message from chat that contains Badges, you may
+        also encounter the following symbols:</p>
+    
+    <table class="compact" style="border-collapse: collapse;">
+        <tr>
+            <td class="symbol">'</td>
+            <td>Addon Usericon</td>
+        </tr>
+        <tr>
+            <td class="symbol">?</td>
+            <td>Unknown Badge (for example special Twitch Badges that may only
+                be available for some time or in some channels)</td>
+        </tr>
+    </table>
+    
     <p><a href="http://frankerfacez.com">FrankerFaceZ</a> provides a custom
     mod icon for some channels. You can disable this in the settings if you
     want to keep the default one for all channels.</p>

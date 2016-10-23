@@ -42,7 +42,7 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.8.4">Version 0.8.4</a> <a name="latest">(This one!)</a> (2016-10-22)
+        <a name="0.8.4">Version 0.8.4</a> <a name="latest">(This one!)</a> (2016-10-23)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>This update implements the new Badge system that Twitch introduced, which
@@ -60,13 +60,13 @@
 - Added Emoji support (are shown in chat and can be favorited as Emotes)
 - Added displaying of received Cheering emotes (sending Cheers is not possible)
 - Added support for new Twitch Badge system (e.g. Bits Badge, Prime Badge)
-  - Update Custom Usericon settings, added $badge: restriction, added ref images
+  - Updated Custom Usericon settings, added $badge: restriction, other stuff
   - Allow Custom Usericons without an image, to hide the matching default badge
   - Recognize users with Prime Badge as Turbo users for some stuff like status
     smybol (+) or matching users
   - Added Status Symbols: $ (Bits), + (Prime Turbo), ' (Addon), ? (Unknown)
     (last two only being used in chat, when you copy&paste the message)
-- Implement proper FFZ Bots API
+- Implemented proper FFZ Bots API
 - Only show one set of emotes in Emote Dialog if user has both Prime and Turbo
 
 ### Settings
@@ -83,15 +83,14 @@
 ### Moderation
 - Added initial support for displaying mod actions (Broadcaster/Mods only)
 - Added initial support for unofficial way of deleting single messages
-- Fixed some dialogs not reopening even with the appropriate setting
 - Added automatic showing of Chat Rules and menu entries to show manually
-- Change "More.." info in User Info Dialog to not be hidden unless clicked again
-- Change account age to show years and days
-- Add User Info Dialog to window manager, so it can keep position
-- Chatlog: Add account age to BAN messages, but only if info was loaded before
+- Changed "More.." info in User Info Dialog to stay shown until clicked again
+- Changed account age to show years and days
+- Added User Info Dialog to window manager, so it can keep position
+- Chatlog: Added account age to BAN messages, but only if info was loaded before
 
 ### Other
-- Add support for Localized Names (you can configure how these are shown)
+- Added support for Localized Names (you can configure how these are shown)
 - Some changes to the build process
 - Updated Context Menus:
   - Removed entries for pages that Twitch removed (Twitch Profile, old Popout)
@@ -103,11 +102,13 @@
 - Removed version from URL when opening Help website out of Chatty
 
 ### Bugfixes
+- Fixed some dialogs not reopening even with the appropriate setting
 - Fixed bug with empty Whisper TAB appearing
-- Fix reconnect delay off-by-one error
-- Fix Whisper notification typo/encoding
+- Fixed reconnect delay off-by-one error
+- Fixed Whisper notification typo/encoding
 - Only send Content-Type header to Twitch API when sending data, which otherwise
   may trip up the API
+- Fixed ignoring of info messages not respecting the "Enable Ignore" setting
 </pre>
 
     <h2>
