@@ -3,10 +3,6 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -59,7 +55,7 @@ public class OtherSettings extends SettingsPanel {
         graphics.add(d.addSimpleBooleanSetting("noddraw", "Disable DirectDraw", ""), gbc);
         
         // Other settings
-        gbc = d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
         JCheckBox versionCheck = d.addSimpleBooleanSetting("checkNewVersion",
                 "Inform me about new versions",
                 "Automatically check for a new version every few days and output a message "
@@ -69,6 +65,11 @@ public class OtherSettings extends SettingsPanel {
             versionCheck.setEnabled(false);
             versionCheck.setToolTipText("Feature disabled in this distributed version.");
         }
+        
+        other.add(d.addSimpleBooleanSetting("newsAutoRequest",
+                "Check for important announcements",
+                "Automatically checks for announcements about Chatty"),
+                d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
         gbc = d.makeGbc(0, 5, 2, 1);
         other.add(d.addSimpleBooleanSetting("enableStatusWriter",

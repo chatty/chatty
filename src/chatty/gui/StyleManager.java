@@ -112,6 +112,7 @@ public class StyleManager implements StyleServer {
         int paragraphSpacing = (int)settings.getLong("paragraphSpacing");
         int topSpacing = paragraphSpacing / 3;
         int bottomSpacing = (paragraphSpacing / 3)*2 + paragraphSpacing % 3;
+//        System.out.println(topSpacing+" "+bottomSpacing);
         StyleConstants.setSpaceAbove(paragraphStyle, topSpacing);
         StyleConstants.setSpaceBelow(paragraphStyle, bottomSpacing);
         

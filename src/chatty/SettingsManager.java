@@ -176,7 +176,7 @@ public class SettingsManager {
         settings.addLong("fontSize",14);
         settings.addString("inputFont", "Dialog 14");
         settings.addLong("lineSpacing", 3);
-        settings.addLong("paragraphSpacing", 4);
+        settings.addLong("paragraphSpacing", 0);
         settings.addString("timestamp","[HH:mm]");
         settings.addString("timestampTimezone", "");
         settings.addBoolean("capitalizedNames", true);
