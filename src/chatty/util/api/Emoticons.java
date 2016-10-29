@@ -170,7 +170,9 @@ public class Emoticons {
                             || emote.subType == update.subTypeToRemove) {
                         it.remove();
                         emoteNames.remove(emote.code);
-                        emotesNamesPerStream.get(update.roomToRemove).remove(emote.code);
+                        if (update.roomToRemove != null && emotesNamesPerStream.containsKey(update.roomToRemove)) {
+                            emotesNamesPerStream.get(update.roomToRemove).remove(emote.code);
+                        }
                         removedCount++;
                     }
                 }

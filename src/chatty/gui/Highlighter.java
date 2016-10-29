@@ -193,6 +193,7 @@ public class Highlighter {
     static class HighlightItem {
         
         private String username;
+        private Pattern usernamePattern;
         private Pattern pattern;
         private String caseSensitive;
         private String caseInsensitive;
@@ -250,6 +251,9 @@ public class Highlighter {
                 categoryNot = parsePrefix(item, "!cat:");
             } else if (item.startsWith("user:")) {
                 username = parsePrefix(item, "user:").toLowerCase(Locale.ENGLISH);
+            } else if (item.startsWith("reuser:")) {
+                String regex = parsePrefix(item, "reuser:").toLowerCase(Locale.ENGLISH);
+                compileUsernamePattern(regex);
             } else if (item.startsWith("chan:")) {
                 parseListPrefix(item, "chan:");
             } else if (item.startsWith("!chan:")) {
@@ -354,7 +358,15 @@ public class Highlighter {
             try {
                 pattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
-                LOGGER.warning("Invalid regex: " + ex.getLocalizedMessage());
+                LOGGER.warning("Invalid regex: " + ex);
+            }
+        }
+        
+        private void compileUsernamePattern(String patternString) {
+            try {
+                usernamePattern = Pattern.compile(patternString);
+            } catch (PatternSyntaxException ex) {
+                LOGGER.warning("Invalid username regex: " + ex);
             }
         }
         
@@ -389,6 +401,9 @@ public class Highlighter {
                 return false;
             }
             if (username != null && !username.equals(user.nick)) {
+                return false;
+            }
+            if (usernamePattern != null && !usernamePattern.matcher(user.getNick()).matches()) {
                 return false;
             }
             if (category != null && !user.hasCategory(category)) {

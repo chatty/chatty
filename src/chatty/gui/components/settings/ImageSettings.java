@@ -47,7 +47,7 @@ public class ImageSettings extends SettingsPanel {
         usericons.add(d.addSimpleBooleanSetting("botNamesFFZ", "FFZ",
                 "Loads bot names from the FFZ API to give them the bot badge. FFZ emotes have to be enabled."), gbc);
         
-        usericonsData = new UsericonEditor(d);
+        usericonsData = new UsericonEditor(d, d.getLinkLabelListener());
         usericonsData.setPreferredSize(new Dimension(150, 250));
         gbc = d.makeGbc(0, 2, 3, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -69,6 +69,10 @@ public class ImageSettings extends SettingsPanel {
     
     public List<Usericon> getData() {
         return usericonsData.getData();
+    }
+    
+    public void addUsericonOfBadgeType(String idVersion) {
+        usericonsData.addUsericonOfBadgeType(idVersion);
     }
     
 }

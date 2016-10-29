@@ -120,6 +120,8 @@ public class Usericon implements Comparable {
      * The channel restriction, which determines which channel(s) the icon
      * should be used for. This doesn't necessarily only contain the channel
      * itself, but possibly also modifiers.
+     * 
+     * Can never be null.
      */
     public final String channelRestriction;
     

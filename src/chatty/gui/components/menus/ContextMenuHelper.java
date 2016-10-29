@@ -19,6 +19,7 @@ public class ContextMenuHelper {
     protected static final ImageIcon ICON_WEB = new ImageIcon(About.class.getResource("go-web.png"));
     protected static final ImageIcon ICON_IMAGE = new ImageIcon(ContextMenuHelper.class.getResource("image-icon.png"));
     protected static final ImageIcon ICON_COMMANDLINE = new ImageIcon(ContextMenuHelper.class.getResource("commandline.png"));
+    protected static final ImageIcon ICON_COPY = new ImageIcon(ContextMenuHelper.class.getResource("edit-copy.png"));
 
     public static boolean enableLivestreamer = true;
     public static String livestreamerQualities;

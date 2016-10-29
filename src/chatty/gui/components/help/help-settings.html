@@ -35,6 +35,17 @@
     <h3>Chat Font</h3>
     <p>Change font and font size by clicking on <code>Select font</code>.</p>
     
+    <dl class="dl-settings">
+        <dt>Line Spacing</dt>
+        <dd>Space between lines in the chat window. One message can consist of
+            several lines. Lines that contain emotes may have a larger height.</dd>
+        
+        <dt>Message Spacing</dt>
+        <dd>Space between messages. One message can consist of several lines,
+            but this setting is only applied per message and doesn't affect the
+            indiviual line height.</dd>
+    </dl>
+    
     <h3>Input Font</h3>
     <p>Input font is restricted to two fonts by default, because other fonts
         cause issues due to a bug in Java. The number behind the font is the
@@ -352,7 +363,7 @@
         </li>
     </ul>
     
-    <h3>Custom Usericons</h3>
+    <h3><a name="CustomUsericons">Custom Usericons</a></h3>
     <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
         or replace the default icons (all other Types).</p>
     <p>The order of the entries can matter, they are looked at from the top:</p>
@@ -373,7 +384,9 @@
             Addon-badges that matche the Restrictions are shown at once.</dd>
         <dd>Other types replace an already shown default badge. For example
             adding an entry of Type <code>Turbo</code> allows you to define a
-            custom icon for all Turbo badges shown in chat.</dd>
+            custom icon for all Turbo badges shown in chat. Accordingly, if you
+            selected <code>Bits</code> it would target all variations of the
+            Bits badge.</dd>
         <dd>The Type <code>Other Twitch</code> allows you to directly select a
             default icon via Twitch's own Badge ID/Version, which allows you to
             target badges that are not a supported Type.</dd>
@@ -381,12 +394,12 @@
         <dt>ID/Version</dt>
         <dd>You can only use this when you have the <code>Other Twitch</code>
             Type selected. This specifies the Badge ID/Version that Twitch uses
-            to identify Badges, which gives you a bit more flexibilities on what
-            badges you match.</dd>
+            to identify Badges, which allows you to target any Twitch Badge you
+            want, including a specific variation.</dd>
         <dd>For example if you wanted to replace the 100-Bits Badge, you'd want
-            to use <code>bits/100</code>. If you don't specify a Version, for
-            example just <code>bits</code>, then it matches all versions, in
-            this case it would match all Bits Badges.</dd>
+            to use <code>bits/100</code>. If you don't specify a Version, so
+            just <code>bits</code>, then it matches all versions, in this case
+            it would match all Bits Badges.</dd>
         <dd>If you are already connected to a channel, it should automatically
             populate the list with known ID/Version combinations. Note that some
             of these may only be used in some channels.</dd>

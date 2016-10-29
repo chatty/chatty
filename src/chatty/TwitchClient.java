@@ -201,7 +201,6 @@ public class TwitchClient {
                 settings.getString("pubsub"), new PubSubResults(), api);
         
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings);
-        frankerFaceZ.autoUpdateFeatureFridayEmotes();
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
@@ -2072,6 +2071,7 @@ public class TwitchClient {
     public void requestChannelEmotes(String channel) {
         if (settings.getBoolean("ffz")) {
             frankerFaceZ.requestEmotes(channel, false);
+            frankerFaceZ.autoUpdateFeatureFridayEmotes();
         }
         if (settings.getBoolean("bttvEmotes")) {
             bttvEmotes.requestEmotes(channel, false);

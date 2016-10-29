@@ -82,7 +82,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_MAIN = "Main";
     private static final String PANEL_MESSAGES = "Messages";
     private static final String PANEL_EMOTES = "Emoticons";
-    private static final String PANEL_IMAGES = "Usericons";
+    private static final String PANEL_USERICONS = "Usericons";
     private static final String PANEL_COLORS = "Colors";
     private static final String PANEL_HIGHLIGHT = "Highlight";
     private static final String PANEL_IGNORE = "Ignore";
@@ -113,7 +113,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         PANEL_MESSAGES,
         PANEL_CHAT,
         PANEL_EMOTES,
-        PANEL_IMAGES,
+        PANEL_USERICONS,
         PANEL_COLORS,
         PANEL_USERCOLORS,
         PANEL_NAMES,
@@ -190,7 +190,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new MessageSettings(this), PANEL_MESSAGES);
         cards.add(new EmoteSettings(this), PANEL_EMOTES);
         imageSettings = new ImageSettings(this);
-        cards.add(imageSettings, PANEL_IMAGES);
+        cards.add(imageSettings, PANEL_USERICONS);
         cards.add(new ColorSettings(this), PANEL_COLORS);
         cards.add(new HighlightSettings(this), PANEL_HIGHLIGHT);
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);
@@ -273,12 +273,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         notificationSettings.setUserReadPermission(settings.getBoolean("token_user"));
         setLocationRelativeTo(owner);
         if (action != null) {
-            if (action.equals("editUsercolorItem")) {
-                editUsercolorItem(parameter);
-            }
-            else if (action.equals("editCustomNameItem")) {
-                editCustomNameItem(parameter);
-            }
+            editDirectly(action, parameter);
         }
         stuffBasedOnPanel();
         selection.requestFocusInWindow();
@@ -292,24 +287,21 @@ public class SettingsDialog extends JDialog implements ActionListener {
         }
     }
     
-    private void editUsercolorItem(final String item) {
+    private void editDirectly(final String action, final String parameter) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                showPanel(PANEL_USERCOLORS);
-                usercolorSettings.editItem(item);
-            }
-        });
-    }
-    
-    private void editCustomNameItem(final String item) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                showPanel(PANEL_NAMES);
-                nameSettings.editCustomName(item);
+                if (action.equals("editUsercolorItem")) {
+                    showPanel(PANEL_USERCOLORS);
+                    usercolorSettings.editItem(parameter);
+                } else if (action.equals("editCustomNameItem")) {
+                    showPanel(PANEL_NAMES);
+                    nameSettings.editCustomName(parameter);
+                } else if (action.equals("addUsericonOfBadgeType")) {
+                    showPanel(PANEL_USERICONS);
+                    imageSettings.addUsericonOfBadgeType(parameter);
+                }
             }
         });
     }

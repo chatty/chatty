@@ -804,7 +804,7 @@ public class EmotesDialog extends JDialog {
             Set<Emoticon> bttv = Emoticons.filterByType(emoteManager.getOtherGlobalEmotes(), Emoticon.Type.BTTV);
 
             addEmotes(ffzRegular, "Global FFZ Emotes");
-            addEmotes(ffzFeatured, "Global FFZ Emotes [Feature Friday]");
+            addEmotes(ffzFeatured, "Global FFZ Emotes [Featured]");
             addEmotes(bttv, "Global BTTV Emotes");
             
             relayout();

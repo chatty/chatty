@@ -6,6 +6,8 @@ import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.GuiUtil;
 import chatty.gui.RegexDocumentFilter;
+import chatty.gui.components.LinkLabel;
+import chatty.gui.components.LinkLabelListener;
 import chatty.util.MiscUtil;
 import chatty.util.api.usericons.UsericonFactory;
 import java.awt.Color;
@@ -46,10 +48,10 @@ class UsericonEditor extends TableEditor<Usericon> {
     
     private final MyItemEditor editor;
     
-    public UsericonEditor(JDialog owner) {
+    public UsericonEditor(JDialog owner, LinkLabelListener linkLabelListener) {
         super(SORTING_MODE_MANUAL, false);
         
-        editor = new MyItemEditor(owner);
+        editor = new MyItemEditor(owner, linkLabelListener);
         setModel(new MyTableModel());
         setItemEditor(editor);
         setRendererForColumn(1, new IdRenderer(getForeground()));
@@ -67,6 +69,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames.put(Usericon.Type.SUB, "Subscriber");
         typeNames.put(Usericon.Type.TURBO, "Turbo");
         typeNames.put(Usericon.Type.PRIME, "Prime");
+        typeNames.put(Usericon.Type.BITS, "Bits");
         typeNames.put(Usericon.Type.ADMIN, "Admin");
         typeNames.put(Usericon.Type.STAFF, "Staff");
         typeNames.put(Usericon.Type.BROADCASTER, "Broadcaster");
@@ -77,6 +80,11 @@ class UsericonEditor extends TableEditor<Usericon> {
     
     public void setTwitchBadgeTypes(Set<String> types) {
         editor.setTwitchBadgeTypes(types);
+    }
+    
+    public void addUsericonOfBadgeType(String idVersion) {
+        Usericon usericon = UsericonFactory.createCustomIcon(Type.TWITCH, idVersion, "", "", "");
+        addItem(usericon);
     }
     
     private static String getTypeName(Type type) {
@@ -233,13 +241,17 @@ class UsericonEditor extends TableEditor<Usericon> {
      */
     private static class MyItemEditor implements ItemEditor<Usericon> {
 
+        private static final String HELP = "<html><body style='width:220px;'>"
+                + "Define which badge to target and what image to replace it "
+                + "with. [help-settings:CustomUsericons More Information..]";
+        
         private static final String ERROR_LOADING_IMAGE = "Error loading image.";
         
         private final JDialog dialog;
         
         private final GenericComboSetting<String> fileName;
         private final GenericComboSetting<Type> type;
-        private final JTextField restriction = new JTextField();
+        private final JTextField restriction = new JTextField(16);
         private final JTextField stream = new JTextField();
         private final GenericComboSetting<String> idVersion;
         
@@ -256,7 +268,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         private boolean save;
         private Usericon currentIcon;
         
-        public MyItemEditor(Window owner) {
+        public MyItemEditor(Window owner, LinkLabelListener linkLabelListener) {
             dialog = new JDialog(owner);
             dialog.setLayout(new GridBagLayout());
             dialog.setResizable(false);
@@ -294,16 +306,18 @@ class UsericonEditor extends TableEditor<Usericon> {
 
             GridBagConstraints gbc;
             
-            folderPanel = createFolderPanel();
-            folderPanel.setVisible(false);
+            dialog.add(new LinkLabel(HELP, linkLabelListener), GuiUtil.makeGbc(0, 0, 3, 1));
+            
             gbc = GuiUtil.makeGbc(0, 1, 3, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            dialog.add(folderPanel, gbc);
-
-            gbc = GuiUtil.makeGbc(0, 0, 3, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             dialog.add(createMainPanel(), gbc);
             
+            folderPanel = createFolderPanel();
+            folderPanel.setVisible(false);
+            gbc = GuiUtil.makeGbc(0, 2, 3, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            dialog.add(folderPanel, gbc);
+
             gbc = GuiUtil.makeGbc(0, 6, 1, 1);
             dialog.add(new JLabel(), gbc);
             

@@ -1780,6 +1780,18 @@ public class MainGui extends JFrame implements Runnable {
                     UrlOpener.openUrlPrompt(MainGui.this, usericon.metaUrl);
                 }
             }
+            else if (e.getActionCommand().equals("copyBadgeType")) {
+                MiscUtil.copyToClipboard(usericon.badgeType.toString());
+            }
+            else if (e.getActionCommand().equals("addUsericonOfBadgeType")) {
+                getSettingsDialog().showSettings("addUsericonOfBadgeType", usericon.badgeType.toString());
+            }
+            else if (e.getActionCommand().equals("addUsericonOfBadgeTypeId")) {
+                getSettingsDialog().showSettings("addUsericonOfBadgeType", usericon.badgeType.id);
+            }
+            else if (e.getActionCommand().equals("badgeImage")) {
+                UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
+            }
         }
         
     }

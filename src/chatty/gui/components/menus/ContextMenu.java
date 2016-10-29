@@ -64,7 +64,8 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
      * @param text The label of the menu item
      * @param parent The name of the submenu, can be {@code null} in which case
      * it isn't added to a submenu
-     * @see addItem(String, String)
+     * @param icon The icon to display for the menu item
+     * @see addItem(String, String, ImageIcon)
      */
     protected void addSubItem(String action, String text, String parent, ImageIcon icon) {
         if (parent != null) {

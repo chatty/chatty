@@ -50,6 +50,7 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         
         // Font Size
         gbc = d.makeGbc(1,0,2,1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         SimpleStringSetting fontSetting = new SimpleStringSetting(15, false);
         d.addStringSetting("font", fontSetting);
         fontSettingsPanel.add(fontSetting ,gbc);
@@ -78,6 +79,18 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         gbc = d.makeGbc(3,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         fontSettingsPanel.add(lineSpacing, gbc);
+        
+        fontSettingsPanel.add(new JLabel("Message Spacing:"),
+                d.makeGbc(1, 2, 2, 1, GridBagConstraints.EAST));
+        
+        Map<Long, String> paragraphSpacingDef = new LinkedHashMap<>();
+        for (int i=0;i<=20;i+=2) {
+            paragraphSpacingDef.put((long)i, String.valueOf(i)+" px");
+        }
+        ComboLongSetting paragraphSpacing = new ComboLongSetting(paragraphSpacingDef);
+        d.addLongSetting("paragraphSpacing", paragraphSpacing);
+        gbc = d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST);
+        fontSettingsPanel.add(paragraphSpacing, gbc);
         
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
         inputFontSettingsPanel.add(new JLabel("Input Font:"), gbc);

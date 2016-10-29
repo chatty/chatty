@@ -277,7 +277,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param message The object contain all the data
      */
-    public void printUserMessage(UserMessage message) {
+    private void printUserMessage(UserMessage message) {
         User user = message.user;
         boolean ignored = message.ignored_compact;
         if (ignored) {
@@ -1274,7 +1274,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param whisper 
      * @param id 
      */
-    public void printUser(User user, boolean action,
+    private void printUser(User user, boolean action,
             boolean whisper, String id) {
         
         // Decide on name based on settings and available names
@@ -1635,7 +1635,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param line
      * @param style 
      */
-    public void printLine(String line, MutableAttributeSet style) {
+    private void printLine(String line, MutableAttributeSet style) {
         // Close compact mode, because this is definately a new line (timestamp)
         closeCompactMode();
         print(getTimePrefix()+line,style);
@@ -1982,14 +1982,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public static Element getLastLine(Document doc) {
         return doc.getDefaultRootElement().getElement(doc.getDefaultRootElement().getElementCount() - 1);
     }
-    
-    /**
-     * Prints the given text.
-     * @param text 
-     */
-    public void print(String text) {
-        print(text, styles.standard());
-    }
 
     /**
      * Prints the given text in the given style. Runs the function that actually
@@ -1998,7 +1990,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param text
      * @param style 
      */
-    public void print(final String text,final MutableAttributeSet style) {
+    private void print(final String text,final MutableAttributeSet style) {
         try {
             String newline = "";
             if (doc.getLength() == 0 || newlineRequired) {

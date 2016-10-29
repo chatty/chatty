@@ -67,7 +67,10 @@ public class DateTime {
     }
     
     public static String formatAccountAge(long time, Formatting... options) {
-        return ago(time, 0, 2, DateTime.H, options);
+        if (System.currentTimeMillis() - time > DAY*1000) {
+            return ago(time, 0, 2, DateTime.H, options);
+        }
+        return ago(time, 0, 1, 0, options);
     }
 
     public static String agoText(long time) {
@@ -299,5 +302,7 @@ public class DateTime {
 //            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
 //        }
         System.out.println(TimeUnit.HOURS.toMillis(1));
+        
+        System.out.println(formatAccountAge(System.currentTimeMillis() - 2500*1000));
     }
 }

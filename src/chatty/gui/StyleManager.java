@@ -34,7 +34,8 @@ public class StyleManager implements StyleServer {
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
             "colorCorrection", "banReasonAppended", "banDurationAppended",
-            "banDurationMessage", "banReasonMessage", "displayNamesMode"
+            "banDurationMessage", "banReasonMessage", "displayNamesMode",
+            "paragraphSpacing"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -108,6 +109,11 @@ public class StyleManager implements StyleServer {
         // Divide by 10 so integer values can be used for this setting
         float spacing = settings.getLong("lineSpacing") / (float)10.0;
         StyleConstants.setLineSpacing(paragraphStyle, spacing);
+        int paragraphSpacing = (int)settings.getLong("paragraphSpacing");
+        int topSpacing = paragraphSpacing / 3;
+        int bottomSpacing = (paragraphSpacing / 3)*2 + paragraphSpacing % 3;
+        StyleConstants.setSpaceAbove(paragraphStyle, topSpacing);
+        StyleConstants.setSpaceBelow(paragraphStyle, bottomSpacing);
         
         other = new SimpleAttributeSet();
         addBooleanSetting(Setting.EMOTICONS_ENABLED, "emoticonsEnabled");
