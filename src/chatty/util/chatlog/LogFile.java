@@ -72,7 +72,7 @@ public class LogFile {
             if (i == 0) {
                 fileName = name + ".log";
             } else {
-                fileName = name + "_" + i + ".log";
+                fileName = name + "-" + i + ".log";
             }
 
             file = path.resolve(fileName);
