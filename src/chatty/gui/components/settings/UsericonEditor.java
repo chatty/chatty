@@ -159,6 +159,11 @@ class UsericonEditor extends TableEditor<Usericon> {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                setText(null);
+                return;
+            }
+            
             Usericon icon = (Usericon) value;
             
             if (icon.matchType == Usericon.MatchType.UNDEFINED) {
@@ -188,6 +193,12 @@ class UsericonEditor extends TableEditor<Usericon> {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                setIcon(null);
+                setText(null);
+                return;
+            }
+            
             Usericon icon = (Usericon) value;
             
             if (icon.fileName != null && icon.fileName.startsWith("$")) {
@@ -221,6 +232,10 @@ class UsericonEditor extends TableEditor<Usericon> {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                setText(null);
+                return;
+            }
             Usericon icon = (Usericon) value;
             
             if (!icon.channelRestriction.isEmpty() && icon.channel.isEmpty()) {

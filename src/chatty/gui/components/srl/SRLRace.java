@@ -380,6 +380,9 @@ public class SRLRace extends JDialog {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
             Entrant e = (Entrant)value;
             if (e.time > 0) {
                 setText(String.valueOf(e.place));
@@ -402,6 +405,9 @@ public class SRLRace extends JDialog {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
             Entrant e = (Entrant)value;
             String state = e.statetext;
             if (state.equals("Forfeit") || state.equals("Disqualified")) {

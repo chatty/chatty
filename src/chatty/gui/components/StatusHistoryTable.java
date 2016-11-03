@@ -263,6 +263,9 @@ public class StatusHistoryTable extends JTable {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
             Long lastActivity = (Long)value;
             setText(DateTime.agoText(lastActivity));
             JLabel label = (JLabel)this;

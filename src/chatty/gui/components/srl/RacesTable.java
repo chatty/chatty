@@ -200,6 +200,9 @@ public class RacesTable extends JTable {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
             String state = (String)value;
             if (state.equals("Entry Open")) {
                 setForeground(OPEN);

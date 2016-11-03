@@ -311,6 +311,10 @@ public class LiveStreamsList extends JList<StreamInfo> {
         @Override
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
+            if (value == null) {
+                area.setText(null);
+                return area;
+            }
             //System.out.println("Getting rubberstamp for "+value);
             StreamInfo info = (StreamInfo)value;
             

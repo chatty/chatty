@@ -451,6 +451,9 @@ public class FavoritesDialog extends JDialog {
         
         @Override
         public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
             long time = (Long)value;
             if (time == -1) {
                 setText("-");
