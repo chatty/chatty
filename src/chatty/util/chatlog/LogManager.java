@@ -22,17 +22,17 @@ public class LogManager {
     private static final int MAX_WAIT = 10*1000;
     
     private final AtomicInteger errors = new AtomicInteger();
-    
+
     private final BlockingQueue<LogItem> queue;
     private final Thread writerThread;
-    
-    public LogManager(Path path) {
+
+    public LogManager(Path path, String splitLogs, Boolean useSubdirectories) {
         path.toFile().mkdirs();
         if (!path.toFile().exists()) {
             LOGGER.warning("Log: Failed to create path: "+path);
         }
         this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-        this.writerThread = new Thread(new LogWriter(queue, path));
+        this.writerThread = new Thread(new LogWriter(queue, path, splitLogs, useSubdirectories));
     }
     
     public void start() {
