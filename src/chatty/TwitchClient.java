@@ -210,7 +210,7 @@ public class TwitchClient {
         channelFavorites = new ChannelFavorites(settings);
         usercolorManager = new UsercolorManager(settings);
         usericonManager = new UsericonManager(settings);
-        customCommands = new CustomCommands(settings);
+        customCommands = new CustomCommands(settings, api);
         customCommands.loadFromSettings();
         botNameManager = new BotNameManager(settings);
         settings.addSettingsListener(new SettingSaveListener());

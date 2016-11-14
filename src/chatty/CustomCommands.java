@@ -1,8 +1,11 @@
 
 package chatty;
 
+import chatty.util.DateTime;
 import chatty.util.ParameterReplacer;
 import chatty.util.StringUtil;
+import chatty.util.api.StreamInfo;
+import chatty.util.api.TwitchApi;
 import chatty.util.settings.Settings;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +23,11 @@ public class CustomCommands {
     private final Map<String, String> commands = new HashMap<>();
     
     private final Settings settings;
+    private final TwitchApi api;
     
-    public CustomCommands(Settings settings) {
+    public CustomCommands(Settings settings, TwitchApi api) {
         this.settings = settings;
+        this.api = api;
     }
     
     /**
@@ -49,6 +54,18 @@ public class CustomCommands {
             if (replaced != null) {
                 // If no required parameters are missing, replace channel
                 replaced = replaced.replaceAll("\\$chan", channel);
+                String stream = Helper.toValidStream(channel);
+                if (stream != null) {
+                    if (replaced.contains("$stream")) {
+                        StreamInfo streamInfo = api.getStreamInfo(stream, null);
+                        if (streamInfo.isValid()) {
+                            replaced = replaced.replaceAll("\\$streamtitle", streamInfo.getTitle());
+                            replaced = replaced.replaceAll("\\$streamgame", streamInfo.getGame());
+                            replaced = replaced.replaceAll("\\$streamstatus", streamInfo.getFullStatus());
+                            replaced = replaced.replaceAll("\\$streamuptime", DateTime.agoUptimeCompact2(streamInfo.getTimeStartedWithPicnic()));
+                        }
+                    }
+                }
             }
             return replaced;
         }

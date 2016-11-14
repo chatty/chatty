@@ -41,61 +41,71 @@ public class OtherSettings extends SettingsPanel {
         
         JPanel graphics = addTitledPanel("Graphic Settings", 0);
         JPanel other = addTitledPanel("Other", 1);
-        
-        GridBagConstraints gbc;
 
+        //------------------
         // Graphics settings
-        gbc = d.makeGbc(0, 0, 2, 1);
-        graphics.add(new JLabel(INFO), gbc);
+        //------------------
+        graphics.add(new JLabel(INFO), d.makeGbc(0, 0, 2, 1));
+
+        graphics.add(d.addSimpleBooleanSetting(
+                "nod3d",
+                "Disable Direct3D",
+                ""),
+                d.makeGbc(0, 1, 1, 1));
+
+        graphics.add(d.addSimpleBooleanSetting(
+                "noddraw",
+                "Disable DirectDraw",
+                ""),
+                d.makeGbc(1, 1, 1, 1));
         
-        gbc = d.makeGbc(0, 1, 1, 1);
-        graphics.add(d.addSimpleBooleanSetting("nod3d", "Disable Direct3D", ""), gbc);
-        
-        gbc = d.makeGbc(1, 1, 1, 1);
-        graphics.add(d.addSimpleBooleanSetting("noddraw", "Disable DirectDraw", ""), gbc);
-        
+        //---------------
         // Other settings
-        gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
-        JCheckBox versionCheck = d.addSimpleBooleanSetting("checkNewVersion",
+        //---------------
+        JCheckBox versionCheck = d.addSimpleBooleanSetting(
+                "checkNewVersion",
                 "Inform me about new versions",
-                "Automatically check for a new version every few days and output a message "
-                + "if a new one is available.");
-        other.add(versionCheck, gbc);
+                "Automatically check for a new version every few days and output a message if a new one is available.");
+        other.add(versionCheck,
+                d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
         if (!Chatty.VERSION_CHECK_ENABLED) {
             versionCheck.setEnabled(false);
             versionCheck.setToolTipText("Feature disabled in this distributed version.");
         }
         
-        other.add(d.addSimpleBooleanSetting("newsAutoRequest",
+        other.add(d.addSimpleBooleanSetting(
+                "newsAutoRequest",
                 "Check for important announcements",
                 "Automatically checks for announcements about Chatty"),
                 d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
-        gbc = d.makeGbc(0, 5, 2, 1);
-        other.add(d.addSimpleBooleanSetting("enableStatusWriter",
-                "Write Stream Status:", ""), gbc);
+        other.add(d.addSimpleBooleanSetting(
+                "enableStatusWriter",
+                "Write Stream Status:", ""),
+                d.makeGbc(0, 5, 2, 1));
         
-        gbc = d.makeGbc(2, 5, 1, 1);
-        other.add(d.addEditorStringSetting("statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER), gbc);
+        other.add(d.addEditorStringSetting(
+                "statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER),
+                d.makeGbc(2, 5, 1, 1));
         
-        
-        gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleBooleanSetting("autoUnhost",
+        other.add(d.addSimpleBooleanSetting(
+                "autoUnhost",
                 "Auto-Unhost when your stream goes live",
                 "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"),
-                gbc);
+                d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST));
         
-        gbc = d.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST);
-        other.add(new JLabel("Prepend to window title:"), gbc);
+        other.add(new JLabel("Prepend to window title:"),
+                d.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST));
         
-        gbc = d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleStringSetting("titleAddition", 10, true), gbc);
-        
-        gbc = d.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST);
-        other.add(d.addSimpleBooleanSetting("abSaveOnChange",
+        other.add(d.addSimpleStringSetting(
+                "titleAddition", 10, true),
+                d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST));
+
+        other.add(d.addSimpleBooleanSetting(
+                "abSaveOnChange",
                 "Save Addressbook immediately after changing entries",
                 "Save immediately after updating addressbook (including changes via commands)"),
-                gbc);
+                d.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST));
     }
     
 }

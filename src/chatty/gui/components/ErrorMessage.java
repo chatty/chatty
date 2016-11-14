@@ -229,8 +229,11 @@ public class ErrorMessage extends JDialog {
         errors.add(errorText);
         if (errorCount == 1) {
             setTitle("Error");
-            debugMessage.setText("Error Report // "+Chatty.chattyVersion()+" / "
-                    +Helper.systemInfo()+" / "+LogUtil.getMemoryUsage()+"\n\n");
+            debugMessage.setText(String.format("Error Report // %s / %s / %s / %s\n\n",
+                    DateTime.fullDateTime(),
+                    Chatty.chattyVersion(),
+                    Helper.systemInfo(),
+                    LogUtil.getMemoryUsage()));
         } else {
             setTitle(errorCount+" Errors");
         }

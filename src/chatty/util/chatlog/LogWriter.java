@@ -30,6 +30,8 @@ public class LogWriter implements Runnable {
     private final Set<String> errors = new HashSet<>();
     private final BlockingQueue<LogItem> queue;
     private final Path path;
+    private final String splitLogs;
+    private final boolean useSubdirectories;
 
     private long addedQueueSize;
     private int addedQueueSizeCount;
@@ -37,10 +39,9 @@ public class LogWriter implements Runnable {
     private long lastStatsTime;
     private int maxQueueSize;
     private int totalLines;
-    private String splitLogs;
-    private boolean useSubdirectories;
 
-    public LogWriter(BlockingQueue<LogItem> queue, Path path, String splitLogs, Boolean useSubdirectories) {
+    public LogWriter(BlockingQueue<LogItem> queue, Path path, String splitLogs,
+            Boolean useSubdirectories) {
         this.queue = queue;
         this.path = path;
         this.splitLogs = splitLogs;
@@ -105,12 +106,12 @@ public class LogWriter implements Runnable {
         LogFile file = files.get(channel);
         String datePrefix = "";
 
-        if ( ! splitLogs.equals("never")) {
+        if (!splitLogs.equals("never")) {
             datePrefix = getDatePrefix() + "_";
         }
 
         if (file != null && file.isValid()) {
-            if (shouldSplitLog(file.getDate()) && datePrefix.length() > 0) {
+            if (!datePrefix.isEmpty() && shouldSplitLog(file.getDate())) {
                 file.close();
                 return addFile(channel, datePrefix);
             }
@@ -126,9 +127,11 @@ public class LogWriter implements Runnable {
     }
 
     /**
-     * Determine if we should close the current log file and start a new one.
+     * Get the date prefix for the log filenames, based on the splitLogs
+     * setting.
      *
-     * @return String The date string to prefix log files with.
+     * @return The date String to prefix log filenames with, or an empty String
+     * if the splitLogs setting does not have a valid value
      */
     private String getDatePrefix() {
         Calendar date = Calendar.getInstance();
@@ -153,20 +156,28 @@ public class LogWriter implements Runnable {
     /**
      * Determine if we should split the log file before writing.
      *
-     * @param fileDate The date that the LogFile instance was created.
-     * @return Returns true if the log file should be split before writing.
+     * @param fileDate The date that the LogFile instance was created
+     * @return Returns true if the log file should be split before writing
      */
     private boolean shouldSplitLog(Calendar fileDate) {
         Calendar date = Calendar.getInstance();
 
-        if (splitLogs.equals("daily") && fileDate.get(Calendar.DAY_OF_YEAR) != date.get(Calendar.DAY_OF_YEAR)) {
-            return true;
-        } else if (splitLogs.equals("weekly") && fileDate.get(Calendar.WEEK_OF_YEAR) != date.get(Calendar.WEEK_OF_YEAR)) {
-            return true;
-        } else if (splitLogs.equals("monthly") && fileDate.get(Calendar.MONTH) != date.get(Calendar.MONTH)) {
-            return true;
+        if (splitLogs.equals("daily")) {
+            if (fileDate.get(Calendar.DAY_OF_YEAR) != date.get(Calendar.DAY_OF_YEAR)) {
+                return true;
+            }
         }
-
+        else if (splitLogs.equals("weekly")) {
+            if (fileDate.get(Calendar.WEEK_OF_YEAR) != date.get(Calendar.WEEK_OF_YEAR)) {
+                return true;
+            }
+        }
+        else if (splitLogs.equals("monthly")) {
+            if (fileDate.get(Calendar.MONTH) != date.get(Calendar.MONTH)) {
+                return true;
+            }
+        }
+        
         return false;
     }
 

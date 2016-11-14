@@ -171,6 +171,13 @@ public class Helper {
         return channel;
     }
     
+    public static String toValidStream(String channel) {
+        if (!validateChannel(channel)) {
+            return null;
+        }
+        return toStream(channel);
+    }
+    
     /**
      * Makes a readable message out of the given reason code.
      * 

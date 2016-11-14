@@ -175,8 +175,8 @@ public class SettingsManager {
         settings.addString("font","Consolas");
         settings.addLong("fontSize",14);
         settings.addString("inputFont", "Dialog 14");
-        settings.addLong("lineSpacing", 3);
-        settings.addLong("paragraphSpacing", 0);
+        settings.addLong("lineSpacing", 2);
+        settings.addLong("paragraphSpacing", 6);
         settings.addString("timestamp","[HH:mm]");
         settings.addString("timestampTimezone", "");
         settings.addBoolean("capitalizedNames", true);
