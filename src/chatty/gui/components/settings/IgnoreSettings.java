@@ -43,8 +43,19 @@ public class IgnoreSettings extends SettingsPanel {
                 "If enabled, shows messages that match the highlight criteria "
                 + "in another color"), gbc);
         
-        final JLabel modeInfo = new JLabel("Shows the number of ignored messages regulary");
-        final JCheckBox ignoreShowNotDialog = d.addSimpleBooleanSetting("ignoreShowNotDialog", "Only show if ignored messages dialog is not open", "");
+        //---------
+        // Settings
+        //---------
+        
+        gbc = d.makeGbc(2, 1, 1, 1, GridBagConstraints.EAST);
+        gbc.weightx = 1;
+        base.add(new JLabel("Ignore Hints:"),
+                gbc);
+        
+        final JCheckBox ignoreShowNotDialog = d.addSimpleBooleanSetting(
+                "ignoreShowNotDialog",
+                "Only show if ignored messages dialog is not open",
+                "");
         
         HashMap<Long, String> modeDef = new HashMap<>();
         modeDef.put((long)IgnoredMessages.MODE_HIDE, "Hide");
@@ -55,42 +66,38 @@ public class IgnoreSettings extends SettingsPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String info = "";
                 if (mode.getSettingValue() == IgnoredMessages.MODE_HIDE) {
-                    info = "Doesn't show ignored messages in the chat at all";
                     ignoreShowNotDialog.setEnabled(false);
                 } else if (mode.getSettingValue() == IgnoredMessages.MODE_COUNT) {
-                    info = "Regulary shows the number of ignored messages in chat";
                     ignoreShowNotDialog.setEnabled(true);
                 } else if (mode.getSettingValue() == IgnoredMessages.MODE_COMPACT) {
-                    info = "Lists the name of the sender of ignored messages in chat";
                     ignoreShowNotDialog.setEnabled(true);
                 }
-                modeInfo.setText(info);
             }
         });
         d.addLongSetting("ignoreMode", mode);
-        gbc = d.makeGbc(2,0,1,1);
+        gbc = d.makeGbc(3, 1, 1, 1);
         gbc.insets = new Insets(0,12,2,5);
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.EAST;
         base.add(mode, gbc);
         
-        gbc = d.makeGbc(0, 1, 3, 1, GridBagConstraints.EAST);
-        gbc.insets = new Insets(2, 5, 3, 5);
-        base.add(modeInfo, gbc);
-        
-        gbc = d.makeGbc(0, 2, 3, 1, GridBagConstraints.EAST);
+        gbc = d.makeGbc(0, 2, 4, 1, GridBagConstraints.EAST);
         gbc.insets = new Insets(0, 5, 4, 4);
         base.add(ignoreShowNotDialog, gbc);
         
-        gbc = d.makeGbc(1,0,1,1);
+        gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.EAST);
         gbc.insets = new Insets(0,12,2,5);
-        gbc.anchor = GridBagConstraints.EAST;
-        base.add(d.addSimpleBooleanSetting("ignoreOwnText", "Ignore own messages",
-                "If enabled, ignores messages your wrote yourself. Good "
-                        + "for testing."), gbc);
+        base.add(d.addSimpleBooleanSetting(
+                "ignoreOwnText",
+                "Check own text for ignoring",
+                "If enabled, allows messages you wrote yourself to be ignored as well. Good for testing."),
+                gbc);
         
-        gbc = d.makeGbc(0,3,3,1);
+        //----------
+        // Main List
+        //----------
+        
+        gbc = d.makeGbc(0, 3, 4, 1);
         gbc.insets = new Insets(5,10,5,5);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
@@ -106,6 +113,10 @@ public class IgnoreSettings extends SettingsPanel {
         });
         base.add(items, gbc);
         
+        //-------
+        // Footer
+        //-------
+        
         JButton ignoredUsersButton = new JButton("Ignored Users");
         ignoredUsersButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         ignoredUsersButton.addActionListener(new ActionListener() {
@@ -118,10 +129,10 @@ public class IgnoreSettings extends SettingsPanel {
         });
         gbc = d.makeGbc(0, 4, 1, 1);
         gbc.insets = new Insets(1,10,5,5);
-        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.anchor = GridBagConstraints.WEST;
         base.add(ignoredUsersButton, gbc);
         
-        gbc = d.makeGbc(1,4,2,1);
+        gbc = d.makeGbc(1,4,3,1, GridBagConstraints.CENTER);
         gbc.insets = new Insets(0, 5, 5, 5);
         base.add(new LinkLabel("<html><body style=\"width:220px;\">"
                 + "Click on the Help link on the bottom left for help."

@@ -452,7 +452,7 @@ public class SettingsManager {
         settings.addList("ignore", new ArrayList(), Setting.STRING);
         settings.addBoolean("ignoreEnabled", false);
         settings.addBoolean("ignoreOwnText", false);
-        settings.addLong("ignoreMode", 1);
+        settings.addLong("ignoreMode", 0);
         settings.addBoolean("ignoreShowNotDialog", false);
         settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
         settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
