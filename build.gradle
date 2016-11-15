@@ -138,3 +138,52 @@ task releaseZips(group: 'build') {
 task release(group: 'build') {
     dependsOn releaseZips, build
 }
+
+//--------
+// Windows
+//--------
+
+def javapackagerBuildDir = new File(buildDir, 'javapackager')
+
+task javapackager(type: Exec, group: 'build') {
+    dependsOn shadowJar
+
+    doFirst {
+        if (!project.hasProperty('javapackagerPath')) {
+            throw new GradleException('Path to javapackager.exe must be defined with -PjavapackagerPath=<path>')
+        }
+    }
+    if (project.hasProperty('javapackagerPath')) {
+        def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
+        command << "-Bicon=assets-bundle/Chatty.ico"
+        command << "-BappVersion=${version}"
+        command << "-BjvmProperties=sun.java2d.d3d=false"
+        if (project.hasProperty('jrePath')) {
+            command << "-Bruntime=${jrePath}"
+        }
+        commandLine command
+    }
+}
+
+task windowsZip(type: Zip, group: 'build') {
+    dependsOn javapackager
+
+    from new File(javapackagerBuildDir, 'bundles/Chatty')
+    from ('assets') {
+        exclude 'lib'
+	into 'app'
+    }
+    from 'assets/lib/dlls/JIntellitype32.dll'
+    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
+    from ('assets-bundle/fallback-fonts') {
+        into 'runtime/libs/fonts/fallback'
+    }
+    from 'assets-bundle/readme-bundle.txt'
+
+    destinationDir = releasesDir
+    archiveName = "${archivesBaseName}_${version}_windows_standalone.zip"
+}
+
+task releaseWindows(group: 'build') {
+    dependsOn release, windowsZip
+}

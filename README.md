@@ -128,8 +128,26 @@ the release artifacts.
 
 If you have Hotkey Support enabled (Windows only), you need to include the
 JIntellitype32.dll or the JIntellitype64.dll for the 32/64bit versions of Java
-respectively (but always renamed to JIntellitype.dll).
+respectively (but always renamed to JIntellitype.dll). If you use the release
+task mentioned above, several different zip versions are created for this.
 
 In Chatty.java you should set your own client id which you get from Twitch. You
 may also want to disable the Version Checker depending on how you will distribute
 the compiled program. See the comments in Chatty.java for more information.
+
+Windows Standalone Bundle
+-------------------------
+
+You can create a standalone Windows version (including a JRE) using the
+javapackager program included in the JDK. Use the `releaseWindows` task to
+build both the regular zip files and the standalone version, or the
+`windowsZip` task to just build the standalone version.
+
+You must specify the path to the javapackager program like this:
+`gradlew windowsZip -PjavapackagerPath="<path_to>/javapackager.exe"`
+
+You may also specify the path to the JRE to bundle using the `-PjrePath`
+parameter, otherwise it will use the default JRE of the system.
+
+Currently the build includes the JIntellitype32.dll, so you may have to
+exchange that file if you bundle a 64bit version of Java.
