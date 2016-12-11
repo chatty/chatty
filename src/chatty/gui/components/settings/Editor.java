@@ -49,7 +49,7 @@ public class Editor {
 
     private String result;
 
-    Editor(Window parent) {
+    public Editor(Window parent) {
         dialog = new JDialog(parent);
         this.parent = parent;
 

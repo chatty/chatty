@@ -13,12 +13,19 @@ import chatty.gui.HtmlColors;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
+import chatty.gui.components.settings.Editor;
+import chatty.gui.components.settings.GenericComboSetting;
+import chatty.gui.components.settings.SettingsDialog;
 import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
+import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
+import chatty.util.settings.Settings;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
@@ -28,6 +35,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 /**
  *
@@ -39,6 +47,8 @@ public class UserInfo extends JDialog {
     private static final SimpleDateFormat TIMESTAMP_ACTION_MESSAGE = new SimpleDateFormat("[HH:mm:ss]* ");
     private static final SimpleDateFormat TIMESTAMP_SPECIAL = new SimpleDateFormat("[HH:mm:ss]>");
     private static final SimpleDateFormat TIMESTAMP_SUB = new SimpleDateFormat("[HH:mm:ss]$ ");
+    
+    private static final String SINGLE_MESSAGE_CHECK = "Remove only selected message";
     
     public enum Action {
         NONE, TIMEOUT, MOD, UNMOD, COMMAND
@@ -54,6 +64,8 @@ public class UserInfo extends JDialog {
     private final HashMap<JButton, Integer> timeoutButtons = new HashMap<>();
     private final HashMap<JButton, String> commandButtons = new HashMap<>();
     private final JButton closeButton = new JButton("Close");
+    private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
+    private final BanReasons banReasons;
     
     private final JPanel buttonPane;
     private final JPanel buttonPane2;
@@ -64,6 +76,7 @@ public class UserInfo extends JDialog {
     
     private User currentUser;
     private String currentLocalUsername;
+    private String currentMessageId;
     
     private float fontSize;
     
@@ -72,9 +85,11 @@ public class UserInfo extends JDialog {
     
     private final MainGui owner;
    
-    public UserInfo(final MainGui owner, final ContextMenuListener contextMenuListener) {
+    public UserInfo(final MainGui owner, Settings settings,
+            final ContextMenuListener contextMenuListener) {
         super(owner);
         this.owner = owner;
+        banReasons = new BanReasons(this, settings);
         actionListener = new ActionListener() {
 
             @Override
@@ -95,25 +110,41 @@ public class UserInfo extends JDialog {
 
         buttonPane = new JPanel();
         gbc = makeGbc(0,0,3,1);
+        gbc.insets = new Insets(2, 2, 0, 2);
         add(buttonPane,gbc);
+        
+        gbc = makeGbc(0,3,3,1);
+        gbc.insets = new Insets(0, 6, 2, 2);
+        gbc.anchor = GridBagConstraints.CENTER;
+        singleMessage.setToolTipText("When doing a ban/timeout only remove a single message of that user [S to toggle]");
+        //add(singleMessage, gbc);
+        
+        JComboBox<String> reasons = new JComboBox<>();
+        reasons.addItem("-- Select Ban/Timeout Reason --");
+        reasons.addItem("No CatBag posted");
+        reasons.addItem("Custom Ban/Timeout Reason:");
+        gbc = makeGbc(0,1,3,1);
+        gbc.insets = new Insets(2, 10, 5, 10);
+        //gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(banReasons, gbc);
         
         lines.setEditable(false);
         lines.setLineWrap(true);
         JScrollPane scrollPane = new JScrollPane(lines);
         scrollPane.setPreferredSize(new Dimension(300,200));
-        gbc = makeGbc(0,1,3,1);
+        gbc = makeGbc(0,4,3,1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 0.9;
         add(scrollPane,gbc);
         
         buttonPane2 = new JPanel();
-        gbc = makeGbc(0,2,3,1);
+        gbc = makeGbc(0,5,3,1);
         gbc.insets = new Insets(0,0,0,0);
         add(buttonPane2, gbc);
         
         infoPane = new JPanel();
-        gbc = makeGbc(0,3,3,1);
+        gbc = makeGbc(0,6,3,1);
         add(infoPane,gbc);
         
         infoPane.add(numberOfLines);
@@ -134,7 +165,7 @@ public class UserInfo extends JDialog {
         infoPane2.add(followers);
 //        add(infoPane2, gbc);
 
-        gbc = makeGbc(0,5,3,1);
+        gbc = makeGbc(0,8,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10,5,3,5);
         add(closeButton,gbc);
@@ -166,6 +197,20 @@ public class UserInfo extends JDialog {
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
+      
+//        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("S"), singleMessage);
+//        getRootPane().getActionMap().put(singleMessage, new AbstractAction() {
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                if (getFocusOwner().getClass() == JTextField.class) {
+//                    return;
+//                }
+//                if (singleMessage.isEnabled()) {
+//                    singleMessage.setSelected(!singleMessage.isSelected());
+//                }
+//            }
+//        });
     }
     
     public void setFontSize(float size) {
@@ -284,6 +329,9 @@ public class UserInfo extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (getFocusOwner().getClass() == JTextField.class) {
+                    return;
+                }
                 button.doClick();
             }
         });
@@ -342,8 +390,10 @@ public class UserInfo extends JDialog {
         GuiUtil.setFontSize(fontSize, this);
         // Pack because otherwise the dialog won't be sized correctly when
         // displaying it for the first time (not sure why)
+        banReasons.addCustomInput();
         pack();
         finishDialog();
+        banReasons.removeCustomInput();
     }
     
     private void finishDialog() {
@@ -442,13 +492,15 @@ public class UserInfo extends JDialog {
         return Action.NONE;
     }
     
-    private void setUser(User user, String localUsername) {
+    private void setUser(User user, String messageId, String localUsername) {
         if (currentUser != user) {
             currentUser = user;
             if (infoAdded) {
                 showInfo();
             }
-            
+            currentMessageId = messageId;
+        } else if (messageId != null) {
+            currentMessageId = messageId;
         }
         currentLocalUsername = localUsername;
         
@@ -471,6 +523,7 @@ public class UserInfo extends JDialog {
         firstSeen.setText(" First seen: "+DateTime.format(user.getCreatedAt()));
         firstSeen.setToolTipText("First seen (this session only): "+DateTime.formatFullDatetime(user.getCreatedAt()));
         numberOfLines.setText(" Messages: "+user.getNumberOfMessages());
+        singleMessage.setEnabled(currentMessageId != null);
         updateColor();
         updateModButtons();
         finishDialog();
@@ -536,8 +589,14 @@ public class UserInfo extends JDialog {
         List<Message> messages = currentUser.getMessages();
         for (Message m : messages) {
             if (m.getType() == Message.MESSAGE) {
-                b.append(DateTime.format(m.getTime(), ((TextMessage)m).isAction() ? TIMESTAMP_ACTION_MESSAGE : TIMESTAMP_MESSAGE));
-                b.append(((TextMessage)m).getText());
+                TextMessage tm = (TextMessage)m;
+                if (!StringUtil.isNullOrEmpty(currentMessageId)
+                        && currentMessageId.equals(tm.id)) {
+                    b.append(">");
+                    singleMessage.setText(SINGLE_MESSAGE_CHECK+" ("+StringUtil.shortenTo(tm.text, 14)+")");
+                }
+                b.append(DateTime.format(m.getTime(), tm.action ? TIMESTAMP_ACTION_MESSAGE : TIMESTAMP_MESSAGE));
+                b.append(tm.text);
                 b.append("\n");
             }
             else if (m.getType() == Message.BAN) {
@@ -581,8 +640,11 @@ public class UserInfo extends JDialog {
         return b.toString();
     }
     
-    public void show(Component owner, User user, String localUsername) {
-        setUser(user, localUsername);
+    public void show(Component owner, User user, String messageId, String localUsername) {
+        banReasons.updateReasonsFromSettings();
+        banReasons.reset();
+        singleMessage.setSelected(false);
+        setUser(user, messageId, localUsername);
         closeButton.requestFocusInWindow();
         setVisible(true);
     }
@@ -597,7 +659,7 @@ public class UserInfo extends JDialog {
      */
     public void update(User user, String localUsername) {
         if (currentUser == user && isVisible()) {
-            setUser(user, localUsername);
+            setUser(user, null, localUsername);
         }
     }
     
@@ -607,6 +669,17 @@ public class UserInfo extends JDialog {
     
     public String getChannel() {
         return currentUser.getChannel();
+    }
+    
+    public String getTargetMsgId() {
+        if (singleMessage.isSelected()) {
+            return currentMessageId;
+        }
+        return null;
+    }
+    
+    public String getBanReason() {
+        return banReasons.getSelectedReason();
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -622,7 +695,7 @@ public class UserInfo extends JDialog {
     private boolean infoAdded;
     
     private void addInfo() {
-        GridBagConstraints gbc = makeGbc(0, 4, 3, 1);
+        GridBagConstraints gbc = makeGbc(0, 7, 3, 1);
         gbc.insets = new Insets(-8, 5, 0, 5);
         add(infoPane2, gbc);
         revalidate();
@@ -667,4 +740,223 @@ public class UserInfo extends JDialog {
         
         followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));
     }
+    
+    private static class BanReasons extends JPanel {
+        
+        private final GenericComboSetting<String> combo = new GenericComboSetting<>();
+        private final Settings settings;
+        
+        private final Editor settingEditor;
+        private final JTextField customReasonInput = new JTextField();
+        
+        private final GridBagConstraints customInputGbc;
+        
+        private String currentReasons;
+
+        private final int[] codes = new int[]{KeyEvent.VK_1,
+            KeyEvent.VK_2, KeyEvent.VK_3, KeyEvent.VK_4, KeyEvent.VK_5,
+            KeyEvent.VK_6, KeyEvent.VK_7, KeyEvent.VK_8, KeyEvent.VK_9};
+        
+        public BanReasons(final Window parent, Settings settings) {
+            this.settings = settings;
+            
+            setLayout(new GridBagLayout());
+
+            JButton editButton = new JButton();
+            editButton.setIcon(new ImageIcon(SettingsDialog.class.getResource("edit.png")));
+            editButton.setMargin(new Insets(0,2,0,2));
+            editButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    editReasons();
+                }
+            });
+            
+            settingEditor = new Editor(parent);
+            settingEditor.setAllowEmpty(true);
+            settingEditor.setAllowLinebreaks(true);
+            
+            final GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            add(combo, gbc);
+            gbc.gridx = 1;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            add(editButton, gbc);
+            customInputGbc = new GridBagConstraints();
+            customInputGbc.gridx = 0;
+            customInputGbc.gridy = 1;
+            customInputGbc.gridwidth = 2;
+            customInputGbc.fill = GridBagConstraints.HORIZONTAL;
+            add(customReasonInput, customInputGbc);
+            
+            /**
+             * Custom renderer to display the value of the items for the
+             * selected item, instead of the label (hide the shortcut).
+             */
+            combo.setRenderer(new BasicComboBoxRenderer() {
+            
+                @Override
+                public Component getListCellRendererComponent(JList list,
+                        Object value, int index, boolean isSelected,
+                        boolean hasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
+                    
+                    if (index == -1 && value != null) {
+                        String text = ((GenericComboSetting.Entry<String>)value).value;
+                        if (text != null && !text.isEmpty()) {
+                            setText(text);
+                        }
+                    }
+                    return this;
+                }
+            
+            });
+            
+            /**
+             * Add/remove custom reason input box if last item is selected.
+             */
+            combo.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (combo.getItemCount() > 1 && combo.getSelectedIndex() == combo.getItemCount() - 1) {
+                        addCustomInput();
+                    } else {
+                        removeCustomInput();
+                    }
+                    
+                }
+            });
+            
+            /**
+             * When the popup is open, allow shortcuts to select items.
+             */
+            combo.addKeyListener(new KeyAdapter() {
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (!combo.isPopupVisible()) {
+                        return;
+                    }
+                    for (int i=0;i<codes.length;i++) {
+                        if (codes[i] == e.getKeyCode()) {
+                            int indexToSelect = i+1;
+                            if (combo.getItemCount() > indexToSelect+1) {
+                                combo.setPopupVisible(false);
+                                combo.setSelectedIndex(indexToSelect);
+                            }
+                            e.consume();
+                        }
+                    }
+                    if (e.getKeyCode() == KeyEvent.VK_C) {
+                        combo.setSelectedIndex(combo.getItemCount() - 1);
+                        e.consume();
+                    }
+                }
+            });
+            
+            // TODO: Disable for now until it can be configured
+//            combo.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("R"), combo);
+            combo.getActionMap().put(combo, new AbstractAction() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (parent.getFocusOwner().getClass() == JTextField.class) {
+                        return;
+                    }
+                    if (!combo.isPopupVisible() && combo.getSelectedIndex() != 0) {
+                        combo.setSelectedIndex(0);
+                    }
+                    combo.requestFocusInWindow();
+                    combo.setPopupVisible(!combo.isPopupVisible());
+                }
+            });
+            customReasonInput.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusPreviousComponent();
+                }
+            });
+            customReasonInput.addKeyListener(new KeyAdapter() {
+                
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_UP) {
+                        combo.requestFocusInWindow();
+                        combo.setPopupVisible(true);
+                        combo.setSelectedIndex(combo.getItemCount() - 2);
+                    }
+                }
+            });
+        }
+        
+        private void editReasons() {
+            String currentReasons = settings.getString("banReasons");
+            String editedReasons = settingEditor.showDialog(
+                    "Edit Preset Ban Reasons (one per line):",
+                    currentReasons,
+                    null);
+            if (editedReasons != null) {
+                settings.setString("banReasons", editedReasons);
+                updateReasonsFromSettings();
+            }
+        }
+        
+        public void updateReasonsFromSettings() {
+            String reasons = settings.getString("banReasons");
+            if (reasons.equals(currentReasons)) {
+                return;
+            }
+            String[] split = reasons.split("\n");
+            combo.removeAllItems();
+//            combo.add("", "Select a Ban Reason (optional) [R]");
+            combo.add("", "Select a Ban Reason (optional)");
+            for (int i=0;i<split.length;i++) {
+                if (!split[i].trim().isEmpty()) {
+                    String shortcut = "-";
+                    if (codes.length > i) {
+                        shortcut = KeyEvent.getKeyText(codes[i]);
+                    }
+                    combo.add(split[i], "["+shortcut+"] "+split[i]);
+                }
+            }
+            combo.add("[C] Non-preset reason:");
+            currentReasons = reasons;
+        }
+        
+        public String getSelectedReason() {
+            int index = combo.getSelectedIndex();
+            if (index == 0 || index == -1) {
+                return "";
+            }
+            if (index == combo.getItemCount() - 1) {
+                return customReasonInput.getText();
+            }
+            return combo.getSettingValue();
+        }
+        
+        public void reset() {
+            if (combo.getItemCount() > 0) {
+                combo.setSelectedIndex(0);
+            }
+        }
+        
+        public void addCustomInput() {
+            add(customReasonInput, customInputGbc);
+            revalidate();
+            customReasonInput.requestFocusInWindow();
+            customReasonInput.setSelectionStart(0);
+            customReasonInput.setSelectionEnd(customReasonInput.getText().length());
+        }
+        
+        public void removeCustomInput() {
+            remove(customReasonInput);
+            revalidate();
+        }
+        
+    }
+    
 }

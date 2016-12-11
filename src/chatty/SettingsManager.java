@@ -255,6 +255,8 @@ public class SettingsManager {
 
         // Menu Entries
         settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4]");
+        settings.addString("banReasons", "Spam\nPosting Bad Links\nBan Evasion\n"
+                                + "Hate / Harassment\nSpoilers / Backseat Gaming");
         settings.addString("userContextMenu", "");
         settings.addString("channelContextMenu", "");
 

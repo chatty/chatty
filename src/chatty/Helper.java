@@ -270,6 +270,7 @@ public class Helper {
     private static final Replacer HTMLSPECIALCHARS_ENCODE;
     private static final Replacer HTMLSPECIALCHARS_DECODE;
     private static final Replacer TAGS_VALUE_DECODE;
+    private static final Replacer TAGS_VALUE_ENCODE;
     
     static {
         Map<String, String> replacements = new HashMap<>();
@@ -292,6 +293,14 @@ public class Helper {
         replacements2.put("\\\\:", ";");
         replacements2.put("\\\\\\\\", "\\");
         
+        Map<String, String> replacements2Reverse = new HashMap<>();
+        replacements2Reverse.put("\\s", "\\s");
+        replacements2Reverse.put("\n", "\\n");
+        replacements2Reverse.put("\r", "\\r");
+        replacements2Reverse.put(";", "\\:");
+        replacements2Reverse.put("\\\\", "\\\\");
+        
+        TAGS_VALUE_ENCODE = new Replacer(replacements2Reverse);
         TAGS_VALUE_DECODE = new Replacer(replacements2);
     }
     
@@ -300,6 +309,13 @@ public class Helper {
             return null;
         }
         return TAGS_VALUE_DECODE.replace(s);
+    }
+    
+    public static String tagsvalue_encode(String s) {
+        if (s == null) {
+            return null;
+        }
+        return TAGS_VALUE_ENCODE.replace(s);
     }
     
     public static String htmlspecialchars_decode(String s) {

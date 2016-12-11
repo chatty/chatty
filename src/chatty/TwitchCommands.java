@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.DateTime;
+import chatty.util.MsgTags;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -46,15 +47,15 @@ public class TwitchCommands {
         this.c = c;
     }
     
-    public boolean command(String channel, String command, String parameter) {
+    public boolean command(String channel, String msgId, String command, String parameter) {
        if (command.equals("to") || command.equals("timeout")) {
-            commandTimeout(channel,parameter);
+            commandTimeout(channel, msgId, parameter);
         }
         else if (command.equals("unban")) {
             commandUnban(channel, parameter);
         }
         else if (command.equals("ban")) {
-            commandBan(channel, parameter);
+            commandBan(channel, msgId, parameter);
         }
         else if (command.equals("slow")) {
             commandSlowmodeOn(channel, parameter);
@@ -118,7 +119,11 @@ public class TwitchCommands {
     }
     
     private void sendMessage(String channel, String message, String echo) {
-        c.sendCommandMessage(channel, message, echo);
+        sendMessage(channel, message, echo, MsgTags.EMPTY);
+    }
+    
+    private void sendMessage(String channel, String message, String echo, MsgTags tags) {
+        c.sendCommandMessage(channel, message, echo, tags);
     }
     
     private void printLine(String channel, String message) {
@@ -129,7 +134,7 @@ public class TwitchCommands {
         c.info(message);
     }
     
-    protected void commandTimeout(String channel, String parameter) {
+    protected void commandTimeout(String channel, String msgId, String parameter) {
         parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( [0-9]+( .+)?)?", parameter);
         if (parameter == null) {
             printLine("Usage: /to <nick> [time] [reason]");
@@ -151,7 +156,7 @@ public class TwitchCommands {
         if (parts.length > 2) {
             reason = parts[2];
         }
-        timeout(channel, nick, duration, reason);
+        timeout(channel, msgId, nick, duration, reason);
     }
     
     protected void commandSlowmodeOn(String channel, String parameter) {
@@ -176,15 +181,15 @@ public class TwitchCommands {
         unban(channel, parameter);
     }
     
-    protected void commandBan(String channel, String parameter) {
+    protected void commandBan(String channel, String msgId, String parameter) {
         if (prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter) == null) {
             printLine("Usage: /ban <nick> [reason]");
         } else {
             String[] split = parameter.split(" ", 2);
             if (split.length == 2) {
-                ban(channel, split[0], split[1]);
+                ban(channel, msgId, split[0], split[1]);
             } else {
-                ban(channel, split[0], null);
+                ban(channel, msgId, split[0], null);
             }
         }
     }
@@ -334,12 +339,13 @@ public class TwitchCommands {
         }
     }
 
-    public void ban(String channel, String name, String reason) {
+    public void ban(String channel, String msgId, String name, String reason) {
         if (onChannel(channel, true)) {
+            MsgTags tags = createTags(msgId);
             if (reason == null || reason.isEmpty()) {
-                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..");
+                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..", tags);
             } else {
-                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")");
+                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")", tags);
             }
         }
     }
@@ -363,10 +369,11 @@ public class TwitchCommands {
      * @param name
      * @param time 
      */
-    public void timeout(String channel, String name, long time, String reason) {
+    public void timeout(String channel, String msgId, String name, long time, String reason) {
         if (onChannel(channel, true)) {
+            MsgTags tags = createTags(msgId);
             if (time <= 0) {
-                sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..");
+                sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..", tags);
             }
             else {
                 String formatted = DateTime.duration(time*1000, 0, 2, 0);
@@ -375,10 +382,10 @@ public class TwitchCommands {
                         ? onlySeconds : onlySeconds+"/"+formatted;
                 if (reason == null || reason.isEmpty()) {
                     sendMessage(channel,".timeout "+name+" "+time,
-                        "Trying to timeout "+name+" ("+timeString+")");
+                        "Trying to timeout "+name+" ("+timeString+")", tags);
                 } else {
                     sendMessage(channel,".timeout "+name+" "+time+" "+reason,
-                        "Trying to timeout "+name+" ("+timeString+", "+reason+")");
+                        "Trying to timeout "+name+" ("+timeString+", "+reason+")", tags);
                 }
             }
             
@@ -497,6 +504,13 @@ public class TwitchCommands {
         }
         parameters = parameters.trim();
         return parameters.matches(regex) ? parameters : null;
+    }
+    
+    private MsgTags createTags(String msgId) {
+        if (msgId != null) {
+            return MsgTags.create("target-msg-id", msgId);
+        }
+        return MsgTags.EMPTY;
     }
     
 }

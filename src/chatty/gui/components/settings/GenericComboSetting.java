@@ -123,8 +123,8 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
     }
     
     public static class Entry<E> {
-        private final E value;
-        private final String label;
+        public final E value;
+        public final String label;
         
         public Entry(E value, String label) {
             this.value = value;

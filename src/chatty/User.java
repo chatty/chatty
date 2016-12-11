@@ -264,8 +264,8 @@ public class User implements Comparable {
      * 
      * @param line 
      */
-    public synchronized void addMessage(String line, boolean action) {
-        addLine(new TextMessage(System.currentTimeMillis(), line, action));
+    public synchronized void addMessage(String line, boolean action, String id) {
+        addLine(new TextMessage(System.currentTimeMillis(), line, action, id));
         numberOfMessages++;
         lastMessage = System.currentTimeMillis();
     }
@@ -852,13 +852,15 @@ public class User implements Comparable {
     }
     
     public static class TextMessage extends Message {
-        private final String text;
-        private final boolean action;
+        public final String text;
+        public final boolean action;
+        public final String id;
         
-        public TextMessage(Long time, String message, boolean action) {
+        public TextMessage(Long time, String message, boolean action, String id) {
             super(MESSAGE, time);
             this.text = message;
             this.action = action;
+            this.id = id;
         }
         
         public String getText() {

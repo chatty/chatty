@@ -161,7 +161,7 @@ public class UserList extends JList<User> {
     private void userSelected(MouseEvent e) {
         User user = getUser(e);
         if (user != null) {
-            userListener.userClicked(user, e);
+            userListener.userClicked(user, null, e);
         }
     }
     

@@ -24,6 +24,7 @@ import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
+import chatty.util.MsgTags;
 import chatty.util.ProcessManager;
 import chatty.util.RawMessageTest;
 import chatty.util.Speedruncom;
@@ -172,10 +173,10 @@ public class TwitchClient {
         LOGGER.info("### Log start ("+DateTime.fullDateTime()+")");
         LOGGER.info(Chatty.chattyVersion());
         LOGGER.info(Helper.systemInfo());
-        LOGGER.info("Working Directory: "+System.getProperty("user.dir")
-                +" Settings Directory: "+Chatty.getUserDataDirectory()
-                +" Classpath: "+System.getProperty("java.class.path")
-                +" Library Path: "+System.getProperty("java.library.path"));
+        LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
+                +" [Settings Directory] "+Chatty.getUserDataDirectory()
+                +" [Classpath] "+System.getProperty("java.class.path")
+                +" [Library Path] "+System.getProperty("java.library.path"));
         LOGGER.info("Retina Display: "+GuiUtil.hasRetinaDisplay());
         
         // Create after Logging is created, since that resets some stuff
@@ -273,7 +274,7 @@ public class TwitchClient {
             g.addUser("", new User("josh", ""));
             g.addUser("", new User("joshua", ""));
             User j = new User("joshimuz", "Joshimuz", "");
-            j.addMessage("abc", false);
+            j.addMessage("abc", false, null);
             j.setDisplayNick("Joshimoose");
             j.setTurbo(true);
             g.addUser("", j);
@@ -769,6 +770,12 @@ public class TwitchClient {
      * @return 
      */
     public boolean command(String channel, String command, String parameter) {
+        return command(channel, command, parameter, null);
+    }
+    
+    public boolean command(String channel, String command, String parameter,
+            String msgId) {
+        System.out.println(command+" "+parameter);
         command = StringUtil.toLowerCase(command);
         
         //---------------
@@ -982,7 +989,7 @@ public class TwitchClient {
             g.printSystem("[Proc] "+ProcessManager.command(parameter));
         }
         
-        else if (c.command(channel, command, parameter)) {
+        else if (c.command(channel, command, parameter, msgId)) {
             // Already done if true
         }
         
@@ -2322,20 +2329,20 @@ public class TwitchClient {
                         Pattern.CASE_INSENSITIVE);
 
         @Override
-        public void onBan(User user, long duration, String reason) {
+        public void onBan(User user, long duration, String reason, String targetMsgId) {
             User localUser = c.getLocalUser(user.getChannel());
-            Matcher m = findId.matcher(reason);
-            String id = null;
-            if (m.find()) {
-                id = m.group();
-                reason = reason.replace(id, "").trim();
-            }
+//            Matcher m = findId.matcher(reason);
+//            String id = null;
+//            if (m.find()) {
+//                id = m.group();
+//                reason = reason.replace(id, "").trim();
+//            }
             if (localUser != user && !localUser.hasModeratorRights()) {
                 // Remove reason if not the affected user and not a mod, to be
                 // consistent with other applications
                 reason = "";
             }
-            g.userBanned(user, duration, reason, id);
+            g.userBanned(user, duration, reason, targetMsgId);
             ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.nick);
             chatLog.userBanned(user.getChannel(), user.getRegularDisplayNick(),
                     duration, reason, channelInfo);

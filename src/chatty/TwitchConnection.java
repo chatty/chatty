@@ -3,6 +3,7 @@ package chatty;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.BotNameManager;
+import chatty.util.MsgTags;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.util.Collection;
@@ -393,8 +394,13 @@ public class TwitchConnection {
         irc.send(text);
     }
     
-    public boolean command(String channel, String command, String parameters) {
-        return twitchCommands.command(channel, command, parameters);
+    public boolean command(String channel, String command, String parameters,
+            String msgId) {
+        return twitchCommands.command(channel, msgId, command, parameters);
+    }
+    
+    public void sendCommandMessage(String channel, String message, String echo) {
+        sendCommandMessage(channel, message, echo, MsgTags.EMPTY);
     }
     
     /**
@@ -406,13 +412,19 @@ public class TwitchConnection {
      * @param channel The channel to send the message to
      * @param message The message to send (e.g. a moderation command)
      * @param echo The message to display to the user
+     * @param tags
      */
-    public void sendCommandMessage(String channel, String message, String echo) {
-        if (sendSpamProtectedMessage(channel, message, false)) {
+    public void sendCommandMessage(String channel, String message, String echo,
+            MsgTags tags) {
+        if (sendSpamProtectedMessage(channel, message, false, tags)) {
             listener.onInfo(channel, echo);
         } else {
             listener.onInfo(channel, "# Command not sent to prevent ban: " + message);
         }
+    }
+    
+    public boolean sendSpamProtectedMessage(String channel, String message, boolean action) {
+        return sendSpamProtectedMessage(channel, message, action, MsgTags.EMPTY);
     }
     
     /**
@@ -427,7 +439,7 @@ public class TwitchConnection {
      * @return true if the message was send, false otherwise
      */
     public boolean sendSpamProtectedMessage(String channel, String message,
-            boolean action) {
+            boolean action, MsgTags tags) {
         if (!spamProtection.check()) {
             return false;
         } else {
@@ -435,7 +447,7 @@ public class TwitchConnection {
             if (action) {
                 irc.sendActionMessage(channel, message);
             } else {
-                irc.sendMessage(channel, message);
+                irc.sendMessage(channel, message, tags);
             }
             return true;
         }
@@ -822,8 +834,8 @@ public class TwitchConnection {
             }
         }
         
-        private void updateUserFromTags(User user, Map<String, String> tags) {
-            if (tags == null) {
+        private void updateUserFromTags(User user, MsgTags tags) {
+            if (tags.isEmpty()) {
                 return;
             }
             /**
@@ -851,11 +863,11 @@ public class TwitchConnection {
             }
             
             // Update user status
-            boolean turbo = checkTagsState("turbo", tags) || badges.containsKey("turbo") || badges.containsKey("premium");
+            boolean turbo = tags.isTrue("turbo") || badges.containsKey("turbo") || badges.containsKey("premium");
             if (user.setTurbo(turbo)) {
                 changed = true;
             }
-            if (user.setSubscriber(checkTagsState("subscriber", tags))) {
+            if (user.setSubscriber(tags.isTrue("subscriber"))) {
                 changed = true;
             }
             
@@ -879,33 +891,10 @@ public class TwitchConnection {
                 listener.onUserUpdated(user);
             }
         }
-        
-        /**
-         * Returns true if the given key in the tags Map is equal to "1", false
-         * otherwise.
-         * 
-         * @param key The key to check
-         * @param tags The tags to lookup the key from
-         * @return True if equal to 1, false otherwise
-         */
-        private boolean checkTagsState(String key, Map<String, String> tags) {
-            return "1".equals(tags.get(key));
-        }
-        
-        private int getIntegerFromTags(Map<String, String> tags, String key, int defaultValue) {
-            if (tags != null && tags.get(key) != null) {
-                try {
-                    return Integer.parseInt(tags.get(key));
-                } catch (NumberFormatException ex) {
-                    // Do nothing
-                }
-            }
-            return defaultValue;
-        }
 
         @Override
         void onChannelMessage(String channel, String nick, String from, String text,
-                Map<String, String> tags, boolean action) {
+                MsgTags tags, boolean action) {
             channel = channel.toLowerCase();
             if (this != irc) {
                 return;
@@ -919,9 +908,9 @@ public class TwitchConnection {
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
-                    String emotesTag = tags != null ? tags.get("emotes") : null;
-                    String id = tags != null ? tags.get("id") : null;
-                    int bits = getIntegerFromTags(tags, "bits", 0);
+                    String emotesTag = tags.get("emotes");
+                    String id = tags.get("id");
+                    int bits = tags.getInteger("bits", 0);
                     listener.onChannelMessage(user, text, action, emotesTag, id, bits);
                 }
             }
@@ -937,7 +926,7 @@ public class TwitchConnection {
         }
         
         @Override
-        void onNotice(String channel, String text, Map<String, String> tags) {
+        void onNotice(String channel, String text, MsgTags tags) {
             channel = channel.toLowerCase();
             if (this != irc) {
                 return;
@@ -952,8 +941,8 @@ public class TwitchConnection {
         }
         
         @Override
-        void onUsernotice(String channel, String message, Map<String, String> tags) {
-            if (tags == null) {
+        void onUsernotice(String channel, String message, MsgTags tags) {
+            if (tags.isEmpty()) {
                 return;
             }
             if (!onChannel(channel)) {
@@ -963,12 +952,7 @@ public class TwitchConnection {
                 String login = tags.get("login");
                 String text = tags.get("system-msg");
                 String emotes = tags.get("emotes");
-                int months = -1;
-                try {
-                    months = Integer.parseInt(tags.get("msg-param-months"));
-                } catch (Exception ex) {
-                    // Just go with default value
-                }
+                int months = tags.getInteger("msg-param-months", -1);
                 if (StringUtil.isNullOrEmpty(login, text)) {
                     return;
                 }
@@ -1093,7 +1077,7 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onUserstate(String channel, Map<String, String> tags) {
+        public void onUserstate(String channel, MsgTags tags) {
             channel = channel.toLowerCase();
             if (onChannel(channel)) {
                 updateUserstate(channel, tags);
@@ -1101,11 +1085,11 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onGlobalUserstate(Map<String, String> tags) {
+        public void onGlobalUserstate(MsgTags tags) {
             updateUserstate(null, tags);
         }
         
-        private void updateUserstate(String channel, Map<String, String> tags) {
+        private void updateUserstate(String channel, MsgTags tags) {
             String emotesets = tags.get("emote-sets");
             if (channel != null) {
                 /**
@@ -1146,29 +1130,18 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onClearChat(Map<String, String> tags, String channel, 
+        public void onClearChat(MsgTags tags, String channel, 
                 String nick) {
             channel = channel.toLowerCase();
             if (nick != null) {
                 // A single user was timed out/banned
                 User user = users.getUserIfExists(channel, nick);
                 if (user != null) {
-                    long duration = -1;
-                    String reason = "";
-                    if (tags != null) {
-                        if (tags.containsKey("ban-reason")) {
-                            reason = tags.get("ban-reason");
-                        }
-                        if (tags.containsKey("ban-duration")) {
-                            try {
-                                duration = Long.parseLong(tags.get("ban-duration"));
-                            } catch (NumberFormatException ex) {
-                                // Just don't use value
-                            }
-                        }
-                    }
+                    long duration = tags.getLong("ban-duration", -1);
+                    String reason = tags.get("ban-reason", "");
+                    String targetMsgId = tags.get("target-msg-id", null);
                     if (isChannelOpen(user.getChannel())) {
-                        listener.onBan(user, duration, reason);
+                        listener.onBan(user, duration, reason, targetMsgId);
                     }
                 }
             } else {
@@ -1178,7 +1151,7 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onChannelCommand(Map<String, String> tags, String nick,
+        public void onChannelCommand(MsgTags tags, String nick,
                 String channel, String command, String trailing) {
             channel = channel.toLowerCase();
             if (command.equals("HOSTTARGET")) {
@@ -1194,20 +1167,20 @@ public class TwitchConnection {
                     }
                 }
             } else if (command.equals("ROOMSTATE")) {
-                if (tags != null) {
+                if (!tags.isEmpty()) {
                     /**
                      * ROOMSTATE doesn't always have to contain all states, so
                      * only work with those that are actually there (otherwise
                      * they may be inadvertently recognized as false).
                      */
                     if (tags.containsKey("r9k")) {
-                        channelStates.setR9kMode(channel, checkTagsState("r9k", tags));
+                        channelStates.setR9kMode(channel, tags.isTrue("r9k"));
                     }
                     if (tags.containsKey("emote-only")) {
-                        channelStates.setEmoteOnly(channel, checkTagsState("emote-only", tags));
+                        channelStates.setEmoteOnly(channel, tags.isTrue("emote-only"));
                     }
                     if (tags.containsKey("subs-only")) {
-                        channelStates.setSubmode(channel, checkTagsState("subs-only", tags));
+                        channelStates.setSubmode(channel, tags.isTrue("subs-only"));
                     }
                     if (tags.containsKey("slow")) {
                         channelStates.setSlowmode(channel, tags.get("slow"));
@@ -1226,15 +1199,14 @@ public class TwitchConnection {
         }
         
         @Override
-        public void onCommand(String nick, String command, String parameter, String text, Map<String, String> tags) {
+        public void onCommand(String nick, String command, String parameter, String text, MsgTags tags) {
             if (nick.isEmpty()) {
                 return;
             }
             if (command.equals("WHISPER")) {
                 User user = userJoined(WhisperManager.WHISPER_CHANNEL, nick);
                 updateUserFromTags(user, tags);
-                String emotesTag = tags != null ? tags.get("emotes") : null;
-                listener.onWhisper(user, text, emotesTag);
+                listener.onWhisper(user, text, tags.get("emotes"));
             }
         }
     }
@@ -1338,7 +1310,7 @@ public class TwitchConnection {
         
         void onGlobalInfo(String message);
 
-        void onBan(User user, long length, String reason);
+        void onBan(User user, long length, String reason, String targetMsgId);
 
         void onRegistered();
         

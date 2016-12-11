@@ -610,12 +610,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private User getUserFromLine(Element line) {
-        for (int j = 0; j < 10; j++) {
-            Element element = line.getElement(j);
+        return getUserFromElement(getUserElementFromLine(line));
+    }
+    
+    private Element getUserElementFromLine(Element line) {
+        for (int i = 0; i < 20; i++) {
+            if (i > line.getElementCount()) {
+                break;
+            }
+            Element element = line.getElement(i);
             User elementUser = getUserFromElement(element);
-            // If the User object matches, we're done
+            // If there is a User object, we're done
             if (elementUser != null) {
-                return elementUser;
+                return element;
             }
         }
         // No User object was found, so it's probably not a chat message
@@ -632,21 +639,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @return 
      */
     private boolean isLineFromUserAndId(Element line, User user, String id) {
-        for (int j = 0; j < 20; j++) {
-            Element element = line.getElement(j);
-            User elementUser = getUserFromElement(element);
-            // If the User object matches, we're done
-            if (elementUser == user) {
-                if (id == null || id.equals(getIdFromElement(element))) {
-                    return true;
-                }
-            }
-            // Stop if any User object was found
-            if (elementUser != null) {
-                return false;
+        Element element = getUserElementFromLine(line);
+        User elementUser = getUserFromElement(element);
+        if (elementUser == user) {
+            if (id == null || id.equals(getIdFromElement(element))) {
+                return true;
             }
         }
-        // No User object was found, so it's probably not a chat message
         return false;
     }
     
@@ -673,7 +672,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param element
      * @return The ID element, or null if none was found
      */
-    private String getIdFromElement(Element element) {
+    public static String getIdFromElement(Element element) {
         if (element != null) {
             return (String)element.getAttributes().getAttribute(Attribute.ID);
         }
@@ -928,7 +927,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (currentSelection != null && doesLineExist(currentSelection)) {
-                        userListener.userClicked(currentUser, null);
+                        userListener.userClicked(currentUser, getCurrentId(), null);
                     }
                 }
             });
@@ -1106,6 +1105,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 highlightLine(element, false);
             }
         }
+        
+        private String getCurrentId() {
+            if (currentSelection != null) {
+                return getIdFromElement(getUserElementFromLine(currentSelection));
+            }
+            return null;
+        }
 
         /**
          * When a user is clicked while holding Ctrl down, then select that user
@@ -1115,7 +1121,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * @param e The MouseEvent of the click
          */
         @Override
-        public void userClicked(User user, MouseEvent e) {
+        public void userClicked(User user, String messageId, MouseEvent e) {
             if (e != null && ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown())) {
                 Element element = LinkController.getElement(e);
                 Element line = null;

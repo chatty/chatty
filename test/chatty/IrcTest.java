@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.MsgTags;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,7 +39,7 @@ public class IrcTest {
             }
             
             @Override
-            void onChannelMessage (String channel, String nick, String from, String text, Map<String, String> tags, boolean action) {
+            void onChannelMessage (String channel, String nick, String from, String text, MsgTags tags, boolean action) {
                 System.out.println("Channel Message: "+channel+" "+nick+" "+from+" "+text+" (action: "+action+")");
             }
         };

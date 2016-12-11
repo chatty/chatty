@@ -127,8 +127,9 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             }
             User user = getUser(e);
             if (user != null) {
+                String messageId = (String)getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID);
                 for (UserListener listener : userListener) {
-                    listener.userClicked(user, e);
+                    listener.userClicked(user, messageId, e);
                 }
                 return;
             }

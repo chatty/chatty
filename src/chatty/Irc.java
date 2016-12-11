@@ -4,6 +4,7 @@ package chatty;
 import chatty.util.DateTime;
 import chatty.util.DelayedActionQueue;
 import chatty.util.DelayedActionQueue.DelayedActionListener;
+import chatty.util.MsgTags;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -243,23 +244,6 @@ public abstract class Irc {
         sendCommand("QUIT",quitmessage);
     }
     
-    private static Map<String, String> parseTags(String data) {
-        String[] tags = data.split(";");
-        if (tags.length > 0) {
-            Map<String, String> result = new HashMap<>();
-            for (String tag : tags) {
-                String[] keyValue = tag.split("=",2);
-                if (keyValue.length == 2) {
-                    result.put(keyValue[0], Helper.tagsvalue_decode(keyValue[1]));
-                } else {
-                    result.put(keyValue[0], null);
-                }
-            }
-            return result;
-        }
-        return null;
-    }
-    
     public void simulate(String data) {
         received(data);
     }
@@ -275,14 +259,14 @@ public abstract class Irc {
         }
         raw(data);
         
-        Map<String, String> tags = null;
+        MsgTags tags = MsgTags.EMPTY;
         if (data.startsWith("@")) {
             int endOfTags = data.indexOf(" ");
             if (endOfTags == -1) {
                 warning("Parsing error: Couldn't find whitespace after tags: "+data);
                 return;
             }
-            tags = parseTags(data.substring(1, endOfTags));
+            tags = MsgTags.parse(data.substring(1, endOfTags));
             data = data.substring(endOfTags+1);
         }
         //System.out.println("Tags: "+tags);
@@ -331,7 +315,7 @@ public abstract class Irc {
         
         // An exception shouldn't happen unless the message is malformed (hopefully :P)
 //        try {
-            receivedCommand(prefix,command,parameters,trailing, tags);
+            receivedCommand(prefix, command, parameters, trailing, tags);
 //        } catch (NullPointerException | ArrayIndexOutOfBoundsException ex) {
 //            warning("Error parsing irc message: "+data+" ["+ex+"]");
 //        }
@@ -349,7 +333,7 @@ public abstract class Irc {
      * @param tags The IRCv3 tags, can be null
      */
     private void receivedCommand(String prefix, String command,
-            String[] parameters, String trailing, Map<String, String> tags) {
+            String[] parameters, String trailing, MsgTags tags) {
         String nick = getNickFromPrefix(prefix);
         
         parsed(prefix,command,parameters,trailing);
@@ -560,9 +544,17 @@ public abstract class Irc {
      * 
      * @param to
      * @param message 
+     * @param tags 
      */
-    public void sendMessage(String to,String message) {
-        send("PRIVMSG "+to+" :"+message);
+    public void sendMessage(String to, String message, MsgTags tags) {
+        if (!tags.isEmpty()) {
+            send(String.format("@%s PRIVMSG %s :%s",
+                    tags.toTagsString(),
+                    to,
+                    message));
+        } else {
+            send("PRIVMSG "+to+" :"+message);
+        }
     }
     
     public void sendActionMessage(String to,String message) {
@@ -649,13 +641,13 @@ public abstract class Irc {
      * Methods that can by overwritten by another Class
      */
     
-    void onChannelMessage (String channel, String nick, String from, String text, Map<String, String> tags, boolean action) {}
+    void onChannelMessage (String channel, String nick, String from, String text, MsgTags tags, boolean action) {}
     
     void onQueryMessage (String nick, String from, String text) {}
     
     void onNotice(String nick, String from, String text) {}
     
-    void onNotice(String channel, String text, Map<String, String> tags) { }
+    void onNotice(String channel, String text, MsgTags tags) { }
     
     void onJoinAttempt(String channel) {}
     
@@ -683,15 +675,15 @@ public abstract class Irc {
     
     void sent(String message) { }
     
-    void onUserstate(String channel, Map<String, String> tags) { }
+    void onUserstate(String channel, MsgTags tags) { }
     
-    void onGlobalUserstate(Map<String, String> tags) { }
+    void onGlobalUserstate(MsgTags tags) { }
     
-    void onClearChat(Map<String, String> tags, String channel, String name) { }
+    void onClearChat(MsgTags tags, String channel, String name) { }
     
-    void onChannelCommand(Map<String, String> tags, String nick, String channel, String command, String trailing) { }
+    void onChannelCommand(MsgTags tags, String nick, String channel, String command, String trailing) { }
     
-    void onCommand(String nick, String command, String parameter, String text, Map<String, String> tags) { }
+    void onCommand(String nick, String command, String parameter, String text, MsgTags tags) { }
     
-    void onUsernotice(String channel, String message, Map<String, String> tags) { }
+    void onUsernotice(String channel, String message, MsgTags tags) { }
 }

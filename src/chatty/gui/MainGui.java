@@ -54,6 +54,7 @@ import chatty.util.CopyMessages;
 import chatty.util.DateTime;
 import chatty.util.ImageCache;
 import chatty.util.MiscUtil;
+import chatty.util.MsgTags;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
 import chatty.util.api.ChatInfo;
@@ -206,7 +207,7 @@ public class MainGui extends JFrame implements Runnable {
         GuiUtil.installEscapeCloseOperation(connectionDialog);
         tokenDialog = new TokenDialog(this);
         tokenGetDialog = new TokenGetDialog(this);
-        userInfoDialog = new UserInfo(this, contextMenuListener);
+        userInfoDialog = new UserInfo(this, client.settings, contextMenuListener);
         GuiUtil.installEscapeCloseOperation(userInfoDialog);
         aboutDialog = new About();
         setHelpWindowIcons();
@@ -1168,12 +1169,17 @@ public class MainGui extends JFrame implements Runnable {
                 User user = userInfoDialog.getUser();
                 String nick = user.getNick();
                 String channel = userInfoDialog.getChannel();
+                String msgId = userInfoDialog.getTargetMsgId();
+                String reason = userInfoDialog.getBanReason();
+                if (!reason.isEmpty()) {
+                    reason = " "+reason;
+                }
                 if (action == UserInfo.Action.TIMEOUT) {
                     int time = userInfoDialog.getTimeoutButtonTime(event.getSource());
-                    client.command(channel, "timeout", nick+" "+time);
+                    client.command(channel, "timeout", nick+" "+time+reason, msgId);
                 } else if (action == UserInfo.Action.COMMAND) {
                     String command = userInfoDialog.getCommandButtonCommand(source);
-                    client.command(channel, command, nick);
+                    client.command(channel, command, nick+reason, msgId);
                 } else if (action == UserInfo.Action.MOD) {
                     client.command(channel, "mod", nick);
                 } else if (action == UserInfo.Action.UNMOD) {
@@ -1370,7 +1376,7 @@ public class MainGui extends JFrame implements Runnable {
         public void userMenuItemClicked(ActionEvent e, User user) {
             String cmd = e.getActionCommand();
             if (cmd.equals("userinfo")) {
-                openUserInfoDialog(user);
+                openUserInfoDialog(user, null);
             }
             else if (cmd.equals("addressbookEdit")) {
                 openAddressbook(user.getNick());
@@ -1817,9 +1823,9 @@ public class MainGui extends JFrame implements Runnable {
     private class MyUserListener implements UserListener {
         
         @Override
-        public void userClicked(User user, MouseEvent e) {
+        public void userClicked(User user, String messageId, MouseEvent e) {
             if (e == null || (!e.isControlDown() && !e.isAltDown())) {
-                openUserInfoDialog(user);
+                openUserInfoDialog(user, messageId);
                 return;
             }
             String command = client.settings.getString("commandOnCtrlClick");
@@ -1829,7 +1835,7 @@ public class MainGui extends JFrame implements Runnable {
             if (e.isControlDown() && !command.isEmpty()) {
                 client.command(user.getChannel(), command, user.getRegularDisplayNick());
             } else if (!e.isAltDown()) {
-                openUserInfoDialog(user);
+                openUserInfoDialog(user, messageId);
             }
         }
 
@@ -2021,9 +2027,9 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    private void openUserInfoDialog(User user) {
+    private void openUserInfoDialog(User user, String messageId) {
         windowStateManager.setWindowPosition(userInfoDialog, getActiveWindow());
-        userInfoDialog.show(getActiveWindow(), user, client.getUsername());
+        userInfoDialog.show(getActiveWindow(), user, messageId, client.getUsername());
     }
     
     private void openChannelInfoDialog() {
@@ -2599,7 +2605,7 @@ public class MainGui extends JFrame implements Runnable {
                 CopyMessages.copyMessage(client.settings, user, text, highlighted);
                 
                 // Stuff independent of highlight/ignore
-                user.addMessage(processMessage(text), action);
+                user.addMessage(processMessage(text), action, id);
                 if (highlighted) {
                     user.setHighlighted();
                 }
