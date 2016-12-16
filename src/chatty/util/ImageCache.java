@@ -2,18 +2,13 @@
 package chatty.util;
 
 import chatty.util.gif.GifUtil;
-import static java.awt.MediaTracker.COMPLETE;
-import static java.awt.MediaTracker.ERRORED;
-import java.awt.Toolkit;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -261,9 +256,10 @@ public class ImageCache {
      * @return The ImageIcon or null if an error occured
      */
     public static ImageIcon getImageDirectly(URL url) {
-        ImageIcon loadedIcon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
-        if (loadedIcon.getImageLoadStatus() != ERRORED) {
-            return checkForGif(url, loadedIcon);
+        try {
+            return GifUtil.getGifFromUrl(url);
+        } catch (Exception ex) {
+            LOGGER.warning("Error loading image: "+ex);
         }
         return null;
     }
@@ -361,33 +357,19 @@ public class ImageCache {
         return false;
     }
     
-    private static boolean saveFile2(URL url, Path file) {
-        try (ReadableByteChannel rbc = Channels.newChannel(url.openStream())) {
-            FileOutputStream fos = new FileOutputStream(file.toFile());
-            long written = fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            if (written > 0) {
-                return true;
-            }
-        } catch (IOException ex) {
-            LOGGER.warning("Error saving "+url+" to "+file+": "+ex);
-        }
-        return false;
-    }
-    
     private static ImageIcon getImageFromFile(Path file) {
         try {
             URL url = file.toUri().toURL();
-            ImageIcon image = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
-            if (image.getImageLoadStatus() != ERRORED) {
-                return checkForGif(url, image);
-            }
-        } catch (MalformedURLException ex) {
+            return GifUtil.getGifFromUrl(url);
+        } catch (FileNotFoundException ex) {
+            // Fail silently, images are expected to often be not cached yet
+        } catch (Exception ex) {
             LOGGER.warning("Error loading image from file: "+ex);
         }
         return null;
     }
     
-    public static String sha1(String input) {
+    private static String sha1(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             return byteArrayToHexString(md.digest(input.getBytes("UTF-8")));
@@ -433,30 +415,6 @@ public class ImageCache {
         synchronized(lockObjects) {
             lockObjects.remove(file);
         }
-    }
-    
-    /**
-     * Checks if the given image might be a GIF file and tries to load it, while
-     * also fixing potential frame rate issues.
-     * 
-     * @param url
-     * @param icon
-     * @return 
-     */
-    private static ImageIcon checkForGif(URL url, ImageIcon icon) {
-        // Not sure if this check works reliably, but it seemed to not be
-        // complete when loading animated GIFs.
-        if (icon.getImageLoadStatus() != COMPLETE) {
-            // Assume GIF
-            try {
-                ImageIcon gifIcon = GifUtil.getGifFromUrl(url);
-                LOGGER.info("Loaded " + url + " as GIF.");
-                return gifIcon;
-            } catch (Exception ex) {
-                LOGGER.info("Error loading GIF " + url + ": " + ex);
-            }
-        }
-        return icon;
     }
     
 }

@@ -857,11 +857,11 @@ public class Settings {
         Path tempFile = Paths.get(fileName+"-temp");
         try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
             writer.write(json);
+            MiscUtil.moveFile(tempFile, file);
         } catch (IOException ex) {
             LOGGER.warning("Error saving settings to file: "+ex);
             System.out.println("Error saving settings to file: "+ex);
         }
-        MiscUtil.moveFile(tempFile, file);
     }
 
     /**

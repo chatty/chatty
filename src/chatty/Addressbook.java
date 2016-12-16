@@ -698,7 +698,7 @@ public class Addressbook {
                 }
             } while (line != null);
         } catch (IOException ex) {
-            LOGGER.warning("Error reading addressbook: "+ex.getLocalizedMessage());
+            LOGGER.warning("Error reading addressbook: "+ex);
             // This may not make too much sense because it also shows when no
             // addressbook was saved yet
             //LOGGER.log(Logging.USERINFO, "Error reading addressbook.");
@@ -757,11 +757,11 @@ public class Addressbook {
                 writer.write(makeLine(entry));
                 writer.newLine();
             }
+            MiscUtil.moveFile(tempFile, file);
             saved = true;
         } catch (IOException ex) {
             LOGGER.warning("Error writing addressbook: "+ex.getLocalizedMessage());
         }
-        MiscUtil.moveFile(tempFile, file);
     }
     
     /**
