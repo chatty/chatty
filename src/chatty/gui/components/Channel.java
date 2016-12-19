@@ -230,7 +230,7 @@ public class Channel extends JPanel {
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
-            "follow", "unfollow", "ffzws",
+            "follow", "unfollow", "ffzws", "followers", "followersoff",
             "setcolor"
         }));
         

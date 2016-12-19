@@ -60,6 +60,12 @@ public class TwitchCommands {
         else if (command.equals("slow")) {
             commandSlowmodeOn(channel, parameter);
         }
+        else if (command.equals("followers")) {
+            followersOn(channel, parameter);
+        }
+        else if (command.equals("followersoff")) {
+            followersOff(channel);
+        }
         else if (command.equals("slowoff")) {
             slowmodeOff(channel);
         }
@@ -289,6 +295,18 @@ public class TwitchCommands {
     public void slowmodeOff(String channel) {
         if (onChannel(channel, true)) {
             sendMessage(channel,".slowoff", "Trying to turn off slowmode..");
+        }
+    }
+    
+    public void followersOn(String channel, String time) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel, ".followers "+(time != null ? time : ""), "Trying to turn on followers-only mode..");
+        }
+    }
+    
+    public void followersOff(String channel) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel, ".followersoff", "Trying to turn off followers-only mode..");
         }
     }
     

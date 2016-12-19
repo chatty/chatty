@@ -1188,6 +1188,9 @@ public class TwitchConnection {
                     if (tags.containsKey("broadcaster-lang")) {
                         channelStates.setLang(channel, tags.get("broadcaster-lang"));
                     }
+                    if (tags.containsKey("followers-only")) {
+                        channelStates.setFollowersOnly(channel, tags.get("followers-only"));
+                    }
                 }
             } else if (command.equals("SERVERCHANGE")) {
                 listener.onInfo(channel, "*** You may be on the wrong server "

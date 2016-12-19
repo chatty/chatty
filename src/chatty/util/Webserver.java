@@ -4,6 +4,8 @@ package chatty.util;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -27,7 +29,8 @@ public class Webserver implements Runnable {
     private final WebserverListener listener;
     private int connectionCount = 0;
     
-    private final ArrayList<WebserverConnection> connections = new ArrayList<>();
+    private final List<WebserverConnection> connections =
+            Collections.synchronizedList(new ArrayList<WebserverConnection>());
     
     /**
      * Main method for testing the server on it's own.
@@ -183,8 +186,11 @@ public class Webserver implements Runnable {
      * Close all connections.
      */
     private void closeConnections() {
-        for (WebserverConnection c : connections) {
-            c.close();
+        synchronized(connections) {
+            for (WebserverConnection c : connections) {
+                c.close();
+            }
+            connections.clear();
         }
     }
     
@@ -293,7 +299,7 @@ public class Webserver implements Runnable {
             try {
                 connection.close();
             } catch (IOException ex) {
-                debugConnection("Failed closing connection: "+ex.getLocalizedMessage());
+                debugConnection("Failed closing connection: "+ex);
             }
         }
         

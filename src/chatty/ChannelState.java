@@ -38,6 +38,8 @@ public class ChannelState {
     
     private String lang;
     
+    private int followersOnly;
+    
     /**
      * Cached info text based on the current state.
      */
@@ -71,6 +73,9 @@ public class ChannelState {
             changed = true;
         }
         if (setEmoteOnly(false)) {
+            changed = true;
+        }
+        if (setFollowersOnly(-1)) {
             changed = true;
         }
         return changed;
@@ -190,6 +195,15 @@ public class ChannelState {
         return false;
     }
     
+    public synchronized boolean setFollowersOnly(int minutes) {
+        if (followersOnly != minutes) {
+            this.followersOnly = minutes;
+            updateInfo();
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Get the info text based on the current state.
      * 
@@ -214,6 +228,13 @@ public class ChannelState {
         }
         if (subMode) {
             result = StringUtil.append(result, sep, "Sub");
+        }
+        if (followersOnly == SLOWMODE_ON_INVALID) {
+            result = StringUtil.append(result, sep, "Followers: ?");
+        } else if (followersOnly > 0) {
+            result = StringUtil.append(result, sep, "Followers: "+DateTime.duration((long)followersOnly*60*1000, 1, DateTime.S, DateTime.Formatting.COMPACT));
+        } else if (followersOnly == 0) {
+            result = StringUtil.append(result, sep, "Followers");
         }
         if (r9kMode) {
             result = StringUtil.append(result, sep, "r9k");
