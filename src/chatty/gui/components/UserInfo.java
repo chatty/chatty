@@ -43,10 +43,7 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
  */
 public class UserInfo extends JDialog {
     
-    private static final SimpleDateFormat TIMESTAMP_MESSAGE = new SimpleDateFormat("[HH:mm:ss] ");
-    private static final SimpleDateFormat TIMESTAMP_ACTION_MESSAGE = new SimpleDateFormat("[HH:mm:ss]* ");
-    private static final SimpleDateFormat TIMESTAMP_SPECIAL = new SimpleDateFormat("[HH:mm:ss]>");
-    private static final SimpleDateFormat TIMESTAMP_SUB = new SimpleDateFormat("[HH:mm:ss]$ ");
+    private static final SimpleDateFormat TIMESTAMP = new SimpleDateFormat("[HH:mm:ss]");
     
     private static final String SINGLE_MESSAGE_CHECK = "Remove only selected message";
     
@@ -595,13 +592,16 @@ public class UserInfo extends JDialog {
                     b.append(">");
                     singleMessage.setText(SINGLE_MESSAGE_CHECK+" ("+StringUtil.shortenTo(tm.text, 14)+")");
                 }
-                b.append(DateTime.format(m.getTime(), tm.action ? TIMESTAMP_ACTION_MESSAGE : TIMESTAMP_MESSAGE));
+                b.append(DateTime.format(m.getTime(), TIMESTAMP));
+                if (tm.action) {
+                    b.append("* ");
+                }
                 b.append(tm.text);
                 b.append("\n");
             }
             else if (m.getType() == Message.BAN) {
                 BanMessage bm = (User.BanMessage)m;
-                b.append(DateTime.format(m.getTime(), TIMESTAMP_SPECIAL));
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
                 if (bm.duration > 0) {
                     b.append("Timed out (").append(bm.duration).append("s)");
                 }
@@ -619,7 +619,7 @@ public class UserInfo extends JDialog {
             }
             else if (m.getType() == Message.SUB) {
                 SubMessage sm = (SubMessage)m;
-                b.append(DateTime.format(m.getTime(), TIMESTAMP_SUB));
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append("$ ");
                 if (sm.months == 1) {
                     b.append("[new sub] ");
                 }
@@ -631,9 +631,15 @@ public class UserInfo extends JDialog {
             }
             else if (m.getType() == Message.MOD_ACTION) {
                 ModAction ma = (ModAction)m;
-                b.append(DateTime.format(m.getTime(), TIMESTAMP_SPECIAL));
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
                 b.append("ModAction: /");
                 b.append(ma.commandAndParameters);
+                b.append("\n");
+            }
+            else if (m.getType() == Message.AUTO_MOD_MESSAGE) {
+                User.AutoModMessage ma = (User.AutoModMessage)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
+                b.append("Filtered by AutoMod: ").append(ma.message);
                 b.append("\n");
             }
         }

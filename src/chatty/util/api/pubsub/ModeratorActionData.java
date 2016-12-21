@@ -22,15 +22,18 @@ public class ModeratorActionData extends MessageData {
     public final List<String> args;
     public final String created_by;
     public final String stream;
+    public final String msgId;
     
     public ModeratorActionData(String topic, String message, String stream,
-            String moderation_action, List<String> args, String created_by) {
+            String moderation_action, List<String> args, String created_by,
+            String msgId) {
         super(topic, message);
         
         this.moderation_action = moderation_action;
         this.args = args;
         this.created_by = created_by;
         this.stream = stream;
+        this.msgId = msgId;
     }
     
     public static ModeratorActionData decode(String topic, String message, Map<Long, String> userIds) throws ParseException {
@@ -56,9 +59,14 @@ public class ModeratorActionData extends MessageData {
             created_by = "";
         }
         
+        String msgId = (String)data.get("msg_id");
+        if (msgId == null) {
+            msgId = "";
+        }
+        
         String stream = Helper.getStreamFromTopic(topic, userIds);
         
-        return new ModeratorActionData(topic, message, stream, moderation_action, args, created_by);
+        return new ModeratorActionData(topic, message, stream, moderation_action, args, created_by, msgId);
     }
     
     public String getCommandAndParameters() {

@@ -511,6 +511,10 @@ public class TwitchClient {
         return c.getUsername();
     }
     
+    public User getUser(String channel, String name) {
+        return c.getUser(channel, name);
+    }
+    
     public void clearUserList() {
         c.setAllOffline();
         g.clearUsers(null);
@@ -1160,11 +1164,16 @@ public class TwitchClient {
         } else if (command.equals("psdisconnect")) {
             pubsub.disconnect();
         } else if (command.equals("modactiontest")) {
-            List<String> args = new ArrayList<String>();
+            List<String> args = new ArrayList<>();
             args.add("tirean");
             args.add("300");
             args.add("still not using LiveSplit Autosplitter D:");
-            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva"), false);
+            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva", ""), false);
+        } else if (command.equals("modactiontest2")) {
+            List<String> args = new ArrayList<>();
+            args.add("tduva");
+            args.add("fuck and stuff like that, rather long message and whatnot Kappa b");
+            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
         } else if (command.equals("loadsoferrors")) {
             for (int i=0;i<10000;i++) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -1804,6 +1813,11 @@ public class TwitchClient {
         @Override
         public void receivedChatInfo(ChatInfo chatInfo) {
             g.setChatInfo(chatInfo);
+        }
+
+        @Override
+        public void autoModResult(String result, String msgId) {
+            g.autoModRequestResult(result, msgId);
         }
     }
     

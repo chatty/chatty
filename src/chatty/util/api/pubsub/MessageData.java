@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
  */
 public class MessageData {
     
+    public final long created_at = System.currentTimeMillis();
     public final String topic;
     public final String message;
     

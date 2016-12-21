@@ -44,7 +44,7 @@ public class TwitchApi {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
         SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW, CHAT_INFO,
-        GLOBAL_BADGES, ROOM_BADGES
+        GLOBAL_BADGES, ROOM_BADGES, AUTOMOD_APPROVE, AUTOMOD_DENY
     }
     
     public enum RequestResult {
@@ -445,6 +445,22 @@ public class TwitchApi {
         }
     }
     
+    public void autoMod(String action, String msgId) {
+        if (!action.equals("approve") && !action.equals("deny")) {
+            return;
+        }
+        String url = "https://api.twitch.tv/kraken/chat/twitchbot/"+action;
+        JSONObject data = new JSONObject();
+        data.put("msg_id", msgId);
+        RequestType requestType = action.equals("approve")
+                ? RequestType.AUTOMOD_APPROVE : RequestType.AUTOMOD_DENY;
+        TwitchApiRequest request = new TwitchApiRequest(this, requestType, url, defaultToken);
+        request.setApiVersion("v5");
+        request.setData(data.toJSONString(), "POST");
+        request.setInfo(msgId);
+        executor.execute(request);
+    }
+    
     /**
      * Called by the request thread to work on the result of the request.
      * 
@@ -455,7 +471,8 @@ public class TwitchApi {
      * @param responseCode The HTTP response code
      * @param encoding
      */
-    protected void requestResult(RequestType type, String url, String result, int responseCode, String error, String encoding) {
+    protected void requestResult(RequestType type, String url, String result,
+            int responseCode, String error, String encoding, String info) {
 //        if (type == RequestType.CHANNEL) {
 //            blubb();
 //        } else {
@@ -542,7 +559,8 @@ public class TwitchApi {
      * @param token The token used for authorization
      */
     protected void requestResult(RequestType type, String url,
-            String result, int responseCode, String error, String encoding, String token) {
+            String result, int responseCode, String error, String encoding,
+            String token, String info) {
         int length = -1;
         if (result != null) {
             length = result.length();
@@ -556,7 +574,7 @@ public class TwitchApi {
             resultListener.tokenVerified(token, tokenInfo);
         }
         else if (type == RequestType.CHANNEL_PUT) {
-            requestResult(type, url, result, responseCode, error, encoding);
+            requestResult(type, url, result, responseCode, error, encoding, info);
         }
         else if (type == RequestType.COMMERCIAL) {
             String stream = removeRequest(url);
@@ -619,6 +637,21 @@ public class TwitchApi {
                 resultListener.followResult("Couldn't unfollow '"+target+"' (access denied)");
             } else {
                 resultListener.followResult("Couldn't unfollow '"+target+"' (unknown error)");
+            }
+        }
+        else if (type == RequestType.AUTOMOD_APPROVE || type == RequestType.AUTOMOD_DENY) {
+            if (responseCode == 204) {
+                if (type == RequestType.AUTOMOD_APPROVE) {
+                    resultListener.autoModResult("approved", info);
+                } else if (type == RequestType.AUTOMOD_DENY) {
+                    resultListener.autoModResult("denied", info);
+                }
+            } else if (responseCode == 404) {
+                resultListener.autoModResult("404", info);
+            } else if (responseCode == 400) {
+                resultListener.autoModResult("400", info);
+            } else {
+                resultListener.autoModResult("error", info);
             }
         }
     }

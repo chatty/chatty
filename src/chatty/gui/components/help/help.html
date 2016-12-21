@@ -32,6 +32,7 @@
                     <li><a href="#userselection">User Selection Mode</a></li>
                     <li><a href="#emoticons">Emoticons/Emote Dialog</a></li>
                     <li><a href="#pausechat">Pause Chat / One-click moderation</a></li>
+                    <li><a href="#automod">AutoMod</a></li>
                 </ul>
                 
                 <strong>Chat customization</strong>
@@ -996,6 +997,44 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         or else misclicks could be very common.</p>
     
     <h2>
+        <a name="automod">AutoMod</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p><a href="https://help.twitch.tv/customer/portal/articles/2662186-how-to-use-automod">AutoMod</a>
+        is a Twitch feature that filters messages before they are send to the
+        chat clients. As mod in the channel you can review and either approve
+        or deny those filtered messages. In Chatty this can be done via
+        <code>Extra - AutoMod</code>.</p>
+    
+    <p>In the dialog you will see filtered messages of the current channel (if
+        you are mod). Open the context menu on a message (usually right-click)
+        to approve or deny that message.</p>
+    
+    <p>Shortcuts available when you have a message selected:</p>
+    <ul>
+        <li><kbd>A</kbd> to approve, <kbd>D</kbd> to deny message</li>
+        <li><kbd>W</kbd> to move up in the list, <kbd>Alt+W</kbd> to jump over
+            already handled messages</li>
+        <li><kbd>S</kbd> to move down in the list, <kbd>Alt+S</kbd> to jump over
+            already handled messages</li>
+    </ul>
+    
+    <p>Messages can have different prefixes depending on their status:</p>
+    <ul>
+        <li>No prefix - The message has not been approved/denied yet</li>
+        <li><code>[Approved]</code> - You have approved the message</li>
+        <li><code>[Denied]</code> - You have denied the message</li>
+        <li><code>[Handled]</code> - The message has been handled already,
+            probably by another mod (the API does not return whether it's been
+            approved or denied)</li>
+        <li><code>[Pending]</code> - Your action is being sent to the Twitch API</li>
+        <li><code>[N/A]</code> - The message is no longer available to be
+            approved or denied</li>
+        <li><code>[Error]</code> - An error occured sending your action to the
+            Twitch API</li>
+    </ul>
+    
+    <h2>
         <a name="channelinfo">Channel Info / History</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -1396,6 +1435,8 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <li>Thanks to <a href="http://java-sl.com">java-sl.com</a> for some nice articles.</li>
         <li>Thanks to <a href="http://twitchemotes.com">Twitchemotes.com</a> for
             their <a href="http://twitchemotes.com/api/sets">Emoteset API endpoint</a>.</li>
+        <li>Thanks to <a href="https://frankerfacez.com">FrankerFaceZ</a> for
+            their Emotes/APIs and support</li>
         <li>Thanks to <a href="http://www.nightdev.com">Nightdev</a> for allowing the use
             of the <a href="http://www.nightdev.com/betterttv/">BetterTTV</a> emotes.</li>
     </ul>

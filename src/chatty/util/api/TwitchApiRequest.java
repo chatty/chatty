@@ -43,6 +43,7 @@ public class TwitchApiRequest implements Runnable {
     private String contentType = "application/json";
     private String apiVersion = "v3";
     private String error;
+    private String info;
     
     /**
      * Construct a new request without a token.
@@ -103,15 +104,19 @@ public class TwitchApiRequest implements Runnable {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
+    
+    public void setInfo(String info) {
+        this.info = info;
+    }
 
     @Override
     public void run() {
         String result = getUrl(url);
         if (token != null) {
-            origin.requestResult(type, url, result, responseCode, error, encoding, token);
+            origin.requestResult(type, url, result, responseCode, error, encoding, token, info);
         }
         else {
-            origin.requestResult(type, url, result, responseCode, error, encoding);
+            origin.requestResult(type, url, result, responseCode, error, encoding, info);
         }
     }
     

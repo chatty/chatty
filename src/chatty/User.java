@@ -285,6 +285,10 @@ public class User implements Comparable {
         addLine(new ModAction(System.currentTimeMillis(), commandAndParameters));
     }
     
+    public synchronized void addAutoModMessage(String line) {
+        addLine(new AutoModMessage(line));
+    }
+    
     /**
      * Adds a Message.
      * 
@@ -833,6 +837,7 @@ public class User implements Comparable {
         public static final int BAN = 1;
         public static final int SUB = 2;
         public static final int MOD_ACTION = 3;
+        public static final int AUTO_MOD_MESSAGE = 4;
         
         private final Long time;
         private final int type;
@@ -906,6 +911,17 @@ public class User implements Comparable {
         public ModAction(Long time, String commandAndParameters) {
             super(MOD_ACTION, time);
             this.commandAndParameters = commandAndParameters;
+        }
+        
+    }
+    
+    public static class AutoModMessage extends Message {
+        
+        public final String message;
+        
+        public AutoModMessage(String message) {
+            super(AUTO_MOD_MESSAGE, System.currentTimeMillis());
+            this.message = message;
         }
         
     }

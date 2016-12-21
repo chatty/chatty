@@ -49,4 +49,6 @@ public interface TwitchApiResultListener {
      * @param message 
      */
     void followResult(String message);
+    
+    void autoModResult(String result, String msgId);
 }

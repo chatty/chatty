@@ -31,6 +31,7 @@ import chatty.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
 import chatty.gui.components.AddressbookDialog;
+import chatty.gui.components.AutoModDialog;
 import chatty.gui.components.ChatRulesDialog;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
@@ -131,6 +132,7 @@ public class MainGui extends JFrame implements Runnable {
     private FollowersDialog subscribersDialog;
     private StreamChat streamChat;
     private ModerationLog moderationLog;
+    private AutoModDialog autoModDialog;
     private ChatRulesDialog chatRulesDialog;
     
     // Helpers
@@ -260,6 +262,7 @@ public class MainGui extends JFrame implements Runnable {
             client.settings.getBoolean("streamChatBottom"));
         
         moderationLog = new ModerationLog(this);
+        autoModDialog = new AutoModDialog(this, client.api, client);
         
         chatRulesDialog = new ChatRulesDialog(this);
         channels.setOnceOffEditListener(chatRulesDialog);
@@ -301,6 +304,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(moderationLog, "moderationLog", true, true);
         windowStateManager.addWindow(streamChat, "streamChat", true, true);
         windowStateManager.addWindow(userInfoDialog, "userInfo", true, false);
+        windowStateManager.addWindow(autoModDialog, "autoMod", true, true);
         
         guiCreated = true;
     }
@@ -487,6 +491,15 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleModerationLog();
+            }
+        });
+        
+        addMenuAction("dialog.autoModDialog", "Dialog: Toggle AutoMod Dialog",
+                "AutoMod", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleAutoModDialog();
             }
         });
         
@@ -982,6 +995,8 @@ public class MainGui extends JFrame implements Runnable {
                 openModerationLog();
             } else if (window == streamChat) {
                 openStreamChat();
+            } else if (window == autoModDialog) {
+                openAutoModDialog();
             }
         }
     }
@@ -1817,6 +1832,7 @@ public class MainGui extends JFrame implements Runnable {
             updateChannelInfoDialog();
             emotesDialog.updateStream(channels.getLastActiveChannel().getStreamName());
             moderationLog.setChannel(channels.getLastActiveChannel().getStreamName());
+            autoModDialog.setChannel(channels.getLastActiveChannel().getStreamName());
         }
     }
     
@@ -2027,7 +2043,13 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    private void openUserInfoDialog(User user, String messageId) {
+    /**
+     * Only call out of the EDT.
+     * 
+     * @param user
+     * @param messageId 
+     */
+    public void openUserInfoDialog(User user, String messageId) {
         windowStateManager.setWindowPosition(userInfoDialog, getActiveWindow());
         userInfoDialog.show(getActiveWindow(), user, messageId, client.getUsername());
     }
@@ -2198,6 +2220,17 @@ public class MainGui extends JFrame implements Runnable {
     private void toggleModerationLog() {
         if (!closeDialog(moderationLog)) {
             openModerationLog();
+        }
+    }
+    
+    private void openAutoModDialog() {
+        windowStateManager.setWindowPosition(autoModDialog);
+        autoModDialog.showDialog();
+    }
+    
+    private void toggleAutoModDialog() {
+        if (!closeDialog(autoModDialog)) {
+            openAutoModDialog();
         }
     }
     
@@ -2922,6 +2955,7 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 moderationLog.add(data);
+                autoModDialog.addData(data);
                 String channel = Helper.toValidChannel(data.stream);
                 if (!ownAction && client.settings.getBoolean("showModActions") && channels.isChannel(channel)) {
                     channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
@@ -2930,6 +2964,17 @@ public class MainGui extends JFrame implements Runnable {
                             StringUtil.join(data.args, " ")));
                 }
             }
+        });
+    }
+    
+    public void autoModRequestResult(final String result, final String msgId) {
+        SwingUtilities.invokeLater(new Runnable() {
+            
+            @Override
+            public void run() {
+                autoModDialog.requestResult(result, msgId);
+            }
+            
         });
     }
     
