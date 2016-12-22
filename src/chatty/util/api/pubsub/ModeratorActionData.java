@@ -18,10 +18,30 @@ import org.json.simple.parser.ParseException;
  */
 public class ModeratorActionData extends MessageData {
 
+    /**
+     * The name of the action. Can never be null.
+     */
     public final String moderation_action;
+    
+    /**
+     * The args associated with this action. An empty list if not present.
+     */
     public final List<String> args;
+    
+    /**
+     * The name of the user this action orginiated from. Can never be null.
+     */
     public final String created_by;
+    
+    /**
+     * The stream/room this action originated in. May be null if some kind of
+     * error occured.
+     */
     public final String stream;
+    
+    /**
+     * The msg_id value. If not present, an empty value.
+     */
     public final String msgId;
     
     public ModeratorActionData(String topic, String message, String stream,

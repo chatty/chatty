@@ -253,16 +253,15 @@ public class User implements Comparable {
     }
     
     public boolean maxNumberOfLinesReached() {
-        if (numberOfLines > MAXLINES) {
-            return true;
-        }
-        return false;
+        return numberOfLines > MAXLINES;
     }
     
     /**
      * Adds a single chatmessage with the current time.
      * 
      * @param line 
+     * @param action 
+     * @param id 
      */
     public synchronized void addMessage(String line, boolean action, String id) {
         addLine(new TextMessage(System.currentTimeMillis(), line, action, id));
@@ -272,6 +271,10 @@ public class User implements Comparable {
     
     /**
      * Adds a single ban with the current time.
+     * 
+     * @param duration
+     * @param reason
+     * @param id
      */
     public synchronized void addBan(long duration, String reason, String id) {
         addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id));

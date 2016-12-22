@@ -6,7 +6,7 @@ This is a bundled version of Chatty, which includes:
 * A private Java Runtime Environment (Java 1.8.0_111, 32bit) in the `runtime`
   subdirectory, which is used to run Chatty without having to have Java
   installed on the system
-* The Chatty.exe and some libraries to actually start Chatty
+* The Chatty.exe and some helper libraries
 
 Advantages
 ----------

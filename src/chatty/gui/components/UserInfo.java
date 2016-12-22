@@ -595,6 +595,8 @@ public class UserInfo extends JDialog {
                 b.append(DateTime.format(m.getTime(), TIMESTAMP));
                 if (tm.action) {
                     b.append("* ");
+                } else {
+                    b.append(" ");
                 }
                 b.append(tm.text);
                 b.append("\n");
