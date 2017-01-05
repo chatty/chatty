@@ -176,7 +176,7 @@ task windowsZip(type: Zip, group: 'build') {
     from 'assets/lib/dlls/JIntellitype32.dll'
     rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
     from ('assets-bundle/fallback-fonts') {
-        into 'runtime/libs/fonts/fallback'
+        into 'runtime/lib/fonts/fallback'
     }
     from 'assets-bundle/readme-bundle.txt'
 
