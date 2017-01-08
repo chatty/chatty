@@ -35,6 +35,7 @@ import chatty.util.TwitchEmotes;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.Webserver;
 import chatty.util.api.ChatInfo;
+import chatty.util.api.CheerEmoticon;
 import chatty.util.api.EmoticonSizeCache;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
@@ -697,7 +698,7 @@ public class TwitchClient {
         }
         else {
             if (c.onChannel(channel)) {
-                sendMessage(channel, text);
+                sendMessage(channel, text, true);
             }
             else if (channel.startsWith("$")) {
                 w.whisperChannel(channel, text);
@@ -717,8 +718,24 @@ public class TwitchClient {
     }
     
     private void sendMessage(String channel, String text) {
+        sendMessage(channel, text, false);
+    }
+    
+    /**
+     * 
+     * @param channel
+     * @param text
+     * @param allowCommandMessageLocally Commands like !highlight, which
+     * normally only working for received messages, will be triggered when
+     * sending a message as well
+     */
+    private void sendMessage(String channel, String text, boolean allowCommandMessageLocally) {
         if (c.sendSpamProtectedMessage(channel, text, false)) {
-            g.printMessage(channel, c.localUserJoined(channel), text, false, null, 0);
+            User user = c.localUserJoined(channel);
+            g.printMessage(channel, user, text, false, null, 0);
+            if (allowCommandMessageLocally) {
+                modCommandAddStreamHighlight(user, text);
+            }
         } else {
             g.printLine("# Message not sent to prevent ban: " + text);
         }
@@ -1466,6 +1483,19 @@ public class TwitchClient {
         g.printLine(channel, streamHighlights.openFile());
     }
     
+    public void modCommandAddStreamHighlight(User user, String message) {
+        // Stream Highlights
+        String result = streamHighlights.modCommand(user, message);
+        if (result != null) {
+            result = user.getDisplayNick() + ": " + result;
+            if (settings.getBoolean("streamHighlightChannelRespond")) {
+                sendMessage(user.getChannel(), result);
+            } else {
+                g.printLine(user.getChannel(), result);
+            }
+        }
+    }
+    
     private void commandRefresh(String channel, String parameter) {
         if (!Helper.validateChannel(channel)) {
             channel = null;
@@ -1818,6 +1848,11 @@ public class TwitchClient {
         @Override
         public void autoModResult(String result, String msgId) {
             g.autoModRequestResult(result, msgId);
+        }
+
+        @Override
+        public void receivedCheerEmoticons(Set<CheerEmoticon> emoticons) {
+            g.setCheerEmotes(emoticons);
         }
     }
     
@@ -2273,17 +2308,7 @@ public class TwitchClient {
             g.printMessage(user.getChannel(), user, message, action, emotes, bits, id);
             if (!action) {
                 addressbookCommands(user.getChannel(), user, message);
-                
-                // Stream Highlights
-                String result = streamHighlights.modCommand(user, message);
-                if (result != null) {
-                    result = user.getDisplayNick()+": "+result;
-                    if (settings.getBoolean("streamHighlightChannelRespond")) {
-                        sendMessage(user.getChannel(), result);
-                    } else {
-                        g.printLine(user.getChannel(), result);
-                    }
-                }
+                modCommandAddStreamHighlight(user, message);
             }
         }
 

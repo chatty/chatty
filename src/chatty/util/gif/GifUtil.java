@@ -1,7 +1,6 @@
 
 package chatty.util.gif;
 
-import chatty.util.ImageCache;
 import chatty.util.gif.GifDecoder.GifImage;
 import java.awt.MediaTracker;
 import java.io.ByteArrayOutputStream;
@@ -12,7 +11,6 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
@@ -42,6 +40,7 @@ public class GifUtil {
             ImageIcon image = null;
             try {
                 image = fixGifFps(imageData);
+                image.setDescription("GIF");
             } catch (Exception ex) {
                 /**
                  * If not a GIF, or another error occured, just create the image

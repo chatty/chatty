@@ -13,11 +13,8 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -29,7 +26,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.SwingWorker;
 
@@ -66,13 +62,6 @@ public class Emoticon {
      * occurs.
      */
     private static final int MAX_LOADING_ATTEMPTS = 3;
-    
-    /**
-     * After these many attempts, try the alternate way of loading the image, so
-     * we can get a better error message and possibly also load it. This has to
-     * be lower than MAX_LOADING_ATTEMPTS or it will never happen.
-     */
-    private static final int TRY_ALTERNATE_AFTER_ATTEMPTS = 2;
     
     /**
      * How much time (milliseconds) has to pass in between loading attempts,
@@ -234,7 +223,7 @@ public class Emoticon {
      * @return The URL as a String or null if none could created or not of an
      * applicable type
      */
-    private String getEmoteUrl(int factor) {
+    protected String getEmoteUrl(int factor) {
         if (type == Type.TWITCH) {
             if (subType == SubType.CHEER) {
                 return getCheerEmoteUrl(url, stringId, factor);
@@ -283,7 +272,7 @@ public class Emoticon {
      * @param builder The Emoticon.Builder object containing the values to
      * construct this object with
      */
-    private Emoticon(Builder builder) {
+    protected Emoticon(Builder builder) {
         
         String code = builder.search;
         
@@ -481,6 +470,15 @@ public class Emoticon {
     }
     
     /**
+     * Removes all currently cached images.
+     */
+    public void clearImages() {
+        if (images != null) {
+            images.clear();
+        }
+    }
+    
+    /**
      * Requests an ImageIcon to be loaded, returns the default icon at first,
      * but starts a SwingWorker to get the actual image.
      * 
@@ -617,32 +615,11 @@ public class Emoticon {
         return new Dimension(imageWidth, imageHeight);
     }
     
-    
-    int i = 0;
     private Image getScaledImage(Image img, int w, int h) {
-        if (true) {
-//            System.out.println("getScaledInstance");
-            return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-        } else {
-//            System.out.println("scaleImage");
-            return scaleImage(img, w, h);
-        }
-    }
-    
-    private static Image scaleImage(Image img, int w, int h) {
-        int type = BufferedImage.TYPE_INT_ARGB;
-        BufferedImage tmp = new BufferedImage(w, h, type);
-        Graphics2D g = tmp.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g.drawImage(img, 0, 0, w, h, null);
-        g.dispose();
-        return tmp;
+        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
     }
     
 
-
-    
-    
     /**
      * A Worker class to load the Icon. Not doing this in it's own thread
      * can lead to lag when a lot of new icons are being loaded.
@@ -671,6 +648,9 @@ public class Emoticon {
             if (type == Type.TWITCH || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
                 if (scaledSize.width > defaultSize.width) {
                     urlFactor = 2;
+                    if (isAnimated && (float)scaledSize.width / defaultSize.width < 1.6) {
+                        urlFactor = 1;
+                    }
                 }
                 String builtUrl = getEmoteUrl(urlFactor);
                 if (builtUrl == null) {
@@ -690,6 +670,7 @@ public class Emoticon {
             if (icon == null) {
                 return null;
             }
+            
             /**
              * Only doing this on ERRORED, waiting for COMPLETE would not allow
              * animated GIFs to load
@@ -725,8 +706,7 @@ public class Emoticon {
              */
             if ((icon.getIconWidth() != targetSize.width
                     || icon.getIconHeight() != targetSize.height)
-                    && !url.endsWith(".gif")
-                    && icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                    && (icon.getDescription() == null || !icon.getDescription().equals("GIF"))) {
                 Image scaled = getScaledImage(icon.getImage(), targetSize.width,
                         targetSize.height);
                 icon.setImage(scaled);
@@ -743,73 +723,17 @@ public class Emoticon {
                     // setCachedSize checks for type
                     setCachedSize(width, height);
                 }
-//                if (type == Type.TWITCH && twitchId != ID_UNDEFINED
-//                        && (width != DEFAULT_WIDTH || height != DEFAULT_HEIGHT)) {
-//                    EmoticonSizeCache.setSize(type+"."+twitchId, width, height);
-//                }
             }
             return icon;
         }
         
         private ImageIcon loadEmote(String url) {
-            ImageIcon loadedIcon = null;
-            
-            if (image.loadingAttempts <= TRY_ALTERNATE_AFTER_ATTEMPTS) {
-                /**
-                 * Primary method, which should be used if no error occurs. For
-                 * some reason this way loads some images (e.g. Kappa) with more
-                 * contrast. And it overall seems to work well, so changing the
-                 * method completely may not be wise.
-                 */
-                try {
-                    // Use createImage() instead of just using "new ImageIcon()"
-                    // so it doesn't try to load a higher resolution image for
-                    // Retina displays (the Twitch CDN returns a 404 image)
-                    //loadedIcon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(new URL(url)));
-                    loadedIcon = ImageCache.getImage(new URL(url), "emote_"+type, CACHE_TIME);
-                    
-//                    Image img = loadedIcon.getImage();
-//                    BufferedImage bi = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_4BYTE_ABGR);
-//
-//                    Graphics2D g2 = bi.createGraphics();
-//                    g2.drawImage(img, 0, 0, null);
-//                    g2.dispose();
-//                    ImageIO.write(bi, "png",
-//                            new File(Chatty.getUserDataDirectory()+File.separator+"emotecache"+File.separator+Helper.md5(url)));
-                } catch (MalformedURLException ex) {
-                    LOGGER.warning("Invalid url for " + code + ": " + url);
-                    return null;
-                }
-            } else {
-                /**
-                 * Secondary method, with slightly better error messages (well,
-                 * any at all). Not quite sure if there is any way this may work
-                 * while the other one doesn't, but at least it should give a
-                 * better error response. Still, just in case, this also creates
-                 * an ImageIcon if successfull (of course it might just happen
-                 * to attempt this when the server is reachable again).
-                 */
-                try {
-                    // Using URLConnection because just ImageIO.read(URL) didn't
-                    // seem to give very useful error messages
-                    URLConnection c = new URL(url).openConnection();
-                    c.setReadTimeout(10 * 1000);
-                    c.setConnectTimeout(10 * 1000);
-                    
-                    // Try-with-resources on the input stream should also close
-                    // the connection
-                    try (InputStream input = c.getInputStream()) {
-                        Image image = ImageIO.read(input);
-                        if (image != null) {
-                            loadedIcon = new ImageIcon(image);
-                            LOGGER.warning("Loaded emoticon " + code + " via alternate way.");
-                        }
-                    }
-                } catch (IOException ex) {
-                    LOGGER.warning("Error loading emoticon " + code + " (" + url + "): " + ex);
-                }
+            try {
+                return ImageCache.getImage(new URL(url), "emote_" + type, CACHE_TIME);
+            } catch (MalformedURLException ex) {
+                LOGGER.warning("Invalid url for " + code + ": " + url);
+                return null;
             }
-            return loadedIcon;
         }
         
         /**

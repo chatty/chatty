@@ -1,12 +1,14 @@
 
 package chatty.gui.components;
 
+import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.util.StringUtil;
+import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticon.EmoticonUser;
@@ -69,6 +71,7 @@ public class EmotesDialog extends JDialog {
     private static final String OTHER_EMOTES = "Other";
     private static final String EMOJI = "Emoji";
     private static final String EMOTE_DETAILS = "Emote Details";
+    private static final String BITS = "B";
     
     private final JPanel emotesPanel;
     private final Emoticons emoteManager;
@@ -136,6 +139,9 @@ public class EmotesDialog extends JDialog {
                 UPDATE_CHANNEL_CHANGED | UPDATE_EMOTESET_CHANGED));
         panels.add(new TwitchEmotesPanel(TWITCH_EMOTES,0));
         panels.add(new OtherEmotesPanel(OTHER_EMOTES,0));
+        if (Chatty.DEBUG) {
+            panels.add(new BitsPanel(BITS, 0));
+        }
         // Not quite ready yet
         //panels.add(new EmojiPanel(EMOJI, 0));
         defaultPanel = panels.get(1);
@@ -175,7 +181,9 @@ public class EmotesDialog extends JDialog {
                         setVisible(false);
                     } else {
                         Emote label = (Emote) e.getSource();
-                        main.insert(Emoticons.toWriteable(label.code), true);
+                        if (!label.noInsert) {
+                            main.insert(Emoticons.toWriteable(label.code), true);
+                        }
                     }
                 }
             }
@@ -429,6 +437,7 @@ public class EmotesDialog extends JDialog {
         
         public final String code;
         public final EmoticonImage emote;
+        public final boolean noInsert;
 
         public Emote(Emoticon emote, MouseListener mouseListener, float scale,
                 EmoticonUser emoteUser) {
@@ -442,8 +451,15 @@ public class EmotesDialog extends JDialog {
             if (emote.type == Emoticon.Type.EMOJI) {
                 setToolTipText(emote.getInfos().toString());
             }
+            if (emote.subType == Emoticon.SubType.CHEER) {
+                setToolTipText(emote.getInfos().toString());
+            }
+            if (emote.subType == Emoticon.SubType.CHEER) {
+                noInsert = true;
+            } else {
+                noInsert = false;
+            }
             setBorder(BORDER);
-            
         }
         
     }
@@ -811,6 +827,28 @@ public class EmotesDialog extends JDialog {
         }
     }
     
+    private class BitsPanel extends EmotesPanel {
+
+        public BitsPanel(String name, int updateOn) {
+            super(name, updateOn);
+        }
+        
+        @Override
+        protected void updateEmotes() {
+            reset();
+            
+            Collection<CheerEmoticon> cheerEmotes = emoteManager.getCheerEmotes();
+            Collection<Emoticon> emotes = new ArrayList<>();
+            for (CheerEmoticon emote : cheerEmotes) {
+                emotes.add((Emoticon)emote);
+            }
+            addEmotesPanel(emotes);
+            
+            relayout();
+        }
+        
+    }
+    
     private class EmojiPanel extends EmotesPanel {
 
         public EmojiPanel(String name, int updateOn) {
@@ -868,7 +906,7 @@ public class EmotesDialog extends JDialog {
             panel.setLayout(new GridBagLayout());
             
             addScaledEmote(emote, panel, 1, "100%");
-            if (emote.getWidth()*3+200 < EmotesDialog.this.getWidth()) {
+            if (emote.getWidth()*3+200 < EmotesDialog.this.getWidth() && !emote.isAnimated) {
                 /**
                  * Don't show middle one if emote is too wide (this won't be too
                  * exact, but should work well enough in this case).

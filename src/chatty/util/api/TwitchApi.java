@@ -44,7 +44,7 @@ public class TwitchApi {
         STREAM, EMOTICONS, VERIFY_TOKEN, CHAT_ICONS, CHANNEL, CHANNEL_PUT,
         GAME_SEARCH, COMMERCIAL, STREAMS, FOLLOWED_STREAMS, FOLLOWERS,
         SUBSCRIBERS, USERINFO, CHAT_SERVER, FOLLOW, UNFOLLOW, CHAT_INFO,
-        GLOBAL_BADGES, ROOM_BADGES, AUTOMOD_APPROVE, AUTOMOD_DENY
+        GLOBAL_BADGES, ROOM_BADGES, AUTOMOD_APPROVE, AUTOMOD_DENY, CHEERS
     }
     
     public enum RequestResult {
@@ -56,6 +56,7 @@ public class TwitchApi {
     
     private final StreamInfoManager streamInfoManager;
     private final EmoticonManager emoticonManager;
+    private final CheerEmoticonManager cheersManager;
     private final FollowerManager followerManager;
     private final FollowerManager subscriberManager;
     private final BadgeManager badgeManager;
@@ -78,6 +79,7 @@ public class TwitchApi {
         this.resultListener = apiResultListener;
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
         emoticonManager = new EmoticonManager(apiResultListener);
+        cheersManager = new CheerEmoticonManager(apiResultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
         badgeManager = new BadgeManager(this);
@@ -205,9 +207,8 @@ public class TwitchApi {
      * @param forcedUpdate
      */
     public void requestEmoticons(boolean forcedUpdate) {
-        if (forcedUpdate || !emoticonManager.loadEmoticons(false)) {
-            String url = "https://api.twitch.tv/kraken/chat/emoticons";
-            url = "https://api.twitch.tv/kraken/chat/emoticon_images";
+        if (forcedUpdate || !emoticonManager.load(false)) {
+            String url = "https://api.twitch.tv/kraken/chat/emoticon_images";
             //url = "http://127.0.0.1/twitch/emoticons";
             if (attemptRequest(url, forcedUpdate ? "update" : "")) {
                 TwitchApiRequest request = new TwitchApiRequest(this, RequestType.EMOTICONS, url);
@@ -215,6 +216,17 @@ public class TwitchApi {
                 executor.execute(request);
             }
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
+        }
+    }
+    
+    public void requestCheerEmoticons(boolean forcedUpdate) {
+        if (forcedUpdate || !cheersManager.load(false)) {
+            String url = "https://api.twitch.tv/kraken/bits/actions";
+            if (attemptRequest(url, forcedUpdate ? "update" : "")) {
+                TwitchApiRequest request = new TwitchApiRequest(this, RequestType.CHEERS, url);
+                request.setApiVersion("v5");
+                executor.execute(request);
+            }
         }
     }
     
@@ -494,7 +506,10 @@ public class TwitchApi {
             streamInfoManager.requestResultStreams(url, result, responseCode);
         }
         else if (type == RequestType.EMOTICONS) {
-            emoticonManager.emoticonsReceived(result, stream);
+            emoticonManager.dataReceived(result, stream.equals("update"));
+        }
+        else if (type == RequestType.CHEERS) {
+            cheersManager.dataReceived(result, stream.equals("update"));
         }
         else if (type == RequestType.CHAT_ICONS) {
             if (result == null) {

@@ -59,6 +59,7 @@ import chatty.util.MsgTags;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
 import chatty.util.api.ChatInfo;
+import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
@@ -283,6 +284,7 @@ public class MainGui extends JFrame implements Runnable {
         
         // Load some stuff
         client.api.requestEmoticons(false);
+        client.api.requestCheerEmoticons(false);
         client.twitchemotes.requestEmotesets(false);
         if (client.settings.getBoolean("bttvEmotes")) {
             client.bttvEmotes.requestEmotes("$global$", false);
@@ -836,7 +838,8 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.loadFavoritesFromSettings(client.settings);
         emoticons.loadCustomEmotes();
         emoticons.addEmoji(client.settings.getString("emoji"));
-        emoticons.addCheerEmotes(client.settings.getString("cheersType"));
+        emoticons.setCheerState(client.settings.getString("cheersType"));
+        emoticons.setCheerBackground(HtmlColors.decode(client.settings.getString("backgroundColor")));
         client.api.setToken(client.settings.getString("token"));
         
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
@@ -3429,6 +3432,16 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void setCheerEmotes(final Set<CheerEmoticon> emotes) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                emoticons.setCheerEmotes(emotes);
+            }
+        });
+    }
+    
     public void setEmotesets(final Map<Integer, String> emotesets) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -3979,7 +3992,9 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (setting.equals("emoji")) {
                     emoticons.addEmoji((String)value);
                 } else if (setting.equals("cheersType")) {
-                    emoticons.addCheerEmotes((String)value);
+                    emoticons.setCheerState((String)value);
+                } else if (setting.equals("backgroundColor")) {
+                    emoticons.setCheerBackground(HtmlColors.decode((String)value));
                 } else if (setting.equals("soundDevice")) {
                     Sound.setDeviceName((String)value);
                 }

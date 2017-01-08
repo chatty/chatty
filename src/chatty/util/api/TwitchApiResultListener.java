@@ -15,6 +15,7 @@ import java.util.Set;
  */
 public interface TwitchApiResultListener {
     void receivedEmoticons(Set<Emoticon> emoticons);
+    void receivedCheerEmoticons(Set<CheerEmoticon> emoticons);
     void receivedUsericons(List<Usericon> icons);
     void gameSearchResult(Set<String> games);
     void tokenVerified(String token, TokenInfo tokenInfo);

@@ -1265,17 +1265,25 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     
     <h3>Allow your moderators to add highlights</h3>
     <p>You can also let your moderators add stream highlights
-        (<code>!highlight [comment]</code>), but you first have to
-        change some <a href="help-setting_commands.html#streamhighlights">settings</a>:</p>
+        (<code>!highlight [comment]</code>), but you first have to set the channel with a
+        <a href="help-setting_commands.html#streamhighlights">setting command</a>:</p>
     
-    <ul>
-        <li><code>/set streamHighlightChannel #&lt;yourchannelname&gt;</code> to
-        allow moderators in the given channel to run the command</li>
-        <li><code>/set streamHighlightChannelRespond 1</code> to send a response to
-        chat when the mod command is used (otherwise the message is just shown locally)</li>
-        <li><code>/set streamHighlightCommand !highlight</code> to set <code>!highlight</code>
-        as mod command</li>
-    </ul>
+    <dl class="defList">
+        <dt><code>/set streamHighlightChannel #&lt;yourchannelname&gt;</code></dt>
+        <dd>Allows moderators in the given channel to run the command.</dd>
+        <dd>For example if your channel/stream is called <code>zoton2</code> the
+            command you have to enter would be: <code>/set&nbsp;streamHighlightChannel&nbsp;#zoton2</code></dd>
+    </dl>
+    
+    <p>Optionally you can also set the following settings:</p>
+    <dl class="defList">
+        <dt><code>/set streamHighlightChannelRespond 1</code></dt>
+        <dd>Send a response to chat when the mod command is used (otherwise the
+            message is just shown locally).</dd>
+        <dt><code>/set streamHighlightCommand !highlight</code></dt>
+        <dd>Change the mod command (in this example to <code>!highlight</code>,
+            which is the default)</dd>
+    </dl>
 
     <h2>
         <a name="ignoreJoinsParts">Ignore joins/parts</a>

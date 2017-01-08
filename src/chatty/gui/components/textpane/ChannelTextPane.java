@@ -16,6 +16,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.CheerEmoticon;
 import chatty.util.api.CheersUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -1677,7 +1678,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (styles.showEmoticons()) {
             findEmoticons(text, user, ranges, rangesStyle, emotes);
             if (containsBits) {
-                findBits(text, ranges, rangesStyle);
+                findBits(main.emoticons.getCheerEmotes(), text, ranges, rangesStyle);
             }
         }
         
@@ -1871,7 +1872,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private void findEmoticons(User user, Set<Emoticon> emoticons, String text,
             Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle) {
         // Find emoticons
-        Iterator<Emoticon> it = emoticons.iterator();
         for (Emoticon emoticon : emoticons) {
             // Check the text for every single emoticon
             if (!emoticon.matchesUser(user)) {
@@ -1896,34 +1896,31 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
     }
     
-    private void findBits(String text,
+    private void findBits(Set<CheerEmoticon> emotes, String text,
             Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle) {
-        Matcher m = CheersUtil.PATTERN.matcher(text);
-        while (m.find()) {
-            int start = m.start();
-            int end = m.end() - 1;
-            try {
-                int bits = Integer.parseInt(m.group(1));
-                int bitsLength = m.group(1).length();
-                CheersUtil.CHEER cheer = CheersUtil.getCheerFromBits(bits);
-                if (cheer == null) {
-                    continue;
+        for (CheerEmoticon emote : emotes) {
+            Matcher m = emote.getMatcher(text);
+            while (m.find()) {
+                int start = m.start();
+                int end = m.end() - 1;
+                try {
+                    int bits = Integer.parseInt(m.group(1));
+                    int bitsLength = m.group(1).length();
+                    if (bits < emote.min_bits) {
+                        continue;
+                    }
+                    if (addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
+                        addFormattedText(emote.color, end - bitsLength + 1, end, ranges, rangesStyle);
+                    }
+                } catch (NumberFormatException ex) {
+                    System.out.println("Error parsing cheer: " + ex);
                 }
-                Emoticon emote = main.emoticons.getCheerEmotes().get(cheer.image);
-                if (emote != null) {
-                    addEmoticon(emote, start, end-bitsLength, ranges, rangesStyle);
-                    addFormattedText(cheer.color, end-bitsLength+1, end, ranges, rangesStyle);
-                } else {
-                    //addFormattedText(cheer.color, start, end, ranges, rangesStyle);
-                }
-            } catch (NumberFormatException ex) {
-                System.out.println("Error parsing cheer: "+ex);
             }
         }
     }
     
-    private void addEmoticon(Emoticon emoticon, int start, int end,
+    private boolean addEmoticon(Emoticon emoticon, int start, int end,
             Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle) {
         if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
@@ -1935,8 +1932,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 // follow in a row)
                 attr.addAttribute("start", start);
                 rangesStyle.put(start, attr);
+                return true;
             }
         }
+        return false;
     }
     
     private void addFormattedText(Color color, int start, int end,
