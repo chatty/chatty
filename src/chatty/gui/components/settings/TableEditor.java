@@ -753,6 +753,10 @@ public class TableEditor<T> extends JPanel {
         
         // Reset search if searching on other column
         int column = data.getSearchColumn(table.getSelectedColumn());
+        if (column == -1) {
+            // No search column, so don't do any search
+            return;
+        }
         if (column != searchColumn) {
             resetSearch();
         }
