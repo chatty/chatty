@@ -225,9 +225,6 @@ public class Emoticon {
      */
     protected String getEmoteUrl(int factor) {
         if (type == Type.TWITCH) {
-            if (subType == SubType.CHEER) {
-                return getCheerEmoteUrl(url, stringId, factor);
-            }
             if (numericId != ID_UNDEFINED) {
                 return getTwitchEmoteUrlById(numericId, factor);
             }
@@ -243,10 +240,6 @@ public class Emoticon {
     
     public static String getTwitchEmoteUrlById(int id, int factor) {
         return "http://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
-    }
-    
-    public static String getCheerEmoteUrl(String baseUrl, String color, int factor) {
-        return baseUrl+color+"/"+factor;
     }
     
     public String getBttvEmoteUrl(String id, int factor) {
@@ -649,6 +642,9 @@ public class Emoticon {
                 if (scaledSize.width > defaultSize.width) {
                     urlFactor = 2;
                     if (isAnimated && (float)scaledSize.width / defaultSize.width < 1.6) {
+                        // For animated emotes, which currently are not resized,
+                        // only load the 2x version if scale is high enough,
+                        // otherwise it just looks ridiculous
                         urlFactor = 1;
                     }
                 }

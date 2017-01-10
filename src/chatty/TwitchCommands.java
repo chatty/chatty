@@ -54,6 +54,9 @@ public class TwitchCommands {
         else if (command.equals("unban")) {
             commandUnban(channel, parameter);
         }
+        else if (command.equals("untimeout")) {
+            commandUntimeout(channel, parameter);
+        }
         else if (command.equals("ban")) {
             commandBan(channel, msgId, parameter);
         }
@@ -180,15 +183,28 @@ public class TwitchCommands {
     }
     
     protected void commandUnban(String channel, String parameter) {
-        if (prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter) == null) {
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        if (parameter == null) {
             printLine("Usage: /unban <nick>");
             return;
         }
         unban(channel, parameter);
     }
     
+    protected void commandUntimeout(String channel, String parameter) {
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        if (parameter == null) {
+            printLine("Usage: /untimeout <nick>");
+            return;
+        }
+        if (onChannel(channel, true)) {
+            sendMessage(channel,".untimeout "+parameter, "Trying to untimeout "+parameter+"..");
+        }
+    }
+    
     protected void commandBan(String channel, String msgId, String parameter) {
-        if (prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter) == null) {
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
+        if (parameter == null) {
             printLine("Usage: /ban <nick> [reason]");
         } else {
             String[] split = parameter.split(" ", 2);
@@ -201,7 +217,8 @@ public class TwitchCommands {
     }
     
     protected void commandMod(String channel, String parameter) {
-        if (prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter) == null) {
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        if (parameter == null) {
             printLine("Usage: /mod <nick>");
         } else {
             mod(channel, parameter);
@@ -209,7 +226,8 @@ public class TwitchCommands {
     }
     
     protected void commandUnmod(String channel, String parameter) {
-        if (prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter) == null) {
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        if (parameter == null) {
             printLine("Usage: /unmod <nick>");
         }
         else {

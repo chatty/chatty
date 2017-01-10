@@ -14,6 +14,11 @@ import java.util.TreeSet;
  */
 public class CheersUtil {
 
+    /**
+     * Stores CheerEmoticon objects and sort them by min_bits, so that higher
+     * min_bits are checked first. That way the highest possible emoticon for
+     * the spent bits is used.
+     */
     private final Set<CheerEmoticon> cheerEmotes = new TreeSet<>(new Comparator<CheerEmoticon>() {
 
         @Override

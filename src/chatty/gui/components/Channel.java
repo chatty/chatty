@@ -231,13 +231,14 @@ public class Channel extends JPanel {
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
             "follow", "unfollow", "ffzws", "followers", "followersoff",
-            "setcolor"
+            "setcolor", "untimeout"
         }));
         
         private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
             "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ", "/host ",
             "/unban ", "/ignore ", "/unignore ", "/ignoreChat ", "/unignoreChat ",
-            "/ignoreWhisper ", "/unignoreWhisper ", "/follow ", "/unfollow "
+            "/ignoreWhisper ", "/unignoreWhisper ", "/follow ", "/unfollow ",
+            "/untimeout "
         }));
         
         private void updateSettings() {

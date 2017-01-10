@@ -33,7 +33,6 @@ public class CheerEmoticonManager extends CachedManager {
     @Override
     protected boolean handleData(String data) {
         Set<CheerEmoticon> result = parse(data);
-        System.out.println(result);
         if (result == null || result.isEmpty()) {
             return false;
         }
@@ -66,10 +65,13 @@ public class CheerEmoticonManager extends CachedManager {
         try {
             Set<CheerEmoticon> result = new HashSet<>();
             String prefix = (String)entry.get("prefix");
+            if (prefix == null) {
+                LOGGER.warning("Error parsing Cheer: No prefix");
+                return null;
+            }
             JSONArray tiers = (JSONArray)entry.get("tiers");
             for (Object o : tiers) {
                 CheerEmoticon tierResult = getTier(prefix, (JSONObject)o);
-                System.out.println(tierResult);
                 if (tierResult != null) {
                     result.add(tierResult);
                 }
