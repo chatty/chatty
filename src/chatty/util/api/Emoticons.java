@@ -312,6 +312,10 @@ public class Emoticons {
         return cheers.get();
     }
     
+    public String getCheerEmotesString() {
+        return cheers.getString();
+    }
+    
     public Set<Emoticon> getOtherGlobalEmotes() {
         return otherGlobalEmotes;
     }

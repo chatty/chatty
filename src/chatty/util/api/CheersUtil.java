@@ -117,6 +117,23 @@ public class CheersUtil {
         return color.getRed() * 0.299 + color.getGreen() * 0.587 + color.getBlue() * 0.114;
     }
     
+    public String getString() {
+        Set<CheerEmoticon> blah = new TreeSet<>(new Comparator<CheerEmoticon>() {
+
+            @Override
+            public int compare(CheerEmoticon s1, CheerEmoticon s2) {
+                int cmp = s1.code.compareTo(s2.code);
+                return cmp != 0 ? cmp : Integer.compare(s1.min_bits, s2.min_bits);
+            }
+        });
+        blah.addAll(cheerEmotes);
+        StringBuilder b = new StringBuilder();
+        for (CheerEmoticon emote : blah) {
+            b.append(emote.prefix).append(emote.min_bits).append(" ");
+        }
+        return b.toString();
+    }
+    
     // For testing
     public static void main(String[] args) {
         System.out.println(getLuma(Color.DARK_GRAY));

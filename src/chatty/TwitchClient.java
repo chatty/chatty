@@ -1024,6 +1024,13 @@ public class TwitchClient {
             customCommand(channel, command, parameter);
         }
         
+        else if (command.equals("debug")) {
+            String[] split = parameter.split(" ", 2);
+            String actualCommand = split[0];
+            String actualParamter = split[1];
+            testCommands(channel, actualCommand, actualParamter);
+        }
+        
         //--------------------
         // Only for testing
         else if (Chatty.DEBUG || settings.getBoolean("debugCommands")) {
@@ -1150,9 +1157,12 @@ public class TwitchClient {
                     + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
         } else if (command.equals("requestfollowers")) {
             api.getFollowers(parameter);
-        } else if (command.equals("simulate")) {
-            c.simulate(parameter);
         } else if (command.equals("simulate2")) {
+            c.simulate(parameter);
+        } else if (command.equals("simulate")) {
+            if (parameter.equals("bits")) {
+                parameter = "bits "+g.emoticons.getCheerEmotesString();
+            }
             String raw = RawMessageTest.simulateIRC(channel, parameter);
             if (raw != null) {
                 c.simulate(raw);
