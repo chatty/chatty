@@ -36,13 +36,32 @@ public class StringUtil {
     }
     
     public static String join(Collection<String> items, String delimiter) {
+        return join(items, delimiter, -1, -1);
+    }
+    
+    public static String join(Collection<String> items, String delimiter, int start) {
+        return join(items, delimiter, start, -1);
+    }
+    
+    public static String join(Collection<String> items, String delimiter, int start, int end) {
+        if (items.isEmpty()) {
+            return "";
+        }
+        start = start > -1 ? start : 0;
+        end = end > -1 ? end : items.size();
+        
         StringBuilder b = new StringBuilder();
         Iterator<String> it = items.iterator();
+        int i = 0;
         while (it.hasNext()) {
-            b.append(it.next());
-            if (it.hasNext()) {
-                b.append(delimiter);
+            String next = it.next();
+            if (i >= start && i < end) {
+                b.append(next);
+                if (it.hasNext() && i+1 < end) {
+                    b.append(delimiter);
+                }
             }
+            i++;
         }
         return b.toString();
     }

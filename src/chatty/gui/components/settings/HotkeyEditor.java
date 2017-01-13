@@ -137,6 +137,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         private final JRadioButton regular = new JRadioButton("Regular");
         private final JRadioButton applicationWide = new JRadioButton("Application");
         private final JRadioButton global = new JRadioButton("Global");
+        private final JLabel scopeTip = new JLabel();
         
         private final JButton ok = new JButton("Done");
         private final JButton cancel = new JButton("Cancel");
@@ -211,6 +212,10 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             cancel.addActionListener(listener);
             actionId.addActionListener(listener);
             global.addActionListener(listener);
+            
+            regular.setToolTipText("Hotkey that can only be triggered if the focus is on the Chatty main window");
+            applicationWide.setToolTipText("Hotkey that can be triggered anywhere in Chatty");
+            global.setToolTipText("Hotkey that can be triggered globally on your computer");
 
             // Hotkey scope selection radio buttons
             final ButtonGroup scopeSelection = new ButtonGroup();
@@ -258,24 +263,29 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(scopeSelectionPanel, gbc);
             
-            gbc = GuiUtil.makeGbc(0, 5, 1, 1);
+            gbc = GuiUtil.makeGbc(1, 5, 3, 1);
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.insets = new Insets(-1, 5, 7, 5);
+            dialog.add(scopeTip, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 6, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(new JLabel("Delay:"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 5, 1, 1);
+            gbc = GuiUtil.makeGbc(1, 6, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(delay, gbc);
             
-            gbc = GuiUtil.makeGbc(2, 5, 2, 1);
+            gbc = GuiUtil.makeGbc(2, 6, 2, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(new JLabel("(1/10th seconds)"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 6, 2, 1);
+            gbc = GuiUtil.makeGbc(1, 7, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
             dialog.add(ok, gbc);
             
-            gbc = GuiUtil.makeGbc(3, 6, 1, 1);
+            gbc = GuiUtil.makeGbc(3, 7, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.1;
             dialog.add(cancel, gbc);
@@ -362,6 +372,13 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             boolean customEnabled = action != null && action.startsWith("custom.");
             custom.setEnabled(customEnabled);
             custom.setEditable(customEnabled);
+            if (action != null && action.startsWith("dialog.") && !applicationWide.isSelected()) {
+                scopeTip.setVisible(true);
+                scopeTip.setText("Application scope recommended for this action");
+            } else {
+                scopeTip.setVisible(false);
+            }
+            dialog.pack();
             
             boolean enabled = actionId.getSettingValue() != null && currentHotkey != null
                     && (!customEnabled || !custom.getText().isEmpty());

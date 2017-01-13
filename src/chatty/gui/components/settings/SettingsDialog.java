@@ -99,6 +99,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_COMPLETION = "Completion";
     private static final String PANEL_CHAT = "Chat";
     private static final String PANEL_NAMES = "Names";
+    private static final String PANEL_MODERATION = "Moderation";
 
     private String currentlyShown;
     
@@ -111,6 +112,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String[] MENU = {
         PANEL_MAIN,
         PANEL_MESSAGES,
+        PANEL_MODERATION,
         PANEL_CHAT,
         PANEL_EMOTES,
         PANEL_USERICONS,
@@ -188,6 +190,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards = new JPanel(cardManager);
         cards.add(new MainSettings(this), PANEL_MAIN);
         cards.add(new MessageSettings(this), PANEL_MESSAGES);
+        cards.add(new ModerationSettings(this), PANEL_MODERATION);
         cards.add(new EmoteSettings(this), PANEL_EMOTES);
         imageSettings = new ImageSettings(this);
         cards.add(imageSettings, PANEL_USERICONS);

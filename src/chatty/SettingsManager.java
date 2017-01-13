@@ -420,6 +420,7 @@ public class SettingsManager {
         settings.addBoolean("twitchnotifyAsInfo", true);
         settings.addBoolean("printStreamStatus", true);
         settings.addBoolean("showModActions", false);
+        settings.addBoolean("showAutoMod", false);
 
         // Timeouts/Bans
         settings.addBoolean("showBanMessages", false);

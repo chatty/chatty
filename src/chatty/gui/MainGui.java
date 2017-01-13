@@ -406,14 +406,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
-        addMenuAction("dialog.streams", "Dialog: Live Channels (toggle)",
-                "Live Channels", KeyEvent.VK_L, new AbstractAction() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleLiveStreamsDialog();
-            }
-        });
         
         addMenuAction("dialog.search", "Dialog: Open Search Dialog",
                 "Find text..", KeyEvent.VK_F, new AbstractAction() {
@@ -424,97 +417,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
-        addMenuAction("dialog.toggleEmotes", "Dialog: Toggle Emotes Dialog",
-                "Emoticons", KeyEvent.VK_E, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleEmotesDialog();
-            }
-        });
-        
-        addMenuAction("dialog.channelInfo", "Dialog: Toggle Channel Info Dialog",
-                "Channel Info", KeyEvent.VK_C, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleChannelInfoDialog();
-            }
-        });
-        
-        addMenuAction("dialog.channelAdmin", "Dialog: Toggle Channel Admin Dialog",
-                "Channel Admin", KeyEvent.VK_A, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleChannelAdminDialog();
-            }
-        });
-        
-        addMenuAction("dialog.highlightedMessages", "Dialog: Toggle Highlighted Messages",
-                "Highlights", KeyEvent.VK_H, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleHighlightedMessages();
-            }
-        });
-        
-        addMenuAction("dialog.ignoredMessages", "Dialog: Toggle Ignored Messages",
-                "Ignored", KeyEvent.VK_I, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleIgnoredMessages();
-            }
-        });
-        
-        addMenuAction("dialog.followers", "Dialog: Toggle Followers List",
-                "Followers", KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleFollowerDialog();
-            }
-        });
-        
-        addMenuAction("dialog.subscribers", "Dialog: Toggle Subscriber List",
-                "Subscribers", KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleSubscriberDialog();
-            }
-        });
-        
-        addMenuAction("dialog.moderationLog", "Dialog: Toggle Moderation Log",
-                "Moderation Log", KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleModerationLog();
-            }
-        });
-        
-        addMenuAction("dialog.autoModDialog", "Dialog: Toggle AutoMod Dialog",
-                "AutoMod", KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleAutoModDialog();
-            }
-        });
-        
-        addMenuAction("dialog.chatRules", "Dialog: Toggle Chat Rules",
-                "Chat Rules", KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleChatRules();
-            }
-        });
-        
-        addMenuAction("dialog.addressbook", "Dialog: Toggle Addressbook",
+        addMenuAction("dialog.addressbook", "Dialog: Addressbook (toggle)",
                 "Addressbook", KeyEvent.VK_UNDEFINED, new AbstractAction() {
 
             @Override
@@ -523,6 +426,105 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
+        addMenuAction("dialog.autoModDialog", "Dialog: AutoMod Dialog (toggle)",
+                "AutoMod", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleAutoModDialog();
+            }
+        });
+        
+        addMenuAction("dialog.moderationLog", "Dialog: Moderation Log (toggle)",
+                "Moderation Log", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleModerationLog();
+            }
+        });
+        
+        addMenuAction("dialog.channelInfo", "Dialog: Channel Info Dialog (toggle)",
+                "Channel Info", KeyEvent.VK_C, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleChannelInfoDialog();
+            }
+        });
+        
+        addMenuAction("dialog.channelAdmin", "Dialog: Channel Admin Dialog (toggle)",
+                "Channel Admin", KeyEvent.VK_A, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleChannelAdminDialog();
+            }
+        });
+        
+        addMenuAction("dialog.chatRules", "Dialog: Chat Rules (toggle)",
+                "Chat Rules", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleChatRules();
+            }
+        });
+        
+        addMenuAction("dialog.toggleEmotes", "Dialog: Emotes Dialog (toggle)",
+                "Emoticons", KeyEvent.VK_E, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleEmotesDialog();
+            }
+        });
+
+        addMenuAction("dialog.highlightedMessages", "Dialog: Highlighted Messages (toggle)",
+                "Highlights", KeyEvent.VK_H, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleHighlightedMessages();
+            }
+        });
+        
+        addMenuAction("dialog.ignoredMessages", "Dialog: Ignored Messages (toggle)",
+                "Ignored", KeyEvent.VK_I, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleIgnoredMessages();
+            }
+        });
+        
+        addMenuAction("dialog.streams", "Dialog: Live Channels Dialog (toggle)",
+                "Live Channels", KeyEvent.VK_L, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleLiveStreamsDialog();
+            }
+        });
+        
+        addMenuAction("dialog.followers", "Dialog: Followers List (toggle)",
+                "Followers", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleFollowerDialog();
+            }
+        });
+        
+        addMenuAction("dialog.subscribers", "Dialog: Subscriber List (toggle)",
+                "Subscribers", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleSubscriberDialog();
+            }
+        });
+
         addMenuAction("dialog.joinChannel", "Dialog: Join Channel",
                 "Join Channel", KeyEvent.VK_J, new AbstractAction() {
 
@@ -2960,11 +2962,20 @@ public class MainGui extends JFrame implements Runnable {
                 moderationLog.add(data);
                 autoModDialog.addData(data);
                 String channel = Helper.toValidChannel(data.stream);
-                if (!ownAction && client.settings.getBoolean("showModActions") && channels.isChannel(channel)) {
-                    channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
-                            data.created_by,
-                            data.moderation_action,
-                            StringUtil.join(data.args, " ")));
+                if (channels.isChannel(channel)) {
+                    if (data.moderation_action.equals("twitchbot_rejected")) {
+                        if (client.settings.getBoolean("showAutoMod")) {
+                            channels.getChannel(channel).printLine(
+                                    String.format("[AutoMod] <%s> %s",
+                                            data.args.get(0),
+                                            StringUtil.join(data.args, " ", 1)));
+                        }
+                    } else if (!ownAction && client.settings.getBoolean("showModActions")) {
+                        channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
+                                data.created_by,
+                                data.moderation_action,
+                                StringUtil.join(data.args, " ")));
+                    }
                 }
             }
         });
