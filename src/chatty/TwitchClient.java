@@ -1201,6 +1201,10 @@ public class TwitchClient {
             args.add("tduva");
             args.add("fuck and stuff like that, rather long message and whatnot Kappa b");
             g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
+        } else if (command.equals("modactiontest3")) {
+            List<String> args = new ArrayList<>();
+            args.add("tduva");
+            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "approved_twitchbot_message", args, "tduvatest", "TEST"+Math.random()), false);
         } else if (command.equals("loadsoferrors")) {
             for (int i=0;i<10000;i++) {
                 SwingUtilities.invokeLater(new Runnable() {

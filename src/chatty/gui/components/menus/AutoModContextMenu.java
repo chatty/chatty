@@ -21,6 +21,8 @@ public class AutoModContextMenu extends ContextMenu {
         addItem("user", "User Info");
         addSeparator();
         addItem("help", "Help");
+        addSeparator();
+        addItem("close", "Close [Q]");
         
         this.item = item;
         this.listener = listener;

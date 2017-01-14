@@ -175,6 +175,15 @@ public class AutoModDialog extends JDialog {
             }
         });
         
+        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Q"), "automod.close");
+        list.getActionMap().put("automod.close", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        });
+        
         ComponentListener l = new ComponentAdapter() {
 
             @Override
@@ -228,28 +237,38 @@ public class AutoModDialog extends JDialog {
     }
     
     public void addData(ModeratorActionData modData) {
-        if (!"twitchbot".equals(modData.created_by)) {
-            return;
-        }
-        if ("twitchbot_rejected".equals(modData.moderation_action)) {
+        if ("twitchbot".equals(modData.created_by) && "twitchbot_rejected".equals(modData.moderation_action)) {
             addItem(modData);
         }
+        if ("approved_twitchbot_message".equals(modData.moderation_action)) {
+            handledExternally(modData, Item.STATUS_APPROVED);
+        }
+        if ("denied_twitchbot_message".equals(modData.moderation_action)) {
+            handledExternally(modData, Item.STATUS_DENIED);
+        }
     }
-    
+
+    /**
+     * Result of an API request to approve/deny a message.
+     * 
+     * @param result
+     * @param msgId 
+     */
     public void requestResult(String result, String msgId) {
         Item changedItem = findItemByMsgId(msgId);
         if (changedItem != null) {
+            changedItem.setRequestPending(false);
             if (result.equals("approved")) {
                 changedItem.setStatus(Item.STATUS_APPROVED);
             } else if (result.equals("denied")) {
-                changedItem.status = Item.STATUS_DENIED;
-            } else if (changedItem.status <= Item.STATUS_PENDING) {
+                changedItem.setStatus(Item.STATUS_DENIED);
+            } else if (changedItem.status <= Item.STATUS_NONE) {
                 if (result.equals("400")) {
-                    changedItem.status = Item.STATUS_HANDLED;
+                    changedItem.setStatus(Item.STATUS_HANDLED);
                 } else if (result.equals("404")) {
-                    changedItem.status = Item.STATUS_NA;
+                    changedItem.setStatus(Item.STATUS_NA);
                 } else {
-                    changedItem.status = Item.STATUS_ERROR;
+                    changedItem.setStatus(Item.STATUS_ERROR);
                 }
             }
         }
@@ -303,6 +322,68 @@ public class AutoModDialog extends JDialog {
             data.addElement(item);
             scrollDownIfApplicable();
         }
+    }
+
+    /**
+     * Message has been handled by another user, so determine if corresponding
+     * message can be found and set the status accordingly.
+     * 
+     * @param modData
+     * @param status 
+     */
+    private void handledExternally(ModeratorActionData modData, int status) {
+        if (modData.args.size() != 1 || modData.created_by.isEmpty()) {
+            return;
+        }
+        String handledBy = modData.created_by;
+        String targetUsername = modData.args.get(0);
+        String room = modData.stream;
+        Item item = findItemByUsername(room, targetUsername);
+        if (item != null) {
+            item.setStatus(status, handledBy);
+            list.repaint();
+        }
+    }
+    
+    /**
+     * Find a single Item by username for a given room. The issue with this is
+     * that Twitch only provides the username for approved messages (and a new
+     * message id), so only return an Item if only one for that username was
+     * found in the last 5 minutes that hasn't been handled yet. Messages seem
+     * to get removed after a few minutes, so messages older than 5 minutes
+     * probably can't be approved anymore. Still, this isn't that pretty.
+     * 
+     * @param room
+     * @param username
+     * @return 
+     */
+    private Item findItemByUsername(String room, String username) {
+        Item foundItem = null;
+        List<Item> items = cache.get(room);
+        if (items != null) {
+            boolean oldEnoughHistory = false;
+            for (int i=items.size() - 1; i>=0; i--) {
+                Item item = items.get(i);
+                if (item.getAge() > 5*60) {
+                    oldEnoughHistory = true;
+                    break;
+                }
+                if (!item.hasRequestPending && !item.isHandled()
+                        && item.targetUser.getNick().equals(username)) {
+                    if (foundItem != null) {
+                        // Can't be more than one Item, since we don't know
+                        // which is the correct one by just the username
+                        foundItem = null;
+                        break;
+                    }
+                    foundItem = item;
+                }
+            }
+            if (!oldEnoughHistory) {
+                foundItem = null;
+            }
+        }
+        return foundItem;
     }
     
     private void scrollDownIfApplicable() {
@@ -360,6 +441,9 @@ public class AutoModDialog extends JDialog {
                     else if (e.getActionCommand().equals("user")) {
                         openUserInfoDialog();
                     }
+                    else if (e.getActionCommand().equals("close")) {
+                        setVisible(false);
+                    }
                 }
             });
             m.show(list, e.getX(), e.getY());
@@ -396,7 +480,7 @@ public class AutoModDialog extends JDialog {
     }
     
     private void setPending(Item item) {
-        item.status = Item.STATUS_PENDING;
+        item.setRequestPending(true);
         if (data.contains(item)) {
             list.repaint();
         }
@@ -492,7 +576,6 @@ public class AutoModDialog extends JDialog {
     public static class Item {
         
         public static final int STATUS_NONE = 0;
-        public static final int STATUS_PENDING = 1;
         public static final int STATUS_HANDLED = 2;
         public static final int STATUS_ERROR = 3;
         public static final int STATUS_NA = 4;
@@ -502,14 +585,46 @@ public class AutoModDialog extends JDialog {
         public final ModeratorActionData data;
         public final User targetUser;
         private int status;
+        private String handledBy;
+        private boolean hasRequestPending;
         
         private Item(ModeratorActionData data, User targetUser) {
             this.data = data;
             this.targetUser = targetUser;
         }
         
-        public void setStatus(int status) {
+        public void setStatus(int status, String handledBy) {
             this.status = status;
+            this.handledBy = handledBy;
+        }
+        
+        public void setStatus(int status) {
+            setStatus(status, null);
+        }
+        
+        public void setRequestPending(boolean isPending) {
+            this.hasRequestPending = isPending;
+        }
+        
+        public boolean hasRequestPending() {
+            return hasRequestPending;
+        }
+        
+        public String getHandledBy() {
+            return handledBy;
+        }
+        
+        public boolean isHandled() {
+            return status == STATUS_APPROVED || status == STATUS_DENIED || status == STATUS_HANDLED || status == STATUS_NA;
+        }
+        
+        /**
+         * Returns the age of this item in seconds.
+         * 
+         * @return 
+         */
+        public long getAge() {
+            return (System.currentTimeMillis() - data.created_at) / 1000;
         }
         
         @Override
@@ -521,9 +636,11 @@ public class AutoModDialog extends JDialog {
         }
         
         public String getStatusText() {
+            if (hasRequestPending) {
+                return "Pending";
+            }
             switch (status) {
                 case STATUS_NONE: return "";
-                case STATUS_PENDING: return "Pending";
                 case STATUS_HANDLED: return "Handled";
                 case STATUS_APPROVED: return "Approved";
                 case STATUS_DENIED: return "Denied";
@@ -566,7 +683,14 @@ public class AutoModDialog extends JDialog {
             } else {
                 agoText = DateTime.agoSingleCompact(item.data.created_at);
             }
-            String status = item.status > 0 ? "-"+item.getStatusText()+"- " : "";
+            String status;
+            if (item.hasRequestPending()) {
+                status = "-Pending- ";
+            } else if (item.getHandledBy() == null) {
+                status = item.status > Item.STATUS_NONE ? "-"+item.getStatusText()+"- " : "";
+            } else {
+                status = item.status > Item.STATUS_NONE ? "-"+item.getStatusText()+" by "+item.getHandledBy()+"- " : "";
+            }
             String text = String.format("%s[%s] <%s> %s",
                     status,
                     agoText,
@@ -583,14 +707,13 @@ public class AutoModDialog extends JDialog {
             // Selected Color
             if (isSelected) {
                 area.setBackground(list.getSelectionBackground());
-                area.setForeground(list.getSelectionForeground());
             } else {
                 area.setBackground(list.getBackground());
-                if (item.status > Item.STATUS_PENDING) {
-                    area.setForeground(Color.GRAY);
-                } else {
-                    area.setForeground(list.getForeground());
-                }
+            }
+            if (item.isHandled() || item.getAge() > 60 * 5) {
+                area.setForeground(Color.GRAY);
+            } else {
+                area.setForeground(list.getForeground());
             }
             return area;
         }

@@ -1024,17 +1024,21 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     <p>Messages can have different prefixes depending on their status:</p>
     <ul>
         <li>No prefix - The message has not been approved/denied yet</li>
-        <li><code>[Approved]</code> - You have approved the message</li>
-        <li><code>[Denied]</code> - You have denied the message</li>
-        <li><code>[Handled]</code> - The message has been handled already,
+        <li><code>Approved</code> - You have approved the message</li>
+        <li><code>Denied</code> - You have denied the message</li>
+        <li><code>Handled</code> - The message has been handled already,
             probably by another mod (the API does not return whether it's been
             approved or denied)</li>
-        <li><code>[Pending]</code> - Your action is being sent to the Twitch API</li>
-        <li><code>[N/A]</code> - The message is no longer available to be
-            approved or denied</li>
-        <li><code>[Error]</code> - An error occured sending your action to the
+        <li><code>Pending</code> - Your action is being sent to the Twitch API</li>
+        <li><code>N/A</code> - The message is no longer available to be
+            approved or denied (this seems to be the case after a few minutes)</li>
+        <li><code>Error</code> - An error occured sending your action to the
             Twitch API</li>
     </ul>
+    
+    <p>Messages that have already been handled or that are older than 5 minutes
+        (and can thus <em>probably</em> not be approved/denied anymore) are
+        shown greyed out.</p>
     
     <h2>
         <a name="channelinfo">Channel Info / History</a>
