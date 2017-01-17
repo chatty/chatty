@@ -1199,8 +1199,8 @@ public class TwitchClient {
         } else if (command.equals("modactiontest2")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
-            args.add("fuck and stuff like that, rather long message and whatnot Kappa b");
-            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
+            args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+new Random().nextInt(100));
+            g.printModerationAction(new ModeratorActionData("", "", parameter == null ? "tduvatest" : parameter, "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
         } else if (command.equals("modactiontest3")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");

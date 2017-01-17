@@ -16,7 +16,7 @@ public class ModerationSettings extends SettingsPanel {
         
         blah.add(d.addSimpleBooleanSetting(
                 "showModActions",
-                "<html><body>Show moderator actions in chat (same as <code>Extra - Moderation Log</code>)",
+                "<html><body>Show moderator actions in chat (similiar to <code>Extra - Moderation Log</code>)",
                 "Show what commands mods perform, except your own (you can also open Extra - Moderation Log)"),
                 d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         

@@ -237,6 +237,9 @@ public class AutoModDialog extends JDialog {
     }
     
     public void addData(ModeratorActionData modData) {
+        if (modData.stream == null) {
+            return;
+        }
         if ("twitchbot".equals(modData.created_by) && "twitchbot_rejected".equals(modData.moderation_action)) {
             addItem(modData);
         }
@@ -272,9 +275,7 @@ public class AutoModDialog extends JDialog {
                 }
             }
         }
-        if (data.contains(changedItem)) {
-            list.repaint();
-        }
+        repaintFor(changedItem);
     }
     
     private Item findItemByMsgId(String msgId) {
@@ -315,7 +316,9 @@ public class AutoModDialog extends JDialog {
         cache.get(room).add(item);
         if (cache.get(room).size() > MESSAGE_LIMIT) {
             cache.get(room).remove(0);
-            data.remove(0);
+            if (room.equals(currentRoom) && !data.isEmpty()) {
+                data.remove(0);
+            }
         }
 
         if (room.equals(currentRoom)) {
@@ -341,7 +344,7 @@ public class AutoModDialog extends JDialog {
         Item item = findItemByUsername(room, targetUsername);
         if (item != null) {
             item.setStatus(status, handledBy);
-            list.repaint();
+            repaintFor(item);
         }
     }
     
@@ -481,6 +484,10 @@ public class AutoModDialog extends JDialog {
     
     private void setPending(Item item) {
         item.setRequestPending(true);
+        repaintFor(item);
+    }
+    
+    private void repaintFor(Item item) {
         if (data.contains(item)) {
             list.repaint();
         }
