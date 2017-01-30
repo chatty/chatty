@@ -28,11 +28,18 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     
     public EditorStringSetting(Window parent, final String title, int size,
             boolean allowEmpty, boolean allowLinebreaks, final String info) {
+        this(parent, title, size, allowEmpty, allowLinebreaks, info, null);
+    }
+    
+    public EditorStringSetting(Window parent, final String title, int size,
+            boolean allowEmpty, boolean allowLinebreaks, final String info,
+            Editor.Tester tester) {
         setLayout(new BorderLayout(2, 0));
         
         editor = new Editor(parent);
         editor.setAllowEmpty(allowEmpty);
         editor.setAllowLinebreaks(allowLinebreaks);
+        editor.setTester(tester);
         
         preview = new JTextField(size);
         preview.setEditable(false);
@@ -77,5 +84,5 @@ public class EditorStringSetting extends JPanel implements StringSetting {
             }
         }
     }
-    
+
 }

@@ -217,7 +217,7 @@ public class TwitchCommands {
     }
     
     protected void commandMod(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
         if (parameter == null) {
             printLine("Usage: /mod <nick>");
         } else {
@@ -226,7 +226,7 @@ public class TwitchCommands {
     }
     
     protected void commandUnmod(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
+        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
         if (parameter == null) {
             printLine("Usage: /unmod <nick>");
         }

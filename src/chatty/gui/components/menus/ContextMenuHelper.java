@@ -23,8 +23,6 @@ public class ContextMenuHelper {
 
     public static boolean enableLivestreamer = true;
     public static String livestreamerQualities;
-    public static String userCustomCommands;
-    public static String channelCustomCommands;
     public static Settings settings;
     
     /**
@@ -32,17 +30,6 @@ public class ContextMenuHelper {
      */
     private static final Pattern LIVESTREAMER_PATTERN
             = Pattern.compile("(\\|)|([^,\\s]+)");
-    
-    /**
-     * Pattern for finding commands/seperators in the custom commands setting
-     */
-    private static final Pattern CUSTOM_COMMANDS_PATTERN
-            = Pattern.compile("(\\|)|(?:/?/?([^,\\s]+))");
-    
-    /**
-     * Menu name to use for custom commands submenu
-     */
-    private static final String CUSTOM_COMMANDS_SUBMENU = "More..";
     
     /**
      * Adds menu items to the given ContextMenu that provide ways to do stream
@@ -74,7 +61,7 @@ public class ContextMenuHelper {
             s = "s";
             count = String.valueOf(numStreams)+" ";
         }
-        String streamSubmenu = "Twitch Stream" + s;
+        String streamSubmenu = "Twitch Stream";
         String miscSubmenu = "Miscellaneous";
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
         m.addSubItem("stream", "Normal", streamSubmenu);
@@ -95,6 +82,7 @@ public class ContextMenuHelper {
             m.addSubItem("follow", "Follow Channel", miscSubmenu);
             m.addSubItem("unfollow", "Unfollow Channel", miscSubmenu);
         }
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m);
     }
     
     /**
@@ -122,59 +110,6 @@ public class ContextMenuHelper {
                     sep = false;
                 }
             }
-        }
-    }
-    
-    /**
-     * Add custom commands intended for the User Context Menu.
-     * 
-     * @param m The ContextMenu to add the menu items to
-     */
-    public static void addCustomUserCommands(ContextMenu m) {
-        if (userCustomCommands != null) {
-            addCustomCommands(userCustomCommands, m);
-        }
-    }
-    
-    /**
-     * Add custom commands intended for the Channel Context Menu.
-     * 
-     * @param m The ContextMenu to add the menu items to
-     */
-    public static void addCustomChannelCommands(ContextMenu m) {
-        if (channelCustomCommands != null) {
-            addCustomCommands(channelCustomCommands, m);
-        }
-    }
-    
-    /**
-     * Parses the given commands setting and adds menu items to the given
-     * ContextMenu.
-     * 
-     * @param commands The String containing the commands and stuff
-     * @param m The context menu to add the menu items to
-     */
-    public static void addCustomCommands(String commands, ContextMenu m) {
-        Matcher matcher = CUSTOM_COMMANDS_PATTERN.matcher(commands);
-        boolean sep = false;
-        while (matcher.find()) {
-            String match = matcher.group();
-            if (match.equals("|")) {
-                sep = true;
-            } else {
-                String command = matcher.group(2);
-                String submenu = null;
-                if (match.startsWith("//")) {
-                    submenu = CUSTOM_COMMANDS_SUBMENU;
-                }
-                if (sep) {
-                    m.addSeparator(submenu);
-                }
-                m.addSubItem("command" + command, Helper.replaceUnderscoreWithSpace(command),
-                        submenu);
-                sep = false;
-            }
-
         }
     }
     

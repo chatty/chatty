@@ -510,7 +510,7 @@ public class Helper {
      */
     private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io)";
     
-    private static final String MID = "[-A-Z0-9+&@#/%=~_|$?!:,.()]";
+    private static final String MID = "[-A-Z0-9+&@#/%=~_|$?!:,;.()]";
     
     private static final String END = "[A-Z0-9+&@#/%=~_|$)]";
     
@@ -522,7 +522,7 @@ public class Helper {
     /**
      * Start of the URL (second possibility).
      */
-    private static final String S2 = "(?:[A-Z0-9.-]+\\."+TLD+"\\b)";
+    private static final String S2 = "(?:[A-Z0-9.-]+[A-Z0-9]\\."+TLD+"\\b)";
     
     /**
      * Complete URL.

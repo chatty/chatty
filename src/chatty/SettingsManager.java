@@ -259,6 +259,7 @@ public class SettingsManager {
                                 + "Hate / Harassment\nSpoilers / Backseat Gaming");
         settings.addString("userContextMenu", "");
         settings.addString("channelContextMenu", "");
+        settings.addString("streamsContextMenu", "");
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);

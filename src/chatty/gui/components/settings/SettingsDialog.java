@@ -570,8 +570,16 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return s;
     }
     
-    protected JPanel addEditorStringSetting(String settingName, int size, boolean editable, final String title, final boolean linebreaks, String info) {
-        EditorStringSetting s = new EditorStringSetting(this, title, size, true, linebreaks, info);
+    protected JPanel addEditorStringSetting(String settingName, int size,
+            boolean editable, final String title, final boolean linebreaks,
+            String info) {
+        return addEditorStringSetting(settingName, size, editable, title, linebreaks, info, null);
+    }
+    
+    protected JPanel addEditorStringSetting(String settingName, int size,
+            boolean editable, final String title, final boolean linebreaks,
+            String info, Editor.Tester tester) {
+        EditorStringSetting s = new EditorStringSetting(this, title, size, true, linebreaks, info, tester);
         addStringSetting(settingName, s);
         return s;
     }

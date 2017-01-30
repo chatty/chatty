@@ -39,7 +39,7 @@ public class ChannelContextMenu extends ContextMenu {
         addSeparator();
         addItem("closeChannel", "Close Channel");
         
-        ContextMenuHelper.addCustomChannelCommands(this);
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.CHANNEL, this);
     }
 
     @Override

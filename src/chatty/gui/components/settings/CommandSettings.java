@@ -1,6 +1,9 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.components.menus.ContextMenu;
+import chatty.gui.components.menus.TestContextMenu;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,25 +61,41 @@ public class CommandSettings extends SettingsPanel {
         
         JPanel menus = addTitledPanel("Menu/Button Commands", 1);
         
+        Editor.Tester menuTester = new Editor.Tester() {
+
+            @Override
+            public void test(Component component, int x, int y, String value) {
+                ContextMenu m = new TestContextMenu(value);
+                m.show(component, x, y);
+            }
+        };
+        
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
         menus.add(new JLabel("User Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 0, 1, 1);
-        menus.add(d.addEditorStringSetting("userContextMenu", 20, true, "Edit User Context Menu:", true, INFO), gbc);
+        menus.add(d.addEditorStringSetting("userContextMenu", 20, true, "Edit User Context Menu:", true, INFO, menuTester), gbc);
         
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
         menus.add(new JLabel("Channel Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 1, 1, 1);
-        menus.add(d.addEditorStringSetting("channelContextMenu", 20, true, "Edit Channel Context Menu:", true, INFO), gbc);
+        menus.add(d.addEditorStringSetting("channelContextMenu", 20, true, "Edit Channel Context Menu:", true, INFO, menuTester), gbc);
         
         gbc = d.makeGbc(0, 2, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("User Dialog Buttons:"), gbc);
+        menus.add(new JLabel("Streams Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 2, 1, 1);
+        menus.add(d.addEditorStringSetting("streamsContextMenu", 20, true, "Edit Streams Context Menu:", true, INFO, menuTester), gbc);
+        
+        gbc = d.makeGbc(0, 3, 1, 1);
+        gbc.anchor = GridBagConstraints.EAST;
+        menus.add(new JLabel("User Dialog Buttons:"), gbc);
+        
+        gbc = d.makeGbc(1, 3, 1, 1);
         menus.add(d.addEditorStringSetting("timeoutButtons", 20, true, "Edit User Dialog Buttons:", true, INFO_TIMEOUT), gbc);
         
     }

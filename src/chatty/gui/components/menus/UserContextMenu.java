@@ -2,6 +2,7 @@
 package chatty.gui.components.menus;
 
 import chatty.User;
+import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Set;
@@ -76,7 +77,7 @@ public class UserContextMenu extends ContextMenu {
             }
         }
 
-        ContextMenuHelper.addCustomUserCommands(this);
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.USER, this);
     }
 
     @Override

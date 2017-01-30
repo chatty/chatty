@@ -2,7 +2,7 @@
 package chatty.gui;
 
 import chatty.gui.components.textpane.UserMessage;
-import chatty.gui.components.UserInfo;
+import chatty.gui.components.userinfo.UserInfo;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
 import chatty.gui.components.LinkLabelListener;
@@ -44,6 +44,8 @@ import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
 import chatty.gui.components.UpdateMessage;
+import chatty.gui.components.menus.CommandActionEvent;
+import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
@@ -66,6 +68,8 @@ import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi.RequestResult;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -895,8 +899,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateCustomContextMenuEntries() {
-        ContextMenuHelper.channelCustomCommands = client.settings.getString("channelContextMenu");
-        ContextMenuHelper.userCustomCommands = client.settings.getString("userContextMenu");
+        CommandMenuItems.setCommands(CommandMenuItems.MenuType.CHANNEL, client.settings.getString("channelContextMenu"));
+        CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
+        CommandMenuItems.setCommands(CommandMenuItems.MenuType.STREAMS, client.settings.getString("streamsContextMenu"));
         ContextMenuHelper.livestreamerQualities = client.settings.getString("livestreamerQualities");
         ContextMenuHelper.enableLivestreamer = client.settings.getBoolean("livestreamer");
         ContextMenuHelper.settings = client.settings;
@@ -1184,8 +1189,8 @@ public class MainGui extends JFrame implements Runnable {
             } //-----------------
             // Userinfo Dialog
             //-----------------
-            else if (userInfoDialog.getAction(event.getSource()) != UserInfo.Action.NONE) {
-                UserInfo.Action action = userInfoDialog.getAction(event.getSource());
+            else if (userInfoDialog.getCommand(source) != null) {
+                CustomCommand command = userInfoDialog.getCommand(source);
                 User user = userInfoDialog.getUser();
                 String nick = user.getNick();
                 String channel = userInfoDialog.getChannel();
@@ -1194,17 +1199,9 @@ public class MainGui extends JFrame implements Runnable {
                 if (!reason.isEmpty()) {
                     reason = " "+reason;
                 }
-                if (action == UserInfo.Action.TIMEOUT) {
-                    int time = userInfoDialog.getTimeoutButtonTime(event.getSource());
-                    client.command(channel, "timeout", nick+" "+time+reason, msgId);
-                } else if (action == UserInfo.Action.COMMAND) {
-                    String command = userInfoDialog.getCommandButtonCommand(source);
-                    client.command(channel, command, nick+reason, msgId);
-                } else if (action == UserInfo.Action.MOD) {
-                    client.command(channel, "mod", nick);
-                } else if (action == UserInfo.Action.UNMOD) {
-                    client.command(channel, "unmod", nick);
-                }
+                Parameters parameters = Parameters.create(nick+reason);
+                parameters.put("msg-id", msgId);
+                client.anonCustomCommand(channel, command, parameters);
             // Favorites Dialog
             } else if (favoritesDialog.getAction(source) == FavoritesDialog.BUTTON_ADD_FAVORITES) {
                 Set<String> channels = favoritesDialog.getChannels();
@@ -1424,8 +1421,7 @@ public class MainGui extends JFrame implements Runnable {
                 setCustomName(user.nick);
             }
             else if (cmd.startsWith("command")) {
-                String command = cmd.substring(7);
-                client.command(user.getChannel(), command, user.getRegularDisplayNick());
+                customCommand(user.getChannel(), e, user.getRegularDisplayNick());
             } else if (cmd.equals("copyNick")) {
                 MiscUtil.copyToClipboard(user.getNick());
             } else if (cmd.equals("copyDisplayNick")) {
@@ -1438,8 +1434,9 @@ public class MainGui extends JFrame implements Runnable {
                 client.commandSetIgnored(user.nick, "chat", false);
             } else  if (cmd.equals("unignoreWhisper")) {
                 client.commandSetIgnored(user.nick, "whisper", false);
+            } else {
+                nameBasedStuff(e, user.getNick());
             }
-            nameBasedStuff(cmd, user.getNick());
         }
         
         /**
@@ -1516,8 +1513,7 @@ public class MainGui extends JFrame implements Runnable {
                 channels.popoutActiveChannel();
             }
             else if (cmd.startsWith("command")) {
-                String command = cmd.substring(7);
-                client.command(channels.getActiveChannel().getName(), command, channels.getActiveChannel().getStreamName());
+                customCommand(channels.getActiveChannel().getName(), e, channels.getActiveChannel().getStreamName());
             }
             else if (cmd.startsWith("range")) {
                 int range = -1;
@@ -1543,7 +1539,7 @@ public class MainGui extends JFrame implements Runnable {
                 updateHistoryRange();
                 client.settings.setLong("historyRange", range);
             } else {
-                nameBasedStuff(cmd, channels.getActiveChannel().getStreamName());
+                nameBasedStuff(e, channels.getActiveChannel().getStreamName());
             }
         }
 
@@ -1555,8 +1551,7 @@ public class MainGui extends JFrame implements Runnable {
          */
         @Override
         public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
-            String cmd = e.getActionCommand();
-            streamStuff(cmd, streams);
+            streamStuff(e, streams);
         }
 
         /**
@@ -1603,10 +1598,10 @@ public class MainGui extends JFrame implements Runnable {
          * @param cmd
          * @param name 
          */
-        private void nameBasedStuff(String cmd, String name) {
+        private void nameBasedStuff(ActionEvent e, String name) {
             Collection<String> list = new ArrayList<>();
             list.add(name);
-            streamStuff(cmd, list);
+            streamStuff(e, list);
         }
         
         /**
@@ -1649,7 +1644,8 @@ public class MainGui extends JFrame implements Runnable {
          * @param cmd The command
          * @param streams The list of stream or channel names
          */
-        private void streamStuff(String cmd, Collection<String> streams) {
+        private void streamStuff(ActionEvent e, Collection<String> streams) {
+            String cmd = e.getActionCommand();
             TwitchUrl.removeInvalidStreams(streams);
             if (streams.isEmpty() && cmdRequiresStream(cmd)) {
                 JOptionPane.showMessageDialog(getActiveWindow(), "Can't perform action: No stream/channel.",
@@ -1736,6 +1732,8 @@ public class MainGui extends JFrame implements Runnable {
                 }
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
+            } else if (cmd.startsWith("command")) {
+                customCommand(channels.getLastActiveChannel().getName(), e, StringUtil.join(streams, " "));
             }
         }
 
@@ -1792,7 +1790,7 @@ public class MainGui extends JFrame implements Runnable {
                 emotesDialog.favoritesUpdated();
             }
             if (emote.hasStreamSet()) {
-                nameBasedStuff(e.getActionCommand(), emote.getStream());
+                nameBasedStuff(e, emote.getStream());
             }
             if (url != null) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), url, true);
@@ -1818,6 +1816,12 @@ public class MainGui extends JFrame implements Runnable {
             else if (e.getActionCommand().equals("badgeImage")) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
             }
+        }
+        
+        private void customCommand(String channel, ActionEvent e, String args) {
+            CommandActionEvent ce = (CommandActionEvent)e;
+            CustomCommand command = ce.getCommand();
+            client.anonCustomCommand(channel, command, Parameters.create(args));
         }
         
     }
@@ -4063,7 +4067,10 @@ public class MainGui extends JFrame implements Runnable {
             if (setting.equals("commands")) {
                 client.customCommands.loadFromSettings();
             }
-            if (setting.equals("channelContextMenu") || setting.equals("userContextMenu") || setting.equals("livestreamerQualities")) {
+            if (setting.equals("channelContextMenu")
+                    || setting.equals("userContextMenu")
+                    || setting.equals("livestreamerQualities")
+                    || setting.equals("streamsContextMenu")) {
                 updateCustomContextMenuEntries();
             }
             else if (setting.equals("chatScrollbarAlways") || setting.equals("userlistWidth")) {

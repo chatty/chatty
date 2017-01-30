@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
@@ -48,6 +49,8 @@ import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.api.pubsub.PubSubListener;
 import chatty.util.chatlog.ChatLog;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
@@ -690,6 +693,7 @@ public class TwitchClient {
      * @param text 
      */
     public void textInput(String channel, String text) {
+        System.out.println(channel);
         if (text.isEmpty()) {
             return;
         }
@@ -796,7 +800,7 @@ public class TwitchClient {
     
     public boolean command(String channel, String command, String parameter,
             String msgId) {
-        System.out.println(command+" "+parameter);
+        System.out.println(channel+" "+command+" "+parameter);
         command = StringUtil.toLowerCase(command);
         
         //---------------
@@ -866,7 +870,11 @@ public class TwitchClient {
             g.openReleaseInfo();
         }
         else if (command.equals("echo")) {
-            g.printLine(parameter);
+            if (parameter != null) {
+                g.printLine(parameter);
+            } else {
+                g.printLine("Invalid parameters: /echo <message>");
+            }
         }
         else if (command.equals("uptime")) {
             g.printSystem("Chatty has been running for "+Chatty.uptime());
@@ -1226,6 +1234,25 @@ public class TwitchClient {
         }
     }
     
+    public void anonCustomCommand(String channel, CustomCommand command, Parameters parameters) {
+        if (command.getError() != null) {
+            g.printLine("Custom command invalid: "+command.getError());
+            return;
+        }
+        if (channel == null) {
+            g.printLine("Custom command: Not on a channel");
+            return;
+        }
+        String result = customCommands.command(command, parameters, channel);
+        if (result == null) {
+            g.printLine("Custom command: Insufficient parameters/data");
+        } else if (result.isEmpty()) {
+            g.printLine("Custom command: No action specified");
+        } else {
+            textInput(channel, result);
+        }
+    }
+    
     public void customCommand(String channel, String command, String parameter) {
         if (channel == null) {
             g.printLine("Custom command: Not on a channel");
@@ -1235,9 +1262,9 @@ public class TwitchClient {
             g.printLine("Custom command not found: "+command);
             return;
         }
-        String result = customCommands.command(command, parameter, Helper.toStream(channel));
+        String result = customCommands.command(command, Parameters.create(parameter), channel);
         if (result == null) {
-            g.printLine("Custom command '"+command+"': Invalid parameters");
+            g.printLine("Custom command '"+command+"': Insufficient parameters/data");
         } else if (result.isEmpty()) {
             // This shouldn't actually happen if edited through the settings,
             // which should trim() out whitespace, so that the command won't

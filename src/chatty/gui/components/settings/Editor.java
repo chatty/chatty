@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -40,11 +41,13 @@ public class Editor {
     private final JTextArea input;
     private final JButton okButton = new JButton("Save");
     private final JButton cancelButton = new JButton("Cancel");
+    private final JButton testButton = new JButton("Test");
     private final JToggleButton toggleInfoButton = new JToggleButton("Help");
     private final Window parent;
     private final JLabel info;
     
     private DataFormatter<String> formatter;
+    private Tester tester;
     private boolean allowEmpty;
 
     private String result;
@@ -62,9 +65,14 @@ public class Editor {
 
         // Should contain something to set correct minimum size in constructor
         label = new JLabel("abc");
-        gbc = GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
+        gbc = GuiUtil.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(5, 5, 5, 5);
         dialog.add(label, gbc);
+        
+        gbc = GuiUtil.makeGbc(2, 0, 1, 1, GridBagConstraints.EAST);
+        testButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        dialog.add(testButton, gbc);
+        testButton.setVisible(false);
 
         gbc = GuiUtil.makeGbc(0, 1, 3, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -108,6 +116,7 @@ public class Editor {
         okButton.addActionListener(buttonAction);
         cancelButton.addActionListener(buttonAction);
         toggleInfoButton.addActionListener(buttonAction);
+        testButton.addActionListener(buttonAction);
 
         okButton.setMnemonic(KeyEvent.VK_S);
         cancelButton.setMnemonic(KeyEvent.VK_C);
@@ -169,6 +178,11 @@ public class Editor {
      */
     public void setFormatter(DataFormatter<String> formatter) {
         this.formatter = formatter;
+    }
+    
+    public void setTester(Tester tester) {
+        this.tester = tester;
+        testButton.setVisible(tester != null);
     }
     
     /**
@@ -240,6 +254,10 @@ public class Editor {
                  */
                 info.setVisible(toggleInfoButton.isSelected());
                 dialog.pack();
+            } else if (e.getSource() == testButton) {
+                if (tester != null) {
+                    tester.test(testButton, 0, testButton.getHeight(), input.getText());
+                }
             }
             
         }
@@ -301,6 +319,10 @@ public class Editor {
         public void changedUpdate(DocumentEvent e) {
             updateOkButton();
         }
+    }
+    
+    public interface Tester {
+        public void test(Component component, int x, int y, String value);
     }
 
 }
