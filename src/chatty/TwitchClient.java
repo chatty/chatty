@@ -255,6 +255,7 @@ public class TwitchClient {
         c.setUsericonManager(usericonManager);
         c.setBotNameManager(botNameManager);
         c.addChannelStateListener(new ChannelStateUpdater());
+        c.setMaxReconnectionAttempts(settings.getLong("maxReconnectionAttempts"));
         
         w = new WhisperManager(new MyWhisperListener(), settings, c);
         

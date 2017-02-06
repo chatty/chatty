@@ -129,6 +129,8 @@ public class SettingsManager {
         settings.addList("securedPorts", new LinkedHashSet<>(Arrays.asList((long)6697, (long)443)), Setting.LONG);
         settings.addBoolean("membershipEnabled", true);
         settings.addString("pubsub", "wss://pubsub-edge.twitch.tv");
+        
+        settings.addLong("maxReconnectionAttempts", 40);
 
         // Auto-join channels
         settings.addString("channel", "");

@@ -49,7 +49,7 @@ public class TwitchConnection {
     /**
      * How many times to try to reconnect
      */
-    private final int maxReconnectionAttempts = 40;
+    private long maxReconnectionAttempts = 40;
     
     /**
      * The time in seconds between reconnection attempts. The first entry is the
@@ -156,6 +156,10 @@ public class TwitchConnection {
     
     public void setCustomNamesManager(CustomNames customNames) {
         users.setCustomNamesManager(customNames);
+    }
+    
+    public void setMaxReconnectionAttempts(long num) {
+        this.maxReconnectionAttempts = num;
     }
     
     public User getUser(String channel, String name) {
@@ -695,14 +699,16 @@ public class TwitchConnection {
         
         private void startReconnectTimer(int reason) {
             if (reconnectionTimer == null) {
-                if (connectionAttempts > maxReconnectionAttempts) {
+                if (connectionAttempts > maxReconnectionAttempts
+                        && maxReconnectionAttempts > -1) {
                     listener.onGlobalInfo("Gave up reconnecting. :(");
                 } else {
                     int delay = getReconnectionDelay(connectionAttempts);
-                    listener.onGlobalInfo("Attempting to reconnect in "+delay
-                            +" seconds.. ("
-                            +irc.connectionAttempts+"/"+maxReconnectionAttempts+")"
-                    );
+                    listener.onGlobalInfo(String.format(
+                            "Attempting to reconnect in %s seconds.. (%s/%s)",
+                            delay,
+                            irc.connectionAttempts,
+                            maxReconnectionAttempts < 0 ? "∞" : maxReconnectionAttempts));
                     setState(Irc.STATE_RECONNECTING);
                     reconnectionTimer = new Timer();
                     reconnectionTimer.schedule(getReconnectionTimerTask(), delay * 1000);

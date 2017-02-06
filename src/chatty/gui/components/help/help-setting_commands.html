@@ -279,6 +279,16 @@
                     <td>If set, overrides the <code>defaultPort</code>, can be
                     set by commandline options, not saved in between sessions</td>
                 </tr>
+                <tr class="settingExclusive">
+                    <td class="setting">maxReconnectionAttempts</td>
+                    <td>Integer</td>
+                    <td>How many times Chatty will attempt to reconnect when
+                        connecting fails</td>
+                    <td class="settingDefault">40</td>
+                    <td>You can set a negative value (for example -1) to have no
+                        limit on the number of reconnection attempts. <em>Requires a
+                        restart of Chatty after changing to take any effect.</em></td>
+                </tr>
                 <tr>
                     <td class="setting">username</td>
                     <td>String</td>
