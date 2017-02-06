@@ -48,7 +48,8 @@ public class CommandMenuItems {
         for (String line : lines) {
             String submenu = parseSubmenu(line);
             if (submenu != null) {
-                currentSubmenu = submenu;
+                currentSubmenu = removeKey(submenu);
+                result.add(new CommandMenuItem(removeKey(submenu), null, null, getKey(submenu)));
                 continue;
             }
             if (line.trim().equals("-")) {
@@ -77,6 +78,24 @@ public class CommandMenuItems {
         return null;
     }
     
+    private static String getKey(String input) {
+        if (input == null) {
+            return null;
+        }
+        if (input.indexOf("[") > 0 && input.endsWith("]")) {
+            String key = input.substring(input.lastIndexOf("[") + 1, input.length() - 1);
+            return key.isEmpty() ? null : key;
+        }
+        return null;
+    }
+    
+    private static String removeKey(String input) {
+        if (input.indexOf("[") > 0 && input.endsWith("]")) {
+            return input.substring(0, input.lastIndexOf("[")).trim();
+        }
+        return input;
+    }
+    
     public static void main(String[] args) {
         List<CommandMenuItem> items = parse("/slap\n"
                 + "[Joshimuz]\n"
@@ -85,6 +104,7 @@ public class CommandMenuItems {
         for (CommandMenuItem item : items) {
             System.out.println(item);
         }
+        System.out.println(getKey("abc[e]")+" "+removeKey("abc["));
     }
     
     private static final Pattern PATTERN = Pattern.compile("([^\\[=]+)(?:\\[([^]]*)\\])?=(.+)");

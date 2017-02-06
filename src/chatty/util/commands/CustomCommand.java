@@ -39,6 +39,10 @@ public class CustomCommand {
         return error;
     }
     
+    public boolean hasError() {
+        return error != null;
+    }
+    
     public boolean containsIdentifier(String prefix) {
         return items.containsIdentifier(prefix);
     }

@@ -14,14 +14,14 @@ h1 {
     border-bottom: 1px solid #AAAAAA;
 }
 h2 {
-    margin: 14px 0 0 0;
+    margin: 18px 0 0 0;
     font-size: 1.1em;
     border-bottom: 1px solid #AAAAAA;
     padding-bottom: 2px;
 }
 h3 {
     font-size: 1em;
-    margin: 10px 0 0 0;
+    margin: 14px 0 0 0;
     padding: 0;
 }
 li ul {
@@ -42,6 +42,19 @@ li {
 code {
     background-color: #EEEEEE;
 }
+
+.codeblock {
+    margin-left: 22px;
+    margin-top:10px;
+    background-color: #EEEEEE;
+    font-family: monospace;
+    padding: 6px;
+}
+.codeblock pre {
+    margin: 0;
+    padding: 0;
+}
+
 cite {
     background-color: #EEEEEE;
 }
@@ -115,6 +128,11 @@ table.files {
     font-weight: bold;
     font-style: normal;
 }
+
+.note {
+    padding-left: 10px;
+}
+
 .paragraphs dd {
     padding-bottom: 4px;
 /*    padding: 0 0 0 16px;

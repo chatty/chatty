@@ -457,7 +457,7 @@ public class TwitchClient {
         LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
         badgesTest.put("moderator", "1");
         badgesTest.put("premium", "1");
-        badgesTest.put("bits", "100");
+        badgesTest.put("bits", "1000000");
         testUser.setTwitchBadges(badgesTest);
     }
     

@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.Helper;
 import chatty.util.MiscUtil;
 import java.awt.Component;
 import java.awt.Container;
@@ -110,6 +111,15 @@ public class GuiUtil {
             }
         }
         return -1;
+    }
+    
+    public static void showNonModalMessage(Component parent, String title, String message, int type) {
+        message = Helper.htmlspecialchars_encode(message);
+        message = "<html><body style='font-family: Monospaced;width:400px;'>"+message;
+        JOptionPane pane = new JOptionPane(message, type);
+        JDialog dialog = pane.createDialog(parent, title);
+        dialog.setModal(false);
+        dialog.setVisible(true);
     }
     
     /**

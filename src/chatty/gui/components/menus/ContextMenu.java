@@ -4,6 +4,7 @@ package chatty.gui.components.menus;
 import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -94,12 +95,22 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     }
     
     public JMenuItem addCommandItem(CommandMenuItem item) {
-        if (item.getCommand() == null) {
+        if (item.getCommand() == null && item.getLabel() == null) {
             addSeparator(item.getParent());
-            return null;
+        } else if (item.getCommand() == null) {
+            JMenu menu = getSubmenu(item.getLabel());
+            addKey(item, menu);
         } else {
             commands.put(item.getId(), item.getCommand());
-            return addSubItem(item.getId(), item.getLabel(), item.getParent());
+            JMenuItem mItem = addSubItem(item.getId(), item.getLabel(), item.getParent());
+            addKey(item, mItem);
+        }
+        return null;
+    }
+    
+    private void addKey(CommandMenuItem item, JMenuItem mItem) {
+        if (item.hasKey()) {
+            mItem.setMnemonic(KeyEvent.getExtendedKeyCodeForChar(item.getKey().toLowerCase().charAt(0)));
         }
     }
     

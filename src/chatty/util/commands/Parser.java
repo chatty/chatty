@@ -245,7 +245,7 @@ public class Parser {
         @Override
         public String replace(Parameters parameters) {
             String value = identifier.replace(parameters);
-            if (value != null) {
+            if (value != null && !value.isEmpty()) {
                 return value;
             }
             return isRequired ? null : "";

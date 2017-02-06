@@ -64,6 +64,7 @@ public class CustomCommands {
                     parameters.put("streamuptime", DateTime.agoUptimeCompact2(streamInfo.getTimeStartedWithPicnic()));
                     parameters.put("streamtitle", streamInfo.getTitle());
                     parameters.put("streamgame", streamInfo.getGame());
+                    parameters.put("streamviewers", String.valueOf(streamInfo.getViewers()));
                 }
             }
         }

@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.components.settings.Editor.Tester;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -158,6 +159,10 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     public void setInfo(String info) {
         this.info = info;
+    }
+    
+    public void setTester(Tester tester) {
+        editor.setTester(tester);
     }
     
     private void configureButton(JButton button, String icon, String tooltip) {

@@ -2,6 +2,7 @@
 package chatty.gui.components.menus;
 
 import chatty.Helper;
+import chatty.gui.GuiUtil;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
@@ -51,21 +52,12 @@ public class TestContextMenu extends ContextMenu {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("errors")) {
-            showMessage("Errors", errorsInfo, JOptionPane.WARNING_MESSAGE);
+            GuiUtil.showNonModalMessage(getInvoker(), "Errors", errorsInfo, JOptionPane.WARNING_MESSAGE);
         }
         if (e instanceof CommandActionEvent) {
             CustomCommand command = ((CommandActionEvent)e).getCommand();
-            showMessage("Command Info", command.toString(), JOptionPane.INFORMATION_MESSAGE);
+            GuiUtil.showNonModalMessage(getInvoker(), "Command Info", command.toString(), JOptionPane.INFORMATION_MESSAGE);
         }
-    }
-    
-    private void showMessage(String title, String message, int type) {
-        message = Helper.htmlspecialchars_encode(message);
-        message = "<html><body style='font-family: Monospaced'>"+message;
-        JOptionPane pane = new JOptionPane(message, type);
-        JDialog dialog = pane.createDialog(getInvoker(), title);
-        dialog.setModal(false);
-        dialog.setVisible(true);
     }
     
 }

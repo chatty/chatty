@@ -1,11 +1,14 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.TestContextMenu;
+import chatty.util.commands.CustomCommand;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -51,6 +54,25 @@ public class CommandSettings extends SettingsPanel {
             @Override
             public String format(String input) {
                 return input.trim();
+            }
+        });
+        items.setTester(new Editor.Tester() {
+
+            @Override
+            public void test(Component component, int x, int y, String value) {
+                String message = "";
+                String[] split = value.split(" ", 2);
+                if (split.length != 2) {
+                    message = "No command";
+                } else {
+                    CustomCommand command = CustomCommand.parse(split[1]);
+                    if (command.hasError()) {
+                        message = command.getError();
+                    } else {
+                        message = command.toString();
+                    }
+                }
+                GuiUtil.showNonModalMessage(component, "Custom Command", message, JOptionPane.INFORMATION_MESSAGE);
             }
         });
         items.setInfo(INFO_COMMANDS);
