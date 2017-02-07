@@ -271,15 +271,32 @@
         <a name="visual-glitches">Visual Artifacts/Glitches</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>If you experience issues with the GUI where things are drawn on top of
-        eachother or repeating themselves, try the following:</p>
+    <p>Some people experience issues with stuff in Chatty not being drawn
+        correctly (e.g. on top of eachother, areas not showing). This is probably
+        a Java bug that is system-dependant in some way (possibly OS or graphics
+        driver related, it's not really clear). There is no definite solution
+        for this, but there are a few things you can try:</p>
     <ul>
         <li>Check if you have any programs running that may interfere, for
             example MSI Afterburner and add <code>javaw.exe</code> to an ignore
             list or disable on-screen display support if possible.</li>
         <li>If you have more than one monitor, try the other monitor. Not sure
         why, but some people had it work better on another monitor.</li>
+        <li>Make sure the <code>Settings - Other - Disable Direct3D</code>
+            setting is checked. Maybe also try <code>Disable DirectDraw</code>,
+            although it should be redundant.</li>
+        <li>Add the <code>-Dsun.java2d.d3d=false</code> parameter when starting
+            Chatty, which does the same as the <code>Disable Direct3D</code>
+            setting, but adding it as a starting parameter seemed to work better
+            for some people. To do this, <a href="help-guide_create_shortcut.html">create a shortcut</a>
+            and add the parameter, similiar to this (obviously adjusting to your
+            paths):
+            <code>javaw -Dsun.java2d.d3d=false -jar "D:\Chatty\Chatty.jar"</code></li>
     </ul>
+    
+    <p><a href="https://github.com/chatty/chatty/issues/64">Read Issue #64</a>
+        for experiences of other users and possible workarounds, and add your
+        own data to the discussion.</p>
     
     <h2>
         <a name="log">Debug log</a>

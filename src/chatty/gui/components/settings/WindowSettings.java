@@ -3,10 +3,13 @@ package chatty.gui.components.settings;
 
 import chatty.gui.WindowStateManager;
 import java.awt.GridBagConstraints;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 
 /**
  *
@@ -56,17 +59,6 @@ public class WindowSettings extends SettingsPanel {
         other.add(d.addSimpleBooleanSetting("closeToTray", "Close to tray",
                 "When closing the window, Chatty will not exit but instead be minimized to the tray icon."),
                 d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
-        
-        other.add(new JLabel("Tab Order:"), d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
-        other.add(
-                d.addComboStringSetting("tabOrder", 1, false, new String[]{"normal", "alphabetical"}),
-                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST)
-        );
-        
-        other.add(d.addSimpleBooleanSetting("tabsMwheelScrolling",
-                "Scroll through tabs with mousewheel",
-                "Scrolling over the tabs changes between them"),
-                d.makeGbc(0, 3, 4, 1, GridBagConstraints.WEST));
 
         other.add(new JLabel("Default Userlist Width:"),
                 d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));

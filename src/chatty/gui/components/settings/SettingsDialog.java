@@ -48,7 +48,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "capitalizedNames", "correctlyCapitalizedNames", "ircv3CapitalizedNames",
             "tabOrder", "tabsMwheelScrolling", "inputFont",
             "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
-            "logPath", "logTimestamp", "logSplit", "logSubdirectories"
+            "logPath", "logTimestamp", "logSplit", "logSubdirectories",
+            "tabsPlacement", "tabsLayout"
     ));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(
@@ -92,6 +93,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_USERCOLORS = "Usercolors";
     private static final String PANEL_LOG = "Log to file";
     private static final String PANEL_WINDOW = "Window";
+    private static final String PANEL_TABS = "Tabs";
     private static final String PANEL_COMMANDS = "Commands";
     private static final String PANEL_OTHER = "Other";
     private static final String PANEL_ADVANCED = "Advanced";
@@ -126,6 +128,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         PANEL_NOTIFICATIONS,
         PANEL_LOG,
         PANEL_WINDOW,
+        PANEL_TABS,
         PANEL_COMMANDS,
         PANEL_OTHER,
         PANEL_ADVANCED,
@@ -205,6 +208,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(usercolorSettings, PANEL_USERCOLORS);
         cards.add(new LogSettings(this), PANEL_LOG);
         cards.add(new WindowSettings(this), PANEL_WINDOW);
+        cards.add(new TabSettings(this), PANEL_TABS);
         cards.add(new CommandSettings(this), PANEL_COMMANDS);
         cards.add(new OtherSettings(this), PANEL_OTHER);
         cards.add(new AdvancedSettings(this), PANEL_ADVANCED);

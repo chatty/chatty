@@ -84,6 +84,8 @@ public class Channels {
         tabs.addChangeListener(new TabChangeListener());
         tabs.setMouseWheelScrollingEnabled(gui.getSettings().getBoolean("tabsMwheelScrolling"));
         tabs.setMouseWheelScrollingAnywhereEnabled(gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
+        tabs.setTabPlacement(gui.getSettings().getString("tabsPlacement"));
+        tabs.setTabLayoutPolicy(gui.getSettings().getString("tabsLayout"));
         gui.addWindowListener(windowListener);
         //tabs.setOpaque(false);
         //tabs.setBackground(new Color(0,0,0,0));

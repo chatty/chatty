@@ -694,7 +694,6 @@ public class TwitchClient {
      * @param text 
      */
     public void textInput(String channel, String text) {
-        System.out.println(channel);
         if (text.isEmpty()) {
             return;
         }
@@ -801,7 +800,7 @@ public class TwitchClient {
     
     public boolean command(String channel, String command, String parameter,
             String msgId) {
-        System.out.println(channel+" "+command+" "+parameter);
+        //System.out.println(channel+" "+command+" "+parameter);
         command = StringUtil.toLowerCase(command);
         
         //---------------
@@ -1210,6 +1209,12 @@ public class TwitchClient {
             args.add("tduva");
             args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+new Random().nextInt(100));
             g.printModerationAction(new ModeratorActionData("", "", parameter == null ? "tduvatest" : parameter, "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
+        } else if (command.equals("repeat")) {
+            String[] split = parameter.split(" ", 2);
+            int count = Integer.parseInt(split[0]);
+            for (int i=0;i<count;i++) {
+                commandInput(channel, "/"+split[1]);
+            }
         } else if (command.equals("modactiontest3")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
@@ -2544,7 +2549,7 @@ public class TwitchClient {
 
         @Override
         public void onSubscriberNotification(String channel, User user, String text, String message, int months, String emotes) {
-            System.out.println(channel+" "+user+" "+months);
+            //System.out.println(channel+" "+user+" "+months);
             
             g.printSubscriberMessage(channel, user, text, message, months, emotes);
             

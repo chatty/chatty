@@ -7,7 +7,6 @@ import chatty.util.DateTime;
 import chatty.util.hotkeys.Hotkey;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
@@ -338,6 +337,8 @@ public class SettingsManager {
         settings.addString("tabOrder", "normal");
         settings.addBoolean("tabsMwheelScrolling", false);
         settings.addBoolean("tabsMwheelScrollingAnywhere", false);
+        settings.addString("tabsPlacement", "top");
+        settings.addString("tabsLayout", "wrap");
 
         // Chat Window
         settings.addBoolean("chatScrollbarAlways", false);

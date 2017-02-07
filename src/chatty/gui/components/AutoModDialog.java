@@ -45,7 +45,7 @@ import javax.swing.Timer;
  */
 public class AutoModDialog extends JDialog {
     
-    private static final int MESSAGE_LIMIT = 50;
+    private static final int MESSAGE_LIMIT = 20;
 
     private final MainGui gui;
     private final TwitchApi api;

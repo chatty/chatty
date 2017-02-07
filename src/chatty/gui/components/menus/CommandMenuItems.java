@@ -118,7 +118,7 @@ public class CommandMenuItems {
         String label = m.group(1);
         String key = m.group(2);
         String command = m.group(3).trim();
-        System.out.println("'"+label+"' '"+key+"' '"+command+"'");
+        //System.out.println("'"+label+"' '"+key+"' '"+command+"'");
         
         if (!label.startsWith(".")) {
             currentSubmenu = null;
@@ -174,7 +174,6 @@ public class CommandMenuItems {
                 String submenu = parent;
                 CommandMenuItem item;
                 String key = matcher.group(5);
-                System.out.println(key);
                 if (match.startsWith("//")) {
                     submenu = CUSTOM_COMMANDS_SUBMENU;
                 }

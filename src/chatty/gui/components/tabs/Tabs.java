@@ -121,6 +121,32 @@ public class Tabs extends JPanel {
         mouseWheelScrollingAnywhere = enabled;
     }
     
+    public void setTabPlacement(String location) {
+        tabs.setTabPlacement(getTabPlacementValue(location));
+    }
+        
+    private int getTabPlacementValue(String location) {
+        switch(location) {
+            case "top": return JTabbedPane.TOP;
+            case "bottom": return JTabbedPane.BOTTOM;
+            case "left": return JTabbedPane.LEFT;
+            case "right": return JTabbedPane.RIGHT;
+        }
+        return JTabbedPane.TOP;
+    }
+    
+    public void setTabLayoutPolicy(String type) {
+        tabs.setTabLayoutPolicy(getTabLayoutPolicyValue(type));
+    }
+    
+    private int getTabLayoutPolicyValue(String type) {
+        switch(type) {
+            case "wrap": return JTabbedPane.WRAP_TAB_LAYOUT;
+            case "scroll": return JTabbedPane.SCROLL_TAB_LAYOUT;
+        }
+        return JTabbedPane.WRAP_TAB_LAYOUT;
+    }
+    
     public void setPopupMenu(JPopupMenu menu) {
         popupMenu = menu;
     }
