@@ -107,6 +107,9 @@ public class InfoPanel extends JPanel {
     }
 
     private void addInfo() {
+        if (infoAdded) {
+            return;
+        }
         GridBagConstraints gbc = makeGbc(0, 7, 3, 1);
         gbc.insets = new Insets(-8, 5, 0, 5);
         add(panel2, gbc);
@@ -138,15 +141,17 @@ public class InfoPanel extends JPanel {
             createdAt.setToolTipText(null);
             followers.setText(null);
         } else {
+            addInfo();
             setChannelInfo(requestedInfo);
         }
     }
     
     public void setChannelInfo(ChannelInfo info) {
-        addInfo();
-        createdAt.setText("Registered: "+DateTime.formatAccountAge(info.createdAt, DateTime.Formatting.VERBOSE)+" ago");
-        createdAt.setToolTipText("Account created: "+DateTime.formatFullDatetime(info.createdAt));
-        followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));
+        if (infoAdded) {
+            createdAt.setText("Registered: "+DateTime.formatAccountAge(info.createdAt, DateTime.Formatting.VERBOSE)+" ago");
+            createdAt.setToolTipText("Account created: "+DateTime.formatFullDatetime(info.createdAt));
+            followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));
+        }
     }
     
 }

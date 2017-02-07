@@ -58,20 +58,8 @@ public class Version {
         
         // Compare versions
         String currentVersion = VERSION;
-        // Check if current is beta version
-        boolean isBetaVersion = false;
-        if (currentVersion.contains("b")) {
-            currentVersion = currentVersion.substring(0, currentVersion.indexOf("b"));
-            isBetaVersion = true;
-        }
-        int compare = compareVersions(currentVersion, newVersion);
-        boolean isNewVersion = false;
-        if ((compare == 0 && isBetaVersion) || compare == 1) {
-            // This is a newer version
-            isNewVersion = true;
-        }
+        boolean isNewVersion = compareVersions(currentVersion, newVersion) == 1;
         listener.versionChecked(newVersion, newVersionInfo, isNewVersion);
-        
     }
     
     /**
@@ -115,14 +103,25 @@ public class Version {
     
     /**
      * Convert a version in the form "x.y.z" (any length) into an array of
-     * integers "[x, y, z]".
+     * integers "[x, y, z]". If the version contains a "b", then everything
+     * after the "b" is interpreted as number and put at the end, with a -1 as
+     * separator ("0.8.5b3" -> "[0, 8, 5, -1, 3]").
      * 
      * @param version
      * @return 
      */
-    private static int[] versionToIntArray(String version) {
+    public static int[] versionToIntArray(String version) {
+        int betaVersion = 0;
+        if (version.contains("b")) {
+            try {
+                betaVersion = Integer.parseInt(version.substring(version.indexOf("b")+1));
+            } catch (NumberFormatException ex) {
+                // Just keep at default
+            }
+            version = version.substring(0, version.indexOf("b"));
+        }
         String[] split = version.split("\\.");
-        int[] intVersion = new int[split.length];
+        int[] intVersion = new int[split.length+(betaVersion > 0 ? 2 : 0)];
         
         for (int i=0;i<split.length;i++) {
             String part = split[i];
@@ -133,6 +132,10 @@ public class Version {
                 // No action necessary, just use 0 as default
             }
             intVersion[i] = partI;
+        }
+        if (betaVersion > 0) {
+            intVersion[intVersion.length - 2] = -1;
+            intVersion[intVersion.length - 1] = betaVersion;
         }
         return intVersion;
     }

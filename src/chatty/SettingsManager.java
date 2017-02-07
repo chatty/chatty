@@ -659,6 +659,12 @@ public class SettingsManager {
         if (updatedFromBefore("0.8.4")) {
             settings.setBoolean("ircv3CapitalizedNames", true);
         }
+        if (updatedFromBefore("0.8.5b4")) {
+            String currentValue = settings.getString("timeoutButtons");
+            if (!currentValue.toLowerCase().contains("/modunmod")) {
+                settings.setString("timeoutButtons", currentValue+"\n/ModUnmod");
+            }
+        }
     }
     
     /**
