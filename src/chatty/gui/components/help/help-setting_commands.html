@@ -15,23 +15,32 @@
         <a name="commands">Commands</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <ul>
-        <li><code>/set &lt;setting&gt; &lt;value&gt;</code> changes a setting</li>
-        <li><code>/get &lt;setting&gt;</code> shows the current value of a
-            setting</li>
-        <li><code>/reset &lt;setting&gt;</code> resets the setting to the
-            default (hard-coded) value</li>
-        <li><code>/clearsetting &lt;setting&gt;</code> sets string settings to
-            an empty string</li>
-        <li><code>/add &lt;setting&gt; &lt;value&gt;</code> adds item to a list
-            of strings/numbers</li>
-        <li><code>/remove &lt;setting&gt; &lt;value&gt;</code> removes item from
-            a list of strings/numbers</li>
-    </ul>
-            
-            <p><em>Tip:</em> You can use <a href="help.html#nickCompletion">TAB Completion</a>
-                for setting names when using it behind a setting command.</p>
-            
+    <dl class="defList">
+        <dt><code>/set &lt;setting&gt; &lt;value&gt;</code></dt>
+        <dd>Changes the value of a setting.</dd>
+        <dd>For Boolean settings you can use <code>true</code>, <code>1</code>
+                or <code>on</code> to enable the setting, <code>!</code> to
+                toggle it and any other value to disable it.</dd>
+        
+        <dt><code>/get &lt;setting&gt;</code></dt>
+        <dd>Shows the current value of a setting.</dd>
+        
+        <dt><code>/reset &lt;setting&gt;</code></dt>
+        <dd>Resets the setting to the default (hard-coded) value.</dd>
+        
+        <dt><code>/clearsetting &lt;setting&gt;</code></dt>
+        <dd>Sets String (text) settings to an empty String.</dd>
+        
+        <dt><code>/add &lt;setting&gt; &lt;value&gt;</code></dt>
+        <dd>Adds an item to a list setting.</dd>
+        
+        <dt><code>/remove &lt;setting&gt; &lt;value&gt;</code></dt>
+        <dd>Removes an item from a list setting.</dd>
+    </dl>
+
+    <p><em>Tip:</em> You can use <a href="help.html#nickCompletion">TAB Completion</a>
+        for setting names when using it behind a setting command.</p>
+
     <h2>
         <a name="settings">Settings</a>
         <a href="#top" class="top">[back to menu]</a>

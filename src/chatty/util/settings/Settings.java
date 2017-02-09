@@ -633,6 +633,9 @@ public class Settings {
                     parameter.equals("on")) {
                 value = true;
             }
+            if (parameter.equals("!")) {
+                value = !getBoolean(setting);
+            }
             setBoolean(setting,value);
             return "Setting '"+setting+"' set to "+value+".";
         }
