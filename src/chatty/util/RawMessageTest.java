@@ -9,7 +9,7 @@ import chatty.util.api.CheerEmoticon;
  */
 public class RawMessageTest {
     
-    public static String simulateIRC(String channel, String parameters) {
+    public static String simulateIRC(String channel, String parameters, String localUsername) {
         String split[] = parameters.split(" ", 2);
         String type = split[0];
         String options = null;
@@ -25,6 +25,9 @@ public class RawMessageTest {
         }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
+        }
+        if (type.equals("autohost")) {
+            return ":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG "+localUsername+" :UserName is now auto hosting you.";
         }
         return null;
     }

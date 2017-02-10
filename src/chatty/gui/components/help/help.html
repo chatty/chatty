@@ -161,60 +161,48 @@
     
     <p><em>Tip:</em> You can also use TAB Completion for many commands.</p>
     
-    <p>Chat commands:</p>
+    <h3><a name="commands-chat">Chat commands:</a></h3>
     <ul>
-	    <li><code>/me &lt;message&gt;</code> - Send an action message (* nickname says something) to the channel</li>
-	    <li><code>/to &lt;nick&gt; [time] [reason]</code> - Timeout the user with the given nickname for "time" seconds (time is optional)</li>
-            <li><code>/timeout</code>, <code>/ban</code>, <code>/unban</code>,
+	<li><code>/me &lt;message&gt;</code> - Send an action message (* nickname says something) to the channel</li>
+	<li><code>/to &lt;nick&gt; [time] [reason]</code> - Timeout the user with the given nickname for "time" seconds (time is optional)</li>
+        <li><code>/timeout</code>, <code>/ban</code>, <code>/unban</code>,
                 <code>/slow</code>, <code>/slowoff</code>,
                 <code>/subscribers</code>, <code>/subscribersoff</code>,
                 <code>/clear</code>, <code>/mods</code>, <code>/host</code>,
                 <code>/unhost</code>, <code>/color</code>
                 just like in normal Twitch Chat</li>
-            <li><code>/join &lt;channel&gt;</code> - Joins the given channel</li>
-            <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
-            <li><code>/reconnect</code> - Disconnects and reconnects</li>
-            <li><code>/fixMods</code> - Temporarily fixes the list of mods (like
+        <li><code>/join &lt;channel&gt;</code> - Joins the given channel</li>
+        <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
+        <li><code>/reconnect</code> - Disconnects and reconnects</li>
+        <li><code>/fixMods</code> - Temporarily fixes the list of mods (like
                 <code>/mods</code> but without showing the list of mods in chat)</li>
-            <li><code>/ignore &lt;user&gt;</code>, <code>/unignore &lt;user&gt;</code> - To ignore/unignore user (chat and whisper)</li>
-            <li><code>/ignoreChat</code>, <code>/unignoreChat</code>, <code>/ignoreWhisper</code>, <code>/unignoreWhisper</code>
+        <li><code>/ignore &lt;user&gt;</code>, <code>/unignore &lt;user&gt;</code> - To ignore/unignore user (chat and whisper)</li>
+        <li><code>/ignoreChat</code>, <code>/unignoreChat</code>, <code>/ignoreWhisper</code>, <code>/unignoreWhisper</code>
                 - To ignore/unignore user only from chat/whispering you</li>
-    </ul>
-    <p>Info commands:</p>
-    <ul>
-            <li><code>/connection</code> - Show info about the current connection</li>
-            <li><code>/uptime</code> - Shows how long Chatty has been running</li>
-            <li><code>/appinfo</code> - Shows Chatty uptime and current memory stats</li>
-	    <li><code>/dir</code> - Show the directory the settings (and other stuff) are saved in</li>
-            <li><code>/wdir</code> - Show the current working directory</li>
-            <li><code>/openDir</code> - Opens the settings directory in your file browser</li>
-            <li><code>/openWdir</code> - Opens the current working directory in your file browser</li>
-            <li><code>/testNotification [channel]</code> - Display a test notification (optionally with channel,
-            which means right-clicking on the notification will join that channel)</li>
-            <li><code>/myemotes</code> - Show your subscriber emote codes (only works if you
-            have joined any channel before, this is only a quick info, better emote
-            integration maybe to be implemented later)</li>
-            <li><code>/ffz</code>, <code>/ffzGlobal</code> - Shows the FFZ channel emote codes for the current channel/global FFZ emotes</li>
-            <li><code>/releaseinfo</code> - Opens the help with the release information</li>
+        <li><code>/clearchat</code> - Clears the current chat window of all text</li>
+        <li><code>/connection</code> - Show info about the current connection</li>
     </ul>
     
-    <p>Other commands:</p>
+    <p><em>Tip:</em> You can circumvent Chatty commands and send Twitch Chat commands
+        directly by prepending them with a dot <code>.</code> instead of a slash,
+        for example: <code>.mods</code>.</p>
+    
+    <h3><a name="commands-settings">Settings/Customization commands:</a></h3>
     <ul>
-        <li><code>/clearchat</code> - Clears the current chat window of all text</li>
+        <li><a href="#settings">Setting commands</a></li>
         <li><code>/setcolor &lt;name&gt;</code> - Opens the usercolor settings
         for the given name</li>
-        <li><code>/echo &lt;text&gt;</code> - Outputs the given text as a info message</li>
         <li><a href="#addressbook">Addressbook commands</a></li>
-        <li><a href="#settings">Setting commands</a></li>
         <li><a href="#streamhighlights">Stream Highlights commands</a></li>
         <li><a href="#streamchat">Stream Chat commands</a></li>
-        <li><code>/copy</code> - Copies the given text to the clipboard</li>
         <li><code>/follow [user]</code>, <code>/unfollow [user]</code> - Follow
             or unfollow the given user, or the current channel if no user is given</li>
     </ul>
     
-    <p>GUI commands:</p>
+    <h3><a name="commands-gui">GUI commands:</a></h3>
     <ul>
+        <li><code>/echo &lt;text&gt;</code> - Outputs the given text as a info message</li>
+        <li><code>/copy</code> - Copies the given text to the clipboard</li>
         <li><code>/settings</code>, <code>/livestreams</code>, <code>/channeladmin</code>,
             <code>/channelinfo</code>, <code>/search</code>, <code>/openFollowers</code>,
             <code>/openSubscribers</code> - Opens the according dialog</li>
@@ -228,10 +216,14 @@
         showing a prompt for confirmation</li>
     </ul>
     
-    <p>Advanced commands (<em>not recommended for use unless you know what you do</em>):</p>
+    <h3><a name="commands-system">Housekeeping/System commands:</a></h3>
     <ul>
-        <li><code>/server &lt;host&gt;[:port]</code> - Connect to a custom server</li>
-        <li><code>/raw &lt;command&gt;</code> - Send a raw command to the server</li>
+        <li><code>/uptime</code> - Shows how long Chatty has been running</li>
+        <li><code>/appinfo</code> - Shows Chatty uptime and current memory stats</li>
+	<li><code>/dir</code> - Show the directory the settings (and other stuff) are saved in</li>
+        <li><code>/wdir</code> - Show the current working directory</li>
+        <li><code>/openDir</code> - Opens the settings directory in your file browser</li>
+        <li><code>/openWdir</code> - Opens the current working directory in your file browser</li>
         <li><code>/refresh &lt;emoticons/badges/ffz/ffzglobal/bttvemotes/emotesets&gt;</code>
             - Refresh the given data from it's respective API:
             <ul>
@@ -244,9 +236,33 @@
                     channel name, to display Twitch Subemotes info correctly
                     (twitchemotes.com API)</li>
             </ul>
-            <em>This downloads the lists from the Internet, so don't use this
-            unless you need to (it's basicially like pressing reload in your
-            browser, just only for some stuff).</em></li>
+            <em>This downloads the lists from the Internet, which may be useful
+                if new emotes have been added (it's basicially like pressing
+                reload in your browser, but only for some select stuff per command).</em></li>
+        <li><code>/releaseinfo</code> - Opens the help with the release information</li>
+        <li><code>/myemotes</code> - Show your subscriber emote codes (only works if you
+            have joined any channel before, this is only a quick info, better emote
+            integration maybe to be implemented later)</li>
+        <li><code>/ffz</code>, <code>/ffzGlobal</code> - Shows the FFZ channel emote codes for the current channel/global FFZ emotes</li>
+    </ul>
+    
+    <h3><a name="commands-test">Test commands:</a></h3>
+    <ul>
+        <li><code>/testNotification [channel]</code> - Display a test notification (optionally with channel,
+            which means right-clicking on the notification will join that channel)</li>
+        <li><code>/debug simulate &lt;type&gt;</code> - Simulates a chat message
+            for testing. Some possible types: <code>sub</code>, <code>resub</code>,
+            <code>bits</code>, <code>authost</code>.
+        </li>
+        <li><code>/debug</code> allows for a number of debug commands to be run,
+            but those may produce errors and strange behaviour, so you usually
+            shouldn't mess around with it.</li>
+    </ul>
+    
+    <h3><a name="commands-advanced">Advanced commands (<em>be careful with these</em>):</a></h3>
+    <ul>
+        <li><code>/server &lt;host&gt;[:port]</code> - Connect to a custom server</li>
+        <li><code>/raw &lt;command&gt;</code> - Send a raw command to the server</li>
         <li><code>/changetoken &lt;token&gt;</code> - Checks if the given token
             is valid and sets it as new token if it is</li>
     </ul>

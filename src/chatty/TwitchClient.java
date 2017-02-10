@@ -1171,7 +1171,7 @@ public class TwitchClient {
             if (parameter.equals("bits")) {
                 parameter = "bits "+g.emoticons.getCheerEmotesString();
             }
-            String raw = RawMessageTest.simulateIRC(channel, parameter);
+            String raw = RawMessageTest.simulateIRC(channel, parameter, c.getUsername());
             if (raw != null) {
                 c.simulate(raw);
             }
