@@ -244,7 +244,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         print(getTimePrefix(), styles.info());
         
         MutableAttributeSet style;
-        if (message.user.nick.isEmpty()) {
+        if (message.user.getName().isEmpty()) {
             // Only dummy User attached (so no custom message attached as well)
             style = styles.info();
         } else {
@@ -1290,14 +1290,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             userName = user.getCustomNick();
         }
         else if (styles.namesMode() == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
-            userName = user.getNick();
+            userName = user.getName();
         }
         else if (styles.namesMode() != SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED
                 || user.hasRegularDisplayNick()) {
             userName = user.getDisplayNick();
         }
         else {
-            userName = user.getNick();
+            userName = user.getName();
         }
         
 //        if (user.hasCustomNickSet()
@@ -1350,7 +1350,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 fontSize = StyleConstants.getFontSize(style);
             }
             StyleConstants.setFontSize(style, fontSize);
-            print(" ("+user.getNick()+")", style);
+            print(" ("+user.getName()+")", style);
         }
         
         // Finish up

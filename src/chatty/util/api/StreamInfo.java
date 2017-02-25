@@ -35,7 +35,7 @@ public class StreamInfo {
      */
     private String display_name;
     
-    private long userId = -1;
+    private String userId;
     
     /**
      * Correctly capitalized name of the stream. May be null if not set.
@@ -411,8 +411,8 @@ public class StreamInfo {
         return !hasDisplayName() || capitalizedName != null;
     }
     
-    public synchronized boolean setUserId(long userId) {
-        if (this.userId != userId && userId != -1) {
+    public synchronized boolean setUserId(String userId) {
+        if (this.userId == null || (!this.userId.equals(userId) && userId != null)) {
             this.userId = userId;
             return true;
         }

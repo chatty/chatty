@@ -56,7 +56,7 @@ public class ModeratorActionData extends MessageData {
         this.msgId = msgId;
     }
     
-    public static ModeratorActionData decode(String topic, String message, Map<Long, String> userIds) throws ParseException {
+    public static ModeratorActionData decode(String topic, String message, Map<String, String> userIds) throws ParseException {
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject)parser.parse(message);
         JSONObject data = (JSONObject)root.get("data");

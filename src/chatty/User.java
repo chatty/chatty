@@ -54,7 +54,9 @@ public class User implements Comparable {
     /**
      * The nick, all-lowercase.
      */
-    public final String nick;
+    private volatile String nick;
+    
+    private volatile String id;
     
     /**
      * The nick, could contain different case.
@@ -315,8 +317,18 @@ public class User implements Comparable {
         return new ArrayList<>(messages);
     }
     
-    public synchronized String getNick() {
+    public synchronized String getName() {
         return nick;
+    }
+    
+    public synchronized String getId() {
+        return id;
+    }
+    
+    public synchronized void setId(String id) {
+        if (id != null) {
+            this.id = id;
+        }
     }
     
     public synchronized String getDisplayNick() {

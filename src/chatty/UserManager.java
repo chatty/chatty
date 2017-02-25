@@ -38,7 +38,6 @@ public class UserManager {
     // Stupid hack to get Usericons in ChannelTextPane without a user (twitchnotify messages)
     public final User dummyUser = new User("", "#[error]");
 
-    private CapitalizedNames capitalizedNamesManager;
     private CustomNames customNamesManager;
     private UsericonManager usericonManager;
     private UsercolorManager usercolorManager;
@@ -106,23 +105,6 @@ public class UserManager {
     
     public void setEmotesets(Map<Integer, String> newEmotesets) {
         emotesets.putAll(newEmotesets);
-    }
-    
-    public void setCapitalizedNamesManager(CapitalizedNames m) {
-        if (m != null) {
-            this.capitalizedNamesManager = m;
-            m.addListener(new CapitalizedNames.CapitalizedNamesListener() {
-
-                @Override
-                public void setName(String name, String capitalizedName) {
-                    List<User> users = getUsersByName(name);
-                    for (User user : users) {
-                        user.setDisplayNick(capitalizedName);
-                        userUpdated(user);
-                    }
-                }
-            });
-        }
     }
     
     public void setCustomNamesManager(CustomNames m) {
@@ -209,8 +191,7 @@ public class UserManager {
         name = name.toLowerCase(Locale.ENGLISH);
         User user = getUserIfExists(channel, name);
         if (user == null) {
-            String capitalizedName = capitalizedNamesManager != null
-                    ? capitalizedNamesManager.getName(name) : null;
+            String capitalizedName = null;
             if (displayName.equals(name)) {
                 if (capitalizedName != null) {
                     displayName = capitalizedName;
@@ -253,9 +234,6 @@ public class UserManager {
             }
             // Put User into the map for the channel
             getUsersByChannel(channel).put(name, user);
-        } else if (capitalizedNamesManager != null) {
-            //System.out.println(name);
-            capitalizedNamesManager.activity(name);
         }
         return user;
     }

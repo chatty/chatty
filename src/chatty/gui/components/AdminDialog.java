@@ -8,7 +8,7 @@ import chatty.gui.components.settings.DurationSetting;
 import chatty.util.DateTime;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
-import chatty.util.api.TwitchApi.RequestResult;
+import chatty.util.api.TwitchApi.RequestResultCode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -525,9 +525,9 @@ public class AdminDialog extends JDialog {
      * @param stream Then stream the info is for
      * @param info The channel info
      */
-    public void setChannelInfo(String stream, ChannelInfo info, RequestResult result) {
+    public void setChannelInfo(String stream, ChannelInfo info, RequestResultCode result) {
         if (stream.equals(this.currentChannel)) {
-            if (result == TwitchApi.RequestResult.SUCCESS) {
+            if (result == TwitchApi.RequestResultCode.SUCCESS) {
                 status.setText(info.getStatus());
                 game.setText(info.getGame());
                 updated.setText("Info last loaded: just now");
@@ -535,7 +535,7 @@ public class AdminDialog extends JDialog {
                 statusEdited = false;
             } else {
                 infoLastLoaded = -1;
-                if (result == TwitchApi.RequestResult.NOT_FOUND) {
+                if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
                     updated.setText("Error loading info: Channel not found.");
                 } else {
                     updated.setText("Error loading info.");
@@ -553,20 +553,20 @@ public class AdminDialog extends JDialog {
      * 
      * @param result 
      */
-    public void setPutResult(RequestResult result) {
-        if (result == TwitchApi.RequestResult.SUCCESS) {
+    public void setPutResult(RequestResultCode result) {
+        if (result == TwitchApi.RequestResultCode.SUCCESS) {
             setPutResult("Info successfully updated.");
         } else {
-            if (result == TwitchApi.RequestResult.ACCESS_DENIED) {
+            if (result == TwitchApi.RequestResultCode.ACCESS_DENIED) {
                 setPutResult("Changing info failed: Access denied");
                 updated.setText("Error: Access denied");
-            } else if (result == TwitchApi.RequestResult.FAILED) {
+            } else if (result == TwitchApi.RequestResultCode.FAILED) {
                 setPutResult("Changing info failed: Unknown error");
                 updated.setText("Error: Unknown error");
-            } else if (result == TwitchApi.RequestResult.NOT_FOUND) {
+            } else if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
                 setPutResult("Changing info failed: Channel not found.");
                 updated.setText("Error: Channel not found.");
-            } else if (result == TwitchApi.RequestResult.INVALID_STREAM_STATUS) {
+            } else if (result == TwitchApi.RequestResultCode.INVALID_STREAM_STATUS) {
                 setPutResult("Changing info failed: Invalid title/game (possibly bad language)");
                 updated.setText("Error: Invalid title/game");
             }
@@ -759,11 +759,11 @@ public class AdminDialog extends JDialog {
      * @param resultText
      * @param result 
      */
-    public void commercialResult(String stream, String resultText, RequestResult result) {
+    public void commercialResult(String stream, String resultText, RequestResultCode result) {
         setCommercialResult(DateTime.currentTime()+" "+resultText);
         lastCommercialRunAttempt = System.currentTimeMillis();
         setLoadingCommercial(false);
-        if (result == TwitchApi.RequestResult.RUNNING_COMMERCIAL) {
+        if (result == TwitchApi.RequestResultCode.RUNNING_COMMERCIAL) {
             lastCommercial.put(stream, System.currentTimeMillis());
             if (stream != null && stream.equals(currentChannel)) {
                 lastCommercialRun = System.currentTimeMillis();
@@ -897,7 +897,7 @@ public class AdminDialog extends JDialog {
             if (e.getSource() == update) {
                 if (currentChannel != null && !currentChannel.isEmpty()) {
                     ChannelInfo info = new ChannelInfo(currentChannel, status.getText(), game.getText());
-                    main.putChannelInfo(currentChannel, info);
+                    main.putChannelInfo(info);
                     setLoading(true);
                     addCurrentToHistory();
                 }

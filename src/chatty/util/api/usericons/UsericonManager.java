@@ -297,7 +297,7 @@ public class UsericonManager {
         } else if (icon.matchType == Usericon.MatchType.ALL) {
             return true;
         } else if (icon.matchType == Usericon.MatchType.NAME) {
-            if (icon.restrictionValue.equalsIgnoreCase(user.getNick())) {
+            if (icon.restrictionValue.equalsIgnoreCase(user.getName())) {
                 return true;
             }
         } else if (icon.matchType == Usericon.MatchType.CATEGORY) {

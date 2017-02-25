@@ -95,7 +95,7 @@ public class ChatLog {
             String line;
             String name = user.getFullNick();
             if (!user.hasRegularDisplayNick()) {
-                name += " ("+user.getNick()+")";
+                name += " ("+user.getName()+")";
             }
             if (action) {
                 line = timestamp()+"<"+name+">* "+message;

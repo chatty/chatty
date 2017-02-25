@@ -21,7 +21,7 @@ public class MessageData {
         this.message = message;
     }
     
-    public static MessageData decode(JSONObject data, Map<Long, String> userIds) throws ParseException {
+    public static MessageData decode(JSONObject data, Map<String, String> userIds) throws ParseException {
         if (data == null) {
             return null;
         }

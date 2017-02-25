@@ -137,6 +137,8 @@ public class SettingsManager {
         // Login Data
         settings.addString("username", "");
         settings.setFile("username", loginFile);
+        settings.addString("userid", "");
+        settings.setFile("userid", loginFile);
         settings.addString("password", "", false);
         settings.addBoolean("connectOnStartup", false, false);
         settings.addLong("onStart", 1);

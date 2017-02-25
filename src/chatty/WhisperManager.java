@@ -142,7 +142,7 @@ public class WhisperManager {
     }
 
     private boolean isUserIgnored(User user) {
-        if (settings.listContains("ignoredUsersWhisper", user.nick)) {
+        if (settings.listContains("ignoredUsersWhisper", user.getName())) {
             return true;
         }
         return !isUserAllowed(user);
@@ -156,12 +156,12 @@ public class WhisperManager {
             listener.whisperReceived(user, message, emotes);
         }
         if (isUserIgnored(user) && settings.getBoolean("whisperAutoRespond")) {
-            if (!autoRespondedTo.contains(user.nick)) {
-                rawWhisper(user.nick, AUTO_RESPOND_MESSAGE);
-                autoRespondedTo.add(user.nick);
+            if (!autoRespondedTo.contains(user.getName())) {
+                rawWhisper(user.getName(), AUTO_RESPOND_MESSAGE);
+                autoRespondedTo.add(user.getName());
             }
         } else {
-            autoRespondedTo.remove(user.nick);
+            autoRespondedTo.remove(user.getName());
         }
     }
     

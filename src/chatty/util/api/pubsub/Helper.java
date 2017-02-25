@@ -22,13 +22,9 @@ public class Helper {
         return object.toJSONString();
     }
     
-    public static String getStreamFromTopic(String topic, Map<Long, String> userIds) {
-        try {
-            long userId = Long.valueOf(topic.substring(topic.lastIndexOf(".")+1));
-            return userIds.get(userId);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
+    public static String getStreamFromTopic(String topic, Map<String, String> userIds) {
+        String userId = topic.substring(topic.lastIndexOf(".") + 1);
+        return userIds.get(userId);
     }
     
     public static String removeToken(String token, String message) {

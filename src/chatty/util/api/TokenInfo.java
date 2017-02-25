@@ -15,6 +15,7 @@ public class TokenInfo {
     public final boolean channel_subscriptions;
     public final boolean user_follows_edit;
     public final String name;
+    public final String userId;
     public final boolean valid;
     
     public TokenInfo() {
@@ -24,14 +25,16 @@ public class TokenInfo {
         chat_access = false;
         user_read = false;
         name = null;
+        userId = null;
         channel_subscriptions = false;
         user_follows_edit = false;
     }
     
-    public TokenInfo(String name, boolean chat_access, boolean channel_editor,
+    public TokenInfo(String name, String userId, boolean chat_access, boolean channel_editor,
             boolean channel_commercials, boolean user_read, boolean channel_subscriptions,
             boolean user_follows_edit) {
         this.name = name;
+        this.userId = userId;
         this.channel_editor = channel_editor;
         this.channel_commercials = channel_commercials;
         this.chat_access = chat_access;

@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Logging;
+import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,12 +84,6 @@ public class StreamInfoManager {
     private String prevToken = "";
     
     private int streamsRequestErrors = 0;
-    
-    /**
-     * Stores streams requests, so the list of requested streams can be accessed
-     * when the response come in.
-     */
-    private final Map<String, Set<StreamInfo>> pendingRequests;
 
     private final StreamInfoListener listener;
     private final TwitchApi api;
@@ -107,7 +102,6 @@ public class StreamInfoManager {
     public StreamInfoManager(TwitchApi api, StreamInfoListener listener) {
         this.listener = listener;
         this.api = api;
-        pendingRequests = new HashMap<>();
         // Create StreamInfo object for invalid stream names
         invalidStreamInfo = new StreamInfo("invalid", listener);
         // Set as requested so it won't ever be requested
@@ -131,14 +125,14 @@ public class StreamInfoManager {
             prevToken = token;
             followsLastRequested = System.currentTimeMillis();
             followedStreamsRequests = 1;
-            api.requestFollowedStreams(token, null);
+            api.requests.requestFollowedStreams(token, null);
         }
     }
     
     private void getFollowedStreamsNext(String url) {
         if (url != null && followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
             followedStreamsRequests++;
-            api.requestFollowedStreams(prevToken, url);
+            api.requests.requestFollowedStreams(prevToken, url);
         } else {
             LOGGER.warning("Followed streams: Not getting next url '"+url+"' "
                     + "(requests: "+followedStreamsRequests+", "
@@ -180,7 +174,7 @@ public class StreamInfoManager {
         StreamInfo cached = getStreamInfo(stream);
         if (cached.hasExpired() && !cached.isRequested()) {
             cached.setRequested();
-            api.requestStreamInfo(stream);
+            api.requests.requestStreamInfo(stream);
         }
         return cached;
     }
@@ -263,6 +257,9 @@ public class StreamInfoManager {
                 streamInfosForRequest.add(cached);
                 cached.setRequested();
             }
+            if (streamsForRequest.size() > 90) {
+                break;
+            }
         }
         if (special) {
             specialCheckLastDone = System.currentTimeMillis();
@@ -271,8 +268,7 @@ public class StreamInfoManager {
             if (!special) {
                 streamsInfoLastRequested = System.currentTimeMillis();
             }
-            String url = api.requestStreamsInfo(streamsForRequest);
-            pendingRequests.put(url, streamInfosForRequest);
+            api.requests.requestStreamsInfo(streamsForRequest, streamInfosForRequest);
         }
     }
     
@@ -284,7 +280,7 @@ public class StreamInfoManager {
      * @param responseCode
      * @param stream 
      */
-    protected synchronized void requestResult(String url, String result, int responseCode, String stream) {
+    protected synchronized void requestResult(String result, int responseCode, String stream) {
         // Probably don't use a lock here, but rely on the lock of the caller
         // so no deadlock can accur in case cachedStreamInfo is accessed from
         // somehwere where the TwitchApi isn't locked
@@ -309,11 +305,8 @@ public class StreamInfoManager {
      * @param result
      * @param responseCode 
      */
-    protected synchronized void requestResultStreams(String url, String result, int responseCode) {
-        Set<StreamInfo> expected = pendingRequests.remove(url);
-        if (expected == null) {
-            LOGGER.warning("No pending request for: "+url);
-        } else if (responseCode != 200 || result == null) {
+    protected synchronized void requestResultStreams(String result, int responseCode, Set<StreamInfo> expected) {
+        if (responseCode != 200 || result == null) {
             if (responseCode == 404) {
                 streamsRequestErrors += 2;
             } else {
@@ -349,10 +342,11 @@ public class StreamInfoManager {
         if (responseCode == 200 && result != null) {
             int count = parseStreams(result, null);
             LOGGER.info("Got "+count+" (limit: "+FOLLOWED_STREAMS_LIMIT+") followed streams.");
-            if (count == FOLLOWED_STREAMS_LIMIT) {
-                String nextUrl = getNextUrl(result);
-                getFollowedStreamsNext(nextUrl);
-            }
+            // TODO
+//            if (count == FOLLOWED_STREAMS_LIMIT) {
+//                String nextUrl = getNextUrl(result);
+//                getFollowedStreamsNext(nextUrl);
+//            }
             followsRequestErrors = 0;
         } else if (responseCode == 401) {
             followsRequestErrors += 4;
@@ -489,7 +483,7 @@ public class StreamInfoManager {
         String name;
         String display_name;
         long timeStarted = -1;
-        long userId = -1;
+        String userId = null;
         boolean noChannelObject = false;
         try {
             // Get stream data
@@ -505,7 +499,10 @@ public class StreamInfoManager {
             game = (String) channel.get("game");
             name = (String) channel.get("name");
             display_name = (String) channel.get("display_name");
-            userId = JSONUtil.getLong(channel, "_id", -1);
+            userId = String.valueOf(JSONUtil.getLong(channel, "_id", -1));
+            if (userId.equals("-1")) {
+                userId = JSONUtil.getString(channel, "_id");
+            }
             if (!channel.containsKey("status")) {
                 LOGGER.warning("Error parsing StreamInfo: no channel object ("+name+")");
                 noChannelObject = true;
@@ -526,8 +523,8 @@ public class StreamInfoManager {
         
         // Try to parse created_at
         try {
-            timeStarted = Util.parseTime((String) stream.get("created_at"));
-        } catch (java.text.ParseException | NullPointerException | ClassCastException ex) {
+            timeStarted = DateTime.parseDatetime((String) stream.get("created_at"));
+        } catch (Exception ex) {
             LOGGER.warning("Warning parsing StreamInfo: could not parse created_at ("+ex+")");
         }
 
@@ -551,6 +548,7 @@ public class StreamInfoManager {
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);
+            System.out.println(name+" "+userId);
         }
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted);
@@ -558,26 +556,6 @@ public class StreamInfoManager {
             streamInfo.set(status, game, viewers, timeStarted);
         }
         return streamInfo;
-    }
-    
-    /**
-     * Retrieves the next URL for pagination from the given JSON.
-     * 
-     * @param json The API response that contains the next URL.
-     * @return The URL as a String or null if no URL could be retrieved.
-     */
-    private static String getNextUrl(String json) {
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject root = (JSONObject) parser.parse(json);
-            Object links = root.get("_links");
-            if (links != null && links instanceof JSONObject) {
-                return (String)((JSONObject)links).get("next");
-            }
-        } catch (ParseException ex) {
-            LOGGER.warning("Error parsing next url: " + ex);
-        }
-        return null;
     }
     
 }

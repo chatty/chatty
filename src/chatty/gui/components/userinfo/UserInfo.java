@@ -215,7 +215,7 @@ public class UserInfo extends JDialog {
         String displayNickInfo = user.hasDisplayNickSet() ? "" : "*";
         this.setTitle("User: "+user.toString()
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
-                +(!user.hasRegularDisplayNick() ? " ("+user.getNick()+")" : "")
+                +(!user.hasRegularDisplayNick() ? " ("+user.getName()+")" : "")
                 +displayNickInfo
                 +" / "+user.getChannel()
                 +" "+categoriesString);
@@ -277,14 +277,14 @@ public class UserInfo extends JDialog {
     }
 
     public void setChannelInfo(ChannelInfo info) {
-        if (info == null || currentUser == null || !currentUser.nick.equals(info.name)) {
+        if (info == null || currentUser == null || !currentUser.getName().equals(info.name)) {
             return;
         }
         infoPanel.setChannelInfo(info);
     }
     
     protected ChannelInfo getChannelInfo() {
-        return owner.getCachedChannelInfo(currentUser.nick);
+        return owner.getCachedChannelInfo(currentUser.getName());
     }
 
 }

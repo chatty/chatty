@@ -66,7 +66,7 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
-import chatty.util.api.TwitchApi.RequestResult;
+import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -343,7 +343,7 @@ public class MainGui extends JFrame implements Runnable {
         if (selectedUserRequired && selectedUser == null) {
             return;
         }
-        String selectedUserName = selectedUser != null ? selectedUser.nick : "";
+        String selectedUserName = selectedUser != null ? selectedUser.getName() : "";
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
@@ -1192,7 +1192,7 @@ public class MainGui extends JFrame implements Runnable {
             else if (userInfoDialog.getCommand(source) != null) {
                 CustomCommand command = userInfoDialog.getCommand(source);
                 User user = userInfoDialog.getUser();
-                String nick = user.getNick();
+                String nick = user.getName();
                 String channel = userInfoDialog.getChannel();
                 String msgId = userInfoDialog.getTargetMsgId();
                 String reason = userInfoDialog.getBanReason();
@@ -1396,10 +1396,10 @@ public class MainGui extends JFrame implements Runnable {
                 openUserInfoDialog(user, null);
             }
             else if (cmd.equals("addressbookEdit")) {
-                openAddressbook(user.getNick());
+                openAddressbook(user.getName());
             }
             else if (cmd.equals("addressbookRemove")) {
-                client.addressbook.remove(user.getNick());
+                client.addressbook.remove(user.getName());
                 updateUserInfoDialog(user);
             }
             else if (cmd.startsWith("cat")) {
@@ -1407,35 +1407,35 @@ public class MainGui extends JFrame implements Runnable {
                     boolean selected = ((JCheckBoxMenuItem)e.getSource()).isSelected();
                     String catName = cmd.substring(3);
                     if (selected) {
-                        client.addressbook.add(user.getNick(), catName);
+                        client.addressbook.add(user.getName(), catName);
                     } else {
-                        client.addressbook.remove(user.getNick(), catName);
+                        client.addressbook.remove(user.getName(), catName);
                     }
                 }
                 updateUserInfoDialog(user);
             }
             else if (cmd.equals("setcolor")) {
-                setColor(user.nick);
+                setColor(user.getName());
             }
             else if (cmd.equals("setname")) {
-                setCustomName(user.nick);
+                setCustomName(user.getName());
             }
             else if (cmd.startsWith("command")) {
                 customCommand(user.getChannel(), e, user.getRegularDisplayNick());
             } else if (cmd.equals("copyNick")) {
-                MiscUtil.copyToClipboard(user.getNick());
+                MiscUtil.copyToClipboard(user.getName());
             } else if (cmd.equals("copyDisplayNick")) {
                 MiscUtil.copyToClipboard(user.getDisplayNick());
             } else if (cmd.equals("ignore")) {
-                client.commandSetIgnored(user.nick, "chat", true);
+                client.commandSetIgnored(user.getName(), "chat", true);
             } else  if (cmd.equals("ignoreWhisper")) {
-                client.commandSetIgnored(user.nick, "whisper", true);
+                client.commandSetIgnored(user.getName(), "whisper", true);
             } else  if (cmd.equals("unignore")) {
-                client.commandSetIgnored(user.nick, "chat", false);
+                client.commandSetIgnored(user.getName(), "chat", false);
             } else  if (cmd.equals("unignoreWhisper")) {
-                client.commandSetIgnored(user.nick, "whisper", false);
+                client.commandSetIgnored(user.getName(), "whisper", false);
             } else {
-                nameBasedStuff(e, user.getNick());
+                nameBasedStuff(e, user.getName());
             }
         }
         
@@ -2567,7 +2567,7 @@ public class MainGui extends JFrame implements Runnable {
                         chan = channels.getChannel(channel);
                     } else if (whisperSetting == WhisperManager.DISPLAY_PER_USER) {
                         if (!userIgnored(user, true)) {
-                            chan = channels.getChannel("$"+user.getNick());
+                            chan = channels.getChannel("$"+user.getName());
                         } else {
                             chan = channels.getActiveChannel();
                         }
@@ -2582,13 +2582,13 @@ public class MainGui extends JFrame implements Runnable {
                 channel = chan.getName();
                 client.chatLog.message(chan.getName(), user, text, action);
                 
-                boolean isOwnMessage = isOwnUsername(user.getNick()) || (whisper && action);
+                boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
                 
                 boolean highlighted = false;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
-                        && !client.settings.listContains("noHighlightUsers", user.nick)) {
+                        && !client.settings.listContains("noHighlightUsers", user.getName())) {
                     highlighted = checkHighlight(user, text, highlighter, "highlight", isOwnMessage);
                 }
                 
@@ -2682,7 +2682,7 @@ public class MainGui extends JFrame implements Runnable {
 
                 // Chatlog/User Info
                 client.chatLog.info(channel, fullMessage);
-                if (!user.nick.isEmpty()) {
+                if (!user.getName().isEmpty()) {
                     user.addSub(message != null ? processMessage(message) : "", months);
                     updateUserInfoDialog(user);
                 }
@@ -2700,7 +2700,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     private boolean userIgnored(User user, boolean whisper) {
         String setting = whisper ? "ignoredUsersWhisper" : "ignoredUsers";
-        return client.settings.listContains(setting, user.nick);
+        return client.settings.listContains(setting, user.getName());
     }
     
     private String processMessage(String text) {
@@ -3635,6 +3635,7 @@ public class MainGui extends JFrame implements Runnable {
             valid = true;
             String username = tokenInfo.name;
             client.settings.setString("username", username);
+            client.settings.setString("userid", tokenInfo.userId);
             client.settings.setString("token", token);
             tokenDialog.update(username, token);
             updateConnectionDialog(null);
@@ -3743,7 +3744,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResult result) {
+    public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResultCode result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3754,8 +3755,8 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void putChannelInfo(String stream, ChannelInfo info) {
-        client.api.putChannelInfo(stream, info, client.settings.getString("token"));
+    public void putChannelInfo(ChannelInfo info) {
+        client.api.putChannelInfo(info);
     }
     
     public void getChannelInfo(String channel) {
@@ -3767,11 +3768,11 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void performGameSearch(String search) {
-        client.api.getGameSearch(search);
+        client.api.performGameSearch(search);
     }
     
     public void getChatInfo(String stream) {
-        client.api.requestChatInfo(stream);
+        client.api.getChatInfo(stream);
     }
     
     /**
@@ -3820,7 +3821,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void putChannelInfoResult(final RequestResult result) {
+    public void putChannelInfoResult(final RequestResultCode result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -3853,7 +3854,7 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void commercialResult(final String stream, final String text, final RequestResult result) {
+    public void commercialResult(final String stream, final String text, final RequestResultCode result) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override

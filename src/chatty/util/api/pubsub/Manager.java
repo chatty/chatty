@@ -3,7 +3,6 @@ package chatty.util.api.pubsub;
 
 import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
-import chatty.util.api.UserIDs;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,18 +31,18 @@ public class Manager {
     /**
      * Storage of user ids for easier lookup to turn an id into a channel name.
      */
-    private final Map<Long, String> userIds = Collections.synchronizedMap(new HashMap<Long, String>());
+    private final Map<String, String> userIds = Collections.synchronizedMap(new HashMap<String, String>());
     
     /**
      * Channels to listen on for the modlog, storing the id of the channel as
      * well. If the id is -1, still waiting for the user id and not listening
      * yet.
      */
-    private final Map<String, Long> modLogListen = Collections.synchronizedMap(new  HashMap<String, Long>());
+    private final Map<String, String> modLogListen = Collections.synchronizedMap(new  HashMap<String, String>());
     
     private volatile Timer pingTimer;
     private volatile String token;
-    private volatile long localUserId = -1;
+    private volatile String localUserId;
     private volatile String localUsername;
     
     public Manager(String server, final PubSubListener listener, TwitchApi api) {
@@ -82,15 +81,15 @@ public class Manager {
     }
     
     private void sendAllTopics() {
-        Set<Long> listenTo = new HashSet<>();
+        Set<String> listenTo = new HashSet<>();
         synchronized (modLogListen) {
-            for (Long userId : modLogListen.values()) {
-                if (userId != -1) {
+            for (String userId : modLogListen.values()) {
+                if (userId != null) {
                     listenTo.add(userId);
                 }
             }
         }
-        for (Long userId : listenTo) {
+        for (String userId : listenTo) {
             sendListenModLog(userId, true);
         }
     }
@@ -134,10 +133,10 @@ public class Manager {
             return;
         }
         this.token = token;
-        long userId = getUserId(username);
+        String userId = getUserId(username);
         modLogListen.put(username, userId);
         LOGGER.info("[PubSub] LISTEN ModLog "+username+" "+userId);
-        if (userId != -1) {
+        if (userId != null) {
             sendListenModLog(userId, true);
         }
     }
@@ -150,7 +149,7 @@ public class Manager {
     public void unlistenModLog(String username) {
         synchronized(modLogListen) {
             if (modLogListen.containsKey(username)) {
-                if (modLogListen.get(username) != -1) {
+                if (modLogListen.get(username) != null) {
                     sendListenModLog(modLogListen.get(username), false);
                 }
                 modLogListen.remove(username);
@@ -165,23 +164,11 @@ public class Manager {
      * @param username A valid Twitch username
      * @return The user id, or -1 if user id still has to be requested
      */
-    private long getUserId(String username) {
-        long userId = api.getUserId(username, new UserIDs.UserIDListener() {
-
-            @Override
-            public void setUserId(String username, long userId) {
-                /**
-                 * When the user id has been requested. If the user id is
-                 * already cached, this listener won't be stored.
-                 */
-                Manager.this.setUserId(username, userId);
-            }
-        });
-        if (userId != -1) {
-            userIds.put(userId, username);
-            return userId;
-        }
-        return -1;
+    private String getUserId(String username) {
+        api.waitForUserId(r -> {
+            Manager.this.setUserId(username, r.getId(username));
+        }, username);
+        return null;
     }
 
     /**
@@ -190,24 +177,24 @@ public class Manager {
      * @param username
      * @param userId 
      */
-    private void setUserId(String username, long userId) {
+    private void setUserId(String username, String userId) {
         userIds.put(userId, username);
         
         // Topics to still request
-        if (modLogListen.containsKey(username) && modLogListen.get(username) == -1) {
+        if (modLogListen.containsKey(username) && modLogListen.get(username) == null) {
             modLogListen.put(username, userId);
             sendListenModLog(userId, true);
         }
         
         // If local userId hasn't been set yet, request everything now
-        if (localUserId == -1 && username.equals(localUsername)) {
+        if (localUserId == null && username.equals(localUsername)) {
             localUserId = userId;
             sendAllTopics();
         }
     }
     
-    private void sendListenModLog(Long userId, boolean listen) {
-        if (localUserId == -1) {
+    private void sendListenModLog(String userId, boolean listen) {
+        if (localUserId == null) {
             return;
         }
         

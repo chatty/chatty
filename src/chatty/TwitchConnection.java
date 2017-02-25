@@ -150,10 +150,6 @@ public class TwitchConnection {
         users.setBotNameManager(m);
     }
     
-    public void setCapitalizedNamesManager(CapitalizedNames capitalizedNames) {
-        users.setCapitalizedNamesManager(capitalizedNames);
-    }
-    
     public void setCustomNamesManager(CustomNames customNames) {
         users.setCustomNamesManager(customNames);
     }
@@ -893,6 +889,8 @@ public class TwitchConnection {
                 changed = true;
             }
             
+            user.setId(tags.get("user-id"));
+            
             if (changed && user != users.specialUser) {
                 listener.onUserUpdated(user);
             }
@@ -1253,7 +1251,7 @@ public class TwitchConnection {
     public User userJoined(User user) {
         if (user.setOnline(true)) {
             String channel = user.getChannel();
-            if (channel.substring(1).equals(user.nick)) {
+            if (channel.substring(1).equals(user.getName())) {
                 user.setBroadcaster(true);
             }
             listener.onUserAdded(user);

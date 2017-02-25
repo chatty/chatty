@@ -372,7 +372,7 @@ public class AutoModDialog extends JDialog {
                     break;
                 }
                 if (!item.hasRequestPending && !item.isHandled()
-                        && item.targetUser.getNick().equals(username)) {
+                        && item.targetUser.getName().equals(username)) {
                     if (foundItem != null) {
                         // Can't be more than one Item, since we don't know
                         // which is the correct one by just the username

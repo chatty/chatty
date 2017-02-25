@@ -316,7 +316,7 @@ public class Channel extends JPanel {
             Set<User> localizedMatched = new HashSet<>();
             for (User user : users.getData()) {
                 boolean matched = false;
-                if (user.nick.startsWith(search)) {
+                if (user.getName().startsWith(search)) {
                     matched = true;
                     regularMatched.add(user);
                 }
@@ -443,7 +443,7 @@ public class Channel extends JPanel {
 
             @Override
             public int compare(User o1, User o2) {
-                return o1.nick.compareToIgnoreCase(o2.nick);
+                return o1.getName().compareToIgnoreCase(o2.getName());
             }
             
         }

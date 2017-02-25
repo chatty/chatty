@@ -28,15 +28,15 @@ public class UserContextMenu extends ContextMenu {
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
-        addItem("join","Join #"+user.getNick());
+        addItem("join","Join #"+user.getName());
         addSeparator();
         
         // Misc Submenu
         addSubItem("copyNick", "Copy Name", MISC_MENU);
         addSubItem("copyDisplayNick", "Copy Display Name", MISC_MENU);
         addSeparator(MISC_MENU);
-        ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, false);
-        ContextMenuHelper.addIgnore(this, user.nick, MISC_MENU, true);
+        ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, false);
+        ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, true);
         addSeparator(MISC_MENU);
         addSubItem("follow", "Follow", MISC_MENU);
         addSubItem("unfollow", "Unfollow", MISC_MENU);

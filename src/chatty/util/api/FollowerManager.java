@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -115,9 +116,9 @@ public class FollowerManager {
         FollowerInfo cachedInfo = cached.get(stream);
         if (cachedInfo == null || checkTimePassed(cachedInfo)) {
             if (type == Follower.Type.FOLLOWER) {
-                api.requestFollowers(stream);
+                api.requests.requestFollowers(stream);
             } else if (type == Follower.Type.SUBSCRIBER) {
-                api.requestSubscribers(stream);
+                api.requests.requestSubscribers(stream, api.getToken());
             }
         } else {
             if (type == Follower.Type.FOLLOWER) {
@@ -243,14 +244,13 @@ public class FollowerManager {
         try {
             JSONObject data = (JSONObject)o;
             String created_at = (String)data.get("created_at");
-            long time = Util.parseTime(created_at);
+            long time = DateTime.parseDatetime(created_at);
             JSONObject user = (JSONObject)data.get("user");
             String display_name = (String)user.get("display_name");
             String name = (String)user.get("name");
             
             return createFollowerItem(stream, name, display_name, time);
-        } catch (ClassCastException | NullPointerException
-                | java.text.ParseException | NumberFormatException ex) {
+        } catch (Exception ex) {
             LOGGER.warning("Error parsing entry of "+type+": "+o+" ["+ex+"]");
         }
         return null;

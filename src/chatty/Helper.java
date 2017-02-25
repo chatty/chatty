@@ -178,6 +178,14 @@ public class Helper {
         return toStream(channel);
     }
     
+    public static String[] toStream(String[] channels) {
+        String[] result = new String[channels.length];
+        for (int i=0;i<channels.length;i++) {
+            result[i] = toStream(channels[i]);
+        }
+        return result;
+    }
+    
     /**
      * Makes a readable message out of the given reason code.
      * 
@@ -669,7 +677,7 @@ public class Helper {
         } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED) {
             return user.getModeSymbol() + user.getRegularDisplayNick();
         } else if (displayNamesMode == SettingsManager.DISPLAY_NAMES_MODE_USERNAME) {
-            return user.getModeSymbol() + user.getNick();
+            return user.getModeSymbol() + user.getName();
         }
         return user.getFullNick();
     }

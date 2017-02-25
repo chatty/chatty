@@ -89,7 +89,7 @@ public class Highlighter {
     public boolean check(User fromUser, String text) {
         if (checkMatch(fromUser, text)) {
             if (fromUser != null) {
-                addMatch(fromUser.getNick());
+                addMatch(fromUser.getName());
             }
             return true;
         }
@@ -147,7 +147,7 @@ public class Highlighter {
         }
         
         // Then see if there is a recent match
-        if (highlightNextMessages && user != null && hasRecentMatch(user.nick)) {
+        if (highlightNextMessages && user != null && hasRecentMatch(user.getName())) {
             return true;
         }
         return false;
@@ -400,10 +400,10 @@ public class Highlighter {
             if (user != null && appliesToInfo) {
                 return false;
             }
-            if (username != null && !username.equals(user.nick)) {
+            if (username != null && !username.equals(user.getName())) {
                 return false;
             }
-            if (usernamePattern != null && !usernamePattern.matcher(user.getNick()).matches()) {
+            if (usernamePattern != null && !usernamePattern.matcher(user.getName()).matches()) {
                 return false;
             }
             if (category != null && !user.hasCategory(category)) {

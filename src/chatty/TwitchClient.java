@@ -25,7 +25,6 @@ import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
-import chatty.util.MsgTags;
 import chatty.util.ProcessManager;
 import chatty.util.RawMessageTest;
 import chatty.util.Speedruncom;
@@ -43,8 +42,7 @@ import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
-import chatty.util.api.TwitchApi.RequestResult;
-import chatty.util.api.UserIDs;
+import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.api.pubsub.PubSubListener;
@@ -60,7 +58,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 
@@ -663,7 +660,7 @@ public class TwitchClient {
         if (channel != null) {
             settings.setString("channel", channel);
         }
-        
+        api.requestUserId(Helper.toStream(autojoin));
         c.connect(server, ports, name, password, autojoin);
         return true;
     }
@@ -840,9 +837,6 @@ public class TwitchClient {
         }
         else if (command.equals("changetoken")) {
             g.changeToken(parameter);
-        }
-        else if (command.equals("fixserver")) {
-            commandFixServer(channel);
         }
 
         //------------
@@ -1070,8 +1064,6 @@ public class TwitchClient {
             getSpecialUser().setEmoteSets(parameter);
         } else if (command.equals("getemoteset")) {
             g.printLine(g.emoticons.getEmoticons(Integer.parseInt(parameter)).toString());
-        } else if (command.equals("loadchaticons")) {
-            api.requestChatIcons(parameter, true);
         } else if (command.equals("testcolor")) {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
@@ -1229,14 +1221,14 @@ public class TwitchClient {
                     }
                 });
             }
-        } else if (command.equals("getuserid")) {
-            g.printSystem(parameter+": "+api.getUserId(parameter, new UserIDs.UserIDListener() {
-
-                @Override
-                public void setUserId(String username, long userId) {
-                    g.printSystem(username+": "+userId);
-                }
-            }));
+        } else if (command.equals("getuserids")) {
+            api.getUserId(r -> {
+                g.printSystem(r.toString());
+            }, parameter.split("[ ,]"));
+        } else if (command.equals("getuserids2")) {
+            api.getUserIDsTest2(parameter);
+        } else if (command.equals("getuserids3")) {
+            api.getUserIDsTest3(parameter);
         }
     }
     
@@ -1440,14 +1432,6 @@ public class TwitchClient {
         }
     }
     
-    private void commandFixServer(String channel) {
-        if (!Helper.validateChannel(channel)) {
-            return;
-        }
-        fixServer = true;
-        api.getServer(channel);
-    }
-    
     private void commandCustomCompletion(String parameter) {
         String usage = "Usage: /customCompletion <add/set/remove> <item> <value>";
         if (parameter == null) {
@@ -1554,14 +1538,6 @@ public class TwitchClient {
             refreshRequests.add("emoticons");
             //Emoticons.clearCache(Emoticon.Type.TWITCH);
             api.requestEmoticons(true);
-        } else if (parameter.equals("badges2")) {
-            if (!Helper.validateChannel(channel)) {
-                g.printLine("Must be on a channel to use this.");
-            } else {
-                g.printLine("Refreshing badges2 for " + channel + "..");
-                refreshRequests.add("badges2");
-                api.requestChatIcons(Helper.toStream(channel), true);
-            }
         } else if (parameter.equals("badges")) {
             if (!Helper.validateChannel(channel)) {
                 g.printLine("Must be on a channel to use this.");
@@ -1781,7 +1757,7 @@ public class TwitchClient {
         }
         
         @Override
-        public void runCommercialResult(String stream, String text, RequestResult result) {
+        public void runCommercialResult(String stream, String text, RequestResultCode result) {
             commercialResult(stream, text, result);
         }
  
@@ -1791,12 +1767,12 @@ public class TwitchClient {
         }
         
         @Override
-        public void receivedChannelInfo(String channel, ChannelInfo info, RequestResult result) {
+        public void receivedChannelInfo(String channel, ChannelInfo info, RequestResultCode result) {
             g.setChannelInfo(channel, info, result);
         }
     
         @Override
-        public void putChannelInfoResult(RequestResult result) {
+        public void putChannelInfoResult(RequestResultCode result) {
             g.putChannelInfoResult(result);
         }
 
@@ -2085,7 +2061,7 @@ public class TwitchClient {
      */
     public void runCommercial(String stream, int length) {
         if (stream == null || stream.isEmpty()) {
-            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.RequestResult.FAILED);
+            commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.RequestResultCode.FAILED);
         }
         else {
             String channel = "#"+stream;
@@ -2094,7 +2070,7 @@ public class TwitchClient {
             } else {
                 g.printLine("Trying to run "+length+"s commercial.. ("+stream+")");
             }
-            api.runCommercial(stream, settings.getString("token"), length);
+            api.runCommercial(stream, length);
         }
     }
     
@@ -2110,7 +2086,7 @@ public class TwitchClient {
      * @param text
      * @param result 
      */
-    private void commercialResult(String stream, String text, RequestResult result) {
+    private void commercialResult(String stream, String text, RequestResultCode result) {
         String channel = "#"+stream;
         if (isChannelOpen(channel)) {
             g.printLine(channel, text);
@@ -2291,7 +2267,7 @@ public class TwitchClient {
     private class Messages implements TwitchConnection.ConnectionListener {
 
         private void checkModLogListen(User user) {
-            if (user.hasChannelModeratorRights() && user.nick.equals(c.getUsername())) {
+            if (user.hasChannelModeratorRights() && user.getName().equals(c.getUsername())) {
                 pubsub.setLocalUsername(c.getUsername());
                 pubsub.listenModLog(Helper.toStream(user.getChannel()), settings.getString("token"));
             }
@@ -2402,7 +2378,7 @@ public class TwitchClient {
             if (!settings.getBoolean("ignoredUsersHideInGUI")) {
                 return true;
             }
-            return !settings.listContains("ignoredUsers", user.nick);
+            return !settings.listContains("ignoredUsers", user.getName());
         }
 
         @Override
@@ -2429,7 +2405,7 @@ public class TwitchClient {
                 reason = "";
             }
             g.userBanned(user, duration, reason, targetMsgId);
-            ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.nick);
+            ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.getName());
             chatLog.userBanned(user.getChannel(), user.getRegularDisplayNick(),
                     duration, reason, channelInfo);
         }
@@ -2554,10 +2530,10 @@ public class TwitchClient {
             g.printSubscriberMessage(channel, user, text, message, months, emotes);
             
             // May be using dummy User if from twitchnotify that doesn't contain a propery name tag
-            if (user.nick.isEmpty()) {
+            if (user.getName().isEmpty()) {
                 return;
             }
-            String name = user.nick;
+            String name = user.getName();
             if (!settings.getString("abSubMonthsChan").equalsIgnoreCase(channel)) {
                 return;
             }

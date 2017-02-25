@@ -67,4 +67,11 @@ public class DateTimeTest {
         }
     }
     
+    @Test
+    public void testParseDatetime() {
+        assertEquals(DateTime.parseDatetime("2015-05-15T22:16:57+02:00"), 1431721017000L);
+        assertEquals(DateTime.parseDatetime("2015-05-15T17:27:16Z"), 1431710836000L);
+        assertEquals(DateTime.parseDatetime("2014-01-10T17:44:50.027732Z"), 1389375890027L);
+    }
+    
 }

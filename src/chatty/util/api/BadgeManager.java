@@ -33,7 +33,7 @@ public class BadgeManager {
     public void requestGlobalBadges(boolean forceRefresh) {
         if (!globalBadgesRequested || forceRefresh) {
             globalBadgesRequested = true;
-            api.requestGlobalBadges();
+            api.requests.requestGlobalBadges();
         }
     }
     
@@ -42,16 +42,9 @@ public class BadgeManager {
         if (!roomsRequested.contains(room) || forceRefresh) {
             roomsRequested.add(room);
             
-            long roomId = api.getUserId(room, new UserIDs.UserIDListener() {
-
-                @Override
-                public void setUserId(String username, long userId) {
-                    api.requestRoomBadges(userId, room);
-                }
-            });
-            if (roomId != -1) {
-                api.requestRoomBadges(roomId, room);
-            }
+            api.waitForUserId(r -> {
+                api.requests.requestRoomBadges(r.getId(room), room);
+            }, room);
         }
     }
     

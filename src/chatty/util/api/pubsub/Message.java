@@ -43,7 +43,7 @@ public class Message {
         this.error = error;
     }
     
-    public static Message fromJson(String json, Map<Long, String> userIds) {
+    public static Message fromJson(String json, Map<String, String> userIds) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject)parser.parse(json);

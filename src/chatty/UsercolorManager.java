@@ -106,7 +106,7 @@ public class UsercolorManager {
                     return item.color;
                 }
             } else if (item.type == UsercolorItem.TYPE_NAME) {
-                if (item.id.equalsIgnoreCase(user.getNick())) {
+                if (item.id.equalsIgnoreCase(user.getName())) {
                     return item.color;
                 }
             } else if (item.type == UsercolorItem.TYPE_STATUS) {
