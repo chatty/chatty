@@ -9,7 +9,7 @@ import chatty.gui.components.LinkLabelListener;
 import chatty.gui.components.help.About;
 import chatty.gui.components.HighlightedMessages;
 import chatty.gui.components.TokenDialog;
-import chatty.gui.components.AdminDialog;
+import chatty.gui.components.admin.AdminDialog;
 import chatty.gui.components.ConnectionDialog;
 import chatty.gui.components.Channel;
 import chatty.gui.components.TokenGetDialog;
@@ -26,7 +26,7 @@ import chatty.TwitchClient;
 import chatty.Helper;
 import chatty.User;
 import chatty.Irc;
-import chatty.StatusHistory;
+import chatty.gui.components.admin.StatusHistory;
 import chatty.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
@@ -220,7 +220,7 @@ public class MainGui extends JFrame implements Runnable {
         setHelpWindowIcons();
         channelInfoDialog = new ChannelInfoDialog(this);
         channelInfoDialog.addContextMenuListener(contextMenuListener);
-        adminDialog = new AdminDialog(this);
+        adminDialog = new AdminDialog(this, client.api);
         favoritesDialog = new FavoritesDialog(this, contextMenuListener);
         GuiUtil.installEscapeCloseOperation(favoritesDialog);
         joinDialog = new JoinDialog(this);
@@ -3767,10 +3767,6 @@ public class MainGui extends JFrame implements Runnable {
         return client.api.getCachedChannelInfo(channel);
     }
     
-    public void performGameSearch(String search) {
-        client.api.performGameSearch(search);
-    }
-    
     public void getChatInfo(String stream) {
         client.api.getChatInfo(stream);
     }
@@ -3802,6 +3798,10 @@ public class MainGui extends JFrame implements Runnable {
         client.settings.putList("gamesFavorites", new ArrayList(favorites));
     }
     
+    public void setCommunityFavorites(Map<String, String> favorites) {
+        client.settings.putMap("communityFavorites", favorites);
+    }
+    
     /**
      * Returns a Set of game favorites retrieved from the settings.
      * 
@@ -3811,14 +3811,8 @@ public class MainGui extends JFrame implements Runnable {
         return new HashSet<>(client.settings.getList("gamesFavorites"));
     }
     
-    public void gameSearchResult(final Set<String> games) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                adminDialog.gameSearchResult(games);
-            }
-        });
+    public Map<String, String> getCommunityFavorites() {
+        return client.settings.getMap("communityFavorites");
     }
     
     public void putChannelInfoResult(final RequestResultCode result) {

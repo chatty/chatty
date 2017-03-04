@@ -1,6 +1,10 @@
 
 package chatty.util.api;
 
+import chatty.Helper;
+import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.CommunitiesManager.CommunityListener;
+import chatty.util.api.CommunitiesManager.CommunityPutListener;
 import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
@@ -39,6 +43,7 @@ public class TwitchApi {
     protected final BadgeManager badgeManager;
     protected final UserIDs userIDs;
     protected final ChannelInfoManager channelInfoManager;
+    protected final CommunitiesManager communitiesManager;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -58,6 +63,9 @@ public class TwitchApi {
         requests = new Requests(this, resultListener);
         channelInfoManager = new ChannelInfoManager(this, resultListener);
         userIDs = new UserIDs(this);
+        communitiesManager = new CommunitiesManager(this);
+        
+        getCommunityTop(r -> {});
     }
     
     
@@ -256,8 +264,86 @@ public class TwitchApi {
         requests.putChannelInfo(info, defaultToken);
     }
     
-    public void performGameSearch(String search) {
-        requests.getGameSearch(search);
+    public void performGameSearch(String search, GameSearchListener listener) {
+        requests.getGameSearch(search, listener);
+    }
+    
+    public interface GameSearchListener {
+        public void result(Collection<String> result);
+    }
+    
+    /**
+     * Gets Community by id, which is guaranteed to contain description/rules.
+     * Cached only, so it doesn't requests it if it's not in the cache.
+     * 
+     * @param id
+     * @return 
+     */
+    public Community getCachedCommunityInfo(String id) {
+        return communitiesManager.getCachedByIdWithInfo(id);
+    }
+    
+    /**
+     * Gets community by id, which may or may not contain description/rules.
+     * Requests it if not cached (but not again in case of error).
+     * 
+     * @param id The community id
+     * @param listener 
+     */
+    public void getCommunityForName(String id, CommunityListener listener) {
+        if (id == null || id.isEmpty()) {
+            listener.received(null, "No community id.");
+        } else {
+            communitiesManager.getById(id, listener);
+        }
+    }
+    
+    /**
+     * Requests the current top 100 communities.
+     * 
+     * @param listener 
+     */
+    public void getCommunityTop(CommunitiesManager.CommunityTopListener listener) {
+        requests.getCommunitiesTop(listener);
+    }
+    
+    /**
+     * Requests the community by name.
+     * 
+     * @param name The name of the community
+     * @param listener 
+     */
+    public void getCommunityByName(String name, CommunityListener listener) {
+        if (name != null && !name.isEmpty()) {
+            requests.getCommunityByName(name, listener);
+        } else {
+            listener.received(null, "Invalid community name");
+        }
+    }
+    
+    public void setCommunity(String channelName, String communityId, CommunityPutListener listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.result("Failed getting user id");
+            } else {
+                String channelId = r.getId(channelName);
+                if (communityId != null) {
+                    requests.setCommunity(channelId, communityId, defaultToken, listener);
+                } else {
+                    requests.removeCommunity(channelId, defaultToken, listener);
+                }
+            }
+        }, channelName);
+    }
+    
+    public void getCommunityForChannel(String channelName, CommunityListener listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.received(null, "Error resolving id.");
+            } else {
+                requests.getCommunity(r.getId(channelName), listener);
+            }
+        }, channelName);
     }
     
     public void runCommercial(String stream, int length) {

@@ -178,6 +178,9 @@ public class StringUtil {
         if (a == null || a.isEmpty()) {
             return b;
         }
+        if (b == null || b.isEmpty()) {
+            return a;
+        }
         return a+sep+b;
     }
     

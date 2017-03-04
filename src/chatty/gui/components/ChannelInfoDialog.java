@@ -7,6 +7,7 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import static chatty.util.DateTime.H;
 import static chatty.util.DateTime.S;
+import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.StreamInfo;
 import java.awt.Dimension;
 import java.awt.Frame;
@@ -36,6 +37,8 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     
     private final JLabel gameLabel = new JLabel("Playing:");
     private final JTextField game = new JTextField();
+    
+    private final LinkLabel communityLabel;
     
     private final JLabel historyLabel = new JLabel("Viewers:");
     private final ViewerHistory history = new ViewerHistory();
@@ -96,6 +99,19 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         gbc = makeGbc(0,3,2,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(game,gbc);
+        
+        gbc = makeGbc(1, 2, 1, 1);
+        gbc.anchor = GridBagConstraints.EAST;
+        communityLabel = new LinkLabel("", new LinkLabelListener() {
+
+            @Override
+            public void linkClicked(String type, String ref) {
+                String url = "https://www.twitch.tv/communities/"+ref;
+                UrlOpener.openUrlPrompt(ChannelInfoDialog.this, url);
+            }
+        });
+        communityLabel.setMargin(game.getMargin());
+        add(communityLabel, gbc);
  
         // Graph
         gbc = makeGbc(0,4,1,1);
@@ -149,6 +165,14 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             timeStarted = streamInfo.getTimeStarted();
             onlineSince.setText(null);
             onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(timeStarted));
+            Community community = streamInfo.getCommunity();
+            String communityText = null;
+            if (community != null) {
+                communityText = String.format("[community:%s %s]",
+                        community.getName(),
+                        community.getName());
+            }
+            communityLabel.setText(communityText);
         }
         else if (streamInfo.isValid()) {
             statusText = "Stream offline";

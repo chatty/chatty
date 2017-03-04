@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Logging;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
+import chatty.util.api.CommunitiesManager.Community;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -484,10 +485,12 @@ public class StreamInfoManager {
         String display_name;
         long timeStarted = -1;
         String userId = null;
+        String community_id = null;
         boolean noChannelObject = false;
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewers");
+            community_id = JSONUtil.getString(stream, "community_id");
             
             // Get channel data
             JSONObject channel = (JSONObject) stream.get("channel");
@@ -550,6 +553,7 @@ public class StreamInfoManager {
             api.setUserId(name, userId);
             System.out.println(name+" "+userId);
         }
+        api.getCommunityForName(community_id, (r,e) -> { streamInfo.setCommunity(r); });
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted);
         } else {

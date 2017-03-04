@@ -56,7 +56,9 @@ public class LinkLabel extends JEditorPane {
      */
     @Override
     public final void setText(String text) {
-        text = text.replaceAll("\\[([^] ]+) ([^]]+)\\]","<a href=\"$1\">$2</a>");
+        if (text != null) {
+            text = text.replaceAll("\\[([^] ]+) ([^]]+)\\]","<a href=\"$1\">$2</a>");
+        }
         super.setText(text);
     }
     

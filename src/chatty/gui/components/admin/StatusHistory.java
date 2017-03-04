@@ -1,13 +1,17 @@
 
-package chatty;
+package chatty.gui.components.admin;
 
+import chatty.util.api.CommunitiesManager;
+import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -84,15 +88,16 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title The title
      * @param game The game
+     * @param community
      * @return 
      */
-    public synchronized StatusHistoryEntry get(String title, String game) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, -1, -1, false);
+    public synchronized StatusHistoryEntry get(String title, String game, Community community) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, community);
         return entries.get(entry);
     }
     
-    public synchronized boolean isFavorite(String title, String game) {
-        StatusHistoryEntry entry = get(title, game);
+    public synchronized boolean isFavorite(String title, String game, Community community) {
+        StatusHistoryEntry entry = get(title, game, community);
         return entry != null ? entry.favorite : false;
     }
     
@@ -105,12 +110,13 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
+     * @param community
      * @param lastSet
      * @param timesUsed
      * @return 
      */
-    public synchronized StatusHistoryEntry add(String title, String game, long lastSet, int timesUsed) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, lastSet, timesUsed, false);
+    public synchronized StatusHistoryEntry add(String title, String game, Community community, long lastSet, int timesUsed) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, community, lastSet, timesUsed, false);
         put(entry);
         return entry;
     }
@@ -120,9 +126,10 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game 
+     * @param community 
      */
-    public synchronized void remove(String title, String game) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, -1, -1, false);
+    public synchronized void remove(String title, String game, Community community) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, community);
         entries.remove(entry);
     }
     
@@ -141,10 +148,11 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
+     * @param community
      * @return 
      */
-    public synchronized StatusHistoryEntry addUsed(String title, String game) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, System.currentTimeMillis(), 1, false);
+    public synchronized StatusHistoryEntry addUsed(String title, String game, Community community) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, community, System.currentTimeMillis(), 1, false);
         StatusHistoryEntry present = entries.get(entry);
         if (present != null) {
             entry = present.increaseUsed();
@@ -159,10 +167,11 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
+     * @param community
      * @return 
      */
-    public synchronized StatusHistoryEntry addFavorite(String title, String game) {
-        return setFavorite(title, game, true);
+    public synchronized StatusHistoryEntry addFavorite(String title, String game, Community community) {
+        return setFavorite(title, game, community, true);
     }
     
     /**
@@ -172,9 +181,10 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game 
+     * @param community 
      */
-    public synchronized void removeFavorite(String title, String game) {
-        setFavorite(title, game, false);
+    public synchronized void removeFavorite(String title, String game, Community community) {
+        setFavorite(title, game, community, false);
     }
     
     /**
@@ -182,11 +192,12 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
+     * @param community
      * @param favorite
      * @return 
      */
-    public synchronized StatusHistoryEntry setFavorite(String title, String game, boolean favorite) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, System.currentTimeMillis(), 0, favorite);
+    public synchronized StatusHistoryEntry setFavorite(String title, String game, Community community, boolean favorite) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, community, System.currentTimeMillis(), 0, favorite);
         return setFavorite(entry, favorite);
     }
     
@@ -209,6 +220,17 @@ public class StatusHistory implements SettingsListener {
         }
         put(entry);
         return entry;
+    }
+    
+    public synchronized void updateCommunityName(Community c) {
+        Set<StatusHistoryEntry> modifiedValues = new HashSet<>();
+        for (StatusHistoryEntry entry : entries.values()) {
+            StatusHistoryEntry modified = entry.updateCommunityName(c);
+            if (modified != entry) {
+                modifiedValues.add(modified);
+            }
+        }
+        modifiedValues.stream().forEach(e -> entries.put(e, e));
     }
 
     /**
@@ -277,6 +299,10 @@ public class StatusHistory implements SettingsListener {
         list.add(entry.lastActivity);
         list.add(entry.timesUsed);
         list.add(entry.favorite);
+        if (entry.community != null) {
+            list.add(entry.community.getId());
+            list.add(entry.community.getName());
+        }
         return list;
     }
     
@@ -299,11 +325,17 @@ public class StatusHistory implements SettingsListener {
             Number lastSet = (Number) list.get(2);
             Number timesUsed = (Number) list.get(3);
             Boolean favorite = (Boolean) list.get(4);
+            Community community = Community.EMPTY;
+            if (list.size() > 5) {
+                String communityId = (String) list.get(5);
+                String communityName = (String) list.get(6);
+                community = new Community(communityId, communityName);
+            }
             if (title == null || game == null) {
                 //LOGGER.warning("Didn't load "+list+" (Unexpected null)");
                 return null;
             }
-            return new StatusHistoryEntry(title, game, lastSet.longValue(), timesUsed.intValue(), favorite);
+            return new StatusHistoryEntry(title, game, community, lastSet.longValue(), timesUsed.intValue(), favorite);
         } catch (ClassCastException | IndexOutOfBoundsException ex) {
             //LOGGER.warning("Didn't load "+list+" ("+ex.getLocalizedMessage()+")");
             return null;

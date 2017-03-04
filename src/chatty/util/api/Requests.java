@@ -5,6 +5,10 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.CommunitiesManager.CommunityListener;
+import chatty.util.api.CommunitiesManager.CommunityPutListener;
+import chatty.util.api.TwitchApi.GameSearchListener;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.TwitchApiRequest.TwitchApiRequestResult;
 import java.io.UnsupportedEncodingException;
@@ -256,7 +260,91 @@ public class Requests {
         }
     }
     
-    public void getGameSearch(String game) {
+    public void getCommunitiesTop(CommunitiesManager.CommunityTopListener listener) {
+        String url = "https://api.twitch.tv/kraken/communities/top?limit=100";
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        execute(request, r -> {
+            Collection<Community> result = CommunitiesManager.parseTop(r.text);
+            listener.received(result);
+            result.forEach(c -> { api.communitiesManager.addCommunity(c); });
+        });
+    }
+    
+    public void getCommunityByName(String name, CommunityListener listener) {
+        String url = "https://api.twitch.tv/kraken/communities?name="+name;
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        execute(request, r -> {
+            Community result = CommunitiesManager.parse(r.text);
+            if (r.responseCode == 404) {
+                listener.received(null, "Community not found.");
+            } else {
+                api.communitiesManager.addCommunity(result);
+                listener.received(result, null);
+            }
+        });
+    }
+    
+    public void getCommunityById(String id, CommunityListener listener) {
+        String url = "https://api.twitch.tv/kraken/communities/"+id;
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        execute(request, r -> {
+            Community result = CommunitiesManager.parse(r.text);
+            if (r.responseCode == 404) {
+                listener.received(null, "Community not found.");
+            } else {
+                api.communitiesManager.addCommunity(result);
+                listener.received(result, null);
+            }
+        });
+    }
+    
+    public void setCommunity(String userId, String communityId, String token, CommunityPutListener listener) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community/"+communityId;
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setRequestType("PUT");
+        request.setToken(token);
+        execute(request, r -> {
+            if (r.responseCode == 204) {
+                listener.result(null);
+            } else {
+                listener.result("Error");
+            }
+        });
+    }
+    
+    public void removeCommunity(String userId, String token, CommunityPutListener listener) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setRequestType("DELETE");
+        request.setToken(token);
+        execute(request, r -> {
+            if (r.responseCode == 204) {
+                listener.result(null);
+            } else {
+                listener.result("Error");
+            }
+        });
+    }
+    
+    public void getCommunity(String userId, CommunityListener listener) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        execute(request, r -> {
+            if (r.responseCode == 204) {
+                listener.received(Community.EMPTY, null);
+            } else {
+                Community result = CommunitiesManager.parse(r.text);
+                if (result == null) {
+                    listener.received(null, "Unkown error");
+                } else {
+                    api.communitiesManager.addCommunity(result);
+                    listener.received(result, null);
+                }
+            }
+        });
+    }
+    
+    public void getGameSearch(String game, GameSearchListener listener) {
         if (game == null || game.isEmpty()) {
             return;
         }
@@ -272,7 +360,7 @@ public class Requests {
             if (r.text != null) {
                 Set<String> games = Parsing.parseGameSearch(r.text);
                 if (games != null) {
-                    listener.gameSearchResult(games);
+                    listener.result(games);
                 }
             }
         });
@@ -286,7 +374,7 @@ public class Requests {
             request.setData("length=" + length, "POST");
             request.setContentType("application/x-www-form-urlencoded");
             execute(request, r -> {
-                String resultText = "Uunknown response: " + r.responseCode;
+                String resultText = "Unknown response: " + r.responseCode;
                 RequestResultCode resultCode = RequestResultCode.UNKNOWN;
                 if (r.responseCode == 204) {
                     resultText = "Running commercial..";

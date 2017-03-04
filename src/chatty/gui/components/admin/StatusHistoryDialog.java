@@ -1,8 +1,6 @@
 
-package chatty.gui.components;
+package chatty.gui.components.admin;
 
-import chatty.StatusHistory;
-import chatty.StatusHistoryEntry;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import java.awt.Dialog;
@@ -35,7 +33,7 @@ import javax.swing.event.ListSelectionListener;
 public class StatusHistoryDialog extends JDialog {
     
     private enum CloseAction {
-        CANCEL, TITLE, TITLE_GAME, GAME
+        CANCEL, USE_TITLE, USE_ALL
     }
     
     private static final String INFO_TEXT = "<html><body style='width: 170px;'>"
@@ -44,9 +42,8 @@ public class StatusHistoryDialog extends JDialog {
     
     private final StatusHistory history;
     
-    private final JButton useTitleButton = new JButton("Use title");
-    private final JButton useAllButton = new JButton("Use title and game");
-    private final JButton useGameButton = new JButton("Use game");
+    private final JButton useTitleButton = new JButton("Use title only");
+    private final JButton useAllButton = new JButton("Use status (title/game/community)");
     private final JButton cancelButton = new JButton("Close");
     private final StatusHistoryTable table;
     private final JCheckBox filterCurrentGame = new JCheckBox("Current game");
@@ -77,13 +74,11 @@ public class StatusHistoryDialog extends JDialog {
             
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
+                if (table.getSelectedColumn() == 0
+                        && table.rowAtPoint(e.getPoint()) != -1) {
+                    toggleFavoriteOnSelected();
+                } else if (e.getClickCount() == 2 && table.getSelectedColumn() != 0) {
                     useStatus();
-                } else if (e.getClickCount() == 1) {
-                    if (table.getSelectedColumn() == 0
-                            && table.rowAtPoint(e.getPoint()) != -1) {
-                        toggleFavoriteOnSelected();
-                    }
                 }
             }
         });
@@ -129,15 +124,8 @@ public class StatusHistoryDialog extends JDialog {
         gbc.insets = new Insets(5, 5, 5, 0);
         add(useAllButton, gbc);
         
-        useGameButton.setMnemonic(KeyEvent.VK_M);
-        gbc = makeGbc(2, 4, 1, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 0.2;
-        gbc.insets = new Insets(5, 5, 5, 0);
-        add(useGameButton, gbc);
-        
         useTitleButton.setMnemonic(KeyEvent.VK_T);
-        gbc = makeGbc(3, 4, 1, 1);
+        gbc = makeGbc(2, 4, 2, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.2;
         gbc.insets = new Insets(5, 5, 5, 4);
@@ -151,13 +139,12 @@ public class StatusHistoryDialog extends JDialog {
         
         ActionListener buttonActionListener = new ButtonAction();
         useTitleButton.addActionListener(buttonActionListener);
-        useGameButton.addActionListener(buttonActionListener);
         useAllButton.addActionListener(buttonActionListener);
         cancelButton.addActionListener(buttonActionListener);
         
         pack();
         setMinimumSize(new Dimension(getPreferredSize().width, 200));
-        setSize(new Dimension(600,400));
+        setSize(new Dimension(700,400));
     }
     
     private void addShortcuts() {
@@ -213,11 +200,9 @@ public class StatusHistoryDialog extends JDialog {
         // The dialog is modal
         StatusHistoryEntry selected = table.getSelectedEntry();
         if (selected != null) {
-            if (closeAction == CloseAction.TITLE) {
-                return new StatusHistoryEntry(selected.title, null, -1, -1, false);
-            } else if (closeAction == CloseAction.GAME) {
-                return new StatusHistoryEntry(null, selected.game, -1, -1, false);
-            } else if (closeAction == CloseAction.TITLE_GAME) {
+            if (closeAction == CloseAction.USE_TITLE) {
+                return new StatusHistoryEntry(selected.title, null, null, -1, -1, false);
+            } else if (closeAction == CloseAction.USE_ALL) {
                 return selected;
             }
         }
@@ -280,7 +265,6 @@ public class StatusHistoryDialog extends JDialog {
         boolean enabled = somethingSelected();
         useAllButton.setEnabled(enabled);
         useTitleButton.setEnabled(enabled);
-        useGameButton.setEnabled(enabled);
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -297,7 +281,7 @@ public class StatusHistoryDialog extends JDialog {
      * Closes the dialog returning both the title and the game.
      */
     private void useStatus() {
-        closeAction = CloseAction.TITLE_GAME;
+        closeAction = CloseAction.USE_ALL;
         setVisible(false);
     }
     
@@ -305,15 +289,7 @@ public class StatusHistoryDialog extends JDialog {
      * Closes the dialog returning only the title.
      */
     private void useTitle() {
-        closeAction = CloseAction.TITLE;
-        setVisible(false);
-    }
-    
-    /**
-     * Closes the dialog returning only the game.
-     */
-    private void useGame() {
-        closeAction = CloseAction.GAME;
+        closeAction = CloseAction.USE_TITLE;
         setVisible(false);
     }
     
@@ -328,8 +304,6 @@ public class StatusHistoryDialog extends JDialog {
                 useStatus();
             } else if (e.getSource() == useTitleButton) {
                 useTitle();
-            } else if (e.getSource() == useGameButton) {
-                useGame();
             } else {
                 setVisible(false);
             }
@@ -357,9 +331,8 @@ public class StatusHistoryDialog extends JDialog {
             addItem("toggleFavorite", "Toggle favorite");
             addItem("remove", "Remove");
             addSeparator();
-            addItem("useAll", "Use title and game");
-            addItem("useTitle", "Use title");
-            addItem("useGame", "Use game");
+            addItem("useAll", "Use status");
+            addItem("useTitle", "Use title only");
         }
 
         @Override
@@ -372,8 +345,6 @@ public class StatusHistoryDialog extends JDialog {
                 useStatus();
             } else if (e.getActionCommand().equals("useTitle")) {
                 useTitle();
-            } else if (e.getActionCommand().equals("useGame")) {
-                useGame();
             }
         }
         

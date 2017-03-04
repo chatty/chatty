@@ -1,8 +1,6 @@
 
-package chatty.gui.components;
+package chatty.gui.components.admin;
 
-import chatty.StatusHistoryEntry;
-import chatty.gui.GuiUtil;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
 import java.awt.Color;
@@ -33,7 +31,7 @@ import javax.swing.table.TableRowSorter;
  */
 public class StatusHistoryTable extends JTable {
     
-    private final Model data = new Model(new String[]{"Fav","Title","Game","Last Activity","Usage"});
+    private final Model data = new Model(new String[]{"Fav","Title","Game","Community","Last Activity","Usage"});
     private final TableRowSorter sorter;
     private final JPopupMenu contextMenu;
     
@@ -50,14 +48,15 @@ public class StatusHistoryTable extends JTable {
         tc.setCellRenderer(new LineWrapCellRenderer());
         setGridColor(new Color(200,200,200));
         
-        getColumnModel().getColumn(3).setCellRenderer(new LastActivityRenderer());
+        getColumnModel().getColumn(4).setCellRenderer(new LastActivityRenderer());
         getColumnModel().getColumn(0).setCellRenderer(new FavoriteRenderer());
         
         setColumnWidth(0, 30, 30, 30);
         setColumnWidth(1, 200, 0, 0);
         setColumnWidth(2, 120, 0, 0);
-        setColumnWidth(3, 100, 100, 100);
-        setColumnWidth(4, 50, 50, 50);
+        setColumnWidth(3, 100, 0, 0);
+        setColumnWidth(4, 100, 100, 100);
+        setColumnWidth(5, 50, 50, 50);
         
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
@@ -308,8 +307,10 @@ public class StatusHistoryTable extends JTable {
             } else if (columnIndex == 2) {
                 return entry.game;
             } else if (columnIndex == 3) {
-                return entry.lastActivity;
+                return entry.community.getName();
             } else if (columnIndex == 4) {
+                return entry.lastActivity;
+            } else if (columnIndex == 5) {
                 return entry.timesUsed;
             }
             return null;
@@ -326,10 +327,10 @@ public class StatusHistoryTable extends JTable {
             if (columnIndex == 0) {
                 return Boolean.class;
             }
-            if (columnIndex == 3) {
+            if (columnIndex == 4) {
                 return Long.class;
             }
-            if (columnIndex == 4) {
+            if (columnIndex == 5) {
                 return Integer.class;
             }
             return String.class;

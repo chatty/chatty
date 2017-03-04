@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.components.admin.StatusHistory;
 import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
@@ -1759,11 +1760,6 @@ public class TwitchClient {
         @Override
         public void runCommercialResult(String stream, String text, RequestResultCode result) {
             commercialResult(stream, text, result);
-        }
- 
-        @Override
-        public void gameSearchResult(Set<String> games) {
-            g.gameSearchResult(games);
         }
         
         @Override
