@@ -1767,16 +1767,20 @@ public class MainGui extends JFrame implements Runnable {
                 openEmotesDialogEmoteDetails(emote);
             }
             else if (e.getActionCommand().equals("ignoreEmote")) {
+                String code = emote.code;
+                if (emote instanceof CheerEmoticon) {
+                    code = ((CheerEmoticon)emote).getSimpleCode();
+                }
                 int result = JOptionPane.showConfirmDialog(getActiveWindow(),
                           "<html><body style='width:200px'>Ignoring an emote "
                         + "means showing just the code instead of turning "
                         + "it into an image. The list of ignored emotes can be edited in "
                         + "the Settings under 'Emoticons'.\n\nDo you want to "
-                        + "ignore '"+emote.code+"' from now on?",
+                        + "ignore '"+code+"' from now on?",
                         "Ignore Emote", JOptionPane.OK_CANCEL_OPTION);
                 if (result == JOptionPane.OK_OPTION) {
-                    emoticons.addIgnoredEmote(emote);
-                    client.settings.setAdd("ignoredEmotes", emote.code);
+                    emoticons.addIgnoredEmote(code);
+                    client.settings.setAdd("ignoredEmotes", code);
                 }
             }
             else if (e.getActionCommand().equals("favoriteEmote")) {

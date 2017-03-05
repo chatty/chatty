@@ -1910,8 +1910,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     if (bits < emote.min_bits) {
                         continue;
                     }
-                    if (addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
+                    boolean ignored = main.emoticons.isEmoteIgnored(emote);
+                    if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
                         addFormattedText(emote.color, end - bitsLength + 1, end, ranges, rangesStyle);
+                    } else {
+                        addFormattedText(emote.color, start, end, ranges, rangesStyle);
                     }
                 } catch (NumberFormatException ex) {
                     System.out.println("Error parsing cheer: " + ex);

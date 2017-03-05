@@ -441,15 +441,6 @@ public class Emoticons {
     }
     
     /**
-     * Adds the given emote to the list of ignored emotes, by adding it's code.
-     * 
-     * @param emote The emote to ignore
-     */
-    public void addIgnoredEmote(Emoticon emote) {
-        addIgnoredEmote(emote.code);
-    }
-    
-    /**
      * Adds the given emote code to the list of ignored emotes.
      * 
      * @param emoteCode The emote code to add
@@ -466,6 +457,9 @@ public class Emoticons {
      * @return true if the emote is ignored, false otherwise
      */
     public boolean isEmoteIgnored(Emoticon emote) {
+        if (emote instanceof CheerEmoticon) {
+            return ignoredEmotes.contains(((CheerEmoticon)emote).getSimpleCode());
+        }
         return ignoredEmotes.contains(emote.code);
     }
     

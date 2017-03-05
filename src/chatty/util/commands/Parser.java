@@ -268,6 +268,7 @@ public class Parser {
         private final boolean isRequired;
         private final Item identifier;
         private final Items output1;
+        // May be null
         private final Items output2;
         
         public Condition(Item name, boolean isRequired, Items output1, Items output2) {
@@ -299,6 +300,7 @@ public class Parser {
         public boolean containsIdentifier(String prefix) {
             return identifier.containsIdentifier(prefix)
                     || output1.containsIdentifier(prefix)
+                    || output2 == null
                     || output2.containsIdentifier(prefix);
         }
         

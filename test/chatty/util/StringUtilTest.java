@@ -40,7 +40,7 @@ public class StringUtilTest {
         assertEquals(StringUtil.append("abc", "", "abc"), "abcabc");
         assertEquals(StringUtil.append(null, "|", "b"), "b");
         assertEquals(StringUtil.append("", "|", "b"), "b");
-        assertEquals(StringUtil.append("abc", "|", null), "abc|null");
+        assertEquals(StringUtil.append("abc", "|", null), "abc");
         assertEquals(StringUtil.append("abc", null, "abc"), "abcnullabc");
         assertEquals(StringUtil.append(null, null, null), null);
     }

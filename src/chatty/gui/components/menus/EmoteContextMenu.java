@@ -91,11 +91,11 @@ public class EmoteContextMenu extends ContextMenu {
         addSeparator();
         addItem("emoteDetails", "Show Details");
         
+        addSeparator();
+        addItem("ignoreEmote", "Ignore");
         if (emote.subType == Emoticon.SubType.CHEER) {
             return;
         }
-        addSeparator();
-        addItem("ignoreEmote", "Ignore");
         
         if (!emote.hasStreamRestrictions()) {
             if (emoteManager.isFavorite(emote)) {

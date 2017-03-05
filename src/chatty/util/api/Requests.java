@@ -330,12 +330,12 @@ public class Requests {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         execute(request, r -> {
-            if (r.responseCode == 204) {
+            if (r.responseCode == 204 || r.responseCode == 404) { // 404 just in case Twitch changes it
                 listener.received(Community.EMPTY, null);
             } else {
                 Community result = CommunitiesManager.parse(r.text);
                 if (result == null) {
-                    listener.received(null, "Unkown error");
+                    listener.received(null, "Community error");
                 } else {
                     api.communitiesManager.addCommunity(result);
                     listener.received(result, null);

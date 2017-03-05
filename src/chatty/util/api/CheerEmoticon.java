@@ -104,4 +104,8 @@ public class CheerEmoticon extends Emoticon {
         return true;
     }
     
+    public String getSimpleCode() {
+        return prefix+min_bits;
+    }
+    
 }
