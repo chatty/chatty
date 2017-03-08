@@ -98,7 +98,13 @@ public class TwitchApi {
     //====================
     
     public void getChannelInfo(String stream) {
-        requests.getChannelInfo(stream);
+        userIDs.getUserIDsAsap(r -> {
+            if (!r.hasError()) {
+                requests.getChannelInfo(r.getId(stream), stream);
+            } else {
+                resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
+            }
+        }, stream);
     }
 
     public void getChatInfo(String stream) {
@@ -261,7 +267,13 @@ public class TwitchApi {
     //===================
     
     public void putChannelInfo(ChannelInfo info) {
-        requests.putChannelInfo(info, defaultToken);
+        userIDs.getUserIDsAsap(r -> {
+            if (!r.hasError()) {
+                requests.putChannelInfo(r.getId(info.name), info, defaultToken);
+            } else {
+                resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+            }
+        }, info.name);
     }
     
     public void performGameSearch(String search, GameSearchListener listener) {
@@ -290,7 +302,7 @@ public class TwitchApi {
      * @param id The community id
      * @param listener 
      */
-    public void getCommunityForName(String id, CommunityListener listener) {
+    public void getCommunity(String id, CommunityListener listener) {
         if (id == null || id.isEmpty()) {
             listener.received(null, "No community id.");
         } else {
@@ -347,7 +359,13 @@ public class TwitchApi {
     }
     
     public void runCommercial(String stream, int length) {
-        requests.runCommercial(stream, defaultToken, length);
+        userIDs.getUserIDsAsap(r -> {
+            if (!r.hasError()) {
+                requests.runCommercial(r.getId(stream), stream, defaultToken, length);
+            } else {
+                resultListener.runCommercialResult(stream, "Failed to resolve id", RequestResultCode.UNKNOWN);
+            }
+        }, stream);
     }
     
     public void autoMod(String action, String msgId) {

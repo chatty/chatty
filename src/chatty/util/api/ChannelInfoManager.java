@@ -38,11 +38,11 @@ public class ChannelInfoManager {
         ChannelInfo info = cachedChannelInfo.get(stream);
         if (info != null) {
             if (System.currentTimeMillis() - info.time > 600*1000) {
-                api.requests.getChannelInfo(stream);
+                api.getChannelInfo(stream);
             }
             return info;
         }
-        api.requests.getChannelInfo(stream);
+        api.getChannelInfo(stream);
         return null;
     }
     
@@ -122,7 +122,7 @@ public class ChannelInfoManager {
             JSONObject root = (JSONObject)parser.parse(json);
             
             String name = (String)root.get("name");
-            long id = ((Number)root.get("_id")).longValue();
+            String id = (String)root.get("_id");
             String status = (String)root.get("status");
             String game = (String)root.get("game");
             int views = JSONUtil.getInteger(root, "views", -1);

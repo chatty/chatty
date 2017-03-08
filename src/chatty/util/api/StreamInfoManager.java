@@ -553,7 +553,7 @@ public class StreamInfoManager {
             api.setUserId(name, userId);
             System.out.println(name+" "+userId);
         }
-        api.getCommunityForName(community_id, (r,e) -> { streamInfo.setCommunity(r); });
+        api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted);
         } else {

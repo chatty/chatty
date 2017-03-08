@@ -271,6 +271,7 @@ public class StatusPanel extends JPanel {
         currentChannel = channel;
         status.setText("");
         game.setText("");
+        setCommunity(null);
         
         // This will reset last loaded anyway
         getChannelInfo();

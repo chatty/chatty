@@ -13,7 +13,7 @@ import chatty.util.api.CommunitiesManager.Community;
  */
 public class ChannelInfo {
     
-    public final long id;
+    public final String id;
     public final long time;
     public final String name;
     public final long createdAt;
@@ -23,10 +23,10 @@ public class ChannelInfo {
     public final String game;
     
     public ChannelInfo(String name, String status, String game) {
-        this(name, -1, status, game, -1, -1, -1);
+        this(name, null, status, game, -1, -1, -1);
     }
     
-    public ChannelInfo(String name, long id, String status, String game, long createdAt,
+    public ChannelInfo(String name, String id, String status, String game, long createdAt,
             int followers, int views) {
         this.status = status;
         this.game = game;

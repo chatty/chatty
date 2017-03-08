@@ -156,6 +156,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             name += " ("+streamInfo.getCapitalizedName()+")";
         }
         this.setTitle("Channel: "+name+(streamInfo.getFollowed() ? " (followed)" : ""));
+        String communityText = "";
         if (streamInfo.isValid() && streamInfo.getOnline()) {
             statusText = streamInfo.getTitle();
             gameText = streamInfo.getGame();
@@ -166,13 +167,11 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             onlineSince.setText(null);
             onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(timeStarted));
             Community community = streamInfo.getCommunity();
-            String communityText = null;
             if (community != null) {
                 communityText = String.format("[community:%s %s]",
                         community.getName(),
                         community.getName());
             }
-            communityLabel.setText(communityText);
         }
         else if (streamInfo.isValid()) {
             statusText = "Stream offline";
@@ -200,6 +199,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
         title.setText(statusText);
         game.setText(gameText);
+        communityLabel.setText(communityText);
         history.setHistory(streamInfo.getStream(), streamInfo.getHistory());
         currentStreamInfo = streamInfo;
         updateOnlineTime();

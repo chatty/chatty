@@ -46,25 +46,24 @@ public class Requests {
     // Channel Information
     //====================
     
-    protected void requestFollowers(String stream) {
-        String url = "https://api.twitch.tv/kraken/channels/"+stream+"/follows?direction=desc&limit=100&offset=0";
+    protected void requestFollowers(String streamId, String stream) {
+        String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/follows?direction=desc&limit=100&offset=0";
         //url = "http://127.0.0.1/twitch/followers";
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
-            //request.setApiVersion("v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             execute(request, r -> {
                 api.followerManager.received(r.responseCode, stream, r.text);
             });
         }
     }
     
-    protected void requestSubscribers(String stream, String token) {
-        String url = "https://api.twitch.tv/kraken/channels/"+stream+"/subscriptions?direction=desc&limit=100&offset=0";
+    protected void requestSubscribers(String streamId, String stream, String token) {
+        String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/subscriptions?direction=desc&limit=100&offset=0";
         if (Chatty.DEBUG) {
             url = "http://127.0.0.1/twitch/subscriptions_test";
         }
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             request.setToken(token);
             execute(request, r -> {
                 api.subscriberManager.received(r.responseCode, stream, r.text);
@@ -72,13 +71,13 @@ public class Requests {
         }
     }
     
-    public void getChannelInfo(String stream) {
+    public void getChannelInfo(String streamId, String stream) {
         if (stream == null || stream.isEmpty()) {
             return;
         }
-        String url = "https://api.twitch.tv/kraken/channels/"+stream;
+        String url = "https://api.twitch.tv/kraken/channels/"+streamId;
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             execute(request, r -> {
                 api.channelInfoManager.handleChannelInfoResult(false, r.text, r.responseCode, stream);
             });
@@ -245,13 +244,13 @@ public class Requests {
      * @param info
      * @param token 
      */
-    public void putChannelInfo(ChannelInfo info, String token) {
+    public void putChannelInfo(String userId, ChannelInfo info, String token) {
         if (info == null || info.name == null) {
             return;
         }
-        String url = "https://api.twitch.tv/kraken/channels/"+info.name;
+        String url = "https://api.twitch.tv/kraken/channels/"+userId;
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             request.setToken(token);
             request.setData(api.channelInfoManager.makeChannelInfoJson(info), "PUT");
             execute(request, r -> {
@@ -354,8 +353,8 @@ public class Requests {
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(TwitchApi.class.getName()).log(Level.SEVERE, null, ex);
         }
-        final String url = "https://api.twitch.tv/kraken/search/games?type=suggest&q="+encodedGame;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+        final String url = "https://api.twitch.tv/kraken/search/games?query="+encodedGame;
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         execute(request, r -> {
             if (r.text != null) {
                 Set<String> games = Parsing.parseGameSearch(r.text);
@@ -366,17 +365,19 @@ public class Requests {
         });
     }
     
-    public void runCommercial(String stream, String token, int length) {
-        String url = "https://api.twitch.tv/kraken/channels/"+stream+"/commercial";
+    public void runCommercial(String userId, String stream, String token, int length) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/commercial";
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            JSONObject data = new JSONObject();
+            data.put("duration", length);
             request.setToken(token);
-            request.setData("length=" + length, "POST");
-            request.setContentType("application/x-www-form-urlencoded");
+            request.setData(data.toJSONString(), "POST");
+            request.setContentType("application/json");
             execute(request, r -> {
                 String resultText = "Unknown response: " + r.responseCode;
                 RequestResultCode resultCode = RequestResultCode.UNKNOWN;
-                if (r.responseCode == 204) {
+                if (r.responseCode == 204 || r.responseCode == 200) { // Not sure from the docs, and hard to test without being partner
                     resultText = "Running commercial..";
                     resultCode = RequestResultCode.RUNNING_COMMERCIAL;
                 } else if (r.responseCode == 422) {
@@ -442,7 +443,7 @@ public class Requests {
     protected void requestGlobalBadges() {
         String url = "https://badges.twitch.tv/v1/badges/global/display?language=en";
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             execute(request, r -> {
                 listener.receivedUsericons(api.badgeManager.handleGlobalBadgesResult(r.text));
             });
@@ -452,7 +453,7 @@ public class Requests {
     protected void requestRoomBadges(String roomId, String stream) {
         String url = "https://badges.twitch.tv/v1/badges/channels/"+roomId+"/display?language=en";
         if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             execute(request, r -> {
                 listener.receivedUsericons(api.badgeManager.handleRoomBadgesResult(r.text, stream));
             });
@@ -471,7 +472,7 @@ public class Requests {
             String url = "https://api.twitch.tv/kraken/chat/emoticon_images";
             //url = "http://127.0.0.1/twitch/emoticons";
             if (attemptRequest(url)) {
-                TwitchApiRequest request = new TwitchApiRequest(url, "v3");
+                TwitchApiRequest request = new TwitchApiRequest(url, "v5");
                 execute(request, r -> {
                     api.emoticonManager.dataReceived(r.text, forcedUpdate);
                 });
