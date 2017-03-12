@@ -113,7 +113,8 @@ public class Manager {
     public void setLocalUsername(String username) {
         if (localUsername == null || !localUsername.equals(username)) {
             this.localUsername = username;
-            this.localUserId = getUserId(username);
+            this.localUserId = null;
+            getUserId(username);
         }
     }
     
@@ -133,12 +134,9 @@ public class Manager {
             return;
         }
         this.token = token;
-        String userId = getUserId(username);
-        modLogListen.put(username, userId);
-        LOGGER.info("[PubSub] LISTEN ModLog "+username+" "+userId);
-        if (userId != null) {
-            sendListenModLog(userId, true);
-        }
+        LOGGER.info("[PubSub] LISTEN ModLog "+username+" pending");
+        modLogListen.put(username, null);
+        getUserId(username);
     }
     
     /**
@@ -164,11 +162,10 @@ public class Manager {
      * @param username A valid Twitch username
      * @return The user id, or -1 if user id still has to be requested
      */
-    private String getUserId(String username) {
+    private void getUserId(String username) {
         api.waitForUserId(r -> {
             Manager.this.setUserId(username, r.getId(username));
         }, username);
-        return null;
     }
 
     /**

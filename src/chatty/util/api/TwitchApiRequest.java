@@ -117,6 +117,14 @@ public class TwitchApiRequest implements Runnable {
      * @return 
      */
     private String getUrl(String targetUrl) {
+        // Debug output
+        if (token != null) {
+            LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl + " "
+                    + "(using authorization)");
+        } else {
+            LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl);
+        }
+        
         Charset charset = Charset.forName("UTF-8");
         URL url;
         HttpURLConnection connection = null;
@@ -149,13 +157,7 @@ public class TwitchApiRequest implements Runnable {
                 LOGGER.info("Sending data: "+data);
             }
 
-            // Whether token was used or not
-            if (token != null) {
-                LOGGER.info(connection.getRequestMethod()+" ("+apiVersion+"): "+targetUrl+" "
-                        + "(using authorization)");
-            } else {
-                LOGGER.info(connection.getRequestMethod()+" ("+apiVersion+"): "+targetUrl);
-            }
+            
             
             encoding = connection.getContentEncoding();
             //System.out.println(connection.getHeaderFields());

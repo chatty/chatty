@@ -288,14 +288,17 @@ public class StatusPanel extends JPanel {
     }
     
     private void putCommunity() {
+        final String channel = currentChannel;
         api.setCommunity(currentChannel, currentCommunity.getId(), error -> {
-            if (error != null) {
-                communityPutResult = "Failed setting community.";
-            } else {
-                communityPutResult = "Community updated.";
+            if (currentChannel.equals(channel)) {
+                if (error != null) {
+                    communityPutResult = "Failed setting community.";
+                } else {
+                    communityPutResult = "Community updated.";
+                }
+                loadingCommunity = false;
+                checkLoadingDone();
             }
-            loadingCommunity = false;
-            checkLoadingDone();
         });
     }
 
@@ -372,18 +375,21 @@ public class StatusPanel extends JPanel {
         statusLoadError = null;
         communityLoadError = null;
         
-        main.getChannelInfo(currentChannel);
-        api.getCommunityForChannel(currentChannel, (r, e) -> {
-            if (r == null) {
-                communityLoadError = e == null ? "" : e;
-            } else {
-                setCommunity(r);
-                updateCommunityName(r);
-            }
-            loadingCommunity = false;
-            checkLoadingDone();
-        });
         setLoading(true);
+        main.getChannelInfo(currentChannel);
+        final String channel = currentChannel;
+        api.getCommunityForChannel(currentChannel, (r, e) -> {
+            if (currentChannel.equals(channel)) {
+                if (r == null) {
+                    communityLoadError = e == null ? "" : e;
+                } else {
+                    setCommunity(r);
+                }
+                loadingCommunity = false;
+                checkLoadingDone();
+            }
+            updateCommunityName(r);
+        });
     }
     
     private void checkLoadingDone() {
@@ -466,6 +472,9 @@ public class StatusPanel extends JPanel {
      * @param c 
      */
     protected void updateCommunityName(Community c) {
+        if (c == null) {
+            return;
+        }
         main.getStatusHistory().updateCommunityName(c);
         Map<String, String> communities = main.getCommunityFavorites();
         if (communities.containsKey(c.getId())) {

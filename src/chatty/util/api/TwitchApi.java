@@ -119,10 +119,23 @@ public class TwitchApi {
         subscriberManager.request(stream);
     }
     
+    /**
+     * Get ChannelInfo, if cached. This will *not* request missing ChannelInfo.
+     * 
+     * @param stream
+     * @return 
+     */
     public ChannelInfo getOnlyCachedChannelInfo(String stream) {
         return channelInfoManager.getOnlyCachedChannelInfo(stream);
     }
     
+    /**
+     * Get ChannelInfo, which may be cached. This will request immediately if
+     * not cached.
+     * 
+     * @param stream
+     * @return 
+     */
     public ChannelInfo getCachedChannelInfo(String stream) {
         return channelInfoManager.getCachedChannelInfo(stream);
     }
@@ -210,18 +223,18 @@ public class TwitchApi {
         userIDs.waitForUserIDs(listener, names);
     }
     
-    public void getUserId(UserIDs.UserIdResultListener listener, String... names) {
+    /**
+     * @see UserIDs#getUserIDsAsap(chatty.util.api.UserIDs.UserIdResultListener, java.lang.String...) 
+     * 
+     * @param listener
+     * @param names 
+     */
+    public void getUserIdAsap(UserIDs.UserIdResultListener listener, String... names) {
         userIDs.getUserIDsAsap(listener, names);
     }
     
     public void requestUserId(String... names) {
         userIDs.requestUserIDs(names);
-    }
-    
-    public void getUserIDsTest(String usernames) {
-        userIDs.getUserIDsAsap(r -> {
-            System.out.println(r.getValidIDs());
-        }, usernames.split(" "));
     }
     
     public void getUserIDsTest2(String usernames) {
@@ -331,6 +344,10 @@ public class TwitchApi {
         } else {
             listener.received(null, "Invalid community name");
         }
+    }
+    
+    public void getCommunityById(String id, CommunityListener listener) {
+        requests.getCommunityById(id, listener);
     }
     
     public void setCommunity(String channelName, String communityId, CommunityPutListener listener) {

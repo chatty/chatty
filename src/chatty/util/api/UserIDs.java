@@ -3,7 +3,6 @@ package chatty.util.api;
 
 import chatty.util.StringUtil;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +26,8 @@ public class UserIDs {
     private static final Logger LOGGER = Logger.getLogger(UserIDs.class.getName());
     
     private static final long CHECK_PENDING_DELAY = 10*1000;
+    private static final long REQUEST_DELAY = 5;
+    private static final long ERROR_PENALTY = 30;
     
     private final Data data = new Data();
     private final Collection<Request> requests = new LinkedList<>();
@@ -48,6 +49,21 @@ public class UserIDs {
         }, CHECK_PENDING_DELAY, CHECK_PENDING_DELAY);
     }
     
+    /**
+     * Request the userids for the given names, and wait for the result. Will
+     * only return a result if the id for *all* names is available, so the
+     * caller may end up waiting forever. This is useful if not having the code
+     * prevents you from progressing and any way.
+     * 
+     * These are not removed, unless the request succeeds, but the name is not
+     * found. This means that requests can more easily stack up, so the caller
+     * should make sure to prevent that, or else if errors clear up (like the
+     * API can suddenly be reached after some time) a whole lot of request
+     * listeners may be called at once.
+     * 
+     * @param result
+     * @param usernames 
+     */
     public void waitForUserIDs(UserIdResultListener result, String... usernames) {
         Collection names = prepareNames(usernames);
         addRequest(result, names, true);
@@ -55,6 +71,15 @@ public class UserIDs {
         checkRequest();
     }
     
+    /**
+     * Request the ID for each of the given names, as soon as possible. This
+     * will not wait for a request, it will request missing IDs immediately.
+     * This can be used for actions that are triggered by the user and thus
+     * should be done asap.
+     * 
+     * @param result
+     * @param usernames 
+     */
     public void getUserIDsAsap(UserIdResultListener result, String... usernames) {
         Collection names = prepareNames(usernames);
         addRequest(result, names, false);
@@ -62,17 +87,37 @@ public class UserIDs {
         performRequest();
     }
     
+    /**
+     * Convenience method for getUserIDs(UserIdResultListener, Collection<String>).
+     * 
+     * @param result
+     * @param usernames 
+     */
     public void getUserIDs(UserIdResultListener result, String... usernames) {
         Collection names = prepareNames(usernames);
         getUserIDs(result, names);
     }
     
+    /**
+     * Gets the given user ids, if cached, or otherwise requests them on the
+     * normal request cycle (so it could take a while).
+     * 
+     * @param result
+     * @param names 
+     */
     public void getUserIDs(UserIdResultListener result, Collection<String> names) {
         addRequest(result, names, false);
         checkDoneRequests(true);
-        //checkRequest();
     }
     
+    /**
+     * Return cached results if all names are cached (whether they have an id
+     * or not, but have been requsted before), or null. Adds any names missing
+     * an id to be requested.
+     * 
+     * @param usernames
+     * @return 
+     */
     public synchronized UserIdResult requestUserIDs(String... usernames) {
         Collection names = prepareNames(usernames);
         UserIdResult result = getCachedResult(names);
@@ -146,7 +191,7 @@ public class UserIDs {
     
     private synchronized void checkRequest() {
         long timePassed = System.currentTimeMillis() - lastRequest;
-        if (timePassed > (5 + 10 * errors) * 1000) {
+        if (timePassed > (REQUEST_DELAY + ERROR_PENALTY * errors) * 1000) {
             performRequest();
         }
     }
@@ -177,8 +222,8 @@ public class UserIDs {
         System.out.println("Added request: "+requests);
     }
     
-    private void checkDoneRequests(boolean noErrors) {
-        Collection<Request> done = getDoneRequests(noErrors);
+    private void checkDoneRequests(boolean onlyComplete) {
+        Collection<Request> done = getDoneRequests(onlyComplete);
         if (done == null) {
             return;
         }
@@ -190,15 +235,16 @@ public class UserIDs {
         clearUp();
     }
     
-    private synchronized Collection<Request> getDoneRequests(boolean noErrors) {
+    private synchronized Collection<Request> getDoneRequests(boolean onlyComplete) {
         if (requests.isEmpty()) {
             return null;
         }
         Collection<Request> result = new ArrayList<>();
         for (Request r : requests) {
             UserIdResult idResult = getCachedResult(r.usernames);
-            if (idResult != null && (!r.wait || !idResult.hasError())
-                    && (!noErrors || !eligibleForRequest(r))) {
+            if (idResult != null
+                    && (!r.wait || !idResult.hasError())
+                    && (!onlyComplete || !eligibleForRequest(r))) {
                 r.setResult(idResult);
                 result.add(r);
             }
@@ -207,6 +253,15 @@ public class UserIDs {
         return result;
     }
     
+    /**
+     * Returns the Entry object for all given usernames, or null if not all
+     * are cached. Note that the Entry objects may not have an idea attached,
+     * they could also have been added due to a request error. It just means
+     * that they have been requested before, successful or not.
+     * 
+     * @param usernames
+     * @return 
+     */
     private synchronized UserIdResult getCachedResult(Collection<String> usernames) {
         Map<String, Entry> result = data.get(usernames);
         if (result.size() < usernames.size()) {
@@ -226,6 +281,13 @@ public class UserIDs {
         System.out.println("After cleanup: "+requests);
     }
     
+    /**
+     * Returns true if at least one of the names in the Request is still
+     * eligible for request.
+     * 
+     * @param request
+     * @return 
+     */
     private boolean eligibleForRequest(Request request) {
         for (String name : request.usernames) {
             if (data.shouldRequest(name)) {
@@ -274,6 +336,10 @@ public class UserIDs {
             return data.values();
         }
         
+        public Map<String, String> getData() {
+            return data;
+        }
+        
         public String getId(String name) {
             return data.get(StringUtil.toLowerCase(name));
         }
@@ -317,7 +383,7 @@ public class UserIDs {
         
         @Override
         public String toString() {
-            return usernames.toString();
+            return String.format("{%s/%s}", usernames.toString(), wait);
         }
         
     }
@@ -339,10 +405,12 @@ public class UserIDs {
             return data.get(name);
         }
         
-        public synchronized void setId(String name, String id) {
+        public synchronized boolean setId(String name, String id) {
             if (!data.containsKey(name) || get(name).id == null) {
                 data.put(name, new Entry(name, id));
+                return true;
             }
+            return false;
         }
         
         public synchronized void setNotFound(String name) {
@@ -359,12 +427,12 @@ public class UserIDs {
         
         public synchronized void setError(String name) {
             if (data.containsKey(name)) {
-                Entry entry = data.get(name);
-                entry.errors++;
-                System.out.println(entry);
+//                Entry entry = data.get(name);
+//                entry.errors++;
+//                System.out.println(entry);
             } else {
                 Entry entry = new Entry(name, null);
-                entry.errors++;
+                //entry.errors++;
                 data.put(name, entry);
             }
         }
@@ -392,6 +460,13 @@ public class UserIDs {
             return data.containsKey(name) && data.get(name).id != null;
         }
         
+        /**
+         * Returns true if the id for this name should be requested again, so if
+         * it hasn't been requested yet, or only few errors occured so far.
+         * 
+         * @param name
+         * @return 
+         */
         public synchronized boolean shouldRequest(String name) {
             if (!data.containsKey(name)) {
                 return true;

@@ -159,6 +159,7 @@ public class SelectCommunityDialog extends JDialog {
         gbc.weightx = 0.9;
         gbc.weighty = 1;
         description.setEditable(false);
+        description.setContentType("text/html");
         add(new JScrollPane(description), gbc);
  
         gbc = makeGbc(0,5,1,1);
@@ -286,7 +287,6 @@ public class SelectCommunityDialog extends JDialog {
                     "<html><body style='font: sans-serif 9pt;padding:3px;'>%s<h2 style='font-size:12pt;border-bottom: 1px solid black'>Rules</h2>%s",
                     maybe.getSummary(),
                     maybe.getRules()));
-            description.setContentType("text/html");
             description.setCaretPosition(0);
         } else {
             description.setText("Loading..");
@@ -297,20 +297,31 @@ public class SelectCommunityDialog extends JDialog {
     
     private void loadCurrentInfo() {
         if (!loading && current != null && current == shouldMaybeRequest) {
+            final Community forRequest = current;
+            // This should only be done if cached info could not be found
             loading = true;
             shouldMaybeRequest = null;
-            api.getCommunityByName(current.getName(), (r, e) -> {
+            // The request will also add it to cached infos, so we don't need
+            // to retrieve the result directly
+            api.getCommunityById(forRequest.getId(), (r, e) -> {
                 SwingUtilities.invokeLater(() -> {
                     updateInfo();
+                    
+                    // In case same one was selected again, reset
+                    if (forRequest.equals(shouldMaybeRequest)) {
+                        shouldMaybeRequest = null;
+                    }
                     loading = false;
+                    updateName(r);
                 });
             });
         }
     }
     
     private void updateName(Community c) {
-        if (favorites.remove(c)) {
+        if (c != null && favorites.remove(c)) {
             favorites.add(c);
+            saveFavorites();
         }
     }
     
@@ -352,7 +363,7 @@ public class SelectCommunityDialog extends JDialog {
                     setCurrent(r);
                     // Update cached name, if necessary (not sure if Communities
                     // can even change name, but it's certainly not impossible).
-                    // Do it here because the result form the API should be
+                    // Do it here because the result from the API should be
                     // correct.
                     updateName(r);
                     

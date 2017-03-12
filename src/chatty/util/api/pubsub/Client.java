@@ -173,7 +173,7 @@ public class Client {
     
     @OnOpen
     public synchronized void onOpen(Session session) {
-        LOGGER.info("[PubSub] Connected to "+session.getRequestURI());
+        LOGGER.info("[PubSub] Connected: "+session.getRequestURI());
         connectedSince = System.currentTimeMillis();
         this.s = session;
         handler.handleConnect();

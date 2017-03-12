@@ -1222,10 +1222,18 @@ public class TwitchClient {
                     }
                 });
             }
-        } else if (command.equals("getuserids")) {
-            api.getUserId(r -> {
-                g.printSystem(r.toString());
-            }, parameter.split("[ ,]"));
+        } else if (command.equals("getuserid")) {
+            if (parameter == null) {
+                g.printSystem("Parameter required.");
+            } else {
+                api.getUserIdAsap(r -> {
+                    String result = r.getData().toString();
+                    if (r.hasError()) {
+                        result += " Error: "+r.getError();
+                    }
+                    g.printSystem(result);
+                }, parameter.split("[ ,]"));
+            }
         } else if (command.equals("getuserids2")) {
             api.getUserIDsTest2(parameter);
         } else if (command.equals("getuserids3")) {
