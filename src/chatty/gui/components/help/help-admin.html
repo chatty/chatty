@@ -14,14 +14,13 @@
             right-clicking on the channel to open the context menu and choose
             <code>Channel Admin</code>.</em></p>
     
-    <p>In the Admin Dialog you can change the title/game of your channel and
-    run commercials, if you have allowed the necessary access when getting your
-    login data. You need <code>Editor access</code> for changing game/title and
-    <code>Commercial access</code> for running commercials. See <a href="help.html#access">allow more access</a>.</p>
-    <p>The Admin Dialog is always opened for the currently selected channel,
+    <p>In the Admin Dialog you can edit your title/game and run commercials, if
+        you have allowed Chatty access (you need <code>Editor Access</code>/
+        <code>Commercial access</code> respectively, see <a href="help.html#access">allow more access</a>).</p>
+    
+    <p>The Admin Dialog is always opened for the currently active channel,
     unless there is no channel open (which is the case just after you started Chatty),
-    in which case it will always be opened for your own channel, which is derived
-    from your configured account name.</p>
+    in which case it will open for your own channel (you login with).</p>
     
     <h2><a name="status">Change game/title</a></h2>
     <p>The Status-Tab lets you view and change the title and game of your channel.
@@ -30,26 +29,29 @@
     you may want to reload before trying to change it.</p>
     
     <h3>Select a game</h3>
-    <p>When you select a game, another dialog will open where you should enter
-        part of the name of the game in the search field and hit <kbd>Enter</kbd>
-        or click the <code>Search</code>-Button to find the correct name, which
-    you can then select. You can also just use the name you entered yourself,
-    but you should usually use the search to make sure your stream appears in
-    the correct category on Twitch.</p>
+    <p>Use <code>Select game</code> to open a dialog where you can search for
+        a game and also add games to the favorites.</p>
+    
+    <h3>Select a community</h3>
+    <p>Communities in Twitch are an additional category you can select for your
+        stream. If you want to use a Community, you need to select an already
+        existing one. As with games, you can add favorite Communities. Make sure
+        to adhere to the rules when selecting a Community.</p>
     
     <h3>Use presets</h3>
-    <p>There are also status presets, which allow you to add a combination of
-        title and game, so you can select it later. By pressing <code>Fav</code>
-        on the Status-Tab, you can add the current status to the favorites.
-        The status is also automatically added to the history every time you
-        press the <code>Update</code> button.</p>
-    <p>Press the <code>Presets</code> button to open a table with the favorites
-        and status history. You can filter the table by only showing entries for
-        the game currently have selected or only showing favorites.</p>
-    <p>History entries (the ones that are not favorites) are automatically
-        removed after some time, you can change when they are removed and
-        whether they should be added in the first place in the settings.</p>
-    <p>The <code>Last Activity</code> columns shows when this status was last
+    <p>Status Presets allow you to store the current title, game and community
+        for later use. A status is automatically added every time you press the
+        <code>Update</code> button (can be disabled in the History settings),
+        but will be removed after some time of not being used. You can also add
+        the current status to the favorites by pressing the <code>Fav</code>
+        button, which means it is never automatically removed from the Status
+        Presets.</p>
+    
+    <p>Press the <code>Presets</code> button to open the Presets, where you can
+        select a status (double-click to immediately use it) and filter by
+        current game or favorites.</p>
+    
+    <p>The <code>Last Activity</code> column shows when this status was last
         set using the <code>Update</code> button (or when it was added to the
         favorites for the first time). The <code>Usage</code> column shows how
         often it was set using the <code>Update</code> button.</p>

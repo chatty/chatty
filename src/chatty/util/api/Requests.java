@@ -405,6 +405,7 @@ public class Requests {
         data.put("msg_id", msgId);
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         request.setData(data.toJSONString(), "POST");
+        request.setToken(token);
         execute(request, r -> {
             if (r.responseCode == 204) {
                 if (action.equals("approve")) {
