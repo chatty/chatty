@@ -128,7 +128,6 @@ public class FollowerManager {
                     FollowerInfo errorResult = new FollowerInfo(type, stream, "Could not resolve id");
                     sendResult(type, errorResult);
                     cached.put(stream, errorResult);
-                    System.out.println("error");
                 }
             }, stream);
         } else {

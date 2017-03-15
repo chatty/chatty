@@ -99,10 +99,10 @@ public class TwitchApi {
     
     public void getChannelInfo(String stream) {
         userIDs.getUserIDsAsap(r -> {
-            if (!r.hasError()) {
-                requests.getChannelInfo(r.getId(stream), stream);
-            } else {
+            if (r.hasError()) {
                 resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
+            } else {
+                requests.getChannelInfo(r.getId(stream), stream);
             }
         }, stream);
     }
@@ -281,10 +281,10 @@ public class TwitchApi {
     
     public void putChannelInfo(ChannelInfo info) {
         userIDs.getUserIDsAsap(r -> {
-            if (!r.hasError()) {
-                requests.putChannelInfo(r.getId(info.name), info, defaultToken);
-            } else {
+            if (r.hasError()) {
                 resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+            } else {
+                requests.putChannelInfo(r.getId(info.name), info, defaultToken);
             }
         }, info.name);
     }
@@ -377,10 +377,10 @@ public class TwitchApi {
     
     public void runCommercial(String stream, int length) {
         userIDs.getUserIDsAsap(r -> {
-            if (!r.hasError()) {
-                requests.runCommercial(r.getId(stream), stream, defaultToken, length);
-            } else {
+            if (r.hasError()) {
                 resultListener.runCommercialResult(stream, "Failed to resolve id", RequestResultCode.UNKNOWN);
+            } else {
+                requests.runCommercial(r.getId(stream), stream, defaultToken, length);
             }
         }, stream);
     }

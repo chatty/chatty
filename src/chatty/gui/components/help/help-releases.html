@@ -44,9 +44,68 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.8.5">Version 0.8.5</a> <a name="latest">(This one!)</a> (2016-?)
+        <a name="0.8.5">Version 0.8.5</a> <a name="latest">(This one!)</a> (2017-03-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>Custom Commands got a major overhaul in this version, which means that
+        some of the Custom Commands you are using may have to be fixed (although
+        it should be mostly backwards-compatible). Both Custom Commands and
+        adding them to the Context Menus/User Dialog has become more flexible
+        (for example you can add custom submenus, define commands directly in
+        the menu and move/remove the Mod/Unmod button in the User Dialog). Check
+        out the <a href="help-custom_commands.html">updated help</a> if you want
+        to learn more about it.</p>
+    
+    <p>Also featured in this version is support for Communities in the Admin
+        Dialog. As with games Communities can be favorited and are integrated
+        into the Presets.</p>
+    
+<pre>
+### New features
+- Added Community support to Admin Dialog
+- Added AutoMod dialog (Extra - AutoMod) to approve/deny messages
+- User Dialog: Added ban reasons
+- Added support for Cheer emoticons
+- Added Follower-Only mode support
+- Added "/untimeout" command
+- Added Window Standalone Bundle (no installed Java required)
+
+### Other changes
+- Moved to v5 of the Twitch API
+- Only show 2x size of GIF emotes if scaling is 160% or higher
+- Allow "!highlight" command to be executed locally as well
+- Improve URL parsing a bit
+
+### Settings
+- Added automatic chat log splits (daily, weekly, monthly) and channel
+  directories settings
+- Reorganized Settings Dialog a bit
+- Moved "Simple Title" setting to Titlebar options submenu
+- Changed line spacing setting defaults
+- Changed Ignore Mode default to "Hide"
+- Further attempts to improve reliability of saving settings
+- Added "maxReconnectionAttempts" setting (commands only)
+- Added setting for placement of the Tabs
+- Added "/set" command special value "!" to toggle boolean settings
+- Extended Emote Ignore feature to Cheer Emoticons
+
+### Custom Commands
+- New parser which may require changes to some existing Custom Commands
+- Added some simple functions for more flexibility (like $if to check if a
+  parameter exists)
+- Changed format of Custom Menus to support directly defining commands as well
+  as custom submenu names
+- Changed format of User Dialog Buttons to support adding several rows of
+  buttons, as well as moving/removing the Mod/Unmod button
+- Add "Test" button to some settings to check format of commands and show a
+  limited preview of Custom Menus
+- Add replacements for stream info (title, game, viewers, ..)
+
+### Bugfixes
+- Fixed "/refresh bttvemotes" command when not on a channel
+- Further improved GIF rendering
+- Fixed rare error in Webserver
+</pre>
     
     <h2>
         <a name="0.8.4.1">Version 0.8.4.1</a> (2016-10-29)

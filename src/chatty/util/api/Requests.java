@@ -110,7 +110,6 @@ public class Requests {
      * @param stream 
      */
     protected void requestStreamInfo(String stream) {
-        System.out.println("Stream: "+stream);
         api.userIDs.getUserIDs(r -> {
             if (r.hasError()) {
                 api.streamInfoManager.requestResult(null, -1, stream);
@@ -141,7 +140,6 @@ public class Requests {
     }
     
     private void requestStreamsInfoById(Collection<String> ids, Set<StreamInfo> expected) {
-        System.out.println("Streams: " + ids);
         String streamsString = StringUtil.join(ids, ",");
         String url = "https://api.twitch.tv/kraken/streams?offset=0&limit=100&channel=" + streamsString;
         //url = "http://127.0.0.1/twitch/streams";
@@ -167,7 +165,6 @@ public class Requests {
     }
     
     public void requestUserIDs(Set<String> usernames) {
-        usernames.removeIf(item -> !Helper.validateStream(item));
         String url = "https://api.twitch.tv/kraken/users?login="+StringUtil.join(usernames, ",");
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");

@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.Helper;
 import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -204,8 +205,12 @@ public class UserIDs {
         requests.stream().forEach(r -> {
             r.usernames.stream().forEach(n -> {
                 if (!requestPending.contains(n) && data.shouldRequest(n) && namesToRequest.size() < 100) {
-                    namesToRequest.add(n);
-                    requestPending.add(n);
+                    if (Helper.validateStream(n)) {
+                        namesToRequest.add(n);
+                        requestPending.add(n);
+                    } else {
+                        data.setNotFound(n);
+                    }
                 }
             });
         });
@@ -213,13 +218,15 @@ public class UserIDs {
         if (!namesToRequest.isEmpty()) {
             api.requests.requestUserIDs(namesToRequest);
             lastRequest = System.currentTimeMillis();
+        } else {
+            checkDoneRequests(false);
         }
     }
     
     private synchronized void addRequest(UserIdResultListener result, Collection<String> usernames,
             boolean wait) {
         requests.add(new Request(new HashSet<>(usernames), result, wait));
-        System.out.println("Added request: "+requests);
+        //System.out.println("Added request: "+requests);
     }
     
     private void checkDoneRequests(boolean onlyComplete) {
@@ -271,14 +278,16 @@ public class UserIDs {
     }
     
     private synchronized void clearUp() {
-        System.out.println("Before cleanup: "+requests);
-        Iterator<Request> it = requests.iterator();
-        while (it.hasNext()) {
-            if (!eligibleForRequest(it.next())) {
-                it.remove();
+//        System.out.println("Before cleanup: "+requests);
+        if (!requests.isEmpty()) {
+            Iterator<Request> it = requests.iterator();
+            while (it.hasNext()) {
+                if (!eligibleForRequest(it.next())) {
+                    it.remove();
+                }
             }
         }
-        System.out.println("After cleanup: "+requests);
+//        System.out.println("After cleanup: "+requests);
     }
     
     /**
