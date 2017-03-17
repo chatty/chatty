@@ -1918,8 +1918,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     }
                     boolean ignored = main.emoticons.isEmoteIgnored(emote);
                     if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
+                        // Add emote
                         addFormattedText(emote.color, end - bitsLength + 1, end, ranges, rangesStyle);
                     } else {
+                        // Add just text
                         addFormattedText(emote.color, start, end, ranges, rangesStyle);
                     }
                 } catch (NumberFormatException ex) {

@@ -2556,13 +2556,19 @@ public class MainGui extends JFrame implements Runnable {
     
     public void printMessage(final String toChan, final User user,
             final String text, final boolean action, final String emotes,
-            final int bits, final String id) {
+            final int bits2, final String id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Channel chan;
                 String channel = toChan;
                 boolean whisper = false;
+                
+                // Disable Cheer emotes altogether if disabled in the settings
+                int bits = bits2;
+                if (client.settings.getString("cheersType").equals("none")) {
+                    bits = 0;
+                }
                 
                 /**
                  * Check if special channel and change target according to
