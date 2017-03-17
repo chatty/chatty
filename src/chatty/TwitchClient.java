@@ -184,7 +184,7 @@ public class TwitchClient {
         // Create after Logging is created, since that resets some stuff
         ircLogger = new IrcLogger();
         
-        createTestUser("tduva", "");
+        createTestUser("tduva", "#m_tt");
         
         settings = new Settings(Chatty.getUserDataDirectory()+"settings");
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
@@ -1162,7 +1162,11 @@ public class TwitchClient {
             c.simulate(parameter);
         } else if (command.equals("simulate")) {
             if (parameter.equals("bits")) {
-                parameter = "bits "+g.emoticons.getCheerEmotesString();
+                parameter = "bits "+g.emoticons.getCheerEmotesString(null);
+            } else if (parameter.equals("bitslocal")) {
+                parameter = "bits "+g.emoticons.getCheerEmotesString(Helper.toStream(channel));
+            } else if (parameter.startsWith("bits ")) {
+                parameter = "bits "+parameter.substring("bits ".length());
             }
             String raw = RawMessageTest.simulateIRC(channel, parameter, c.getUsername());
             if (raw != null) {
@@ -1547,6 +1551,10 @@ public class TwitchClient {
             refreshRequests.add("emoticons");
             //Emoticons.clearCache(Emoticon.Type.TWITCH);
             api.requestEmoticons(true);
+        } else if (parameter.equals("bits")) {
+            g.printLine("Refreshing bits..");
+            refreshRequests.add("bits");
+            api.getCheers(channel, true);
         } else if (parameter.equals("badges")) {
             if (!Helper.validateChannel(channel)) {
                 g.printLine("Must be on a channel to use this.");
@@ -1879,6 +1887,10 @@ public class TwitchClient {
 
         @Override
         public void receivedCheerEmoticons(Set<CheerEmoticon> emoticons) {
+            if (refreshRequests.contains("bits")) {
+                g.printLine("Bits received.");
+                refreshRequests.remove("bits");
+            }
             g.setCheerEmotes(emoticons);
         }
     }
@@ -2288,6 +2300,7 @@ public class TwitchClient {
             //api.requestChatIcons(Helper.toStream(channel), false);
             api.getGlobalBadges(false);
             api.getRoomBadges(channel, false);
+            api.getCheers(channel, false);
             requestChannelEmotes(channel);
             frankerFaceZ.joined(channel);
             checkModLogListen(user);

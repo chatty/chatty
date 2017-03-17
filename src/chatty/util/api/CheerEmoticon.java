@@ -37,10 +37,12 @@ public class CheerEmoticon extends Emoticon {
     private final Set<CheerEmoticonUrl> urls;
     
     public static CheerEmoticon create(String prefix, int min_bits, Color color,
-            Set<CheerEmoticonUrl> urls) {
+            Set<CheerEmoticonUrl> urls, String stream) {
         Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "(?i)"+prefix+"([0-9]+)", "");
         b.setSubType(Emoticon.SubType.CHEER);
         b.addInfo(Helper.formatViewerCount(min_bits)+" bits");
+        b.addStreamRestriction(stream);
+        b.setStream(stream);
         return new CheerEmoticon(b, prefix, min_bits, color, urls);
     }
     
@@ -102,6 +104,11 @@ public class CheerEmoticon extends Emoticon {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString()+"/"+min_bits;
     }
     
     public String getSimpleCode() {

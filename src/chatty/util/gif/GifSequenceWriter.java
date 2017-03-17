@@ -14,6 +14,7 @@ package chatty.util.gif;
 /**
  * Changes made by tduva:
  * 
+ * ----------
  * Changed:
  * graphicsControlExtensionNode.setAttribute("disposalMethod", "none");
  * 
@@ -21,6 +22,10 @@ package chatty.util.gif;
  * graphicsControlExtensionNode.setAttribute("disposalMethod", "restoreToBackgroundColor");
  * 
  * as suggested in http://stackoverflow.com/questions/777947/creating-animated-gif-with-imageio/789723#comment26719121_789723
+ * 
+ * ----------
+ * 
+ * Modified to add per-frame delay.
  */
 
 import javax.imageio.*;
@@ -34,13 +39,13 @@ public class GifSequenceWriter {
   protected ImageWriter gifWriter;
   protected ImageWriteParam imageWriteParam;
   protected IIOMetadata imageMetaData;
+  private final boolean loopContinuously;
   
   /**
    * Creates a new GifSequenceWriter
    * 
    * @param outputStream the ImageOutputStream to be written to
    * @param imageType one of the imageTypes specified in BufferedImage
-   * @param timeBetweenFramesMS the time between frames in miliseconds
    * @param loopContinuously wether the gif should loop repeatedly
    * @throws IIOException if no gif ImageWriters are found
    *
@@ -49,7 +54,6 @@ public class GifSequenceWriter {
   public GifSequenceWriter(
       ImageOutputStream outputStream,
       int imageType,
-      int timeBetweenFramesMS,
       boolean loopContinuously) throws IIOException, IOException {
     // my method to create a writer
     gifWriter = getWriter(); 
@@ -61,6 +65,14 @@ public class GifSequenceWriter {
       gifWriter.getDefaultImageMetadata(imageTypeSpecifier,
       imageWriteParam);
 
+    this.loopContinuously = loopContinuously;
+
+    gifWriter.setOutput(outputStream);
+
+    gifWriter.prepareWriteSequence(null);
+  }
+  
+  private void setSettings(int frameDelay) throws IOException {
     String metaFormatName = imageMetaData.getNativeMetadataFormatName();
 
     IIOMetadataNode root = (IIOMetadataNode)
@@ -76,8 +88,8 @@ public class GifSequenceWriter {
       "transparentColorFlag",
       "FALSE");
     graphicsControlExtensionNode.setAttribute(
-      "delayTime",
-      Integer.toString(timeBetweenFramesMS / 10));
+              "delayTime",
+              Integer.toString(frameDelay / 10));
     graphicsControlExtensionNode.setAttribute(
       "transparentColorIndex",
       "0");
@@ -101,13 +113,16 @@ public class GifSequenceWriter {
     appEntensionsNode.appendChild(child);
 
     imageMetaData.setFromTree(metaFormatName, root);
-
-    gifWriter.setOutput(outputStream);
-
-    gifWriter.prepareWriteSequence(null);
   }
   
-  public void writeToSequence(RenderedImage img) throws IOException {
+  /**
+   * 
+   * @param img
+   * @param frameDelay milliseconds
+   * @throws IOException 
+   */
+  public void writeToSequence(RenderedImage img, int frameDelay) throws IOException {
+      setSettings(frameDelay);
     gifWriter.writeToSequence(
       new IIOImage(
         img,
@@ -185,13 +200,13 @@ public class GifSequenceWriter {
       // create a gif sequence with the type of the first image, 1 second
       // between frames, which loops continuously
       GifSequenceWriter writer = 
-        new GifSequenceWriter(output, firstImage.getType(), 1, false);
+        new GifSequenceWriter(output, firstImage.getType(), false);
       
       // write out the first image to our sequence...
-      writer.writeToSequence(firstImage);
+      writer.writeToSequence(firstImage, 1);
       for(int i=1; i<args.length-1; i++) {
         BufferedImage nextImage = ImageIO.read(new File(args[i]));
-        writer.writeToSequence(nextImage);
+        writer.writeToSequence(nextImage, 1);
       }
       
       writer.close();

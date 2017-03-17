@@ -32,7 +32,7 @@ public class CheerEmoticonManager extends CachedManager {
     
     @Override
     protected boolean handleData(String data) {
-        Set<CheerEmoticon> result = parse(data);
+        Set<CheerEmoticon> result = parse(data, null);
         if (result == null || result.isEmpty()) {
             return false;
         }
@@ -40,7 +40,7 @@ public class CheerEmoticonManager extends CachedManager {
         return true;
     }
     
-    private static Set<CheerEmoticon> parse(String json) {
+    protected static Set<CheerEmoticon> parse(String json, String stream) {
         Set<CheerEmoticon> result = new HashSet<>();
         JSONParser parser = new JSONParser();
         try {
@@ -48,7 +48,7 @@ public class CheerEmoticonManager extends CachedManager {
             JSONArray cheers = (JSONArray)root.get("actions");
             for (Object entry : cheers) {
                 if (entry instanceof JSONObject) {
-                    Set<CheerEmoticon> parsedEntry = getEntry((JSONObject)entry);
+                    Set<CheerEmoticon> parsedEntry = getEntry((JSONObject)entry, stream);
                     if (parsedEntry != null) {
                         result.addAll(parsedEntry);
                     }
@@ -61,7 +61,7 @@ public class CheerEmoticonManager extends CachedManager {
         return result;
     }
     
-    private static Set<CheerEmoticon> getEntry(JSONObject entry) {
+    private static Set<CheerEmoticon> getEntry(JSONObject entry, String stream) {
         try {
             Set<CheerEmoticon> result = new HashSet<>();
             String prefix = (String)entry.get("prefix");
@@ -69,9 +69,14 @@ public class CheerEmoticonManager extends CachedManager {
                 LOGGER.warning("Error parsing Cheer: No prefix");
                 return null;
             }
+            String type = (String) entry.get("type");
+            if (type == null || !type.equals("channel_custom")) {
+                stream = null;
+            }
+            System.out.println(prefix+" "+stream);
             JSONArray tiers = (JSONArray)entry.get("tiers");
             for (Object o : tiers) {
-                CheerEmoticon tierResult = getTier(prefix, (JSONObject)o);
+                CheerEmoticon tierResult = getTier(prefix, (JSONObject)o, stream);
                 if (tierResult != null) {
                     result.add(tierResult);
                 }
@@ -83,7 +88,7 @@ public class CheerEmoticonManager extends CachedManager {
         return null;
     }
     
-    private static CheerEmoticon getTier(String prefix, JSONObject tier) {
+    private static CheerEmoticon getTier(String prefix, JSONObject tier, String stream) {
         int min_bits = ((Number)tier.get("min_bits")).intValue();
         Color color = HtmlColors.decode((String)tier.get("color"));
         Set<CheerEmoticonUrl> urls = new HashSet<>();
@@ -93,7 +98,7 @@ public class CheerEmoticonManager extends CachedManager {
         addUrls(images, urls, "light", "animated");
         addUrls(images, urls, "light", "static");
         
-        return CheerEmoticon.create(prefix, min_bits, color, urls);
+        return CheerEmoticon.create(prefix, min_bits, color, urls, stream);
     }
     
     private static void addUrls(JSONObject data, Set<CheerEmoticonUrl> urls,

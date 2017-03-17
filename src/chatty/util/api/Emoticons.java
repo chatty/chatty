@@ -312,8 +312,15 @@ public class Emoticons {
         return cheers.get();
     }
     
-    public String getCheerEmotesString() {
-        return cheers.getString();
+    /**
+     * Get a String with all Cheer emoticons, or just Cheer emoticons specific
+     * to the given stream.
+     * 
+     * @param stream Only return emotes specific to this stream, or null for all
+     * @return 
+     */
+    public String getCheerEmotesString(String stream) {
+        return cheers.getString(stream);
     }
     
     public Set<Emoticon> getOtherGlobalEmotes() {
@@ -1125,7 +1132,7 @@ public class Emoticons {
     }
     
     public void setCheerEmotes(Set<CheerEmoticon> newCheerEmotes) {
-        cheers.set(newCheerEmotes);
+        cheers.add(newCheerEmotes);
         LOGGER.info("Found "+newCheerEmotes.size()+" cheer emotes");
     }
     

@@ -488,8 +488,17 @@ public class Requests {
         }
     }
     
+    public void requestCheerEmoticons(String channelId, String stream) {
+        String url = "https://api.twitch.tv/kraken/bits/actions?channel_id="+channelId;
+        if (attemptRequest(url)) {
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            execute(request, r -> {
+                api.cheersManager2.dataReceived(r.text, stream, channelId);
+            });
+        }
+    }
     
-
+    
     //===================
     // Management Methods
     //===================

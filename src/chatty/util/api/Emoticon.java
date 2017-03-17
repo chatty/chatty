@@ -702,7 +702,7 @@ public class Emoticon {
              */
             if ((icon.getIconWidth() != targetSize.width
                     || icon.getIconHeight() != targetSize.height)
-                    && (icon.getDescription() == null || !icon.getDescription().equals("GIF"))) {
+                    && (icon.getDescription() == null || !icon.getDescription().startsWith("GIF"))) {
                 Image scaled = getScaledImage(icon.getImage(), targetSize.width,
                         targetSize.height);
                 icon.setImage(scaled);
@@ -744,7 +744,7 @@ public class Emoticon {
                 if (loadedIcon == null) {
                     image.setLoadingError();
                 } else {
-                    image.setImage(loadedIcon.getImage());
+                    image.setImage(loadedIcon);
                 }
                 image.setLoadingDone();
             } catch (InterruptedException | ExecutionException ex) {
@@ -926,8 +926,9 @@ public class Emoticon {
             loadingError = true;
         }
         
-        private void setImage(Image image) {
-            icon.setImage(image);
+        private void setImage(ImageIcon image) {
+            icon.setImage(image.getImage());
+            icon.setDescription(image.getDescription());
         }
         
         private void setLoadedFrom(String url) {

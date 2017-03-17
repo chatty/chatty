@@ -288,7 +288,10 @@ public class MainGui extends JFrame implements Runnable {
         
         // Load some stuff
         client.api.requestEmoticons(false);
-        client.api.requestCheerEmoticons(false);
+        //client.api.requestCheerEmoticons(false);
+        // TEST
+//        client.api.getUserIdAsap(null, "m_tt");
+//        client.api.getCheers("m_tt", false);
         client.twitchemotes.requestEmotesets(false);
         if (client.settings.getBoolean("bttvEmotes")) {
             client.bttvEmotes.requestEmotes("$global$", false);

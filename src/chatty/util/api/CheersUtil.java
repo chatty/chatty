@@ -37,9 +37,9 @@ public class CheersUtil {
      * 
      * @param data 
      */
-    public void set(Set<CheerEmoticon> data) {
-        cheerEmotes.clear();
+    public void add(Set<CheerEmoticon> data) {
         cheerEmotes.addAll(data);
+        System.out.println(cheerEmotes.size()+" "+cheerEmotes);
         setSettings(currentBackground, currentState);
     }
     
@@ -117,7 +117,7 @@ public class CheersUtil {
         return color.getRed() * 0.299 + color.getGreen() * 0.587 + color.getBlue() * 0.114;
     }
     
-    public String getString() {
+    public String getString(String stream) {
         Set<CheerEmoticon> blah = new TreeSet<>(new Comparator<CheerEmoticon>() {
 
             @Override
@@ -129,7 +129,9 @@ public class CheersUtil {
         blah.addAll(cheerEmotes);
         StringBuilder b = new StringBuilder();
         for (CheerEmoticon emote : blah) {
-            b.append(emote.prefix).append(emote.min_bits).append(" ");
+            if (stream == null || emote.streamRestrictionContains(stream)) {
+                b.append(emote.prefix).append(emote.min_bits).append(" ");
+            }
         }
         return b.toString();
     }

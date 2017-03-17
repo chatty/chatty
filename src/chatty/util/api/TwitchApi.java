@@ -38,6 +38,7 @@ public class TwitchApi {
     protected final StreamInfoManager streamInfoManager;
     protected final EmoticonManager emoticonManager;
     protected final CheerEmoticonManager cheersManager;
+    protected final CheerEmoticonManager2 cheersManager2;
     protected final FollowerManager followerManager;
     protected final FollowerManager subscriberManager;
     protected final BadgeManager badgeManager;
@@ -57,6 +58,7 @@ public class TwitchApi {
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
         emoticonManager = new EmoticonManager(apiResultListener);
         cheersManager = new CheerEmoticonManager(apiResultListener);
+        cheersManager2 = new CheerEmoticonManager2(this, resultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
         badgeManager = new BadgeManager(this);
@@ -91,6 +93,10 @@ public class TwitchApi {
     
     public void getRoomBadges(String room, boolean forceRefresh) {
         badgeManager.requestBadges(room, forceRefresh);
+    }
+    
+    public void getCheers(String room, boolean forceRefresh) {
+        cheersManager2.request(room, forceRefresh);
     }
     
     //====================

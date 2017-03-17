@@ -93,20 +93,19 @@ public class EmoteContextMenu extends ContextMenu {
         
         addSeparator();
         addItem("ignoreEmote", "Ignore");
-        if (emote.subType == Emoticon.SubType.CHEER) {
-            return;
-        }
-        
-        if (!emote.hasStreamRestrictions()) {
-            if (emoteManager.isFavorite(emote)) {
-                addItem("unfavoriteEmote", "UnFavorite");
-            } else {
-                addItem("favoriteEmote", "Favorite");
+        if (emote.subType != Emoticon.SubType.CHEER) {
+            if (!emote.hasStreamRestrictions()) {
+                if (emoteManager.isFavorite(emote)) {
+                    addItem("unfavoriteEmote", "UnFavorite");
+                } else {
+                    addItem("favoriteEmote", "Favorite");
+                }
             }
         }
-        
+
         if (Chatty.DEBUG) {
             addItem("", String.valueOf(System.identityHashCode(emote)));
+            addItem("", emoteImage.getImageIcon().getDescription());
         }
     }
 

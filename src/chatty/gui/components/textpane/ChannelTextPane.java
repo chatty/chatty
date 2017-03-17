@@ -1678,7 +1678,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (styles.showEmoticons()) {
             findEmoticons(text, user, ranges, rangesStyle, emotes);
             if (containsBits) {
-                findBits(main.emoticons.getCheerEmotes(), text, ranges, rangesStyle);
+                findBits(main.emoticons.getCheerEmotes(), text, ranges, rangesStyle, user);
             }
         }
         
@@ -1898,8 +1898,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private void findBits(Set<CheerEmoticon> emotes, String text,
             Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle) {
+            Map<Integer, MutableAttributeSet> rangesStyle,
+            User user) {
         for (CheerEmoticon emote : emotes) {
+            if (!emote.matchesUser(user)) {
+                // CONTINUE
+                continue;
+            }
             Matcher m = emote.getMatcher(text);
             while (m.find()) {
                 int start = m.start();
@@ -1908,6 +1913,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     int bits = Integer.parseInt(m.group(1));
                     int bitsLength = m.group(1).length();
                     if (bits < emote.min_bits) {
+                        // CONTINUE
                         continue;
                     }
                     boolean ignored = main.emoticons.isEmoteIgnored(emote);

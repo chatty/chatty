@@ -39,8 +39,8 @@ public class GifUtil {
             byte[] imageData = readAllBytes(input);
             ImageIcon image = null;
             try {
+                //System.out.println(hash(imageData)+" "+url);
                 image = fixGifFps(imageData);
-                image.setDescription("GIF");
             } catch (Exception ex) {
                 /**
                  * If not a GIF, or another error occured, just create the image
@@ -66,30 +66,63 @@ public class GifUtil {
      * @throws IOException 
      */
     private static ImageIcon fixGifFps(byte[] imageData) throws IOException {
-        final GifImage gif = GifDecoder.read(imageData);
-        //System.out.println(hash(imageData));
+        GifImage gif = GifDecoder.read(imageData);
+        if (shouldPreferRegular(imageData)) {
+            ImageIcon icon = new ImageIcon(imageData);
+            icon.setDescription("GIF (Exception)");
+            return icon;
+        }
         if (DONT_FIX.contains(hash(imageData))) {
             /**
              * Don't try to fix some GIFs, which look better originally. This is
              * obviously not ideal, but until a method is found that works well
              * for ALL GIFs, this must do.
              */
-            return new ImageIcon(imageData);
+            ImageIcon icon = new ImageIcon(imageData);
+            icon.setDescription("GIF (Dont fix)");
+            return icon;
         }
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try (ImageOutputStream output = ImageIO.createImageOutputStream(bos)) {
-            int delay = gif.getDelay(0) * 10;
-            if (delay <= 10) {
-                delay = 100;
-            }
-            GifSequenceWriter w = new GifSequenceWriter(output, gif.getFrame(0).getType(), delay, true);
+            GifSequenceWriter w = new GifSequenceWriter(output, gif.getFrame(0).getType(), true);
             for (int i = 0; i < gif.getFrameCount(); i++) {
-                //System.out.println(gif.getDelay(i));
-                w.writeToSequence(gif.getFrame(i));
+                int delay = gif.getDelay(i) * 10;
+                if (delay <= 10) {
+                    delay = 100;
+                }
+                w.writeToSequence(gif.getFrame(i), delay);
             }
             w.close();
         }
-        return new ImageIcon(bos.toByteArray());
+        ImageIcon icon = new ImageIcon(bos.toByteArray());
+        icon.setDescription("GIF");
+        return icon;
+    }
+    
+    private static boolean shouldPreferRegular(byte[] imageData) {
+        try {
+            GifDecoderE.GifImage gif = GifDecoderE.read(imageData);
+            if (invalidDelay(gif)) {
+                System.out.println("Invalid delay");
+                return false;
+            }
+            for (int i = 0; i < gif.getFrameCount(); i++) {
+                gif.getFrame(i);
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception "+ex);
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean invalidDelay(GifDecoderE.GifImage gif) {
+        for (int i = 0; i < gif.getFrameCount(); i++) {
+            if (gif.getDelay(i) == 0) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static final Set<String> DONT_FIX = new HashSet<>(Arrays.asList(new String[]{
@@ -130,6 +163,10 @@ public class GifUtil {
             result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
         }
         return result;
+    }
+    
+    public static class GifDecoderException extends RuntimeException {
+        
     }
     
 }
