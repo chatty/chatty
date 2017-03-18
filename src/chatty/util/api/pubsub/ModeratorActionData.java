@@ -18,6 +18,10 @@ import org.json.simple.parser.ParseException;
  */
 public class ModeratorActionData extends MessageData {
 
+    public enum Type {
+        AUTOMOD_REJECTED, AUTOMOD_APPROVED, AUTOMOD_DENIED, OTHER
+    }
+    
     /**
      * The name of the action. Can never be null.
      */
@@ -44,6 +48,11 @@ public class ModeratorActionData extends MessageData {
      */
     public final String msgId;
     
+    /**
+     * Determine some known types of actions (but not all).
+     */
+    public final Type type;
+    
     public ModeratorActionData(String topic, String message, String stream,
             String moderation_action, List<String> args, String created_by,
             String msgId) {
@@ -54,6 +63,25 @@ public class ModeratorActionData extends MessageData {
         this.created_by = created_by;
         this.stream = stream;
         this.msgId = msgId;
+        
+        // Determine some known types of actions
+        switch (moderation_action) {
+            case "twitchbot_rejected":
+            case "automod_rejected":
+            case "rejected_automod_message":
+                // Just guessing at this point D:
+                type = Type.AUTOMOD_REJECTED;
+                break;
+            case "approved_automod_message":
+                type = Type.AUTOMOD_APPROVED;
+                break;
+            case "denied_automod_message":
+                type = Type.AUTOMOD_DENIED;
+                break;
+            default:
+                type = Type.OTHER;
+                break;
+        }
     }
     
     public static ModeratorActionData decode(String topic, String message, Map<String, String> userIds) throws ParseException {

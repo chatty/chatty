@@ -2980,7 +2980,9 @@ public class MainGui extends JFrame implements Runnable {
                 autoModDialog.addData(data);
                 String channel = Helper.toValidChannel(data.stream);
                 if (channels.isChannel(channel)) {
-                    if (data.moderation_action.equals("twitchbot_rejected")) {
+                    // Output directly to chat (if enabled)
+                    if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED) {
+                        // Automod
                         if (client.settings.getBoolean("showAutoMod")) {
                             channels.getChannel(channel).printLine(
                                     String.format("[AutoMod] <%s> %s",
@@ -2988,6 +2990,7 @@ public class MainGui extends JFrame implements Runnable {
                                             StringUtil.join(data.args, " ", 1)));
                         }
                     } else if (!ownAction && client.settings.getBoolean("showModActions")) {
+                        // Other Mod Actions
                         channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
                                 data.created_by,
                                 data.moderation_action,

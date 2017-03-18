@@ -240,13 +240,13 @@ public class AutoModDialog extends JDialog {
         if (modData.stream == null) {
             return;
         }
-        if ("twitchbot".equals(modData.created_by) && "twitchbot_rejected".equals(modData.moderation_action)) {
+        if (modData.type == ModeratorActionData.Type.AUTOMOD_REJECTED) {
             addItem(modData);
         }
-        if ("approved_twitchbot_message".equals(modData.moderation_action)) {
+        if (modData.type == ModeratorActionData.Type.AUTOMOD_APPROVED) {
             handledExternally(modData, Item.STATUS_APPROVED);
         }
-        if ("denied_twitchbot_message".equals(modData.moderation_action)) {
+        if (modData.type == ModeratorActionData.Type.AUTOMOD_DENIED) {
             handledExternally(modData, Item.STATUS_DENIED);
         }
     }
@@ -341,8 +341,13 @@ public class AutoModDialog extends JDialog {
         String handledBy = modData.created_by;
         String targetUsername = modData.args.get(0);
         String room = modData.stream;
-        Item item = findItemByUsername(room, targetUsername);
-        if (item != null) {
+        Item item;
+        if (!modData.msgId.isEmpty()) {
+            item = findItemByMsgId(modData.msgId);
+        } else {
+            item = findItemByUsername(room, targetUsername);
+        }
+        if (item != null && !item.hasRequestPending && !item.isHandled()) {
             item.setStatus(status, handledBy);
             repaintFor(item);
         }
