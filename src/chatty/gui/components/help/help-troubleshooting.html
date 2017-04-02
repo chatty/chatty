@@ -19,6 +19,7 @@
             <ul>
                 <li><a href="#login">Can't connect because the login failed</a></li>
                 <li><a href="#connect">Can't connect</a></li>
+                <li><a href="#logindata">Can't get login data</a></li>
             </ul>
         </li>
         <li>Other
@@ -175,6 +176,12 @@
         custom server/port you may have defined there using <a href="help.html#launch">commandline parameters</a>.</p>
     
     <h2>
+        <a name="logindata">Can't get login data</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>If you get an error getting login data, see <a href="help-guide2.html">What to do when getting login fails</a>.</p>
+    
+    <h2>
         <a name="font">Some characters in chat only show up as boxes / Fallback fonts</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -277,9 +284,13 @@
         driver related, it's not really clear). There is no definite solution
         for this, but there are a few things you can try:</p>
     <ul>
-        <li>Check if you have any programs running that may interfere, for
-            example MSI Afterburner and add <code>javaw.exe</code> to an ignore
-            list or disable on-screen display support if possible.</li>
+        <li>Check if you have any programs running that may interfere, programs
+            that have been known to be incompatible for some people:
+            <ul>
+                <li>MSI Afterburner: Add <code>javaw.exe</code> to an ignore
+                list or disable on-screen display support if possible</li>
+                <li>Raptr</li>
+            </ul>
         <li>If you have more than one monitor, try the other monitor. Not sure
         why, but some people had it work better on another monitor.</li>
         <li>Make sure the <code>Settings - Other - Disable Direct3D</code>
