@@ -284,7 +284,7 @@ public class UserInfo extends JDialog {
     }
     
     protected ChannelInfo getChannelInfo() {
-        return owner.getCachedChannelInfo(currentUser.getName());
+        return owner.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
     }
 
 }

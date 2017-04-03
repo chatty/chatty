@@ -31,7 +31,11 @@ public class RegexDocumentFilter extends DocumentFilter {
     @Override
     public void replace(DocumentFilter.FilterBypass fb, int off, int len, String str, AttributeSet attr) {
         try {
-            fb.replace(off, len, pattern.matcher(str).replaceAll(""), attr);
+            if (str == null) {
+                fb.replace(off, len, str, attr);
+            } else {
+                fb.replace(off, len, pattern.matcher(str).replaceAll(""), attr);
+            }
         } catch (BadLocationException | NullPointerException ex) {
             
         }

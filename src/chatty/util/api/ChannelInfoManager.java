@@ -34,15 +34,15 @@ public class ChannelInfoManager {
         return cachedChannelInfo.get(stream);
     }
     
-    public ChannelInfo getCachedChannelInfo(String stream) {
+    public ChannelInfo getCachedChannelInfo(String stream, String id) {
         ChannelInfo info = cachedChannelInfo.get(stream);
         if (info != null) {
             if (System.currentTimeMillis() - info.time > 600*1000) {
-                api.getChannelInfo(stream);
+                api.getChannelInfo(stream, id);
             }
             return info;
         }
-        api.getChannelInfo(stream);
+        api.getChannelInfo(stream, id);
         return null;
     }
     

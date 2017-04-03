@@ -324,11 +324,13 @@ public class Settings {
      * @throws SettingNotFoundException if a setting with this name doesn't
      * exist or isn't a Map setting
      */
-    public void putMap(String settingName, Map map) {
+    public boolean putMap(String settingName, Map map) {
         synchronized (LOCK) {
             Map settingMap = getMapInternal(settingName);
+            boolean changed = !settingMap.equals(map);
             settingMap.clear();
             settingMap.putAll(map);
+            return changed;
         }
     }
     

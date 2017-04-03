@@ -287,7 +287,7 @@ public class StreamInfoManager {
         // somehwere where the TwitchApi isn't locked
         StreamInfo streamInfo = getStreamInfo(stream);
         if (result == null) {
-            LOGGER.warning("Error requesting stream data: " + result);
+            LOGGER.warning("Error requesting stream data "+stream+": " + result);
             if (responseCode == 404) {
                 streamInfo.setExpiresAfter(UPDATE_STREAMINFO_DELAY_NOT_FOUND);
                 streamInfo.setNotFound();
@@ -551,7 +551,6 @@ public class StreamInfoManager {
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);
-            System.out.println(name+" "+userId);
         }
         api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
         if (follows) {

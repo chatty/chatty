@@ -287,6 +287,7 @@ public class MainGui extends JFrame implements Runnable {
         setLocationByPlatform(true);
         
         // Load some stuff
+        client.api.setUserId(client.settings.getString("username"), client.settings.getString("userid"));
         client.api.requestEmoticons(false);
         //client.api.requestCheerEmoticons(false);
         // TEST
@@ -1169,13 +1170,25 @@ public class MainGui extends JFrame implements Runnable {
             // Token Dialog actions
             //---------------------------
             else if (event.getSource() == tokenDialog.getDeleteTokenButton()) {
-                client.settings.setString("token", "");
-                client.settings.setBoolean("foreignToken", false);
-                client.settings.setString("username", "");
-                resetTokenScopes();
-                updateConnectionDialog(null);
-                tokenDialog.update("", "");
-                updateTokenScopes();
+                int result = JOptionPane.showConfirmDialog(tokenDialog,
+                        "<html><body style='width:400px'>This removes the login token from Chatty.<br><br>It does not "
+                        + "revoke access for the token. This is usually no "
+                                + "problem, but if you're doing this to "
+                                + "completely disconnect Chatty from Twitch, "
+                                + "you need to go to <code>twitch.tv/settings/connections</code> "
+                                + "and click 'Disconnect' next to Chatty.",
+                        "Save Settings to file",
+                        JOptionPane.OK_CANCEL_OPTION);
+                if (result == 0) {
+                    client.settings.setString("token", "");
+                    client.settings.setBoolean("foreignToken", false);
+                    client.settings.setString("username", "");
+                    client.settings.setString("userid", "");
+                    resetTokenScopes();
+                    updateConnectionDialog(null);
+                    tokenDialog.update("", "");
+                    updateTokenScopes();
+                }
             } else if (event.getSource() == tokenDialog.getRequestTokenButton()) {
                 tokenGetDialog.setLocationRelativeTo(tokenDialog);
                 tokenGetDialog.reset();
@@ -3779,8 +3792,8 @@ public class MainGui extends JFrame implements Runnable {
         client.api.getChannelInfo(channel);
     }
     
-    public ChannelInfo getCachedChannelInfo(String channel) {
-        return client.api.getCachedChannelInfo(channel);
+    public ChannelInfo getCachedChannelInfo(String channel, String id) {
+        return client.api.getCachedChannelInfo(channel, id);
     }
     
     public void getChatInfo(String stream) {

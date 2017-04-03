@@ -2,7 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.RegexDocumentFilter;
-import chatty.gui.components.settings.StringTableEditor.StringMapItem;
+import chatty.gui.components.settings.SimpleTableEditor.StringMapItem;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -24,15 +24,17 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
 
 /**
- *
+ * A map setting with a String as key/value. Implement the abstract method to
+ * parse the value into the desired type.
+ * 
  * @author tduva
  */
-public class StringTableEditor extends TableEditor<StringMapItem> implements MapSetting<String, String> {
+public abstract class SimpleTableEditor<T> extends TableEditor<StringMapItem> implements MapSetting<String, T> {
 
     private final MyTableModel data = new MyTableModel();
     private final MyItemEditor editor;
     
-    public StringTableEditor(JDialog owner) {
+    public SimpleTableEditor(JDialog owner) {
         super(SORTING_MODE_SORTED, false);
         setModel(data);
         editor = new MyItemEditor(owner);
@@ -49,25 +51,31 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         }
     }
     
+    protected abstract T valueFromString(String input);
+    
     public void setKeyFilter(String p) {
         editor.setKeyFilter(new RegexDocumentFilter(p));
     }
+    
+    public void setValueFilter(String p) {
+        editor.setValueFilter(new RegexDocumentFilter(p));
+    }
 
     @Override
-    public Map<String, String> getSettingValue() {
-        Map<String, String> map = new HashMap<>();
+    public Map<String, T> getSettingValue() {
+        Map<String, T> map = new HashMap<>();
         for (StringMapItem item : data.getData()) {
-            map.put(item.key, item.value);
+            map.put(item.key, valueFromString(item.value));
         }
         return map;
     }
 
     @Override
-    public void setSettingValue(Map<String, String> values) {
+    public void setSettingValue(Map<String, T> values) {
         data.clear();
         Collection<StringMapItem> items = new ArrayList<>();
         for (String key : values.keySet()) {
-            String value = values.get(key);
+            String value = String.valueOf(values.get(key));
             items.add(new StringMapItem(key, value));
         }
         data.setData(items);
@@ -146,6 +154,7 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         private final JButton ok = new JButton("Done");
         private final JButton cancel = new JButton("Cancel");
         
+        private String presetKey;
         private boolean save;
         
         public MyItemEditor(JDialog owner) {
@@ -178,7 +187,7 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource() == ok) {
-                        if (hasKey(getKey())) {
+                        if (!getKey().equals(presetKey) && hasKey(getKey())) {
                             JOptionPane.showMessageDialog(dialog,
                                     "An item with the key '"+getKey()+"' already exists");
                         } else {
@@ -230,9 +239,11 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
             if (preset != null) {
                 key.setText(preset.key);
                 value.setText(preset.value);
+                presetKey = preset.key;
             } else {
                 key.setText(null);
                 value.setText(null);
+                presetKey = null;
             }
             updateButtons();
             key.requestFocusInWindow();
@@ -254,6 +265,10 @@ public class StringTableEditor extends TableEditor<StringMapItem> implements Map
         
         public void setKeyFilter(DocumentFilter keyFilter) {
             ((AbstractDocument)key.getDocument()).setDocumentFilter(keyFilter);
+        }
+        
+        public void setValueFilter(DocumentFilter keyFilter) {
+            ((AbstractDocument)value.getDocument()).setDocumentFilter(keyFilter);
         }
     }
 }

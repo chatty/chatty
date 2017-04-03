@@ -2070,6 +2070,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public void refreshStyles() {
         styles.refresh();
     }
+    
+    public void setBufferSize(int size) {
+        styles.setBufferSize(size);
+    }
 
     /**
      * Simply uses UrlOpener to prompt the user to open the given URL. The
@@ -2442,6 +2446,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * Store the timestamp format
          */
         private SimpleDateFormat timestampFormat;
+        
+        private int bufferSize = -1;
 
         /**
          * Icons that have been modified for use and saved into a style. Should
@@ -2891,13 +2897,22 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         
         public int bufferSize() {
+            if (bufferSize > 0) {
+                return bufferSize;
+            }
             return (int)numericSettings.get(Setting.BUFFER_SIZE);
+        }
+        
+        public void setBufferSize(int size) {
+            bufferSize = size;
         }
         
         public long namesMode() {
             return numericSettings.get(Setting.DISPLAY_NAMES_MODE);
         }
     }
+    
+
     
 }
 

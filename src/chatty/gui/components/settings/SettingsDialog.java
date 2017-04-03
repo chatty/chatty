@@ -483,8 +483,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void saveMapSettings() {
         for (String settingName : mapSettings.keySet()) {
             MapSetting setting = mapSettings.get(settingName);
-            settings.putMap(settingName, setting.getSettingValue());
-            settings.setSettingChanged(settingName);
+            boolean changed = settings.putMap(settingName, setting.getSettingValue());
+            if (changed) {
+                settings.setSettingChanged(settingName);
+            }
         }
     }
     
@@ -676,8 +678,28 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return result;
     }
     
-    protected StringTableEditor addMapSetting(String name, int width, int height) {
-        StringTableEditor table = new StringTableEditor(this);
+    protected SimpleTableEditor addStringMapSetting(String name, int width, int height) {
+        SimpleTableEditor<String> table = new SimpleTableEditor<String>(this) {
+
+            @Override
+            protected String valueFromString(String input) {
+                return input;
+            }
+        };
+        table.setPreferredSize(new Dimension(width, height));
+        mapSettings.put(name, table);
+        return table;
+    }
+    
+    protected SimpleTableEditor addLongMapSetting(String name, int width, int height) {
+        SimpleTableEditor<Long> table = new SimpleTableEditor<Long>(this) {
+
+            @Override
+            protected Long valueFromString(String input) {
+                return Long.valueOf(input);
+            }
+        };
+        table.setValueFilter("[^0-9]");
         table.setPreferredSize(new Dimension(width, height));
         mapSettings.put(name, table);
         return table;

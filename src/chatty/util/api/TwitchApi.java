@@ -104,13 +104,21 @@ public class TwitchApi {
     //====================
     
     public void getChannelInfo(String stream) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
-            } else {
-                requests.getChannelInfo(r.getId(stream), stream);
-            }
-        }, stream);
+        getChannelInfo(stream, null);
+    }
+    
+    public void getChannelInfo(String stream, String id) {
+        if (id != null) {
+            requests.getChannelInfo(id, stream);
+        } else {
+            userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
+                } else {
+                    requests.getChannelInfo(r.getId(stream), stream);
+                }
+            }, stream);
+        }
     }
 
     public void getChatInfo(String stream) {
@@ -135,15 +143,20 @@ public class TwitchApi {
         return channelInfoManager.getOnlyCachedChannelInfo(stream);
     }
     
+    public ChannelInfo getCachedChannelInfo(String stream) {
+        return getCachedChannelInfo(stream, null);
+    }
+    
     /**
      * Get ChannelInfo, which may be cached. This will request immediately if
      * not cached.
      * 
      * @param stream
+     * @param id
      * @return 
      */
-    public ChannelInfo getCachedChannelInfo(String stream) {
-        return channelInfoManager.getCachedChannelInfo(stream);
+    public ChannelInfo getCachedChannelInfo(String stream, String id) {
+        return channelInfoManager.getCachedChannelInfo(stream, id);
     }
     
     //===================

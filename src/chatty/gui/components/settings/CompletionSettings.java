@@ -77,7 +77,7 @@ public class CompletionSettings extends SettingsPanel {
         GridBagConstraints gbc;
         gbc = d.makeGbc(0, 0, 1, 1);
         JPanel custom = addTitledPanel("Custom Completion Items", 1, true);
-        StringTableEditor editor = d.addMapSetting("customCompletion", 270, 200);
+        SimpleTableEditor editor = d.addStringMapSetting("customCompletion", 270, 200);
         editor.setKeyFilter("[^\\w]");
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
  */
 public class NameSettings extends SettingsPanel {
     
-    private final StringTableEditor customNamesEditor;
+    private final SimpleTableEditor customNamesEditor;
     
     public NameSettings(SettingsDialog d) {
         
@@ -57,7 +57,7 @@ public class NameSettings extends SettingsPanel {
 
         
         JPanel custom = addTitledPanel("Custom Names", 1, true);
-        customNamesEditor = d.addMapSetting("customNames", 270, 200);
+        customNamesEditor = d.addStringMapSetting("customNames", 270, 200);
         customNamesEditor.setKeyFilter("[^\\w]");
         
         gbc = d.makeGbc(0, 0, 1, 1);

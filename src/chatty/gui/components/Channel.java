@@ -9,6 +9,7 @@ import chatty.User;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
+import chatty.util.StringUtil;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -186,6 +187,7 @@ public class Channel extends JPanel {
     @Override
     public void setName(String name) {
         this.name = name;
+        refreshBufferSize();
     }
     
     public void addUser(User user) {
@@ -516,6 +518,12 @@ public class Channel extends JPanel {
         input.setForeground(styleManager.getColor("inputForeground"));
         users.setBackground(styleManager.getColor("background"));
         users.setForeground(styleManager.getColor("foreground"));
+        refreshBufferSize();
+    }
+    
+    private void refreshBufferSize() {
+        Long bufferSize = (Long)main.getSettings().mapGet("bufferSizes", StringUtil.toLowerCase(name));
+        text.setBufferSize(bufferSize != null ? bufferSize.intValue() : -1);
     }
     
     public void clearChat() {

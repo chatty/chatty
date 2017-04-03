@@ -137,7 +137,8 @@ public class UserIDs {
     }
     
     public void setUserId(String name, String id) {
-        if (name == null || id == null) {
+        System.out.println("setUserId "+name+" "+id);
+        if (name == null || id == null || name.isEmpty() || id.isEmpty()) {
             return;
         }
         data.setId(StringUtil.toLowerCase(name), id);

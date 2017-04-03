@@ -352,6 +352,7 @@ public class SettingsManager {
         settings.addLong("userlistMinWidth", 0);
         settings.addBoolean("userlistEnabled", true);
         settings.addLong("bufferSize", 500);
+        settings.addMap("bufferSizes", new HashMap<>(), Setting.LONG);
 
         settings.addString("liveStreamsSorting", "recent");
         settings.addLong("historyRange", 0);

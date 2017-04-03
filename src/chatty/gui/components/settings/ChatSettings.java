@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -10,7 +11,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -45,15 +48,23 @@ public class ChatSettings extends SettingsPanel {
         
  
         gbc = d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
-        main.add(new JLabel("Chat buffer size:"),
+        main.add(new JLabel("Chat buffer size (default):"),
                 gbc);
         
         gbc = d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
         main.add(d.addSimpleLongSetting("bufferSize", 3, true),
                 gbc);
         
+        BufferSizes bufferSizes = new BufferSizes(d);
+        JButton bufferSizesButton = new JButton("Per tab buffer sizes");
+        bufferSizesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        bufferSizesButton.addActionListener(e -> {
+            bufferSizes.setLocationRelativeTo(ChatSettings.this);
+            bufferSizes.setVisible(true);
+        });
+        
         gbc = d.makeGbc(2, 4, 1, 1, GridBagConstraints.WEST);
-        main.add(new JLabel("(too high values may lower performance)"),
+        main.add(bufferSizesButton,
                 gbc);
         
         
@@ -114,6 +125,49 @@ public class ChatSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(0, 0, 0, 0);
         pauseChat.add(commandPanel, gbc);
+    }
+    
+    private static class BufferSizes extends JDialog {
+        
+        private static final String INFO = "<html><body style='width:240px;padding:5px;'>"
+                + "Specify the buffer size per tab, specifying the lowercase name of the "
+                + "tab (for a channel that includes the leading #)."
+                + "<br /><br />This can "
+                + "be useful if you want to have a low default buffer size, to "
+                + "reduce memory usage, but want a huge scrollback on a few "
+                + "select channels.";
+        
+        private BufferSizes(SettingsDialog d) {
+            super(d);
+            setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+            setLayout(new GridBagLayout());
+            setTitle("Per-tab buffer size (scrollback)");
+            
+            GridBagConstraints gbc;
+            
+            gbc = d.makeGbc(0, 0, 1, 1);
+            add(new JLabel(INFO), gbc);
+            
+            gbc = d.makeGbc(0, 1, 1, 1);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            SimpleTableEditor<Long> editor = d.addLongMapSetting("bufferSizes", 300, 200);
+            add(editor, gbc);
+            
+            gbc = d.makeGbc(0, 2, 1, 1);
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 1;
+            JButton closeButton = new JButton("Close");
+            add(closeButton, gbc);
+            closeButton.addActionListener(e -> {
+                setVisible(false);
+            });
+            
+            pack();
+            setMinimumSize(getPreferredSize());
+        }
+        
     }
     
 }
