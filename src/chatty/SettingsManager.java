@@ -488,6 +488,7 @@ public class SettingsManager {
         settings.addString("logSplit", "never");
         settings.addBoolean("logSubdirectories", false);
         settings.addString("logTimestamp", "[HH:mm:ss]");
+        settings.addBoolean("logLockFiles", true);
         
         // TAB Completion
         settings.addMap("customCompletion", new HashMap(), Setting.STRING);

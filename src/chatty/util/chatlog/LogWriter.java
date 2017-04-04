@@ -32,6 +32,7 @@ public class LogWriter implements Runnable {
     private final Path path;
     private final String splitLogs;
     private final boolean useSubdirectories;
+    private final boolean lockFiles;
 
     private long addedQueueSize;
     private int addedQueueSizeCount;
@@ -41,11 +42,12 @@ public class LogWriter implements Runnable {
     private int totalLines;
 
     public LogWriter(BlockingQueue<LogItem> queue, Path path, String splitLogs,
-            Boolean useSubdirectories) {
+            boolean useSubdirectories, boolean lockFiles) {
         this.queue = queue;
         this.path = path;
         this.splitLogs = splitLogs;
         this.useSubdirectories = useSubdirectories;
+        this.lockFiles = lockFiles;
     }
 
     @Override
@@ -193,13 +195,13 @@ public class LogWriter implements Runnable {
             }
         }
 
-        LogFile file = LogFile.get(channelPath, datePrefix + channel);
+        LogFile file = LogFile.get(channelPath, datePrefix + channel, lockFiles);
         if (file == null) {
             errors.add(channel);
         } else {
             files.put(channel, file);
             file.write("# Log started: " + getDateTime());
-            LOGGER.info("Log: Opened file " + file.getPath());
+            LOGGER.info("Log: Opened file " + file.getPath()+(file.isLocked() ? " (locked)" : ""));
         }
         return file;
     }

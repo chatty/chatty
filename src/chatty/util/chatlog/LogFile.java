@@ -53,6 +53,8 @@ public class LogFile {
      * The time this LogFile instance was created.
      */
     private Calendar currentTime;
+    
+    private boolean lockFile = true;
 
     /**
      * LogFile constructor.
@@ -60,7 +62,8 @@ public class LogFile {
      * @param path The system path of where the LogFile will be stored.
      * @param name Name of the LogFile to be stored.
      */
-    private LogFile(Path path, String name) {
+    private LogFile(Path path, String name, boolean lockFile) {
+        this.lockFile = lockFile;
         currentTime = Calendar.getInstance();
 
         // * can't be part of a filename (for Bouncer messages, e.g. *status)
@@ -90,8 +93,8 @@ public class LogFile {
      * @param name The name of the log file to be created.
      * @return The LogFile or null if an error occurred while opening the file.
      */
-    public static LogFile get(Path path, String name) {
-        LogFile file = new LogFile(path, name);
+    public static LogFile get(Path path, String name, boolean lockFile) {
+        LogFile file = new LogFile(path, name, lockFile);
         if (file.valid) {
             return file;
         }
@@ -158,12 +161,16 @@ public class LogFile {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(raf.length());
             FileChannel channel = raf.getChannel();
-            FileLock lock = channel.tryLock();
-
-            if (lock != null) {
+            if (lockFile) {
+                FileLock lock = channel.tryLock();
+                if (lock != null) {
+                    writer = new BufferedWriter(Channels.newWriter(channel, CHARSET));
+                    valid = true;
+                    return true;
+                }
+            } else {
                 writer = new BufferedWriter(Channels.newWriter(channel, CHARSET));
                 valid = true;
-
                 return true;
             }
         } catch (IOException ex) {
@@ -181,6 +188,10 @@ public class LogFile {
      */
     public boolean isValid() {
         return valid;
+    }
+    
+    public boolean isLocked() {
+        return lockFile && valid;
     }
 
     /**

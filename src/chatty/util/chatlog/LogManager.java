@@ -26,13 +26,14 @@ public class LogManager {
     private final BlockingQueue<LogItem> queue;
     private final Thread writerThread;
 
-    public LogManager(Path path, String splitLogs, Boolean useSubdirectories) {
+    public LogManager(Path path, String splitLogs, boolean useSubdirectories,
+            boolean lockFiles) {
         path.toFile().mkdirs();
         if (!path.toFile().exists()) {
             LOGGER.warning("Log: Failed to create path: "+path);
         }
         this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-        this.writerThread = new Thread(new LogWriter(queue, path, splitLogs, useSubdirectories));
+        this.writerThread = new Thread(new LogWriter(queue, path, splitLogs, useSubdirectories, lockFiles));
     }
     
     public void start() {

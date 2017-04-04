@@ -173,6 +173,12 @@ public class LogSettings extends SettingsPanel {
         otherSettings.add(timestampCombo,
                 d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
         
+        otherSettings.add(d.addSimpleBooleanSetting(
+                "logLockFiles",
+                "Lock files while writing",
+                "Gets exclusive access to logfiles to ensure no other program writes to it."),
+                d.makeGbcCloser(2, 2, 1, 1, GridBagConstraints.WEST));
+        
         /**
          * Add panels to the dialog
          */

@@ -1171,12 +1171,14 @@ public class MainGui extends JFrame implements Runnable {
             //---------------------------
             else if (event.getSource() == tokenDialog.getDeleteTokenButton()) {
                 int result = JOptionPane.showConfirmDialog(tokenDialog,
-                        "<html><body style='width:400px'>This removes the login token from Chatty.<br><br>It does not "
-                        + "revoke access for the token. This is usually no "
-                                + "problem, but if you're doing this to "
-                                + "completely disconnect Chatty from Twitch, "
-                                + "you need to go to <code>twitch.tv/settings/connections</code> "
-                                + "and click 'Disconnect' next to Chatty.",
+                        "<html><body style='width:400px'>"
+                        + "This removes the login token from Chatty.<br><br>"
+                        + "It does not revoke access for the token, which "
+                        + "usually is no problem if the token isn't saved "
+                        + "anywhere else. If you suspect it may still be stored "
+                        + "in other places (or even compromised) you have to go "
+                        + "to <code>twitch.tv/settings/connections</code> and "
+                        + "click 'Disconnect' next to Chatty to revoke access.",
                         "Save Settings to file",
                         JOptionPane.OK_CANCEL_OPTION);
                 if (result == 0) {

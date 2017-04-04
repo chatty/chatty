@@ -49,8 +49,9 @@ public class ChatLog {
             log = null;
         } else {
             String logSplit = settings.getString("logSplit");
-            Boolean logSubdirectories = settings.getBoolean("logSubdirectories");
-            this.log = new LogManager(path, logSplit, logSubdirectories);
+            boolean logSubdirectories = settings.getBoolean("logSubdirectories");
+            boolean lockFiles = settings.getBoolean("logLockFiles");
+            this.log = new LogManager(path, logSplit, logSubdirectories, lockFiles);
         }
         compactForChannels = new HashMap<>();
         try {
