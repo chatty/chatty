@@ -72,6 +72,7 @@ public class Helper {
     }
     
     public static String USERNAME_REGEX = "[a-zA-Z0-9_]+";
+    public static String USERNAME_REGEX_STRICT = "[a-zA-Z0-9][a-zA-Z0-9_]+";
     
     /**
      * Kind of relaxed valiadation if a channel, which can have a leading # or
@@ -110,6 +111,14 @@ public class Helper {
         try {
             return stream.matches("(?i)^"+USERNAME_REGEX+"$");
         } catch (PatternSyntaxException | NullPointerException ex) {
+            return false;
+        }
+    }
+    
+    public static boolean validateStreamStrict(String stream) {
+        try {
+            return stream.matches("(?i)^"+USERNAME_REGEX_STRICT+"$");
+        } catch (Exception ex) {
             return false;
         }
     }

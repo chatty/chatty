@@ -2299,11 +2299,13 @@ public class TwitchClient {
             // Icons and FFZ/BTTV Emotes
             //api.requestChatIcons(Helper.toStream(channel), false);
             api.getGlobalBadges(false);
-            api.getRoomBadges(channel, false);
-            api.getCheers(channel, false);
-            requestChannelEmotes(channel);
-            frankerFaceZ.joined(channel);
-            checkModLogListen(user);
+            if (Helper.validateStreamStrict(user.getStream())) {
+                api.getRoomBadges(channel, false);
+                api.getCheers(channel, false);
+                requestChannelEmotes(channel);
+                frankerFaceZ.joined(channel);
+                checkModLogListen(user);
+            }
         }
 
         @Override

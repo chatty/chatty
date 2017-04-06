@@ -122,7 +122,9 @@ public class TwitchApi {
     }
 
     public void getChatInfo(String stream) {
-        requests.requestChatInfo(stream);
+        if (Helper.validateStreamStrict(stream)) {
+            requests.requestChatInfo(stream);
+        }
     }
     
     public void getFollowers(String stream) {
