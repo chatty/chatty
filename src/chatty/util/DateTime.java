@@ -2,6 +2,7 @@
 package chatty.util;
 
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -280,13 +281,17 @@ public class DateTime {
      * Parses the time returned from the Twitch API.
      * 
      * http://stackoverflow.com/a/2202300/2375667
+     * 
+     * Switched to java.time now because DatatypeConverter isn't visible by
+     * default in Java 9 anymore.
      *
      * @param time The time string
      * @return The timestamp
      * @throws IllegalArgumentException if the time could not be parsed
      */
     public static long parseDatetime(String time) {
-        return javax.xml.bind.DatatypeConverter.parseDateTime(time).getTimeInMillis();
+        OffsetDateTime odt = OffsetDateTime.parse(time);
+        return odt.toInstant().toEpochMilli();
     }
     
     public static final void main(String[] args) {
