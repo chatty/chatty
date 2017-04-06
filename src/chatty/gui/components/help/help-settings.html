@@ -7,6 +7,7 @@
     <h1><a name="top">Settings</a></h1>
     <p><a href="#Main">Main</a>
         | <a href="#Messages">Messages</a>
+        | <a href="#Moderation">Moderation</a>
         | <a href="#Chat">Chat</a>
         | <a href="#Emoticons">Emoticons</a>
         | <a href="#Usericons">Usericons</a>
@@ -226,6 +227,24 @@
     
     <h3><a name="capitalization">Name Capitalization</a></h3>
     <p>This has been moved to it's own <a href="#Names">settings page</a>.</p>
+    
+    
+    <h2>
+        <a name="Moderation">Moderation</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <dl class="dl-settings">
+        <dt>Show moderator actions in chat</dt>
+        <dd>Show commands that moderators execute directly in chat. You can also
+            view the same messages under <code>Extra - Moderation Log</code>.
+            Only works if you are a moderator yourself.</dd>
+        
+        <dt>Show messages rejected by AutoMod</dt>
+        <dd>Show messages that have to be approved directly in chat. To approve
+            messages you have to open <code>Extra - AutoMod</code>, where you
+            can also view those messages even if this setting is disabled.</dd>
+    </dl>
+    
     
     <h2>
         <a name="Chat">Chat</a>
@@ -935,6 +954,30 @@
         whitelist</li>
         <li><strong>off</strong> - Log no channels whatsoever</li>
     </ul>
+    
+    <h3>Other Settings</h3>
+    <dl class="dl-settings">
+        <dt>Folder</dt>
+        <dd>Select where to save the log files.</dd>
+        
+        <dt>Split Logs</dt>
+        <dd>Start a new log file every Day, Week or Month.</dd>
+        
+        <dt>Channel Subdirectories</dt>
+        <dd>Create a subfolder for each channel.</dd>
+        
+        <dt>Lock files while writing</dt>
+        <dd>By default Chatty requests exclusive access while writing to the
+            file, so that no other program can interfere. This can however cause
+            issues if you try to open the log while in the channel, for example
+            if you want to look something up for moderation, so disabling this
+            setting can make sense. This means that you have to ensure yourself
+            that only one instance of Chatty and no other programs write to or
+            the lock the files.</dd>
+        
+        <dt>Timestamp</dt>
+        <dd>Select the timestamp to be used in the logs.</dd>
+    </dl>
     
     <h3>Messages Types</h3>
     <p>Normal chat messages are always logged, however you can log additional
