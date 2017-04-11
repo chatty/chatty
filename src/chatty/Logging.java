@@ -147,7 +147,7 @@ public class Logging {
     public static FileHandler getIrcFileHandler() {
         createLogDir();
         try {
-            FileHandler file = new FileHandler(LOG_FILE_IRC,MAX_LOG_SIZE,2,true);
+            FileHandler file = new FileHandler(LOG_FILE_IRC,MAX_LOG_SIZE*4,2,true);
             file.setFormatter(new Formatter() {
 
                 @Override

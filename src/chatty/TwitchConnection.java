@@ -92,8 +92,6 @@ public class TwitchConnection {
         this.listener = listener;
         this.settings = settings;
         this.twitchCommands = new TwitchCommands(this);
-        // TODO: Disabled auto request for the time being
-        //this.twitchCommands.startAutoRequestMods();
         spamProtection = new SpamProtection();
         spamProtection.setLinesPerSeconds(settings.getString("spamProtection"));
         users.setCapitalizedNames(settings.getBoolean("capitalizedNames"));
@@ -952,17 +950,21 @@ public class TwitchConnection {
             if (!onChannel(channel)) {
                 return;
             }
-            if ("resub".equals(tags.get("msg-id"))) {
-                String login = tags.get("login");
-                String text = tags.get("system-msg");
-                String emotes = tags.get("emotes");
-                int months = tags.getInteger("msg-param-months", -1);
-                if (StringUtil.isNullOrEmpty(login, text)) {
-                    return;
-                }
-                User user = userJoined(channel, login);
-                updateUserFromTags(user, tags);
+            String login = tags.get("login");
+            String text = tags.get("system-msg");
+            String emotes = tags.get("emotes");
+            int months = tags.getInteger("msg-param-months", -1);
+            if (StringUtil.isNullOrEmpty(login, text)) {
+                return;
+            }
+            User user = userJoined(channel, login);
+            updateUserFromTags(user, tags);
+            if (tags.isValue("msg-id", "resub")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
+            } else {
+                // Not sure about this, there may be some weird messages
+                //listener.onInfo(channel, text);
+                //listener.onChannelMessage(user, message, false, emotes, null, 0);
             }
         }
 

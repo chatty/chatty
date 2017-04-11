@@ -68,6 +68,10 @@ public class MsgTags {
         return "1".equals(tags.get(key));
     }
     
+    public boolean isValue(String key, String value) {
+        return value.equals(tags.get(key));
+    }
+    
     /**
      * Returns the String associated with key, or null if the key doesn't exist.
      * 

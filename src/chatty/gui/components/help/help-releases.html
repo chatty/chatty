@@ -44,7 +44,7 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.8.5">Version 0.8.5</a> <a name="latest">(This one!)</a> (2017-03-??)
+        <a name="0.8.5">Version 0.8.5</a> <a name="latest">(This one!)</a> (2017-04-12)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>Custom Commands got a major overhaul in this version, which means that
@@ -62,7 +62,7 @@
     
 <pre>
 ### New features
-- Added Community support to Admin Dialog
+- Admin Dialog: Added support for setting a Community
 - Added AutoMod dialog (Extra - AutoMod) to approve/deny messages
 - User Dialog: Added ban reasons
 - Added support for Cheer emoticons
@@ -74,34 +74,34 @@
 - Moved to v5 of the Twitch API
 - Only show 2x size of GIF emotes if scaling is 160% or higher
 - Allow "!highlight" command to be executed locally as well
-- Improve URL parsing a bit
+- Improved URL parsing a bit
 
 ### Settings
-- Added automatic chat log splits (daily, weekly, monthly) and channel
+- Added automatic Chat Log splits (daily, weekly, monthly) and channel
   directories settings
-- Reorganized Settings Dialog a bit
-- Moved "Simple Title" setting to Titlebar options submenu
+- Added setting to disable Chat Log file locking
 - Changed line spacing setting defaults
 - Changed Ignore Mode default to "Hide"
 - Further attempts to improve reliability of saving settings
 - Added "maxReconnectionAttempts" setting (commands only)
 - Added setting for placement of the Tabs
 - Added setting for per-Tab Chat Buffer
-- Added setting to disable Chat Log file locking
 - Added "/set" command special value "!" to toggle boolean settings
 - Extended Emote Ignore feature to Cheer Emoticons
+- Moved "Simple Title" setting to Titlebar options submenu
+- Reorganized Settings Dialog a bit
 
 ### Custom Commands
 - New parser which may require changes to some existing Custom Commands
 - Added some simple functions for more flexibility (like $if to check if a
   parameter exists)
-- Changed format of Custom Menus to support directly defining commands as well
-  as custom submenu names
+- Changed format of Custom Menus to support defining commands directly in the
+  menu setting as well as custom submenus
 - Changed format of User Dialog Buttons to support adding several rows of
   buttons, as well as moving/removing the Mod/Unmod button
-- Add "Test" button to some settings to check format of commands and show a
+- Added "Test" button to some settings to check format of commands and show a
   limited preview of Custom Menus
-- Add replacements for stream info (title, game, viewers, ..)
+- Added replacements for stream info (title, game, viewers, ..)
 
 ### Bugfixes
 - Fixed "/refresh bttvemotes" command when not on a channel

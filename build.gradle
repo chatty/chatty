@@ -158,7 +158,7 @@ task javapackager(type: Exec, group: 'build') {
         command << "-Bicon=assets-bundle/Chatty.ico"
         command << "-BappVersion=${version}"
         command << "-BjvmProperties=sun.java2d.d3d=false"
-	command << "-BjvmOptions=-Xmx400M"
+        command << "-BjvmOptions=-Xmx400M"
         if (project.hasProperty('jrePath')) {
             command << "-Bruntime=${jrePath}"
         }
