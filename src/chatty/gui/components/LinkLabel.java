@@ -16,7 +16,7 @@ import javax.swing.text.html.HTMLDocument;
 public class LinkLabel extends JEditorPane {
     
     private static final JLabel label = new JLabel();
-    private final LinkLabelListener listener;
+    private LinkLabelListener listener;
     
     public LinkLabel(String text, LinkLabelListener listener) {
         this.listener = listener;
@@ -64,6 +64,10 @@ public class LinkLabel extends JEditorPane {
     
     public void addRule(String css) {
         ((HTMLDocument)getDocument()).getStyleSheet().addRule(css);
+    }
+    
+    public void setListener(LinkLabelListener listener) {
+        this.listener = listener;
     }
     
     /**

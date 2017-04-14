@@ -2,6 +2,8 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.gui.components.LinkLabel;
+import chatty.gui.components.LinkLabelListener;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -44,7 +46,7 @@ public class Editor {
     private final JButton testButton = new JButton("Test");
     private final JToggleButton toggleInfoButton = new JToggleButton("Help");
     private final Window parent;
-    private final JLabel info;
+    private final LinkLabel info;
     
     private DataFormatter<String> formatter;
     private Tester tester;
@@ -93,7 +95,7 @@ public class Editor {
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);
         gbc.insets = new Insets(5, 8, 8, 8);
         gbc.anchor = GridBagConstraints.CENTER;
-        info = new JLabel();
+        info = new LinkLabel("", null);
         dialog.add(info, gbc);
         /**
          * Set help invisible by default (do it in constructor to get correct
@@ -183,6 +185,10 @@ public class Editor {
     public void setTester(Tester tester) {
         this.tester = tester;
         testButton.setVisible(tester != null);
+    }
+    
+    public void setLinkLabelListener(LinkLabelListener listener) {
+        info.setListener(listener);
     }
     
     /**

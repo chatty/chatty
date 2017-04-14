@@ -223,7 +223,7 @@
         <dd>This effectively replaces spaces in the parameters with the separator.</dd>
     </dl>
     
-    <p><em>Note</em> that the <code>&lt;identifier&gt;</code> parameter means <em>only</em>
+    <p class="note"><em>Note:</em> The <code>&lt;identifier&gt;</code> parameter means <em>only</em>
         the identifier, without any <code>$</code>, while the other parameters
         may contain replacements (including functions). You can think of this
         function syntax as an extension to the regular replacement:
@@ -242,6 +242,13 @@
             parameters</dd>
         <dd>Entering <code>/mt joshimuz lotsofs</code> opens the URL <code>http://multitwitch.tv/joshimuz/lotsofs</code></dd>
     </dl>
+    
+    <p class="note"><em>Note:</em> A backslash can be used to escape parenthesis
+        in function parameters. Example: <code>$if(streamuptime,$(streamuptime),(n/a\))</code>.
+        In this example only the closing one after <code>n/a</code> has to be
+        escaped, because the opening one doesn't have a special meaning in this
+        context and the ones around <code>streamuptime</code> have a special
+        meaning that takes precedence (closing the replacement).</p>
     
     <h2><a name="menus">Custom Context Menus / User Dialog Buttons</a></h2>
     <p>Under <code>Settings - Commands</code> there are several settings that

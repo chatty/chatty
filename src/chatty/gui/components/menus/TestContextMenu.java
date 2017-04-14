@@ -3,6 +3,7 @@ package chatty.gui.components.menus;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.components.settings.CommandSettings;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
@@ -56,7 +57,7 @@ public class TestContextMenu extends ContextMenu {
         }
         if (e instanceof CommandActionEvent) {
             CustomCommand command = ((CommandActionEvent)e).getCommand();
-            GuiUtil.showNonModalMessage(getInvoker(), "Command Info", command.toString(), JOptionPane.INFORMATION_MESSAGE);
+            CommandSettings.showCommandInfoPopup(getInvoker(), command);
         }
     }
     

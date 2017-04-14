@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.gui.components.LinkLabelListener;
 import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -67,6 +68,15 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     
     public void setChangeListener(ChangeListener listener) {
         this.listener = listener;
+    }
+    
+    /**
+     * Listener for links in the info/help text.
+     * 
+     * @param listener 
+     */
+    public void setLinkLabelListener(LinkLabelListener listener) {
+        editor.setLinkLabelListener(listener);
     }
     
     @Override

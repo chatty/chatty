@@ -1253,6 +1253,8 @@ public class MainGui extends JFrame implements Runnable {
                 openHelp(ref);
             } else if (type.equals("help-settings")) {
                 openHelp("help-settings.html", ref);
+            } else if (type.equals("help-commands")) {
+                openHelp("help-custom_commands.html", ref);
             } else if (type.equals("help-admin")) {
                 openHelp("help-admin.html", ref);
             } else if (type.equals("help-livestreamer")) {

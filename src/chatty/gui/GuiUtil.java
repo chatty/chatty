@@ -114,7 +114,13 @@ public class GuiUtil {
     }
     
     public static void showNonModalMessage(Component parent, String title, String message, int type) {
-        message = Helper.htmlspecialchars_encode(message);
+        showNonModalMessage(parent, title, message, type, false);
+    }
+    
+    public static void showNonModalMessage(Component parent, String title, String message, int type, boolean allowHtml) {
+        if (!allowHtml) {
+            message = Helper.htmlspecialchars_encode(message);
+        }
         message = "<html><body style='font-family: Monospaced;width:400px;'>"+message;
         JOptionPane pane = new JOptionPane(message, type);
         JDialog dialog = pane.createDialog(parent, title);
