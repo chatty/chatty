@@ -33,8 +33,10 @@ public class Parser {
             if (accept("$")) {
                 items.add(specialThing());
             } else if (accept("\\")) {
-                // Just read next character as literal
-                items.add(reader.next());
+                if (reader.hasNext()) {
+                    // Just read next character as literal
+                    items.add(reader.next());
+                }
             } else {
                 items.add(reader.next());
             }

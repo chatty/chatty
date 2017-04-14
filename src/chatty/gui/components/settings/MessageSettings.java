@@ -54,16 +54,17 @@ public class MessageSettings extends SettingsPanel {
         
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
                 "showModMessages",
-                "Show mod/unmod messages",
-                "Whether to show when someone was modded/unmodded or a "
-                                + "mod joined/left the channel."),
+                "Show mod/unmod (unreliable)",
+                "Whether to show when someone was modded/unmodded or a mod "
+                        + "joined/left the channel. Twitch Chat is not very "
+                        + "reliable in reporting these events correctly."),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
 
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "showJoinsParts", "Show joins/parts",
+                "showJoinsParts", "Show joins/parts (unreliable)",
                 "Show users joining/parting the channel (only with "
                                 + "Userlist Connection enabled, see Advanced "
-                                + "settings)"),
+                                + "settings)."),
                 d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
 
         otherSettingsPanel.add(d.addSimpleBooleanSetting(

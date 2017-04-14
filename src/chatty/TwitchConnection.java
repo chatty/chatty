@@ -933,10 +933,10 @@ public class TwitchConnection {
             if (this != irc) {
                 return;
             }
-            if (onChannel(channel)) {
-                infoMessage(channel, text);
-            } else if (channel.equals("#jtv")) {
+            if (tags.isValue("msg-id", "whisper_invalid_login")) {
                 listener.onInfo(text);
+            } else if (onChannel(channel)) {
+                infoMessage(channel, text);
             } else {
                 listener.onInfo(String.format("[Info/%s] %s", channel, text));
             }

@@ -772,7 +772,7 @@ public class TwitchClient {
      * @return 
      */
     public boolean commandInput(String channel, String text) {
-        String[] split = text.trim().split(" ", 2);
+        String[] split = text.split(" ", 2);
         String command = split[0].substring(1);
         String parameter = null;
         if (split.length == 2) {
@@ -1285,7 +1285,7 @@ public class TwitchClient {
             g.printLine("Custom command '"+command+"': No action specified");
         } else {
             // Check what command is called in the result of this command
-            String[] resultSplit = result.trim().split(" ", 2);
+            String[] resultSplit = result.split(" ", 2);
             String resultCommand = resultSplit[0];
             if (resultCommand.startsWith("/")
                     && customCommands.containsCommand(resultCommand.substring(1))) {

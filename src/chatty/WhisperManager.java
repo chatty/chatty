@@ -173,7 +173,7 @@ public class WhisperManager {
      * @return 
      */
     private boolean rawWhisper(String nick, String message) {
-        return c.sendSpamProtectedMessage("#jtv", "/w " + nick + " " + message, false);
+        return c.sendSpamProtectedMessage("#"+c.getUsername(), "/w " + nick + " " + message, false);
     }
             
 

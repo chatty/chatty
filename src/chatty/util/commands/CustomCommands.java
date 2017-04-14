@@ -55,7 +55,6 @@ public class CustomCommands {
         // Add some more parameters
         parameters.put("chan", Helper.toStream(channel));
         if (command.containsIdentifier("stream")) {
-            System.out.println("Request");
             String stream = Helper.toValidStream(channel);
             StreamInfo streamInfo = api.getStreamInfo(stream, null);
             if (streamInfo.isValid()) {
@@ -94,16 +93,18 @@ public class CustomCommands {
             if (c != null && !c.isEmpty()) {
                 String[] split = c.split(" ", 2);
                 if (split.length == 2) {
-                    String command = split[0];
-                    if (command.startsWith("/")) {
-                        command = command.substring(1);
+                    String commandName = split[0];
+                    if (commandName.startsWith("/")) {
+                        commandName = commandName.substring(1);
                     }
-                    command = command.trim();
+                    commandName = commandName.trim();
+                    // Trim when loading, to ensure consistent behaviour
+                    // (in-line menu commands and Test-button parsing trim too)
                     String commandValue = split[1].trim();
-                    if (!command.isEmpty()) {
+                    if (!commandName.isEmpty()) {
                         CustomCommand parsedCommand = CustomCommand.parse(commandValue);
                         if (parsedCommand.getError() == null) {
-                            commands.put(StringUtil.toLowerCase(command), parsedCommand);
+                            commands.put(StringUtil.toLowerCase(commandName), parsedCommand);
                         } else {
                             LOGGER.warning("Error parsing custom command: "+parsedCommand.getError());
                         }

@@ -65,7 +65,7 @@ public class CommandSettings extends SettingsPanel {
                 if (split.length != 2) {
                     message = "No command";
                 } else {
-                    CustomCommand command = CustomCommand.parse(split[1]);
+                    CustomCommand command = CustomCommand.parse(split[1].trim());
                     if (command.hasError()) {
                         message = command.getError();
                     } else {

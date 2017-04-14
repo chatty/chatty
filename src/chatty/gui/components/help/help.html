@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.5)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.5.1)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -502,15 +502,20 @@
     <p>In order to receive JOIN/PART messages, the setting <code>Correct Userlist</code>
         under <code>Settings - Advanced - Connection</code> has to be enabled.</p>
     
-    <p>JOIN/PART messages are sent in batches and can be pretty delayed. So if
-        someone joins the chat, he may only appear as joined after e.g. 15
-        seconds. If you want to use this to directly react on stream to someone
-        joining, then including stream delay your reaction may be e.g. 30
-        seconds too late (possibly longer). The user may even have already left
-        the channel again, but it just doesn't show yet.</p>
+    <p><em>Note:</em> The userlist is not very reliable and should only be taken
+        as a rough estimate of who is currently in the channel. This is because:
+    </p>
     
-    <p>The userlist can also take some time to initially load after you join a
-        channel, or not load at all sometimes.</p>
+    <ul>
+        <li>JOIN/PART messages are sent in batches and can be pretty delayed, so
+        so it may happen that a user who only just started showing up in the
+        userlist joined half a minute ago (or even already left again).</li>
+        <li>It can take some time for Twitch to send the userlist when you join
+        a channel. In big channels it may not be sent at all.</li>
+        <li>MOD/UNMOD messages are unreliable as well, so mod status in the
+        userlist may not always be correct. Twitch Chat has also been known to
+        sometimes spam MOD/UNMOD messages.</li>
+    </ul>
     
     <p>Also note that the userlist doesn't necessarily have to do with who
         watches your stream. A user can be logged into chat without watching the
