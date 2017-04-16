@@ -79,8 +79,10 @@ public class ChannelEditBox extends JTextField implements KeyListener,
      * 
      * @param text The text to insert
      * @param withSpace Whether to add spaces
+     * @param forceSpace If you wish to force a space adding after the text,
+     * whenever there is no text after (for a mention, for example)
      */
-    public void insertAtCaret(String text, boolean withSpace) {
+    public void insertAtCaret(String text, boolean withSpace, boolean forceSpaceAfter) {
         int pos = getCaretPosition();
         String current = getText();
         String before = current.substring(0, pos);
@@ -91,7 +93,7 @@ public class ChannelEditBox extends JTextField implements KeyListener,
             if (!before.isEmpty() && !before.endsWith(" ")) {
                 text = " "+text;
             }
-            if (!after.isEmpty() && !after.startsWith(" ")) {
+            if (forceSpaceAfter || !after.isEmpty() && !after.startsWith(" ")) {
                 text = text+" ";
             }
         }

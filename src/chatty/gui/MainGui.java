@@ -1415,6 +1415,9 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("userinfo")) {
                 openUserInfoDialog(user, null);
             }
+            else if(cmd.equals("userMention")) {
+                channels.getActiveChannel().insertText("@" + user.getName(), true, true);
+            }
             else if (cmd.equals("addressbookEdit")) {
                 openAddressbook(user.getName());
             }
@@ -1762,7 +1765,7 @@ public class MainGui extends JFrame implements Runnable {
             Emoticon emote = emoteImage.getEmoticon();
             String url = null;
             if (e.getActionCommand().equals("code")) {
-                channels.getActiveChannel().insertText(emote.code, true);
+                channels.getActiveChannel().insertText(emote.code, true, false);
             } else if (e.getActionCommand().equals("cheer")) {
                 url = "http://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {
@@ -2055,7 +2058,7 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 if (text != null) {
-                    channels.getLastActiveChannel().insertText(text, spaces);
+                    channels.getLastActiveChannel().insertText(text, spaces, false);
                 }
             }
         });

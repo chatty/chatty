@@ -25,6 +25,7 @@ public class UserContextMenu extends ContextMenu {
         this.user = user;
         
         addItem("userinfo", "User: "+user.getDisplayNick());
+        addItem("userMention", "Mention @"+user.getDisplayNick());
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
