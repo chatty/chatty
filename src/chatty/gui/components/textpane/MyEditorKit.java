@@ -17,15 +17,15 @@ import javax.swing.text.ViewFactory;
  */
 class MyEditorKit extends StyledEditorKit {
 
-    private final boolean startAtBottom;
+    private final ViewFactory factory;
     
     public MyEditorKit(boolean startAtBottom) {
-        this.startAtBottom = startAtBottom;
+        this.factory = new StyledViewFactory(startAtBottom);
     }
     
     @Override
     public ViewFactory getViewFactory() {
-        return new StyledViewFactory(startAtBottom);
+        return factory;
     }
  
     static class StyledViewFactory implements ViewFactory {

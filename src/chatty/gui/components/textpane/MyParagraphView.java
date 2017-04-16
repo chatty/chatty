@@ -1,10 +1,13 @@
 
 package chatty.gui.components.textpane;
 
+import java.awt.Shape;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.Element;
 import javax.swing.text.FlowView;
 import javax.swing.text.ParagraphView;
 import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
 
 /**
  * Changes the FlowStrategy to increase performance when i18n is enabled in the
@@ -12,6 +15,9 @@ import javax.swing.text.View;
  * default the strategy is a singleton shared by all instances, which may reduce
  * performance if all instances have to use a i18n stragety when one character
  * that requires it is inserted.)
+ * 
+ * Contains parts of http://stackoverflow.com/a/14230668/2375667 to fix a line
+ * breaking bug in JTextPane.
  *
  * @author tduva
  */
@@ -36,4 +42,26 @@ class MyParagraphView extends ParagraphView {
             return res;
         }
     }
+    
+    @Override
+    public void removeUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        super.removeUpdate(e, a, f);
+        resetBreakSpots();
+    }
+    
+    @Override
+    public void insertUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        super.insertUpdate(e, a, f);
+        resetBreakSpots();
+    }
+
+    private void resetBreakSpots() {
+        for (int i = 0; i < layoutPool.getViewCount(); i++) {
+            View v = layoutPool.getView(i);
+            if (v instanceof WrapLabelView) {
+                ((WrapLabelView) v).resetBreakSpots();
+            }
+        }
+    }
+    
 }

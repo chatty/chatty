@@ -961,6 +961,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * applicable.
          */
         private void disable() {
+            if (currentSelection == null) {
+                return;
+            }
             resetSearch();
             if (currentSelection != null) {
                 scrollManager.scrollDown();
