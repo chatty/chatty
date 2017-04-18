@@ -42,7 +42,7 @@ class Join implements Item {
 
     @Override
     public String toString() {
-        return "JOIN:" + identifier + "/" + separator;
+        return "Join " + identifier + "/" + separator;
     }
 
     @Override
