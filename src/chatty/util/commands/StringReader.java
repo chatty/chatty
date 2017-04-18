@@ -2,7 +2,8 @@
 package chatty.util.commands;
 
 /**
- *
+ * Allows reading the given String character by character.
+ * 
  * @author tduva
  */
 public class StringReader {
@@ -15,15 +16,30 @@ public class StringReader {
         this.string = string;
     }
     
+    /**
+     * Checks if there is a next character available.
+     * 
+     * @return 
+     */
     public boolean hasNext() {
         return string.length() > index + 1;
     }
     
+    /**
+     * Return the next character and advance the read index.
+     * 
+     * @return 
+     */
     public String next() {
         index++;
         return string.substring(index, index+1);
     }
     
+    /**
+     * Return the next character, but don't advance the read index.
+     * 
+     * @return 
+     */
     public String peek() {
         return string.substring(index+1, index+2);
     }
@@ -32,6 +48,11 @@ public class StringReader {
         return string.substring(index, index+1);
     }
     
+    /**
+     * The current read index.
+     * 
+     * @return 
+     */
     public int pos() {
         return index;
     }

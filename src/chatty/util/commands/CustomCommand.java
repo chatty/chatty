@@ -1,7 +1,6 @@
 
 package chatty.util.commands;
 
-import chatty.util.commands.Parser.Item;
 import java.text.ParseException;
 import java.util.Set;
 
@@ -11,10 +10,10 @@ import java.util.Set;
  */
 public class CustomCommand {
     
-    private final Parser.Items items;
+    private final Items items;
     private final String error;
 
-    private CustomCommand(Parser.Items items) {
+    private CustomCommand(Items items) {
         this.items = items;
         this.error = null;
     }
@@ -51,8 +50,8 @@ public class CustomCommand {
     public String getCommand() {
         if (items != null && !items.isEmpty()) {
             Item firstToken = items.getItem(0);
-            if (firstToken instanceof Parser.Literal) {
-                String text = ((Parser.Literal)firstToken).getLiteral();
+            if (firstToken instanceof Literal) {
+                String text = ((Literal)firstToken).getLiteral();
                 if (text.startsWith("/") && text.contains(" ")) {
                     return text.substring(1, text.indexOf(" "));
                 }
