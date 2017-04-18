@@ -5,7 +5,10 @@ import chatty.util.StringUtil;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -88,6 +91,9 @@ public class Parser {
         else if (type.equals("join")) {
             return join(isRequired);
         }
+        else if (type.equals("ifeq")) {
+            return ifEq(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'");
             return null;
@@ -100,7 +106,7 @@ public class Parser {
      * @return 
      */
     private Item identifier() throws ParseException {
-        String ref = read("[a-zA-Z0-9-]");
+        String ref = read("[a-zA-Z0-9-_]");
         Matcher m = Pattern.compile("([0-9])+(-)?").matcher(ref);
         if (ref.isEmpty()) {
             error("Expected identifier");
@@ -137,13 +143,28 @@ public class Parser {
         expect("(");
         Item identifier = identifier();
         expect(",");
-        Items output1 = parse("[,)]");
+        Items output1 = param();
         Items output2 = null;
         if (accept(",")) {
-            output2 = parse("[)]");
+            output2 = lastParam();
         }
         expect(")");
         return new Condition(identifier, isRequired, output1, output2);
+    }
+    
+    private Item ifEq(boolean isRequired) throws ParseException {
+        expect("(");
+        Item identifier = identifier();
+        expect(",");
+        Items compare = param();
+        expect(",");
+        Items output1 = param();
+        Items output2 = null;
+        if (accept(",")) {
+            output2 = lastParam();
+        }
+        expect(")");
+        return new IfEq(identifier, isRequired, compare, output1, output2);
     }
     
     private Item join(boolean isRequired) throws ParseException {
@@ -170,8 +191,16 @@ public class Parser {
         }
     }
     
-    public String name() {
+    private String name() {
         return read("[a-zA-Z]");
+    }
+    
+    private Items param() throws ParseException {
+        return parse("[,)]");
+    }
+    
+    private Items lastParam() throws ParseException {
+        return parse("[)]");
     }
     
     private String read(String regex) {
@@ -202,7 +231,45 @@ public class Parser {
          */
         public String replace(Parameters parameters);
         
-        public boolean containsIdentifier(String prefix);
+        /**
+         * Returns all identifiers that start with the given prefix (can be
+         * empty to return all).
+         * 
+         * @param prefix
+         * @return A set of identifiers, empty if none are found
+         */
+        public Set<String> getIdentifiersWithPrefix(String prefix);
+        
+        public static Set<String> getIdentifiersWithPrefix(String prefix, Object... input) {
+            Set<String> output = new HashSet<>();
+            for (Object value : input) {
+                if (value != null) {
+                    if (value instanceof String) {
+                        if (((String)value).startsWith(prefix)) {
+                            output.add((String)value);
+                        }
+                    } else if (value instanceof Item) {
+                        Set<String> value2 = ((Item)value).getIdentifiersWithPrefix(prefix);
+                        if (value2 != null) {
+                            output.addAll(value2);
+                        }
+                    }
+                }
+            }
+            return output;
+        }
+        
+    }
+    
+    public static void main(String[] args) {
+        Identifier id = new Identifier("abc");
+        Literal lit = new Literal("abcd");
+        Items items = new Items();
+        items.add(id);
+        items.add(new Identifier("aijofwe"));
+        items.add("_ffweffabc");
+        items.add(new Join(new Identifier("cheese"), null, true));
+        System.out.println(Item.getIdentifiersWithPrefix("_", id, lit, items));
     }
     
     static class Literal implements Item {
@@ -222,14 +289,14 @@ public class Parser {
         public String toString() {
             return "'"+literal+"'";
         }
-
-        @Override
-        public boolean containsIdentifier(String prefix) {
-            return false;
-        }
         
         public String getLiteral() {
             return literal;
+        }
+
+        @Override
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return null;
         }
         
     }
@@ -255,12 +322,12 @@ public class Parser {
         
         @Override
         public String toString() {
-            return identifier.toString();
+            return (isRequired ? "$" : "")+identifier.toString();
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            return identifier.containsIdentifier(prefix);
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return identifier.getIdentifiersWithPrefix(prefix);
         }
         
     }
@@ -284,28 +351,67 @@ public class Parser {
         public String replace(Parameters parameters) {
             String value = identifier.replace(parameters);
             if (value != null && !value.isEmpty()) {
-                return output1.replace(parameters);
+                return output1.replace(parameters, isRequired);
             }
             if (output2 != null) {
-                return output2.replace(parameters);
+                return output2.replace(parameters, isRequired);
             }
-            System.out.println(isRequired);
             return isRequired ? null : "";
         }
         
         @Override
         public String toString() {
-            return "IF:"+identifier+"?"+output1+":"+output2;
+            return "If "+identifier+" ? "+output1+" : "+output2;
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            return identifier.containsIdentifier(prefix)
-                    || output1.containsIdentifier(prefix)
-                    || output2 == null
-                    || output2.containsIdentifier(prefix);
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return Item.getIdentifiersWithPrefix(prefix, identifier, output1, output2);
         }
         
+    }
+    
+    static class IfEq implements Item {
+
+        private final boolean isRequired;
+        private final Item identifier;
+        private final Items compare;
+        private final Items output1;
+        // May be null
+        private final Items output2;
+        
+        public IfEq(Item identifier, boolean isRequired, Items compare,
+                Items output1, Items output2) {
+            this.identifier = identifier;
+            this.isRequired = isRequired;
+            this.compare = compare;
+            this.output1 = output1;
+            this.output2 = output2;
+        }
+        
+        @Override
+        public String replace(Parameters parameters) {
+            String value = identifier.replace(parameters);
+            String compareTo = compare.replace(parameters);
+            if (Objects.equals(value, compareTo)) {
+                return output1.replace(parameters, isRequired);
+            }
+            if (output2 != null) {
+                return output2.replace(parameters, isRequired);
+            }
+            return isRequired ? null : "";
+        }
+
+        @Override
+        public String toString() {
+            return "If "+identifier+" == "+compare+" ? "+output1+" : "+output2;
+        }
+
+        @Override
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return Item.getIdentifiersWithPrefix(prefix, identifier, compare, output1, output2);
+        }
+
     }
     
     static class Items implements Item {
@@ -344,6 +450,11 @@ public class Parser {
         public boolean isEmpty() {
             return collection.isEmpty();
         }
+        
+        public String replace(Parameters parameters, boolean isRequired) {
+            String result = replace(parameters);
+            return result != null || isRequired ? result : "";
+        }
 
         @Override
         public String replace(Parameters parameters) {
@@ -364,13 +475,8 @@ public class Parser {
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            for (Item item : collection) {
-                if (item.containsIdentifier(prefix)) {
-                    return true;
-                }
-            }
-            return false;
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return Item.getIdentifiersWithPrefix(prefix, collection.toArray());
         }
         
     }
@@ -400,8 +506,8 @@ public class Parser {
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            return false;
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return null;
         }
         
     }
@@ -440,8 +546,8 @@ public class Parser {
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            return identifier.containsIdentifier(prefix);
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return Item.getIdentifiersWithPrefix(prefix, identifier, separator);
         }
         
     }
@@ -451,7 +557,7 @@ public class Parser {
         private final String name;
         
         public Identifier(String name) {
-            this.name = name;
+            this.name = name.toLowerCase();
         }
 
         @Override
@@ -465,8 +571,8 @@ public class Parser {
         }
 
         @Override
-        public boolean containsIdentifier(String prefix) {
-            return name.startsWith(prefix);
+        public Set<String> getIdentifiersWithPrefix(String prefix) {
+            return Item.getIdentifiersWithPrefix(prefix, name);
         }
         
     }

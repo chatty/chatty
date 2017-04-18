@@ -53,4 +53,9 @@ public class Parameters {
         return new Parameters(parameters);
     }
 
+    @Override
+    public String toString() {
+        return parameters.toString();
+    }
+    
 }

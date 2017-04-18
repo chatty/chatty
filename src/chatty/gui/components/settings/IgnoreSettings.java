@@ -102,7 +102,7 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
-        ListSelector items = d.addListSetting("ignore", 390, 160, true);
+        ListSelector items = d.addListSetting("ignore", 390, 160, true, false);
         items.setInfo(INFO_IGNORE);
         items.setDataFormatter(new DataFormatter<String>() {
 
@@ -168,7 +168,7 @@ public class IgnoreSettings extends SettingsPanel {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 0.5;
             gbc.weighty = 1;
-            ListSelector ignoredChat = d.addListSetting("ignoredUsers", 180, 250, false);
+            ListSelector ignoredChat = d.addListSetting("ignoredUsers", 180, 250, false, true);
             ignoredChat.setDataFormatter(FORMATTER);
             add(ignoredChat, gbc);
             
@@ -176,7 +176,7 @@ public class IgnoreSettings extends SettingsPanel {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 0.5;
             gbc.weighty = 1;
-            ListSelector ignoredWhispers = d.addListSetting("ignoredUsersWhisper", 180, 250, false);
+            ListSelector ignoredWhispers = d.addListSetting("ignoredUsersWhisper", 180, 250, false, true);
             ignoredWhispers.setDataFormatter(FORMATTER);
             add(ignoredWhispers, gbc);
             

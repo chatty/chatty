@@ -57,7 +57,7 @@ External Libraries/Resources
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
 		go-previous.png, go-home.png, go-web.png,
-		image-icon.png, commandline.png, edit-copy.png`
+		image-icon.png, commandline.png, edit-copy.png, sort.png`
   * Source: http://tango.freedesktop.org/Tango_Icon_Library
   * License: Released into the Public Domain
 

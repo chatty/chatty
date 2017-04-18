@@ -10,6 +10,7 @@ import chatty.util.settings.Settings;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -24,6 +25,7 @@ public class CustomCommands {
     private static final Logger LOGGER = Logger.getLogger(CustomCommands.class.getName());
     
     private final Map<String, CustomCommand> commands = new HashMap<>();
+    private final Map<String, CustomCommand> replacements = new HashMap<>();
     
     private final Settings settings;
     private final TwitchApi api;
@@ -54,7 +56,8 @@ public class CustomCommands {
     public synchronized String command(CustomCommand command, Parameters parameters, String channel) {
         // Add some more parameters
         parameters.put("chan", Helper.toStream(channel));
-        if (command.containsIdentifier("stream")) {
+        if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {
+            System.out.println("request");
             String stream = Helper.toValidStream(channel);
             StreamInfo streamInfo = api.getStreamInfo(stream, null);
             if (streamInfo.isValid()) {
@@ -65,6 +68,14 @@ public class CustomCommands {
                     parameters.put("streamgame", streamInfo.getGame());
                     parameters.put("streamviewers", String.valueOf(streamInfo.getViewers()));
                 }
+            }
+        }
+        
+        // Add parameters for custom replacements
+        Set<String> customIdentifiers = command.getIdentifiersWithPrefix("_");
+        for (String identifier : customIdentifiers) {
+            if (replacements.containsKey(identifier)) {
+                parameters.put(identifier, replacements.get(identifier).replace(parameters));
             }
         }
 
@@ -89,6 +100,7 @@ public class CustomCommands {
     public synchronized void loadFromSettings() {
         List<String> commandsToLoad = settings.getList("commands");
         commands.clear();
+        replacements.clear();
         for (String c : commandsToLoad) {
             if (c != null && !c.isEmpty()) {
                 String[] split = c.split(" ", 2);
@@ -97,14 +109,18 @@ public class CustomCommands {
                     if (commandName.startsWith("/")) {
                         commandName = commandName.substring(1);
                     }
-                    commandName = commandName.trim();
+                    commandName = StringUtil.toLowerCase(commandName.trim());
                     // Trim when loading, to ensure consistent behaviour
                     // (in-line menu commands and Test-button parsing trim too)
                     String commandValue = split[1].trim();
                     if (!commandName.isEmpty()) {
                         CustomCommand parsedCommand = CustomCommand.parse(commandValue);
                         if (parsedCommand.getError() == null) {
-                            commands.put(StringUtil.toLowerCase(commandName), parsedCommand);
+                            if (commandName.startsWith("_") && commandName.length() > 1) {
+                                replacements.put(commandName, parsedCommand);
+                            } else {
+                                commands.put(commandName, parsedCommand);
+                            }
                         } else {
                             LOGGER.warning("Error parsing custom command: "+parsedCommand.getError());
                         }

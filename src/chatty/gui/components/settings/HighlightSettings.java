@@ -85,7 +85,7 @@ public class HighlightSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
-        ListSelector items = d.addListSetting("highlight", 220, 250, true);
+        ListSelector items = d.addListSetting("highlight", 220, 250, true, false);
         items.setInfo(INFO_HIGHLIGHTS);
         items.setDataFormatter(new DataFormatter<String>() {
 
@@ -138,7 +138,7 @@ public class HighlightSettings extends SettingsPanel {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 0.5;
             gbc.weighty = 1;
-            ListSelector noHighlightUsers = d.addListSetting("noHighlightUsers", 180, 250, false);
+            ListSelector noHighlightUsers = d.addListSetting("noHighlightUsers", 180, 250, false, true);
             noHighlightUsers.setDataFormatter(FORMATTER);
             add(noHighlightUsers, gbc);
             

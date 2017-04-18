@@ -3,6 +3,7 @@ package chatty.util.commands;
 
 import chatty.util.commands.Parser.Item;
 import java.text.ParseException;
+import java.util.Set;
 
 /**
  *
@@ -43,8 +44,8 @@ public class CustomCommand {
         return error != null;
     }
     
-    public boolean containsIdentifier(String prefix) {
-        return items.containsIdentifier(prefix);
+    public Set<String> getIdentifiersWithPrefix(String prefix) {
+        return items.getIdentifiersWithPrefix(prefix);
     }
     
     public String getCommand() {

@@ -166,7 +166,7 @@ public class EmoteSettings extends SettingsPanel {
         JPanel ignored = addTitledPanel("Ignored Emotes", 1, true);
         
         gbc = d.makeGbc(0, 0, 1, 1);
-        ignored.add(d.addListSetting("ignoredEmotes", 150, 130, false), gbc);
+        ignored.add(d.addListSetting("ignoredEmotes", 150, 130, false, true), gbc);
         
         gbc = d.makeGbc(1, 0, 1, 1);
         gbc.anchor = GridBagConstraints.NORTH;

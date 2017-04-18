@@ -13,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.*;
@@ -35,6 +36,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     private final JButton change = new JButton();
     private final JButton moveUp = new JButton();
     private final JButton moveDown = new JButton();
+    private final JButton sort = new JButton();
     private final JTextField input = new JTextField();
     
     private String info;
@@ -43,7 +45,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     private final Editor editor;
 
-    public ListSelector(Window parent, boolean enableSortingButtons) {
+    public ListSelector(Window parent, boolean manualSorting,
+            boolean alphabeticSorting) {
         
         // Button actions
         ActionListener buttonAction = new ActionListener() {
@@ -64,6 +67,9 @@ public class ListSelector extends JPanel implements ListSetting<String> {
                 }
                 else if (e.getSource() == moveDown) {
                     moveDown();
+                }
+                else if (e.getSource() == sort) {
+                    sort();
                 }
             }
         };
@@ -104,6 +110,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         configureButton(change, "edit.png", "Edit selected item (or double-click on item)");
         configureButton(moveUp, "go-up.png", "Move selected item up");
         configureButton(moveDown, "go-down.png", "Move selected item down");
+        configureButton(sort, "sort.png", "Sort list alphabetically");
         
         // Listeners
         add.addActionListener(buttonAction);
@@ -112,6 +119,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         change.addActionListener(buttonAction);
         moveUp.addActionListener(buttonAction);
         moveDown.addActionListener(buttonAction);
+        sort.addActionListener(buttonAction);
         
         list.setModel(data);
         
@@ -137,18 +145,22 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         gbc.gridy = 2;
         add(change, gbc);
         
-        if (enableSortingButtons) {
+        if (manualSorting) {
             gbc.gridy = 3;
             add(moveUp, gbc);
 
             gbc.gridy = 4;
             add(moveDown, gbc);
         }
+        if (alphabeticSorting) {
+            gbc.gridy = 5;
+            add(sort, gbc);
+        }
         
         gbc.weightx = 1;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridheight = 5;
+        gbc.gridheight = 6;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         add(new JScrollPane(list), gbc);
@@ -247,6 +259,17 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         String temp = data.get(index2);
         data.set(index2, data.get(index1));
         data.set(index1, temp);
+    }
+    
+    private void sort() {
+        if (JOptionPane.showConfirmDialog(sort,
+                "Sort list alphabetically?",
+                "Sort",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
+            List<String> sortData = getData();
+            Collections.sort(sortData);
+            setData(sortData);
+        }
     }
 
     /**

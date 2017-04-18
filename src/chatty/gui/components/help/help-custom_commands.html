@@ -17,6 +17,7 @@
                 <li><a href="#simple-replacements">Simple Replacements</a></li>
                 <li><a href="#parameters-context">Pre-defined Parameters</a></li>
                 <li><a href="#functions">Functions</a></li>
+                <li><a href="#custom-replacements">Custom Replacements</a></li>
             </ul>
         </li>
         <li>
@@ -205,15 +206,24 @@
         replacements, however they have a function name before the identifier (there
         is no short notation for functions):</p>
         
-    <p><code>$&lt;functionName&gt;(&lt;identifier&gt;,&lt;some parameters&gt;)</code></p>
+    <p><code>$&lt;functionName&gt;(&lt;identifier&gt;,&lt;some parameters&gt;,[optional parameters])</code></p>
     
     <p>The following functions are available:</p>
     <dl class="defList">
-        <dt><code>$if(&lt;identifier&gt;,&lt;replacement if exists&gt;,&lt;replacement if doesn't exist&gt;)</code></dt>
+        <dt><code>$if(&lt;identifier&gt;,&lt;output if exists&gt;,[output if not])</code></dt>
         <dd>If the value the identifier refers to exists (non-empty), it will
             return the first function parameter, the second otherwise.</dd>
-        <dd><em>Example:</em> <code>$if(1,$1,nope)</code> with parameters <code>cheese cake</code> turns into <code>cheese</code>,
-            with no parameters turns into <code>nope</code></dd>
+        <dd><em>Example:</em> <code>$if(1,$1,nope)</code> with command parameters <code>cheese cake</code> turns into <code>cheese</code>,
+            with no parameters turns into <code>nope</code>, the optional <code>[output if not]</code> function parameter.</dd>
+        
+        <dt><code>$ifeq(&lt;identifier&gt;,&lt;comparison&gt;,&lt;output if equal&gt;,[output if not])</code></dt>
+        <dd>Similar to <code>$if</code>, but instead of just checking fot the
+            existence of a parameter it compares it to a given value
+            (<code>&lt;comparison&gt;</code>).</dd>
+        <dd><em>Example:</em> <code>$ifeq(1,cheesecake,yummy)</code> with parameters
+            <code>cheesecake</code> turns into <code>yummy</code>, with parameters
+            <code>cheese cake</code> turns into an an empty string, since the
+            optional <code>[output if not]</code> has not been specified.</dd>
         
         <dt><code>$join(&lt;identifier&gt;,&lt;separator&gt;)</code></dt>
         <dd>Joins together the arguments the identifier refers to, using the
@@ -248,7 +258,28 @@
         In this example only the closing one after <code>n/a</code> has to be
         escaped, because the opening one doesn't have a special meaning in this
         context and the ones around <code>streamuptime</code> have a special
-        meaning that takes precedence (closing the replacement).</p>
+        meaning that takes precedence (opening/closing the replacement).</p>
+    
+    <h3><a name="custom-replacements">Custom Replacements</a></h3>
+    <p>You can create your own identifiers for replacements by adding an entry
+        to the Custom Commands list starting with an underscore:</p>
+    
+    <p><code>_m $ifeq(1,$(chan),,$$1: )</code></p>
+    
+    <p>Instead of a command, this creates an identifier that can be used in a
+        replacement:</p>
+    
+    <p><code>/faq $(_m)FAQ: https://pastebin.com/KySx3KDu</code></p>
+    
+    <p>When the <code>/faq</code> command is run, the <code>$(_m)</code> gets
+        replaced with whatever is defined in <code>_m</code>, in this case it
+        creates a mention if the first parameter isn't equal to the current
+        channel.</p>
+    
+    <p class="note"><em>Note:</em> Custom identifiers always start with an
+        underscore and can themselves not contain replacements with custom
+        identifiers (well they technicially can, but they won't get replaced).</p>
+    
     
     <h2><a name="menus">Custom Context Menus / User Dialog Buttons</a></h2>
     <p>Under <code>Settings - Commands</code> there are several settings that
