@@ -24,17 +24,17 @@ public class ChannelContextMenu extends ContextMenu {
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
         
-        addSubItem("hostchannel", "Host Channel", MISC_MENU);
+        addItem("hostchannel", "Host Channel", MISC_MENU);
         addSeparator(MISC_MENU);
-        addSubItem("joinHostedChannel", "Join Hosted Channel", MISC_MENU);
-        addSubItem("copy", "Copy Stream Name", MISC_MENU);
+        addItem("joinHostedChannel", "Join Hosted Channel", MISC_MENU);
+        addItem("copy", "Copy Stream Name", MISC_MENU);
         addSeparator(MISC_MENU);
-        addSubItem("chatRules", "Show Chat Rules", MISC_MENU);
+        addItem("chatRules", "Show Chat Rules", MISC_MENU);
         addSeparator(MISC_MENU);
-        addSubItem("follow", "Follow Channel", MISC_MENU);
-        addSubItem("unfollow", "Unfollow Channel", MISC_MENU);
+        addItem("follow", "Follow Channel", MISC_MENU);
+        addItem("unfollow", "Unfollow Channel", MISC_MENU);
         addSeparator(MISC_MENU);
-        addSubItem("srcOpen", "Open Speedrun.com", MISC_MENU);
+        addItem("srcOpen", "Open Speedrun.com", MISC_MENU);
         
         addSeparator();
         addItem("closeChannel", "Close Channel");

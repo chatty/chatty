@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -36,6 +37,32 @@ class Replacement implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return identifier.getIdentifiersWithPrefix(prefix);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Replacement other = (Replacement)obj;
+        if (!Objects.equals(identifier, other.identifier)) {
+            return false;
+        }
+        if (isRequired != other.isRequired) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + (this.isRequired ? 1 : 0);
+        hash = 97 * hash + Objects.hashCode(this.identifier);
+        return hash;
     }
 
 }

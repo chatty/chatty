@@ -653,8 +653,8 @@ public class FollowersDialog extends JDialog {
 
         public MyContextMenu() {
             final String saveMenu = "Export list to file";
-            addSubItem("saveSimple", "Names only", saveMenu);
-            addSubItem("saveVerbose", "Names and dates", saveMenu);
+            addItem("saveSimple", "Names only", saveMenu);
+            addItem("saveVerbose", "Names and dates", saveMenu);
         }
         
         @Override

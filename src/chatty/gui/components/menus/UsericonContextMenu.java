@@ -40,24 +40,24 @@ public class UsericonContextMenu extends ContextMenu {
             infoMenu = "Custom Usericon";
         }
         if (!usericon.badgeType.isEmpty()) {
-            addSubItem("copyBadgeType", "ID/Version: "+usericon.badgeType.toString(), infoMenu, ContextMenuHelper.ICON_COPY);
+            addItem("copyBadgeType", "ID/Version: "+usericon.badgeType.toString(), -1, infoMenu, ContextMenuHelper.ICON_COPY);
             if (usericon.source == Usericon.SOURCE_TWITCH2) {
                 // Only show add options if original Twitch emote (custom emote
                 // would already be added)
                 addSeparator(infoMenu);
-                addSubItem("addUsericonOfBadgeType", "Change/Hide ("+usericon.badgeType+")", infoMenu);
-                addSubItem("addUsericonOfBadgeTypeId", "Change/Hide (all "+usericon.badgeType.id+" variants)", infoMenu);
+                addItem("addUsericonOfBadgeType", "Change/Hide ("+usericon.badgeType+")", infoMenu);
+                addItem("addUsericonOfBadgeTypeId", "Change/Hide (all "+usericon.badgeType.id+" variants)", infoMenu);
             }
         }
         if (usericon.restriction != null) {
             if (usericon.restriction.isEmpty()) {
-                addSubItem("", "No Restriction", infoMenu);
+                addItem("", "No Restriction", infoMenu);
             } else {
-                addSubItem("", "Restriction: "+usericon.restriction, infoMenu);
+                addItem("", "Restriction: "+usericon.restriction, infoMenu);
             }
         }
         if (!usericon.channelRestriction.isEmpty()) {
-            addSubItem("", "Channel: "+usericon.channelRestriction, infoMenu);
+            addItem("", "Channel: "+usericon.channelRestriction, infoMenu);
         }
         
         //---------

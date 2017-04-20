@@ -52,57 +52,60 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     }
     
     /**
-     * Adds an item to the context menu, after any previously added items.
-     * 
-     * @param action The action of the menu item, which will be send to the
-     * listener
-     * @param text The label of the menu item
-     */
-    protected JMenuItem addItem(String action, String text, ImageIcon icon) {
-        JMenuItem item = makeItem(action, text, icon);
-        add(item);
-        return item;
-    }
-    
-    protected JMenuItem addItem(String action, String text) {
-        return addItem(action, text, null);
-    }
-    
-    /**
      * Adds an entry to the submenu with the name {@code parent}, after any
      * previously added items in that submenu.
      * 
      * @param action The action of the menu item, which will be send to the
      * listener
      * @param text The label of the menu item
+     * @param pos The position in the menu, at the time of adding
      * @param parent The name of the submenu, can be {@code null} in which case
      * it isn't added to a submenu
      * @param icon The icon to display for the menu item
+     * @return 
      * @see addItem(String, String, ImageIcon)
      */
-    protected JMenuItem addSubItem(String action, String text, String parent, ImageIcon icon) {
+    protected JMenuItem addItem(String action, String text, int pos, String parent, ImageIcon icon) {
         if (parent != null) {
             JMenuItem item = makeItem(action, text, icon);
-            getSubmenu(parent).add(item);
+            if (pos > -1) {
+                getSubmenu(parent).insert(item, pos);
+            } else {
+                getSubmenu(parent).add(item);
+            }
             return item;
         } else {
-            return addItem(action, text, icon);
+            JMenuItem item = makeItem(action, text, icon);
+            if (pos > -1) {
+                insert(item, pos);
+            } else {
+                add(item);
+            }
+            return item;
         }
     }
     
-    protected JMenuItem addSubItem(String action, String text, String parent) {
-        return addSubItem(action, text, parent, null);
+    protected JMenuItem addItem(String action, String text) {
+        return addItem(action, text, -1, null, null);
     }
-    
+
+    protected JMenuItem addItem(String action, String text, ImageIcon icon) {
+        return addItem(action, text, -1, null, icon);
+    }
+
+    protected JMenuItem addItem(String action, String text, String parent) {
+        return addItem(action, text, -1, parent, null);
+    }
+
     public JMenuItem addCommandItem(CommandMenuItem item) {
         if (item.getCommand() == null && item.getLabel() == null) {
-            addSeparator(item.getParent());
+            addSeparator(item.getPos(), item.getParent());
         } else if (item.getCommand() == null) {
-            JMenu menu = getSubmenu(item.getLabel());
+            JMenu menu = getSubmenu(item.getLabel(), item.getPos());
             addKey(item, menu);
         } else {
             commands.put(item.getId(), item.getCommand());
-            JMenuItem mItem = addSubItem(item.getId(), item.getLabel(), item.getParent());
+            JMenuItem mItem = addItem(item.getId(), item.getLabel(), item.getPos(), item.getParent(), null);
             addKey(item, mItem);
         }
         return null;
@@ -140,12 +143,24 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
      * 
      * @param parent 
      */
-    protected void addSeparator(String parent) {
+    protected void addSeparator(int pos, String parent) {
         if (parent != null && isSubmenu(parent)) {
-            getSubmenu(parent).addSeparator();
+            if (pos > -1) {
+                getSubmenu(parent).insertSeparator(pos);
+            } else {
+                getSubmenu(parent).addSeparator();
+            }
         } else {
-            addSeparator();
+            if (pos > -1) {
+                insert(new Separator(), pos);
+            } else {
+                addSeparator();
+            }
         }
+    }
+    
+    protected void addSeparator(String parent) {
+        addSeparator(-1, parent);
     }
     
     public void addContextMenuListener(ContextMenuListener listener) {
@@ -162,17 +177,25 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         return subMenus.containsKey(name);
     }
     
-    private JMenu getSubmenu(String name) {
+    private JMenu getSubmenu(String name, int pos) {
         if (subMenus.get(name) == null) {
             JMenu menu = new JMenu(name);
-            add(menu);
+            if (pos > -1) {
+                insert(menu, pos);
+            } else {
+                add(menu);
+            }
             subMenus.put(name, menu);
         }
         return subMenus.get(name);
     }
     
+    private JMenu getSubmenu(String name) {
+        return getSubmenu(name, -1);
+    }
+    
     protected void setSubMenuIcon(String name, ImageIcon icon) {
-        getSubmenu(name).setIcon(icon);
+        getSubmenu(name, -1).setIcon(icon);
     }
  
 }

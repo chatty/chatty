@@ -64,23 +64,23 @@ public class ContextMenuHelper {
         String streamSubmenu = "Twitch Stream";
         String miscSubmenu = "Miscellaneous";
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
-        m.addSubItem("stream", "Normal", streamSubmenu);
-        m.addSubItem("streamPopout", "Popout", streamSubmenu);
+        m.addItem("stream", "Normal", streamSubmenu);
+        m.addItem("streamPopout", "Popout", streamSubmenu);
         m.addSeparator(streamSubmenu);
-        m.addSubItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
-        m.addSubItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
-        m.addSubItem("streamsKadgar", "Kadgar.net", streamSubmenu);
+        m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
+        m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
+        m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);
         addLivestreamerOptions(m);
         if (join) {
             m.addSeparator();
             m.addItem("join", "Join " + count + "channel" + s);
             m.addSeparator();
-            m.addSubItem("hostchannel", "Host Channel", miscSubmenu);
+            m.addItem("hostchannel", "Host Channel", miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addSubItem("copy", "Copy Stream Name", miscSubmenu);
+            m.addItem("copy", "Copy Stream Name", miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addSubItem("follow", "Follow Channel", miscSubmenu);
-            m.addSubItem("unfollow", "Unfollow Channel", miscSubmenu);
+            m.addItem("follow", "Follow Channel", miscSubmenu);
+            m.addItem("unfollow", "Unfollow Channel", miscSubmenu);
         }
         CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m);
     }
@@ -106,7 +106,7 @@ public class ContextMenuHelper {
                     if (sep) {
                         m.addSeparator(livestreamerMenu);
                     }
-                    m.addSubItem("livestreamerQ"+match, match, livestreamerMenu);
+                    m.addItem("livestreamerQ"+match, match, livestreamerMenu);
                     sep = false;
                 }
             }
@@ -119,9 +119,9 @@ public class ContextMenuHelper {
             String label = whisper ? "(whisper)" : "(chat)";
             String item = whisper ? "Whisper" : "";
             if (settings.listContains(setting, name)) {
-                m.addSubItem("unignore"+item, "Unignore "+label, submenu);
+                m.addItem("unignore"+item, "Unignore "+label, submenu);
             } else {
-                m.addSubItem("ignore"+item, "Ignore "+label, submenu);
+                m.addItem("ignore"+item, "Ignore "+label, submenu);
             }
         }
     }

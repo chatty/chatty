@@ -32,17 +32,17 @@ public class UserContextMenu extends ContextMenu {
         addSeparator();
         
         // Misc Submenu
-        addSubItem("copyNick", "Copy Name", MISC_MENU);
-        addSubItem("copyDisplayNick", "Copy Display Name", MISC_MENU);
+        addItem("copyNick", "Copy Name", MISC_MENU);
+        addItem("copyDisplayNick", "Copy Display Name", MISC_MENU);
         addSeparator(MISC_MENU);
         ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, false);
         ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, true);
         addSeparator(MISC_MENU);
-        addSubItem("follow", "Follow", MISC_MENU);
-        addSubItem("unfollow", "Unfollow", MISC_MENU);
+        addItem("follow", "Follow", MISC_MENU);
+        addItem("unfollow", "Unfollow", MISC_MENU);
         addSeparator(MISC_MENU);
-        addSubItem("setcolor", "Set color", MISC_MENU);
-        addSubItem("setname", "Set name", MISC_MENU);
+        addItem("setcolor", "Set color", MISC_MENU);
+        addItem("setname", "Set name", MISC_MENU);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user
@@ -70,10 +70,10 @@ public class UserContextMenu extends ContextMenu {
             // Add "add" or "edit" buttons depending on whether the user is
             // already in the addressbook
             if (userCategories != null) {
-                addSubItem("addressbookEdit", "Edit", submenu);
-                addSubItem("addressbookRemove", "Remove", submenu);
+                addItem("addressbookEdit", "Edit", submenu);
+                addItem("addressbookRemove", "Remove", submenu);
             } else {
-                addSubItem("addressbookEdit", "Add", submenu);
+                addItem("addressbookEdit", "Add", submenu);
             }
         }
 

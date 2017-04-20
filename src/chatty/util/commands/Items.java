@@ -3,6 +3,7 @@ package chatty.util.commands;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -74,6 +75,21 @@ class Items implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, collection.toArray());
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        final Items other = (Items)obj;
+        if (!Objects.equals(this.collection, other.collection)) {
+            return false;
+        }
+        return true;
     }
 
 }

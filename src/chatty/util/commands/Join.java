@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -49,5 +50,35 @@ class Join implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, identifier, separator);
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Join other = (Join) obj;
+        if (this.isRequired != other.isRequired) {
+            return false;
+        }
+        if (!Objects.equals(this.identifier, other.identifier)) {
+            return false;
+        }
+        if (!Objects.equals(this.separator, other.separator)) {
+            return false;
+        }
+        return true;
+    }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.isRequired ? 1 : 0);
+        hash = 29 * hash + Objects.hashCode(this.identifier);
+        hash = 29 * hash + Objects.hashCode(this.separator);
+        return hash;
+    }
+    
 }

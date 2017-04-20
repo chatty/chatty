@@ -2,6 +2,7 @@
 package chatty.util.commands;
 
 import java.text.ParseException;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -69,6 +70,32 @@ public class CustomCommand {
         }
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CustomCommand other = (CustomCommand) obj;
+        if (!Objects.equals(this.items, other.items)) {
+            return false;
+        }
+        if (!Objects.equals(this.error, other.error)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + Objects.hashCode(this.items);
+        hash = 73 * hash + Objects.hashCode(this.error);
+        return hash;
+    }
+
     public static void main(String[] args) {
         CustomCommand command = CustomCommand.parse("$join");
         System.out.println(command);

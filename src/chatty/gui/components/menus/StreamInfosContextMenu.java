@@ -34,10 +34,10 @@ public class StreamInfosContextMenu extends ContextMenu {
             }
         }
         if (liveStreams) {
-            addSubItem("sortRecent", "Recent", SORT_SUBMENU);
-            addSubItem("sortName", "Name", SORT_SUBMENU);
-            addSubItem("sortGame", "Game", SORT_SUBMENU);
-            addSubItem("sortViewers", "Viewers", SORT_SUBMENU);
+            addItem("sortRecent", "Recent", SORT_SUBMENU);
+            addItem("sortName", "Name", SORT_SUBMENU);
+            addItem("sortGame", "Game", SORT_SUBMENU);
+            addItem("sortViewers", "Viewers", SORT_SUBMENU);
             addItem("showRemovedList", "Removed Streams..");
             addSeparator();
             addItem("manualRefreshStreams", "Refresh");

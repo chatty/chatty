@@ -20,11 +20,11 @@ public class TabContextMenu extends ContextMenu {
         addItem("popoutChannel", "Popout");addSeparator();
         addItem("closeChannel", "Close");
         
-        addSubItem("closeAllTabsButCurrent", "Except current", subMenu);
-        addSubItem("closeAllTabsToLeft", "To left of current", subMenu);
-        addSubItem("closeAllTabsToRight", "To right of current", subMenu);
+        addItem("closeAllTabsButCurrent", "Except current", subMenu);
+        addItem("closeAllTabsToLeft", "To left of current", subMenu);
+        addItem("closeAllTabsToRight", "To right of current", subMenu);
         addSeparator(subMenu);
-        addSubItem("closeAllTabs", "All", subMenu);
+        addItem("closeAllTabs", "All", subMenu);
     }
     
     @Override

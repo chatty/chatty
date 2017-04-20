@@ -44,56 +44,55 @@ public class CommandMenuItems {
             return result;
         }
         String[] lines = input.split("\n");
-        String currentSubmenu = null;
+        String submenuName = null;
         for (String line : lines) {
-            String submenu = parseSubmenu(line);
-            if (submenu != null) {
-                currentSubmenu = removeKey(submenu);
-                result.add(new CommandMenuItem(removeKey(submenu), null, null, getKey(submenu)));
-                continue;
+            CommandMenuItem submenu;
+            CommandMenuItem separator;
+            CommandMenuItem item;
+            if ((submenu = parseSubmenu(line)) != null) {
+                submenuName = submenu.getLabel();
+                result.add(submenu);
             }
-            if (line.trim().equals("-")) {
-                result.add(new CommandMenuItem(null, null, null, null));
-                continue;
+            else if ((separator = parseSeparator(line, submenuName)) != null) {
+                result.add(separator);
             }
-            if (line.trim().equals(".-")) {
-                result.add(new CommandMenuItem(null, null, currentSubmenu, null));
-                continue;
-            }
-            CommandMenuItem item = parseCommand(line, currentSubmenu);
-            if (item != null) {
+            else if ((item = parseCommand(line, submenuName)) != null) {
                 result.add(item);
-            } else {
-                result.addAll(addCustomCommands(line, currentSubmenu));
+            }
+            else {
+                result.addAll(addCustomCommands(line, submenuName));
             }
         }
         return result;
     }
     
-    private static String parseSubmenu(String line) {
+    private static final String POS_KEY_PATTERN = "(?:\\{(\\d+)\\})?(?:\\[([^]]*)\\])?";
+    
+    private static final Pattern SUBMENU_PATTERN = Pattern.compile("@([^\\[{]+)"+POS_KEY_PATTERN);
+    
+    private static CommandMenuItem parseSubmenu(String line) {
         line = line.trim();
-        if (line.startsWith("@") && line.length() > 1) {
-            return line.substring(1);
+        Matcher m = SUBMENU_PATTERN.matcher(line);
+        if (m.matches()) {
+            String name = m.group(1).trim();
+            int pos = m.group(2) == null ? -1 : Integer.parseInt(m.group(2));
+            String key = m.group(3);
+            return new CommandMenuItem(name, null, null, pos, key);
         }
         return null;
     }
     
-    private static String getKey(String input) {
-        if (input == null) {
-            return null;
-        }
-        if (input.indexOf("[") > 0 && input.endsWith("]")) {
-            String key = input.substring(input.lastIndexOf("[") + 1, input.length() - 1);
-            return key.isEmpty() ? null : key;
+    private static final Pattern SEPARTOR_PATTERN = Pattern.compile("(\\.)?-"+POS_KEY_PATTERN);
+    
+    private static CommandMenuItem parseSeparator(String line, String currentSubmenu) {
+        line = line.trim();
+        Matcher m = SEPARTOR_PATTERN.matcher(line);
+        if (m.matches()) {
+            String submenu = m.group(1) != null ? currentSubmenu : null;
+            int pos = m.group(2) == null ? -1 : Integer.parseInt(m.group(2));
+            return new CommandMenuItem(null, null, submenu, pos, null);
         }
         return null;
-    }
-    
-    private static String removeKey(String input) {
-        if (input.indexOf("[") > 0 && input.endsWith("]")) {
-            return input.substring(0, input.lastIndexOf("[")).trim();
-        }
-        return input;
     }
     
     public static void main(String[] args) {
@@ -104,10 +103,10 @@ public class CommandMenuItems {
         for (CommandMenuItem item : items) {
             System.out.println(item);
         }
-        System.out.println(getKey("abc[e]")+" "+removeKey("abc["));
+        System.out.println(true || false && false);
     }
     
-    private static final Pattern PATTERN = Pattern.compile("([^\\[=]+)(?:\\[([^]]*)\\])?=(.+)");
+    private static final Pattern PATTERN = Pattern.compile("([^\\[{=]+)"+POS_KEY_PATTERN+"=(.+)");
     
     private static CommandMenuItem parseCommand(String line, String currentSubmenu) {
         Matcher m = PATTERN.matcher(line);
@@ -115,47 +114,24 @@ public class CommandMenuItems {
             return null;
         }
         
-        String label = m.group(1);
-        String key = m.group(2);
-        String command = m.group(3).trim();
+        String label = m.group(1).trim();
+        int pos = m.group(2) == null ? -1 : Integer.parseInt(m.group(2));
+        String key = m.group(3);
+        String command = m.group(4).trim();
         //System.out.println("'"+label+"' '"+key+"' '"+command+"'");
         
         if (!label.startsWith(".")) {
             currentSubmenu = null;
         } else {
-            label = label.substring(1);
+            label = label.substring(1).trim();
         }
-        
-        return makeItem(label, command, currentSubmenu, key);
-        
-//        String[] split = line.split("=", 2);
-//        if (split.length != 2) {
-//            return null;
-//        }
-//        String label = split[0].trim();
-//        String command = split[1];
-//        String key = null;
-//        if (label.isEmpty() || command.trim().isEmpty()) {
-//            return null;
-//        }
-//        if (!label.startsWith(".")) {
-//            currentSubmenu = null;
-//        } else {
-//            label = label.substring(1);
-//        }
-//        if (label.contains("[") && !label.startsWith("[") && label.endsWith("]")) {
-//            key = label.substring(label.lastIndexOf("[")+1, label.length()-1);
-//            label = label.substring(0, label.lastIndexOf("["));
-//        }
-//        return makeItem(label, command.trim(), currentSubmenu, key);
+        return makeItem(label, command, currentSubmenu, pos, key);
     }
-    
-//    private static final Pattern CUSTOM_COMMANDS_PATTERN
-//            = Pattern.compile("(\\|)|(?:/?/?([^,\\s]+))");
     
     public static final String CUSTOM_COMMANDS_SUBMENU = "More..";
     
-    private static final Pattern PATTERN_COMPACT = Pattern.compile("(\\|)|(?:(?:([0-9]+)([smhd]?)|/?/?([^\\[,\\s]+))(?:\\[([^,\\s]+)\\])?)");
+    private static final Pattern PATTERN_COMPACT = Pattern.compile(
+            "(\\|)|(?:(?:([0-9]+)([smhd]?)|/?/?([^\\[{,\\s]+))(?:\\{(\\d+)\\})?(?:\\[([^,\\s]+)\\])?)");
     
     public static List<CommandMenuItem> addCustomCommands(String line, String parent) {
         List<CommandMenuItem> result = new LinkedList<>();
@@ -173,34 +149,34 @@ public class CommandMenuItems {
             } else {
                 String submenu = parent;
                 CommandMenuItem item;
-                String key = matcher.group(5);
+                int pos = matcher.group(5) == null ? - 1 : Integer.parseInt(matcher.group(5));
+                String key = matcher.group(6);
                 if (match.startsWith("//")) {
                     submenu = CUSTOM_COMMANDS_SUBMENU;
                 }
                 if (matcher.group(2) != null) {
                     String number = matcher.group(2);
                     String factor = matcher.group(3);
-                    item = createTimeoutItem(number, factor, submenu, key);
+                    item = createTimeoutItem(number, factor, submenu, pos, key);
                 } else {
                     String command = matcher.group(4);
-                    item = createItem(command, submenu, key);
+                    item = createItem(command, submenu, pos, key);
                 }
                 if (sep) {
-                    result.add(makeItem(null, null, submenu, null));
+                    result.add(makeItem(null, null, submenu, -1, null));
                 }
-                //result.add(makeItem(label, "/" + command + " $1-", submenu, null));
                 result.add(item);
             }
         }
         return result;
     }
     
-    private static CommandMenuItem createItem(String command, String subMenu, String key) {
+    private static CommandMenuItem createItem(String command, String subMenu, int pos, String key) {
         String label = Helper.replaceUnderscoreWithSpace(command);
-        return makeItem(label, "/"+command+" $1-", subMenu, key);
+        return makeItem(label, "/"+command+" $1-", subMenu, pos, key);
     }
     
-    private static CommandMenuItem createTimeoutItem(String number, String factor, String subMenu, String key) {
+    private static CommandMenuItem createTimeoutItem(String number, String factor, String subMenu, int pos, String key) {
         int time = Integer.parseInt(number);
         String label;
         if (!factor.isEmpty()) {
@@ -210,7 +186,7 @@ public class CommandMenuItems {
             label = timeFormat(time);
         }
         String command = "/timeout $1 "+time+" $2-";
-        return makeItem(label, command, subMenu, key);
+        return makeItem(label, command, subMenu, pos, key);
     }
 
     private static int getFactor(String factorString) {
@@ -237,13 +213,13 @@ public class CommandMenuItems {
         return String.format("%dd", seconds / (60*60*24));
     }
     
-    private static CommandMenuItem makeItem(String label, String command, String submenu, String key) {
+    private static CommandMenuItem makeItem(String label, String command, String submenu, int pos, String key) {
         if (command == null) {
             // For separators
-            return new CommandMenuItem(null, null, submenu, key);
+            return new CommandMenuItem(null, null, submenu, pos, key);
         }
         CustomCommand parsedCommand = CustomCommand.parse(command.trim());
-        return new CommandMenuItem(label, parsedCommand, submenu, key);
+        return new CommandMenuItem(label, parsedCommand, submenu, pos, key);
     }
     
 }

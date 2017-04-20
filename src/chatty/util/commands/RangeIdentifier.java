@@ -38,5 +38,23 @@ class RangeIdentifier implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return null;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        RangeIdentifier other = (RangeIdentifier)obj;
+        if (index != other.index) {
+            return false;
+        }
+        if (toEnd != other.toEnd) {
+            return false;
+        }
+        return true;
+    }
 
 }

@@ -23,11 +23,11 @@ public class TestContextMenu extends ContextMenu {
     
     public TestContextMenu(String value) {
         final String readme = "Readme";
-        addSubItem("", "Test Context Menu", readme);
-        addSubItem("", "a) Only shows custom menu items (not the pre-defined ones)", readme);
-        addSubItem("", "b) Clicking on an item shows info about the associated command", readme);
-        addSubItem("", "c) The associated command doesn't get executed", readme);
-        addSubItem("", "(I hope you enjoy my abusing of a popup menu as an info list.)", readme);
+        addItem("", "Test Context Menu", readme);
+        addItem("", "a) Only shows custom menu items (not the pre-defined ones)", readme);
+        addItem("", "b) Clicking on an item shows info about the associated command", readme);
+        addItem("", "c) The associated command doesn't get executed", readme);
+        addItem("", "(I hope you enjoy my abusing of a popup menu as an info list.)", readme);
         int errorCount = 0;
         List<CommandMenuItem> items = CommandMenuItems.parse(value);
         for (CommandMenuItem item : items) {
