@@ -57,4 +57,12 @@ class RangeIdentifier implements Item {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 37 * hash + this.index;
+        hash = 37 * hash + (this.toEnd ? 1 : 0);
+        return hash;
+    }
+
 }

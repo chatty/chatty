@@ -123,7 +123,7 @@ public class EmoteContextMenu extends ContextMenu {
     private void addStreamSubmenu(Emoticon emote) {
         if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
             String subMenu = emote.getStream();
-            addItem("profile", "Twitch Profile", subMenu);
+            addItem("stream", "Twitch Stream", subMenu);
             addItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);
             addSeparator(subMenu);
             addItem("showChannelEmotes", "Show Emotes", subMenu);

@@ -40,7 +40,8 @@ public class CommandMenuItemsTest {
                 + "./Test //Test\n"
                 + "\n"
                 + ". Test = /Test $1- \n"
-                + "60s 1m 60";
+                + "60s 1m 60\n"
+                + "Uptime=Stream Uptime: $(streamuptime)";
         
         List<CommandMenuItem> expected1 = new LinkedList<>();
         expected1.add(new CommandMenuItem("Test", CustomCommand.parse("/Hello"), null, -1, null));
@@ -71,6 +72,7 @@ public class CommandMenuItemsTest {
         expected1.add(new CommandMenuItem("60s", CustomCommand.parse("/timeout $1 60 $2-"), null, -1, null));
         expected1.add(new CommandMenuItem("1m", CustomCommand.parse("/timeout $1 60 $2-"), null, -1, null));
         expected1.add(new CommandMenuItem("1m", CustomCommand.parse("/timeout $1 60 $2-"), null, -1, null));
+        expected1.add(new CommandMenuItem("Uptime", CustomCommand.parse("Stream Uptime: $(streamuptime)"), null, -1, null));
         
         assertEquals(CommandMenuItems.parse(input1), expected1);
     }

@@ -92,4 +92,11 @@ class Items implements Item {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 83 * hash + Objects.hashCode(this.collection);
+        return hash;
+    }
+
 }

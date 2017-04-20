@@ -50,5 +50,43 @@ class IfEq implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, identifier, compare, output1, output2);
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        IfEq other = (IfEq)obj;
+        if (isRequired != other.isRequired) {
+            return false;
+        }
+        if (Objects.equals(identifier, other.identifier)) {
+            return false;
+        }
+        if (Objects.equals(compare, other.compare)) {
+            return false;
+        }
+        if (Objects.equals(output1, other.output1)) {
+            return false;
+        }
+        if (Objects.equals(output2, other.output2)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + (this.isRequired ? 1 : 0);
+        hash = 59 * hash + Objects.hashCode(this.identifier);
+        hash = 59 * hash + Objects.hashCode(this.compare);
+        hash = 59 * hash + Objects.hashCode(this.output1);
+        hash = 59 * hash + Objects.hashCode(this.output2);
+        return hash;
+    }
 
 }

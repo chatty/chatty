@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -29,6 +30,28 @@ class Identifier implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Identifier other = (Identifier) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 71 * hash + Objects.hashCode(this.name);
+        return hash;
     }
 
 }

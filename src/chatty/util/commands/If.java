@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -44,6 +45,40 @@ class If implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, identifier, output1, output2);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final If other = (If) obj;
+        if (this.isRequired != other.isRequired) {
+            return false;
+        }
+        if (!Objects.equals(this.identifier, other.identifier)) {
+            return false;
+        }
+        if (!Objects.equals(this.output1, other.output1)) {
+            return false;
+        }
+        if (!Objects.equals(this.output2, other.output2)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + (this.isRequired ? 1 : 0);
+        hash = 97 * hash + Objects.hashCode(this.identifier);
+        hash = 97 * hash + Objects.hashCode(this.output1);
+        hash = 97 * hash + Objects.hashCode(this.output2);
+        return hash;
     }
 
 }
