@@ -72,6 +72,10 @@ public class MsgTags {
         return value.equals(tags.get(key));
     }
     
+    public boolean isEmpty(String key) {
+        return !tags.containsKey(key) || tags.get(key).isEmpty();
+    }
+    
     /**
      * Returns the String associated with key, or null if the key doesn't exist.
      * 

@@ -2576,6 +2576,13 @@ public class TwitchClient {
         public void onSpecialMessage(String name, String message) {
             g.printLine(name, message);
         }
+
+        @Override
+        public void onRoomId(String channel, String id) {
+            if (Helper.isRegularChannel(channel)) {
+                api.setUserId(Helper.toStream(channel), id);
+            }
+        }
         
     }
     

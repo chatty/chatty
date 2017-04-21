@@ -1197,6 +1197,9 @@ public class TwitchConnection {
                     if (tags.containsKey("followers-only")) {
                         channelStates.setFollowersOnly(channel, tags.get("followers-only"));
                     }
+                    if (!tags.isEmpty("room-id")) {
+                        listener.onRoomId(channel, tags.get("room-id"));
+                    }
                 }
             } else if (command.equals("SERVERCHANGE")) {
                 listener.onInfo(channel, "*** You may be on the wrong server "
@@ -1359,6 +1362,8 @@ public class TwitchConnection {
         void onSubscriberNotification(String channel, User user, String text, String message, int months, String emotes);
         
         void onSpecialMessage(String name, String message);
+        
+        void onRoomId(String channel, String id);
         
     }
 
