@@ -23,6 +23,9 @@ public class RawMessageTest {
         if (type.equals("resub")) {
             return "@badges=subscriber/1;color=;display-name=USERNAME;emotes=;id=123;login=username;mod=0;msg-id=resub;msg-param-months=4;subscriber=1;system-msg=USERNAME\\ssubscribed\\sfor\\s4\\smonths\\sin\\sa\\srow!;tmi-sent-ts=1475037717295;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :Hi strimmer are you gud strimmer";
         }
+        if (type.equals("sub2")) {
+            return "@badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;msg-id=sub;msg-param-months=6;room-id=1337;subscriber=1;msg-param-sub-plan=Prime;msg-param-sub-plan-name=Channel\\sSubscription\\s(display_name);system-msg=TWITCH_UserName\\shas\\ssubscribed\\sfor\\s6\\smonths!;login=twitch_username;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE "+channel+" :Great stream -- keep it up!";
+        }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }

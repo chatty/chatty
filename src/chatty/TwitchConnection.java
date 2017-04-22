@@ -85,6 +85,8 @@ public class TwitchConnection {
     private final TwitchCommands twitchCommands;
     private final SpamProtection spamProtection;
     private final ChannelStateManager channelStates = new ChannelStateManager();
+    
+    private boolean newSubStuff = false;
 
     public TwitchConnection(final ConnectionListener listener, Settings settings,
             String label) {
@@ -906,7 +908,9 @@ public class TwitchConnection {
             }
             if (onChannel(channel)) {
                 if (settings.getBoolean("twitchnotifyAsInfo") && nick.equals("twitchnotify")) {
-                    listener.onSubscriberNotification(channel, users.dummyUser, text, null, 1, null);
+                    if (!newSubStuff) {
+                        listener.onSubscriberNotification(channel, users.dummyUser, text, null, 1, null);
+                    }
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
@@ -959,7 +963,10 @@ public class TwitchConnection {
             }
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
-            if (tags.isValue("msg-id", "resub")) {
+            if (tags.isValue("msg-id", "sub")) {
+                newSubStuff = true;
+            }
+            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
             } else {
                 // Not sure about this, there may be some weird messages
