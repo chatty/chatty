@@ -2713,7 +2713,7 @@ public class MainGui extends JFrame implements Runnable {
                 // Chatlog/User Info
                 client.chatLog.info(channel, fullMessage);
                 if (!user.getName().isEmpty()) {
-                    user.addSub(message != null ? processMessage(message) : "", months);
+                    user.addSub(message != null ? processMessage(message) : "", text);
                     updateUserInfoDialog(user);
                 }
             }

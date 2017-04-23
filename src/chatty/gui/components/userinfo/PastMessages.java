@@ -79,13 +79,10 @@ public class PastMessages extends JTextArea {
             else if (m.getType() == User.Message.SUB) {
                 User.SubMessage sm = (User.SubMessage)m;
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append("$ ");
-                if (sm.months == 1) {
-                    b.append("[new sub] ");
+                b.append(sm.system_msg);
+                if (!sm.attached_message.isEmpty()) {
+                    b.append(" [").append(sm.attached_message).append("]");
                 }
-                else if (sm.months > 1) {
-                    b.append("[").append(sm.months).append(" months sub] ");
-                }
-                b.append(sm.message);
                 b.append("\n");
             }
             else if (m.getType() == User.Message.MOD_ACTION) {

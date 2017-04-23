@@ -282,8 +282,8 @@ public class User implements Comparable {
         addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id));
     }
     
-    public synchronized void addSub(String message, int months) {
-        addLine(new SubMessage(System.currentTimeMillis(), message, months));
+    public synchronized void addSub(String message, String text) {
+        addLine(new SubMessage(System.currentTimeMillis(), message, text));
     }
     
     public synchronized void addModAction(String commandAndParameters) {
@@ -909,13 +909,13 @@ public class User implements Comparable {
     
     public static class SubMessage extends Message {
         
-        public final String message;
-        public final int months;
+        public final String attached_message;
+        public final String system_msg;
         
-        public SubMessage(Long time, String message, int months) {
+        public SubMessage(Long time, String message, String text) {
             super(SUB, time);
-            this.message = message;
-            this.months = months;
+            this.attached_message = message;
+            this.system_msg = text;
         }
     }
     
