@@ -48,6 +48,12 @@ public class TabSettings extends SettingsPanel {
                 "Scroll through tabs with mousewheel",
                 "Scrolling over the tabs changes between them"),
                 d.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
+        
+        other.add(d.addSimpleBooleanSetting("tabsMwheelScrollingAnywhere",
+                "Scroll through tabs anywhere (mostly inputbox)",
+                "Scrolling through tabs works in a few more places, mostly the inputbox"),
+                d.makeGbcSub(0, 6, 4, 1, GridBagConstraints.WEST));
+
     }
     
 }
