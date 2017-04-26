@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -55,6 +56,18 @@ public class ChannelEditBox extends JTextField implements KeyListener,
                 selection = getSelectedText() != null;
             }
         });
+    }
+    
+    @Override
+    public Point getLocationOnScreen() {
+        synchronized (getTreeLock()) {
+            if (isShowing()) {
+                return super.getLocationOnScreen();
+            }
+            // Workaround that probably breaks ALL the things, since I can't
+            // figure out what actually causes this error
+            return new Point(0,0);
+        }
     }
     
     public void setCompletionMaxItemsShown(int max) {
