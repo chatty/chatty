@@ -27,6 +27,7 @@
                 <li><a href="#inline-commands">Format 2: Inline-Commands</a></li>
                 <li><a href="#submenus">Format 3: Submenus</a></li>
                 <li><a href="#shortcuts">Shortcuts</a></li>
+                <li><a href="#positioning">Positioning</a></li>
             </ul>
         </li>
     </ul>
@@ -316,7 +317,12 @@ Spoiler[S]=/timeout $$1 600 No spoilers
 ./Message /Report
 .Warn User=$$1: Plz no spammerino</pre></div>
     
-    <h3><a name="command-list">Format 1: List Custom Command Names</a></h3>
+    <p class="note"><em>Note:</em> Command Names/Labels may not contain the
+        characters <code>[ ] { }</code> except for their special meaning of
+        <a href="#shortcuts">Shortcuts</a> and <a href="#positioning">Positioning</a>.</p>
+    
+    
+    <h3><a name="commands-list">Format 1: List Custom Command Names</a></h3>
     <p>You can list the name of several Custom Commands in one line, for example:</p>
     
     <p><code>/Slap /Permit</code></p>
@@ -425,9 +431,10 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         timeout buttons as well as a single bottom row for the <code>Slap</code>
         command.</p>
     
+    
     <h3><a name="shortcuts">Shortcuts</a></h3>
     <p>You can add a shortcut to the end of a label or command name by enclosing
-        it with <code>[ ]</code>:</p>
+        it with <code>[ ]</code> (square brackets):</p>
     
     <p><code>/Ban[B]</code> or <code>Spoiler[S]=/timeout $$1 ..</code></p>
     
@@ -453,6 +460,40 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         may also contain the same syntax: <code>@Rules[R]</code> (which would
         allow you to open that submenu by pressing R on your keyboard when the
         context menu is open).</p>
+    
+    
+    <h3><a name="positioning">Positioning</a></h3>
+    <p>You can define an absolute position in the menu the entry should appear
+        at by enclosing it with <code>{ }</code> (curly brackets) at the end of
+        the label or command name (but before a shortcut if there is any):</p>
+    
+    <p><code>Mention{1}=/insertword $$1: \</code></p>
+    
+    <p>This will put the <code>Mention</code> menu entry at the <em>second</em>
+        position in the menu (counting starts from 0).</p>
+    
+    <p>Another example:</p>
+    
+    <div class="codeblock"><pre>
+@Twitch Stream[s]
+.Videos{2}[v]=/openUrlPrompt https://www.twitch.tv/$$1/videos/past-broadcasts
+@Important{0}
+.Slap=/me slaps $$1 around a bit with a large trout
+@Really Important{0}
+.FAQ=FAQ: https://pastebin.com/KySx3KDu
+</pre></div>
+
+    <p>This puts the <code>Videos</code> entry into the pre-defined
+        <code>Twitch Stream</code> submenu at the third position in the submenu
+        (also adding the accelerator key <code>s</code> to the menu and
+        <code>v</code> to the entry).</p>
+    
+    <p>It also adds the <code>Important</code> submenu at the first position
+        (since it hasn't been added yet) and after that adds the
+        <code>Really Important</code> submenu at the first position as well,
+        moving down <code>Important</code>. This demonstrates that the
+        positioning is based on the current state of the menu, so it can matter
+        <em>when</em> you add entries with absolute positioning.</p>
     
 </body>
 </html>
