@@ -241,7 +241,7 @@ public class Highlighter {
         private void prepare(String item) {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
-                compilePattern(item.substring(3));
+                compilePattern(parsePrefix(item, "re:"));
             } else if (item.startsWith("w:") && item.length() > 2) {
                 compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
             } else if (item.startsWith("wcs:") && item.length() > 4) {
