@@ -11,8 +11,8 @@ import javax.swing.JPanel;
 public class AutoReplySettings extends SettingsPanel {
 
     private static final String INFO_AUTOREPLY = HighlightSettings.INFO
-            + "<li><code>resp:</code> - reply to send when a matching message is found</li>"
-            + "</ul>Example: <code>chan:joshimuz re:!bet.* resp:Stop betting!</code>";
+            + "<li><code>reply:</code> - reply to send when a matching message is found</li>"
+            + "</ul>Example: <code>chan:joshimuz re:!bet.* reply:Stop betting!</code>";
 
     public AutoReplySettings(SettingsDialog d) {
         super(true);

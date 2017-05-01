@@ -2690,6 +2690,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 updateUserInfoDialog(user);
                 if (autoReply) {
+                    printLine(channel, autoReplyChecker.getLastResp());
                     client.textInput(channel, autoReplyChecker.getLastResp());
                 }
             }

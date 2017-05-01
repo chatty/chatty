@@ -241,12 +241,6 @@ public class Highlighter {
         private void prepare(String item) {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
-                int respIdx = item.indexOf("resp:");
-                if (respIdx > 0) {
-                    String newItem = item.substring(respIdx);
-                    prepare(newItem);
-                    item = item.replace(newItem, "");
-                }
                 compilePattern(item.substring(3));
             } else if (item.startsWith("w:") && item.length() > 2) {
                 compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
@@ -283,8 +277,8 @@ public class Highlighter {
                 parseStatus(status, false);
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
-            } else if (item.startsWith("resp:")) {
-                response = parsePrefix(item, "resp:");
+            } else if (item.startsWith("reply:")) {
+                response = parsePrefix(item, "reply:");
             } else {
                 caseInsensitive = item.toLowerCase();
             }
