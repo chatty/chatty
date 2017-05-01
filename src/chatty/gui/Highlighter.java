@@ -30,6 +30,7 @@ public class Highlighter {
     private final Map<String, Long> lastHighlighted = new HashMap<>();
     private final List<HighlightItem> items = new ArrayList<>();
     private Pattern usernamePattern;
+    private String lastResp;
     private Color lastMatchColor;
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
@@ -113,12 +114,14 @@ public class Highlighter {
     public boolean getLastMatchNoSound() {
         return lastMatchNoSound;
     }
+
+    public String getLastResp() { return lastResp; }
     
     /**
      * Checks whether the given message consisting of username and text should
      * be highlighted.
      * 
-     * @param userName The name of the user who send the message
+     * @param user The name of the user who send the message
      * @param text The text of the message
      * @return true if the message should be highlighted, false otherwise
      */
@@ -142,6 +145,7 @@ public class Highlighter {
                 lastMatchColor = item.getColor();
                 lastMatchNoNotification = item.noNotification();
                 lastMatchNoSound = item.noSound();
+                lastResp = item.response;
                 return true;
             }
         }
@@ -199,6 +203,7 @@ public class Highlighter {
         private String caseInsensitive;
         private String startsWith;
         private String category;
+        private String response;
         private final Set<String> notChannels = new HashSet<>();
         private final Set<String> channels = new HashSet<>();
         private String channelCategory;
@@ -236,6 +241,12 @@ public class Highlighter {
         private void prepare(String item) {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
+                int respIdx = item.indexOf("resp:");
+                if (respIdx > 0) {
+                    String newItem = item.substring(respIdx);
+                    prepare(newItem);
+                    item = item.replace(newItem, "");
+                }
                 compilePattern(item.substring(3));
             } else if (item.startsWith("w:") && item.length() > 2) {
                 compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
@@ -272,6 +283,8 @@ public class Highlighter {
                 parseStatus(status, false);
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
+            } else if (item.startsWith("resp:")) {
+                response = parsePrefix(item, "resp:");
             } else {
                 caseInsensitive = item.toLowerCase();
             }
@@ -373,7 +386,7 @@ public class Highlighter {
         /**
          * Check whether a message matches this item.
          * 
-         * @param lowercaseUsername The username in lowercase
+         * @param user The username in lowercase
          * @param text The text as received
          * @param lowercaseText The text in lowercase (minor optimization, so
          *  it doesn't have to be made lowercase for every item)

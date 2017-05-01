@@ -143,6 +143,7 @@ public class MainGui extends JFrame implements Runnable {
     // Helpers
     private final Highlighter highlighter = new Highlighter();
     private final Highlighter ignoreChecker = new Highlighter();
+    private final Highlighter autoReplyChecker = new Highlighter();
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
     private final StateUpdater state = new StateUpdater();
@@ -824,6 +825,7 @@ public class MainGui extends JFrame implements Runnable {
         }
         updateHighlight();
         updateIgnore();
+        updateAutoReply();
         updateHistoryRange();
         updateNotificationSettings();
         updateChannelsSettings();
@@ -901,7 +903,11 @@ public class MainGui extends JFrame implements Runnable {
     private void updateIgnore() {
         ignoreChecker.update(StringUtil.getStringList(client.settings.getList("ignore")));
     }
-    
+
+    private void updateAutoReply() {
+        autoReplyChecker.update(StringUtil.getStringList(client.settings.getList("autoReply")));
+    }
+
     private void updateCustomContextMenuEntries() {
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.CHANNEL, client.settings.getString("channelContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
@@ -2615,7 +2621,8 @@ public class MainGui extends JFrame implements Runnable {
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
-                
+
+                boolean autoReply = (client.settings.getBoolean("autoReplyEnabled") && autoReplyChecker.check(user, text));
                 boolean highlighted = false;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
@@ -2682,6 +2689,9 @@ public class MainGui extends JFrame implements Runnable {
                     user.setHighlighted();
                 }
                 updateUserInfoDialog(user);
+                if (autoReply) {
+                    client.textInput(channel, autoReplyChecker.getLastResp());
+                }
             }
         });
     }
@@ -4047,6 +4057,8 @@ public class MainGui extends JFrame implements Runnable {
                     updateHighlight();
                 } else if (setting.equals("ignore")) {
                     updateIgnore();
+                } else if (setting.equals("autoReply")) {
+                    updateAutoReply();
                 } else if (setting.equals("hotkeys")) {
                     hotkeyManager.loadFromSettings(client.settings);
                 }
