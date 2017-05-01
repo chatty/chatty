@@ -10,9 +10,9 @@ import javax.swing.JPanel;
  */
 public class AutoReplySettings extends SettingsPanel {
 
-    private static final String INFO_IGNORE = HighlightSettings.INFO
+    private static final String INFO_AUTOREPLY = HighlightSettings.INFO
             + "<li><code>resp:</code> - reply to send when a matching message is found</li>"
-            + "</ul>Example: <code>user:cohhilitionbot re:\\*\\*\\* NEW GIVEAWAY OPENED: resp:!enter</code>";
+            + "</ul>Example: <code>chan:joshimuz re:!bet.* resp:Stop betting!</code>";
 
     public AutoReplySettings(SettingsDialog d) {
         super(true);
@@ -32,7 +32,7 @@ public class AutoReplySettings extends SettingsPanel {
         gbc.weighty = 1;
         gbc.weightx = 1;
         ListSelector items = d.addListSetting("autoReply", 390, 160, true, false);
-        items.setInfo(INFO_IGNORE);
+        items.setInfo(INFO_AUTOREPLY);
         items.setDataFormatter(new DataFormatter<String>() {
 
             @Override
