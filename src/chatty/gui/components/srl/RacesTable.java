@@ -51,6 +51,7 @@ public class RacesTable extends JTable {
         setRowSorter(new MySorter(races));
         setFillsViewportHeight(true);
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        getTableHeader().setReorderingAllowed(false);
 
         getColumnModel().getColumn(2).setMaxWidth(100);
         getColumnModel().getColumn(3).setMaxWidth(50);

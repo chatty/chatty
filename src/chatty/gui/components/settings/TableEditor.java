@@ -98,6 +98,7 @@ public class TableEditor<T> extends JPanel {
         table = new JTable();
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setFillsViewportHeight(true);
+        table.getTableHeader().setReorderingAllowed(false);
         
         // Selection Listener to update buttons
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
