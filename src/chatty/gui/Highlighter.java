@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -229,7 +230,14 @@ public class Highlighter {
         }
         
         HighlightItem(String item) {
-            prepare(item);
+            List<String> list = new ArrayList<String>();
+            Matcher m = Pattern.compile("[^\\s\"']+|\"[^\"]*\"|'[^']*'").matcher(item);
+            while(m.find()) {
+                list.add(m.group().replace("\"", ""));
+            }
+            for (int i = 0, iLen = list.size(); i < iLen; i++) {
+                prepare(list.get(i));
+            }
         }
         
         /**
@@ -241,12 +249,6 @@ public class Highlighter {
         private void prepare(String item) {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
-                int replyIdx = item.indexOf("reply:");
-                if (replyIdx > 0) {
-                    String newItem = item.substring(replyIdx);
-                    prepare(newItem);
-                    item = item.replace(newItem, "");
-                }
                 compilePattern(item.substring(3));
             } else if (item.startsWith("w:") && item.length() > 2) {
                 compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
@@ -256,6 +258,8 @@ public class Highlighter {
                 caseSensitive = item.substring(3);
             } else if (item.startsWith("start:") && item.length() > 6) {
                 startsWith = item.substring(6).toLowerCase();
+            } else if (item.startsWith("reply:") && item.length() > 6) {
+                response = item.substring(6);
             } else if (item.startsWith("cat:")) {
                 category = parsePrefix(item, "cat:");
             } else if (item.startsWith("!cat:")) {
@@ -283,8 +287,6 @@ public class Highlighter {
                 parseStatus(status, false);
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
-            } else if (item.startsWith("reply:")) {
-                response = parsePrefix(item, "reply:");
             } else {
                 caseInsensitive = item.toLowerCase();
             }

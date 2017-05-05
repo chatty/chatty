@@ -10,9 +10,17 @@ import javax.swing.JPanel;
  */
 public class AutoReplySettings extends SettingsPanel {
 
-    private static final String INFO_AUTOREPLY = HighlightSettings.INFO
+    private static final String INFO_AUTOREPLY = "<html><body style='width:300px;font-weight:normal;'>"
+            + "Quick Reference (see regular help for more):"
+            + "<ul style='margin-left:30px'>"
+            + "<li><code>cs:</code> - match case sensitive</li>"
+            + "<li><code>w:/wcs:</code> - match as whole word / case-sensitive</li>"
+            + "<li><code>re:</code> - use regular expression</li>"
+            + "<li><code>chan:chan1,chan2/!chan:</code> - restrict to channel(s) / inverted</li>"
+            + "<li><code>user:name</code> - restrict to user with that name</li>"
+            + "<li><code>cat:category</code> - restrict to users in that category</li>"
             + "<li><code>reply:</code> - reply to send when a matching message is found</li>"
-            + "</ul>Example: <code>chan:joshimuz re:!bet.* reply:Stop betting!</code>";
+            + "</ul>Example: <code>\"user:cohhilitionbot\" \"reply:!enter\" \"re:\\*\\*\\* NEW GIVEAWAY OPENED\"</code>";
 
     public AutoReplySettings(SettingsDialog d) {
         super(true);
