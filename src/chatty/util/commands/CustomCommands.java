@@ -24,8 +24,8 @@ public class CustomCommands {
     
     private static final Logger LOGGER = Logger.getLogger(CustomCommands.class.getName());
     
-    private final Map<String, CustomCommand> commands = new HashMap<>();
-    private final Map<String, CustomCommand> replacements = new HashMap<>();
+    private final Map<String, Map<String, CustomCommand>> commands = new HashMap<>();
+    private final Map<String, Map<String, CustomCommand>> replacements = new HashMap<>();
     
     private final Settings settings;
     private final TwitchApi api;
@@ -46,9 +46,9 @@ public class CustomCommands {
      * command doesn't exist or the number of parameters were invalid
      */
     public synchronized String command(String commandName, Parameters parameters, String channel) {
-        commandName = StringUtil.toLowerCase(commandName);
-        if (commands.containsKey(commandName)) {
-            return command(commands.get(commandName), parameters, channel);
+        CustomCommand command = getCommand(commands, commandName, channel);
+        if (command != null) {
+            return command(command, parameters, channel);
         }
         return null;
     }
@@ -74,22 +74,23 @@ public class CustomCommands {
         // Add parameters for custom replacements
         Set<String> customIdentifiers = command.getIdentifiersWithPrefix("_");
         for (String identifier : customIdentifiers) {
-            if (replacements.containsKey(identifier)) {
-                parameters.put(identifier, replacements.get(identifier).replace(parameters));
+            CustomCommand replacement = getCommand(replacements, identifier, channel);
+            if (replacement != null) {
+                parameters.put(identifier, replacement.replace(parameters));
             }
         }
 
         return command.replace(parameters);
     }
-    
+
     /**
      * Checks if the given command exists (case-insensitive).
      * 
      * @param command The command
      * @return {@code true} if the command exists, {@code false} otherwise
      */
-    public synchronized boolean containsCommand(String command) {
-        return commands.containsKey(StringUtil.toLowerCase(command));
+    public synchronized boolean containsCommand(String command, String chan) {
+        return getCommand(commands, command, chan) != null;
     }
     
     /**
@@ -110,6 +111,13 @@ public class CustomCommands {
                         commandName = commandName.substring(1);
                     }
                     commandName = StringUtil.toLowerCase(commandName.trim());
+                    String chan = null;
+                    if (commandName.contains("#")) {
+                        String[] splitChan = commandName.split("#", 2);
+                        commandName = splitChan[0];
+                        chan = splitChan[1];
+                    }
+                    
                     // Trim when loading, to ensure consistent behaviour
                     // (in-line menu commands and Test-button parsing trim too)
                     String commandValue = split[1].trim();
@@ -117,9 +125,9 @@ public class CustomCommands {
                         CustomCommand parsedCommand = CustomCommand.parse(commandValue);
                         if (parsedCommand.getError() == null) {
                             if (commandName.startsWith("_") && commandName.length() > 1) {
-                                replacements.put(commandName, parsedCommand);
+                                addCommand(replacements, commandName, chan, parsedCommand);
                             } else {
-                                commands.put(commandName, parsedCommand);
+                                addCommand(commands, commandName, chan, parsedCommand);
                             }
                         } else {
                             LOGGER.warning("Error parsing custom command: "+parsedCommand.getError());
@@ -128,6 +136,50 @@ public class CustomCommands {
                 }
             }
         }
+    }
+    
+    /**
+     * Get the CustomCommand from the given dataset, based on name and channel.
+     * This will prefer the command variation of the channel, but fallback on
+     * the non-restricted command, if that is available.
+     * 
+     * @param commands The dataset to retrieve the Custom Command from
+     * @param commandName The name of the command
+     * @param channel The channel the command is run in
+     * @return 
+     */
+    private static CustomCommand getCommand(Map<String, Map<String, CustomCommand>> commands,
+            String commandName, String channel) {
+        commandName = StringUtil.toLowerCase(commandName);
+        channel = StringUtil.toLowerCase(Helper.toStream(channel));
+        if (!commands.containsKey(commandName)) {
+            return null;
+        }
+        Map<String, CustomCommand> variations = commands.get(commandName);
+        if (variations.containsKey(channel)) {
+            // If the channel parameter was null, this will try to get the
+            // non-restricted command
+            return variations.get(channel);
+        }
+        // Non-restricted commands are saved under "null"
+        return variations.get(null);
+    }
+    
+    /**
+     * Add the given CustomCommand to the dataset, with it's name and channel.
+     * 
+     * @param commands The dataset to store the CustomCommand in
+     * @param commandName The name of the command (all lowercase)
+     * @param channel The channel the command is restricted to (all lowercase),
+     * can be null if non-restricted
+     * @param parsedCommand The CustomCommand
+     */
+    private static void addCommand(Map<String, Map<String, CustomCommand>> commands,
+            String commandName, String channel, CustomCommand parsedCommand) {
+        if (!commands.containsKey(commandName)) {
+            commands.put(commandName, new HashMap<>());
+        }
+        commands.get(commandName).put(channel, parsedCommand);
     }
     
 }

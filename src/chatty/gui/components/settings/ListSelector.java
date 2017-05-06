@@ -263,7 +263,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     private void sort() {
         if (JOptionPane.showConfirmDialog(sort,
-                "Sort list alphabetically?",
+                "Sort list alphabetically (case sensitive)?",
                 "Sort",
                 JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
             List<String> sortData = getData();

@@ -1023,7 +1023,7 @@ public class TwitchClient {
 
         // Has to be tested last, so regular commands with the same name take
         // precedence
-        else if (customCommands.containsCommand(command)) {
+        else if (customCommands.containsCommand(command, channel)) {
             customCommand(channel, command, parameter);
         }
         
@@ -1269,7 +1269,7 @@ public class TwitchClient {
             g.printLine("Custom command: Not on a channel");
             return;
         }
-        if (!customCommands.containsCommand(command)) {
+        if (!customCommands.containsCommand(command, channel)) {
             g.printLine("Custom command not found: "+command);
             return;
         }
@@ -1288,7 +1288,7 @@ public class TwitchClient {
             String[] resultSplit = result.split(" ", 2);
             String resultCommand = resultSplit[0];
             if (resultCommand.startsWith("/")
-                    && customCommands.containsCommand(resultCommand.substring(1))) {
+                    && customCommands.containsCommand(resultCommand.substring(1), channel)) {
                 g.printLine("Custom command '"+command+"': Calling another custom "
                         + "command ('"+resultCommand.substring(1)+"') is not allowed");
             } else {

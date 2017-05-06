@@ -110,10 +110,10 @@ public class CommandSettings extends SettingsPanel {
             + "[help-commands:menus Menus/User Dialog Buttons].</p>";
 
     private static final String INFO_COMMANDS = INFO_HEADER
-            + "<p>Each entry is one custom command: <code>/commandName Text to send to chat or regular command</code></p>"
+            + "<p>Each entry is one custom command:<br /><code>/commandName Text to send to chat or regular command</code></p>"
             + "<p>Parameters (replaced when executing the command): "
-            + "<code>$$1</code> required parameter, <code>$1</code> optional "
-            + "parameter, <code>$2-</code> second parameter to end.</p>"
+            + "<code>$1</code> first parameter (optional), <code>$$1</code> first parameter (required) "
+            + ", <code>$2-</code> second parameter to end.</p>"
             + "<p>Example: <code>/hello /me welcomes $$1 to chat</code></p>"
             + "<p>Backslash (<code>\\</code>) is used as an "
             + "escape character, which means the subsequent character is "
@@ -122,6 +122,8 @@ public class CommandSettings extends SettingsPanel {
             + "being replaced with the first parameter. To have the "
             + "<code>\\</code> itself show up you have to escape it as well "
             + "(<code>\\\\</code> shows up as <code>\\</code>).</p>"
+            + "<p>You can restrict commands to a channel by adding it "
+            + "to the command name: <code>/hello#joshimuz /me welcomes ..</code></p>"
             + INFO_MORE;
     
     public CommandSettings(SettingsDialog d) {
