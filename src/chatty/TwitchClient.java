@@ -494,7 +494,7 @@ public class TwitchClient {
     }
     
     private void addressbookCommands(String channel, User user, String text) {
-        if (settings.getString("abCommandsChannel").equals(channel)
+        if (settings.getString("abCommandsChannel").equalsIgnoreCase(channel)
                 && user.isModerator()) {
             text = text.trim();
             if (text.length() < 2) {
