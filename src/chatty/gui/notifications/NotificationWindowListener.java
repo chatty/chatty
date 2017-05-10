@@ -7,7 +7,7 @@ package chatty.gui.notifications;
  * 
  * @author tduva
  */
-public interface NotificationListener {
-    void notificationRemoved(Notification source);
-    void notificationAction(Notification source);
+public interface NotificationWindowListener {
+    void notificationRemoved(NotificationWindow source);
+    void notificationAction(NotificationWindow source);
 }

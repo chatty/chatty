@@ -52,7 +52,7 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.SubscriberMessage;
 import chatty.gui.notifications.NotificationActionListener;
-import chatty.gui.notifications.NotificationManager;
+import chatty.gui.notifications.NotificationWindowManager;
 import chatty.util.CopyMessages;
 import chatty.util.DateTime;
 import chatty.util.ImageCache;
@@ -125,7 +125,7 @@ public class MainGui extends JFrame implements Runnable {
     private HighlightedMessages ignoredMessages;
     private MainMenu menu;
     private LiveStreamsDialog liveStreamsDialog;
-    private NotificationManager<String> notificationManager;
+    private NotificationWindowManager<String> notificationManager;
     private ErrorMessage errorMessage;
     private AddressbookDialog addressbookDialog;
     private SRL srl;
@@ -239,7 +239,7 @@ public class MainGui extends JFrame implements Runnable {
         // Tray/Notifications
         trayIcon = new TrayIconManager(createImage("app_16.png"));
         trayIcon.addActionListener(new TrayMenuListener());
-        notificationManager = new NotificationManager<>(this);
+        notificationManager = new NotificationWindowManager<>(this);
         notificationManager.setNotificationActionListener(new MyNotificationActionListener());
 
         // Channels/Chat output

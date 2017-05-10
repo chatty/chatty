@@ -1,7 +1,7 @@
 
 package chatty.gui.notifications;
 
-import chatty.gui.notifications.Notification.HideMethod;
+import chatty.gui.notifications.NotificationWindow.HideMethod;
 import chatty.util.ActivityTracker;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -24,7 +24,7 @@ import javax.swing.SwingUtilities;
  * @author tduva
  * @param <T> The type of the data associated with a notification
  */
-public class NotificationManager<T> {
+public class NotificationWindowManager<T> {
     
     // Margin between notifications and the border of the screen
     private static final int VERTICAL_MARGIN = 3;
@@ -34,11 +34,11 @@ public class NotificationManager<T> {
     private static final int MINUTE = 60*SECOND;
     
     // List of displayed notifications.
-    private final LinkedList<Notification> displayed = new LinkedList<>();
+    private final LinkedList<NotificationWindow> displayed = new LinkedList<>();
     // List of notifications queued for display.
-    private final LinkedList<Notification> queue = new LinkedList<>();
+    private final LinkedList<NotificationWindow> queue = new LinkedList<>();
     
-    private final Map<Notification,T> notificationData = new HashMap<>();
+    private final Map<NotificationWindow,T> notificationData = new HashMap<>();
     
     /**
      * Settings
@@ -70,27 +70,27 @@ public class NotificationManager<T> {
     // Used to choose a screen for the notification to tbe displayed on
     private final Component parent;
     
-    private final NotificationListener listener;
+    private final NotificationWindowListener listener;
     private NotificationActionListener<T> actionListener;
     
     /**
      *
      * @param parent
      */
-    public NotificationManager(Component parent) {
+    public NotificationWindowManager(Component parent) {
         this.parent = parent;
         setPosition(0);
         setScreen(0);
 
-        this.listener = new NotificationListener() {
+        this.listener = new NotificationWindowListener() {
 
             @Override
-            public void notificationRemoved(Notification source) {
-                NotificationManager.this.notificationRemoved(source);
+            public void notificationRemoved(NotificationWindow source) {
+                NotificationWindowManager.this.notificationRemoved(source);
             }
             
             @Override
-            public void notificationAction(Notification source) {
+            public void notificationAction(NotificationWindow source) {
                 if (actionListener != null) {
                     actionListener.notificationAction(notificationData.get(source));
                 }
@@ -106,7 +106,7 @@ public class NotificationManager<T> {
      * @param data
      */
     public void showMessage(String title, String message, T data) {
-        Notification n = new Notification(title, message, listener, expireTime);
+        NotificationWindow n = new NotificationWindow(title, message, listener, expireTime);
         n.setHideMethod(hideMethod);
         //n.setTimeout(displayTime);
         n.setFallbackTimeout(maxDisplayTime);
@@ -138,7 +138,7 @@ public class NotificationManager<T> {
     public void clearAllShown() {
         // Create a copy of the list so it can iterate over all elements while
         // the original list is modified.
-        for (Notification n : new LinkedList<>(displayed)) {
+        for (NotificationWindow n : new LinkedList<>(displayed)) {
             n.close();
         }
     }
@@ -257,11 +257,11 @@ public class NotificationManager<T> {
      * 
      * @param removed The notification that was removed.
      */
-    private void notificationRemoved(Notification removed) {
+    private void notificationRemoved(NotificationWindow removed) {
         int offset = 0;
-        Iterator<Notification> it = displayed.iterator();
+        Iterator<NotificationWindow> it = displayed.iterator();
         while (it.hasNext()) {
-            Notification n = it.next();
+            NotificationWindow n = it.next();
             if (removed == n) {
                 offset = n.getHeight() + VERTICAL_MARGIN;
                 it.remove();
@@ -272,9 +272,9 @@ public class NotificationManager<T> {
             }
         }
         // Show next notification if possible and if one is queued.
-        Iterator<Notification> itQueue = queue.iterator();
+        Iterator<NotificationWindow> itQueue = queue.iterator();
         while (itQueue.hasNext() && displayed.size() < maxItems) {
-            Notification next = itQueue.next();
+            NotificationWindow next = itQueue.next();
             itQueue.remove();
             showNotification(next);
         }
@@ -297,7 +297,7 @@ public class NotificationManager<T> {
      * 
      * @param n 
      */
-    private void showNotification(Notification n) {
+    private void showNotification(NotificationWindow n) {
         
         checkQueueSize();
         GraphicsConfiguration config = getGraphicsConfig();
@@ -319,7 +319,7 @@ public class NotificationManager<T> {
      */
     private int getCurrentOffset() {
         int offset = VERTICAL_MARGIN;
-        for (Notification n : displayed) {
+        for (NotificationWindow n : displayed) {
             offset += n.getHeight() + VERTICAL_MARGIN;
         }
         return offset;
@@ -395,7 +395,7 @@ public class NotificationManager<T> {
 
             @Override
             public void run() {
-                NotificationManager m = new NotificationManager(null);
+                NotificationWindowManager m = new NotificationWindowManager(null);
                 m.setPosition(0);
                 m.setScreen(1);
                 m.showMessage("Test", "Test message with some text.");

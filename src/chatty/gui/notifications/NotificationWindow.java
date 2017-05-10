@@ -30,11 +30,11 @@ import javax.swing.border.Border;
  * 
  * @author tduva
  */
-public class Notification {
+public class NotificationWindow {
     
     private static final int SECOND = 1000;
     
-    private static final ImageIcon ICON = new ImageIcon(Notification.class.getResource("app_16.png"));
+    private static final ImageIcon ICON = new ImageIcon(NotificationWindow.class.getResource("app_16.png"));
 
     private static final Border PADDING_BORDER = BorderFactory.createEmptyBorder(9, 9, 9, 8);
     private static final Border LINE_BORDER = BorderFactory.createLineBorder(new Color(50, 50, 50), 1);
@@ -75,7 +75,7 @@ public class Notification {
      * References
      */
     private final JWindow window;
-    private final NotificationListener listener;
+    private final NotificationWindowListener listener;
     
     private boolean translucencySupported = false;
     private HideMethod hideMethod = HideMethod.FADE_OUT;
@@ -100,8 +100,8 @@ public class Notification {
      * @param listener Listener that gets informed about the notification state
      * @param expireTime When the notification will expire
      */
-    public Notification(String title, String message,
-            final NotificationListener listener, int expireTime) {
+    public NotificationWindow(String title, String message,
+            final NotificationWindowListener listener, int expireTime) {
         // Window
         window = new JWindow();
         window.setFocusable(false);
@@ -166,17 +166,17 @@ public class Notification {
                 close();
                 if (SwingUtilities.isRightMouseButton(e)) {
                     if (listener != null) {
-                        listener.notificationAction(Notification.this);
+                        listener.notificationAction(NotificationWindow.this);
                     }
                 }
             }
             @Override
             public void mouseEntered(MouseEvent e) {
-                Notification.this.mouseEntered();
+                NotificationWindow.this.mouseEntered();
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                Notification.this.mouseExited();
+                NotificationWindow.this.mouseExited();
             }
         });
         window.pack();
