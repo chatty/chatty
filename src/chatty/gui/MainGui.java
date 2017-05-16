@@ -49,9 +49,12 @@ import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
+import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.SubscriberMessage;
+import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
+import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationWindowManager;
 import chatty.util.CopyMessages;
 import chatty.util.DateTime;
@@ -125,7 +128,8 @@ public class MainGui extends JFrame implements Runnable {
     private HighlightedMessages ignoredMessages;
     private MainMenu menu;
     private LiveStreamsDialog liveStreamsDialog;
-    private NotificationWindowManager<String> notificationManager;
+    private NotificationWindowManager<String> notificationWindowManager;
+    private NotificationManager notificationManager;
     private ErrorMessage errorMessage;
     private AddressbookDialog addressbookDialog;
     private SRL srl;
@@ -239,8 +243,9 @@ public class MainGui extends JFrame implements Runnable {
         // Tray/Notifications
         trayIcon = new TrayIconManager(createImage("app_16.png"));
         trayIcon.addActionListener(new TrayMenuListener());
-        notificationManager = new NotificationWindowManager<>(this);
-        notificationManager.setNotificationActionListener(new MyNotificationActionListener());
+        notificationWindowManager = new NotificationWindowManager<>(this);
+        notificationWindowManager.setNotificationActionListener(new MyNotificationActionListener());
+        notificationManager = new NotificationManager(this, client.settings);
 
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
@@ -704,7 +709,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                notificationManager.clearAll();
+                notificationWindowManager.clearAll();
             }
         });
         
@@ -712,7 +717,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                notificationManager.clearAllShown();
+                notificationWindowManager.clearAllShown();
             }
         });
         
@@ -946,16 +951,16 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateNotificationSettings() {
-        notificationManager.setDisplayTime((int)client.settings.getLong("nDisplayTime"));
-        notificationManager.setMaxDisplayTime((int)client.settings.getLong("nMaxDisplayTime"));
-        notificationManager.setMaxDisplayItems((int)client.settings.getLong("nMaxDisplayed"));
-        notificationManager.setMaxQueueSize((int)client.settings.getLong("nMaxQueueSize"));
+        notificationWindowManager.setDisplayTime((int)client.settings.getLong("nDisplayTime"));
+        notificationWindowManager.setMaxDisplayTime((int)client.settings.getLong("nMaxDisplayTime"));
+        notificationWindowManager.setMaxDisplayItems((int)client.settings.getLong("nMaxDisplayed"));
+        notificationWindowManager.setMaxQueueSize((int)client.settings.getLong("nMaxQueueSize"));
         int activityTime = client.settings.getBoolean("nActivity")
                 ? (int)client.settings.getLong("nActivityTime") : -1;
-        notificationManager.setActivityTime(activityTime);
-        notificationManager.clearAll();
-        notificationManager.setScreen((int)client.settings.getLong("nScreen"));
-        notificationManager.setPosition((int)client.settings.getLong(("nPosition")));
+        notificationWindowManager.setActivityTime(activityTime);
+        notificationWindowManager.clearAll();
+        notificationWindowManager.setScreen((int)client.settings.getLong("nScreen"));
+        notificationWindowManager.setPosition((int)client.settings.getLong(("nPosition")));
     }
     
     private void updatePopoutSettings() {
@@ -1941,6 +1946,14 @@ public class MainGui extends JFrame implements Runnable {
         client.usericonManager.setData(data);
     }
     
+    public java.util.List<Notification> getNotificationData() {
+        return notificationManager.getData();
+    }
+    
+    public void setNotificationData(java.util.List<Notification> data) {
+        notificationManager.setData(data);
+    }
+    
     /**
      * Should only be called out of EDT. All commands have to be defined
      * lowercase, because they are made lowercase when entered.
@@ -2391,77 +2404,30 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    private void messageSound(String channel) {
-        playSound("message", channel);
-    }
-    
-    private void playHighlightSound(String channel) {
-        playSound("highlight", channel);
-    }
-    
-    public void followerSound(String channel) {
-        playSound("follower", channel);
-    }
-    
-    /**
-     * Plays the sound for the given sound identifier (highlight, status, ..),
-     * if the requirements are met.
-     * 
-     * @param id The id of the sound
-     * @param channel The channel this event originated from, to check
-     *  requirements
-     */
-    public void playSound(final String id, final String channel) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            playSoundInternal(id, channel);
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
+    public void userJoined(final User user) {
+        SwingUtilities.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    playSoundInternal(id, channel);
-                }
-            });
-        }
+            @Override
+            public void run() {
+                notificationManager.userJoined(user);
+            }
+        });
     }
     
-    /**
-     * Plays the sound for the given sound identifier (highlight, status, ..),
-     * if the requirements are met. For use in EDT, because it may have to check
-     * which channel is currently selected, but not sure if that has to be in
-     * the EDT.
-     * 
-     * @param id The id of the sound
-     * @param channel The channel this event originated from, to check
-     *  requirements
-     */
-    private void playSoundInternal(String id, String channel) {
-        if (client.settings.getBoolean("sounds")
-                && checkRequirements(client.settings.getString(id + "Sound"), channel)) {
-            playSound(id);
-        }
+    public void userLeft(final User user) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                notificationManager.userLeft(user);
+            }
+        });
     }
     
-    /**
-     * Plays the sound for the given sound identifier (highlight, status, ..).
-     * 
-     * @param id 
-     */
-    private void playSound(String id) {
-        String fileName = client.settings.getString(id + "SoundFile");
-        long volume = client.settings.getLong(id + "SoundVolume");
-        int delay = ((Long) client.settings.getLong(id + "SoundDelay")).intValue();
-        Sound.play(fileName, volume, id, delay);
-    }
-    
-    private void showHighlightNotification(String channel, User user, String text) {
-        String setting = client.settings.getString("highlightNotification");
-        if (checkRequirements(setting, channel)) {
-            long displayNamesMode = getSettings().getLong("displayNamesMode");
-            String name = Helper.makeDisplayNick(user, displayNamesMode);
-            String title = String.format("[Highlight] %s in %s", name, channel);
-            showNotification(title, text, channel);
-        }
+    public void newFollowers(final FollowerInfo info) {
+        SwingUtilities.invokeLater(() -> {
+            notificationManager.newFollowers(info);
+        });
     }
     
     public void setChannelNewStatus(final String channel, final String newStatus) {
@@ -2474,22 +2440,19 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void statusNotification(final String channel, final String status) {
+    public void statusNotification(final String channel, final StreamInfo info) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                if (checkRequirements(client.settings.getString("statusNotification"), channel)) {
-                    showNotification("[Status] " + channel, status, channel);
-                }
-                playSound("status", channel);
+                notificationManager.streamInfoChanged(channel, info);
             }
         });
     }
     
-    private void showNotification(String title, String message, String channel) {
-        if (client.settings.getBoolean("useCustomNotifications")) {
-            notificationManager.showMessage(title, message, channel);
+    public void showNotification(String title, String message, Color foreground, Color background, String channel) {
+        if (client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {
+            notificationWindowManager.showMessage(title, message, foreground, background, channel);
         } else {
             trayIcon.displayInfo(title, message);
         }
@@ -2501,50 +2464,23 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 if (client.settings.getString("username").equalsIgnoreCase("joshimuz")) {
-                    showNotification("[Test] It works!", "Now you have your notifications Josh.. Kappa", channel);
+                    showNotification("[Test] It works!",
+                            "Now you have your notifications Josh.. Kappa",
+                            Color.BLACK, Color.WHITE, channel);
                 } else if (channel == null) {
-                    showNotification("[Test] It works!", "This is where the text goes.", null);
+                    showNotification("[Test] It works!",
+                            "This is where the text goes.",
+                            Color.BLACK, Color.WHITE, null);
                 } else {
-                    showNotification("[Status] "+Helper.toValidChannel(channel), "Test Notification (this would pop up when a stream status changes)", channel);
+                    showNotification("[Status] "+Helper.toValidChannel(channel),
+                            "Test Notification (this would pop up when a stream status changes)",
+                            Color.BLACK, Color.WHITE, channel);
             }
             }
         });
     }
     
-    /**
-     * Checks the requirements that depend on whether the app and/or the given
-     * channel is active.
-     * 
-     * @param setting What the requirements are
-     * @param channel The channel to check the requirement against
-     * @return true if the requirements are met, false otherwise
-     */
-    private boolean checkRequirements(String setting, String channel) {
-        boolean channelActive = channels.getLastActiveChannel().getName().equals(channel);
-        boolean appActive = isAppActive();
-        // These conditions check when the requirements are NOT met
-        if (setting.equals("off")) {
-            return false;
-        }
-        if (setting.equals("both") && (channelActive || appActive)) {
-            return false;
-        }
-        if (setting.equals("channel") && channelActive) {
-            return false;
-        }
-        if (setting.equals("app") && appActive) {
-            return false;
-        }
-        if (setting.equals("either") && (channelActive && appActive)) {
-            return false;
-        }
-        if (setting.equals("channelActive") && !channelActive) {
-            return false;
-        }
-        return true;
-    }
-    
-    private boolean isAppActive() {
+    public boolean isAppActive() {
         for (Window frame : Window.getWindows()) {
             if (frame.isActive()) {
                 return true;
@@ -2553,7 +2489,11 @@ public class MainGui extends JFrame implements Runnable {
         return false;
     }
     
-    private Window getActiveWindow() {
+    public boolean isChanActive(String channel) {
+        return channels.getLastActiveChannel().getName().equals(channel);
+    }
+    
+    public Window getActiveWindow() {
         for (Window frame : Window.getWindows()) {
             if (frame.isActive()) {
                 return frame;
@@ -2629,16 +2569,22 @@ public class MainGui extends JFrame implements Runnable {
                     highlightedMessages.addMessage(channel, user, text, action,
                             tagEmotes, bits, whisper);
                     if (!highlighter.getLastMatchNoSound()) {
-                        playHighlightSound(channel);
+                        //playHighlightSound(channel);
                     }
                     if (!highlighter.getLastMatchNoNotification()) {
-                        showHighlightNotification(channel, user, (whisper ? "[Whisper] " : "")+text);
                         channels.setChannelHighlighted(chan);
                     } else {
                         channels.setChannelNewMessage(chan);
                     }
+                    notificationManager.highlight(user, text,
+                            highlighter.getLastMatchNoNotification(),
+                            highlighter.getLastMatchNoSound());
                 } else if (!ignored) {
-                    messageSound(channel);
+                    if (whisper) {
+                        notificationManager.whisper(user, text);
+                    } else {
+                        notificationManager.message(user, text);
+                    }
                     channels.setChannelNewMessage(chan);
                 }
                 
@@ -2706,6 +2652,7 @@ public class MainGui extends JFrame implements Runnable {
                     Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
                     SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
                     channels.getChannel(channel).printMessage(m);
+                    notificationManager.newSubscriber(user, text, message);
                 } else {
                     ignoredMessages.addInfoMessage(channel, fullMessage);
                 }
@@ -3000,12 +2947,15 @@ public class MainGui extends JFrame implements Runnable {
                     // Output directly to chat (if enabled)
                     if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED) {
                         // Automod
+                        String username = data.args.get(0);
+                        String message = StringUtil.join(data.args, " ", 1);
                         if (client.settings.getBoolean("showAutoMod")) {
                             channels.getChannel(channel).printLine(
                                     String.format("[AutoMod] <%s> %s",
-                                            data.args.get(0),
-                                            StringUtil.join(data.args, " ", 1)));
+                                            username,
+                                            message));
                         }
+                        notificationManager.autoModMessage(channel, username, message);
                     } else if (!ownAction && client.settings.getBoolean("showModActions")) {
                         // Other Mod Actions
                         channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
@@ -4224,7 +4174,7 @@ public class MainGui extends JFrame implements Runnable {
      * Remove tray icon if applicable.
      */
     private void cleanupAfterRestoredFromTray() {
-        if (client.settings.getBoolean("useCustomNotifications")) {
+        if (client.settings.getLong("nType") != NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.setIconVisible(false);
         }
     }

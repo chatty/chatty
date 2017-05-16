@@ -15,10 +15,15 @@ public class SimpleLongSetting extends LongTextField implements LongSetting {
     
     @Override
     public Long getSettingValue() {
+        return getSettingValue(null);
+    }
+    
+    @Override
+    public Long getSettingValue(Long def) {
         try {
             return Long.parseLong(getText());
         } catch (NumberFormatException ex) {
-            return null;
+            return def;
         }
     }
 

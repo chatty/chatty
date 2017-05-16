@@ -1837,7 +1837,7 @@ public class TwitchClient {
 
         @Override
         public void newFollowers(FollowerInfo followerInfo) {
-            g.followerSound(Helper.toValidChannel(followerInfo.stream));
+            g.newFollowers(followerInfo);
         }
 
         @Override
@@ -2022,9 +2022,7 @@ public class TwitchClient {
                     }
                 }
             }
-            if (info.getOnline() || !settings.getBoolean("ignoreOfflineNotifications")) {
-                g.statusNotification(channel, newStatus);
-            }
+            g.statusNotification(channel, info);
         }
     }
     
@@ -2322,7 +2320,7 @@ public class TwitchClient {
             if (settings.getBoolean("showJoinsParts") && showUserInGui(user)) {
                 g.printCompact(channel,"JOIN", user);
             }
-            g.playSound("joinPart", channel);
+            g.userJoined(user);
             chatLog.compact(channel, "JOIN", user.getRegularDisplayNick());
         }
 
@@ -2332,7 +2330,7 @@ public class TwitchClient {
                 g.printCompact(user.getChannel(), "PART", user);
             }
             chatLog.compact(user.getChannel(), "PART", user.getRegularDisplayNick());
-            g.playSound("joinPart", user.getChannel());
+            g.userLeft(user);
         }
 
         @Override

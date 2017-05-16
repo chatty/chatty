@@ -34,6 +34,8 @@ public class PathSetting extends JPanel implements StringSetting {
     private final String defaultPath;
     private final Component parentComponent;
     
+    private PathChangeListener listener;
+    
     /**
      * Create a new PathSetting instancen.
      * 
@@ -108,7 +110,12 @@ public class PathSetting extends JPanel implements StringSetting {
      */
     @Override
     public void setSettingValue(String value) {
-        this.value = value;
+        if (this.value == null || !this.value.equals(value)) {
+            this.value = value;
+            if (listener != null) {
+                listener.pathChanged(getCurrentPath());
+            }
+        }
         display.setText((value.isEmpty() ? "[default] " : "")+getCurrentPathValue());
     }
     
@@ -119,7 +126,7 @@ public class PathSetting extends JPanel implements StringSetting {
      * @return The setting value or the default path if the setting value is
      * empty
      */
-    private String getCurrentPathValue() {
+    public String getCurrentPathValue() {
         if (value.isEmpty()) {
             return defaultPath;
         } else {
@@ -134,12 +141,16 @@ public class PathSetting extends JPanel implements StringSetting {
      * if the setting value is empty
      * @see getCurrentPathValue()
      */
-    private Path getCurrentPath() {
+    public Path getCurrentPath() {
         try {
             return Paths.get(getCurrentPathValue());
         } catch (InvalidPathException ex) {
             return null;
         }
+    }
+    
+    public void setPathChangeListener(PathChangeListener listener) {
+        this.listener = listener;
     }
 
     /**
@@ -152,6 +163,10 @@ public class PathSetting extends JPanel implements StringSetting {
         if (chooser.showDialog(parentComponent, "Select folder") == JFileChooser.APPROVE_OPTION) {
             setSettingValue(chooser.getSelectedFile().getPath());
         }
+    }
+    
+    public interface PathChangeListener {
+        public void pathChanged(Path newPath);
     }
     
 }

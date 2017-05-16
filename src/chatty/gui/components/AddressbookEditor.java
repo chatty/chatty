@@ -162,7 +162,7 @@ public class AddressbookEditor extends TableEditor<AddressbookEntry> {
         }
         
         @Override
-        public AddressbookEntry showEditor(AddressbookEntry preset, Component c, boolean edit) {
+        public AddressbookEntry showEditor(AddressbookEntry preset, Component c, boolean edit, int column) {
             setLocationRelativeTo(c);
             updateButtons();
             setData(preset);

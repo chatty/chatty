@@ -228,7 +228,7 @@ public abstract class SimpleTableEditor<T> extends TableEditor<StringMapItem> im
         }
         
         @Override
-        public StringMapItem showEditor(StringMapItem preset, Component c, boolean edit) {
+        public StringMapItem showEditor(StringMapItem preset, Component c, boolean edit, int column) {
             save = false;
             if (edit) {
                 dialog.setTitle("Edit item");

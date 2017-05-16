@@ -49,6 +49,11 @@ public class SliderLongSetting extends JPanel implements LongSetting {
     public Long getSettingValue() {
         return value;
     }
+    
+    @Override
+    public Long getSettingValue(Long def) {
+        return value;
+    }
 
     @Override
     public void setSettingValue(Long value) {
@@ -77,4 +82,10 @@ public class SliderLongSetting extends JPanel implements LongSetting {
         slider.setPaintTicks(value);
     }
     
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        slider.setEnabled(enabled);
+    }
+
 }

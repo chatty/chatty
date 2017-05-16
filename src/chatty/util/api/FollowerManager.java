@@ -278,7 +278,7 @@ public class FollowerManager {
         stream = StringUtil.toLowerCase(stream);
         // Add map for this stream if not already added
         if (!alreadyFollowed.containsKey(stream)) {
-            alreadyFollowed.put(stream, new HashMap<String, Follower>());
+            alreadyFollowed.put(stream, new HashMap<>());
         }
         // Check if this follower is already present
         Map<String,Follower> entries = alreadyFollowed.get(stream);

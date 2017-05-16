@@ -261,7 +261,7 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         }
         
         @Override
-        public UsercolorItem showEditor(UsercolorItem preset, Component c, boolean edit) {
+        public UsercolorItem showEditor(UsercolorItem preset, Component c, boolean edit, int column) {
             if (edit) {
                 dialog.setTitle("Edit item");
             } else {

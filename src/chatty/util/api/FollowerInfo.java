@@ -1,6 +1,8 @@
 
 package chatty.util.api;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -83,6 +85,16 @@ public class FollowerInfo {
     @Override
     public String toString() {
         return total+" "+followers;
+    }
+    
+    public Collection<Follower> getNewFollowers() {
+        List<Follower> result = new ArrayList<>();
+        for (Follower f : followers) {
+            if (f.newFollower) {
+                result.add(f);
+            }
+        }
+        return result;
     }
     
 }

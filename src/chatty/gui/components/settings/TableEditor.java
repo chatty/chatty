@@ -452,7 +452,7 @@ public class TableEditor<T> extends JPanel {
      * @param preset The entry used to fill out some data in the edit dialog
      */
     protected void addItem(T preset) {
-        T result = editor.showEditor(preset, this, false);
+        T result = editor.showEditor(preset, this, false, -1);
         // If the user didn't cancel the dialog, work with the result.
         if (result != null) {
             // Check if the resulting entry is already in the table.
@@ -521,7 +521,7 @@ public class TableEditor<T> extends JPanel {
         if (preset == null) {
             preset = data.get(modelIndex);
         }
-        T result = editor.showEditor(preset, this, true);
+        T result = editor.showEditor(preset, this, true, table.getSelectedColumn());
         
         // Done editing in the dialog, work with the result if the user didn't
         // cancel the dialog.
@@ -700,7 +700,7 @@ public class TableEditor<T> extends JPanel {
          * @return The changed or added item, or {@code null} if the action was
          * canceled
          */
-        public T showEditor(T preset, Component c, boolean edit);
+        public T showEditor(T preset, Component c, boolean edit, int column);
         
     }
     

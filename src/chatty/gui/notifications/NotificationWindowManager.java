@@ -3,6 +3,7 @@ package chatty.gui.notifications;
 
 import chatty.gui.notifications.NotificationWindow.HideMethod;
 import chatty.util.ActivityTracker;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
@@ -105,8 +106,9 @@ public class NotificationWindowManager<T> {
      * @param message
      * @param data
      */
-    public void showMessage(String title, String message, T data) {
-        NotificationWindow n = new NotificationWindow(title, message, listener, expireTime);
+    public void showMessage(String title, String message, Color foreground,
+            Color background, T data) {
+        NotificationWindow n = new NotificationWindow(title, message, foreground, background, listener, expireTime);
         n.setHideMethod(hideMethod);
         //n.setTimeout(displayTime);
         n.setFallbackTimeout(maxDisplayTime);
@@ -120,8 +122,8 @@ public class NotificationWindowManager<T> {
         notificationData.put(n, data);
     }
     
-    public void showMessage(String title, String message) {
-        showMessage(title, message, null);
+    public void showMessage(String title, String message, Color foreground, Color background) {
+        showMessage(title, message, foreground, background, null);
     }
     
     /**
@@ -398,7 +400,7 @@ public class NotificationWindowManager<T> {
                 NotificationWindowManager m = new NotificationWindowManager(null);
                 m.setPosition(0);
                 m.setScreen(1);
-                m.showMessage("Test", "Test message with some text.");
+                m.showMessage("Test", "Test message with some text.", Color.WHITE, Color.BLACK);
                 
             }
         });

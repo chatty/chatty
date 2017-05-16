@@ -100,7 +100,10 @@ public class NotificationWindow {
      * @param listener Listener that gets informed about the notification state
      * @param expireTime When the notification will expire
      */
-    public NotificationWindow(String title, String message,
+    public NotificationWindow(String title,
+            String message,
+            Color foreground,
+            Color background,
             final NotificationWindowListener listener, int expireTime) {
         // Window
         window = new JWindow();
@@ -116,7 +119,7 @@ public class NotificationWindow {
         final JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BORDER);
         panel.setOpaque(true);
-        panel.setBackground(BACKGROUND_COLOR);
+        panel.setBackground(background);
 
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -143,7 +146,7 @@ public class NotificationWindow {
             message = message.substring(0, MAX_MESSAGE_LENGTH)+"[..]";
         }
         JLabel content = new JLabel(makeContent(title, message, false));
-        content.setForeground(Color.BLACK);
+        content.setForeground(foreground);
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridheight = 2;

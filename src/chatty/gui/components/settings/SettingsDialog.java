@@ -334,6 +334,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         imageSettings.setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
         hotkeySettings.setData(owner.hotkeyManager.getActionsMap(),
                 owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
+        notificationSettings.setData(owner.getNotificationData());
     }
     
     /**
@@ -399,6 +400,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         owner.setUsercolorData(usercolorSettings.getData());
         owner.setUsericonData(imageSettings.getData());
         owner.hotkeyManager.setData(hotkeySettings.getData());
+        owner.setNotificationData(notificationSettings.getData());
         if (restartRequired) {
             JOptionPane.showMessageDialog(this, RESTART_REQUIRED_INFO, "Info", JOptionPane.INFORMATION_MESSAGE);
         }

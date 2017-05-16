@@ -3,12 +3,14 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.util.MiscUtil;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -26,6 +28,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -172,6 +175,12 @@ public class GuiUtil {
         gbc.anchor = anchor;
         gbc.insets = new Insets(5, 5, 5, 5);
         return gbc;
+    }
+    
+    public static JPanel northWrap(JPanel panel) {
+        JPanel container = new JPanel(new BorderLayout());
+        container.add(panel, BorderLayout.NORTH);
+        return container;
     }
     
     /**

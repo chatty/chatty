@@ -32,6 +32,9 @@ public class RawMessageTest {
         if (type.equals("autohost")) {
             return ":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG "+localUsername+" :UserName is now auto hosting you.";
         }
+        if (type.equals("whisper")) {
+            return "@badges=turbo/1;color=#0000FF;display-name=tduva;emotes=;message-id=161;turbo=1;user-id=36194025;user-type= :tduva!tduva@tduva.tmi.twitch.tv WHISPER "+localUsername+" :abc";
+        }
         return null;
     }
     

@@ -295,7 +295,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         }
         
         @Override
-        public Hotkey showEditor(Hotkey preset, Component c, boolean edit) {
+        public Hotkey showEditor(Hotkey preset, Component c, boolean edit, int column) {
             this.preset = preset;
             
             // Set title

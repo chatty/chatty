@@ -190,7 +190,7 @@ public class Highlighter {
      * An item can be prefixed with a user:username, so the username as well
      * as the item after it has to match.
      */
-    static class HighlightItem {
+    public static class HighlightItem {
         
         private String username;
         private Pattern usernamePattern;
@@ -223,7 +223,7 @@ public class Highlighter {
             }
         }
         
-        HighlightItem(String item) {
+        public HighlightItem(String item) {
             prepare(item);
         }
         

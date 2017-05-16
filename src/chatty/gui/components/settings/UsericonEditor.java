@@ -515,7 +515,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         }
         
         @Override
-        public Usericon showEditor(Usericon preset, Component c, boolean edit) {
+        public Usericon showEditor(Usericon preset, Component c, boolean edit, int column) {
             scanFiles();
             if (edit) {
                 dialog.setTitle("Edit item");

@@ -202,7 +202,7 @@ public class SoundSettings extends SettingsPanel {
             public void actionPerformed(ActionEvent e) {
                 String file = d.getStringSetting(fileSetting);
                 long volume = d.getLongSetting(volumeSetting);
-                Sound.play(file, volume, "test", -1);
+                //Sound.play(file, volume, "test", -1);
             }
         });
         gbc = d.makeGbc(3, 0, 1, 1);

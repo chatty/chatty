@@ -37,9 +37,13 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
     }
     
     public E getSettingValue() {
+        return getSettingValue(null);
+    }
+    
+    public E getSettingValue(E def) {
         Entry<E> selected = (Entry<E>)getSelectedItem();
         if (selected == null) {
-            return null;
+            return def;
         }
         return selected.value;
     }

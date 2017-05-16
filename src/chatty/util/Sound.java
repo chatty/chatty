@@ -3,6 +3,7 @@ package chatty.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,15 +24,13 @@ public class Sound {
     private static final int MIN_GAIN = -40;
     
     private static final Logger LOGGER = Logger.getLogger(Sound.class.getName());
-    private static final String PATH = System.getProperty("user.dir")
-            +File.separator+"sounds"+File.separator;
     
     private static final Map<String, Long> lastPlayed = new HashMap<>();
     
     private static Mixer mixer;
     private static String mixerName;
     
-    public static void play(String fileName, float volume, String id, int delay) {
+    public static void play(Path file, float volume, String id, int delay) throws Exception {
         
         if (lastPlayed.containsKey(id)) {
             long timePassed = (System.currentTimeMillis() - lastPlayed.get(id)) / 1000;
@@ -46,8 +45,7 @@ public class Sound {
         
         try {
             // getAudioInputStream() also accepts a File or InputStream
-            File file = new File(PATH+fileName);
-            AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
             
             DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
             final Clip clip;
@@ -81,9 +79,10 @@ public class Sound {
             });
             
             clip.start();
-            LOGGER.info("Playing sound "+id+"/"+fileName+" ("+volumeInfo+")");
+            LOGGER.info("Playing sound "+id+"/"+file+" ("+volumeInfo+")");
         } catch (Exception ex) {
-            LOGGER.warning("Couldn't play sound ("+id+"/"+fileName+"): "+ex);
+            LOGGER.warning("Couldn't play sound ("+id+"/"+file+"): "+ex);
+            throw ex;
         }
     }
     
