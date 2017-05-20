@@ -6,6 +6,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -51,7 +53,7 @@ public class ColorSetting extends JPanel implements StringSetting {
     private Color currentColor;
     private Color secondaryColor;
     
-    private ColorSettingListener listener;
+    private final Set<ColorSettingListener> listeners = new HashSet<>();
     
     private final ColorChooser colorChooser;
     private final JButton chooseColor = new JButton("Choose");
@@ -156,15 +158,24 @@ public class ColorSetting extends JPanel implements StringSetting {
     @Override
     public void setSettingValue(String value) {
         textField.setText(value);
-        if (listener != null) {
+        for (ColorSettingListener listener : listeners) {
             listener.colorUpdated();
         }
         updated();
     }
     
-    public void setListener(ColorSettingListener listener) {
-        this.listener = listener;
+    public Color getSettingValueAsColor() {
+        return currentColor;
     }
     
+    public void addListener(ColorSettingListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+    
+    public void removeListener(ColorSettingListener listener) {
+        listeners.remove(listener);
+    }
     
 }

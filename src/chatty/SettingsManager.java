@@ -404,8 +404,9 @@ public class SettingsManager {
         settings.addLong("nMaxQueueSize", 4);
         settings.addBoolean("nActivity", false);
         settings.addLong("nActivityTime", 10);
-        
-        settings.addList("notificationProperties", new ArrayList<>(), Setting.LIST);
+
+        settings.addList("notifications", new ArrayList<>(), Setting.LIST);
+        settings.addList("nColorPresets", new ArrayList<>(), Setting.LIST);
 
         settings.addBoolean("tips", true);
         settings.addLong("lastTip", 0);

@@ -202,7 +202,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);
         cards.add(new HistorySettings(this), PANEL_HISTORY);
         cards.add(new SoundSettings(this), PANEL_SOUND);
-        notificationSettings = new NotificationSettings(this);
+        notificationSettings = new NotificationSettings(this, settings);
         cards.add(notificationSettings, PANEL_NOTIFICATIONS);
         usercolorSettings = new UsercolorSettings(this);
         cards.add(usercolorSettings, PANEL_USERCOLORS);

@@ -204,6 +204,10 @@ public class NotificationWindow {
     public long getVisibleTime() {
         return System.currentTimeMillis() - visibleSince;
     }
+
+    public boolean isVisible() {
+        return visibleSince > 0 && !closed;
+    }
     
     public void setActivityTime(int time) {
         this.activityTime = time;
@@ -274,7 +278,7 @@ public class NotificationWindow {
             startFallbackTimer();
         }
     }
-    
+
     /**
      * Close the window immediately and cleanup.
      */

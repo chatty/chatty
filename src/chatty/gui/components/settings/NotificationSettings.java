@@ -7,6 +7,7 @@ import static chatty.gui.GuiUtil.SMALL_BUTTON_INSETS;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.notifications.Notification;
 import chatty.util.Sound;
+import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -55,8 +56,8 @@ public class NotificationSettings extends SettingsPanel {
     
     private final NotificationEditor editor;
     
-    public NotificationSettings(SettingsDialog d) {
-        editor = new NotificationEditor(d);
+    public NotificationSettings(SettingsDialog d, Settings settings) {
+        editor = new NotificationEditor(d, settings);
         
         GridBagConstraints gbc;
 

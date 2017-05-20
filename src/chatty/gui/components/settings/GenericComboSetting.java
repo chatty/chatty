@@ -96,6 +96,28 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
         addItem(entry);
     }
     
+    public void insert(E value, String label, int pos) {
+        Entry entry = new Entry<>(value, label);
+        insertItemAt(entry, pos);
+    }
+    
+    public void remove(E value) {
+        Entry entry = new Entry<>(value, String.valueOf(value));
+        removeItem(entry);
+    }
+    
+    public void replace(E search, E replace) {
+        Entry searchEntry = new Entry<>(search, String.valueOf(search));
+        Entry replaceEntry = new Entry<>(replace, String.valueOf(replace));
+        for (int i=0; i<getItemCount(); i++) {
+            if (getItemAt(i).equals(searchEntry)) {
+                removeItemAt(i);
+                insertItemAt(replaceEntry, i);
+                return;
+            }
+        }
+    }
+    
     /**
      * Removes all items from the list.
      */

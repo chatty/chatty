@@ -33,7 +33,8 @@ public class NotificationManager {
     private final MainGui main;
     
     private final List<Notification> properties = new ArrayList<>();
-    private static final String SETTING_NAME = "notificationProperties";
+    private static final String SETTING_NAME = "notifications";
+    public static final String COLOR_PRESETS_SETTING_NAME = "nColorPresets";
     
     public NotificationManager(MainGui main,
             Settings settings) {

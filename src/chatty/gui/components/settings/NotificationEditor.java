@@ -6,12 +6,16 @@ import chatty.gui.HtmlColors;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.Notification.State;
 import chatty.gui.notifications.Notification.Type;
+import chatty.gui.notifications.NotificationManager;
+import chatty.gui.notifications.NotificationWindow;
 import chatty.util.Sound;
+import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +38,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -48,10 +53,10 @@ class NotificationEditor extends TableEditor<Notification> {
     
     private final MyItemEditor editor;
     
-    public NotificationEditor(JDialog owner) {
+    public NotificationEditor(JDialog owner, Settings settings) {
         super(SORTING_MODE_MANUAL, false);
         
-        editor = new MyItemEditor(owner);
+        editor = new MyItemEditor(owner, settings);
         
         setModel(new MyTableModel());
         setItemEditor(editor);
@@ -193,8 +198,10 @@ class NotificationEditor extends TableEditor<Notification> {
         private final GenericComboSetting<Notification.State> soundState;
         private final SimpleStringSetting channel;
         private final SimpleStringSetting matcher;
+        private final ColorTemplates colorTemplates;
         private final ColorSetting foregroundColor;
         private final ColorSetting backgroundColor;
+        private final JButton testColors;
         private final ColorChooser colorChooser;
         private final DurationSetting soundCooldown;
         private final DurationSetting soundInactiveCooldown;
@@ -206,8 +213,9 @@ class NotificationEditor extends TableEditor<Notification> {
         private Notification current;
         private Path soundsPath;
         private boolean save;
+        private NotificationWindow testNotification;
         
-        public MyItemEditor(Window owner) {
+        public MyItemEditor(Window owner, Settings settings) {
             dialog = new JDialog(owner);
             dialog.setLayout(new GridBagLayout());
             dialog.setResizable(false);
@@ -277,11 +285,25 @@ class NotificationEditor extends TableEditor<Notification> {
                 public void colorUpdated() {
                     foregroundColor.update(backgroundColor.getSettingValue());
                     backgroundColor.update(foregroundColor.getSettingValue());
+                    updateTestNotification();
                 }
             };
-            foregroundColor.setListener(colorChangeListener);
-            backgroundColor.setListener(colorChangeListener);
+            foregroundColor.addListener(colorChangeListener);
+            backgroundColor.addListener(colorChangeListener);
             
+            colorTemplates = new ColorTemplates(settings,
+                    NotificationManager.COLOR_PRESETS_SETTING_NAME,
+                    foregroundColor, backgroundColor);
+            colorTemplates.addPreset("Classic", "Black", "#FFFFF0");
+            colorTemplates.addPreset("Highlight", "Black", "#FFFF65");
+            colorTemplates.addPreset("Black", "White", "#333333");
+            colorTemplates.addPreset("Violet", "White", "BlueViolet"); // TODO: Other Chatty icon
+            colorTemplates.init();
+            
+            testColors = new JButton("Test Colors");
+            testColors.addActionListener(e -> {
+                testNotification();
+            });
             
             soundFile = new ComboStringSetting(new String[]{});
             
@@ -305,21 +327,28 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc = GuiUtil.makeGbc(1, 0, 2, 1);
             gbc.anchor = GridBagConstraints.WEST;
             optionsPanel.add(type, gbc);
+            
             //-----------------------
             // Notification Settings
             //-----------------------
-            gbc = GuiUtil.makeGbc(0, 1, 1, 1);
+            gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST);
             desktop.add(new JLabel("Status:"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 1, 2, 1);
-            gbc.anchor = GridBagConstraints.WEST;
+            gbc = GuiUtil.makeGbc(1, 1, 2, 1, GridBagConstraints.CENTER);
             desktop.add(desktopState, gbc);
             
-            gbc = GuiUtil.makeGbc(0, 2, 3, 1);
+            gbc = GuiUtil.makeGbc(0, 2, 3, 1, GridBagConstraints.CENTER);
+            desktop.add(colorTemplates, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 3, 3, 1, GridBagConstraints.CENTER);
+            gbc.insets = new Insets(5, 5, 0, 5);
             desktop.add(foregroundColor, gbc);
             
-            gbc = GuiUtil.makeGbc(0, 3, 3, 1);
+            gbc = GuiUtil.makeGbc(0, 4, 3, 1, GridBagConstraints.CENTER);
             desktop.add(backgroundColor, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 5, 2, 1, GridBagConstraints.EAST);
+            desktop.add(testColors, gbc);
             
             //----------------
             // Sound Settings
@@ -523,6 +552,7 @@ class NotificationEditor extends TableEditor<Notification> {
             } else {
                 tabs.setSelectedIndex(0);
             }
+            colorTemplates.reset();
             
             save = false;
             
@@ -530,6 +560,8 @@ class NotificationEditor extends TableEditor<Notification> {
             dialog.setVisible(true);
             // Modal dialog, so blocks here and stuff can be changed via the GUI
             // until the dialog is closed
+            
+            clearTestNotification();
             
             if (save) {
                 return create();
@@ -566,6 +598,37 @@ class NotificationEditor extends TableEditor<Notification> {
                 soundFile.add(name);
             }
             this.soundsPath = path;
+        }
+        
+        private void testNotification() {
+            NotificationWindow w = new NotificationWindow("[Test] "+type.getSettingValue().label+" Colors",
+                    "Nice color you got there, would be a shame if it was to be used for a notification.",
+                    foregroundColor.getSettingValueAsColor(),
+                    backgroundColor.getSettingValueAsColor(),
+                    null, 0);
+            w.setLocation(dialog.getLocation());
+            w.setTimeout(30*1000);
+            w.show();
+            if (testNotification != null) {
+                final NotificationWindow toClose = testNotification;
+                SwingUtilities.invokeLater(() -> {
+                    toClose.close();
+                });
+            }
+            testNotification = w;
+        }
+        
+        private void clearTestNotification() {
+            if (testNotification != null) {
+                testNotification.close();
+                testNotification = null;
+            }
+        }
+        
+        private void updateTestNotification() {
+            if (testNotification != null && testNotification.isVisible()) {
+                testNotification();
+            }
         }
         
     }

@@ -46,7 +46,7 @@ public class ColorSettings extends SettingsPanel {
     private ColorSetting addColorSetting(String setting, int type,
             String baseSetting, String name, String text, int row) {
         ColorSetting colorSetting = new ColorSetting(type, baseSetting, name, text, colorChooser);
-        colorSetting.setListener(new MyColorSettingListener(setting));
+        colorSetting.addListener(new MyColorSettingListener(setting));
         d.addStringSetting(setting, colorSetting);
         colorSettings.put(setting, colorSetting);
         GridBagConstraints gbc = d.makeGbc(0, row, 1, 1);
