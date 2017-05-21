@@ -45,8 +45,6 @@ public class NotificationWindow {
     private static final String HTML = "<html><body style='font-weight: normal;'>";
     private static final String HTML_FIXED_WIDTH = "<html><body style='width:" + MAX_WIDTH + "px;font-weight: normal;'>";
     
-    private static final Color BACKGROUND_COLOR = new Color(255, 255, 240);
-    
     /**
      * Maximum number of characters to display as message
      */
@@ -67,7 +65,7 @@ public class NotificationWindow {
     private int activityTime = 60*1000;
     
     private long visibleSince = 0;
-    private long createdAt;
+    private final long createdAt;
     
     private boolean closed = false;
 
@@ -97,14 +95,15 @@ public class NotificationWindow {
      * 
      * @param title
      * @param message
+     * @param foreground
+     * @param background
      * @param listener Listener that gets informed about the notification state
-     * @param expireTime When the notification will expire
      */
     public NotificationWindow(String title,
             String message,
             Color foreground,
             Color background,
-            final NotificationWindowListener listener, int expireTime) {
+            final NotificationWindowListener listener) {
         // Window
         window = new JWindow();
         window.setFocusable(false);

@@ -22,12 +22,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -157,7 +157,9 @@ class NotificationEditor extends TableEditor<Notification> {
             } else if (column == 1) {
                 text = String.format("%s", n.getDesktopState());
             } else {
-                text = String.format("%s\n%s", n.getSoundState(), n.soundFile);
+                text = String.format("%s\n%s",
+                        n.getSoundState(),
+                        n.soundFile == null ? "No sound file" : n.soundFile);
             }
             
             if (text.startsWith("Off")) {
@@ -245,6 +247,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 } else {
                     tabs.setTitleAt(0, "Notification");
                 }
+                updateDesktopSettings();
             });
             
             soundState.addItemListener(e -> {
@@ -395,8 +398,10 @@ class NotificationEditor extends TableEditor<Notification> {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         String file = soundFile.getSettingValue();
-                        long volume = volumeSlider.getSettingValue();
-                        Sound.play(soundsPath.resolve(file), volume, "test", -1);
+                        if (file != null && !file.isEmpty()) {
+                            long volume = volumeSlider.getSettingValue();
+                            Sound.play(soundsPath.resolve(file), volume, "test", -1);
+                        }
                     } catch (Exception ex) {
                         GuiUtil.showNonModalMessage(dialog, "Error Playing Sound",
                                 ex.toString(),
@@ -465,7 +470,6 @@ class NotificationEditor extends TableEditor<Notification> {
             for (String type : t.subTypes.keySet()) {
                 JCheckBox checkbox = new JCheckBox(t.subTypes.get(type));
                 checkbox.setName(type);
-                System.out.println(current);
                 if (current != null) {
                     checkbox.setSelected(current.options.contains(type));
                 }
@@ -476,8 +480,8 @@ class NotificationEditor extends TableEditor<Notification> {
             updateSize();
         }
         
-        private Collection<String> getSubTypes() {
-            Collection<String> result = new LinkedList<>();
+        private List<String> getSubTypes() {
+            List<String> result = new ArrayList<>();
             for (String type : optionsAssoc.keySet()) {
                 JCheckBox cb = optionsAssoc.get(type);
                 if (cb.isSelected()) {
@@ -485,6 +489,11 @@ class NotificationEditor extends TableEditor<Notification> {
                 }
             }
             return result;
+        }
+        
+        private void updateDesktopSettings() {
+            boolean enabled = desktopState.getSettingValue() != State.OFF;
+            testColors.setEnabled(enabled);
         }
         
         /**
@@ -520,7 +529,6 @@ class NotificationEditor extends TableEditor<Notification> {
                 // Sound
                 soundState.setSettingValue(preset.soundState);
                 soundFile.setSettingValue(preset.soundFile);
-                System.out.println(preset.soundFile);
                 soundCooldown.setSettingValue(Long.valueOf(preset.soundCooldown));
                 soundInactiveCooldown.setSettingValue(Long.valueOf(preset.soundInactiveCooldown));
                 volumeSlider.setSettingValue(preset.soundVolume);
@@ -538,7 +546,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 // Sound
                 soundState.setSettingValue(Notification.State.OFF);
                 soundFile.setSelectedIndex(0);
-                volumeSlider.setSettingValue(Long.valueOf(100));
+                volumeSlider.setSettingValue(Long.valueOf(20));
                 soundCooldown.setSettingValue(Long.valueOf(0));
                 soundInactiveCooldown.setSettingValue(Long.valueOf(0));
                 
@@ -594,6 +602,7 @@ class NotificationEditor extends TableEditor<Notification> {
         
         public void setSoundFiles(Path path, String[] names) {
             soundFile.removeAllItems();
+            soundFile.add((String)null, "<None>");
             for (String name : names) {
                 soundFile.add(name);
             }
@@ -605,7 +614,7 @@ class NotificationEditor extends TableEditor<Notification> {
                     "Nice color you got there, would be a shame if it was to be used for a notification.",
                     foregroundColor.getSettingValueAsColor(),
                     backgroundColor.getSettingValueAsColor(),
-                    null, 0);
+                    null);
             w.setLocation(dialog.getLocation());
             w.setTimeout(30*1000);
             w.show();

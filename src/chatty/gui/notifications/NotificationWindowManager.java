@@ -56,8 +56,6 @@ public class NotificationWindowManager<T> {
     private int maxDisplayTime = 30*MINUTE;
     // Shorter max display time, in case the queue is full
     private int shortMaxDisplayTime = 2*SECOND;
-    // How long the notification should be shown as new
-    private int expireTime = 5*MINUTE;
     
     private int activityTime = -1;
     
@@ -104,11 +102,14 @@ public class NotificationWindowManager<T> {
      *
      * @param title
      * @param message
-     * @param data
+     * @param foreground
+     * @param background
+     * @param data Associated data, which will be send to the listener when the
+     * Notification is right-clicked
      */
     public void showMessage(String title, String message, Color foreground,
             Color background, T data) {
-        NotificationWindow n = new NotificationWindow(title, message, foreground, background, listener, expireTime);
+        NotificationWindow n = new NotificationWindow(title, message, foreground, background, listener);
         n.setHideMethod(hideMethod);
         //n.setTimeout(displayTime);
         n.setFallbackTimeout(maxDisplayTime);
@@ -196,10 +197,6 @@ public class NotificationWindowManager<T> {
     
     public final void setMaxDisplayItems(int count) {
         this.maxItems = count;
-    }
-    
-    public final void setExpireTime(int time) {
-        this.expireTime = time;
     }
     
     /**

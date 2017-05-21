@@ -888,16 +888,26 @@ public class Settings {
         try (BufferedReader reader = Files.newBufferedReader(file, CHARSET)) {
             String input = reader.readLine();
             if (input != null) {
-                settingsFromJson(input);
+                try {
+                    settingsFromJson(input);
+                } catch (ParseException ex) {
+                    int pos = ex.getPosition();
+                    int start = pos - 10;
+                    int end = pos + 10;
+                    start = start < 0 ? 0 : start;
+                    end = end > input.length() ? input.length() : end;
+                    String excerpt = input.substring(start, pos)+"@"+input.substring(pos, end);
+                    LOGGER.warning("Error parsing settings: " + ex+ "["+excerpt+"]");
+                    LOGGER.log(Logging.USERINFO, String.format("Settings file corrupt, using default settings (%s) [%s]",
+                            fileName,
+                            excerpt));
+                }
             } else {
                 LOGGER.warning("Settings file empty: "+fileName);
                 LOGGER.log(Logging.USERINFO, "Settings file empty, using default settings ("+fileName+")");
             }
         } catch (IOException ex) {
             LOGGER.warning("Error loading settings from file: "+ex);
-        } catch (ParseException ex) {
-            LOGGER.warning("Error parsing settings: "+ex);
-            LOGGER.log(Logging.USERINFO, "Settings file corrupt, using default settings ("+fileName+")");
         }
     }
     

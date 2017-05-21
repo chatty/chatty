@@ -41,6 +41,11 @@ public class NotificationManager {
         this.settings = settings;
         this.main = main;
         loadFromSettings();
+        settings.addSettingChangeListener((s, t, v) -> {
+            if (s.equals(SETTING_NAME)) {
+                loadFromSettings();
+            }
+        });
     }
     
     public synchronized List<Notification> getData() {
@@ -61,7 +66,7 @@ public class NotificationManager {
         settings.putList(SETTING_NAME, entriesToSave);
     }
     
-    private void loadFromSettings() {
+    private synchronized void loadFromSettings() {
         List<List> entriesToLoad = settings.getList(SETTING_NAME);
         properties.clear();
         for (List l : entriesToLoad) {
@@ -229,6 +234,9 @@ public class NotificationManager {
             return false;
         }
         if (n.lastMatchedAgo() < n.soundInactiveCooldown*1000) {
+            return false;
+        }
+        if (n.soundFile == null || n.soundFile.isEmpty()) {
             return false;
         }
         n.setSoundPlayed();

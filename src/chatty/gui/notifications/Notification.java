@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -61,11 +59,11 @@ public class Notification {
     public enum State {
         ALWAYS(1, "Enabled"),
         OFF(0, "Off"),
-        CHANNEL_ACTIVE(2, "When channel active"),
-        CHANNEL_NOT_ACTIVE(3, "When channel not active"),
-        APP_NOT_ACTIVE(4, "When app not active"),
-        CHANNEL_OR_APP_NOT_ACTIVE(5, "When channel or app not active"),
-        CHANNEL_AND_APP_NOT_ACTIVE(6, "When channel/app not active");
+        CHANNEL_ACTIVE(2, "Chan focused"),
+        CHANNEL_NOT_ACTIVE(3, "Chan not focused"),
+        APP_NOT_ACTIVE(4, "App not focused"),
+        CHANNEL_OR_APP_NOT_ACTIVE(5, "Chan or app not focused"),
+        CHANNEL_AND_APP_NOT_ACTIVE(6, "Chan/app not focused");
         
         
         public String label;
@@ -90,18 +88,18 @@ public class Notification {
         
         private final Type type;
         
-        private State soundState;
-        private State desktopState;
+        private State soundState = State.OFF;
+        private State desktopState = State.OFF;
         private String matcher;
         
-        private Color foregroundColor;
-        private Color backgroundColor;
+        private Color foregroundColor = Color.BLACK;
+        private Color backgroundColor = Color.WHITE;
         private int fontSize;
         private String soundFile;
-        private long soundVolume;
+        private long soundVolume = 20;
         private int soundCooldown;
         private int soundInactiveCooldown;
-        private Collection<String> options = new ArrayList<>();
+        private List<String> options = new ArrayList<>();
         private String channel;
         
         public Builder(Type type) {
@@ -153,7 +151,7 @@ public class Notification {
             return this;
         }
         
-        public Builder setOptions(Collection<String> options) {
+        public Builder setOptions(List<String> options) {
             this.options = options;
             return this;
         }
@@ -171,7 +169,7 @@ public class Notification {
     }
     
     public final Type type;
-    public final Collection<String> options;
+    public final List<String> options;
     public final String channel;
     public final String matcher;
     private final Highlighter.HighlightItem matcherItem;
@@ -309,7 +307,7 @@ public class Notification {
             Color foregroundColor = HtmlColors.decode((String)list.get(3));
             Color backgroundColor = HtmlColors.decode((String)list.get(4));
             int fontSize = ((Number)list.get(5)).intValue();
-            Set<String> options = getStringSet(list.get(6));
+            List<String> options = getStringList(list.get(6));
             String soundFile = (String)list.get(7);
             long volume = ((Number)list.get(8)).longValue();
             int soundCooldown = ((Number)list.get(9)).intValue();
@@ -337,8 +335,8 @@ public class Notification {
         return null;
     }
     
-    private static Set<String> getStringSet(Object o) {
-        Set<String> result = new HashSet<>();
+    private static List<String> getStringList(Object o) {
+        List<String> result = new ArrayList<>();
         if (o instanceof Collection) {
             for (Object item : (Collection)o) {
                 if (item instanceof String) {

@@ -1030,7 +1030,10 @@ public class TwitchClient {
         else if (command.equals("debug")) {
             String[] split = parameter.split(" ", 2);
             String actualCommand = split[0];
-            String actualParamter = split[1];
+            String actualParamter = null;
+            if (split.length == 2) {
+                actualParamter = split[1];
+            }
             testCommands(channel, actualCommand, actualParamter);
         }
         

@@ -1,12 +1,15 @@
 
 package chatty;
 
+import chatty.gui.HtmlColors;
 import chatty.gui.WindowStateManager;
+import chatty.gui.notifications.Notification;
 import chatty.util.BackupManager;
 import chatty.util.DateTime;
 import chatty.util.hotkeys.Hotkey;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
+import java.awt.Color;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
@@ -405,7 +408,7 @@ public class SettingsManager {
         settings.addBoolean("nActivity", false);
         settings.addLong("nActivityTime", 10);
 
-        settings.addList("notifications", new ArrayList<>(), Setting.LIST);
+        settings.addList("notifications", getDefaultNotificationSettingValue(), Setting.LIST);
         settings.addList("nColorPresets", new ArrayList<>(), Setting.LIST);
 
         settings.addBoolean("tips", true);
@@ -675,6 +678,9 @@ public class SettingsManager {
                 settings.setString("timeoutButtons", currentValue+"\n/ModUnmod");
             }
         }
+        if (updatedFromBefore("0.8.6b3")) {
+            settings.putList("notifications", getDefaultNotificationSettingValue());
+        }
     }
     
     /**
@@ -738,6 +744,50 @@ public class SettingsManager {
             this.data = data;
         }
         
+    }
+    
+    /**
+     * Used both for creating a default (as the method name would suggest) and
+     * setting a value once on version change based on previous settings (note
+     * that settings are loaded after the default is set, so that will in turn
+     * use the defaults of the referenced settings).
+     * 
+     * @return 
+     */
+    private List<List> getDefaultNotificationSettingValue() {
+        String hl = settings.getString("highlightNotification");
+        String st = settings.getString("statusNotification");
+        
+        Notification.Builder hlNew = new Notification.Builder(Notification.Type.HIGHLIGHT);
+        hlNew.setForeground(Color.BLACK);
+        hlNew.setBackground(HtmlColors.decode("#FFFF65"));
+        hlNew.setDesktopEnabled(convertOldState(hl));
+        
+        Notification.Builder stNew = new Notification.Builder(Notification.Type.STREAM_STATUS);
+        stNew.setForeground(Color.BLACK);
+        stNew.setBackground(HtmlColors.decode("#FFFFF0"));
+        stNew.setDesktopEnabled(convertOldState(st));
+        if (settings.getBoolean("ignoreOfflineNotifications")) {
+            stNew.setOptions(Arrays.asList("noOffline"));
+        }
+        
+        List<List> result = new ArrayList<>();
+        result.add(new Notification(hlNew).toList());
+        result.add(new Notification(stNew).toList());
+        return result;
+    }
+    
+    private static Notification.State convertOldState(String input) {
+        switch (input) {
+            case "off": return Notification.State.OFF;
+            case "both": return Notification.State.CHANNEL_AND_APP_NOT_ACTIVE;
+            case "either": return Notification.State.CHANNEL_OR_APP_NOT_ACTIVE;
+            case "app": return Notification.State.APP_NOT_ACTIVE;
+            case "channel": return Notification.State.CHANNEL_NOT_ACTIVE;
+            case "channelActive": return Notification.State.CHANNEL_ACTIVE;
+            case "always": return Notification.State.ALWAYS;
+        }
+        return Notification.State.OFF;
     }
     
 }
