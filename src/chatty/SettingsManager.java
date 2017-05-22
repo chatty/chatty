@@ -363,7 +363,7 @@ public class SettingsManager {
         //=======
         // Sounds
         //=======
-        settings.addBoolean("sounds", false);
+        settings.addBoolean("sounds", true);
         settings.addString("soundsPath", "");
         settings.addString("soundDevice", "");
         settings.addString("highlightSound", "off");

@@ -136,6 +136,12 @@ public class NotificationSettings extends SettingsPanel {
         // Sound Settings
         //================
         JPanel soundSettings = new JPanel(new GridBagLayout());
+        
+        gbc = d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
+        JCheckBox soundsEnabled = d.addSimpleBooleanSetting("sounds", "Enable sounds (uncheck to mute)",
+                "Use this to enable/disable all sounds.");
+        soundSettings.add(soundsEnabled, gbc);
+        
         gbc = d.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(8,10,2,6);
         soundSettings.add(new JLabel("Chatty looks for sound files (.wav) in this "
@@ -206,8 +212,20 @@ public class NotificationSettings extends SettingsPanel {
         editor.setPreferredSize(new Dimension(10,260));
         tabs.add("Events", editor);
         tabs.add("Notification Settings", GuiUtil.northWrap(notificationSettings));
-        tabs.add("Sound Settings", GuiUtil.northWrap(soundSettings));
+        tabs.add("Sound Settings (Muted)", GuiUtil.northWrap(soundSettings));
 
+        soundsEnabled.addItemListener(e -> {
+            if (soundsEnabled.isSelected()) {
+                tabs.setTitleAt(2, "Sound Settings");
+            } else {
+                tabs.setTitleAt(2, "Sound Settings (Muted)");
+            }
+        });
+        
+        gbc = GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
+        notificationsPanel.add(new JLabel("Tip: Double-click on Sound column to "
+                + "directly open on the 'Sound' tab."), gbc);
+        
         //=======
         // Other
         //=======

@@ -323,12 +323,10 @@ class NotificationEditor extends TableEditor<Notification> {
             GridBagConstraints gbc;
 
             //### Basic Settings Panel ###
-            gbc = GuiUtil.makeGbc(0, 0, 1, 1);
-            gbc.anchor = GridBagConstraints.WEST;
-            optionsPanel.add(new JLabel("Type:"), gbc);
+            gbc = GuiUtil.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
+            optionsPanel.add(new JLabel("Event:"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 0, 2, 1);
-            gbc.anchor = GridBagConstraints.WEST;
+            gbc = GuiUtil.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST);
             optionsPanel.add(type, gbc);
             
             //-----------------------
@@ -512,9 +510,9 @@ class NotificationEditor extends TableEditor<Notification> {
         @Override
         public Notification showEditor(Notification preset, Component c, boolean edit, int column) {
             if (edit) {
-                dialog.setTitle("Edit notification settings");
+                dialog.setTitle("Edit notification/sound");
             } else {
-                dialog.setTitle("Add notification");
+                dialog.setTitle("Add notification/sound");
             }
             if (preset != null) {
                 current = preset;

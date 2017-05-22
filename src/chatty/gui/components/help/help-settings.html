@@ -842,50 +842,89 @@
         <a name="Sounds">Sounds</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <h3>General Sound Settings</h3>
-    <p>You can enable or disable all sounds here. Sounds are searched in the
-    displayed folder, which is the current working directory. Any valid sound
-    files in the folder should be selectable as a sound to be played. If you
-    added or removed files, you may have to use <code>Rescan folder</code> to
-    make the files show up in the list. You can open the folder in your standard
-    file browser from here to add files to it more quickly.</p>
-    
-    <p>The <strong>Output Device</strong> lets you choose the device on your
-        computer the sounds gets output to. This is kind of experimental and may
-        not work properly.</p>
-    
-    <h3>Sound Types Settings</h3>
-    <p>You can specify requirements, soundfile, volume and delay for
-        different types of events:</p>
-    <ul>
-        <li>When a message is highlighted</li>
-        <li>When a stream changes status (online/offline/changed title/changed game)</li>
-        <li>When any message in received in any open channel</li>
-        <li>When someone joins/leaves any open channel</li>
-        <li>When a new follower is detected <em>(this only works if the <a href="help.html#followers">Follower
-                    Dialog</a> is currently open)</em></li>
-    </ul>
-    <p>You can set a delay (seconds) so that the same sound won't be played twice during
-    the set number of seconds. So if e.g. 3 highlighted messages come in within
-    10 seconds and the delay is set to 15 seconds, only one sound will be played.</p>
-    
-    <p>Each sound has different options for when the sound should be played. See
-        the <a href="#Notifications">Notification Settings</a> for help on the options.</p>
+    <p>Sounds are now integrated into the <a href="#Notifications">Notifications</a>.</p>
     
     <h2>
         <a name="Notifications">Notifications</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <h3>Notifications</h3>
-    <p>You can show notifications for two kinds of things:</p>
-    <ul>
-        <li><strong>Highlights</strong> - When a message in chat is highlighted</li>
-        <li><strong>Stream Status</strong> - When a stream changes status, e.g.
-        offline -> online or changed title</li>
-    </ul>
+    <p>The <strong>Events</strong> table can contain several entries that
+        describe events and whether they should trigger a Desktop Notification
+        and/or Sound.</p>
     
-    <p>For both these you can select separately if and when they are shown:</p>
+    <p>The entries are checked from the top and only the first Notification and
+        Sound of matching events are triggered. So you could for example have
+        two "Highlights" events, the first restricted to a certain channel with
+        a Notification/Sound and the second non-restricted with just a Notification.
+        This way only highlighted messages in said channel would play a Sound
+        (and maybe have different Notification colors) and all others just show
+        the general Notification.</p>
+    
+    <p>Example:<br /><img src="Notifications_example.jpg" /></p>
+    
+    <p>Possible event types that can be selected for an entry:</p>
+    
+    <dl class="dl-settings">
+        <dt>Stream Status</dt>
+        <dd>A stream Chatty is watching (because you have it's chat open
+            or you follow it) went online/offline or changed title.</dd>
+
+        <dt>Highlights</dt>
+        <dd>Chat Messages that were highlighted.</dd>
+
+        <dt>Chat Message</dt>
+        <dd>Any Chat Message (including highlighted ones, in this case
+            the order of list entries can matter).</dd>
+        
+        <dt>Whisper</dt>
+        <dd>Any Whisper message (including highlighted ones).</dd>
+
+        <dt>User Joined &amp; User Left</dt>
+        <dd>When a user is seen entering or leaving a chat. Note that
+            this is quite unreliable, see <a href="help.html#userlist">Userlist and JOIN/PART</a>.</dd>
+
+        <dt>New Followers</dt>
+        <dd>When a new follower is detected <em>(this only works if the
+                <a href="help.html#followers">Follower Dialog</a> is
+                currently open)</em>.</dd>
+                
+        <dt>Subscriber Notification</dt>
+        <dd>When a new Subscriber/Resub notification is received in chat.</dd>
+        
+        <dt>AutoMod Message</dt>
+        <dd>When a new chat message filtered by AutoMod is received.</dd>
+    </dl>
+    
+    <h3>Settings for an entry (Notification/Sound)</h3>
+    <dl class="dl-settings">
+        <dt>Channel</dt>
+        <dd>Name of the channel this item should be restricted to.</dd>
+        
+        <dt>Match</dt>
+        <dd>Match the given text or message, in the same format as for
+            <a href="#Highlight">Highlighting</a> (although some prefixes won't
+            work unless it's a chat message).</dd>
+        
+        <dt>Notification (Tab)</dt>
+        <dd>A Desktop Notification, with customizable colors.</dd>
+        
+        <dt>Sound (Tab)</dt>
+        <dd>Play the selected Sound.</dd>
+        <dd>Specify a <code>Cooldown</code> to prevent the sound from playing
+            too often, or a <code>Passive Cooldown</code> which will only play
+            the sound if enough time between matching events has passed (whether
+            it was really played or not), for example if you want to add a sound
+            when a Chat Message comes in, but only if it's the first message in
+            a while (if messages contantly come in you probably won't need to
+            get notified).</dd>
+    </dl>
+    
+    <p>On both the <strong>Notification (Tab)</strong> and <strong>Sound (Tab)</strong>
+        you can enable/disable the according action by choosing one of the
+        following:</p>
+    
     <ul>
+        <li><strong>Enabled</strong> - No requirements, always show it</li>
         <li><strong>Off</strong> - Never show</li>
         <li><strong>When channel/app not active</strong> - Only when the channel
         isn't the currently selected tab AND when the program doesn't have focus</li>
@@ -897,50 +936,60 @@
         isn't the currently selected tab</li>
         <li><strong>When channel active</strong> - Only when the channel IS the
         currently selected tab</li>
-        <li><strong>Always</strong> - No requirements, always show it</li>
     </ul>
     
-    <p>In addition, the option <strong>Don't notify about "Stream offline"</strong> allows you
-    to never show when a stream changes status to offline, so you will only be
-    notified about streams going live or changing title/game.</p>
     
-    <h3>Notification Type / Options</h3>
-    <p>Select here whether to use the <em>Chatty Notifications</em> or the default
-        <em>System Tray Notifications</em>. This settings DOES NOT enable or
-    disable notifications altogether, just switch between the types.</p>
-    <p>If you have <em>Chatty Notifications</em> selected, you can change some
-    more options:</p>
-    <ul>
-        <li><strong>Position:</strong> In which corner the the notification appears on the screen</li>
-        <li><strong>Screen:</strong> On which screen the notification appears (<code>auto</code> means
-        it's on the same screen as the Chatty window)</li>
-        <li><strong>Display Time:</strong> How long the notification will be displayed
-        by default. This can vary a bit depending on the situation.</li>
-        <li><strong>No User Activity:</strong> This is a tricky one. If you enable
-        this, then the notification will not be closed after the defined Display Time
-        if no activity was detected in the last few seconds. This can be useful
-        to still see notifications from a few minutes ago if you were away from
-        the computer.
-        The time defines
-        when the notification will be closed no
-        matter what, so older notifications won't stay there forever if you are
-        away from the computer for a bit longer. 
-        <br /><br />Activity is tracked through two methods: 
-        The first method is tracking the system-wide mouse movements, which is
-        done through an API that may not always return accurate information
-        (e.g. if you are in a game) and it only checks the position every few
-        seconds (only the last location is saved at any time for comparison).
-        The second method detects activity only inside of Chatty, by tracking
-        button presses and mouse actions (e.g. if you type a message, open a
-        dialog etc.).</li>
+    <h3>General Notification Settings</h3>
+    <dl class="dl-settings">
+        <dt>Position</dt>
+        <dd>The corner of the screen the notification is displayed.</dd>
         
-    </ul>
+        <dt>Screen</dt>
+        <dd>On which screen the notification appears (auto means it's on the
+            same screen as the Chatty window).</dd>
+        
+        <dt>Display Time</dt>
+        <dd>How long the notification will be displayed by default. This can
+            vary a bit depending on the situation.</dd>
+        
+        <dt>No User Activity</dt>
+        <dd>This is a tricky one. If you enable this, then the notification will
+            not be closed after the defined Display Time if no activity was
+            detected in the last few seconds. This can be useful to still see
+            notifications from a few minutes ago if you were away from the
+            computer. The time defines when the notification will be closed no
+            matter what, so older notifications won't stay there forever if you
+            are away from the computer for a bit longer.</dd>
+        <dd>Activity is tracked through two methods: The first method is
+            tracking the system-wide mouse movements, which is done through an
+            API that may not always return accurate information (e.g. if you are
+            in a game) and it only checks the position every few seconds (only
+            the last location is saved at any time for comparison). The second
+            method detects activity only inside of Chatty, by tracking button
+            presses and mouse actions (e.g. if you type a message, open a dialog
+            etc.).</dd>
+    </dl>
+    
+    <h3>General Sound Settings</h3>
+    <p>You can enable or disable all sounds here. Sounds are searched in the
+    displayed folder, which is the current working directory, although you can
+    also <code>Change</code> it to a folder of your choice. If you added or removed files,
+    you may have to use <code>Rescan folder</code> to make the files show up in
+    the list of sounds selectable in the event settings. You can <code>Open</code>
+    the folder in your standard file browser from here to add files to it more
+    quickly.</p>
+    
+    <p>The <strong>Output Device</strong> lets you choose the device on your
+        computer the sounds gets output to. This is kind of experimental and may
+        not work properly.</p>
+
     <h3>Followed Streams</h3>
     <p>Enable this to make Chatty get a list of your followed streams regulary
     so it can display notifications if their status changes. This simpy allows
     Chatty to know about your followed streams, so notifications aren't the only
     advantage. It also allows it to record the viewer count and status history
     of followed live streams as long as Chatty is running.</p>
+    
     
     <h2>
         <a name="Log_to_file">Log to file</a>

@@ -226,7 +226,10 @@ public class NotificationManager {
     }
     
     private boolean playSound(Notification n, String channel) {
-        // Check state/delay, return true if played
+        // Check stuff, return true only if played
+        if (!settings.getBoolean("sounds")) {
+            return false;
+        }
         if (!checkRequirements(n.soundState, channel)) {
             return false;
         }
