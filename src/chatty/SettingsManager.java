@@ -760,7 +760,7 @@ public class SettingsManager {
         
         Notification.Builder hlNew = new Notification.Builder(Notification.Type.HIGHLIGHT);
         hlNew.setForeground(Color.BLACK);
-        hlNew.setBackground(HtmlColors.decode("#FFFF65"));
+        hlNew.setBackground(HtmlColors.decode("#FFFF79"));
         hlNew.setDesktopEnabled(convertOldState(hl));
         
         Notification.Builder stNew = new Notification.Builder(Notification.Type.STREAM_STATUS);

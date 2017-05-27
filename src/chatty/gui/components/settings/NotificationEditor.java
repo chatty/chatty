@@ -157,8 +157,15 @@ class NotificationEditor extends TableEditor<Notification> {
             } else if (column == 1) {
                 text = String.format("%s", n.getDesktopState());
             } else {
-                text = String.format("%s\n%s",
+                String cooldown = "";
+                if (n.soundCooldown > 0 || n.soundInactiveCooldown > 0) {
+                    cooldown = String.format("[%s/%s]",
+                            formatCooldown(n.soundCooldown),
+                            formatCooldown(n.soundInactiveCooldown));
+                }
+                text = String.format("%s\n%s %s",
                         n.getSoundState(),
+                        cooldown,
                         n.soundFile == null ? "No sound file" : n.soundFile);
             }
             
@@ -174,6 +181,10 @@ class NotificationEditor extends TableEditor<Notification> {
             return this;
         }
         
+    }
+    
+    private static String formatCooldown(int input) {
+        return input == 0 || input % 60 != 0 ? input+"s" : input/60+"m";
     }
 
     /**
@@ -298,7 +309,7 @@ class NotificationEditor extends TableEditor<Notification> {
                     NotificationManager.COLOR_PRESETS_SETTING_NAME,
                     foregroundColor, backgroundColor);
             colorTemplates.addPreset("Classic", "Black", "#FFFFF0");
-            colorTemplates.addPreset("Highlight", "Black", "#FFFF65");
+            colorTemplates.addPreset("Highlight", "Black", "#FFFF79");
             colorTemplates.addPreset("Black", "White", "#333333");
             colorTemplates.addPreset("Violet", "White", "BlueViolet"); // TODO: Other Chatty icon
             colorTemplates.init();
@@ -558,7 +569,7 @@ class NotificationEditor extends TableEditor<Notification> {
             } else {
                 tabs.setSelectedIndex(0);
             }
-            colorTemplates.reset();
+            colorTemplates.selectDefault();
             
             save = false;
             

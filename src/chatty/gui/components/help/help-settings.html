@@ -16,7 +16,7 @@
         | <a href="#Ignore">Ignore</a>
         | <a href="#Sounds">Sounds</a>
         | <a href="#Notifications">Notifications</a>
-        | <a href="#Log to file">Log to file</a>
+        | <a href="#Log_to_file">Log to file</a>
         | <a href="#Window">Window</a>
         | <a href="#Tabs">Tabs</a>
         | <a href="#Commands">Commands</a>
@@ -852,15 +852,21 @@
         describe events and whether they should trigger a Desktop Notification
         and/or Sound.</p>
     
-    <p>The entries are checked from the top and only the first Notification and
-        Sound of matching events are triggered. So you could for example have
-        two "Highlights" events, the first restricted to a certain channel with
-        a Notification/Sound and the second non-restricted with just a Notification.
-        This way only highlighted messages in said channel would play a Sound
-        (and maybe have different Notification colors) and all others just show
-        the general Notification.</p>
+    <p>The entries are checked from the top and only the first enabled
+        Notification and Sound of matching events are chosen, and then triggered
+        if the Cooldowns allow it (given that any are configured).</p>
     
-    <p>Example:<br /><img src="Notifications_example.jpg" /></p>
+    <p>Example: You could have two "Highlights" events, the first restricted to
+        a certain channel with a Notification/Sound and the second
+        non-restricted with just a Notification. This way only Highlights in
+        said channel would play a Sound (and maybe have different Notification
+        colors) and all others just show a Notification. Note that if you were
+        to switch those entries, then the channel-restricted one would never be
+        chosen, because the non-restricted one already catches everything. So as
+        a general rule, the more specific/restricted entries should always come
+        first.</p>
+    
+    <p><img src="Notifications_example.jpg" /></p>
     
     <p>Possible event types that can be selected for an entry:</p>
     
@@ -910,13 +916,22 @@
         
         <dt>Sound (Tab)</dt>
         <dd>Play the selected Sound.</dd>
-        <dd>Specify a <code>Cooldown</code> to prevent the sound from playing
-            too often, or a <code>Passive Cooldown</code> which will only play
-            the sound if enough time between matching events has passed (whether
-            it was really played or not), for example if you want to add a sound
-            when a Chat Message comes in, but only if it's the first message in
-            a while (if messages contantly come in you probably won't need to
-            get notified).</dd>
+        <dd>Specify a <code>Cooldown</code> to prevent this sound from playing
+            too often.</dd>
+        <dd><code>Passive Cooldown</code> will only play the sound if enough
+            time has passed since this event was last matched. Or in other words
+            it will reset the Cooldown every time the sound <em>would</em> have
+            been played, even if it actually wasn't because another sound took
+            precedence or the regular <code>Cooldown</code> didn't allow it.</dd>
+        <dd>For example if your chat isn't very busy and you want to get
+            notified of new messages so you notice, then you could add an event
+            of type <code>Chat Message</code> with a <code>Passive Cooldown</code>
+            of <code>5m</code>, which means the sound only plays if someone
+            writes a message after the chat has been silent for at least 5 minutes.
+            If on the other hand you would set it as a regular <code>Cooldown</code>
+            it would play the sound after 5 minutes even if the chat has been
+            busy non-stop, at which point you probably wouldn't need to be alerted
+            since you're already paying attention to it.</dd>
     </dl>
     
     <p>On both the <strong>Notification (Tab)</strong> and <strong>Sound (Tab)</strong>

@@ -47,11 +47,43 @@
     
     
     <h2>
-        <a name="0.8.5.1">Version 0.8.6</a> <a name="latest">(This one!)</a> (2017-??-??)
+        <a name="0.8.6">Version 0.8.6</a> <a name="latest">(This one!)</a> (2017-05-27)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>This version features a new Notification system, which combines both
+        Desktop Notifications and Sounds. It is more flexible to configure and
+        can be easier extended on the programming side. It has more types of
+        events (like Whispers or AutoMod messages), better matching of events
+        (matching text or restricting to a channel) and things like configurable
+        colors for Desktop Notifications.</p>
+    
+    <p><em>Note:</em> While your previous Desktop Notification Settings should be
+        carried over, you will have to reconfigure any Sounds in the new system
+        (if you used any).</p>
+    
 <pre>
-Nothing here yet
+### General
+- Added new Notification system
+- Added support for new sub messages
+- Added button to sort some setting lists alphabetically
+- Changed Emote Context Menu entry "Twitch Profile" to "Twitch Stream"
+- Some other Settings Dialog and GUI improvements
+- Made Addressbook mod commands channel setting case-insensitive
+- Some debug output improvements
+- Updated help
+
+### Custom Commands
+- Added custom replacements
+- Added $ifeq function
+- Added feature to add channel-specific Custom Commands
+- Made identifiers case-insensitive
+- Allow absolute positioning of Custom Menu Items
+
+### Bugfixes
+- Fixed word wrapping issues (hopefully)
+- Fixed selection in chat window moving around
+- Added workaround for error occuring in Java 1.8.0_131 (the actual cause of the
+  error is still unclear, but hopefully this works well enough)
 </pre>
     
     <h2>

@@ -2,7 +2,6 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.notifications.Notification;
 import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,12 +9,18 @@ import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
+ * Provides presets/templates for the given ColorSetting objects and saves it in
+ * the specified setting. Colors are saved based on the order of the
+ * ColorSetting objects, so changing the order would break things, although
+ * adding new ColorSetting objects is fine.
+ * 
+ * Colors are stored as String objects, which also allows for more readable
+ * color names like "Black" or "BlueViolet".
  *
  * @author tduva
  */
@@ -99,10 +104,16 @@ public class ColorTemplates extends JPanel {
         init();
     }
     
-    public void reset() {
+    /**
+     * Select default preset.
+     */
+    public void selectDefault() {
         selection.setSelectedIndex(0);
     }
     
+    /**
+     * Initialize presets lists after adding hardcoded presets.
+     */
     public void init() {
         selection.clear();
         selection.add((Preset)null, "-- Color Presets --");
@@ -114,6 +125,9 @@ public class ColorTemplates extends JPanel {
         }
     }
     
+    /**
+     * Update Save button state.
+     */
     private void update() {
         //System.out.println("update");
         Preset p = selection.getSettingValue();
@@ -189,6 +203,11 @@ public class ColorTemplates extends JPanel {
         saveToSettings();
     }
     
+    /**
+     * Gets list of colors currently in the ColorSetting objects.
+     * 
+     * @return 
+     */
     private List<String> getCurrentColors() {
         List<String> colors = new ArrayList<>();
         for (ColorSetting s : colorSettings) {

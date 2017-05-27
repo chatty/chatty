@@ -277,6 +277,10 @@ public class Notification {
         return matcherItem != null;
     }
     
+    public boolean hasSound() {
+        return soundFile != null && !soundFile.isEmpty();
+    }
+    
     public String getMatcherString() {
         return matcher == null ? "" : matcher;
     }

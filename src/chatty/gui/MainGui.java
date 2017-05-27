@@ -2568,9 +2568,6 @@ public class MainGui extends JFrame implements Runnable {
                 if (highlighted) {
                     highlightedMessages.addMessage(channel, user, text, action,
                             tagEmotes, bits, whisper);
-                    if (!highlighter.getLastMatchNoSound()) {
-                        //playHighlightSound(channel);
-                    }
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(chan);
                     } else {

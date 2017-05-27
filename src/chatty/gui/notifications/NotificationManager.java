@@ -213,11 +213,20 @@ public class NotificationManager {
                 
                 NotificationData d = c.check(n);
                 if (d != null) {
-                    if (!noNotify && !shown) {
-                        shown = showNotification(n, d.title, d.message, channel, channel);
+                    if (!shown
+                            && !noNotify
+                            && checkRequirements(n.desktopState, channel)) {
+                        shown = true;
+                        showNotification(n, d.title, d.message, channel, channel);
                     }
-                    if (!noSound && !played) {
-                        played = playSound(n, channel);
+                    if (!played
+                            && !noSound
+                            && checkRequirements(n.soundState, channel)
+                            && n.hasSound()) {
+                        played = true;
+                        // This may not actually play the sound, if waiting for
+                        // cooldown
+                        playSound(n, channel);
                     }
                     n.setMatched();
                 }
@@ -225,21 +234,21 @@ public class NotificationManager {
         }
     }
     
+    public boolean showNotification(Notification n, String title, String message,
+            String data, String channel) {
+        main.showNotification(title, message, n.foregroundColor, n.backgroundColor, data);
+        return true;
+    }
+    
     private boolean playSound(Notification n, String channel) {
         // Check stuff, return true only if played
         if (!settings.getBoolean("sounds")) {
-            return false;
-        }
-        if (!checkRequirements(n.soundState, channel)) {
             return false;
         }
         if (n.lastPlayedAgo() < n.soundCooldown*1000) {
             return false;
         }
         if (n.lastMatchedAgo() < n.soundInactiveCooldown*1000) {
-            return false;
-        }
-        if (n.soundFile == null || n.soundFile.isEmpty()) {
             return false;
         }
         n.setSoundPlayed();
@@ -256,17 +265,7 @@ public class NotificationManager {
         }
         return true;
     }
-    
-    public boolean showNotification(Notification n, String title, String message,
-            String data, String channel) {
-        if (!checkRequirements(n.desktopState, channel)) {
-            return false;
-        }
-        
-        main.showNotification(title, message, n.foregroundColor, n.backgroundColor, data);
-        return true;
-    }
-    
+
     /**
      * Checks the requirements that depend on whether the app and/or the given
      * channel is active.

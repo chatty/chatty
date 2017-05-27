@@ -85,7 +85,7 @@ public class HighlightSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
-        ListSelector items = d.addListSetting("highlight", 220, 250, true, false);
+        ListSelector items = d.addListSetting("highlight", 220, 250, true, true);
         items.setInfo(INFO_HIGHLIGHTS);
         items.setDataFormatter(new DataFormatter<String>() {
 

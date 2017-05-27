@@ -54,7 +54,7 @@ public class Chatty {
      * by points. May contain a single "b" for beta versions, anything following
      * it will be ignored for version checking.
      */
-    public static final String VERSION = "0.8.6b3";
+    public static final String VERSION = "0.8.6";
     
     /**
      * Enable Version Checker (if you compile and distribute this yourself, you

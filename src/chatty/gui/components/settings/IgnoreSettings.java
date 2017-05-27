@@ -102,7 +102,7 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
-        ListSelector items = d.addListSetting("ignore", 390, 160, true, false);
+        ListSelector items = d.addListSetting("ignore", 390, 160, true, true);
         items.setInfo(INFO_IGNORE);
         items.setDataFormatter(new DataFormatter<String>() {
 
