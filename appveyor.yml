@@ -1,0 +1,12 @@
+version: 1.0.{build}
+environment:
+  PATH: C:\Program Files (x86)\Java\jdk1.8.0;%PATH%
+build_script:
+- cmd: gradlew release
+artifacts:
+- path: build\releases\*
+- path: build\libs\*
+cache:
+  - build
+  - .gradle
+  - C:\Users\appveyor\.gradle
