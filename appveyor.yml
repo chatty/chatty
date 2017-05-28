@@ -7,6 +7,9 @@ artifacts:
 - path: build\releases\*
 - path: build\libs\*
 cache:
-  - build
-  - .gradle
   - C:\Users\appveyor\.gradle
+  - .gradle
+  - build\classes
+  - build\dependency-cache
+  - build\libs
+  - build\resources
