@@ -27,10 +27,10 @@ public class Notification {
 
     public enum Type {
         
-        STREAM_STATUS("Stream Status",createStreamStatusSubtypes()),
-        HIGHLIGHT("Highlights"),
-        MESSAGE("Chat Message"),
-        WHISPER("Whisper"),
+        STREAM_STATUS("Stream Status", createStreamStatusSubtypes()),
+        HIGHLIGHT("Highlights", createMessageSubtypes()),
+        MESSAGE("Chat Message", createMessageSubtypes()),
+        WHISPER("Whisper", createMessageSubtypes()),
         JOIN("User Joined"),
         PART("User Left"),
         NEW_FOLLOWERS("New Followers"),
@@ -52,6 +52,12 @@ public class Notification {
         private static Map<String, String> createStreamStatusSubtypes() {
             Map<String, String> result = new LinkedHashMap<>();
             result.put("noOffline", "Not when: 'Stream offline'");
+            return result;
+        }
+        
+        private static Map<String, String> createMessageSubtypes() {
+            Map<String, String> result = new LinkedHashMap<>();
+            result.put("own", "Trigger on own messages as well");
             return result;
         }
     }

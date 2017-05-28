@@ -106,8 +106,9 @@ public class ContextMenuHelper {
                     if (sep) {
                         m.addSeparator(livestreamerMenu);
                     }
-                    if (match.charAt(0) == '{')
+                    if (match.charAt(0) == '{') {
                     	match = livestreamerQualities.substring(matcher.start()+1, matcher.end()-1);
+                    }
                     m.addItem("livestreamerQ"+match, match, livestreamerMenu);
                     sep = false;
                 }

@@ -14,8 +14,8 @@
     is a commandline program that can be used to watch streams in a player like
     VLC Player. It has to be downloaded and installed seperately from Chatty.</p>
     
-    <p><em>Note:</em> Since Livestreamer doesn't appear to be developed anymore, there is an
-        updated fork called Streamlink, which works the same way. If you want to
+    <p><strong>Note:</strong> Since Livestreamer doesn't appear to be developed anymore, there is an
+        updated fork called <a href="https://streamlink.github.io/">Streamlink</a>, which works the same way. If you want to
         use Streamlink with Chatty, simply change the <code>Base command</code>
         to <code>streamlink</code> (or, as with Livestreamer, put the whole path to the program
         if that is required in your case). Currently Streamlink appears to be using the
@@ -61,10 +61,13 @@
             to select a quality in the dialog.</dd>
         <dd>Separate qualities by space or comma, add a <code>|</code> (vertical
             bar) to add a separator to the menu.</dd>
+        <dd>Enclose qualities in brackets <code>{ }</code> if you need to add
+            commas, for example if you want to specify a list of fallback qualities.</dd>
         <dd><em>Examples:</em>
             <ul>
                 <li><code>Best, High, Worst | Select</code></li>
                 <li><code>Source High Medium Low Mobile | Select</code></li>
+                <li><code>Best, {720p,720p60}, Select, {Audio,audio_only}</code></li>
             </ul>
         </dd>
         
@@ -108,7 +111,7 @@
     <h2><a name="troubleshooting">Troubleshooting</a></h2>
     <h3>Bad Request</h3>
     <p>Recently Twitch changed their API to require a Client ID being supplied,
-        which Livestreamer doesn't do by default, so may get a Bad Request
+        which Livestreamer doesn't do by default, so you may get a Bad Request
         error. You can fix this either by:</p>
     <ul>
         <li>Enabling the <code>Use Authorization</code> setting to authenticate
@@ -119,6 +122,8 @@
             <code>livestreamer --http-header Client-ID=ewvlchtxgqq88ru9gmfp1gmyt6h2b93</code>
         </li>
     </ul>
+    <p>If you're using Streamlink this shouldn't be an issue for you since it
+        has been updated accordingly.</p>
     
     <h3>Can't run Livestreamer</h3>
     <p>If you get an error like <code>Error: java.io.IOException: Cannot run
@@ -130,7 +135,7 @@
     not come bundled with Chatty. If you are sure it is installed (and you maybe can
     run it from the commandline just fine), you may have to tell Chatty the full
     path to the Livestreamer executable for it to work by entering it in the
-    <code>Base command</code> field. See the Settings section above for examples
+    <code>Base command</code> field. See the <a href="#settings">Settings section</a> above for examples
     and help on that.</p>
 </body>
 </html>

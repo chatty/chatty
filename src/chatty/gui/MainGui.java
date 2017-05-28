@@ -2575,14 +2575,17 @@ public class MainGui extends JFrame implements Runnable {
                     }
                     notificationManager.highlight(user, text,
                             highlighter.getLastMatchNoNotification(),
-                            highlighter.getLastMatchNoSound());
+                            highlighter.getLastMatchNoSound(),
+                            isOwnMessage);
                 } else if (!ignored) {
                     if (whisper) {
-                        notificationManager.whisper(user, text);
+                        notificationManager.whisper(user, text, isOwnMessage);
                     } else {
-                        notificationManager.message(user, text);
+                        notificationManager.message(user, text, isOwnMessage);
                     }
-                    channels.setChannelNewMessage(chan);
+                    if (!isOwnMessage) {
+                        channels.setChannelNewMessage(chan);
+                    }
                 }
                 
                 // Do stuff if ignored, without printing message
