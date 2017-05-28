@@ -29,7 +29,7 @@ public class ContextMenuHelper {
      * Pattern for finding the qualities in the Livestreamer qualities setting
      */
     private static final Pattern LIVESTREAMER_PATTERN
-            = Pattern.compile("(\\|)|([^,\\s]+)");
+            = Pattern.compile("(\\|)|(?:\\{(.+?)\\})|([^,\\s]+)");
     
     /**
      * Adds menu items to the given ContextMenu that provide ways to do stream
@@ -106,6 +106,8 @@ public class ContextMenuHelper {
                     if (sep) {
                         m.addSeparator(livestreamerMenu);
                     }
+                    if (match.charAt(0) == '{')
+                    	match = livestreamerQualities.substring(matcher.start()+1, matcher.end()-1);
                     m.addItem("livestreamerQ"+match, match, livestreamerMenu);
                     sep = false;
                 }
