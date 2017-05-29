@@ -147,6 +147,7 @@ public class MainGui extends JFrame implements Runnable {
     // Helpers
     private final Highlighter highlighter = new Highlighter();
     private final Highlighter ignoreChecker = new Highlighter();
+    private final Highlighter autoReplyChecker = new Highlighter();
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
     private final StateUpdater state = new StateUpdater();
@@ -501,7 +502,7 @@ public class MainGui extends JFrame implements Runnable {
                 toggleHighlightedMessages();
             }
         });
-        
+
         addMenuAction("dialog.ignoredMessages", "Dialog: Ignored Messages (toggle)",
                 "Ignored", KeyEvent.VK_I, new AbstractAction() {
 
@@ -829,6 +830,7 @@ public class MainGui extends JFrame implements Runnable {
         }
         updateHighlight();
         updateIgnore();
+        updateAutoReply();
         updateHistoryRange();
         updateNotificationSettings();
         updateChannelsSettings();
@@ -906,7 +908,11 @@ public class MainGui extends JFrame implements Runnable {
     private void updateIgnore() {
         ignoreChecker.update(StringUtil.getStringList(client.settings.getList("ignore")));
     }
-    
+
+    private void updateAutoReply() {
+        autoReplyChecker.update(StringUtil.getStringList(client.settings.getList("autoReply")));
+    }
+
     private void updateCustomContextMenuEntries() {
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.CHANNEL, client.settings.getString("channelContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
@@ -1620,7 +1626,7 @@ public class MainGui extends JFrame implements Runnable {
          * Handles context menu events with a single name (stream/channel). Just
          * packs it into a list for use in another method.
          * 
-         * @param cmd
+         * @param e
          * @param name 
          */
         private void nameBasedStuff(ActionEvent e, String name) {
@@ -1666,7 +1672,7 @@ public class MainGui extends JFrame implements Runnable {
          * listeners may be registered), it also checks if it's actually one of
          * the commands it handles.
          * 
-         * @param cmd The command
+         * @param e The command
          * @param streams The list of stream or channel names
          */
         private void streamStuff(ActionEvent e, Collection<String> streams) {
@@ -2555,7 +2561,8 @@ public class MainGui extends JFrame implements Runnable {
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
-                
+
+                boolean autoReply = (client.settings.getBoolean("autoReplyEnabled") && autoReplyChecker.check(user, text));
                 boolean highlighted = false;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
@@ -2628,6 +2635,9 @@ public class MainGui extends JFrame implements Runnable {
                     user.setHighlighted();
                 }
                 updateUserInfoDialog(user);
+                if (autoReply && !autoReplyChecker.getLastResp().equals(text)) {
+                    client.textInput(channel, autoReplyChecker.getLastResp());
+                }
             }
         });
     }
@@ -3563,7 +3573,7 @@ public class MainGui extends JFrame implements Runnable {
      * The tokenGetDialog is closed if necessary.
      * 
      * @param token The token that was verified
-     * @param username The usernamed that was received for this token. If this
+     * @param tokenInfo The usernamed that was received for this token. If this
      *      is null then an error occured, if it is empty then the token was
      *      invalid.
      */
@@ -3997,6 +4007,8 @@ public class MainGui extends JFrame implements Runnable {
                     updateHighlight();
                 } else if (setting.equals("ignore")) {
                     updateIgnore();
+                } else if (setting.equals("autoReply")) {
+                    updateAutoReply();
                 } else if (setting.equals("hotkeys")) {
                     hotkeyManager.loadFromSettings(client.settings);
                 }

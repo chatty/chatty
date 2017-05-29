@@ -477,6 +477,10 @@ public class SettingsManager {
         settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
         settings.addBoolean("ignoredUsersHideInGUI", true);
 
+        // Auto Reply
+        settings.addList("autoReply", new ArrayList(), Setting.STRING);
+        settings.addBoolean("autoReplyEnabled", false);
+
         // Chat Logging
         settings.addString("logMode", "always");
         settings.addBoolean("logMod", true);

@@ -87,6 +87,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_COLORS = "Colors";
     private static final String PANEL_HIGHLIGHT = "Highlight";
     private static final String PANEL_IGNORE = "Ignore";
+    private static final String PANEL_AUTOREPLY = "Auto Reply";
     private static final String PANEL_HISTORY = "History";
     private static final String PANEL_SOUND = "Sounds";
     private static final String PANEL_NOTIFICATIONS = "Notifications";
@@ -123,6 +124,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         PANEL_NAMES,
         PANEL_HIGHLIGHT,
         PANEL_IGNORE,
+        PANEL_AUTOREPLY,
         PANEL_HISTORY,
         PANEL_SOUND,
         PANEL_NOTIFICATIONS,
@@ -200,6 +202,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new ColorSettings(this), PANEL_COLORS);
         cards.add(new HighlightSettings(this), PANEL_HIGHLIGHT);
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);
+        cards.add(new AutoReplySettings(this), PANEL_AUTOREPLY);
         cards.add(new HistorySettings(this), PANEL_HISTORY);
         cards.add(new SoundSettings(this), PANEL_SOUND);
         notificationSettings = new NotificationSettings(this, settings);
