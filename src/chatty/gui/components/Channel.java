@@ -228,7 +228,7 @@ public class Channel extends JPanel {
             "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteonly", "emoteonlyoff",
             "connection", "uptime", "dir", "wdir", "openDir", "openWdir", "releaseInfo", "openBackupDir",
             "clearChat", "refresh", "changetoken", "testNotification", "server",
-            "set", "add", "clearSetting", "remove", "customCompletion",
+            "set", "add", "clearSetting", "remove", "customCompletion", "followers", "followersoff",
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",

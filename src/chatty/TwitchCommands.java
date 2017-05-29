@@ -90,6 +90,12 @@ public class TwitchCommands {
         else if (command.equals("r9koff")) {
             r9kOff(channel);
         }
+        else if (command.equals("followers")) {
+            followersOn(channel, parameter);
+        }
+        else if (command.equals("followersoff")) {
+            followersOff(channel);
+        }
         else if (command.equals("mod")) {
             commandMod(channel, parameter);
         }
@@ -366,6 +372,20 @@ public class TwitchCommands {
     public void r9kOff(String channel) {
         if (onChannel(channel, true)) {
             sendMessage(channel,".r9kbetaoff", "Trying to turn r9k mode off..");
+        }
+    }
+    
+    public void followersOn(String channel, String duration) {
+        if (duration == null || duration.isEmpty()) {
+            sendMessage(channel,".followers ", "Trying to turn on followers only mode..");
+        } else {
+            sendMessage(channel,".followers "+duration, "Trying to turn on followers only mode for "+duration+"..");
+        }
+    }
+    
+    public void followersOff(String channel) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel,".followersoff", "Trying to turn followers only mode off..");
         }
     }
     
