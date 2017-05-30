@@ -1857,6 +1857,8 @@ public class MainGui extends JFrame implements Runnable {
 
     private class ChannelChangeListener implements ChangeListener {
         
+        private boolean openedFirstChannel = false;
+        
         /**
          * When the focus changes to a different channel (either by changing
          * a tab in the main window or changing focus to a different popout
@@ -1871,6 +1873,16 @@ public class MainGui extends JFrame implements Runnable {
             emotesDialog.updateStream(channels.getLastActiveChannel().getStreamName());
             moderationLog.setChannel(channels.getLastActiveChannel().getStreamName());
             autoModDialog.setChannel(channels.getLastActiveChannel().getStreamName());
+            if (!openedFirstChannel
+                    && channels.getLastActiveChannel().getType() == Channel.Type.CHANNEL) {
+                openedFirstChannel = true;
+                if (adminDialog.isVisible()) {
+                    openChannelAdminDialog();
+                }
+                if (followerDialog.isVisible()) {
+                    openFollowerDialog();
+                }
+            }
         }
     }
     

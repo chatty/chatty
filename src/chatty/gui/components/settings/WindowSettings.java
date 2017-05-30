@@ -3,13 +3,10 @@ package chatty.gui.components.settings;
 
 import chatty.gui.WindowStateManager;
 import java.awt.GridBagConstraints;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
 
 /**
  *
@@ -42,6 +39,7 @@ public class WindowSettings extends SettingsPanel {
                 "Moves the dialogs when you move the main window."),
                 d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
 
+        
         JPanel other = addTitledPanel("Other", 1);
         
         other.add(d.addSimpleBooleanSetting("urlPrompt", "Open URL Prompt",
