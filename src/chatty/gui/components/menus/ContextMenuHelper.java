@@ -103,6 +103,7 @@ public class ContextMenuHelper {
             boolean sep = false;
             while (matcher.find()) {
                 String match = matcher.group();
+                String displayName = "";
                 if (match.equals("|")) {
                     sep = true;
                 } else {
@@ -110,9 +111,11 @@ public class ContextMenuHelper {
                         m.addSeparator(livestreamerMenu);
                     }
                     if (match.charAt(0) == '{') {
-                    	match = livestreamerQualities.substring(matcher.start()+1, matcher.end()-1);
+                        match = livestreamerQualities.substring(matcher.start()+1, matcher.end()-1);
+                        displayName = match.substring(0, match.indexOf(","));
+                        match = match.substring(match.indexOf(",")+1);
                     }
-                    m.addItem("livestreamerQ"+match, match, livestreamerMenu);
+                    m.addItem("livestreamerQ"+match, displayName, livestreamerMenu);
                     sep = false;
                 }
             }
