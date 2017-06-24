@@ -90,7 +90,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
      * @param info 
      */
     public void addStream(StreamInfo info) {
-        if (info.isValid() && info.getOnline()) {
+        if (info.isValidEnough() && info.getOnline()) {
             if (data.contains(info)) {
                 data.remove(info);
             }
@@ -122,7 +122,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
         lastChecked = System.currentTimeMillis();
         Set<StreamInfo> remove = new HashSet<>();
         for (StreamInfo info : data) {
-            if (!info.isValid() || !info.getOnline()) {
+            if (!info.isValidEnough() || !info.getOnline()) {
                 remove.add(info);
             }
         }
@@ -332,7 +332,8 @@ public class LiveStreamsList extends JList<StreamInfo> {
             }
             
             // Add Borders
-            String title = String.format("%s (%s | %s)",
+            String title = String.format("%s%s (%s | %s)",
+                    info.getStreamTypeString(),
                     info.getCapitalizedName(),
                     Helper.formatViewerCount(info.getViewers()),
                     DateTime.agoUptimeCompact(info.getTimeStartedWithPicnic()));

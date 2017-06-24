@@ -17,12 +17,15 @@ public class UserContextMenu extends ContextMenu {
     
     private final ContextMenuListener listener;
     private final User user;
+    private final String autoModMsgId;
     
     private static final String MISC_MENU = "Miscellaneous";
     
-    public UserContextMenu(User user, ContextMenuListener listener) {
+    public UserContextMenu(User user, String autoModMsgId,
+            ContextMenuListener listener) {
         this.listener = listener;
         this.user = user;
+        this.autoModMsgId = autoModMsgId;
         
         addItem("userinfo", "User: "+user.getDisplayNick());
         addSeparator();
@@ -30,6 +33,11 @@ public class UserContextMenu extends ContextMenu {
         addSeparator();
         addItem("join","Join #"+user.getName());
         addSeparator();
+        if (autoModMsgId != null) {
+            addItem("autoModApprove", "Approve");
+            addItem("autoModDeny", "Deny");
+            addSeparator();
+        }
         
         // Misc Submenu
         addItem("copyNick", "Copy Name", MISC_MENU);
@@ -83,7 +91,7 @@ public class UserContextMenu extends ContextMenu {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (listener != null) {
-            listener.userMenuItemClicked(e, user);
+            listener.userMenuItemClicked(e, user, autoModMsgId);
         }
     }
 }

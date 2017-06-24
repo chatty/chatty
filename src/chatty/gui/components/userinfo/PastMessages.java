@@ -94,6 +94,10 @@ public class PastMessages extends JTextArea {
             }
             else if (m.getType() == User.Message.AUTO_MOD_MESSAGE) {
                 User.AutoModMessage ma = (User.AutoModMessage)m;
+                if (!StringUtil.isNullOrEmpty(currentMessageId)
+                        && currentMessageId.equals(ma.id)) {
+                    b.append(">");
+                }
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
                 b.append("Filtered by AutoMod: ").append(ma.message);
                 b.append("\n");

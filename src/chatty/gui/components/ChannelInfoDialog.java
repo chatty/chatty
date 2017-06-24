@@ -3,12 +3,15 @@ package chatty.gui.components;
 
 import chatty.gui.LinkListener;
 import chatty.gui.UrlOpener;
+import chatty.gui.components.admin.StatusHistoryEntry;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import static chatty.util.DateTime.H;
 import static chatty.util.DateTime.S;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.StreamInfo;
+import chatty.util.api.StreamInfo.StreamType;
+import chatty.util.api.StreamInfoHistoryItem;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -29,13 +32,16 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     private static final String STATUS_LABEL_TEXT = "Status:";
     private static final String STATUS_LABEL_TEXT_HISTORY = "Status (History):";
     
+    private static final String GAME_LABEL_TEXT = "Playing:";
+    private static final String GAME_LABEL_TEXT_VOD = "VODCAST / Playing:";
+    
     private final JLabel statusLabel = new JLabel("Status:");
     private final ExtendedTextPane title = new ExtendedTextPane();
     
     private final JLabel onlineSince = new JLabel();
-    private boolean showWithPicnic;
+    private boolean historyItemSelected;
     
-    private final JLabel gameLabel = new JLabel("Playing:");
+    private final JLabel gameLabel = new JLabel(GAME_LABEL_TEXT);
     private final JTextField game = new JTextField();
     
     private final LinkLabel communityLabel;
@@ -69,14 +75,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         
         gbc = makeGbc(1,0,1,1);
         gbc.anchor = GridBagConstraints.EAST;
-        onlineSince.addMouseListener(new MouseAdapter() {
-            
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                showWithPicnic = !showWithPicnic;
-                updateOnlineTime();
-            }
-        });
         add(onlineSince, gbc);
         
         title.setEditable(false);
@@ -135,7 +133,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                updateOnlineTime();
+                updateOnlineTime(currentStreamInfo);
             }
         });
         timer.setRepeats(true);
@@ -156,7 +154,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             name += " ("+streamInfo.getCapitalizedName()+")";
         }
         this.setTitle("Channel: "+name+(streamInfo.getFollowed() ? " (followed)" : ""));
-        String communityText = "";
         if (streamInfo.isValid() && streamInfo.getOnline()) {
             statusText = streamInfo.getTitle();
             gameText = streamInfo.getGame();
@@ -165,30 +162,14 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             }
             timeStarted = streamInfo.getTimeStarted();
             onlineSince.setText(null);
-            onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(timeStarted));
-            Community community = streamInfo.getCommunity();
-            if (community != null) {
-                communityText = String.format("[community:%s %s]",
-                        community.getName(),
-                        community.getName());
-            }
+            
+            updateCommunity(streamInfo.getCommunity());
+            updateStreamType(streamInfo.getStreamType());
         }
         else if (streamInfo.isValid()) {
             statusText = "Stream offline";
             gameText = "";
             timeStarted = -1;
-            onlineSince.setText("Offline");
-            if (streamInfo.getLastOnlineTime() != -1) {
-                String lastBroadcastTime = formatTime(streamInfo.getTimeStarted(), streamInfo.getLastOnlineTime());
-                if (streamInfo.getTimeStarted() != streamInfo.getTimeStartedWithPicnic()) {
-                    String withPicnic = formatTime(streamInfo.getTimeStartedWithPicnic(), streamInfo.getLastOnlineTime());
-                    onlineSince.setToolTipText("Last broadcast length (probably approx.): " + lastBroadcastTime+" (With PICNIC: "+withPicnic+")");
-                } else {
-                    onlineSince.setToolTipText("Last broadcast length (probably approx.): " + lastBroadcastTime);
-                }
-            } else {
-                onlineSince.setToolTipText(null);
-            }
         }
         else {
             statusText = "[No Stream Information]";
@@ -199,10 +180,9 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
         title.setText(statusText);
         game.setText(gameText);
-        communityLabel.setText(communityText);
         history.setHistory(streamInfo.getStream(), streamInfo.getHistory());
         currentStreamInfo = streamInfo;
-        updateOnlineTime();
+        updateOnlineTime(streamInfo);
     }
     
     /**
@@ -217,22 +197,66 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
     }
     
-    private void updateOnlineTime() {
-        if (timeStarted != -1) {
-            long withPicnic = currentStreamInfo.getTimeStartedWithPicnic();
-            if (withPicnic != timeStarted) {
-                onlineSince.setText("Online: " + formatTime(timeStarted) + " (" + formatTime(withPicnic)+")");
-                onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(timeStarted)
-                        +" (With PICNIC: "
-                        +DateTime.formatFullDatetime(withPicnic)+")");
-            } else {
-                onlineSince.setText("Online: " + formatTime(timeStarted));
-            }
+    private void updateCommunity(Community community) {
+        if (community != null && community != Community.EMPTY) {
+            communityLabel.setText(String.format("[community:%s %s]",
+                    community.getName(),
+                    community.getName()));
+        } else {
+            communityLabel.setText(null);
         }
     }
     
-    private static String formatTime(long time) {
-        return formatDuration(System.currentTimeMillis() - time);
+    private void updateStreamType(StreamType streamType) {
+        if (streamType == StreamType.WATCH_PARTY) {
+            gameLabel.setText(GAME_LABEL_TEXT_VOD);
+        } else {
+            gameLabel.setText(GAME_LABEL_TEXT);
+        }
+    }
+    
+    private void updateOnlineTime(StreamInfo info) {
+        if (historyItemSelected) {
+            return;
+        }
+        if (info == null) {
+            onlineSince.setText(null);
+        } else if (info.isValid() && info.getOnline()) {
+            updateOnlineTime(info.getTimeStarted(), info.getTimeStartedWithPicnic(), System.currentTimeMillis());
+        } else if (info.isValid()) {
+            onlineSince.setText("Offline");
+            if (info.getLastOnlineTime() != -1) {
+                String lastBroadcastTime = formatTime(info.getTimeStarted(), info.getLastOnlineTime());
+                if (info.getTimeStarted() != info.getTimeStartedWithPicnic()) {
+                    String withPicnic = formatTime(info.getTimeStartedWithPicnic(), info.getLastOnlineTime());
+                    onlineSince.setToolTipText("Last broadcast length (probably approx.): " + lastBroadcastTime+" (With PICNIC: "+withPicnic+")");
+                } else {
+                    onlineSince.setToolTipText("Last broadcast length (probably approx.): " + lastBroadcastTime);
+                }
+            } else {
+                onlineSince.setToolTipText(null);
+            }
+        } else {
+            onlineSince.setText(null);
+        }
+    }
+    
+    private void updateOnlineTime(StreamInfoHistoryItem item) {
+        updateOnlineTime(item.getStreamDuration(), item.getStreamDurationWithPicnic(), item.getTime());
+    }
+    
+    private void updateOnlineTime(long started, long withPicnic, long current) {
+        if (started != -1) {
+            if (withPicnic != started) {
+                onlineSince.setText("Online: " + formatTime(started, current) + " (" + formatTime(withPicnic, current)+")");
+                onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(started)
+                        +" (With PICNIC: "
+                        +DateTime.formatFullDatetime(withPicnic)+")");
+            } else {
+                onlineSince.setText("Online: " + formatTime(started, current));
+                onlineSince.setToolTipText("Stream started: "+DateTime.formatFullDatetime(timeStarted));
+            }
+        }
     }
     
     private static String formatTime(long time, long time2) {
@@ -254,17 +278,25 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     }
 
     @Override
-    public void itemSelected(int viewers, String historyTitle, String historyGame) {
-        title.setText(historyTitle);
-        game.setText(historyGame);
+    public void itemSelected(StreamInfoHistoryItem item) {
+        historyItemSelected = true;
+        title.setText(item.getTitle());
+        game.setText(item.getGame());
         statusLabel.setText(STATUS_LABEL_TEXT_HISTORY);
+        updateCommunity(item.getCommunity());
+        updateStreamType(item.getStreamType());
+        updateOnlineTime(item);
     }
     
     @Override
     public void noItemSelected() {
+        historyItemSelected = false;
         this.title.setText(statusText);
         this.game.setText(gameText);
         statusLabel.setText(STATUS_LABEL_TEXT);
+        updateCommunity(currentStreamInfo.getCommunity());
+        updateStreamType(currentStreamInfo.getStreamType());
+        updateOnlineTime(currentStreamInfo);
     }
     
     public void setHistoryRange(int minutes) {

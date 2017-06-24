@@ -14,7 +14,6 @@ import chatty.util.api.TwitchApiRequest.TwitchApiRequestResult;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -267,17 +266,21 @@ public class Requests {
     }
     
     public void getCommunityByName(String name, CommunityListener listener) {
-        String url = "https://api.twitch.tv/kraken/communities?name="+name;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            Community result = CommunitiesManager.parse(r.text);
-            if (r.responseCode == 404) {
-                listener.received(null, "Community not found.");
-            } else {
-                api.communitiesManager.addCommunity(result);
-                listener.received(result, null);
-            }
-        });
+        try {
+            String url = "https://api.twitch.tv/kraken/communities?name="+URLEncoder.encode(name, "UTF-8");
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            execute(request, r -> {
+                Community result = CommunitiesManager.parse(r.text);
+                if (r.responseCode == 404) {
+                    listener.received(null, "Community not found.");
+                } else {
+                    api.communitiesManager.addCommunity(result);
+                    listener.received(result, null);
+                }
+            });
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(Requests.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void getCommunityById(String id, CommunityListener listener) {

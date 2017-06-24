@@ -36,7 +36,11 @@ public class Buttons {
     
     private final CustomCommand modCommand = CustomCommand.parse("/mod $$1");
     private final CustomCommand unmodCommand = CustomCommand.parse("/unmod $$1");
+    private final CustomCommand approveCommand = CustomCommand.parse("/automod_approve $(automod-msg-id)");
+    private final CustomCommand denyCommand = CustomCommand.parse("/automod_deny $(automod-msg-id)");
     private JButton modUnmodButton;
+    private JButton approveButton;
+    private JButton denyButton;
 
     public Buttons(UserInfo owner, ActionListener listener) {
         this.owner = owner;
@@ -74,6 +78,16 @@ public class Buttons {
         modUnmodButton.setVisible(localIsStreamer);
     }
     
+    public void updateAutoModButtons(String autoModMsgId) {
+        boolean show = autoModMsgId != null;
+        if (approveButton != null) {
+            approveButton.setVisible(show);
+        }
+        if (denyButton != null) {
+            denyButton.setVisible(show);
+        }
+    }
+    
     private void remove() {
         for (JButton button : commands.keySet()) {
             clearShortcut(button);
@@ -108,13 +122,26 @@ public class Buttons {
             }
             
             getRow(item.getParent()).add(button);
-            
-            if (item.getCommand() != null && item.getCommand().getCommand().equalsIgnoreCase("modunmod")) {
-                button.setVisible(false);
-                modUnmodButton = button;
-                // Needs to be set to one of the two valid states so it can be
-                // replaced properly
-                button.setText("Mod");
+
+            if (item.getCommand() != null) {
+                String commandName = item.getCommand().getCommand();
+                if (commandName.equalsIgnoreCase("modunmod")) {
+                    button.setVisible(false);
+                    modUnmodButton = button;
+                    // Needs to be set to one of the two valid states so it can
+                    // be replaced properly
+                    button.setText("Mod");
+                }
+                else if (commandName.equalsIgnoreCase("automod_approve")) {
+                    button.setVisible(false);
+                    approveButton = button;
+                    commands.put(button, approveCommand);
+                }
+                else if (commandName.equalsIgnoreCase("automod_deny")) {
+                    button.setVisible(false);
+                    denyButton = button;
+                    commands.put(button, denyCommand);
+                }
             }
             addShortcut(item.getKey(), button, secondaryButton, noKeyLabels);
         }

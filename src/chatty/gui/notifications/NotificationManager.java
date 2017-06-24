@@ -87,7 +87,7 @@ public class NotificationManager {
     }
     
     public void highlight(User user, String message, boolean noNotify,
-            boolean noSound, boolean isOwnMessage) {
+            boolean noSound, boolean isOwnMessage, boolean isWhisper) {
         check(null, user.getChannel(), user, message, noNotify, noSound, n -> {
             if (isOwnMessage && !n.hasOption("own")) {
                 return null;
@@ -100,7 +100,7 @@ public class NotificationManager {
                 String title = String.format("[Message] %s in %s",
                         getDisplayName(user), user.getChannel());
                 return new NotificationData(title, message);
-            } else if (n.type == Type.WHISPER) {
+            } else if (n.type == Type.WHISPER && isWhisper) {
                 String title = String.format("[Whisper] %s",
                         getDisplayName(user));
                 return new NotificationData(title, message);

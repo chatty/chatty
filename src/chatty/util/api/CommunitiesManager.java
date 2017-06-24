@@ -212,7 +212,7 @@ public class CommunitiesManager {
             for (Object o : communities) {
                 JSONObject community = (JSONObject)o;
                 String id = JSONUtil.getString(community, "_id");
-                String name = JSONUtil.getString(community, "name");
+                String name = JSONUtil.getString(community, "display_name");
                 if (id != null && name != null) {
                     result.add(new Community(id, name));
                 }
@@ -231,7 +231,7 @@ public class CommunitiesManager {
             JSONParser parser = new JSONParser();
             JSONObject community = (JSONObject) parser.parse(text);
             String id = JSONUtil.getString(community, "_id");
-            String name = JSONUtil.getString(community, "name");
+            String name = JSONUtil.getString(community, "display_name");
             String summary = JSONUtil.getString(community, "description_html");
             String rules = JSONUtil.getString(community, "rules_html");
             if (id != null && name != null) {

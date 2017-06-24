@@ -39,7 +39,7 @@ public class CheersUtil {
      */
     public void add(Set<CheerEmoticon> data) {
         cheerEmotes.addAll(data);
-        System.out.println(cheerEmotes.size()+" "+cheerEmotes);
+        //System.out.println(cheerEmotes.size()+" "+cheerEmotes);
         setSettings(currentBackground, currentState);
     }
     

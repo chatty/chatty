@@ -35,6 +35,7 @@ import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.Webserver;
+import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChatInfo;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.EmoticonSizeCache;
@@ -42,6 +43,7 @@ import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
+import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.Message;
@@ -132,6 +134,8 @@ public class TwitchClient {
     protected final BotNameManager botNameManager;
     
     protected final CustomNames customNames;
+    
+    private final AutoModCommandHelper autoModCommandHelper;
     
     /**
      * Holds the UserManager instance, which manages all the user objects.
@@ -271,6 +275,8 @@ public class TwitchClient {
         g = new MainGui(this);
         g.loadSettings();
         g.showGui();
+        
+        autoModCommandHelper = new AutoModCommandHelper(g, api);
         
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,33,42,19194");
@@ -516,6 +522,10 @@ public class TwitchClient {
     
     public User getUser(String channel, String name) {
         return c.getUser(channel, name);
+    }
+    
+    public User getExistingUser(String channel, String name) {
+        return c.getExistingUser(channel, name);
     }
     
     public void clearUserList() {
@@ -994,6 +1004,12 @@ public class TwitchClient {
         else if (command.equals("unfollow")) {
             commandUnfollow(channel, parameter);
         }
+        else if (command.equals("automod_approve")) {
+            autoModCommandHelper.approve(channel, parameter);
+        }
+        else if (command.equals("automod_deny")) {
+            autoModCommandHelper.deny(channel, parameter);
+        }
         else if (command.equals("addstreamhighlight")) {
             commandAddStreamHighlight(channel, parameter);
         }
@@ -1017,7 +1033,7 @@ public class TwitchClient {
             // Already done if true
         }
         
-        else if (g.commandGui(command, parameter)) {
+        else if (g.commandGui(channel, command, parameter)) {
             // Already done if true :P
         }
 
@@ -1116,7 +1132,7 @@ public class TwitchClient {
         } else if (command.equals("testtw")) {
             g.showTokenWarning();
         } else if (command.equals("tsonline")) {
-            testStreamInfo.set(parameter, "Game", 123, -1);
+            testStreamInfo.set(parameter, "Game", 123, -1, StreamType.LIVE);
             g.addStreamInfo(testStreamInfo);
         } else if (command.equals("tsoffline")) {
             testStreamInfo.setOffline();
@@ -1124,7 +1140,7 @@ public class TwitchClient {
         } else if (command.equals("testspam")) {
             g.printLine("test" + spamProtection.getAllowance() + spamProtection.tryMessage());
         } else if (command.equals("tsv")) {
-            testStreamInfo.set("Title", "Game", Integer.parseInt(parameter), -1);
+            testStreamInfo.set("Title", "Game", Integer.parseInt(parameter), -1, StreamType.LIVE);
         } else if (command.equals("tsvs")) {
             System.out.println(testStreamInfo.getViewerStats(true));
         } else if (command.equals("tsaoff")) {
@@ -1132,7 +1148,7 @@ public class TwitchClient {
             info.setOffline();
         } else if (command.equals("tsaon")) {
             StreamInfo info = api.getStreamInfo(g.getActiveStream(), null);
-            info.set("Test", "Game", 12, System.currentTimeMillis() - 1000);
+            info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("usericonsinfo")) {
             usericonManager.debug();
         } else if (command.equals("userlisttest")) {
@@ -1743,9 +1759,10 @@ public class TwitchClient {
                 if (data.stream != null) {
                     g.printModerationAction(data, data.created_by.equals(c.getUsername()));
                     chatLog.modAction(data);
-                    User user = c.getUser(Helper.toChannel(data.stream), data.created_by);
-                    user.addModAction(data.getCommandAndParameters());
-                    g.updateUserinfo(user);
+                    
+                    User modUser = c.getUser(Helper.toChannel(data.stream), data.created_by);
+                    modUser.addModAction(data.getCommandAndParameters());
+                    g.updateUserinfo(modUser);
                 }
             }
         }
@@ -1886,6 +1903,7 @@ public class TwitchClient {
         @Override
         public void autoModResult(String result, String msgId) {
             g.autoModRequestResult(result, msgId);
+            autoModCommandHelper.requestResult(result, msgId);
         }
 
         @Override

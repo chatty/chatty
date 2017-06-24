@@ -597,7 +597,6 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setForeground(foreground);
             b.setBackground(background);
             b.setSoundFile(soundFile.getSettingValue());
-            System.out.println(soundFile.getSettingValue());
             b.setVolume(volumeSlider.getSettingValue());
             b.setSoundCooldown(soundCooldown.getSettingValue(0L).intValue());
             b.setSoundInactiveCooldown(soundInactiveCooldown.getSettingValue(0L).intValue());

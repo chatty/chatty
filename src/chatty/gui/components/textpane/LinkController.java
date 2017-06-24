@@ -127,9 +127,8 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             }
             User user = getUser(e);
             if (user != null) {
-                String messageId = (String)getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID);
                 for (UserListener listener : userListener) {
-                    listener.userClicked(user, messageId, e);
+                    listener.userClicked(user, getMsgId(e), getAutoModMsgId(e), e);
                 }
                 return;
             }
@@ -228,6 +227,14 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         return null;
     }
     
+    private String getMsgId(MouseEvent e) {
+        return (String) getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID);
+    }
+    
+    private String getAutoModMsgId(MouseEvent e) {
+        return (String) getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID_AUTOMOD);
+    }
+    
     private EmoticonImage getEmoticon(MouseEvent e) {
         AttributeSet attributes = getAttributes(e);
         if (attributes != null) {
@@ -309,7 +316,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         Usericon usericon = getUsericon(e);
         JPopupMenu m;
         if (user != null) {
-            m = new UserContextMenu(user, contextMenuListener);
+            m = new UserContextMenu(user, getAutoModMsgId(e), contextMenuListener);
         }
         else if (url != null) {
             m = new UrlContextMenu(url, isUrlDeleted(e), contextMenuListener);

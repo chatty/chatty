@@ -53,8 +53,12 @@ public class CustomCommand {
             Item firstToken = items.getItem(0);
             if (firstToken instanceof Literal) {
                 String text = ((Literal)firstToken).getLiteral();
-                if (text.startsWith("/") && text.contains(" ")) {
-                    return text.substring(1, text.indexOf(" "));
+                if (text.startsWith("/")) {
+                    if (text.contains(" ")) {
+                        return text.substring(1, text.indexOf(" "));
+                    } else {
+                        return text.substring(1);
+                    }
                 }
             }
         }

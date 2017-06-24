@@ -95,30 +95,30 @@ public class LiveStreamsDialog extends JFrame {
         
         // Test data
         if (Chatty.DEBUG) {
-            List<StreamInfo> testData = new ArrayList<>();
-            StreamInfo testEntry1 = new StreamInfo("joshimuz", null);
-            testEntry1.set("Crash Nitro Kart WR Attempts - GTA:SA in December hopefully possibly maybe", "Crash Nitro Kart", 140, -1);
-            testEntry1.setDisplayName("Joshimoose");
-            testData.add(testEntry1);
-            StreamInfo testEntry2 = new StreamInfo("mrnojojojo", null);
-            testEntry2.set("GTA3 Wintermod Race", "Grand Theft Auto III", 123, -1);
-            testData.add(testEntry2);
-            StreamInfo testEntry3 = new StreamInfo("ismokybacon", null);
-            testEntry3.set("GTA:SA Badlands any% Race", "Grand Theft Auto: San Andreas", 14, -1);
-            testData.add(testEntry3);
-            StreamInfo testEntry4 = new StreamInfo("abc", null);
-            testEntry4.set("GTA:SA Badlands any% Race", null, 14, -1);
-            testData.add(testEntry4);
-            for (int i=0;i<0;i++) {
-                StreamInfo newEntry = new StreamInfo("test"+i, null);
-                newEntry.set("Random Title", "Some Game", i, -1);
-                testData.add(newEntry);
-            }
-            list.addStreams(testData);
-            removedList.addStreamInfo(testEntry1);
-            removedList.addStreamInfo(testEntry2);
-            removedList.addStreamInfo(testEntry3);
-            removedList.addStreamInfo(testEntry4);
+//            List<StreamInfo> testData = new ArrayList<>();
+//            StreamInfo testEntry1 = new StreamInfo("joshimuz", null);
+//            testEntry1.set("Crash Nitro Kart WR Attempts - GTA:SA in December hopefully possibly maybe", "Crash Nitro Kart", 140, -1);
+//            testEntry1.setDisplayName("Joshimoose");
+//            testData.add(testEntry1);
+//            StreamInfo testEntry2 = new StreamInfo("mrnojojojo", null);
+//            testEntry2.set("GTA3 Wintermod Race", "Grand Theft Auto III", 123, -1);
+//            testData.add(testEntry2);
+//            StreamInfo testEntry3 = new StreamInfo("ismokybacon", null);
+//            testEntry3.set("GTA:SA Badlands any% Race", "Grand Theft Auto: San Andreas", 14, -1);
+//            testData.add(testEntry3);
+//            StreamInfo testEntry4 = new StreamInfo("abc", null);
+//            testEntry4.set("GTA:SA Badlands any% Race", null, 14, -1);
+//            testData.add(testEntry4);
+//            for (int i=0;i<0;i++) {
+//                StreamInfo newEntry = new StreamInfo("test"+i, null);
+//                newEntry.set("Random Title", "Some Game", i, -1);
+//                testData.add(newEntry);
+//            }
+//            list.addStreams(testData);
+//            removedList.addStreamInfo(testEntry1);
+//            removedList.addStreamInfo(testEntry2);
+//            removedList.addStreamInfo(testEntry3);
+//            removedList.addStreamInfo(testEntry4);
         }
         
         

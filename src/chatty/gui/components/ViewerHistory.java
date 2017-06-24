@@ -7,6 +7,9 @@ import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HistoryContextMenu;
+import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamInfo;
+import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -132,25 +135,72 @@ public class ViewerHistory extends JComponent {
     
     private ViewerHistoryListener listener;
 
+    private static class HistoryTest {
+        
+        public long currentTime;
+        public LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
+        public long startTime;
+        public long picnicStartTime;
+        
+        public void add(String title, String game, int viewers, StreamType streamType, Community community) {
+            history.put(currentTime, new StreamInfoHistoryItem(currentTime, viewers, title, game, streamType, community, startTime, picnicStartTime));
+            currentTime += 120*1000;
+        }
+        
+    }
     
     public ViewerHistory() {
         // Test data
         if (Chatty.DEBUG) {
+            
+            HistoryTest test = new HistoryTest();
+            
+            
             history = new LinkedHashMap<>();
-            history.put((long) 1000*1000, new StreamInfoHistoryItem(5,"Leveling Battlemage","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1120*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1240*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1360*1000, new StreamInfoHistoryItem(6,"Leveling Battlemage","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1480*1000, new StreamInfoHistoryItem(8,"Leveling Battlemage","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1600*1000, new StreamInfoHistoryItem(8,"Pause","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1720*1000, new StreamInfoHistoryItem(10,"Pause","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1840*1000, new StreamInfoHistoryItem(12,"Pause","The Elder Scrolls V: Skyrim"));
-            history.put((long) 1960*1000, new StreamInfoHistoryItem(12,"Diebesgilde","The Elder Scrolls V: Skyrim"));
-            history.put((long) 2080*1000, new StreamInfoHistoryItem(18,"Diebesgilde","The Elder Scrolls V: Skyrim"));
-            history.put((long) 2200*1000, new StreamInfoHistoryItem(20,"Diebesgilde","The Elder Scrolls V: Skyrim"));
-            history.put((long) 2320*1000, new StreamInfoHistoryItem(22,"Diebesgilde","The Elder Scrolls V: Skyrim"));
-            history.put((long) 2440*1000, new StreamInfoHistoryItem(1000,"Diebesgilde","The Elder Scrolls V: Skyrim"));
-            history.put((long) 2560*1000, new StreamInfoHistoryItem(2500,"Diebesgilde","The Elder Scrolls V: Skyrim"));
+            Community c1 = new Community("abc", "VarietyStreaming");
+            Community c2 = new Community("abc", "Speedrunning");
+            
+            test.startTime = -5*60*1000;
+            test.picnicStartTime = -10*60*1000;
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 6, StreamType.LIVE, c1);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1);
+            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
+            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
+            test.add("Pause", "The Elder Scrolls V: Skyrim", 10, StreamType.LIVE, c1);
+            test.add("Pause", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 10, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 14, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
+            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 18, StreamType.WATCH_PARTY, c1);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, null);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 34, StreamType.LIVE, c2);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
+            
+//            history.put((long) 1000*1000, new StreamInfoHistoryItem(5,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1000*1000, 1000*1000));
+//            history.put((long) 1120*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1120*1000, 1120*1000));
+//            history.put((long) 1240*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1240*1000, 1240*1000));
+//            history.put((long) 1360*1000, new StreamInfoHistoryItem(6,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1360*1000, 1360*1000));
+//            history.put((long) 1480*1000, new StreamInfoHistoryItem(8,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1480*1000, 1480*1000));
+//            history.put((long) 1600*1000, new StreamInfoHistoryItem(8,"Pause","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1600*1000, 1600*1000));
+//            history.put((long) 1720*1000, new StreamInfoHistoryItem(10,"Pause","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1720*1000, 1720*1000));
+//            history.put((long) 1840*1000, new StreamInfoHistoryItem(12,"Pause","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1840*1000, 1840*1000));
+//            history.put((long) 1960*1000, new StreamInfoHistoryItem(12,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 1960*1000, 1960*1000));
+//            history.put((long) 2080*1000, new StreamInfoHistoryItem(18,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 2080*1000, 2080*1000));
+//            history.put((long) 2200*1000, new StreamInfoHistoryItem(20,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 2200*1000, 2200*1000));
+//            history.put((long) 2320*1000, new StreamInfoHistoryItem(22,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 2320*1000, 2320*1000));
+//            history.put((long) 2440*1000, new StreamInfoHistoryItem(40,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 2440*1000, 2440*1000));
+//            history.put((long) 2560*1000, new StreamInfoHistoryItem(72,"Diebesgilde","The Elder Scrolls V: Skyrim", StreamType.WATCH_PARTY, c1, 2560*1000, 2560*1000));
+//            history.put((long) 2760*1000, new StreamInfoHistoryItem(72,"any% attempts","Tomb Raider III: Adventures of Lara Croft", StreamType.LIVE, null, 2760*1000, 2760*1000));
+//            history.put((long) 2960*1000, new StreamInfoHistoryItem(68,"any% attempts","Tomb Raider III: Adventures of Lara Croft", StreamType.LIVE, c2, 2960*1000, 2960*1000));
+//            history.put((long) 3160*1000, new StreamInfoHistoryItem(71,"any% attempts","Tomb Raider III: Adventures of Lara Croft", StreamType.LIVE, c2, 3160*1000, 3160*1000));
             //history.put((long) 2680*1000, new StreamInfoHistoryItem());
             //history.put((long) 2800*1000, new StreamInfoHistoryItem());
             //history.put((long) 2920*1000, new StreamInfoHistoryItem());
@@ -162,7 +212,7 @@ public class ViewerHistory extends JComponent {
 //        history.put((long)3000*1000,123);
 //        history.put((long)3300*1000,-1);
 //        history.put((long)3600*1000,0);
-            setHistory("", history);
+            setHistory("", test.history);
         }
         MyMouseListener mouseListener = new MyMouseListener();
         addMouseListener(mouseListener);
@@ -345,6 +395,7 @@ public class ViewerHistory extends JComponent {
         
         int prevX = -1;
         int prevY = -1;
+        StreamInfoHistoryItem prevItem = null;
         Iterator<Entry<Long,StreamInfoHistoryItem>> it = history.entrySet().iterator();
         while (it.hasNext()) { 
             Entry<Long,StreamInfoHistoryItem> entry = it.next();
@@ -373,19 +424,26 @@ public class ViewerHistory extends JComponent {
             
             // Draw connecting line
             if (prevX != -1) {
+                if (entry.getValue().getStreamType() == StreamType.WATCH_PARTY &&
+                        prevItem != null && prevItem.getStreamType() == StreamType.WATCH_PARTY) {
+                    g.setColor(Color.LIGHT_GRAY);
+                } else {
+                    g.setColor(Color.BLACK);
+                }
                 g.drawLine(x,y,prevX,prevY);
             }
             
-            // Save point coordinates to be able to draw the line next loop
+            // Save point coordinates to be able to draw the line next iteration
             prevX = x;
             prevY = y;
+            prevItem = entry.getValue();
             
             // Save point locations to draw points and to find entries on hover
             locations.put(new Point(x,y),time);
         }
         
         
-        
+        prevItem = null;
         // Draw points (after lines, so they are in front)
         for (Point point : locations.keySet()) {
             int x = point.x;
@@ -405,7 +463,16 @@ public class ViewerHistory extends JComponent {
                     g.setColor(colors.get(seconds));
                 }
             }
-            g.fillOval(x  - POINT_SIZE / 2, y  - POINT_SIZE / 2, POINT_SIZE, POINT_SIZE);
+            int pointSize = POINT_SIZE;
+            
+            if (prevItem != null && prevItem.getCommunity() != historyObject.getCommunity()) {
+                pointSize += 2;
+            }
+            
+            g.fillOval(x  - pointSize / 2, y  - pointSize / 2, pointSize, pointSize);
+            
+            
+            prevItem = historyObject;
         }
     }
     
@@ -589,7 +656,11 @@ public class ViewerHistory extends JComponent {
      */
     private void manageChannelSpecificVars(String stream) {
         if (!stream.equals(currentStream)) {
+            if (hoverEntry > 0 && listener != null) {
+                listener.noItemSelected();
+            }
             hoverEntry = -1;
+            fixedHoverEntry = false;
             fixedStartTimes.put(currentStream, fixedStartTime);
             fixedEndTimes.put(currentStream, fixedEndTime);
             currentStream = stream;
@@ -816,7 +887,7 @@ public class ViewerHistory extends JComponent {
                         LOGGER.warning("Hovered Entry "+hoverEntry+" was null");
                         hoverEntry = -1;
                     } else {
-                        listener.itemSelected(item.getViewers(), item.getTitle(), item.getGame());
+                        listener.itemSelected(item);
                     }
                 }
             }

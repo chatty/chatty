@@ -42,7 +42,18 @@ public class UserInfo extends JDialog {
     
     private User currentUser;
     private String currentLocalUsername;
-    private String currentMessageId;
+    
+    /**
+     * The ID of the currently selected chat message (e.g. for use in timeouts),
+     * or null if none is selected.
+     */
+    private String currentMsgId;
+    
+    /**
+     * The ID of the currently selected AutoMod message (to approve/deny over
+     * the API), or null if none is selected.
+     */
+    private String currentAutoModMsgId;
     
     private float fontSize;
     
@@ -139,7 +150,7 @@ public class UserInfo extends JDialog {
             }
             
             private void showPopupMenu(MouseEvent e) {
-                JPopupMenu menu = new UserContextMenu(currentUser, contextMenuListener);
+                JPopupMenu menu = new UserContextMenu(currentUser, currentAutoModMsgId, contextMenuListener);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
@@ -198,12 +209,15 @@ public class UserInfo extends JDialog {
         setMinimumSize(getPreferredSize());
     }
     
-    private void setUser(User user, String messageId, String localUsername) {
+    private void setUser(User user, String msgId, String autoModMsgId, String localUsername) {
         if (currentUser != user) {
             currentUser = user;
-            currentMessageId = messageId;
-        } else if (messageId != null) {
-            currentMessageId = messageId;
+            currentMsgId = msgId;
+            currentAutoModMsgId = autoModMsgId;
+        }
+        if (msgId != null || autoModMsgId != null) {
+            currentMsgId = msgId;
+            currentAutoModMsgId = autoModMsgId;
         }
         currentLocalUsername = localUsername;
 
@@ -219,10 +233,11 @@ public class UserInfo extends JDialog {
                 +displayNickInfo
                 +" / "+user.getChannel()
                 +" "+categoriesString);
-        pastMessages.update(user, currentMessageId);
+        pastMessages.update(user, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
         infoPanel.update(user);
-        singleMessage.setEnabled(currentMessageId != null);
+        singleMessage.setEnabled(currentMsgId != null);
         updateModButtons();
+        buttons.updateAutoModButtons(autoModMsgId);
         finishDialog();
     }
     
@@ -234,11 +249,11 @@ public class UserInfo extends JDialog {
         buttons.updateModButtons(localIsStreamer, currentUser.isModerator());
     }
 
-    public void show(Component owner, User user, String messageId, String localUsername) {
+    public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
         banReasons.updateReasonsFromSettings();
         banReasons.reset();
         singleMessage.setSelected(false);
-        setUser(user, messageId, localUsername);
+        setUser(user, msgId, autoModMsgId, localUsername);
         closeButton.requestFocusInWindow();
         setVisible(true);
     }
@@ -253,7 +268,7 @@ public class UserInfo extends JDialog {
      */
     public void update(User user, String localUsername) {
         if (currentUser == user && isVisible()) {
-            setUser(user, null, localUsername);
+            setUser(user, null, null, localUsername);
         }
     }
     
@@ -265,11 +280,19 @@ public class UserInfo extends JDialog {
         return currentUser.getChannel();
     }
     
+    public String getMsgId() {
+        return currentMsgId;
+    }
+    
     public String getTargetMsgId() {
         if (singleMessage.isSelected()) {
-            return currentMessageId;
+            return currentMsgId;
         }
         return null;
+    }
+    
+    public String getAutoModMsgId() {
+        return currentAutoModMsgId;
     }
     
     public String getBanReason() {

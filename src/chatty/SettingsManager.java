@@ -681,6 +681,15 @@ public class SettingsManager {
         if (updatedFromBefore("0.8.6b3")) {
             settings.putList("notifications", getDefaultNotificationSettingValue());
         }
+        if (updatedFromBefore("0.8.7b1")) {
+            String currentValue = settings.getString("timeoutButtons");
+            if (!currentValue.toLowerCase().contains("/automod_approve")) {
+                settings.setString("timeoutButtons", currentValue + "\n\n"
+                        + "@AutoMod\n"
+                        + ".Approve=/Automod_approve\n"
+                        + ".Deny=/Automod_deny");
+            }
+        }
     }
     
     /**

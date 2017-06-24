@@ -17,7 +17,7 @@ public interface UserListener {
      * @param user
      * @param e Can be null
      */
-    public void userClicked(User user, String messageId, MouseEvent e);
+    public void userClicked(User user, String messageId, String autoModMsgId, MouseEvent e);
     public void emoteClicked(Emoticon emote, MouseEvent e);
     public void usericonClicked(Usericon usericon, MouseEvent e);
 

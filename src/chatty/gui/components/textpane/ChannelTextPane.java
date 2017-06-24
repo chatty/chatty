@@ -106,7 +106,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public enum Attribute {
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
-        BAN_MESSAGE, ID, USERICON
+        BAN_MESSAGE, ID, ID_AUTOMOD, USERICON
     }
     
     public enum MessageType {
@@ -231,6 +231,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             printUserMessage((UserMessage)message);
         } else if (message instanceof SubscriberMessage) {
             printSubscriberMessage((SubscriberMessage)message);
+        } else if (message instanceof AutoModMessage) {
+            printAutoModMessage((AutoModMessage)message);
         }
     }
     
@@ -271,6 +273,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true, false);
             print("]", styles.info());
         }
+        printNewline();
+    }
+    
+    private void printAutoModMessage(AutoModMessage message) {
+        closeCompactMode();
+        print(getTimePrefix(), styles.info());
+        
+        MutableAttributeSet style = styles.nick(message.user, styles.info());
+        style.addAttribute(Attribute.ID_AUTOMOD, message.id);
+        print("[AutoMod] <"+message.user.getDisplayNick()+"> ", style);
+        print(message.text, styles.info());
         printNewline();
     }
 
@@ -929,7 +942,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (currentSelection != null && doesLineExist(currentSelection)) {
-                        userListener.userClicked(currentUser, getCurrentId(), null);
+                        userListener.userClicked(currentUser, getCurrentId(), null, null);
                     }
                 }
             });
@@ -1126,7 +1139,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * @param e The MouseEvent of the click
          */
         @Override
-        public void userClicked(User user, String messageId, MouseEvent e) {
+        public void userClicked(User user, String messageId, String autoModMsgId, MouseEvent e) {
             if (e != null && ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown())) {
                 Element element = LinkController.getElement(e);
                 Element line = null;

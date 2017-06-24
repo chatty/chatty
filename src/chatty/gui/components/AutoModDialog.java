@@ -306,7 +306,7 @@ public class AutoModDialog extends JDialog {
         }
         
         User user = client.getUser(channel, username);
-        user.addAutoModMessage(message);
+        user.addAutoModMessage(message, modData.msgId);
         gui.updateUserinfo(user);
         Item item = new Item(modData, user);
 
@@ -461,7 +461,7 @@ public class AutoModDialog extends JDialog {
     private void openUserInfoDialog() {
         Item item = list.getSelectedValue();
         if (item != null) {
-            gui.openUserInfoDialog(item.targetUser, null);
+            gui.openUserInfoDialog(item.targetUser, null, item.data.msgId);
         }
     }
     
@@ -473,7 +473,7 @@ public class AutoModDialog extends JDialog {
             return;
         }
         setPending(item);
-        api.autoMod("approve", item.data.msgId);
+        api.autoModApprove(item.data.msgId);
     }
     
     private void deny(Item item) {
@@ -484,7 +484,7 @@ public class AutoModDialog extends JDialog {
             return;
         }
         setPending(item);
-        api.autoMod("deny", item.data.msgId);
+        api.autoModDeny(item.data.msgId);
     }
     
     private void setPending(Item item) {

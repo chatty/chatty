@@ -406,8 +406,12 @@ public class TwitchApi {
         }, stream);
     }
     
-    public void autoMod(String action, String msgId) {
-        requests.autoMod(action, msgId, defaultToken);
+    public void autoModApprove(String msgId) {
+        requests.autoMod("approve", msgId, defaultToken);
+    }
+    
+    public void autoModDeny(String msgId) {
+        requests.autoMod("deny", msgId, defaultToken);
     }
 
 }

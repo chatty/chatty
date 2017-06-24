@@ -25,6 +25,7 @@ public class StreamInfo {
     private static final Logger LOGGER = Logger.getLogger(StreamInfo.class.getName());
     
     private enum UpdateResult { UPDATED, CHANGED, SET_OFFLINE };
+    public enum StreamType { LIVE, WATCH_PARTY };
     
     /**
      * All lowercase name of the stream
@@ -45,6 +46,7 @@ public class StreamInfo {
     
     private long lastUpdated = 0;
     private long lastStatusChange = 0;
+    private long lastUpdateSucceded = 0;
     private String status = null;
     private String game = "";
     private int viewers = 0;
@@ -53,6 +55,7 @@ public class StreamInfo {
     private long lastOnline = -1;
     private long startedAtWithPicnic = -1;
     private boolean online = false;
+    private StreamType streamType;
     private boolean updateSucceeded = false;
     private int updateFailedCounter = 0;
     private boolean requested = false;
@@ -149,14 +152,15 @@ public class StreamInfo {
      * @param viewers The current viewercount
      * @param startedAt The timestamp when the stream was started, -1 if not set
      */
-    public void setFollowed(String status, String game, int viewers, long startedAt) {
+    public void setFollowed(String status, String game, int viewers,
+            long startedAt, StreamType streamType) {
         //System.out.println(status);
         followed = true;
         boolean saveToHistory = false;
         if (hasExpired()) {
             saveToHistory = true;
         }
-        set(status, game, viewers, startedAt, saveToHistory);
+        set(status, game, viewers, startedAt, streamType, saveToHistory);
     }
     
     /**
@@ -171,8 +175,9 @@ public class StreamInfo {
      * @param viewers The current viewercount
      * @param startedAt The timestamp when the stream was started, -1 if not set
      */
-    public void set(String status, String game, int viewers, long startedAt) {
-        set(status, game, viewers, startedAt, true);
+    public void set(String status, String game, int viewers, long startedAt,
+            StreamType streamType) {
+        set(status, game, viewers, startedAt, streamType, true);
     }
     
     /**
@@ -184,12 +189,14 @@ public class StreamInfo {
      * @param startedAt The timestamp when the stream was started, -1 if not set
      * @param saveToHistory Whether to save the data to history
      */
-    private void set(String status, String game, int viewers, long startedAt, boolean saveToHistory) {
+    private void set(String status, String game, int viewers, long startedAt,
+            StreamType streamType, boolean saveToHistory) {
         UpdateResult result;
         synchronized(this) {
             this.status = StringUtil.trim(StringUtil.removeLinebreakCharacters(status));
             this.game = StringUtil.trim(StringUtil.nullToString(game));
             this.viewers = viewers;
+            this.streamType = streamType;
 
             /**
              * Always set to -1 (do nothing) when stream is set as online, but
@@ -217,7 +224,11 @@ public class StreamInfo {
             this.online = true;
 
             if (saveToHistory) {
-                addHistoryItem(System.currentTimeMillis(), new StreamInfoHistoryItem(viewers, status, game));
+                addHistoryItem(System.currentTimeMillis(),
+                        new StreamInfoHistoryItem(System.currentTimeMillis(),
+                                viewers, status, game,
+                                streamType, getCommunity(),
+                                getTimeStarted(), getTimeStartedWithPicnic()));
             }
             result = setUpdateSucceeded(true);
         }
@@ -244,7 +255,7 @@ public class StreamInfo {
                 }
                 recheckOffline = -1;
                 this.online = false;
-                addHistoryItem(System.currentTimeMillis(), new StreamInfoHistoryItem());
+                addHistoryItem(System.currentTimeMillis(), new StreamInfoHistoryItem(System.currentTimeMillis()));
             }
             result = setUpdateSucceeded(true);
         }
@@ -282,6 +293,7 @@ public class StreamInfo {
         setUpdated();
         if (succeeded) {
             updateFailedCounter = 0;
+            lastUpdateSucceded = System.currentTimeMillis();
         } else {
             updateFailedCounter++;
             if (recheckOffline != -1) {
@@ -345,13 +357,11 @@ public class StreamInfo {
             if (status == null || status.isEmpty()) {
                 fullStatus = "No stream title set";
             }
+            fullStatus = getStreamTypeString()+fullStatus;
             if (game != null && !game.isEmpty()) {
                 fullStatus += " ("+game+")";
             }
             return fullStatus;
-        }
-        else if (!updateSucceeded) {
-            return "";
         }
         else {
             return "Stream offline";
@@ -429,6 +439,17 @@ public class StreamInfo {
         return community;
     }
     
+    public synchronized StreamType getStreamType() {
+        return streamType;
+    }
+    
+    public synchronized String getStreamTypeString() {
+        if (streamType == StreamType.WATCH_PARTY) {
+            return "[VOD] ";
+        }
+        return "";
+    }
+    
     public synchronized void setNotFound() {
         notFound = true;
     }
@@ -466,6 +487,10 @@ public class StreamInfo {
      */
     public synchronized long getTimeStarted() {
         return startedAt;
+    }
+    
+    public synchronized long getTimeStartedAgo() {
+        return System.currentTimeMillis() - startedAt;
     }
     
     /**
@@ -579,6 +604,10 @@ public class StreamInfo {
             return false;
         }
         return true;
+    }
+    
+    public synchronized boolean isValidEnough() {
+        return isValid() || (System.currentTimeMillis() - lastUpdateSucceded)/1000 < expiresAfter*2;
     }
     
     public synchronized boolean lastUpdateLongAgo() {
