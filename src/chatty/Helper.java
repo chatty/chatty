@@ -5,9 +5,12 @@ import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import java.awt.Dimension;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -17,6 +20,8 @@ import java.util.regex.PatternSyntaxException;
  * @author tduva
  */
 public class Helper {
+    
+    private static final Logger LOGGER = Logger.getLogger(Helper.class.getName());
     
     public static final DecimalFormat VIEWERCOUNT_FORMAT = new DecimalFormat();
     
@@ -525,7 +530,7 @@ public class Helper {
     /**
      * Top Level Domains (only relevant for URLs not starting with http or www).
      */
-    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io)";
+    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io|gg)";
     
     private static final String MID = "[-A-Z0-9+&@#/%=~_|$?!:,;.()]";
     
@@ -560,6 +565,16 @@ public class Helper {
     
     public static Pattern getUrlPattern() {
         return URL_PATTERN;
+    }
+    
+    public static String buildUrlString(String scheme, String host, String path) {
+        try {
+            URI uri = new URI(scheme, host, path, null);
+            return uri.toASCIIString();
+        } catch (URISyntaxException ex) {
+            LOGGER.warning("Error building URL: "+ex);
+            return null;
+        }
     }
     
     /**

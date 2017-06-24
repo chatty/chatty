@@ -1,6 +1,7 @@
 
 package chatty.gui.components.admin;
 
+import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
@@ -535,7 +536,8 @@ public class SelectCommunityDialog extends JDialog {
             }
             if (e.getSource() == openUrl) {
                 if (current != null && !current.getName().isEmpty()) {
-                    UrlOpener.openUrlPrompt(main, "https://www.twitch.tv/communities/"+current.getName());
+                    UrlOpener.openUrlPrompt(main,
+                            Helper.buildUrlString("https", "twitch.tv", "/communities/"+current.getName()));
                 }
             }
         }
