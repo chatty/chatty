@@ -369,7 +369,7 @@
 ### Settings
 - Added setting whether to show the userlist by default
 - Added setting to save Addressbook to file on change
-- Livestreamer: Added some variables to base command ($stream, $url, $quality)
+- Streamlink: Added some variables to base command ($stream, $url, $quality)
 - Added Sound Output Device selection
 
 ### Commands
@@ -780,7 +780,7 @@ Other Enhancements:
   currently hosted channel
 - Added /copy command which copies the given text to the clipboard
 - Added /color command which redirects to the Twitch Chat /color command
-- Added /livestreamer command to open streams/dialog via command
+- Added /streamlink command to open streams/dialog via command
 - Added /appinfo command
 - Added /r9k and /r9koff commands
 - Added workaround for Twitch API sometimes returning stream information with
@@ -1039,7 +1039,7 @@ Bugfixes:
             showing your most recent followers and subscribers (you probably
             need to request new login data with the necessary access for the
             subscriber list to work).</li>
-        <li>Improved <a href="help-livestreamer.html">Livestreamer Dialog and Help</a>.</li>
+        <li>Improved <a href="help-streamlink.html">Streamlink Dialog and Help</a>.</li>
     </ul>
     <p><em>Just a reminder:</em> If you don't care about a correct userlist or joins/parts,
         you may want to switch to Twitch Client Version 3 (<code>Settings - Advanced</code>),
@@ -1053,8 +1053,8 @@ New features:
   channel-specific emotes (FFZ/BTTV)
 - Added Followers/Subscribers lists, added new follower sound (works only if
   Followers Dialog is open)
-- Livestreamer: Added setting to use auth (for sub-only streams), added setting
-  whether to open the Livestreamer Dialog when opening a stream from the menu
+- Streamlink: Added setting to use auth (for sub-only streams), added setting
+  whether to open the Streamlink Dialog when opening a stream from the menu
 - Added setting to write stream info to a file (e.g. for display on stream)
 - Automatically request moderator list once per channel, added /fixMods command
   to temporarily fix mods status without showing the list of all moderators
@@ -1071,7 +1071,7 @@ Changes:
 - Added kadgar.net to open live streams from the context menu
 - Added optional filter to remove combining characters used in some languages
   that may cause an error in some cases
-- Livestreamer: Reuse open tabs if process stopped and opening stream with the
+- Streamlink: Reuse open tabs if process stopped and opening stream with the
   same stream/quality, re-enable quality selection buttons if process stopped,
   improved labels and help
 - Added more timestamp options in the settings and changed to showing as example
@@ -1109,8 +1109,8 @@ New features:
   image (but their code will still show up)
 - Changed game select dialog to one single list for favorites/search as to not
   waste so much space
-- Added setting to change the livestreamer command (so you can also e.g. set the
-  full path to Livestreamer if necessary)
+- Added setting to change the streamlink command (so you can also e.g. set the
+  full path to Streamlink if necessary)
 - Added option to combine ban messages of the same user within 10 seconds, for
   example "&lt;name&gt; has been banned from talking (3)" means banned 3 times
 - Added "/ab change" command to add/remove/toggle categories in a single command
@@ -1150,7 +1150,7 @@ Bugfixes:
             or show which users where ignored. Ignored messages also get added
             to a seperate window so you can check them if you want to.</li>
         <li>Improved Update Notification.</li>
-        <li><a href="help-livestreamer.html">Livestreamer</a> context menu
+        <li><a href="help-streamlink.html">Streamlink</a> context menu
             quality selection customizable.</li>
         <li>Improved <a href="help.html#emoticons">Emoticon</a> Context Menu (right-click on any emoticon image),
             now allowing you to insert the emote code into your chat message by clicking the menu entry
@@ -1175,7 +1175,7 @@ New features:
 - Improved subscriber detection on Twitch Client 1
 - Improved Update Notification to now also show in the Main Menubar (clicking
   on it opens a window showing the changelog)
-- Livestreamer Context Menu quality selection now customizable
+- Streamlink Context Menu quality selection now customizable
 - Added some commands (including /ffz to show FFZ emotes of the current channel,
   some commands to open dialogs and stuff intended for use in Custom Commands)
 
@@ -1265,7 +1265,7 @@ Bugfixes:
     <h3>Highlights</h3>
     <ul>
         <li>Added <a href="help-srl.html">SRL Race viewer</a>, which you can open in the <code>SRL</code>-menu.</li>
-        <li>Added <a href="help-livestreamer.html">Livestreamer</a> support, with a dialog (<code>Extra</code>-menu)
+        <li>Added <a href="help-streamlink.html">Streamlink</a> support, with a dialog (<code>Extra</code>-menu)
         and optional context menu entry.</li>
     </ul>
     
@@ -1275,7 +1275,7 @@ New features:
 - Added SpeedrunsLive (SRL) race viewer
 - Added automatic settings file backup (copies settings to the /backup folder
   when you start Chatty, at most once per day)
-- Added Livestreamer support (start Livestreamer out of dialog/context menus)
+- Added Streamlink support (start Streamlink out of dialog/context menus)
 - Added feature for unique addressbook categories under some circumstances
 - Added "Simple Title" setting to have only "Chatty" as title (Extra menu)
 

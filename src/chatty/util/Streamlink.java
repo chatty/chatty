@@ -17,15 +17,15 @@ import java.util.regex.Pattern;
  * 
  * @author tduva
  */
-public class Livestreamer extends Thread {
+public class Streamlink extends Thread {
     
-    private final static Logger LOGGER = Logger.getLogger(Livestreamer.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(Streamlink.class.getName());
     
     private final String command;
-    private final LivestreamerListener listener;
+    private final StreamlinkListener listener;
     private Process process;
     
-    public Livestreamer(String command, LivestreamerListener listener) {
+    public Streamlink(String command, StreamlinkListener listener) {
         this.command = command;
         this.listener = listener;
     }
@@ -71,7 +71,7 @@ public class Livestreamer extends Thread {
         process.destroy();
     }
     
-    public static interface LivestreamerListener {
+    public static interface StreamlinkListener {
         public void processStarted(String command);
         public void message(String message);
         public void processFinished(int exitValue);

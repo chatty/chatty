@@ -548,12 +548,12 @@ public class SettingsManager {
         // Other Features
         //===============
 
-        // Livestreamer
-        settings.addBoolean("livestreamer", false);
-        settings.addString("livestreamerQualities", "Best, Worst, Select");
-        settings.addString("livestreamerCommand", "livestreamer");
-        settings.addBoolean("livestreamerUseAuth", false);
-        settings.addBoolean("livestreamerShowDialog", true);
+        // Streamlink
+        settings.addBoolean("streamlink", false);
+        settings.addString("streamlinkQualities", "Best, Worst, Select");
+        settings.addString("streamlinkCommand", "streamlink");
+        settings.addBoolean("streamlinkUseAuth", false);
+        settings.addBoolean("streamlinkShowDialog", true);
 
         // Stream Highlights
         settings.addString("streamHighlightCommand", "!highlight");
