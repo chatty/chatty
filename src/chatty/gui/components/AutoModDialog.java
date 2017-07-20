@@ -290,7 +290,7 @@ public class AutoModDialog extends JDialog {
     }
     
     private void addItem(ModeratorActionData modData) {
-        if (modData.args.size() != 2 || modData.msgId.isEmpty()) {
+        if (modData.args.size() < 2 || modData.msgId.isEmpty()) {
             return;
         }
         

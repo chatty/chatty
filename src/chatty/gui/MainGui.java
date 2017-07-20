@@ -2974,17 +2974,14 @@ public class MainGui extends JFrame implements Runnable {
                 String channel = Helper.toValidChannel(data.stream);
                 if (channels.isChannel(channel)) {
                     // Output directly to chat (if enabled)
-                    if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED) {
+                    if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED
+                            && data.args.size() > 1) {
                         // Automod
                         String username = data.args.get(0);
-                        String message = StringUtil.join(data.args, " ", 1);
+                        String message = data.args.get(1);
                         if (client.settings.getBoolean("showAutoMod")) {
                             User user = client.getUser(channel, username);
                             channels.getChannel(channel).printMessage(new AutoModMessage(user, message, data.msgId));
-//                            channels.getChannel(channel).printLine(
-//                                    String.format("[AutoMod] <%s> %s",
-//                                            username,
-//                                            message));
                         }
                         notificationManager.autoModMessage(channel, username, message);
                     } else if (!ownAction && client.settings.getBoolean("showModActions")) {
