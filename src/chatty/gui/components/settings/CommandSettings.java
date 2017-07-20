@@ -8,6 +8,7 @@ import chatty.gui.components.menus.TestContextMenu;
 import chatty.util.commands.CustomCommand;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.awt.Window;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -145,13 +146,14 @@ public class CommandSettings extends SettingsPanel {
         items.setTester(new Editor.Tester() {
 
             @Override
-            public void test(Component component, int x, int y, String value) {
+            public String test(Window parent, Component component, int x, int y, String value) {
                 CustomCommand command = null;
                 String[] split = value.split(" ", 2);
                 if (split.length == 2) {
                     command = CustomCommand.parse(split[1].trim());
                 }
                 showCommandInfoPopup(component, command);
+                return null;
             }
         });
         items.setInfo(INFO_COMMANDS);
@@ -166,9 +168,10 @@ public class CommandSettings extends SettingsPanel {
         Editor.Tester menuTester = new Editor.Tester() {
 
             @Override
-            public void test(Component component, int x, int y, String value) {
+            public String test(Window parent, Component component, int x, int y, String value) {
                 ContextMenu m = new TestContextMenu(value);
                 m.show(component, x, y);
+                return null;
             }
         };
         

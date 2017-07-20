@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -209,6 +210,8 @@ public class Highlighter {
         private boolean noSound;
         private boolean appliesToInfo;
         
+        private boolean error;
+        
         private final Set<Status> statusReq = new HashSet<>();
         private final Set<Status> statusReqNot = new HashSet<>();
         
@@ -358,6 +361,7 @@ public class Highlighter {
             try {
                 pattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
+                error = true;
                 LOGGER.warning("Invalid regex: " + ex);
             }
         }
@@ -366,8 +370,21 @@ public class Highlighter {
             try {
                 usernamePattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
+                error = true;
                 LOGGER.warning("Invalid username regex: " + ex);
             }
+        }
+        
+        public boolean matches(String text) {
+            return matches(null, text, StringUtil.toLowerCase(text), true);
+        }
+        
+        public boolean matches(String text, String lowercaseText) {
+            return matches(null, text, lowercaseText, true);
+        }
+        
+        public boolean matches(User user, String text, String lowercaseText) {
+            return matches(user, text, lowercaseText, false);
         }
         
         /**
@@ -379,7 +396,8 @@ public class Highlighter {
          *  it doesn't have to be made lowercase for every item)
          * @return true if it matches, false otherwise
          */
-        public boolean matches(User user, String text, String lowercaseText) {
+        private boolean matches(User user, String text, String lowercaseText,
+                boolean noUserRequired) {
             
             if (pattern != null && !pattern.matcher(text).matches()) {
                 return false;
@@ -394,7 +412,7 @@ public class Highlighter {
                 return false;
             }
             if (user == null) {
-                return appliesToInfo;
+                return appliesToInfo || noUserRequired;
             }
             // Everything else from here is user-based
             if (user != null && appliesToInfo) {
@@ -506,6 +524,10 @@ public class Highlighter {
         
         public boolean noSound() {
             return noSound;
+        }
+        
+        public boolean hasError() {
+            return error;
         }
         
     }

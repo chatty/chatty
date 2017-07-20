@@ -4,9 +4,11 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.IgnoredMessages;
 import chatty.gui.components.LinkLabel;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -109,6 +111,14 @@ public class IgnoreSettings extends SettingsPanel {
             @Override
             public String format(String input) {
                 return input.trim();
+            }
+        });
+        items.setTester(new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                HighlighterTester tester = new HighlighterTester(parent, value);
+                return tester.test();
             }
         });
         base.add(items, gbc);

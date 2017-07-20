@@ -262,7 +262,10 @@ public class Editor {
                 dialog.pack();
             } else if (e.getSource() == testButton) {
                 if (tester != null) {
-                    tester.test(testButton, 0, testButton.getHeight(), input.getText());
+                    String changed = tester.test(dialog, testButton, 0, testButton.getHeight(), input.getText());
+                    if (changed != null) {
+                        input.setText(changed);
+                    }
                 }
             }
             
@@ -328,7 +331,7 @@ public class Editor {
     }
     
     public interface Tester {
-        public void test(Component component, int x, int y, String value);
+        public String test(Window parent, Component component, int x, int y, String value);
     }
 
 }
