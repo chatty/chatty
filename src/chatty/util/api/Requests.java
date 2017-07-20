@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.CommunitiesManager.CommunitiesListener;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.CommunitiesManager.CommunityListener;
 import chatty.util.api.CommunitiesManager.CommunityPutListener;
@@ -15,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -325,6 +327,29 @@ public class Requests {
         });
     }
     
+    public void setCommunities(String userId, List<String> communityIds,
+            String token, CommunityPutListener listener) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setToken(token);
+        request.setContentType("application/x-www-form-urlencoded");
+        String data = "";
+        if (!communityIds.isEmpty()) {
+            for (String id : communityIds) {
+                data += "&community_ids%5B%5D=" + id;
+            }
+            data = data.substring(1);
+        }
+        request.setData(data, "PUT");
+        execute(request, r -> {
+            if (r.responseCode == 204) {
+                listener.result(null);
+            } else {
+                listener.result("Error");
+            }
+        });
+    }
+    
     public void getCommunity(String userId, CommunityListener listener) {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
@@ -337,6 +362,26 @@ public class Requests {
                     listener.received(null, "Community error");
                 } else {
                     api.communitiesManager.addCommunity(result);
+                    listener.received(result, null);
+                }
+            }
+        });
+    }
+    
+    public void getCommunities(String userId, CommunitiesListener listener) {
+        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        execute(request, r -> {
+            if (r.responseCode == 204 || r.responseCode == 404) { // 404 just in case Twitch changes it
+                listener.received(null, null);
+            } else {
+                List<Community> result = CommunitiesManager.parseCommunities(r.text);
+                if (result == null) {
+                    listener.received(null, "Communities error");
+                } else {
+                    for (Community c : result) {
+                        api.communitiesManager.addCommunity(c);
+                    }
                     listener.received(result, null);
                 }
             }

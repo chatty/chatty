@@ -12,19 +12,21 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import static java.awt.event.InputEvent.ALT_DOWN_MASK;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -41,11 +43,14 @@ public class SelectCommunityDialog extends JDialog {
             + "Twitch currently does not offer a search API, so enter the exact "
             + "name of a community and click 'Search' (or press Enter) to verify it's name.";
 
+    private static final ImageIcon ADD_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-add.png"));
+    private static final ImageIcon REMOVE_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-remove.png"));
+    
     private final MainGui main;
     private final TwitchApi api;
 
     // General Buttons
-    private final JButton ok = new JButton("Ok");
+    private final JButton ok = new JButton("Save changes");
     private final JButton cancel = new JButton("Cancel");
     
     // Game search/fav buttons
@@ -63,11 +68,19 @@ public class SelectCommunityDialog extends JDialog {
     private final DefaultListModel<Community> listData = new DefaultListModel<>();
     private final JTextPane description = new JTextPane();
     
+    // Currently selected communities
+    private final JPanel currentPanel = new JPanel();
+    private final JButton addButton = new JButton("Add selected");
+    
+    private static final int MAX_COMMUNITIES = 3;
+    
     // Current games data seperate from GUI
     private final Set<Community> favorites = new TreeSet<>();
     private final Set<Community> searchResult = new TreeSet<>();
     
-    private Community current;
+    private Community selected;
+    private final List<Community> current = new ArrayList<>();
+    private final List<Community> preset = new ArrayList<>();
     private final Timer timer;
     private long lastSelectionTime;
     private boolean loading;
@@ -77,7 +90,7 @@ public class SelectCommunityDialog extends JDialog {
     private boolean save;
     
     public SelectCommunityDialog(MainGui main, TwitchApi api) {
-        super(main, "Select community", true);
+        super(main, "Choose up to "+MAX_COMMUNITIES+" communities", true);
         setResizable(true);
         
         this.main = main;
@@ -92,12 +105,24 @@ public class SelectCommunityDialog extends JDialog {
         Action doneAction = new DoneAction();
         list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "useSelectedGame");
         list.getActionMap().put("useSelectedGame", doneAction);
-        list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F, 0), "toggleFavorite");
+        list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_F, ALT_DOWN_MASK), "toggleFavorite");
         list.getActionMap().put("toggleFavorite", new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleFavorite();
+            }
+        });
+        list.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                openListContextMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openListContextMenu(e);
             }
         });
         
@@ -151,13 +176,13 @@ public class SelectCommunityDialog extends JDialog {
         
         gbc = makeGbc(0, 4, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 0.1;
+        gbc.weightx = 0;
         gbc.weighty = 1;
         add(new JScrollPane(list), gbc);
         
-        gbc = makeGbc(2, 4, 3, 1);
+        gbc = makeGbc(2, 4, 3, 2);
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 0.9;
+        gbc.weightx = 1;
         gbc.weighty = 1;
         description.setEditable(false);
         description.setContentType("text/html");
@@ -165,24 +190,36 @@ public class SelectCommunityDialog extends JDialog {
  
         gbc = makeGbc(0,5,1,1);
         addToFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         add(addToFavoritesButton, gbc);
         
         removeFromFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
         gbc = makeGbc(1,5,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         add(removeFromFavoritesButton, gbc);
         
-        ok.setMnemonic(KeyEvent.VK_ENTER);
-        gbc = makeGbc(0,6,3,1);
+        gbc = makeGbc(0,6,5,1);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 5, 0, 5);
+        //add(new JLabel("Currently chosen Communities:"), gbc);
+        
+        gbc = makeGbc(0,7,5,1);
+        gbc.anchor = GridBagConstraints.WEST;
+        add(currentPanel, gbc);
+        
+        ok.setMnemonic(KeyEvent.VK_S);
+        gbc = makeGbc(0,8,3,1);
         gbc.weightx = 0.5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(ok, gbc);
         
         cancel.setMnemonic(KeyEvent.VK_C);
-        gbc = makeGbc(3,6,2,1);
+        gbc = makeGbc(3,8,2,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(cancel, gbc);
 
@@ -198,23 +235,6 @@ public class SelectCommunityDialog extends JDialog {
         addToFavoritesButton.addActionListener(actionListener);
         removeFromFavoritesButton.addActionListener(actionListener);
         clearSearchButton.addActionListener(actionListener);
-        input.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-        });
         
         description.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -222,6 +242,14 @@ public class SelectCommunityDialog extends JDialog {
                 UrlOpener.openUrlPrompt(SelectCommunityDialog.this, url, true);
             }
         });
+        
+        // Button for currentPanel
+        addButton.setMargin(new Insets(0, 3, 0, 4));
+        addButton.addActionListener(e -> {
+            addSelected();
+        });
+        addButton.setToolTipText("Tip: Double-click on list entry to add");
+        addButton.setIcon(ADD_ICON);
         
         updateFavoriteButtons();
         
@@ -238,12 +266,16 @@ public class SelectCommunityDialog extends JDialog {
      * @return The name of the game to use, or {@code null} if the game should
      * not be changed
      */
-    public Community open(Community preset) {
+    public List<Community> open(List<Community> preset) {
         timer.start();
+        this.preset.clear();
+        this.preset.addAll(preset);
         setCurrent(preset);
         loadFavorites();
-        if (preset != Community.EMPTY && !favorites.contains(preset)) {
-            searchResult.add(preset);
+        for (Community c : preset) {
+            if (c != Community.EMPTY && !favorites.contains(c)) {
+                searchResult.add(c);
+            }
         }
         update();
         save = false;
@@ -252,7 +284,7 @@ public class SelectCommunityDialog extends JDialog {
         // Blocking dialog, so stuff can change in the meantime
         timer.stop();
         if (save) {
-            return current != null ? current : Community.EMPTY;
+            return current;
         }
         return null;
     }
@@ -265,24 +297,115 @@ public class SelectCommunityDialog extends JDialog {
         setVisible(false);
     }
     
-    private void setCurrent(Community c) {
+    private void setCurrent(List<Community> data) {
+        current.clear();
+        current.addAll(data);
+        updateCurrent();
+    }
+    
+    /**
+     * Update the display of the currently chosen Communities, this means
+     * adding the labels and buttons to remove them.
+     */
+    private void updateCurrent() {
+        currentPanel.removeAll();
+        if (current.isEmpty()) {
+            currentPanel.add(new JLabel("No Community chosen."));
+        } else {
+            for (Community c : current) {
+                JLabel label = new JLabel(c.toString());
+                currentPanel.add(label);
+                JButton removeButton = new JButton(REMOVE_ICON);
+                removeButton.setToolTipText("Remove '"+c.toString()+"'");
+                removeButton.setMargin(new Insets(0,0,0,0));
+                removeButton.setSize(10, 10);
+                removeButton.addActionListener(e -> {
+                    current.remove(c);
+                    updateCurrent();
+                });
+                currentPanel.add(removeButton);
+            }
+        }
+        // Only add "Add" button if less then max Communities are chosen
+        if (current.size() < 3) {
+            currentPanel.add(addButton);
+        }
+        revalidate();
+        // Make dialog bigger if necessary
+        if (currentPanel.getPreferredSize().width+20 > getWidth()) {
+            setSize(currentPanel.getPreferredSize().width+20, getHeight());
+        }
+        updateAddButton();
+        updateOkButton();
+    }
+    
+    /**
+     * Add the Communities currently selected in the list.
+     */
+    private void addSelected() {
+        for (Community c : list.getSelectedValuesList()) {
+            if (canAddCommunity(c)) {
+                current.add(c);
+                updateCurrent();
+            }
+        }
+    }
+    
+    /**
+     * Check if one of the currently selected Communities can be added.
+     * 
+     * @return 
+     */
+    private boolean canAddSomething() {
+        for (Community c : list.getSelectedValuesList()) {
+            if (canAddCommunity(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Check if the given Community can be added, so if any can be added and if
+     * this one isn't added yet.
+     * 
+     * @param c
+     * @return 
+     */
+    private boolean canAddCommunity(Community c) {
+        return c != null && c != Community.EMPTY
+                && current.size() < MAX_COMMUNITIES
+                && !current.contains(c);
+    }
+   
+    private void updateAddButton() {
+        addButton.setEnabled(canAddSomething());
+    }
+    
+    /**
+     * An entry has been selected in the list.
+     * 
+     * @param c 
+     */
+    private void setSelected(Community c) {
         if (c == null) {
-            current = null;
+            selected = null;
             input.setText(null);
         } else {
-            current = c;
+            selected = c;
             input.setText(c.toString());
         }
         updateInfo();
+        updateAddButton();
     }
     
     private void updateInfo() {
-        if (current == null || current.isValid()) {
+        if (selected == null || selected.isValid()) {
             description.setText("Nothing to see here.");
             return;
         }
         
-        Community maybe = api.getCachedCommunityInfo(current.getId());
+        Community maybe = api.getCachedCommunityInfo(selected.getId());
         if (maybe != null) {
             description.setText(String.format(
                     "<html><body style='font: sans-serif 9pt;padding:3px;'>%s<h2 style='font-size:12pt;border-bottom: 1px solid black'>Rules</h2>%s",
@@ -292,13 +415,13 @@ public class SelectCommunityDialog extends JDialog {
         } else {
             description.setText("Loading..");
             lastSelectionTime = System.currentTimeMillis();
-            shouldMaybeRequest = current;
+            shouldMaybeRequest = selected;
         }
     }
     
     private void loadCurrentInfo() {
-        if (!loading && current != null && current == shouldMaybeRequest) {
-            final Community forRequest = current;
+        if (!loading && selected != null && selected == shouldMaybeRequest) {
+            final Community forRequest = selected;
             // This should only be done if cached info could not be found
             loading = true;
             shouldMaybeRequest = null;
@@ -332,8 +455,8 @@ public class SelectCommunityDialog extends JDialog {
      */
     private void update() {
         listData.clear();
-        for (Community game : searchResult) {
-            listData.addElement(game);
+        for (Community c : searchResult) {
+            listData.addElement(c);
         }
         if (!searchResult.isEmpty() && !favorites.isEmpty()) {
             listData.addElement(Community.EMPTY);
@@ -343,7 +466,7 @@ public class SelectCommunityDialog extends JDialog {
         }
         searchResultInfo.setText("Search: "+searchResult.size()+" / "
             +"Favorites: "+favorites.size()+"");
-        list.setSelectedValue(current, false);
+        list.setSelectedValue(selected, false);
     }
     
     private void doSearch() {
@@ -361,7 +484,7 @@ public class SelectCommunityDialog extends JDialog {
                         searchResultInfo.setText("An error occured.");
                     }
                 } else {
-                    setCurrent(r);
+                    setSelected(r);
                     // Update cached name, if necessary (not sure if Communities
                     // can even change name, but it's certainly not impossible).
                     // Do it here because the result from the API should be
@@ -433,7 +556,7 @@ public class SelectCommunityDialog extends JDialog {
     private void saveFavorites() {
         Map<String, String> favs = new HashMap<>();
         for (Community c : favorites) {
-            favs.put(c.getId(), c.getName());
+            favs.put(c.getId(), c.getCapitalizedName());
         }
         main.setCommunityFavorites(favs);
     }
@@ -469,9 +592,7 @@ public class SelectCommunityDialog extends JDialog {
     }
     
     private void updateOkButton() {
-        boolean enabled = current != null && input.getText().equals(current.getName());
-        ok.setEnabled(enabled);
-        openUrl.setEnabled(enabled);
+        ok.setEnabled(!preset.equals(current));
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -493,7 +614,7 @@ public class SelectCommunityDialog extends JDialog {
     private void updateGameFromSelection() {
         Community selected = list.getSelectedValue();
         if (selected != null) {
-            setCurrent(selected);
+            setSelected(selected);
         }
     }
     
@@ -505,6 +626,62 @@ public class SelectCommunityDialog extends JDialog {
      */
     private void itemSelected() {
         updateGameFromSelection();
+    }
+    
+    private void openListContextMenu(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            selectClicked(e, false);
+
+            List<Community> listSelected = list.getSelectedValuesList();
+            JPopupMenu menu = new JPopupMenu();
+            menu.add(new AbstractAction("Replace All") {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setCurrent(listSelected);
+                    updateCurrent();
+                }
+            });
+
+            if (listSelected.size() == 1
+                    && !current.isEmpty()
+                    && !current.contains(list.getSelectedValue())) {
+                menu.addSeparator();
+                for (Community c : current) {
+                    menu.add(new AbstractAction("Replace '" + c + "'") {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Community replaceWith = list.getSelectedValue();
+                            current.replaceAll(item -> {
+                                if (item.equals(c)) {
+                                    return replaceWith;
+                                }
+                                return item;
+                            });
+                            updateCurrent();
+                        }
+                    });
+                }
+            }
+            menu.show(list, e.getX(), e.getY());
+        }
+    }
+    
+    private void selectClicked(MouseEvent e, boolean onlyOutside) {
+        int index = list.locationToIndex(e.getPoint());
+        Rectangle bounds = list.getCellBounds(index, index);
+        if (bounds != null && bounds.contains(e.getPoint())) {
+            if (!onlyOutside) {
+                if (list.isSelectedIndex(index)) {
+                    list.addSelectionInterval(index, index);
+                } else {
+                    list.setSelectedIndex(index);
+                }
+            }
+        } else {
+            list.clearSelection();
+        }
     }
     
     private class MyActionListener implements ActionListener {
@@ -535,9 +712,9 @@ public class SelectCommunityDialog extends JDialog {
                 update();
             }
             if (e.getSource() == openUrl) {
-                if (current != null && !current.getName().isEmpty()) {
+                if (selected != null && !selected.getName().isEmpty()) {
                     UrlOpener.openUrlPrompt(main,
-                            Helper.buildUrlString("https", "twitch.tv", "/communities/"+current.getName()));
+                            Helper.buildUrlString("https", "twitch.tv", "/communities/"+selected.getName()));
                 }
             }
         }
@@ -561,7 +738,7 @@ public class SelectCommunityDialog extends JDialog {
         public void mouseClicked(MouseEvent e) {
             itemSelected();
             if (e.getClickCount() == 2) {
-                useGameAndClose();
+                addSelected();
             }
         }
     }
@@ -570,7 +747,7 @@ public class SelectCommunityDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            useGameAndClose();
+            addSelected();
         }
         
     }

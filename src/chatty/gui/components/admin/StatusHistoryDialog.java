@@ -43,7 +43,7 @@ public class StatusHistoryDialog extends JDialog {
     private final StatusHistory history;
     
     private final JButton useTitleButton = new JButton("Use title only");
-    private final JButton useAllButton = new JButton("Use status (title/game/community)");
+    private final JButton useAllButton = new JButton("Use status (title/game/communities)");
     private final JButton cancelButton = new JButton("Close");
     private final StatusHistoryTable table;
     private final JCheckBox filterCurrentGame = new JCheckBox("Current game");
@@ -144,7 +144,7 @@ public class StatusHistoryDialog extends JDialog {
         
         pack();
         setMinimumSize(new Dimension(getPreferredSize().width, 200));
-        setSize(new Dimension(700,400));
+        setSize(new Dimension(740,400));
     }
     
     private void addShortcuts() {

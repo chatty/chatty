@@ -3,6 +3,7 @@ package chatty.gui.components.admin;
 
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
+import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -31,7 +32,7 @@ import javax.swing.table.TableRowSorter;
  */
 public class StatusHistoryTable extends JTable {
     
-    private final Model data = new Model(new String[]{"Fav","Title","Game","Community","Last Activity","Usage"});
+    private final Model data = new Model(new String[]{"Fav","Title","Game","Communities","Last Activity","Usage"});
     private final TableRowSorter sorter;
     private final JPopupMenu contextMenu;
     
@@ -44,19 +45,21 @@ public class StatusHistoryTable extends JTable {
         sorter = new TableRowSorter(data);
         this.contextMenu = contextMenu;
         setRowSorter(sorter);
-        TableColumn tc = getColumnModel().getColumn(1);
-        tc.setCellRenderer(new LineWrapCellRenderer());
+        TableColumn tc = getColumnModel().getColumn(1); // Title
+        tc.setCellRenderer(new LineWrapCellRenderer(true));
+        TableColumn tc2 = getColumnModel().getColumn(3); // Communities
+        tc2.setCellRenderer(new LineWrapCellRenderer(true));
         setGridColor(new Color(200,200,200));
         
         getColumnModel().getColumn(4).setCellRenderer(new LastActivityRenderer());
         getColumnModel().getColumn(0).setCellRenderer(new FavoriteRenderer());
         
-        setColumnWidth(0, 30, 30, 30);
-        setColumnWidth(1, 200, 0, 0);
-        setColumnWidth(2, 120, 0, 0);
-        setColumnWidth(3, 100, 0, 0);
-        setColumnWidth(4, 100, 100, 100);
-        setColumnWidth(5, 50, 50, 50);
+        setColumnWidth(0, 30, 30, 30);  // Fav
+        setColumnWidth(1, 200, 0, 0);   // Title
+        setColumnWidth(2, 120, 0, 0);   // Game
+        setColumnWidth(3, 140, 0, 0);   // Communities
+        setColumnWidth(4, 100, 100, 100); // Last Activity
+        setColumnWidth(5, 50, 50, 50);  // Usage
         
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
@@ -223,9 +226,9 @@ public class StatusHistoryTable extends JTable {
     }
     
     private static class LineWrapCellRenderer extends JTextArea implements TableCellRenderer {
-
-        LineWrapCellRenderer() {
-            setWrapStyleWord(true);
+        
+        LineWrapCellRenderer(boolean wordWrap) {
+            setWrapStyleWord(wordWrap);
             setLineWrap(true);
         }
         
@@ -235,15 +238,13 @@ public class StatusHistoryTable extends JTable {
             int cWidth = table.getTableHeader().getColumnModel().getColumn(column).getWidth();
             setSize(new Dimension(cWidth, 1000));       
             final int height = getPreferredSize().height;
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    if (table.getRowCount() > row) {
-                        table.setRowHeight(row, height);
-                    }
-                }
-            });
+            /**
+             * Setting the row height triggers a repaint, so make sure to only
+             * do it when necessary. This still seems a bit dodgy though.
+             */
+            if (table.getRowHeight(row) < height) {
+                table.setRowHeight(row, height);
+            }
             
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
@@ -307,7 +308,7 @@ public class StatusHistoryTable extends JTable {
             } else if (columnIndex == 2) {
                 return entry.game;
             } else if (columnIndex == 3) {
-                return entry.community.getName();
+                return StringUtil.join(entry.communities, ", ");
             } else if (columnIndex == 4) {
                 return entry.lastActivity;
             } else if (columnIndex == 5) {

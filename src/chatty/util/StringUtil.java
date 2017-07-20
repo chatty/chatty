@@ -35,15 +35,15 @@ public class StringUtil {
         return result;
     }
     
-    public static String join(Collection<String> items, String delimiter) {
+    public static String join(Collection<?> items, String delimiter) {
         return join(items, delimiter, -1, -1);
     }
     
-    public static String join(Collection<String> items, String delimiter, int start) {
+    public static String join(Collection<?> items, String delimiter, int start) {
         return join(items, delimiter, start, -1);
     }
     
-    public static String join(Collection<String> items, String delimiter, int start, int end) {
+    public static String join(Collection<?> items, String delimiter, int start, int end) {
         if (items.isEmpty()) {
             return "";
         }
@@ -51,10 +51,10 @@ public class StringUtil {
         end = end > -1 ? end : items.size();
         
         StringBuilder b = new StringBuilder();
-        Iterator<String> it = items.iterator();
+        Iterator<?> it = items.iterator();
         int i = 0;
         while (it.hasNext()) {
-            String next = it.next();
+            String next = it.next().toString();
             if (i >= start && i < end) {
                 b.append(next);
                 if (it.hasNext() && i+1 < end) {
