@@ -535,10 +535,11 @@ public class Channel extends JPanel {
      * 
      * @param text
      * @param withSpace 
+     * @param forceSpaceAfter
      * @throws NullPointerException if the text is null
      */
-    public void insertText(String text, boolean withSpace) {
-        input.insertAtCaret(text, withSpace);
+    public void insertText(String text, boolean withSpace, boolean forceSpaceAfter) {
+        input.insertAtCaret(text, withSpace, forceSpaceAfter);
     }
     
     private static class ScrollAction extends AbstractAction {

@@ -28,6 +28,7 @@ public class UserContextMenu extends ContextMenu {
         this.autoModMsgId = autoModMsgId;
         
         addItem("userinfo", "User: "+user.getDisplayNick());
+        addItem("userMention", "Mention @"+user.getDisplayNick());
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
