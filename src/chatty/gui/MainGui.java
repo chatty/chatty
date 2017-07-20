@@ -2628,7 +2628,7 @@ public class MainGui extends JFrame implements Runnable {
                 if (ignored && (ignoreMode <= IgnoredMessages.MODE_COUNT || 
                         !showIgnoredInfo())) {
                     // Don't print message
-                    if (isOwnMessage) {
+                    if (isOwnMessage && ignoreMode != IgnoredMessages.MODE_HIDE) {
                         printLine(channel, "Own message ignored.");
                     }
                 } else {
