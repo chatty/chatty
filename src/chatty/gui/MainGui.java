@@ -2540,7 +2540,7 @@ public class MainGui extends JFrame implements Runnable {
     
     public void printMessage(final String toChan, final User user,
             final String text, final boolean action, final String emotes,
-            final int bits2, final String id) {
+            final int origBits, final String id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -2549,7 +2549,7 @@ public class MainGui extends JFrame implements Runnable {
                 boolean whisper = false;
                 
                 // Disable Cheer emotes altogether if disabled in the settings
-                int bits = bits2;
+                int bits = origBits;
                 if (client.settings.getString("cheersType").equals("none")) {
                     bits = 0;
                 }
@@ -2603,12 +2603,13 @@ public class MainGui extends JFrame implements Runnable {
                     notificationManager.highlight(user, text,
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound(),
-                            isOwnMessage, whisper);
+                            isOwnMessage, whisper, origBits > 0);
                 } else if (!ignored) {
                     if (whisper) {
                         notificationManager.whisper(user, text, isOwnMessage);
                     } else {
-                        notificationManager.message(user, text, isOwnMessage);
+                        notificationManager.message(user, text, isOwnMessage,
+                                origBits > 0);
                     }
                     if (!isOwnMessage) {
                         channels.setChannelNewMessage(chan);

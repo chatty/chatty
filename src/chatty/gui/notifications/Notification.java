@@ -58,6 +58,7 @@ public class Notification {
         private static Map<String, String> createMessageSubtypes() {
             Map<String, String> result = new LinkedHashMap<>();
             result.put("own", "Trigger on own messages as well");
+            result.put("bits", "Trigger only on messages containing bits");
             return result;
         }
     }

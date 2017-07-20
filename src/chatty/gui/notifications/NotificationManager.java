@@ -87,9 +87,13 @@ public class NotificationManager {
     }
     
     public void highlight(User user, String message, boolean noNotify,
-            boolean noSound, boolean isOwnMessage, boolean isWhisper) {
+            boolean noSound, boolean isOwnMessage, boolean isWhisper,
+            boolean hasBits) {
         check(null, user.getChannel(), user, message, noNotify, noSound, n -> {
             if (isOwnMessage && !n.hasOption("own")) {
+                return null;
+            }
+            if (!hasBits && n.hasOption("bits")) {
                 return null;
             }
             if (n.type == Type.HIGHLIGHT) {
@@ -109,9 +113,13 @@ public class NotificationManager {
         });
     }
     
-    public void message(User user, String message, boolean isOwnMessage) {
+    public void message(User user, String message, boolean isOwnMessage,
+            boolean hasBits) {
         check(Type.MESSAGE, user.getChannel(), user, message, n -> {
             if (isOwnMessage && !n.hasOption("own")) {
+                return null;
+            }
+            if (!hasBits && n.hasOption("bits")) {
                 return null;
             }
             String title = String.format("[Message] %s in %s",

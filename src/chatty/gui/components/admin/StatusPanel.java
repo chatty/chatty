@@ -490,7 +490,7 @@ public class StatusPanel extends JPanel {
         main.getStatusHistory().updateCommunityName(c);
         Map<String, String> communities = main.getCommunityFavorites();
         if (communities.containsKey(c.getId())) {
-            communities.put(c.getId(), c.getName());
+            communities.put(c.getId(), c.getCapitalizedName());
             main.setCommunityFavorites(communities);
         }
     }
