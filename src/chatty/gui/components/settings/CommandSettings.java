@@ -89,7 +89,7 @@ public class CommandSettings extends SettingsPanel {
         if (type.equals("userDialog")) {
             info += "<p><em>Note:</em> You can also add [help-commands:shortcuts shortcuts] in brackets, "
                     + "which can be triggered when the User Dialog has focus "
-                    + "(<code>/Ban[B]</code>).";
+                    + "(<code>/Ban[B]</code> or <code>Slap[B]=/me ..</code>).";
         }
         
         info += INFO_MORE;
