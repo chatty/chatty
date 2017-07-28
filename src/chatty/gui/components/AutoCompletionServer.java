@@ -112,6 +112,17 @@ public interface AutoCompletionServer {
             }
             return info.get(item);
         }
+        
+        /**
+         * Add the items and info of the given CompletionItems object to the end
+         * of this one.
+         * 
+         * @param other 
+         */
+        public void append(CompletionItems other) {
+            items.addAll(other.items);
+            info.putAll(other.info);
+        }
     }
 }
 

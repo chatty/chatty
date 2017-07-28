@@ -69,7 +69,9 @@ public class UserInfo extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                setVisible(false);
+                if (settings.getBoolean("closeUserDialogOnAction")) {
+                    setVisible(false);
+                }
                 owner.getActionListener().actionPerformed(e);
             }
         });

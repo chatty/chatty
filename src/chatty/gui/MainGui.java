@@ -4122,6 +4122,10 @@ public class MainGui extends JFrame implements Runnable {
         return (String)client.settings.mapGet("customCompletion", key);
     }
     
+    public Collection<String> getCustomCommandNames() {
+        return client.customCommands.getCommandNames();
+    }
+    
     public void updateEmoteNames() {
         SwingUtilities.invokeLater(new Runnable() {
 

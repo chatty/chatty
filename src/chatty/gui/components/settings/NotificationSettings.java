@@ -284,6 +284,7 @@ public class NotificationSettings extends SettingsPanel {
         String warningText = "";
         if (files == null) {
             resultText = "Error scanning folder.";
+            editor.setSoundFiles(path, new String[0]);
         } else {
             if (files.length == 0) {
                 resultText = "No sound files found.";
@@ -296,22 +297,6 @@ public class NotificationSettings extends SettingsPanel {
             }
             Arrays.sort(fileNames);
             editor.setSoundFiles(path, fileNames);
-//            for (ComboStringSetting s : fileSettings.keySet()) {
-//                Object selected = s.getSelectedItem();
-//                s.removeAllItems();
-//                boolean currentOneStillThere = false;
-//                for (String item : fileNames) {
-//                    if (item.equals(selected)) {
-//                        currentOneStillThere = true;
-//                    }
-//                    s.add(item);
-//                }
-//                if (!currentOneStillThere && selected != null) {
-//                    warningText += "\n'"+selected+"' (used as "+fileSettings.get(s)+" sound) wasn't found.";
-//                } else {
-//                    s.setSelectedItem(selected);
-//                }
-//            }
         }
         if (showMessage) {
             JOptionPane.showMessageDialog(this, resultText+warningText);

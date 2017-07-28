@@ -73,7 +73,7 @@ public class EmoteContextMenu extends ContextMenu {
         }
         
         // Emoteset information
-        if (emote.emoteSet > Emoticon.SET_UNDEFINED) {
+        if (emote.emoteSet > Emoticon.SET_GLOBAL) {
             addSeparator();
             if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
                 addItem("twitchturbolink", "Turbo Emoticon");

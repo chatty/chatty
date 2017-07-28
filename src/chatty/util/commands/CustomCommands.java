@@ -7,7 +7,9 @@ import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.settings.Settings;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,6 +138,10 @@ public class CustomCommands {
                 }
             }
         }
+    }
+    
+    public synchronized Collection<String> getCommandNames() {
+        return new HashSet<>(commands.keySet());
     }
     
     /**

@@ -2,19 +2,17 @@
 package chatty.gui.components;
 
 import chatty.Helper;
+import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamInfosContextMenu;
 import chatty.util.DateTime;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -28,7 +26,6 @@ import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
@@ -189,49 +186,8 @@ public class LiveStreamsList extends JList<StreamInfo> {
         }
     }
     
-    /**
-     * Open context menu for this user, if the event points at one.
-     * 
-     * @param e 
-     */
-    private void openContextMenu(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            selectClicked(e, false);
-            List<StreamInfo> selected = getSelectedValuesList();
-            StreamInfosContextMenu m = new StreamInfosContextMenu(selected, true);
-            for (ContextMenuListener cml : contextMenuListeners) {
-                m.addContextMenuListener(cml);
-            }
-            lastContextMenu = m;
-            m.show(this, e.getX(), e.getY());
-        }
-    }
-    
-    /**
-     * Adds selection of the clicked element, or removes selection if no
-     * element was clicked.
-     * 
-     * @param e
-     * @param onlyOutside 
-     */
-    private void selectClicked(MouseEvent e, boolean onlyOutside) {
-        int index = locationToIndex(e.getPoint());
-        Rectangle bounds = getCellBounds(index, index);
-        if (bounds != null && bounds.contains(e.getPoint())) {
-            if (!onlyOutside) {
-                if (isSelectedIndex(index)) {
-                    addSelectionInterval(index, index);
-                } else {
-                    setSelectedIndex(index);
-                }
-            }
-        } else {
-            clearSelection();
-        }
-    }
-    
     private void addListeners() {
-        ComponentListener l = new ComponentAdapter() {
+        ComponentListener cl = new ComponentAdapter() {
 
             @Override
             public void componentResized(ComponentEvent e) {
@@ -245,31 +201,30 @@ public class LiveStreamsList extends JList<StreamInfo> {
             }
 
         };
-        addComponentListener(l);
-        
-        addMouseListener(new MouseAdapter() {
-        
-            @Override
-            public void mousePressed(MouseEvent e) {
-                selectClicked(e, true);
-                openContextMenu(e);
-            }
-            
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                openContextMenu(e);
-            }
-            
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    StreamInfo info = getSelectedValue();
-                    if (info != null && liveStreamListener != null) {
-                        liveStreamListener.liveStreamClicked(info);
-                    }
+        addComponentListener(cl);
+
+        JListActionHelper.install(this, (a, l, s) -> {
+            if (a == Action.CONTEXT_MENU) {
+                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true);
+                for (ContextMenuListener cml : contextMenuListeners) {
+                    m.addContextMenuListener(cml);
+                }
+                lastContextMenu = m;
+                m.show(this, l.x, l.y);
+            } else if (a == Action.ENTER) {
+                List<String> channels = new ArrayList<>();
+                s.forEach(si -> channels.add(si.stream));
+                for (ContextMenuListener cml : contextMenuListeners) {
+                    cml.streamsMenuItemClicked(
+                            new ActionEvent(s, 0, "join"),
+                            channels);
+                }
+            } else if (a == Action.DOUBLE_CLICK || a == Action.SPACE) {
+                StreamInfo info = getSelectedValue();
+                if (info != null && liveStreamListener != null) {
+                    liveStreamListener.liveStreamClicked(info);
                 }
             }
-            
         });
     }
     

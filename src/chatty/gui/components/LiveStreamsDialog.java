@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.Chatty;
+import chatty.gui.GuiUtil;
 import chatty.gui.components.LiveStreamsList.ListDataChangedListener;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -10,10 +11,8 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
@@ -124,6 +123,7 @@ public class LiveStreamsDialog extends JFrame {
         
         
         channelInfo = new ChannelInfoDialog(this);
+        GuiUtil.installEscapeCloseOperation(channelInfo);
         channelInfo.addContextMenuListener(listener);
         
         // Add to dialog

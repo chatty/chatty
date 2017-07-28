@@ -266,6 +266,8 @@ public class SettingsManager {
         settings.addString("userContextMenu", "");
         settings.addString("channelContextMenu", "");
         settings.addString("streamsContextMenu", "");
+        
+        settings.addBoolean("closeUserDialogOnAction", true);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);
@@ -504,6 +506,8 @@ public class SettingsManager {
         settings.addBoolean("completionAllNameTypes", true);
         settings.addBoolean("completionPreferUsernames", true);
         settings.addBoolean("completionAllNameTypesRestriction", true);
+        settings.addString("completionTab", "names");
+        settings.addString("completionTab2", "emotes");
 
         // Stream Chat
         settings.addLong("streamChatMessageTimeout", -1);

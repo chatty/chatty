@@ -30,6 +30,13 @@ public class ModerationSettings extends SettingsPanel {
                 + "<code>Dialog: AutoMod Dialog</code> as action)."),
                 d.makeGbc(1, 6, 2, 1, GridBagConstraints.EAST));
         
+        JPanel bleh = addTitledPanel("Other Settings", 1);
+        
+        bleh.add(d.addSimpleBooleanSetting(
+                "closeUserDialogOnAction",
+                "Close User Info Dialog when performing action (Button)",
+                "After clicking on a button, the User Info Dialog will automatically close."),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
     }
     
 }
