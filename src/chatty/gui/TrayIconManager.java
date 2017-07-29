@@ -35,6 +35,7 @@ public class TrayIconManager {
             popup.add(exitItem);
 
             trayIcon = new TrayIcon(image, "Chatty");
+            trayIcon.setImageAutoSize(true);
             trayIcon.setPopupMenu(popup);
         } else {
             tray = null;
@@ -52,7 +53,7 @@ public class TrayIconManager {
     public void displayInfo(String title, String message) {
         if (trayIcon != null) {
             addIcon();
-            trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage(title, message, TrayIcon.MessageType.NONE);
         }
     }
     
