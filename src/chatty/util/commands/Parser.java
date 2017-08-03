@@ -132,6 +132,9 @@ public class Parser {
         else if (type.equals("ifeq")) {
             return ifEq(isRequired);
         }
+        else if (type.equals("lower")) {
+            return lower(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'");
             return null;
@@ -215,6 +218,13 @@ public class Parser {
         }
         expect(")");
         return new Join(identifier, separator, isRequired);
+    }
+    
+    private Item lower(boolean isRequired) throws ParseException {
+        expect("(");
+        Item identifier = identifier();
+        expect(")");
+        return new Lower(identifier, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {
