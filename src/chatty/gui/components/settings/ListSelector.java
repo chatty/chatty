@@ -37,6 +37,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     private final JButton moveUp = new JButton();
     private final JButton moveDown = new JButton();
     private final JButton sort = new JButton();
+    private final JButton editAll = new JButton();
     private final JTextField input = new JTextField();
     
     private String info;
@@ -44,6 +45,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     private DataFormatter<String> formatter;
     
     private final Editor editor;
+    private final Editor allEditor;
 
     public ListSelector(Window parent, boolean manualSorting,
             boolean alphabeticSorting) {
@@ -70,6 +72,9 @@ public class ListSelector extends JPanel implements ListSetting<String> {
                 }
                 else if (e.getSource() == sort) {
                     sort();
+                }
+                else if (e.getSource() == editAll) {
+                    editAll();
                 }
             }
         };
@@ -111,6 +116,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         configureButton(moveUp, "go-up.png", "Move selected item up");
         configureButton(moveDown, "go-down.png", "Move selected item down");
         configureButton(sort, "sort.png", "Sort list alphabetically");
+        configureButton(editAll, "edit-all.png", "Edit all entries at once");
         
         // Listeners
         add.addActionListener(buttonAction);
@@ -120,6 +126,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         moveUp.addActionListener(buttonAction);
         moveDown.addActionListener(buttonAction);
         sort.addActionListener(buttonAction);
+        editAll.addActionListener(buttonAction);
         
         list.setModel(data);
         
@@ -156,11 +163,13 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             gbc.gridy = 5;
             add(sort, gbc);
         }
+        gbc.gridy = 6;
+        add(editAll, gbc);
         
         gbc.weightx = 1;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridheight = 6;
+        gbc.gridheight = 7;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         add(new JScrollPane(list), gbc);
@@ -168,6 +177,9 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         updateEditButtons();
         
         editor = new Editor(parent);
+        allEditor = new Editor(parent);
+        allEditor.setAllowLinebreaks(true);
+        allEditor.setAllowEmpty(true);
     }
     
     public void setInfo(String info) {
@@ -176,6 +188,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     public void setInfoLinkLabelListener(LinkLabelListener listener) {
         editor.setLinkLabelListener(listener);
+        allEditor.setLinkLabelListener(listener);
     }
     
     public void setTester(Tester tester) {
@@ -235,6 +248,24 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             newValue = format(newValue);
             if (newValue != null && !newValue.isEmpty()) {
                 data.set(selectedIndex, newValue);
+            }
+        }
+    }
+    
+    private void editAll() {
+        StringBuilder b = new StringBuilder();
+        for (int i=0;i<data.size();i++) {
+            b.append(data.get(i)).append("\n");
+        }
+        String result = allEditor.showDialog("Edit all entries (one per line)", b.toString(), info);
+        if (result != null) {
+            String[] split = result.split("\n");
+            data.clear();
+            for (String item : split) {
+                item = format(item);
+                if (item != null && !item.isEmpty()) {
+                    data.addElement(item);
+                }
             }
         }
     }

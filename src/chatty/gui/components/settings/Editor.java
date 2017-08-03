@@ -10,6 +10,9 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +26,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import sun.awt.FontConfiguration;
 
 /**
  * Simple text editor dialog that can be opened with a description of the edit,
@@ -162,7 +166,11 @@ public class Editor {
 
         // Set initial size, now also based on the preset value
         dialog.pack();
-        dialog.setSize(dialog.getPreferredSize());
+        Dimension p = dialog.getPreferredSize();
+        Rectangle screen = parent.getGraphicsConfiguration().getBounds();
+        if (p.height > screen.height / 2) {
+            dialog.setSize(p.width, screen.height / 2);
+        }
         
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
@@ -202,7 +210,7 @@ public class Editor {
     
     /**
      * Set whether to allow linebrekas in the value. Otherwise linebreaks are
-     * filtered out when editing an replaced by a space. Default is false.
+     * filtered out when editing and replaced by a space. Default is false.
      * 
      * @param allow true to allow linebreaks
      */
@@ -293,8 +301,14 @@ public class Editor {
      * is bigger than the current size.
      */
     private void adjustSize() {
-        if (bigger(dialog.getPreferredSize(), dialog.getSize())) {
-            dialog.pack();
+        if (dialog.isVisible()) {
+            Dimension p = dialog.getPreferredSize();
+            Point bottomRight = dialog.getLocationOnScreen();
+            bottomRight.translate(p.width, p.height);
+            if (bigger(p, dialog.getSize())
+                    && GuiUtil.isPointOnScreen(bottomRight)) {
+                dialog.pack();
+            }
         }
     }
 
