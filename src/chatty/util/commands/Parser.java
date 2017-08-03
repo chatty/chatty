@@ -2,6 +2,7 @@
 package chatty.util.commands;
 
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,10 +66,30 @@ public class Parser {
      * @param message
      * @throws ParseException 
      */
-    private void error(String message) throws ParseException {
-        int pos = reader.pos() + 1;
-        String errorPos = input.substring(0, pos)+"<"+pos+">"+input.substring(pos, input.length());
-        throw new ParseException(message+" at pos <"+pos+"> ["+errorPos+"]", reader.pos());
+    private void error(String message, int offset) throws ParseException {
+        int pos = reader.pos() + offset;
+        
+        final int before = 30;
+        final int after = 20;
+        final String dotdot = "[..]";
+        
+        int start = pos > before+dotdot.length() ? pos - before : 0;
+        int end = input.length() > pos + after + dotdot.length() ? pos + after : input.length();
+        int displayPos = pos - start + 1; // +1 
+        String excerpt = input.substring(start, end);
+        if (start > 0) {
+            excerpt = dotdot+excerpt;
+            displayPos += dotdot.length();
+        }
+        if (end < input.length()) {
+            excerpt = excerpt+dotdot;
+        }
+        throw new ParseException(String.format("%s at pos %s\n %s\n%s^",
+                message,
+                pos+1,
+                excerpt,
+                String.join("", Collections.nCopies(displayPos, " "))
+        ), reader.pos());
     }
 
     /**
@@ -85,6 +106,10 @@ public class Parser {
             return true;
         }
         return false;
+    }
+    
+    private boolean peek(String character) {
+        return reader.hasNext() && reader.peek().equals(character);
     }
     
     private boolean acceptMatch(String regex) {
@@ -104,7 +129,7 @@ public class Parser {
      */
     private void expect(String character) throws ParseException {
         if (!reader.hasNext() || !reader.next().equals(character)) {
-            error("Expected "+character);
+            error("Expected '"+character+"'", 0);
         }
     }
     
@@ -115,10 +140,7 @@ public class Parser {
      * @throws ParseException 
      */
     private Item specialThing() throws ParseException {
-        boolean isRequired = false;
-        if (accept("$")) {
-            isRequired = true;
-        }
+        boolean isRequired = accept("$");
         String type = functionName();
         if (type.isEmpty()) {
             return replacement(isRequired);
@@ -136,7 +158,7 @@ public class Parser {
             return lower(isRequired);
         }
         else {
-            error("Invalid function '"+type+"'");
+            error("Invalid function '"+type+"'", 0);
             return null;
         }
     }
@@ -150,12 +172,12 @@ public class Parser {
         String ref = read("[a-zA-Z0-9-_]");
         Matcher m = Pattern.compile("([0-9])+(-)?").matcher(ref);
         if (ref.isEmpty()) {
-            error("Expected identifier");
+            error("Expected identifier", 1);
         }
         if (m.matches()) {
             int index = Integer.parseInt(m.group(1));
             if (index == 0) {
-                error("Invalid index 0");
+                error("Invalid numeric identifier 0", 0);
             }
             boolean toEnd = m.group(2) != null;
             return new RangeIdentifier(index, toEnd);
@@ -167,11 +189,11 @@ public class Parser {
     private Item tinyIdentifier() throws ParseException {
         String ref = read("[0-9]");
         if (ref.isEmpty()) {
-            error("Expected number");
+            error("Expected numeric identifier", 1);
         }
         int index = Integer.parseInt(ref);
         if (index == 0) {
-            error("Invalid index 0");
+            error("Invalid numeric identifer 0", 0);
         }
         boolean toEnd = false;
         if (accept("-")) {
@@ -182,7 +204,7 @@ public class Parser {
 
     private Item condition(boolean isRequired) throws ParseException {
         expect("(");
-        Item identifier = identifier();
+        Item identifier = peekParam();
         expect(",");
         Items output1 = param();
         Items output2 = null;
@@ -195,7 +217,7 @@ public class Parser {
     
     private Item ifEq(boolean isRequired) throws ParseException {
         expect("(");
-        Item identifier = identifier();
+        Item identifier = peekParam();
         expect(",");
         Items compare = param();
         expect(",");
@@ -210,11 +232,11 @@ public class Parser {
     
     private Item join(boolean isRequired) throws ParseException {
         expect("(");
-        Item identifier = identifier();
+        Item identifier = peekParam();
         expect(",");
         Items separator = parse("[)]");
         if (separator.isEmpty()) {
-            error("Expected separator string");
+            error("Expected separator string", 1);
         }
         expect(")");
         return new Join(identifier, separator, isRequired);
@@ -222,7 +244,7 @@ public class Parser {
     
     private Item lower(boolean isRequired) throws ParseException {
         expect("(");
-        Item identifier = identifier();
+        Item identifier = peekParam();
         expect(")");
         return new Lower(identifier, isRequired);
     }
@@ -249,6 +271,10 @@ public class Parser {
     
     private Items lastParam() throws ParseException {
         return parse("[)]");
+    }
+    
+    private Item peekParam() throws ParseException {
+        return peek("$") ? param() : identifier();
     }
     
     /**

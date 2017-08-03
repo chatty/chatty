@@ -70,7 +70,7 @@ public class CustomCommand {
         try {
             return new CustomCommand(parser.parse());
         } catch (ParseException ex) {
-            return new CustomCommand("Error: "+ex.getLocalizedMessage());
+            return new CustomCommand(ex.getLocalizedMessage());
         }
     }
     

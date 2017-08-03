@@ -221,11 +221,18 @@ public class CommandSettings extends SettingsPanel {
         if (command == null) {
             message += "No command.";
         } else if (command.hasError()) {
-            message += Helper.htmlspecialchars_encode(command.getError());
+            message += "<p style='font-family:monospaced;'>"
+                    + "Error: "+formatErrorMessage(command)+"</p>";
         } else {
             message += Helper.htmlspecialchars_encode(command.toString());
         }
-        GuiUtil.showNonModalMessage(parent, "Custom Command", message, JOptionPane.INFORMATION_MESSAGE, true);
+        GuiUtil.showNonModalMessage(parent, "Custom Command", message,
+                JOptionPane.INFORMATION_MESSAGE, true);
+    }
+    
+    public static String formatErrorMessage(CustomCommand command) {
+        return Helper.htmlspecialchars_encode(command.getError())
+                .replace("\n", "<br />").replace(" ", "&nbsp;");
     }
     
 }

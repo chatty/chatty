@@ -32,8 +32,11 @@ public class TestContextMenu extends ContextMenu {
         List<CommandMenuItem> items = CommandMenuItems.parse(value);
         for (CommandMenuItem item : items) {
             if (item.getCommand() != null && item.getCommand().getError() != null) {
-                String errorDescription = item.getLabel()+"="+item.getCommand().getError();
-                errorsInfo = StringUtil.append(errorsInfo, "\n", errorDescription);
+                String errorDescription = String.format(
+                        "<p style='font-family:monospaced;'>%s=Error: %s</p>",
+                        item.getLabel(),
+                        CommandSettings.formatErrorMessage(item.getCommand()));
+                errorsInfo = StringUtil.append(errorsInfo, "<br />", errorDescription);
                 errorCount++;
             }
         }
@@ -53,7 +56,7 @@ public class TestContextMenu extends ContextMenu {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("errors")) {
-            GuiUtil.showNonModalMessage(getInvoker(), "Errors", errorsInfo, JOptionPane.WARNING_MESSAGE);
+            GuiUtil.showNonModalMessage(getInvoker(), "Errors", errorsInfo, JOptionPane.WARNING_MESSAGE, true);
         }
         if (e instanceof CommandActionEvent) {
             CustomCommand command = ((CommandActionEvent)e).getCommand();
