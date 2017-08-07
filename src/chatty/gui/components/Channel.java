@@ -318,22 +318,33 @@ public class Channel extends JPanel {
         private CompletionItems getMainItems(String setting, String prefix, String search) {
             boolean preferUsernames = prefixesPreferUsernames.contains(prefix)
                         && main.getSettings().getBoolean("completionPreferUsernames");
-            if (setting.equals("names") || prefix.endsWith("@") || prefixesPreferUsernames.contains(prefix)) {
+            
+            // Check prefixes and other non-setting dependant stuff first
+            if (prefix.endsWith("@") || prefixesPreferUsernames.contains(prefix)) {
                 return getCompletionItemsNames(search, preferUsernames);
-            } else if (setting.equals("emotes")) {
+            }
+            if (prefix.endsWith(".")) {
+                return new CompletionItems(getCustomCompletionItems(search), ".");
+            }
+            
+            // Then check settings
+            if (setting.equals("names")) {
+                return getCompletionItemsNames(search, preferUsernames);
+            }
+            if (setting.equals("emotes")) {
                 return getCompletionItemsEmotes(search, false);
-            } else if (setting.equals("custom") || prefix.endsWith(".")) {
-                return new CompletionItems(getCustomCompletionItems(search), prefix.endsWith(".") ? "." : "");
-            } else {
-                CompletionItems names = getCompletionItemsNames(search, preferUsernames);
-                CompletionItems emotes = getCompletionItemsEmotes(search, true);
-                if (setting.equals("both")) {
-                    names.append(emotes);
-                    return names;
-                } else {
-                    emotes.append(names);
-                    return emotes;
-                }
+            }
+            if (setting.equals("custom")) {
+                return new CompletionItems(getCustomCompletionItems(search), "");
+            }
+            CompletionItems names = getCompletionItemsNames(search, preferUsernames);
+            CompletionItems emotes = getCompletionItemsEmotes(search, true);
+            if (setting.equals("both")) {
+                names.append(emotes);
+                return names;
+            } else { // both2
+                emotes.append(names);
+                return emotes;
             }
         }
 
