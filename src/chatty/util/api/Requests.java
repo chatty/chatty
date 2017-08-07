@@ -299,71 +299,20 @@ public class Requests {
         });
     }
     
-    public void setCommunity(String userId, String communityId, String token, CommunityPutListener listener) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community/"+communityId;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setRequestType("PUT");
-        request.setToken(token);
-        execute(request, r -> {
-            if (r.responseCode == 204) {
-                listener.result(null);
-            } else {
-                listener.result("Error");
-            }
-        });
-    }
-    
-    public void removeCommunity(String userId, String token, CommunityPutListener listener) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setRequestType("DELETE");
-        request.setToken(token);
-        execute(request, r -> {
-            if (r.responseCode == 204) {
-                listener.result(null);
-            } else {
-                listener.result("Error");
-            }
-        });
-    }
-    
     public void setCommunities(String userId, List<String> communityIds,
             String token, CommunityPutListener listener) {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         request.setToken(token);
-        request.setContentType("application/x-www-form-urlencoded");
-        String data = "";
-        if (!communityIds.isEmpty()) {
-            for (String id : communityIds) {
-                data += "&community_ids%5B%5D=" + id;
-            }
-            data = data.substring(1);
-        }
-        request.setData(data, "PUT");
+        request.setContentType("application/json");
+        JSONObject data = new JSONObject();
+        data.put("community_ids", communityIds);
+        request.setData(data.toJSONString(), "PUT");
         execute(request, r -> {
             if (r.responseCode == 204) {
                 listener.result(null);
             } else {
                 listener.result("Error");
-            }
-        });
-    }
-    
-    public void getCommunity(String userId, CommunityListener listener) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/community";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            if (r.responseCode == 204 || r.responseCode == 404) { // 404 just in case Twitch changes it
-                listener.received(Community.EMPTY, null);
-            } else {
-                Community result = CommunitiesManager.parse(r.text);
-                if (result == null) {
-                    listener.received(null, "Community error");
-                } else {
-                    api.communitiesManager.addCommunity(result);
-                    listener.received(result, null);
-                }
             }
         });
     }

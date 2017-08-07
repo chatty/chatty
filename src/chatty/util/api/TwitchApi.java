@@ -372,21 +372,6 @@ public class TwitchApi {
         requests.getCommunityById(id, listener);
     }
     
-    public void setCommunity(String channelName, String communityId, CommunityPutListener listener) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                listener.result("Failed getting user id");
-            } else {
-                String channelId = r.getId(channelName);
-                if (communityId != null) {
-                    requests.setCommunity(channelId, communityId, defaultToken, listener);
-                } else {
-                    requests.removeCommunity(channelId, defaultToken, listener);
-                }
-            }
-        }, channelName);
-    }
-    
     public void setCommunities(String channelName, List<Community> communities,
             CommunityPutListener listener) {
         userIDs.getUserIDsAsap(r -> {
@@ -398,16 +383,6 @@ public class TwitchApi {
                     communityIds.add(c.getId());
                 }
                 requests.setCommunities(r.getId(channelName), communityIds, defaultToken, listener);
-            }
-        }, channelName);
-    }
-    
-    public void getCommunityForChannel(String channelName, CommunityListener listener) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                listener.received(null, "Error resolving id.");
-            } else {
-                requests.getCommunity(r.getId(channelName), listener);
             }
         }, channelName);
     }
