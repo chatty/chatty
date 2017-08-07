@@ -170,7 +170,7 @@ public class Parser {
      */
     private Item identifier() throws ParseException {
         String ref = read("[a-zA-Z0-9-_]");
-        Matcher m = Pattern.compile("([0-9])+(-)?").matcher(ref);
+        Matcher m = Pattern.compile("([0-9]+)(-)?").matcher(ref);
         if (ref.isEmpty()) {
             error("Expected identifier", 1);
         }

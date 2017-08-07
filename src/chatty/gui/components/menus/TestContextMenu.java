@@ -35,7 +35,7 @@ public class TestContextMenu extends ContextMenu {
                 String errorDescription = String.format(
                         "<p style='font-family:monospaced;'>%s=Error: %s</p>",
                         item.getLabel(),
-                        CommandSettings.formatErrorMessage(item.getCommand()));
+                        CommandSettings.formatCommandInfo(item.getCommand().getError()));
                 errorsInfo = StringUtil.append(errorsInfo, "<br />", errorDescription);
                 errorCount++;
             }

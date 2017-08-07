@@ -222,16 +222,16 @@ public class CommandSettings extends SettingsPanel {
             message += "No command.";
         } else if (command.hasError()) {
             message += "<p style='font-family:monospaced;'>"
-                    + "Error: "+formatErrorMessage(command)+"</p>";
+                    + "Error: "+formatCommandInfo(command.getError())+"</p>";
         } else {
-            message += Helper.htmlspecialchars_encode(command.toString());
+            message += formatCommandInfo(command.toString());
         }
         GuiUtil.showNonModalMessage(parent, "Custom Command", message,
                 JOptionPane.INFORMATION_MESSAGE, true);
     }
     
-    public static String formatErrorMessage(CustomCommand command) {
-        return Helper.htmlspecialchars_encode(command.getError())
+    public static String formatCommandInfo(String input) {
+        return Helper.htmlspecialchars_encode(input)
                 .replace("\n", "<br />").replace(" ", "&nbsp;");
     }
     
