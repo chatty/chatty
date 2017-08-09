@@ -78,7 +78,7 @@ public class NotificationManager {
     }
     
     public void streamInfoChanged(String channel, StreamInfo info) {
-        check(Type.STREAM_STATUS, "#"+info.getStream(), n -> {
+        check(Type.STREAM_STATUS, "#"+info.getStream(), null, info.getFullStatus(), n -> {
             if (info.getOnline() || !n.hasOption("noOffline")) {
                 return new NotificationData("[Status] "+channel, info.getFullStatus());
             } 

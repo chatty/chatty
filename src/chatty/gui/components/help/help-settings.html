@@ -621,10 +621,28 @@
         <li><code>wcs:</code> is the same as <code>w:</code>, but case-sensitive.</li>
         <li><code>start:</code> to match at the start, so <code>start:!bet</code> will
             match messages starting with <code>!bet</code>.</li>
-        <li><code>re:</code> to use a regular expression, e.g. <code>re:(?i).*\bGTA ?[V5]\b.*</code>
-        to match GTA5, GTA 5, GTA V, gta5, .. (as a word) anywhere in the message. Note
-        that the regex always tries to match the entire message, so you have to
-        add the appropriate wildcards to match parts anywhere in the message.</li>
+        <li><code>re:</code> or <code>re*:</code> to use a
+            <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expression</a>:
+            <ul>
+                <li><code>re:</code> will always try to match the whole message,
+                    so for example <code>re:GTA5</code> will only match the message
+                    "GTA5", but not anything added to it even just a space like
+                    "GTA5 ". Regular Expressions are also case-sensitive by
+                    default, so "gta5" won't match either in this case, but
+                    you can add <code>(?i)</code> for case-insensitive matching.
+                    <br />
+                    Example: <code>re:(?i).*\bGTA ?[V5]\b.*</code> will match
+                    "GTA5", "GTA 5", "GTA V", "gta5", .. anywhere in the message
+                    (<code>.*</code>), but only on word boundaries (<code>\b</code>)
+                    and case-insensitive (<code>(?i)</code> in front).
+                </li>
+                <li><code>re*:</code> does the same as <code>re:</code> except
+                    that a partial match anywhere in the message is enough, so
+                    to get the same behaviour as in the above example you can
+                    just use <code>re*:(?i)\bGTA&nbsp;?[V5]\b</code> (omitting
+                    the surrounding <code>.*</code>).</li>
+            </ul>
+        </li>
     </ul>
     
     <h3>Meta Prefixes</h3>

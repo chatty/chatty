@@ -196,6 +196,7 @@ public class Highlighter {
         private String username;
         private Pattern usernamePattern;
         private Pattern pattern;
+        private Pattern pattern2;
         private String caseSensitive;
         private String caseInsensitive;
         private String startsWith;
@@ -240,6 +241,8 @@ public class Highlighter {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
                 compilePattern(item.substring(3));
+            } else if (item.startsWith("re*:") && item.length() > 4) {
+                compilePattern2(item.substring(4));
             } else if (item.startsWith("w:") && item.length() > 2) {
                 compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
             } else if (item.startsWith("wcs:") && item.length() > 4) {
@@ -366,6 +369,15 @@ public class Highlighter {
             }
         }
         
+        private void compilePattern2(String patternString) {
+            try {
+                pattern2 = Pattern.compile(patternString);
+            } catch (PatternSyntaxException ex) {
+                error = true;
+                LOGGER.warning("Invalid regex2: " + ex);
+            }
+        }
+        
         private void compileUsernamePattern(String patternString) {
             try {
                 usernamePattern = Pattern.compile(patternString);
@@ -390,16 +402,21 @@ public class Highlighter {
         /**
          * Check whether a message matches this item.
          * 
-         * @param lowercaseUsername The username in lowercase
+         * @param user The User object, or null if this message has none
          * @param text The text as received
          * @param lowercaseText The text in lowercase (minor optimization, so
          *  it doesn't have to be made lowercase for every item)
+         * @param noUserRequired Will continue matching when no User object is
+         * given, even without config:info
          * @return true if it matches, false otherwise
          */
-        private boolean matches(User user, String text, String lowercaseText,
+        public boolean matches(User user, String text, String lowercaseText,
                 boolean noUserRequired) {
             
             if (pattern != null && !pattern.matcher(text).matches()) {
+                return false;
+            }
+            if (pattern2 != null && !pattern2.matcher(text).find()) {
                 return false;
             }
             if (caseSensitive != null && !text.contains(caseSensitive)) {
