@@ -12,7 +12,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,7 +25,6 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import sun.awt.FontConfiguration;
 
 /**
  * Simple text editor dialog that can be opened with a description of the edit,
