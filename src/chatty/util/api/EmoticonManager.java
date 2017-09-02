@@ -62,7 +62,7 @@ public class EmoticonManager extends CachedManager {
             for (Object obj : emoticons) {
                 if (obj instanceof JSONObject) {
                     JSONObject emote_json = (JSONObject)obj;
-                    Emoticon emote = parseEmoticon(emote_json);
+                    Emoticon emote = parseEmoticon(emote_json, Emoticon.SET_UNDEFINED);
                     if (emote == null) {
                         if (errors < 10) {
                             LOGGER.warning("Error loading emote: "+emote_json);
@@ -87,21 +87,65 @@ public class EmoticonManager extends CachedManager {
     }
     
     /**
+     * Parse result of ?emotesets=0 request.
+     * 
+     * @param json
+     * @return 
+     */
+    private Set<Emoticon> parseEmoticonSets(String json) {
+        Set<Emoticon> result = new HashSet<>();
+        if (json == null) {
+            return null;
+        }
+        JSONParser parser = new JSONParser();
+        int errors = 0;
+        try {
+            JSONObject root = (JSONObject)parser.parse(json);
+            JSONObject sets = (JSONObject)root.get("emoticon_sets");
+            for (Object key : sets.keySet()) {
+                int emoteSet = Integer.parseInt((String)key);
+                JSONArray emoticons = (JSONArray)sets.get(key);
+                for (Object obj : emoticons) {
+                    JSONObject emote_json = (JSONObject)obj;
+                    Emoticon emote = parseEmoticon(emote_json, emoteSet);
+                    if (emote == null) {
+                        if (errors < 10) {
+                            LOGGER.warning("Error loading emote: "+emote_json);
+                        }
+                        errors++;
+                    } else {
+                        result.add(emote);
+                    }
+                }
+            }
+            if (errors > 0) {
+                LOGGER.warning(errors+" emotes couldn't be loaded");
+            }
+            if (errors > 100) {
+                return null;
+            }
+            return result;
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing emoticons by sets: "+ex);
+        }
+        return null;
+    }
+    
+    /**
      * Parses an Emoticon from the given JSONObject.
      * 
      * @param emote The JSONObject containing the emoticon data
      * @return The Emoticon object or null if an error occured
      */
-    private Emoticon parseEmoticon(JSONObject emote) {
+    private Emoticon parseEmoticon(JSONObject emote, int emoteSet) {
         try {
             String code = (String)emote.get("code");
             int id = ((Number)emote.get("id")).intValue();
-            String url = Emoticon.getTwitchEmoteUrlById(id, 1);
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code, url);
+            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code, null);
             if (emote.get("emoticon_set") != null) {
-                int emoteSet = ((Number)emote.get("emoticon_set")).intValue();
-                b.setEmoteset(emoteSet);
+                emoteSet = ((Number)emote.get("emoticon_set")).intValue();
             }
+            b.setEmoteset(emoteSet);
             b.setNumericId(id);
             return b.build();
         } catch (NullPointerException | ClassCastException ex) {
