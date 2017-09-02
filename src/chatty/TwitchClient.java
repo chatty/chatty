@@ -181,8 +181,7 @@ public class TwitchClient {
         LOGGER.info(Helper.systemInfo());
         LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
                 +" [Settings Directory] "+Chatty.getUserDataDirectory()
-                +" [Classpath] "+System.getProperty("java.class.path")
-                +" [Library Path] "+System.getProperty("java.library.path"));
+                +" [Classpath] "+System.getProperty("java.class.path"));
         LOGGER.info("Retina Display: "+GuiUtil.hasRetinaDisplay());
         
         // Create after Logging is created, since that resets some stuff
