@@ -58,6 +58,7 @@ public class NotificationSettings extends SettingsPanel {
     
     public NotificationSettings(SettingsDialog d, Settings settings) {
         editor = new NotificationEditor(d, settings);
+        editor.setLinkLabelListener(d.getSettingsHelpLinkLabelListener());
         
         GridBagConstraints gbc;
 

@@ -25,6 +25,7 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     private final JButton editButton;
     
     private String value;
+    private String info;
     private ChangeListener listener;
     
     public EditorStringSetting(Window parent, final String title, int size,
@@ -33,9 +34,10 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     }
     
     public EditorStringSetting(Window parent, final String title, int size,
-            boolean allowEmpty, boolean allowLinebreaks, final String info,
+            boolean allowEmpty, boolean allowLinebreaks, String defaultInfo,
             Editor.Tester tester) {
         setLayout(new BorderLayout(2, 0));
+        this.info = defaultInfo;
         
         editor = new Editor(parent);
         editor.setAllowEmpty(allowEmpty);
@@ -93,6 +95,10 @@ public class EditorStringSetting extends JPanel implements StringSetting {
                 listener.stateChanged(new ChangeEvent(this));
             }
         }
+    }
+    
+    public void setInfo(String info) {
+        this.info = info;
     }
 
 }

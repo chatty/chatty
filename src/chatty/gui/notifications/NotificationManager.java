@@ -172,14 +172,16 @@ public class NotificationManager {
     }
     
     public void newSubscriber(User user, String systemMsg, String message) {
-        check(Type.SUBSCRIBER, user.getChannel(), c -> {
+        final String text;
+        if (message != null && !message.isEmpty()) {
+            text = systemMsg + " [" + message + "]";
+        } else {
+            text = systemMsg;
+        }
+        check(Type.SUBSCRIBER, user.getChannel(), user, text, c -> {
             String title = String.format("[Subscriber] %s in %s",
                     user.getDisplayNick(),
                     user.getChannel());
-            String text = systemMsg;
-            if (message != null && !message.isEmpty()) {
-                text = text+" ["+message+"]";
-            }
             return new NotificationData(title, text);
         });
     }

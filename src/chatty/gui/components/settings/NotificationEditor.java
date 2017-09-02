@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
 import chatty.gui.HtmlColors;
+import chatty.gui.components.LinkLabelListener;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.Notification.State;
 import chatty.gui.notifications.Notification.Type;
@@ -67,6 +68,10 @@ class NotificationEditor extends TableEditor<Notification> {
     
     public void setSoundFiles(Path path, String[] fileNames) {
         editor.setSoundFiles(path, fileNames);
+    }
+    
+    public void setLinkLabelListener(LinkLabelListener listener) {
+        editor.setLinkLabelListener(listener);
     }
     
     /**
@@ -194,6 +199,12 @@ class NotificationEditor extends TableEditor<Notification> {
      */
     private static class MyItemEditor implements ItemEditor<Notification> {
         
+        private static final String MATCHER_HELP = "<html><body width='300px'>"
+                + "The Matcher allows you to match on the text of the "
+                + "notification. You can use the same format as for the "
+                + "[help-settings:Highlight Highlights] list, although some prefixes may not have an "
+                + "effect.<br /><br />";
+        
         private static final int VOLUME_MIN = 0;
         private static final int VOLUME_MAX = 100;
 
@@ -210,7 +221,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final GenericComboSetting<Notification.State> desktopState;
         private final GenericComboSetting<Notification.State> soundState;
         private final SimpleStringSetting channel;
-        private final SimpleStringSetting matcher;
+        private final EditorStringSetting matcher;
         private final ColorTemplates colorTemplates;
         private final ColorSetting foregroundColor;
         private final ColorSetting backgroundColor;
@@ -282,10 +293,20 @@ class NotificationEditor extends TableEditor<Notification> {
             optionsAssoc = new HashMap<>();
             
             channel = new SimpleStringSetting(20, true);
-            matcher = new SimpleStringSetting(20, true);
+            matcher = new EditorStringSetting(dialog,
+                    "Match Notification Text",
+                    20, true, false, "",
+                    new Editor.Tester() {
+
+                        @Override
+                        public String test(Window parent, Component component, int x, int y, String value) {
+                            HighlighterTester tester = new HighlighterTester(parent, value);
+                            return tester.test();
+                        }
+                    });
             
             optionsPanel.add(new JLabel("Channel:"), GuiUtil.makeGbc(0, 1, 1, 1));
-            optionsPanel.add(channel, GuiUtil.makeGbc(1, 1, 1, 1));
+            optionsPanel.add(channel, GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
             optionsPanel.add(new JLabel("Match:"), GuiUtil.makeGbc(0, 2, 1, 1));
             optionsPanel.add(matcher, GuiUtil.makeGbc(1, 2, 1, 1));
             optionsPanel.add(options, GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
@@ -473,6 +494,8 @@ class NotificationEditor extends TableEditor<Notification> {
         }
         
         private void updateSubTypes() {
+            updateMatcherHelp();
+            
             Type t = this.type.getSettingValue();
             options.removeAll();
             optionsAssoc.clear();
@@ -487,6 +510,27 @@ class NotificationEditor extends TableEditor<Notification> {
             }
             options.setVisible(!t.subTypes.isEmpty());
             updateSize();
+        }
+        
+        private void updateMatcherHelp() {
+            matcher.setInfo(MATCHER_HELP
+                    +"Example for "+type.getSettingValue().label+":<br />"
+                    +getMatcherHelp());
+        }
+        
+        private String getMatcherHelp() {
+            switch (type.getSettingValue()) {
+                case STREAM_STATUS:
+                    return "<code>[VOD] The Last Of Us | Next Stream: Friday (The Last of Us)</code>";
+                case SUBSCRIBER:
+                    return "<code>USERNAME subscribed for 4 months in a row! &#91;Hi strimmer&#93;</code> (in this case with an attached message)";
+                case MESSAGE:
+                case HIGHLIGHT:
+                case WHISPER:
+                    return "<code>you have so much ammo PogChamp</code> (the message text)";
+                default:
+                    return "&lt;None available&gt;";
+            }
         }
         
         private List<String> getSubTypes() {
@@ -646,6 +690,10 @@ class NotificationEditor extends TableEditor<Notification> {
             if (testNotification != null && testNotification.isVisible()) {
                 testNotification();
             }
+        }
+        
+        public void setLinkLabelListener(LinkLabelListener listener) {
+            matcher.setLinkLabelListener(listener);
         }
         
     }
