@@ -9,6 +9,8 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import static chatty.util.DateTime.H;
 import static chatty.util.DateTime.S;
+import chatty.util.MiscUtil;
+import chatty.util.StringUtil;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
@@ -128,6 +130,14 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
                         };
                         menu.add(new JMenuItem(a));
                     }
+                    menu.addSeparator();
+                    menu.add(new JMenuItem(new AbstractAction("Copy all") {
+                        
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            MiscUtil.copyToClipboard(StringUtil.join(communities, ", "));
+                        }
+                    }));
                     menu.show(communityLabel, communityLabel.getWidth(), communityLabel.getHeight());
                 } else {
                     String url = "https://www.twitch.tv/communities/"+ref;
