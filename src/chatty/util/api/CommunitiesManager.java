@@ -6,8 +6,10 @@ import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -27,6 +29,8 @@ public class CommunitiesManager {
     
     private final Set<Community> withInfo = new HashSet<>();
     private final Set<Community> all = new HashSet<>();
+    
+    private final Map<String, List<CommunityListener>> listeners = new HashMap<>();
     
     private final Set<String> error = Collections.synchronizedSet(new HashSet<>());
     
@@ -52,21 +56,56 @@ public class CommunitiesManager {
         return null;
     }
     
-    public synchronized void getById(String id, CommunityListener listener) {
+    public void getById(String id, CommunityListener listener) {
         Community c = getCachedById(id);
         if (c != null) {
             listener.received(c, null);
         } else {
             // Not cached, request
             if (!error.contains(id)) {
-                api.requests.getCommunityById(id, (r, e) -> {
-                    if (r == null) {
-                        error.add(id);
+                synchronized (this) {
+                    if (!requestPending(id)) {
+                        addListener(id, listener);
+                        api.requests.getCommunityById(id, (r, e) -> {
+                            if (r == null) {
+                                error.add(id);
+                            }
+                            informListeners(id, r, e);
+                        });
+                    } else {
+                        addListener(id, listener);
                     }
-                    listener.received(r, e);
-                });
+                }
+            } else {
+                listener.received(null, "Error (*)");
             }
         }
+    }
+    
+    private synchronized void addListener(String id, CommunityListener listener) {
+        if (!listeners.containsKey(id)) {
+            listeners.put(id, new ArrayList<>());
+        }
+        listeners.get(id).add(listener);
+    }
+    
+    private synchronized boolean requestPending(String id) {
+        return listeners.containsKey(id);
+    }
+    
+    private void informListeners(String id, Community r, String e) {
+        for (CommunityListener l : getListeners(id)) {
+            l.received(r, e);
+        }
+    }
+    
+    private synchronized List<CommunityListener> getListeners(String id) {
+        List<CommunityListener> result = new ArrayList<>();
+        if (listeners.containsKey(id)) {
+            result = new ArrayList<>(listeners.get(id));
+            listeners.remove(id);
+        }
+        return result;
     }
     
     /**

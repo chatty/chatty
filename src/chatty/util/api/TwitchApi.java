@@ -346,6 +346,65 @@ public class TwitchApi {
     }
     
     /**
+     * Gets the communities for the given ids, in the same order, however only
+     * returns communities that could be retrieved without error.
+     * 
+     * If the communities were all cached the listener is notified immediately,
+     * in the same thread, otherwise it will request asynchronously.
+     * 
+     * Duplicate ids will be reduced to one entry in the result.
+     * 
+     * @param ids
+     * @param listener 
+     */
+    public void getCommunities(List<String> ids, CommunitiesListener listener) {
+        if (ids == null || ids.isEmpty()) {
+            listener.received(null, "No community ids.");
+        } else {
+            CommunityListener clistener = new CommunityListener() {
+                
+                private final Community[] data = new Community[ids.size()];
+                private int counter = ids.size();
+
+                @Override
+                public void received(Community community, String error) {
+                    List<Community> result = null;
+                    synchronized(data) {
+                        counter--;
+                        if (community != null) {
+                            System.out.println("received (" + counter + "/" + ids.size() + "): " + community + " " + community.getId());
+                            // Find occurence of id in request, to retain order
+                            // (this implicitly also removes duplicates, since it
+                            // only finds the first occurence)
+                            data[ids.indexOf(community.getId())] = community;
+                        } else {
+                            System.out.println("error (" + counter + "/" + ids.size() + "): "+error);
+                        }
+                        if (counter == 0) {
+                            // All received, make and send result
+                            result = new ArrayList<>();
+                            for (Community c : data) {
+                                if (c != null) {
+                                    result.add(c);
+                                }
+                            }
+                            System.out.println("result: " + result);
+                        }
+                    }
+                    if (result != null) {
+                        listener.received(result, null);
+                    }
+                }
+            };
+            
+            // Request using the created listener
+            for (String id : ids) {
+                communitiesManager.getById(id, clistener);
+            }
+        }
+    }
+    
+    /**
      * Requests the current top 100 communities.
      * 
      * @param listener 
@@ -355,7 +414,7 @@ public class TwitchApi {
     }
     
     /**
-     * Requests the community by name.
+     * Requests the community by name (no caching).
      * 
      * @param name The name of the community
      * @param listener 
@@ -368,6 +427,12 @@ public class TwitchApi {
         }
     }
     
+    /**
+     * Immediately requests the Community for the given id (no caching).
+     * 
+     * @param id
+     * @param listener 
+     */
     public void getCommunityById(String id, CommunityListener listener) {
         requests.getCommunityById(id, listener);
     }

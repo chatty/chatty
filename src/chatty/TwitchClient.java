@@ -1981,7 +1981,7 @@ public class TwitchClient {
         @Override
         public void streamInfoUpdated(StreamInfo info) {
             g.updateState(true);
-            g.updateChannelInfo();
+            g.updateChannelInfo(info);
             g.addStreamInfo(info);
             String channel = "#"+info.getStream();
             if (isChannelOpen(channel)) {

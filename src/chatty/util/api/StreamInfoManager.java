@@ -7,6 +7,7 @@ import chatty.util.JSONUtil;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -486,12 +487,12 @@ public class StreamInfoManager {
         StreamType streamType;
         long timeStarted = -1;
         String userId = null;
-        String community_id = null;
+        List<String> community_ids;
         boolean noChannelObject = false;
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewers");
-            community_id = JSONUtil.getString(stream, "community_id");
+            community_ids = JSONUtil.getStringList(stream, "community_ids");
             
             // Stream Type
             switch (JSONUtil.getString(stream, "stream_type")) {
@@ -567,8 +568,10 @@ public class StreamInfoManager {
         // Community (if cached, will immediately set Community correct again
         // for use in history, otherwise requested async and not in this history
         // item)
-        streamInfo.setCommunity(null);
-        api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
+        streamInfo.setCommunities(null);
+        //api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
+        System.out.println("requesting: "+community_ids);
+        api.getCommunities(community_ids, (r,e) -> { streamInfo.setCommunities(r); });
         
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted, streamType);

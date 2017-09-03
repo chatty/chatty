@@ -6,6 +6,7 @@ import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.CommunitiesManager.Community;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
@@ -50,7 +51,7 @@ public class StreamInfo {
     private String status = null;
     private String game = "";
     private int viewers = 0;
-    private Community community;
+    private List<Community> communities;
     private long startedAt = -1;
     private long lastOnline = -1;
     private long startedAtWithPicnic = -1;
@@ -227,7 +228,7 @@ public class StreamInfo {
                 addHistoryItem(System.currentTimeMillis(),
                         new StreamInfoHistoryItem(System.currentTimeMillis(),
                                 viewers, status, game,
-                                streamType, getCommunity(),
+                                streamType, getCommunities(),
                                 getTimeStarted(), getTimeStartedWithPicnic()));
             }
             result = setUpdateSucceeded(true);
@@ -431,12 +432,12 @@ public class StreamInfo {
         return false;
     }
     
-    public synchronized void setCommunity(Community community) {
-        this.community = community;
+    public synchronized void setCommunities(List<Community> communities) {
+        this.communities = communities;
     }
     
-    public synchronized Community getCommunity() {
-        return community;
+    public synchronized List<Community> getCommunities() {
+        return communities;
     }
     
     public synchronized StreamType getStreamType() {

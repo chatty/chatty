@@ -137,13 +137,23 @@ public class ViewerHistory extends JComponent {
 
     private static class HistoryTest {
         
-        public long currentTime;
+        // Starting with 1 because selecting fixed range checks for 0 (which it
+        // shouldn't be outside testing)
+        public long currentTime = 1;
         public LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
         public long startTime;
         public long picnicStartTime;
         
-        public void add(String title, String game, int viewers, StreamType streamType, Community community) {
-            history.put(currentTime, new StreamInfoHistoryItem(currentTime, viewers, title, game, streamType, community, startTime, picnicStartTime));
+        public void add(String title, String game, int viewers, StreamType streamType, Community... communities) {
+            java.util.List<Community> c;
+            if (communities == null) {
+                c = null;
+            } else {
+                c = Arrays.asList(communities);
+            }
+            history.put(currentTime, new StreamInfoHistoryItem(currentTime,
+                    viewers, title, game, streamType, c,
+                    startTime, picnicStartTime));
             currentTime += 120*1000;
         }
         
@@ -159,14 +169,15 @@ public class ViewerHistory extends JComponent {
             history = new LinkedHashMap<>();
             Community c1 = new Community("abc", "VarietyStreaming");
             Community c2 = new Community("abc", "Speedrunning");
+            Community c3 = new Community("abc", "Pro-Audio");
             
             test.startTime = -5*60*1000;
             test.picnicStartTime = -10*60*1000;
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 6, StreamType.LIVE, c1);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1, c2);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 6, StreamType.LIVE, c1, c2, c3);
+            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1, c2, c3);
             test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
             test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
             test.add("Pause", "The Elder Scrolls V: Skyrim", 10, StreamType.LIVE, c1);
@@ -183,6 +194,9 @@ public class ViewerHistory extends JComponent {
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
+            for (int i=0;i<100;i++) {
+                test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
+            }
             
 //            history.put((long) 1000*1000, new StreamInfoHistoryItem(5,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1000*1000, 1000*1000));
 //            history.put((long) 1120*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1120*1000, 1120*1000));
@@ -465,11 +479,12 @@ public class ViewerHistory extends JComponent {
             }
             int pointSize = POINT_SIZE;
             
-            if (prevItem != null && prevItem.getCommunity() != historyObject.getCommunity()) {
-                pointSize += 2;
+            if (prevItem != null && !Objects.equals(prevItem.getCommunities(), historyObject.getCommunities())) {
+                pointSize += 1;
+                g.fillRect(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
+            } else {
+                g.fillOval(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
             }
-            
-            g.fillOval(x  - pointSize / 2, y  - pointSize / 2, pointSize, pointSize);
             
             
             prevItem = historyObject;

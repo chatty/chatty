@@ -1,6 +1,8 @@
 
 package chatty.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -22,6 +24,20 @@ public class JSONUtil {
         Object value = data.get(key);
         if (value != null && value instanceof String) {
             return (String)value;
+        }
+        return null;
+    }
+    
+    public static List<String> getStringList(JSONObject data, Object key) {
+        Object value = data.get(key);
+        if (value != null && value instanceof JSONArray) {
+            List<String> result = new ArrayList<>();
+            for (Object item : (JSONArray)value) {
+                if (item instanceof String) {
+                    result.add((String)item);
+                }
+            }
+            return result;
         }
         return null;
     }

@@ -1057,10 +1057,14 @@ public class MainGui extends JFrame implements Runnable {
         connectionDialog.setAreChannelsOpen(channels.getChannelCount() > 0);
     }
     
-    private void updateChannelInfoDialog() {
-        String stream = channels.getLastActiveChannel().getStreamName();
-        StreamInfo streamInfo = getStreamInfo(stream);
-        channelInfoDialog.set(streamInfo);
+    private void updateChannelInfoDialog(StreamInfo info) {
+        if (info == null) {
+            String stream = channels.getLastActiveChannel().getStreamName();
+            info = getStreamInfo(stream);
+            channelInfoDialog.set(info);
+        } else {
+            channelInfoDialog.update(info);
+        }
     }
     
     private void updateTokenDialog() {
@@ -1875,7 +1879,7 @@ public class MainGui extends JFrame implements Runnable {
         @Override
         public void stateChanged(ChangeEvent e) {
             state.update(true);
-            updateChannelInfoDialog();
+            updateChannelInfoDialog(null);
             emotesDialog.updateStream(channels.getLastActiveChannel().getStreamName());
             moderationLog.setChannel(channels.getLastActiveChannel().getStreamName());
             autoModDialog.setChannel(channels.getLastActiveChannel().getStreamName());
@@ -3172,11 +3176,11 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
 
-    public void updateChannelInfo() {
+    public void updateChannelInfo(StreamInfo info) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                updateChannelInfoDialog();
+                updateChannelInfoDialog(info);
            }
         });
     }
