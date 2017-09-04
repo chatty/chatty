@@ -48,7 +48,7 @@ public class CustomCommand {
         return items.getIdentifiersWithPrefix(prefix);
     }
     
-    public String getCommand() {
+    public String getCommandName() {
         if (items != null && !items.isEmpty()) {
             Item firstToken = items.getItem(0);
             if (firstToken instanceof Literal) {

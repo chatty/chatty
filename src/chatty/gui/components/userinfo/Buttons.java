@@ -123,8 +123,8 @@ public class Buttons {
             
             getRow(item.getParent()).add(button);
 
-            if (item.getCommand() != null) {
-                String commandName = item.getCommand().getCommand();
+            if (item.getCommand() != null && item.getCommand().getCommandName() != null) {
+                String commandName = item.getCommand().getCommandName();
                 if (commandName.equalsIgnoreCase("modunmod")) {
                     button.setVisible(false);
                     modUnmodButton = button;
