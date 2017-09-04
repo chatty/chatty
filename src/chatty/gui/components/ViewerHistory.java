@@ -189,7 +189,7 @@ public class ViewerHistory extends JComponent {
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 14, StreamType.WATCH_PARTY, c1);
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 18, StreamType.WATCH_PARTY, c1);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, null);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, (Community) null);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 34, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);
