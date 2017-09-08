@@ -877,7 +877,7 @@ public class Emoticon {
                 loadImage();
             } else if (loadingError) {
                 if (loadImage()) {
-                    LOGGER.warning("Trying to load " + code + " again (" + url + ")");
+                    LOGGER.warning("Trying to load " + code + " again (" + loadedFrom + ")");
                 }
             }
             return icon;

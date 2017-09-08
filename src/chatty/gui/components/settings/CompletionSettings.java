@@ -89,7 +89,7 @@ public class CompletionSettings extends SettingsPanel {
         //===========
         // Appearance
         //===========
-        JPanel appearance = addTitledPanel("Appearance/Behaviour", 2);
+        JPanel appearance = addTitledPanel("Appearance / Behaviour", 2);
 
         final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup", "Show popup",
                 "Shows the info popup (also requirement for \"Complete to common prefix\")");

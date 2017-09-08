@@ -963,10 +963,8 @@ public class TwitchConnection {
             updateUserFromTags(user, tags);
             if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
-            } else {
-                // Not sure about this, there may be some weird messages
-                //listener.onInfo(channel, text);
-                //listener.onChannelMessage(user, message, false, emotes, null, 0);
+            } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
+                listener.onInfo(channel, text);
             }
         }
 

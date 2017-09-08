@@ -27,6 +27,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 
@@ -209,14 +210,14 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             }
             timeStarted = streamInfo.getTimeStarted();
             onlineSince.setText(null);
-            communities = streamInfo.getCommunities();
+            setCommunities(streamInfo.getCommunities());
             updateStreamType(streamInfo.getStreamType());
         }
         else if (streamInfo.isValid()) {
             statusText = "Stream offline";
             gameText = "";
             timeStarted = -1;
-            communities = null;
+            setCommunities(null);
         }
         else {
             statusText = "[No Stream Information]";
@@ -224,7 +225,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             timeStarted = -1;
             onlineSince.setText(null);
             onlineSince.setToolTipText(null);
-            communities = null;
+            setCommunities(null);
         }
         title.setText(statusText);
         game.setText(gameText);
@@ -246,6 +247,15 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         if (streamInfo == currentStreamInfo) {
             set(streamInfo);
         }
+    }
+    
+    private void setCommunities(List<Community> c) {
+        if (c != null && c.contains(null)) {
+            // This usually shouldn't contain null elements, but just in case
+            c = new ArrayList<>(c);
+            c.removeIf(e -> { return e == null; });
+        }
+        communities = c;
     }
     
     private void updateCommunities() {
@@ -373,7 +383,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         statusLabel.setText(STATUS_LABEL_TEXT_HISTORY);
         updateStreamType(item.getStreamType());
         updateOnlineTime(item);
-        communities = item.getCommunities();
+        setCommunities(item.getCommunities());
         updateCommunities();
     }
     
@@ -385,7 +395,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         statusLabel.setText(STATUS_LABEL_TEXT);
         updateStreamType(currentStreamInfo.getStreamType());
         updateOnlineTime(currentStreamInfo);
-        communities = currentStreamInfo.getCommunities();
+        setCommunities(currentStreamInfo.getCommunities());
         updateCommunities();
     }
     
