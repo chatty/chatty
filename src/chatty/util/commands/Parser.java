@@ -134,6 +134,34 @@ public class Parser {
     }
     
     /**
+     * Read until it encounters a character not matching the given regex. The
+     * character that caused it to stop won't be read.
+     *
+     * @param regex A regex matching a single character
+     * @return The read String, may be empty
+     */
+    private String readAll(String regex) {
+        StringBuilder b = new StringBuilder();
+        while (reader.hasNext() && reader.peek().matches(regex)) {
+            b.append(reader.next());
+        }
+        return b.toString();
+    }
+
+    /**
+     * Read a single character that matches the given regex.
+     * 
+     * @param regex A regex matching a single character
+     * @return The read String, may be empty
+     */
+    private String readOne(String regex) {
+        if (reader.hasNext() && reader.peek().matches(regex)) {
+            return reader.next();
+        }
+        return "";
+    }
+    
+    /**
      * Parse stuff that occurs after a '$'.
      * 
      * @return
@@ -169,7 +197,7 @@ public class Parser {
      * @return 
      */
     private Item identifier() throws ParseException {
-        String ref = read("[a-zA-Z0-9-_]");
+        String ref = readAll("[a-zA-Z0-9-_]");
         Matcher m = Pattern.compile("([0-9]+)(-)?").matcher(ref);
         if (ref.isEmpty()) {
             error("Expected identifier", 1);
@@ -187,7 +215,7 @@ public class Parser {
     }
     
     private Item tinyIdentifier() throws ParseException {
-        String ref = read("[0-9]");
+        String ref = readOne("[0-9]");
         if (ref.isEmpty()) {
             error("Expected numeric identifier", 1);
         }
@@ -262,7 +290,7 @@ public class Parser {
     }
     
     private String functionName() {
-        return read("[a-zA-Z]");
+        return readAll("[a-zA-Z]");
     }
     
     private Items param() throws ParseException {
@@ -277,20 +305,6 @@ public class Parser {
         return peek("$") ? param() : identifier();
     }
     
-    /**
-     * Read until it encounters a character matching the given regex. The
-     * character the caused it to stop won't be read.
-     * 
-     * @param regex A regex matching a single character
-     * @return The read String
-     */
-    private String read(String regex) {
-        StringBuilder b = new StringBuilder();
-        while (reader.hasNext() && reader.peek().matches(regex)) {
-            b.append(reader.next());
-        }
-        return b.toString();
-    }
 
     
     public static void main(String[] args) {
