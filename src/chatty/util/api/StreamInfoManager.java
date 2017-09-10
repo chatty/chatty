@@ -570,7 +570,7 @@ public class StreamInfoManager {
         // item)
         streamInfo.setCommunities(null);
         //api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
-        System.out.println("requesting: "+community_ids);
+        //System.out.println("requesting: "+community_ids);
         api.getCommunities(community_ids, (r,e) -> { streamInfo.setCommunities(r); });
         
         if (follows) {

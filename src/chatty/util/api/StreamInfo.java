@@ -608,7 +608,7 @@ public class StreamInfo {
     }
     
     public synchronized boolean isValidEnough() {
-        return isValid() || (System.currentTimeMillis() - lastUpdateSucceded)/1000 < expiresAfter*2;
+        return isValid() || (System.currentTimeMillis() - lastUpdateSucceded)/1000 < expiresAfter*3;
     }
     
     public synchronized boolean lastUpdateLongAgo() {

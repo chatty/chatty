@@ -372,13 +372,13 @@ public class TwitchApi {
                     synchronized(data) {
                         counter--;
                         if (community != null) {
-                            System.out.println("received (" + counter + "/" + ids.size() + "): " + community + " " + community.getId());
+                            //System.out.println("received (" + counter + "/" + ids.size() + "): " + community + " " + community.getId());
                             // Find occurence of id in request, to retain order
                             // (this implicitly also removes duplicates, since it
                             // only finds the first occurence)
                             data[ids.indexOf(community.getId())] = community;
                         } else {
-                            System.out.println("error (" + counter + "/" + ids.size() + "): "+error);
+                            //System.out.println("error (" + counter + "/" + ids.size() + "): "+error);
                         }
                         if (counter == 0) {
                             // All received, make and send result
@@ -388,7 +388,7 @@ public class TwitchApi {
                                     result.add(c);
                                 }
                             }
-                            System.out.println("result: " + result);
+                            //System.out.println("result: " + result);
                         }
                     }
                     if (result != null) {

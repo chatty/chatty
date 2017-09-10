@@ -117,19 +117,19 @@ public class LiveStreamsList extends JList<StreamInfo> {
             return;
         }
         lastChecked = System.currentTimeMillis();
-        Set<StreamInfo> remove = new HashSet<>();
+        Set<StreamInfo> toRemove = new HashSet<>();
         for (StreamInfo info : data) {
             if (!info.isValidEnough() || !info.getOnline()) {
-                remove.add(info);
+                toRemove.add(info);
             }
         }
         // Remove invalid items
-        for (StreamInfo info : remove) {
+        for (StreamInfo info : toRemove) {
             data.remove(info);
             itemRemoved(info);
         }
         // Update and inform only if items were actually removed
-        if (remove.isEmpty()) {
+        if (!toRemove.isEmpty()) {
             listDataChanged();
         }
     }
