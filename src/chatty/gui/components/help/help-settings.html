@@ -1444,6 +1444,62 @@
         use TAB Completion <a href="help.html#nickCompletion">check out the general help</a>.</p>
                 
     <h3>TAB Completion</h3>
+    <p>Either <strong>TAB</strong> or <strong>Shift-TAB</strong> can be pressed
+        after some text to initiate Completion, and here you can change what
+        type of Completion each should do:</p>
+    
+    <ul>
+        <li>Names: Complete usernames in the current chat</li>
+        <li>Emotes: Complete emotes you have access to</li>
+        <li>Names, then Emotes: Both usernames and emotes appear in the result,
+            but sorted so that usernames are listed first</li>
+        <li>Emotes, then Names: Same as previous, but emotes are listed first</li>
+        <li>Custom Completion: Complete the keys specified for Custom Completion
+            (without having to use a <code>.</code> prefix)</li>
+    </ul>
+    
+    <p>In addition to this there are special cases where a certain type of
+        Completion is chosen independant of these settings:</p>
+    
+    <ul>
+        <li>Prefixing <code>@</code> always completes usernames</li>
+        <li>Prefixing <code>/</code> always completes command names</li>
+        <li>Prefixing <code>.</code> always performs Custom Completion</li>
+        <li>Certain commands such as <code>/ban</code> always complete usernames</li>
+    </ul>
+    
+    <h3>Localized Names</h3>
+    <dl class="dl-settings">
+        <dt>Prefer Regular name for username-based commmands</dt>
+        <dd>If you complete a username after a command like <code>/ban</code>
+            which needs a regular username as parameter, then always prefer the
+            regular name.</dd>
+        
+        <dt>Include all name types in result</dt>
+        <dd>If a user has a Localized name, or you have a
+            <a href="help.html#customNames">Custom name</a> set, then not only
+            the name that matched, but also the other types of names are added
+            to the result.</dd>
+        <dd><em>Example:</em> If a user is called <code>test</code> and has the
+            Localized Name <code>名前</code>, then entering
+            <code>tes</code> and <kbd>TAB</kbd> will show in the results both
+            <code>test (名前)</code> and
+            <code>名前 (test)</code>, so you can select either name by cycling
+            through the results via <kbd>TAB</kbd> as usual.</dd>
+        <dd>
+            <dl class="dl-settings-sub">
+                <dt>Only when no more than two matches</dt>
+                <dd>Only include all name types when no more than two names
+                    match, so that you don't have to cycle through all the
+                    different name types when you have a larger list.</dd>
+                <dd><em>Tip:</em> Once you found the right name, you can move the cursor
+                    to leave completion, and then press <kbd>TAB</kbd> again to
+                    complete the name again to get the other name types again.</dd>
+            </dl>
+        </dd>
+    </dl>
+        
+    <h3>Apperance / Behaviour</h3>
     <dl class="dl-settings">
         <dt>Show popup</dt>
         <dd>Shows a small window with information about the current completion
@@ -1486,40 +1542,22 @@
             </dl>
         </dd>
         
-        <dt>Include all name types in result</dt>
-        <dd>If a user has a Localized name, or you have a
-            <a href="help.html#customNames">Custom name</a> set, then not only
-            the name that matched, but also the other types of names are added
-            to the result.</dd>
-        <dd><em>Example:</em> If a user is called <code>test</code> and has the
-            Localized Name <code>名前</code>, then entering
-            <code>tes</code> and <kbd>TAB</kbd> will show in the results both
-            <code>test (名前)</code> and
-            <code>名前 (test)</code>, so you can select either name by cycling
-            through the results via <kbd>TAB</kbd> as usual.</dd>
-        <dd>
-            <dl class="dl-settings-sub">
-                <dt>Only when no more than two matches</dt>
-                <dd>Only include all name types when no more than two names
-                    match, so that you don't have to cycle through all the
-                    different name types when you have a larger list.</dd>
-                <dd><em>Tip:</em> Once you found the right name, you can move the cursor
-                    to leave completion, and then press <kbd>TAB</kbd> again to
-                    complete the name again to get the other name types again.</dd>
-            </dl>
-        </dd>
+        
     </dl>
-                
+
     <h3><a name="Completion-custom">Custom Completion Items</a></h3>
     
-    <p>Custom Completion allows you to add user-specified keywords, that if
-        prepended with a dot (<code>.</code>) can be completed to their defined
-        value using <kbd>Shift-TAB</kbd>.</p>
+    <p>Custom Completion allows you to add your own keyword/value pairs for
+        completion. Custom Completion can always be performed by prepending the
+        keyword with a dot (<code>.</code>) and then pressing <kbd>TAB</kbd>
+        or <kbd>Shift-TAB</kbd>, or by selecting Custom Completion for the
+        <strong>TAB</strong> or <strong>Shift-TAB</strong> setting, in which
+        case no prefix is required.</p>
 
     <p><em>Example:</em> Add <code>chatty</code> as <em>Key</em> and
         <code>http://chatty.github.io</code> as <em>Value</em> and then in the
         inputbox type <code>.chatty</code> (notice the dot in front) and press
-        <kbd>Shift-TAB</kbd> to complete it to the URL.</p>
+        <kbd>TAB</kbd> to complete it to the URL.</p>
                 
     <p>Custom Completion items can only have one completion, so you can't have
         <code>.chatty</code> complete to several different values.</p>
@@ -1532,8 +1570,8 @@
         <li><code>/customCompletion set &lt;item&gt; &lt;value&gt;</code> - Change an item if it already exists (or otherwise add it)</li>
         <li><code>/customCompletion remove &lt;item&gt;</code> - Remove an item</li>
     </ul>
-                
-    <p>Remember that you can also use TAB Completion for commands. Kappab</p>
+    
+    <p>Remember that you can also use TAB Completion for command names. Kappab</p>
 </body>
 </html>
 

@@ -47,9 +47,83 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.8.6">Version 0.8.7 Beta</a> <a name="latest">(This one!)</a> (2017-??-??)
+        <a name="0.8.7">Version 0.8.7</a> <a name="latest">(This one!)</a> (2017-09-12)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>This update finally contains the ability to set the three communities. It
+        has been in beta for a while, but unfortunately I seem to be pretty bad
+        at releasing frequent updates, sorry about that (following job interview
+        cliché I guess I would have to say it's because I'm a perfectionist ;).
+        Due to that, there are also some more changes in this update than usual,
+        that have collected over time.</p>
+    
+    <pre>
+### Communities / Channel Info
+- Added support for selecting several communities in Admin Dialog
+- Removed F hotkey for toggling Community favorites (because that can interfere
+  with searching the list), use Alt+F instead
+- Updated Channel Info Dialog to show several communities (in overflow menu if
+  there is not enough space)
+- More info updated when hovering over history graph in Channel Info Dialog
+  (uptime, communities, stream type)
+
+### Notifications
+- Don't match own messages by default, but added option to do so anyway
+- Added option to only trigger on messages containing bits
+- Added text matching for Stream Status and Subscriber Notifications
+- Added separate dialog to edit text matching pattern, including some basic help
+- Prevent channel tab color changing from own messages (by username)
+
+### TAB Completion
+- Added settings to what TAB and Shift-TAB should complete, but always complete
+  to username when using the @ prefix
+- Added completion of Custom Command names
+- Reorganized settings
+
+### Custom Commands / Moderation
+- Added $lower function to make text lowercase
+- Improved error output, showing the place the error occured more conveniently
+- Made function parsing more lenient, so that you can use a replacement in
+  the first function parameter (if it starts with "$"), which usually would
+  require an identifier (e.g. "$lower(1)" or "$lower($(1))")
+- AutoMod: Made name of filtered messages in chat clickable, so you can open the
+  context menu or User Info Dialog to approve/deny a message
+- Added special commands /Automod_approve and /Automod_deny that can be used to
+  position the Approve/Deny buttons in the User Info Dialog
+
+### Other Settings Stuff
+- Highlights/Ignore: Added "re*:" prefix (matching anywhere in message, except
+  of whole message, so "re*:abc" and "re:.*abc.*" would be equivalent)
+- Added "Test"-button to some matcher settings (e.g. Highlights) where you can
+  test if the pattern you entered matches a text
+- Added setting to close User Info Dialog when clicking on button (enabled by
+  default to keep previous behaviour, but can be disabled now)
+- Added ability to add Livestreamer fallback quality options
+- Added "Edit all entries" button to some list settings, which allows all
+  entries to be edited in one editbox (separated by newlines)
+
+### Other Improvements
+- Vodcasts are now marked with "[VOD]" in several places, and also made the
+  Channel Info Dialog history graph line color grey for Vodcasts
+- Set Admin/Followers Dialog to first joined channel, if already open
+- Don't immediately remove streams from Live Streams Dialog on request error
+- Added "/userinfo &lt;name&gt;" command to open specific User Info Dialog
+- Live Streams List: Added hotkeys for join selected (Enter), open Channel Info
+  (Space) and open context menu (Context Menu Button)
+- Channel Info Dialog: Added ESC hotkey to close
+- Removed message type from Tray Notifications, which should allow Chatty icon
+  to show up on them on some OS
+- Minor memory usage improvement in regards to Twitch Emotes metadata
+- Updated help
+
+### Bugfixes
+- Fixed error related to the User Dialog custom buttons setting
+- Fixed error in Notification settings when no sounds could be found
+- Fixed global emotes showing as Subscriber Emotes in context menu
+- Fixed deselecting graph item on channel change
+- Fixed Whisper-Type Notification triggering when it shouldn't
+- Fixed parsing of numeric identifiers with more than one number
+</pre>
     
     <h2>
         <a name="0.8.6">Version 0.8.6</a> (2017-05-27)

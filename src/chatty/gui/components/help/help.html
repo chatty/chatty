@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.7b4)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.8.7)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -211,6 +211,8 @@
         <li><code>/settings</code>, <code>/livestreams</code>, <code>/channeladmin</code>,
             <code>/channelinfo</code>, <code>/search</code>, <code>/openFollowers</code>,
             <code>/openSubscribers</code> - Opens the according dialog</li>
+        <li><code>/userinfo &lt;username&gt;</code> - To open the User Info Dialog
+            on a specific user of the current channel (if available)</li>
         <li><code>/insert &lt;text&gt;</code> - Inserts the given text into the input box at
             the current caret position (can be useful for Custom Commands put
             in a menu)</li>
@@ -528,28 +530,24 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>When you type in the inputbox, you can TAB-complete different types of
-    things:</p>
+        things, by using either <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd> to
+        initiate Completion, which complete different types depending on the
+        <a href="help-settings.html#Completion">Completion settings</a>.</p>
+    
+    <p>Some prefixes automatically switch to a certain type of completion
+        independant of whether you use <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>:</p>
     
     <ul>
-        <li>Using <kbd>TAB</kbd>
-            <ul>
-                <li>Names of who is currently in the userlist</li>
-                <li>Chatty setting names (after a setting command)</li>
-                <li>Some commands (after <code>/</code>)</li>
-            </ul>
-        </li>
-        <li>Using <kbd>Shift-TAB</kbd>
-            <ul>
-                <li>Emoticons</li>
-                <li><a href="help-settings.html#Completion-custom">Custom completion</a></li>
-            </ul>
-        </li>
+        <li>Prefixing <code>@</code> completes usernames</li>
+        <li>Prefixing <code>/</code> completes command names</li>
+        <li>Prefixing <code>.</code> performs <a href="help-settings.html#Completion-custom">Custom completion</a></li>
+        <li>Certain commands such as <code>/ban</code> complete usernames for
+            their first parameter</li>
+        <li>Setting commands such as <code>/set</code> complete setting names
+            for their first parameter</li>
     </ul>
     
     <h3>How it works</h3>
-    <p>There are a couple of <a href="help-settings.html#Completion">settings</a>
-    that change the behaviour of the TAB Completion.</p>
-    
     <p>How the TAB Completion process works:</p>
 
     <ol>
@@ -594,7 +592,7 @@
     <h3>Example: Nick Completion</h3>
     <ul>
         <li>Enter <code>z</code> in the editbox</li>
-        <li>Press <kbd>TAB</kbd> to complete as a nickname
+        <li>Press <kbd>TAB</kbd> to complete as a nickname (assuming the <a href="help-settings.html#Completion">setting</a> is that)
             <ul>
                 <li>On default settings, this may complete to <code>ze_tt</code>
                 with two other results</li>
@@ -612,7 +610,7 @@
     <h3>Example: Emote Completion</h3>
     <ul>
         <li>Enter <code>dat</code> in the editbox</li>
-        <li>Press <kbd>Shift-TAB</kbd> to complete as an emote
+        <li>Press <kbd>Shift-TAB</kbd> to complete as an emote (assuming the <a href="help-settings.html#Completion">setting</a> is that)
             <ul>
                 <li>On default settings, this may complete to <code>DatHass</code> with two other results</li>
             </ul>
@@ -1031,9 +1029,23 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     <p><a href="https://help.twitch.tv/customer/portal/articles/2662186-how-to-use-automod">AutoMod</a>
         is a Twitch feature that filters messages before they are send to the
         chat clients. As mod in the channel you can review and either approve
-        or deny those filtered messages. In Chatty this can be done via
-        <code>Extra - AutoMod</code>.</p>
+        or deny those filtered messages in different ways:</p>
     
+    <ul>
+        <li>The AutoMod Dialog under <code>Extra - AutoMod</code></li>
+        <li>Enable <code>Settings - Moderation - Show messages rejected by AutoMod</code>
+            to show rejected messages directly in chat and..
+            <ul>
+                <li>Right-click on the username of a filtered message and
+                    approve/reject from the context menu</li>
+                <li>Click on the username of a filtered message to open the User
+                    Info Dialog and click the approve/reject button
+                    (<a href="help-custom_commands.html#special-commands">settings</a>)</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h3>AutoMod Dialog</h3>
     <p>In the dialog you will see filtered messages of the current channel (if
         you are mod). Open the context menu on a message (usually right-click)
         to approve or deny that message. Double-click on a message to open the
@@ -1076,8 +1088,8 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     stream. The data is requested from the Twitch API in a semi-regular interval,
     so it can take some time to update.</p>
     
-    <h3>Online Time</h3>
-    <p>If the stream is online, the <code>Online: 1h 30m</code>
+    <h3>Stream Uptime</h3>
+    <p>If the stream is online, the <code>Live: 1h 30m</code>
     shows how long ago the stream was started. That time comes directly from the
     Twitch API, so it is able to show the correct online time, even if you started
     Chatty after the stream started.</p>

@@ -28,6 +28,7 @@
                 <li><a href="#submenus">Format 3: Submenus</a></li>
                 <li><a href="#shortcuts">Shortcuts</a></li>
                 <li><a href="#positioning">Positioning</a></li>
+                <li><a href="#special-commands">Special Commands</a></li>
             </ul>
         </li>
     </ul>
@@ -321,7 +322,9 @@
         
         <dt>User Dialog Buttons</dt>
         <dd>Defines which buttons are visible in the dialog that opens when you
-            click on a user in chat (or double-click in the userlist).</dd>
+            click on a user in chat (or double-click in the userlist). Note
+            the <a href="#special-commands">Special Commands</a> you can use for
+            this setting.</dd>
     </dl>
     
     <p>All those settings share the same format (with some slight differences
@@ -386,14 +389,6 @@ Spoiler[S]=/timeout $$1 600 No spoilers
             directly, otherwise the label is automatically created based on the
             time.</dd>
     </dl>
-    
-    <p>The command <code>/modunmod</code> has a special meaning in the
-        <strong>User Dialog</strong> and is used to add a
-        <strong>Mod/Unmod-Button</strong> which automatically changes depending
-        on the selected user and whether you are the broadcaster on the channel
-        (so the button doesn't always show). Reposition this command to change
-        where the Mod/Unmod-Button appears, or remove it altogether if you don't
-        want it.</p>
     
     <h3><a name="inline-commands">Format 2: Inline-Commands</a></h3>
     <p>You can define commands directly in the setting, without having to add
@@ -515,6 +510,25 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         positioning is based on the current state of the menu, so it can matter
         <em>when</em> you add entries with absolute positioning.</p>
     
+    <h3><a name="special-commands">Special Commands</a></h3>
+    
+    <p>In the User Dialog Buttons setting you can use some special commands:</p>
+    <ul>
+        <li>Add the command <code>/modunmod</code> to ada a <strong>Mod/Unmod-Button</strong>
+            which automatically changes depending on the selected user and
+            whether you are the broadcaster on the channel (so the button
+            doesn't always show up).</li>
+        <li>The commands <code>/Automod_approve</code> and <code>/Automod_deny</code>
+            only appear as buttons when you opened the User Dialog by clicking
+            on the username of a message rejected by AutoMod.</li>
+    </ul>
+    
+    <p>To make use of these you only need to enter the command, you don't need
+        any parameters (Chatty will take care of that). For example simply add
+        <code>/Modunmod</code> or <code>Approve=/Automod_approve</code> to add
+        it to the layout (using the syntax shown on this help page). Chatty will
+        then recognize the command names and the buttons will only show up when
+        they are needed.</p>
 </body>
 </html>
 
