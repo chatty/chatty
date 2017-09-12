@@ -57,6 +57,15 @@
         Due to that, there are also some more changes in this update than usual,
         that have collected over time.</p>
     
+    <p>A note about memory usage and emoticons: With the number of emotes
+        skyrocketing due to the introduction of the Affiliate program, Chatty
+        has much more emote metadata (not images) to handle, which causes issues
+        for some users. It needs that data to populate the Emote Dialog and also
+        (for sent messages) to show emotes in chat. I will try to improve the
+        situation over the coming updates, probably by only requesting data as
+        needed, instead of all at once (although there are related issues to
+        solve for this to work properly).</p>
+    
     <pre>
 ### Communities / Channel Info
 - Added support for selecting several communities in Admin Dialog
@@ -114,6 +123,7 @@
 - Removed message type from Tray Notifications, which should allow Chatty icon
   to show up on them on some OS
 - Minor memory usage improvement in regards to Twitch Emotes metadata
+- Show Twitch Charity messages
 - Updated help
 
 ### Bugfixes
@@ -122,7 +132,8 @@
 - Fixed global emotes showing as Subscriber Emotes in context menu
 - Fixed deselecting graph item on channel change
 - Fixed Whisper-Type Notification triggering when it shouldn't
-- Fixed parsing of numeric identifiers with more than one number
+- Fixed parsing behaviour of numeric identifiers with more than one number
+- Fixed minor display bug in Live Streams List
 </pre>
     
     <h2>
