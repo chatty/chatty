@@ -74,6 +74,7 @@ import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
+import chatty.util.commands.Parser;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -2484,8 +2485,33 @@ public class MainGui extends JFrame implements Runnable {
     public void showNotification(String title, String message, Color foreground, Color background, String channel) {
         if (client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {
             notificationWindowManager.showMessage(title, message, foreground, background, channel);
-        } else {
+        } else if(client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.displayInfo(title, message);
+        } else {
+            String[] commandParams = client.settings.getString("nCommand").split(" ");
+
+            for(int i = 0; i < commandParams.length; i++) {
+                switch(commandParams[i]) {
+                    case "$(title)":
+                        commandParams[i] = title;
+                        break;
+                    case "$(message)":
+                        commandParams[i] = message;
+                        break;
+                    case "$(channel)":
+                        commandParams[i] = channel;
+                        break;
+                }
+            }
+
+            try {
+                ProcessBuilder p = new ProcessBuilder();
+
+                p.command(commandParams);
+                p.start();
+            } catch(java.io.IOException exception) {
+                exception.printStackTrace();
+            }
         }
     }
     
