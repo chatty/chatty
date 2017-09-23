@@ -259,13 +259,14 @@ public class NotificationSettings extends SettingsPanel {
     
     private void updateSettingsState() {
         boolean enabled = nType.getSettingValue().equals(Long.valueOf(0));
+        boolean cmdEnabled = nType.getSettingValue().equals(Long.valueOf(2));
+
         nPosition.setEnabled(enabled);
         nScreen.setEnabled(enabled);
         nDisplayTime.setEnabled(enabled);
         nMaxDisplayTime.setEnabled(enabled);
         userActivity.setEnabled(enabled);
-
-
+        nCommand.setEnabled(cmdEnabled);
     }
     
     protected void setData(List<Notification> data) {
