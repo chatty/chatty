@@ -409,6 +409,7 @@ public class SettingsManager {
         settings.addLong("nMaxQueueSize", 4);
         settings.addBoolean("nActivity", false);
         settings.addLong("nActivityTime", 10);
+        settings.addString("nCommand", "");
 
         settings.addList("notifications", getDefaultNotificationSettingValue(), Setting.LIST);
         settings.addList("nColorPresets", new ArrayList<>(), Setting.LIST);

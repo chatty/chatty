@@ -24,12 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
 /**
  *
@@ -39,7 +34,8 @@ public class NotificationSettings extends SettingsPanel {
     
     public final static long NOTIFICATION_TYPE_CUSTOM = 0;
     public final static long NOTIFICATION_TYPE_TRAY = 1;
-    
+    public final static long NOTIFICATION_TYPE_COMMAND = 2;
+
     private final LinkLabel userReadPermission;
     private final JCheckBox requestFollowedStreams;
     
@@ -49,6 +45,7 @@ public class NotificationSettings extends SettingsPanel {
     private final DurationSetting nDisplayTime;
     private final DurationSetting nMaxDisplayTime;
     private final JCheckBox userActivity;
+    private final JTextField nCommand;
     
     private final PathSetting soundsPath;
     
@@ -73,6 +70,7 @@ public class NotificationSettings extends SettingsPanel {
         Map<Long, String> nTypeOptions = new LinkedHashMap<>();
         nTypeOptions.put(NOTIFICATION_TYPE_CUSTOM, "Chatty Notifications");
         nTypeOptions.put(NOTIFICATION_TYPE_TRAY, "Tray Notifications (OS dependant)");
+        nTypeOptions.put(NOTIFICATION_TYPE_COMMAND, "Run Command");
         nType = new ComboLongSetting(nTypeOptions);
 
         nType.addItemListener(new ItemListener() {
@@ -132,7 +130,10 @@ public class NotificationSettings extends SettingsPanel {
         d.addLongSetting("nMaxDisplayTime", nMaxDisplayTime);
         notificationSettings.add(nMaxDisplayTime,
                 d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST));
-        
+
+        nCommand = d.addSimpleStringSetting("nCommand", 50, true);
+        notificationSettings.add(nCommand, d.makeGbc(1, 4, 1, 1, GridBagConstraints.EAST));
+
         //================
         // Sound Settings
         //================
@@ -263,6 +264,8 @@ public class NotificationSettings extends SettingsPanel {
         nDisplayTime.setEnabled(enabled);
         nMaxDisplayTime.setEnabled(enabled);
         userActivity.setEnabled(enabled);
+
+
     }
     
     protected void setData(List<Notification> data) {

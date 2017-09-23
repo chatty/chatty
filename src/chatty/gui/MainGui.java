@@ -4055,7 +4055,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             Set<String> notificationSettings = new HashSet<>(Arrays.asList(
                 "nScreen", "nPosition", "nDisplayTime", "nMaxDisplayTime",
-                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime"));
+                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime", "nCommand"));
             if (notificationSettings.contains(setting)) {
                 updateNotificationSettings();
             }
