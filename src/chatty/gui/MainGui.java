@@ -15,6 +15,7 @@ import chatty.gui.components.Channel;
 import chatty.gui.components.TokenGetDialog;
 import chatty.gui.components.FavoritesDialog;
 import chatty.gui.components.JoinDialog;
+import chatty.util.*;
 import chatty.util.api.Emoticon;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TokenInfo;
@@ -57,13 +58,6 @@ import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationWindowManager;
-import chatty.util.CopyMessages;
-import chatty.util.DateTime;
-import chatty.util.ImageCache;
-import chatty.util.MiscUtil;
-import chatty.util.MsgTags;
-import chatty.util.Sound;
-import chatty.util.StringUtil;
 import chatty.util.api.ChatInfo;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -2488,30 +2482,14 @@ public class MainGui extends JFrame implements Runnable {
         } else if(client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.displayInfo(title, message);
         } else {
-            String[] commandParams = client.settings.getString("nCommand").split(" ");
+            CustomCommand command = CustomCommand.parse(client.settings.getString("nCommand"));
 
-            for(int i = 0; i < commandParams.length; i++) {
-                switch(commandParams[i]) {
-                    case "$(title)":
-                        commandParams[i] = title;
-                        break;
-                    case "$(message)":
-                        commandParams[i] = message;
-                        break;
-                    case "$(channel)":
-                        commandParams[i] = channel;
-                        break;
-                }
-            }
+            Parameters param = Parameters.create("");
+            param.put("title", "\"" + title + "\"");
+            param.put("message", "\"" + message + "\"");
+            param.put("channel", "\"" + channel + "\"");
 
-            try {
-                ProcessBuilder p = new ProcessBuilder();
-
-                p.command(commandParams);
-                p.start();
-            } catch(java.io.IOException exception) {
-                exception.printStackTrace();
-            }
+            ProcessManager.execute(command.replace(param), "Notification");
         }
     }
     
