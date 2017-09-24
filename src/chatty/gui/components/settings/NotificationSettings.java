@@ -133,7 +133,7 @@ public class NotificationSettings extends SettingsPanel {
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 
-        nCommand = d.addSimpleStringSetting("nCommand", 50, true);
+        nCommand = d.addSimpleStringSetting("nCommand", 35, true);
         notificationSettings.add(nCommand, d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
 
         notificationSettings.add(new JLabel("Tip: Add quotes around variables, as they may contain spaces."), d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
