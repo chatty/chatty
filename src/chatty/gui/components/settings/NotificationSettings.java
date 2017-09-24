@@ -93,7 +93,7 @@ public class NotificationSettings extends SettingsPanel {
         nPositionOptions.put(Long.valueOf(3), "Bottom-Right");
         nPosition = new ComboLongSetting(nPositionOptions);
         d.addLongSetting("nPosition", nPosition);
-        gbc = d.makeGbc(1, 1, 1, 1);
+        gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
         notificationSettings.add(nPosition, gbc);
         
         notificationSettings.add(new JLabel("Screen:"),
@@ -131,8 +131,12 @@ public class NotificationSettings extends SettingsPanel {
         notificationSettings.add(nMaxDisplayTime,
                 d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST));
 
+        notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
+
         nCommand = d.addSimpleStringSetting("nCommand", 50, true);
-        notificationSettings.add(nCommand, d.makeGbc(1, 4, 1, 1, GridBagConstraints.EAST));
+        notificationSettings.add(nCommand, d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
+
+        notificationSettings.add(new JLabel("Tip: Add quotes around variables, as they may contain spaces."), d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
 
         //================
         // Sound Settings
