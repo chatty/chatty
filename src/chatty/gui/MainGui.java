@@ -2485,9 +2485,9 @@ public class MainGui extends JFrame implements Runnable {
             CustomCommand command = CustomCommand.parse(client.settings.getString("nCommand"));
 
             Parameters param = Parameters.create("");
-            param.put("title", "\"" + title + "\"");
-            param.put("message", "\"" + message + "\"");
-            param.put("channel", "\"" + channel + "\"");
+            param.put("title", title);
+            param.put("message", message);
+            param.put("channel", channel);
 
             ProcessManager.execute(command.replace(param), "Notification");
         }
