@@ -8,10 +8,12 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.notifications.Notification;
 import chatty.util.Sound;
 import chatty.util.settings.Settings;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -45,7 +47,7 @@ public class NotificationSettings extends SettingsPanel {
     private final DurationSetting nDisplayTime;
     private final DurationSetting nMaxDisplayTime;
     private final JCheckBox userActivity;
-    private final JTextField nCommand;
+    private final EditorStringSetting nCommand;
     
     private final PathSetting soundsPath;
     
@@ -70,7 +72,7 @@ public class NotificationSettings extends SettingsPanel {
         Map<Long, String> nTypeOptions = new LinkedHashMap<>();
         nTypeOptions.put(NOTIFICATION_TYPE_CUSTOM, "Chatty Notifications");
         nTypeOptions.put(NOTIFICATION_TYPE_TRAY, "Tray Notifications (OS dependant)");
-        nTypeOptions.put(NOTIFICATION_TYPE_COMMAND, "Run Command");
+        nTypeOptions.put(NOTIFICATION_TYPE_COMMAND, "Run OS Command");
         nType = new ComboLongSetting(nTypeOptions);
 
         nType.addItemListener(new ItemListener() {
@@ -133,10 +135,30 @@ public class NotificationSettings extends SettingsPanel {
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 
-        nCommand = d.addSimpleStringSetting("nCommand", 35, true);
-        notificationSettings.add(nCommand, d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
+        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit command to execute:", false, ""
+                + "<html><body style='width: 300px;'>"
+                + "<p>Enter a command with parameters, which will be executed "
+                + "as a new process on your system (so please be careful with "
+                + "this). "
+                + "You can use the following replacements: "
+                + "<code>$(title), $(text), $(chan)</code></p>"
+                + "<p><em>Tip:</em> Add quotes around replacements, as they may contain spaces.</p>"
+                + "<p>For example to run 'notify-send' to show a native notification on Linux: "
+                + "<code>notify-send \"$(title)\" \"$(message)\"</code></p>"
+                + "<p>To view the output of executed commands (for example to "
+                + "debug if it doesn't work as expected) you can open &lt;Extra"
+                + " - Debug window&gt;.</p>"
+                + "<p>Use the \"Test\" button to execute the current command "
+                + "with some example data.</p>", new Editor.Tester() {
 
-        notificationSettings.add(new JLabel("Tip: Add quotes around variables, as they may contain spaces."), d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                GuiUtil.showCommandNotification(value, "Example Title",
+                        "Example Message", "#example");
+                return null;
+            }
+        });
+        notificationSettings.add(nCommand, d.makeGbc(1, 4, 3, 1, GridBagConstraints.WEST));
 
         //================
         // Sound Settings

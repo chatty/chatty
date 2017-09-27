@@ -100,5 +100,11 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     public void setInfo(String info) {
         this.info = info;
     }
+    
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        editButton.setEnabled(enabled);
+    }
 
 }

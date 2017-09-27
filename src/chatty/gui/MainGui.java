@@ -2482,14 +2482,8 @@ public class MainGui extends JFrame implements Runnable {
         } else if(client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.displayInfo(title, message);
         } else {
-            CustomCommand command = CustomCommand.parse(client.settings.getString("nCommand"));
-
-            Parameters param = Parameters.create("");
-            param.put("title", title);
-            param.put("message", message);
-            param.put("channel", channel);
-
-            ProcessManager.execute(command.replace(param), "Notification");
+            GuiUtil.showCommandNotification(client.settings.getString("nCommand"),
+                    title, message, channel);
         }
     }
     
@@ -3939,7 +3933,7 @@ public class MainGui extends JFrame implements Runnable {
             client.api.getFollowedStreams(client.settings.getString("token"));
         }
     }
-
+    
     private class MySettingChangeListener implements SettingChangeListener {
         /**
          * Since this can also be called from other threads, run in EDT if
@@ -4059,7 +4053,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             Set<String> notificationSettings = new HashSet<>(Arrays.asList(
                 "nScreen", "nPosition", "nDisplayTime", "nMaxDisplayTime",
-                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime", "nCommand"));
+                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime"));
             if (notificationSettings.contains(setting)) {
                 updateNotificationSettings();
             }

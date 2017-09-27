@@ -49,6 +49,9 @@ public class Proc extends Thread {
     @Override
     public void run() {
         try {
+            if (command == null || command.isEmpty()) {
+                return;
+            }
             Runtime rt = Runtime.getRuntime();
             String[] cmd = split(command);
             Process p = rt.exec(cmd);

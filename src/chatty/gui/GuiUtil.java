@@ -3,6 +3,9 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.util.MiscUtil;
+import chatty.util.ProcessManager;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -388,6 +391,18 @@ public class GuiUtil {
 
         // Other actions
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), DefaultEditorKit.selectAllAction);
+    }
+    
+    public static void showCommandNotification(String commandText, String title,
+            String message, String channel) {
+        CustomCommand command = CustomCommand.parse(commandText);
+
+        Parameters param = Parameters.create("");
+        param.put("title", title);
+        param.put("message", message);
+        param.put("channel", channel);
+
+        ProcessManager.execute(command.replace(param), "Notification");
     }
     
 }
