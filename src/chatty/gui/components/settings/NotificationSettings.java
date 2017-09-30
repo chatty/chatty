@@ -135,7 +135,7 @@ public class NotificationSettings extends SettingsPanel {
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 
-        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit command to execute:", false, ""
+        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit command to execute (read help):", false, ""
                 + "<html><body style='width: 300px;'>"
                 + "<p>Enter a command with parameters, which will be executed "
                 + "as a new process on your system (so please be careful with "
@@ -154,7 +154,8 @@ public class NotificationSettings extends SettingsPanel {
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
                 GuiUtil.showCommandNotification(value, "Example Title",
-                        "Example Message", "#example");
+                        "Example \"message\" for this test notification",
+                        "#example_channel");
                 return null;
             }
         });

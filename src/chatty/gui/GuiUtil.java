@@ -398,8 +398,8 @@ public class GuiUtil {
         CustomCommand command = CustomCommand.parse(commandText);
 
         Parameters param = Parameters.create("");
-        param.put("title", title);
-        param.put("message", message);
+        param.put("title", title.replace("\"", "\\\""));
+        param.put("message", message.replace("\"", "\\\""));
         param.put("channel", channel);
 
         ProcessManager.execute(command.replace(param), "Notification");

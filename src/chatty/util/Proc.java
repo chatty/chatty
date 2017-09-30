@@ -56,8 +56,8 @@ public class Proc extends Thread {
             String[] cmd = split(command);
             Process p = rt.exec(cmd);
             this.process = p;
-            LOGGER.info(String.format("[%s] Process %s started. [%s]",
-                    label, id(), command));
+            LOGGER.info(String.format("[%s] Process %s started. [%s][%s]",
+                    label, id(), command, StringUtil.join(cmd)));
             listener.processStarted(this);
 
             // Read both output streams (output of the process, so input), so
@@ -145,12 +145,12 @@ public class Proc extends Thread {
      * @param input The line of text to tokenize
      * @return An array of tokens (tokens in quotes may be empty)
      */
-    private static String[] split(String input) {
+    public static String[] split(String input) {
         List<String> result = new ArrayList<>();
-        Matcher m = Pattern.compile("\"([^\"]*)\"|([^\"\\s]+)").matcher(input);
+        Matcher m = Pattern.compile("\"((?:\\\\\"|[^\"])+)\"|([^\"\\s]+)").matcher(input);
         while (m.find()) {
             if (m.group(1) != null) {
-                result.add(m.group(1));
+                result.add(m.group(1).replace("\\\"", "\""));
             } else {
                 result.add(m.group(2));
             }
@@ -159,7 +159,10 @@ public class Proc extends Thread {
     }
     
     public static void main(String[] args) {
-        String[] split = split("abc -d \"abc jfwe\"  fwe\"hmm\"");
+        String message = "Is there even anything over \"here\"?".replace("\"", "\\\"");
+        String test = "notify-send Title \""+message+"\"";
+        String[] split = split(test);
+        System.out.println(test);
         System.out.println(Arrays.asList(split));
     }
 }
