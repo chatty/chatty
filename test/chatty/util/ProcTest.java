@@ -1,11 +1,6 @@
 
 package chatty.util;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -27,6 +22,8 @@ public class ProcTest {
         assertArrayEquals(Proc.split("\"\""), new String[]{});
         assertArrayEquals(Proc.split("\" \""), new String[]{" "});
         assertArrayEquals(Proc.split("\"a \\b\\ c\""), new String[]{"a \\b\\ c"});
+        assertArrayEquals(Proc.split("\\\"a\\\" b"), new String[]{"\"a\"","b"});
+        assertArrayEquals(Proc.split("\\\"a b\\\""), new String[]{"\"a","b\""});
     }
     
 }

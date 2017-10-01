@@ -137,7 +137,8 @@ public class Proc extends Thread {
 
     /**
      * Splits up a line of text into tokens by spaces, ignoring spaces for parts
-     * that are surrounded by quotes.
+     * that are surrounded by quotes. Quotes can be escaped by prepending a
+     * backslash (\").
      *
      * <p>
      * This can be used for splitting up parameters.</p>
@@ -147,12 +148,13 @@ public class Proc extends Thread {
      */
     public static String[] split(String input) {
         List<String> result = new ArrayList<>();
-        Matcher m = Pattern.compile("\"((?:\\\\\"|[^\"])+)\"|([^\"\\s]+)").matcher(input);
+        Matcher m = Pattern.compile("\"((?:\\\\\"|[^\"])+)\"|((?:\\\\\"|[^\"\\s])+)").matcher(input);
         while (m.find()) {
             if (m.group(1) != null) {
+                // Remove escaping characters for quotes (\" to ")
                 result.add(m.group(1).replace("\\\"", "\""));
             } else {
-                result.add(m.group(2));
+                result.add(m.group(2).replace("\\\"", "\""));
             }
         }
         return result.toArray(new String[result.size()]);
@@ -160,7 +162,7 @@ public class Proc extends Thread {
     
     public static void main(String[] args) {
         String message = "Is there even anything over \"here\"?".replace("\"", "\\\"");
-        String test = "notify-send Title \""+message+"\"";
+        String test = "notify-send \\\"Title\\\" \""+message+"\"";
         String[] split = split(test);
         System.out.println(test);
         System.out.println(Arrays.asList(split));

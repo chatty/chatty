@@ -67,7 +67,8 @@ public class ProcessManager {
     /**
      * Execute the given process and parameters.
      * 
-     * @param command The process and parameters
+     * @param command The process and parameters (split up by spaces, except
+     * for parts surrounded by quotes, \" to escape quotes)
      * @param label For debug output
      */
     public static void execute(String command, String label) {
