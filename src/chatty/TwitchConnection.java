@@ -1276,7 +1276,7 @@ public class TwitchConnection {
 
         void onJoinAttempt(String channel);
 
-        void onChannelJoined(User channel);
+        void onChannelJoined(User user);
 
         void onChannelLeft(String channel);
 
