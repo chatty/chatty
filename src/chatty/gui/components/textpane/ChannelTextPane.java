@@ -16,6 +16,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotes.Emoteset;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -1862,7 +1863,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         Emoticon.Builder b = new Emoticon.Builder(
                                 Emoticon.Type.TWITCH, code, url);
                         b.setNumericId(id);
-                        b.setEmoteset(Emoticon.SET_UNKNOWN);
+                        Emoteset emotesetInfo = main.emoticons.getInfoByEmoteId(id);
+                        if (emotesetInfo != null) {
+                            b.setEmoteset(emotesetInfo.emoteset_id);
+                            b.setStream(emotesetInfo.stream);
+                            b.setEmotesetInfo(emotesetInfo.product);
+                        } else {
+                            b.setEmoteset(Emoticon.SET_UNKNOWN);
+                        }
                         emoticon = b.build();
                         main.emoticons.addTempEmoticon(emoticon);
                         LOGGER.info("Added emote from message: "+emoticon);
@@ -2903,9 +2911,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             StyleConstants.setIcon(emoteStyle, emoteImage.getImageIcon());
             
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);
-            if (!emoticon.hasStreamSet()) {
-                emoticon.setStream(main.emoticons.getStreamFromEmoteset(emoticon.emoteSet));
-            }
+            Emoticons.addInfo(main.emoticons.getEmotesetInfo(), emoticon);
             return emoteStyle;
         }
         

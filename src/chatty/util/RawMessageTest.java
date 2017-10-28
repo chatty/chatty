@@ -38,6 +38,9 @@ public class RawMessageTest {
         if (type.equals("charity")) {
             return "@badges=partner/1;color=#8A2BE2;display-name=Twitch;emotes=;id=f4ab0ee7-90bd-434c-9120-03952d84fdf8;login=twitch;mod=0;msg-id=charity;room-id=1337;subscriber=0;system-msg=$14,332\\stotal\\sraised\\sso\\sfar\\sfor\\sExtra\\sLife!\\s12\\smore\\sdays\\sto\\sshow\\ssupport.\\sCheer\\sand\\sinclude\\s#charity.\\sLearn\\sMore\\sat\\slink.twitch.tv/cheer4kids;tmi-sent-ts=1504738162878;turbo=0;user-id=12826;user-type= :tmi.twitch.tv USERNOTICE "+channel;
         }
+        if (type.equals("messagewithemotes")) {
+            return "@badges=;color=#008000;display-name=Abc;emote-only=1;emotes=33:0-7;id=fwaef;mod=0;subscriber=0;tmi-sent-ts=1508516209239;turbo=0;user-type= :abc!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :DansGame ";
+        }
         return null;
     }
     

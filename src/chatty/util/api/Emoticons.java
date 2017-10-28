@@ -4,6 +4,8 @@ package chatty.util.api;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
+import chatty.util.TwitchEmotes.Emoteset;
+import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -120,7 +122,7 @@ public class Emoticons {
     /**
      * Emoteset -> Stream association (from Twitchemotes.com).
      */
-    private final Map<Integer, String> emotesetStreams = Collections.synchronizedMap(new HashMap<Integer, String>());
+    private volatile EmotesetInfo emotesetInfo = EmotesetInfo.EMPTY;
     
     private static final HashSet<Emoticon> EMPTY_SET = new HashSet<>();
     
@@ -346,6 +348,17 @@ public class Emoticons {
         return result;
     }
     
+    public Set<Emoticon> getEmoticons(Set<Emoteset> emotesets) {
+        Set<Emoticon> result = new HashSet<>();
+        for (Emoteset set : emotesets) {
+            Set<Emoticon> emotes = emoticonsByEmoteset.get(set.emoteset_id);
+            if (emotes != null) {
+                result.addAll(emotes);
+            }
+        }
+        return result;
+    }
+    
     /**
      * Gets a list of emoticons that are associated with the given channel. This
      * returns the original Set, so it should not be modified.
@@ -393,13 +406,18 @@ public class Emoticons {
                 || emoteSet == 793 || emoteSet == 19194;
     }
     
+    //===============
+    // Emoteset Info
+    //===============
     /**
      * Adds the emoteset data that associates them with a stream name.
      * 
      * @param data 
      */
-    public void addEmotesetStreams(Map<Integer, String> data) {
-        emotesetStreams.putAll(data);
+    public void setEmotesetInfo(EmotesetInfo info) {
+        if (info != null) {
+            emotesetInfo = info;
+        }
     }
     
     /**
@@ -411,13 +429,26 @@ public class Emoticons {
      * @return The name of the stream, or null if none could be found for this
      * emoteset
      */
-    public String getStreamFromEmoteset(int emoteset) {
-        String stream = emotesetStreams.get(emoteset);
-        if ("--twitch-turbo--".equals(stream) || "turbo".equals(stream)
-                || isTurboEmoteset(emoteset)) {
+    public String getLabelByEmoteset(int emoteset) {
+        if (isTurboEmoteset(emoteset)) {
             return "Turbo/Prime Emotes";
         }
-        return stream;
+        Emoteset info = emotesetInfo.getEmotesetInfo(emoteset);
+        if (info != null) {
+            if (info.stream != null) {
+                return info.stream;
+            }
+            return info.product;
+        }
+        return null;
+    }
+    
+    public Emoteset getInfoByEmoteset(int emoteset) {
+        return emotesetInfo.getEmotesetInfo(emoteset);
+    }
+    
+    public Emoteset getInfoByEmoteId(int emoteId) {
+        return emotesetInfo.getEmotesetInfoByEmoteId(emoteId);
     }
     
     /**
@@ -428,15 +459,31 @@ public class Emoticons {
      * @param stream The name of the stream to get the emoteset for
      * @return The emoteset, or -1 if none could be found
      */
-    public int getEmotesetFromStream(String stream) {
-        for (int emoteset : emotesetStreams.keySet()) {
-            if (emotesetStreams.get(emoteset).equals(stream)) {
-                return emoteset;
-            }
+    public Set<Emoteset> getEmotesetsByStream(String stream) {
+        if (emotesetInfo != null) {
+            return emotesetInfo.getEmotesetsByStream(stream);
         }
-        return -1;
+        return null;
     }
     
+    public static void addInfo(EmotesetInfo data, Emoticon emote) {
+        if (!emote.hasGlobalEmoteset() && !emote.hasStreamSet()) {
+            Emoteset info = data.getEmotesetInfo(emote.emoteSet);
+            if (info != null) {
+                System.out.println(emote + "####" + info);
+                emote.setStream(info.stream);
+                emote.setEmotesetInfo(info.product);
+            }
+        }
+    }
+    
+    public EmotesetInfo getEmotesetInfo() {
+        return emotesetInfo;
+    }
+    
+    //================
+    // Ignored Emotes
+    //================
     /**
      * Replaces the ignored emotes list with the given data.
      * 
@@ -502,7 +549,7 @@ public class Emoticons {
                 +(emote.hasGlobalEmoteset()
                     ? "Usable by everyone"
                     : ("Emoteset: "+emote.emoteSet
-                      +" ("+getStreamFromEmoteset(emote.emoteSet)+")"))
+                      +" ("+getLabelByEmoteset(emote.emoteSet)+")"))
                 
                 +(streams == null
                     ? " / Usable in all channels"

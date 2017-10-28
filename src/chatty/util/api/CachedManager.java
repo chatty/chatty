@@ -38,7 +38,7 @@ public abstract class CachedManager {
      * @param data The raw data
      * @return true if the data is valid and should be cached, false otherwise
      */
-    protected abstract boolean handleData(String data);
+    public abstract boolean handleData(String data);
     
     /**
      * Load the data from the cache. If the data is cached and valid, then this
@@ -48,7 +48,7 @@ public abstract class CachedManager {
      * even if it has expired
      * @return true if the cached data is being used, false otherwise
      */
-    protected boolean load(boolean useFileEvenIfExpired) {
+    public boolean load(boolean useFileEvenIfExpired) {
         String fromFile = loadFromFile(useFileEvenIfExpired);
         if (fromFile != null) {
             boolean dataValid = handleData(fromFile);
@@ -69,7 +69,7 @@ public abstract class CachedManager {
      * request failed, or the data isn't valid, it will only load from the cache
      * if this was the initial request)
      */
-    protected void dataReceived(String data, boolean wasForcedUpdate) {
+    public void dataReceived(String data, boolean wasForcedUpdate) {
         boolean dataValid = handleData(data);
         if (dataValid) {
             saveToFile(data);

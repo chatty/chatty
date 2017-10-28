@@ -128,10 +128,6 @@ public class TwitchConnection {
         return channelStates.getState(channel);
     }
     
-    public void setEmotesets(Map<Integer, String> emotesets) {
-        users.setEmotesets(emotesets);
-    }
-    
     public void setUsercolorManager(UsercolorManager m) {
         users.setUsercolorManager(m);
     }

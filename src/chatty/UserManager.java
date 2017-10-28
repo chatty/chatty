@@ -103,10 +103,6 @@ public class UserManager {
         this.addressbook = addressbook;
     }
     
-    public void setEmotesets(Map<Integer, String> newEmotesets) {
-        emotesets.putAll(newEmotesets);
-    }
-    
     public void setCustomNamesManager(CustomNames m) {
         if (m != null) {
             this.customNamesManager = m;

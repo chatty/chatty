@@ -33,6 +33,7 @@ import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes;
+import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
@@ -671,6 +672,7 @@ public class TwitchClient {
             settings.setString("channel", channel);
         }
         api.requestUserId(Helper.toStream(autojoin));
+        api.getEmotesByStreams(Helper.toStream(autojoin));
         c.connect(server, ports, name, password, autojoin);
         return true;
     }
@@ -1568,7 +1570,9 @@ public class TwitchClient {
             g.printLine("Refreshing emoticons.. (this can take a few seconds)");
             refreshRequests.add("emoticons");
             //Emoticons.clearCache(Emoticon.Type.TWITCH);
-            api.requestEmoticons(true);
+            api.refreshEmotes();
+        } else if (parameter.equals("emoticons_old")) {
+            api.refreshEmotesOld();
         } else if (parameter.equals("bits")) {
             g.printLine("Refreshing bits..");
             refreshRequests.add("bits");
@@ -1602,7 +1606,7 @@ public class TwitchClient {
         } else if (parameter.equals("emotesets")) {
             g.printLine("Refreshing emoteset information..");
             refreshRequests.add("emotesets");
-            twitchemotes.requestEmotesets(true);
+            twitchemotes.refresh();
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
         }
@@ -2189,6 +2193,7 @@ public class TwitchClient {
         if (settings.getBoolean("bttvEmotes")) {
             bttvEmotes.requestEmotes(channel, false);
         }
+        api.getEmotesByStreams(Helper.toStream(channel));
     }
     
     private class EmoteListener implements EmoticonListener {
@@ -2215,13 +2220,13 @@ public class TwitchClient {
     private class TwitchemotesListener implements TwitchEmotesListener {
 
         @Override
-        public void emotesetsReceived(Map<Integer, String> emotesetStreams) {
+        public void emotesetsReceived(EmotesetInfo info) {
             if (refreshRequests.contains("emotesets")) {
                 g.printLine("Emoteset information updated.");
                 refreshRequests.remove("emotesets");
             }
-            g.setEmotesets(emotesetStreams);
-            c.setEmotesets(emotesetStreams);
+            g.setEmotesets(info);
+            api.setEmotesetInfo(info);
         }
         
     }
@@ -2493,6 +2498,7 @@ public class TwitchClient {
         public void onSpecialUserUpdated() {
             g.updateEmotesDialog();
             g.updateEmoteNames();
+            api.getEmotesBySets(getSpecialUser().getEmoteSet());
         }
 
         @Override

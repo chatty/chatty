@@ -77,20 +77,16 @@ public class BTTVEmotes {
         String url = getUrlForStream(stream);
         alreadyRequested.add(stream);
         requestPending.add(stream);
-        UrlRequest request = new UrlRequest(url) {
-
-            @Override
-            public void requestResult(String result, int responseCode) {
-                if (responseCode == 200) {
-                    if (loadEmotes(result, stream) > 0 && stream.equals("$global$")) {
-                        cache.save(result);
-                    }
-                }
-                requestPending.remove(stream);
-            }
-        };
+        UrlRequest request = new UrlRequest(url);
         request.setLabel("[BTTV]");
-        new Thread(request).start();
+        request.async((result, responseCode) -> {
+            if (responseCode == 200) {
+                if (loadEmotes(result, stream) > 0 && stream.equals("$global$")) {
+                    cache.save(result);
+                }
+            }
+            requestPending.remove(stream);
+        });
     }
     
     private String getUrlForStream(String stream) {
@@ -199,7 +195,7 @@ public class BTTVEmotes {
         try {
             String url = urlTemplate;
             String code = (String)o.get("code");
-            String info = (String)o.get("channel");
+            String sourceChannel = (String)o.get("channel");
             String id = (String)o.get("id");
             String imageType = null;
             if (o.get("imageType") instanceof String) {
@@ -212,11 +208,12 @@ public class BTTVEmotes {
 
             Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.BTTV,
                     code, url);
-            builder.setStream(info);
+            builder.setCreator(sourceChannel);
             builder.setLiteral(true);
             builder.setStringId(id);
             if (channelRestriction != null) {
                 builder.addStreamRestriction(channelRestriction);
+                builder.setStream(channelRestriction);
             }
             if (imageType != null && imageType.equals("gif")) {
                 builder.setAnimated(true);

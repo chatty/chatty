@@ -205,28 +205,20 @@ public class NewsDialog extends JDialog {
         lastRequested = System.currentTimeMillis();
         refreshButton.setEnabled(false);
         
-        UrlRequest request = new UrlRequest(Chatty.DEBUG ? NEWS_URL_TEST : NEWS_URL) {
-            
-            @Override
-            public void requestResult(final String result, final int responseCode) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        if (responseCode == 200) {
-                            int unread = setNews(result);
-                            if (openIfUnread && unread > 0) {
-                                showDialog();
-                            }
-                        } else {
-                            news.setText("Error loading news. ("+responseCode+")");
-                        }
-                        refreshButton.setEnabled(true);
+        UrlRequest request = new UrlRequest(Chatty.DEBUG ? NEWS_URL_TEST : NEWS_URL);
+        request.async((result, responseCode) -> {
+            SwingUtilities.invokeLater(() -> {
+                if (responseCode == 200) {
+                    int unread = setNews(result);
+                    if (openIfUnread && unread > 0) {
+                        showDialog();
                     }
-                });
-            }
-        };
-        new Thread(request).start();
+                } else {
+                    news.setText("Error loading news. (" + responseCode + ")");
+                }
+                refreshButton.setEnabled(true);
+            });
+        });
     }
     
     /**

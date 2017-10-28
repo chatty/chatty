@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.JSONUtil;
 import chatty.util.UrlRequest;
+import chatty.util.UrlRequest.FullResult;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.settings.Settings;
@@ -322,10 +323,10 @@ public class WebsocketManager {
      */
     private Set<Emoticon> fetchEmoteSet(String room, int emoteset) {
         UrlRequest r = new UrlRequest("https://api.frankerfacez.com/v1/set/"+emoteset);
-        r.run();
-        if (r.getResult() != null) {
+        FullResult result = r.sync();
+        if (result.getResult() != null) {
             Set<Emoticon> emotes = FrankerFaceZParsing.parseSetEmotes(
-                    r.getResult(), Emoticon.SubType.EVENT, room);
+                    result.getResult(), Emoticon.SubType.EVENT, room);
             return emotes;
         }
         return new HashSet<>();
