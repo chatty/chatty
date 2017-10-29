@@ -67,6 +67,10 @@ public class EmoteContextMenu extends ContextMenu {
             addStreamSubmenu(emote);
         }
         
+        if (emote.type == Emoticon.Type.NOT_FOUND_FAVORITE) {
+            addItem("", "Not found favorite");
+        }
+        
         // Emoteset information
         if (emote.emoteSet > Emoticon.SET_GLOBAL) {
             addSeparator();

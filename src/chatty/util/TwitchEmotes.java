@@ -113,7 +113,7 @@ public class TwitchEmotes {
             // No data, or only name with no emoteset
             return;
         }
-        String info = split[0].substring(1);
+        String info = split[0].substring(1).replace("_", " ");
         for (int i=1;i<split.length;i++) {
             String[] emotesetSplit = split[i].split(":");
             int emoteset = Integer.parseInt(emotesetSplit[0]);

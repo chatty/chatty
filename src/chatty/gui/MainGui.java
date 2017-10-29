@@ -848,6 +848,7 @@ public class MainGui extends JFrame implements Runnable {
         
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
+        client.api.getEmotesBySets(emoticons.getFavoritesEmotesets());
         emoticons.loadCustomEmotes();
         emoticons.addEmoji(client.settings.getString("emoji"));
         emoticons.setCheerState(client.settings.getString("cheersType"));

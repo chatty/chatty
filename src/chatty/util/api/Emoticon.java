@@ -7,6 +7,7 @@ import chatty.util.ImageCache;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -48,7 +49,7 @@ public class Emoticon {
     public static final int ID_UNDEFINED = -1;
     
     public static enum Type {
-        TWITCH, FFZ, BTTV, CUSTOM, EMOJI
+        TWITCH, FFZ, BTTV, CUSTOM, EMOJI, NOT_FOUND_FAVORITE
     }
     
     public static enum SubType {
@@ -901,7 +902,9 @@ public class Emoticon {
         public ImageIcon getImageIcon() {
             if (icon == null) {
                 icon = getDefaultIcon();
-                loadImage();
+                if (type != Type.NOT_FOUND_FAVORITE) {
+                    loadImage();
+                }
             } else if (loadingError) {
                 if (loadImage()) {
                     LOGGER.warning("Trying to load " + code + " again (" + loadedFrom + ")");
@@ -1016,7 +1019,8 @@ public class Emoticon {
             if (error) {
                 g.setColor(Color.red);
             }
-            g.drawString("[x]", width / 2, height / 2);
+            int sWidth = g.getFontMetrics().stringWidth("[x]");
+            g.drawString("[x]", width / 2 - sWidth / 2, height / 2);
 
             g.dispose();
             return res;

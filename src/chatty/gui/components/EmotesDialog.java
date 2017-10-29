@@ -708,29 +708,39 @@ public class EmotesDialog extends JDialog {
             Set<Emoticon> emotes = emoteManager.getFavorites();
             if (emotes.isEmpty()) {
                 addTitle("You haven't added any favorite emotes");
-                if (emoteManager.getNumNotFoundFavorites() > 0) {
-                    addSubtitle("(Emotes may not have been loaded yet.)", false);
-                }
+//                if (emoteManager.getNumNotFoundFavorites() > 0) {
+//                    addSubtitle("(Emotes may not have been loaded yet.)", false);
+//                }
             }
 
             // Sort emotes by emoteset
             List<Emoticon> sorted = new ArrayList<>(emotes);
-            Collections.sort(sorted, new SortEmotesByEmoteset());
+            Collections.sort(sorted, new SortEmotesByEmotesetAndName());
 
             // Sort out emotes that the user probably doesn't have access to
             List<Emoticon> subEmotesNotSubbedTo = new ArrayList<>();
+            List<Emoticon> notFoundFavorites = new ArrayList<>();
             for (Emoticon emote : sorted) {
-                if (emote.emoteSet != Emoticon.SET_UNDEFINED && !localUserEmotesets.contains(emote.emoteSet)) {
+                if (emote.type == Emoticon.Type.NOT_FOUND_FAVORITE) {
+                    notFoundFavorites.add(emote);
+                }
+                else if (!emote.hasGlobalEmoteset() && !localUserEmotesets.contains(emote.emoteSet)) {
                     subEmotesNotSubbedTo.add(emote);
                 }
             }
             sorted.removeAll(subEmotesNotSubbedTo);
-
+            sorted.removeAll(notFoundFavorites);
+            
             // Add emotes
             addEmotesPanel(sorted);
             if (!subEmotesNotSubbedTo.isEmpty()) {
                 addTitle("You need to subscribe to use these emotes:");
                 addEmotesPanel(subEmotesNotSubbedTo);
+            }
+            if (!notFoundFavorites.isEmpty()) {
+                addTitle("Favorites not yet found (metadata not loaded):");
+                addEmotesPanel(notFoundFavorites);
+                addSubtitle("(Right-click to view info and unfavorite, if necessary.)", true);
             }
             relayout();
         }
