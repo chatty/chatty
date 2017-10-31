@@ -54,7 +54,7 @@ public class Chatty {
      * by points. May contain a single "b" for beta versions, which are counted
      * as older (so 0.8.7b4 is older than 0.8.7).
      */
-    public static final String VERSION = "0.8.7";
+    public static final String VERSION = "0.9b1";
     
     /**
      * Enable Version Checker (if you compile and distribute this yourself, you
@@ -121,7 +121,6 @@ public class Chatty {
         if (parsedArgs.containsKey("d")) {
             String dir = parsedArgs.get("d");
             File file = new File(dir);
-            System.out.println(dir+" "+file.isDirectory());
             if (file.isDirectory()) {
                 settingsDir = file.toString();
             }

@@ -152,6 +152,14 @@ public class TwitchConnection {
         this.maxReconnectionAttempts = num;
     }
     
+    public void setSpamProtection(String setting) {
+        spamProtection.setLinesPerSeconds(setting);
+    }
+    
+    public String getSpamProtectionInfo() {
+        return spamProtection.toString();
+    }
+    
     public User getUser(String channel, String name) {
         return users.getUser(channel, name);
     }

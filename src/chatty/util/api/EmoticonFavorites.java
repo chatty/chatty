@@ -127,14 +127,13 @@ public class EmoticonFavorites {
      * <ul>
      * <li>0: code (String),</li>
      * <li>1: emoteset (Number),</li>
-     * <li>2: notFoundCount (Number)</li>
+     * <li>2: notFoundCount (Number)</li> (removed, may be in old settings)
      * </ul>
      * 
      * The notFoundCount is increased if the emote was not found during this
      * session, otherwise it is set to 0.
      * 
      * @param f The favorite to turn into a list
-     * @param found Whether this favorite was found during this session
      * @return The created list
      * @see listToFavorite(List)
      */
@@ -149,6 +148,10 @@ public class EmoticonFavorites {
      * If there are still Favorites not yet associated with an actual Emoticon
      * object, then search through the current emoticons. This should be done
      * everytime new emotes are added (e.g. from request or loaded from cache).
+     * 
+     * @param twitchEmotesById All Twitch emotes currently loaded
+     * @param otherGlobalEmotes All non-Twitch global emotes
+     * @param emoji All Emoji currently loaded
      */
     public void find(Map<Integer, Emoticon> twitchEmotesById,
             Set<Emoticon> otherGlobalEmotes, Set<Emoticon> emoji) {
@@ -167,6 +170,9 @@ public class EmoticonFavorites {
         }
     }
     
+    /**
+     * Create "dummy" Emoticon objects for not found favorites.
+     */
     private void createNotFound() {
         for (Favorite f : favoritesNotFound.values()) {
             Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.NOT_FOUND_FAVORITE, f.code, null);

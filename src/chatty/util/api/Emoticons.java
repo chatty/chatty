@@ -466,7 +466,6 @@ public class Emoticons {
         if (!emote.hasGlobalEmoteset() && !emote.hasStreamSet()) {
             Emoteset info = data.getEmotesetInfo(emote.emoteSet);
             if (info != null) {
-                System.out.println(emote + "####" + info);
                 emote.setStream(info.stream);
                 emote.setEmotesetInfo(info.product);
             }

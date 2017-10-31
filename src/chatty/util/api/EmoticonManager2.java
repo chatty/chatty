@@ -82,12 +82,10 @@ public class EmoticonManager2 {
     //-------------------
     
     public synchronized void addStreams(Set<String> streams) {
-        System.out.println(streams);
         this.pendingStreams.addAll(streams);
     }
     
     public synchronized void addEmotesets(Set<Integer> emotesetsToAdd) {
-        System.out.println(emotesetsToAdd);
         for (int emoteset : emotesetsToAdd) {
             addEmoteset(emoteset);
         }
@@ -111,7 +109,7 @@ public class EmoticonManager2 {
      * Check if any emotesets should be requested, and request them.
      */
     private synchronized void checkRequest() {
-        System.out.println("checkRequest"+pendingEmotesets+" "+requestedEmotesets);
+        //System.out.println("checkRequest"+pendingEmotesets+" "+requestedEmotesets);
         checkStreams();
         
         if (!pendingEmotesets.isEmpty()) {
@@ -143,7 +141,7 @@ public class EmoticonManager2 {
      * requested.
      */
     private synchronized void checkStreams() {
-        System.out.println("checkStreams:"+pendingStreams+" "+backlogStreams);
+        //System.out.println("checkStreams:"+pendingStreams+" "+backlogStreams);
         for (String stream : pendingStreams) {
             Set<Emoteset> sets = emotesetInfo.getEmotesetsByStream(stream);
             System.out.println(sets);
