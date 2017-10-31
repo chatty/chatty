@@ -20,7 +20,7 @@ public class EmoticonManager2 {
      * How often to try to make a request. This is used to "bunch up" requests
      * a bit.
      */
-    private static final long REQUEST_CHECK_INTERVAL = 10*1000;
+    private static final long REQUEST_CHECK_INTERVAL = 5*1000;
     
     //------------
     // References

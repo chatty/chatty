@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -218,7 +219,11 @@ public class MainMenu extends JMenuBar {
     }
     
     public final void setAction(String key, Action action) {
-        menuItems.get(key).setAction(action);
+        JMenuItem item = menuItems.get(key);
+        // Preserve icon
+        Icon icon = item.getIcon();
+        item.setAction(action);
+        item.setIcon(icon);
     }
     
     /**

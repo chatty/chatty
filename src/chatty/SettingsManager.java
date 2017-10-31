@@ -25,7 +25,7 @@ public class SettingsManager {
     private final Settings settings;
     private final BackupManager backup;
     
-    private final List<DefaultHotkey> hotkeys = new ArrayList<>();
+    private final List<DefaultHotkey> defaultHotkeys = new ArrayList<>();
     
     public static final long DISPLAY_NAMES_MODE_BOTH = 0;
     public static final long DISPLAY_NAMES_MODE_CAPITALIZED = 1;
@@ -113,6 +113,7 @@ public class SettingsManager {
         addDefaultHotkeyAppWide("0.7.3", "tabs.previous", "ctrl shift TAB");
         addDefaultHotkey("0.7.3", "selection.toggle", "ctrl SPACE");
         addDefaultHotkey("0.7.3", "selection.toggle", "ctrl S");
+        addDefaultHotkeyAppWide("0.9b1", "about", "F1");
         settings.addList("hotkeys", getDefaultHotkeySettingValue(), Setting.LIST);
         settings.addBoolean("globalHotkeysEnabled", true);
         
@@ -639,7 +640,7 @@ public class SettingsManager {
      */
     void overrideSettings() {
         settings.setBoolean("ignoreJoinsParts", false);
-        if (updatedFromBefore("0.7.2")) {
+        if (switchedFromVersionBefore("0.7.2")) {
             String value = settings.getString("timeoutButtons");
             if (value.equals("5,2m,10m,30m")) {
                 /**
@@ -660,12 +661,12 @@ public class SettingsManager {
                 LOGGER.warning("Added /Ban,/Unban to timeoutButtons setting, now: "+newValue);
             }
         }
-        if (updatedFromBefore("0.8.1")) {
+        if (switchedFromVersionBefore("0.8.1")) {
             if (settings.getString("portDefault").equals("6667,80")) {
                 settings.setString("portDefault", "6667,443");
             }
         }
-        if (updatedFromBefore("0.8.2")) {
+        if (switchedFromVersionBefore("0.8.2")) {
             if (settings.getString("serverDefault").equals("irc.twitch.tv")) {
                 settings.setString("serverDefault", "irc.chat.twitch.tv");
             }
@@ -674,19 +675,19 @@ public class SettingsManager {
             }
             settings.setAdd("securedPorts", (long)443);
         }
-        if (updatedFromBefore("0.8.4")) {
+        if (switchedFromVersionBefore("0.8.4")) {
             settings.setBoolean("ircv3CapitalizedNames", true);
         }
-        if (updatedFromBefore("0.8.5b4")) {
+        if (switchedFromVersionBefore("0.8.5b4")) {
             String currentValue = settings.getString("timeoutButtons");
             if (!currentValue.toLowerCase().contains("/modunmod")) {
                 settings.setString("timeoutButtons", currentValue+"\n/ModUnmod");
             }
         }
-        if (updatedFromBefore("0.8.6b3")) {
+        if (switchedFromVersionBefore("0.8.6b3")) {
             settings.putList("notifications", getDefaultNotificationSettingValue());
         }
-        if (updatedFromBefore("0.8.7b1")) {
+        if (switchedFromVersionBefore("0.8.7b1")) {
             String currentValue = settings.getString("timeoutButtons");
             if (!currentValue.toLowerCase().contains("/automod_approve")) {
                 settings.setString("timeoutButtons", currentValue + "\n\n"
@@ -695,6 +696,7 @@ public class SettingsManager {
                         + ".Deny=/Automod_deny");
             }
         }
+        overrideHotkeySettings();
     }
     
     /**
@@ -710,7 +712,7 @@ public class SettingsManager {
      * @param version The version to check against
      * @return true if the given version is greater than the current version
      */
-    private boolean updatedFromBefore(String version) {
+    private boolean switchedFromVersionBefore(String version) {
         return Version.compareVersions(settings.getString("currentVersion"), version) == 1;
     }
     
@@ -731,21 +733,46 @@ public class SettingsManager {
     }
     
     private void addDefaultHotkey(String version, String id, String hotkey) {
-        hotkeys.add(new DefaultHotkey(version,
+        defaultHotkeys.add(new DefaultHotkey(version,
                 Arrays.asList(new Object[]{id, hotkey})));
     }
     
     private void addDefaultHotkeyAppWide(String version, String id, String hotkey) {
-        hotkeys.add(new DefaultHotkey(version,
+        defaultHotkeys.add(new DefaultHotkey(version,
                 Arrays.asList(new Object[]{id, hotkey, Hotkey.Type.APPLICATION.id})));
     }
     
     private List<List> getDefaultHotkeySettingValue() {
         List<List> data = new ArrayList<>();
-        for (DefaultHotkey hotkey : hotkeys) {
+        for (DefaultHotkey hotkey : defaultHotkeys) {
             data.add(hotkey.data);
         }
         return data;
+    }
+    
+    /**
+     * When settings have already been loaded from file, add some more default
+     * ones if previous version older than specified with the hotkey.
+     */
+    private void overrideHotkeySettings() {
+        for (DefaultHotkey hotkey : defaultHotkeys) {
+            // Check version of when the default hotkey was added
+            if (switchedFromVersionBefore(hotkey.version)) {
+                List<List> setting = settings.getList("hotkeys");
+                Iterator<List> it = setting.iterator();
+                // Remove hotkey if already in setting
+                while (it.hasNext()) {
+                    // Compare hotkey ids
+                    if (it.next().get(0).equals(hotkey.data.get(0))) {
+                        it.remove();
+                    }
+                }
+                // Add hotkey with default settings
+                setting.add(hotkey.data);
+                LOGGER.info("Overriding hotkey setting: "+hotkey.data);
+                settings.putList("hotkeys", setting);
+            }
+        }
     }
     
     private static class DefaultHotkey {

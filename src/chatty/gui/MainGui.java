@@ -544,6 +544,15 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
+        addMenuAction("about", "Open Help", "About/Help", KeyEvent.VK_H,
+                new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openHelp("");
+            }
+        });
+        
         hotkeyManager.registerAction("selection.toggle", "User Selection: Toggle", new AbstractAction() {
 
             @Override
