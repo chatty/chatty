@@ -12,9 +12,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -32,6 +35,9 @@ import javax.swing.event.DocumentListener;
  * @author tduva
  */
 public class HotkeyEditor extends TableEditor<Hotkey> {
+    
+    private static final Set<String> RECOMMENDED_APPLICATION_ACTIONS =
+            new HashSet<>(Arrays.asList(new String[]{"about"}));
 
     private final MyItemEditor itemEditor;
     private final MyTableModel data = new MyTableModel();
@@ -369,10 +375,15 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         
         private void updateButtons() {
             String action = actionId.getSettingValue();
+            
+            // Custom input field
             boolean customEnabled = action != null && action.startsWith("custom.");
             custom.setEnabled(customEnabled);
             custom.setEditable(customEnabled);
-            if (action != null && action.startsWith("dialog.") && !applicationWide.isSelected()) {
+            
+            // Scope tip
+            if (action != null && !applicationWide.isSelected()
+                    && (action.startsWith("dialog.") || RECOMMENDED_APPLICATION_ACTIONS.contains(action))) {
                 scopeTip.setVisible(true);
                 scopeTip.setText("Application scope recommended for this action");
             } else {
@@ -380,6 +391,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             }
             dialog.pack();
             
+            // Button state
             boolean enabled = actionId.getSettingValue() != null && currentHotkey != null
                     && (!customEnabled || !custom.getText().isEmpty());
             ok.setEnabled(enabled);

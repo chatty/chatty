@@ -111,7 +111,7 @@ public class EmojiUtil {
         }
     }
     
-        private static void twemoji(EmojiSet set, Set<Emoticon> result) {
+    private static void twemoji(EmojiSet set, Set<Emoticon> result) {
         add(set, result, "\uD83C\uDC04","1f004.png","mahjong","symbols");
         add(set, result, "\uD83C\uDCCF","1f0cf.png","black joker","symbols");
         add(set, result, "\uD83C\uDD70","1f170.png","a","symbols");

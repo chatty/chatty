@@ -874,7 +874,6 @@ public class EmotesDialog extends JDialog {
                 
                 // Subscriber Emotes
                 Set<Emoteset> sets = emoteManager.getEmotesetsByStream(stream);
-                System.out.println(sets);
                 if (sets != null && !sets.isEmpty()) {
                     if (addEmotes("Subemotes "+stream, sets)) {
                         if (!TwitchEmotes.hasAccessTo(localUserEmotesets, sets)) {

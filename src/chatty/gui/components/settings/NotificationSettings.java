@@ -135,11 +135,11 @@ public class NotificationSettings extends SettingsPanel {
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 
-        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit command to execute (read help):", false, ""
+        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit system command to execute (read help):", false, ""
                 + "<html><body style='width: 300px;'>"
-                + "<p>Enter a command with parameters, which will be executed "
-                + "as a new process on your system (so please be careful with "
-                + "this, especially considering the <code>$(message)</code> "
+                + "<p>Enter a command/program with parameters, which will be "
+                + "executed as a new process on your system (so please be "
+                + "careful with this, especially considering the <code>$(message)</code> "
                 + "comes directly from Twitch Chat, so the program you call "
                 + "must be able to handle that safely).</p>"
                 + "<p>You can use the following replacements: "
