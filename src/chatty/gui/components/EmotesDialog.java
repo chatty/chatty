@@ -61,15 +61,24 @@ import javax.swing.border.Border;
  */
 public class EmotesDialog extends JDialog {
     
+    //--------------------
+    // Updating Constants
+    //--------------------
     public final int UPDATE_EMOTESET_CHANGED = 1;
     public final int UPDATE_CHANNEL_CHANGED = 2;
     public final int UPDATE_FAVORITES = 4;
     
+    //------------------
+    // Layout Constants
+    //------------------
     private static final Insets TITLE_INSETS = new Insets(5,8,0,8);
     private static final Insets SUBTITLE_INSETS = new Insets(6,4,2,4);
     private static final Insets SUBTITLE_INSETS_SMALLER_MARGIN = new Insets(1,2,0,2);
     private static final Insets EMOTE_INSETS = new Insets(4,10,4,10);
     
+    //----------------
+    // Page Constants
+    //----------------
     private static final String FAVORITE_EMOTES = "Favorites";
     private static final String MY_EMOTES = "My Emotes";
     private static final String CHANNEL_EMOTES = "Channel";
@@ -79,16 +88,11 @@ public class EmotesDialog extends JDialog {
     private static final String EMOTE_DETAILS = "Emote Details";
     private static final String BITS = "B";
     
-    private final JPanel emotesPanel;
-    private final Emoticons emoteManager;
-    
-    private final EmoticonUser emoteUser;
-    
+    //--------
+    // Layout
+    //--------
     private final CardLayout cardLayout = new CardLayout();
-    
-    private final MouseAdapter mouseListener;
-    private final ContextMenuListener contextMenuListener;
-    
+    private final JPanel emotesPanel;
     private final List<EmotesPanel> panels = new ArrayList<>();
     private final Map<JToggleButton, EmotesPanel> buttons = new HashMap<>();
     private final EmotesPanel defaultPanel;
@@ -98,14 +102,24 @@ public class EmotesDialog extends JDialog {
      */
     private final GridBagConstraints gbc;
     
+    //------------
+    // References
+    //------------
+    private final Emoticons emoteManager;
+    private final EmoticonUser emoteUser;
+    private final MouseAdapter mouseListener;
+    private final ContextMenuListener contextMenuListener;
+    
+    //------------------
+    // State / Settings
+    //------------------
     private Set<Integer> localUserEmotesets = new HashSet<>();
     private String stream;
     private Emoticon detailsEmote;
-    private boolean repaint;
     private float scale;
-    
     private boolean closeOnDoubleClick = true;
    
+    
     public EmotesDialog(Window owner, Emoticons emotes, final MainGui main, ContextMenuListener contextMenuListener) {
         super(owner);
         
@@ -117,18 +131,6 @@ public class EmotesDialog extends JDialog {
                 repaint();
             }
         };
-//        Timer timer = new Timer(100, new ActionListener() {
-//
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if (repaint) {
-//                    repaint();
-//                    repaint = false;
-//                }
-//            }
-//        });
-//        timer.setRepeats(true);
-//        timer.start();
         
         // TODO: Focusable or maybe just when clicked on emote to insert code?
         this.setFocusable(false);
@@ -137,6 +139,9 @@ public class EmotesDialog extends JDialog {
         this.emoteManager = emotes;
         setResizable(true);
 
+        //------------------
+        // Add Emote Panels
+        //------------------
         panels.add(new FavoritesPanel(FAVORITE_EMOTES,
                 UPDATE_CHANNEL_CHANGED | UPDATE_EMOTESET_CHANGED |
                         UPDATE_FAVORITES));
@@ -150,9 +155,13 @@ public class EmotesDialog extends JDialog {
         }
         // Not quite ready yet
         //panels.add(new EmojiPanel(EMOJI, 0));
+        
+        // Get second panel as default
         defaultPanel = panels.get(1);
         
-        // Buttons/Button Panel
+        //--------------------------
+        // Buttons for those panels
+        //--------------------------
         ActionListener buttonAction = new ActionListener() {
 
             @Override
@@ -176,8 +185,12 @@ public class EmotesDialog extends JDialog {
         }
         add(buttonPanel, BorderLayout.NORTH);
         
+        // Add Details panel, which doesn't have a button
         panels.add(new EmoteDetailPanel(EMOTE_DETAILS, 0));
 
+        //---------------------------------
+        // Listener for clicking on emotes
+        //---------------------------------
         mouseListener = new MouseAdapter() {
             
             @Override
@@ -186,7 +199,7 @@ public class EmotesDialog extends JDialog {
                     if (e.getClickCount() == 2 && closeOnDoubleClick) {
                         setVisible(false);
                     } else {
-                        Emote label = (Emote) e.getSource();
+                        EmoteLabel label = (EmoteLabel) e.getSource();
                         if (!label.noInsert) {
                             main.insert(Emoticons.toWriteable(label.code), true);
                         }
@@ -206,7 +219,11 @@ public class EmotesDialog extends JDialog {
             
         };
         
-        // Emotes
+        //------------------------------------
+        // Add panel holding all emote panels
+        //------------------------------------
+        // This is using a CardLayout, showing just one of the added panels,
+        // using the panel label as constraint to select which one to show
         emotesPanel = new JPanel();
         emotesPanel.setBackground(Color.WHITE);
         emotesPanel.setLayout(cardLayout);
@@ -264,7 +281,7 @@ public class EmotesDialog extends JDialog {
      */
     private void openContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
-            EmoticonImage emote = ((Emote)e.getSource()).emote;
+            EmoticonImage emote = ((EmoteLabel)e.getSource()).emote;
             JPopupMenu m = new EmoteContextMenu(emote, contextMenuListener);
             m.show(e.getComponent(), e.getX(), e.getY());
         }
@@ -437,7 +454,7 @@ public class EmotesDialog extends JDialog {
      * A single emote displayed in a JLabel. Saves a reference to the actual
      * Emoticon object, so it can be retrieved when opening the context menu.
      */
-    private static class Emote extends JLabel {
+    private static class EmoteLabel extends JLabel {
         
         private static final Border BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
         
@@ -445,7 +462,7 @@ public class EmotesDialog extends JDialog {
         public final EmoticonImage emote;
         public final boolean noInsert;
 
-        public Emote(Emoticon emote, MouseListener mouseListener, float scale,
+        public EmoteLabel(Emoticon emote, MouseListener mouseListener, float scale,
                 EmoticonUser emoteUser) {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(mouseListener);
@@ -470,6 +487,9 @@ public class EmotesDialog extends JDialog {
         
     }
     
+    //==================
+    // Emoticon sorting
+    //==================
     private static class SortEmotesByEmoteset implements Comparator<Emoticon> {
 
         @Override
@@ -503,11 +523,16 @@ public class EmotesDialog extends JDialog {
         }
     }
     
-    
+    //==============
+    // Emote Panels
+    //==============
+    /**
+     * General emotes panel which has methods for adding emotes in different
+     * ways. Override updateEmotes() which is called when emotes should be
+     * updated (for example when new data is received).
+     */
     private abstract class EmotesPanel extends JPanel {
-        
-        
-        
+
         private boolean shouldUpdate;
         private final String label;
         private final int updateOn;
@@ -518,6 +543,12 @@ public class EmotesDialog extends JDialog {
             this.updateOn = updateOn;
         }
 
+        /**
+         * Update the emotes on this panel the next time it is shown, but only
+         * if the update reason matches what this panel is configured for.
+         * 
+         * @param reason 
+         */
         public void setUpdated(int reason) {
             if ((updateOn & reason) == reason) {
                 shouldUpdate = true;
@@ -655,7 +686,7 @@ public class EmotesDialog extends JDialog {
                     panel.add(makeSeparator());
                 }
                 prevEmoteset = emote.emoteSet;
-                final JLabel label = new Emote(emote, mouseListener, scale, emoteUser);
+                final JLabel label = new EmoteLabel(emote, mouseListener, scale, emoteUser);
                 panel.add(label);
             }
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -1097,7 +1128,7 @@ public class EmotesDialog extends JDialog {
         private void addScaledEmote(Emoticon emote, JPanel panel, float scale, String label) {
             lgbc.anchor = GridBagConstraints.CENTER;
             lgbc.gridy = 0;
-            panel.add(new Emote(emote, mouseListener, scale, emoteUser), lgbc);
+            panel.add(new EmoteLabel(emote, mouseListener, scale, emoteUser), lgbc);
             
             lgbc.gridy = 1;
             panel.add(new JLabel(label), lgbc);

@@ -74,7 +74,7 @@ public class UrlRequest {
         }).start();
     }
     
-    public void asyncStream(ResultLinesListener listener) {
+    public void asyncLines(ResultLinesListener listener) {
         new Thread(() -> {
             LinesResult result = new LinesResult();
             performRequest(result);
