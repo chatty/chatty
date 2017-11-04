@@ -485,6 +485,8 @@ public class Requests {
                     Set<Emoticon> result = EmoticonManager.parseEmoticonSets(r.text);
                     if (result != null) {
                         listener.receivedEmoticons(result);
+                    } else {
+                        api.emoticonManager2.addError(emotesets);
                     }
                 });
             }
