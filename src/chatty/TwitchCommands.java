@@ -117,6 +117,12 @@ public class TwitchCommands {
         else if (command.equals("color")) {
             commandColor(channel, parameter);
         }
+        else if (command.equals("raid")) {
+            commandRaid(channel, parameter);
+        }
+        else if (command.equals("unraid")) {
+            commandUnraid(channel);
+        }
         else {
             return false;
         }
@@ -240,6 +246,22 @@ public class TwitchCommands {
             printLine("Usage: /color <newcolor>");
         } else {
             color(channel, parameter);
+        }
+    }
+    
+    protected void commandRaid(String channel, String parameter) {
+        if (parameter == null) {
+            printLine("Usage: /raid <stream>");
+        } else {
+            if (onChannel(channel, true)) {
+                sendMessage(channel, ".raid "+parameter, "Trying to raid "+parameter+"..");
+            }
+        }
+    }
+    
+    protected void commandUnraid(String channel) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel, ".unraid", "Trying to stop raid..");
         }
     }
     

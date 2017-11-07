@@ -957,7 +957,7 @@ public class TwitchConnection {
                 return;
             }
             String login = tags.get("login");
-            String text = tags.get("system-msg");
+            String text = StringUtil.removeLinebreakCharacters(tags.get("system-msg"));
             String emotes = tags.get("emotes");
             int months = tags.getInteger("msg-param-months", -1);
             if (StringUtil.isNullOrEmpty(login, text)) {
@@ -968,7 +968,13 @@ public class TwitchConnection {
             if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
-                listener.onInfo(channel, text);
+                listener.onInfo(channel, "[Charity] "+text);
+            } else if (tags.isValue("msg-id", "raid")) {
+                String m = text;
+                if (!message.isEmpty()) {
+                    m += " ["+message+"]";
+                }
+                listener.onInfo(channel, "[Raid] "+m);
             }
         }
 
