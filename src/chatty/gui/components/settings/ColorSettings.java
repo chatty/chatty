@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -21,25 +22,49 @@ public class ColorSettings extends SettingsPanel {
     private final Map<String, ColorSetting> colorSettings = new HashMap<>();
     private final ColorChooser colorChooser;
     private final JPanel main;
+    private final ColorTemplates presets;
     
-    public ColorSettings(SettingsDialog d) {
+    public ColorSettings(SettingsDialog d, Settings settings) {
         this.d = d;
         colorChooser = new ColorChooser(d);
 
-        main = addTitledPanel("Customize Colors", 0);
+        main = addTitledPanel("Customize Chat Colors", 0);
         
         GridBagConstraints gbc;
+
+        presets = new ColorTemplates(settings, "colorPresets",
+                addColorSetting("backgroundColor", ColorSetting.BACKGROUND, "foregroundColor", "Background", "Background Color", 1),
+                addColorSetting("foregroundColor", ColorSetting.FOREGROUND, "backgroundColor", "Foreground", "Normal message", 2),
+                addColorSetting("infoColor", ColorSetting.FOREGROUND, "backgroundColor", "Info", "You have joined #channel", 3),
+                addColorSetting("compactColor", ColorSetting.FOREGROUND, "backgroundColor", "Compact", "MOD: nick1, nick2", 4),
+                addColorSetting("highlightColor", ColorSetting.FOREGROUND, "backgroundColor", "Highlight", "Highlighted message", 5),
+                addColorSetting("inputBackgroundColor", ColorSetting.BACKGROUND, "inputForegroundColor", "Input Background", "Input Background", 6),
+                addColorSetting("inputForegroundColor", ColorSetting.FOREGROUND, "inputBackgroundColor", "Input Foreground", "Input Foreground", 7),
+                addColorSetting("searchResultColor", ColorSetting.BACKGROUND, "foregroundColor", "Search Result", "Search Result", 8),
+                addColorSetting("searchResultColor2", ColorSetting.BACKGROUND, "foregroundColor", "Search Result 2", "Search Result 2", 9)
+        );
+        presets.addPreset("Default",
+                settings.getStringDefault("backgroundColor"),
+                settings.getStringDefault("foregroundColor"),
+                settings.getStringDefault("infoColor"),
+                settings.getStringDefault("compactColor"),
+                settings.getStringDefault("highlightColor"),
+                settings.getStringDefault("inputBackgroundColor"),
+                settings.getStringDefault("inputForegroundColor"),
+                settings.getStringDefault("searchResultColor"),
+                settings.getStringDefault("searchResultColor2"));
+            
+        presets.addPreset("Dark", "#111111", "LightGrey", "DeepSkyBlue",
+                "#A0A0A0", "Red", "#222222", "White", "DarkSlateBlue",
+                "SlateBlue");
+        
+        presets.addPreset("Dark 2", "Black", "White", "#FF9900", "#FFCC00",
+                "#66FF66", "#FFFFFF", "#000000", "#333333", "#555555");
+        
+        presets.init();
+        
         gbc = d.makeGbc(0, 0, 1, 1);
-        main.add(new Presets(), gbc);
-        addColorSetting("backgroundColor", ColorSetting.BACKGROUND, "foregroundColor", "Background","Background Color", 1);
-        addColorSetting("foregroundColor", ColorSetting.FOREGROUND, "backgroundColor", "Foreground","Normal message", 2);
-        addColorSetting("infoColor", ColorSetting.FOREGROUND, "backgroundColor", "Info","You have joined #channel", 3);
-        addColorSetting("compactColor", ColorSetting.FOREGROUND, "backgroundColor", "Compact","MOD: nick1, nick2", 4);
-        addColorSetting("highlightColor", ColorSetting.FOREGROUND, "backgroundColor", "Highlight","Highlighted message", 5);
-        addColorSetting("inputBackgroundColor", ColorSetting.BACKGROUND, "inputForegroundColor", "Input Background","Input Background", 6);
-        addColorSetting("inputForegroundColor", ColorSetting.FOREGROUND, "inputBackgroundColor", "Input Foreground","Input Foreground", 7);
-        addColorSetting("searchResultColor", ColorSetting.BACKGROUND, "foregroundColor", "Search Result","Search Result", 8);
-        addColorSetting("searchResultColor2", ColorSetting.BACKGROUND, "foregroundColor", "Search Result 2","Search Result 2", 9);
+        main.add(presets, gbc);
     }
     
     
@@ -78,7 +103,7 @@ public class ColorSettings extends SettingsPanel {
      */
     class MyColorSettingListener implements ColorSettingListener {
 
-        private String setting;
+        private final String setting;
         
         MyColorSettingListener(String setting) {
             this.setting = setting;

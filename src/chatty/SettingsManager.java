@@ -230,12 +230,13 @@ public class SettingsManager {
         settings.addString("backgroundColor","#FAFAFA");
         settings.addString("infoColor","#001480");
         settings.addString("compactColor","#A0A0A0");
-        settings.addString("inputBackgroundColor","#FFFFFF");
-        settings.addString("inputForegroundColor","#000000");
-        settings.addString("highlightColor","#FF0000");
+        settings.addString("inputBackgroundColor","White");
+        settings.addString("inputForegroundColor","Black");
+        settings.addString("highlightColor","Red");
         settings.addString("searchResultColor", "LightYellow");
         settings.addString("searchResultColor2", "#FFFF80");
         settings.addBoolean("colorCorrection", true);
+        settings.addList("colorPresets", new ArrayList<>(), Setting.LIST);
         
         // Usercolors
         settings.addBoolean("customUsercolors", false);

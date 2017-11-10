@@ -248,13 +248,20 @@ public class Settings {
      * @param type The type of the setting.
      * @return The Object value, which is actually of 'type'.
      */
-    private Object get(String settingName, int type) {
+    private Object get(String settingName, int type, boolean getDefault) {
         synchronized(LOCK) {
             if (!isOfType(settingName, type)) {
                 throw new SettingNotFoundException("Could not find setting: " + settingName);
             }
+            if (getDefault) {
+                return settings.get(settingName).getDefault();
+            }
             return settings.get(settingName).getValue();
         }
+    }
+    
+    private Object get(String settingName, int type) {
+        return get(settingName, type, false);
     }
     
     private Object get(String settingName) {
@@ -275,6 +282,10 @@ public class Settings {
      */
     public String getString(String setting) {
         return (String)get(setting, Setting.STRING);
+    }
+    
+    public String getStringDefault(String setting) {
+        return (String)get(setting, Setting.STRING, true);
     }
     
     public long getLong(String setting) {

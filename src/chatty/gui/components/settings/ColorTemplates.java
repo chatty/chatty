@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -65,15 +66,23 @@ public class ColorTemplates extends JPanel {
         
         gbc = GuiUtil.makeGbc(0, 1, 1, 1);
         gbc.insets = insets;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.3;
         add(saveButton, gbc);
         
         gbc = GuiUtil.makeGbc(1, 1, 1, 1);
         gbc.insets = insets;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.3;
         add(saveAsButton, gbc);
         
         gbc = GuiUtil.makeGbc(2, 1, 1, 1);
         gbc.insets = insets;
         add(removeButton, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 2, 3, 1);
+        JLabel saveNote = new JLabel("(Presets are directly saved to settings)");
+        add(saveNote, gbc);
         
         selection.addItemListener(e -> {
             boolean hardcoded = hardcodedPresets.contains(selection.getSettingValue());

@@ -197,7 +197,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new EmoteSettings(this), PANEL_EMOTES);
         imageSettings = new ImageSettings(this);
         cards.add(imageSettings, PANEL_USERICONS);
-        cards.add(new ColorSettings(this), PANEL_COLORS);
+        cards.add(new ColorSettings(this, settings), PANEL_COLORS);
         cards.add(new HighlightSettings(this), PANEL_HIGHLIGHT);
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);
         cards.add(new HistorySettings(this), PANEL_HISTORY);
