@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.LaF;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -129,18 +130,60 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         channels = d.addSimpleStringSetting("autojoinChannel", 25, true);
         startSettingsPanel.add(channels, gbc);
         
-        gbc = d.makeGbc(0, 0, 1, 1);
-        lafSettingsPanel.add(new JLabel("Look&Feel:"), gbc);
+        
+        //=============
+        // Look & Feel
+        //=============
         
         Map<String, String> lafDef = new LinkedHashMap<>();
         lafDef.put("default", "Default");
         lafDef.put("system", "System");
+        lafDef.put("hifi2", "HiFi Soft (Dark)");
+        lafDef.put("hifi", "HiFi (Dark)");
+        lafDef.put("noire", "Noire (Dark)");
+        lafDef.put("mint", "Mint");
+        lafDef.put("graphite", "Graphite");
+        lafDef.put("aero", "Aero");
+        lafDef.put("fast", "Fast");
+        lafDef.put("luna", "Luna");
         ComboStringSetting laf = new ComboStringSetting(lafDef);
         d.addStringSetting("laf", laf);
+        
+        Map<String, String> themeDef = new LinkedHashMap<>();
+        themeDef.put("Default", "Default");
+        themeDef.put("Small-Font", "Small Font");
+        themeDef.put("Large-Font", "Large Font");
+        themeDef.put("Giant-Font", "Giant Font");
+        ComboStringSetting theme = new ComboStringSetting(themeDef);
+        d.addStringSetting("lafTheme", theme);
+        
+        laf.addActionListener(e -> {
+            String selected = laf.getSettingValue();
+            theme.setEnabled(!selected.equals("default") && !selected.equals("system"));
+        });
+        
+        JButton lafPreviewButton = new JButton("Preview");
+        lafPreviewButton.addActionListener(e -> {
+            LaF.setLookAndFeel(laf.getSettingValue(), theme.getSettingValue());
+            LaF.updateLookAndFeel();
+        });
+        
+        gbc = d.makeGbc(0, 0, 1, 1);
+        lafSettingsPanel.add(new JLabel("Look&Feel:"), gbc);
+        
         gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(laf, gbc);
         
-        gbc = d.makeGbc(0, 1, 2, 1);
+        gbc = d.makeGbc(2, 0, 1, 1);
+        lafSettingsPanel.add(new JLabel("Font:"), gbc);
+        
+        gbc = d.makeGbc(3, 0, 1, 1);
+        lafSettingsPanel.add(theme, gbc);
+        
+        gbc = d.makeGbc(4, 0, 1, 1);
+        lafSettingsPanel.add(lafPreviewButton, gbc);
+        
+        gbc = d.makeGbc(0, 1, 5, 1);
         lafSettingsPanel.add(new JLabel("(Restart of Chatty required for all changes to take effect.)"), gbc);
     }
 

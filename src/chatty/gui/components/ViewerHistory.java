@@ -61,7 +61,7 @@ public class ViewerHistory extends JComponent {
     /**
      * The font to use for text.
      */
-    private static final Font FONT = new Font("Consolas",Font.PLAIN,12);
+    private Font font = new Font("Consolas", Font.PLAIN, 12);
     /**
      * The margin all around the graph area.
      */
@@ -275,9 +275,9 @@ public class ViewerHistory extends JComponent {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         // Font
-        FontMetrics fontMetrics = g.getFontMetrics(FONT);
+        FontMetrics fontMetrics = g.getFontMetrics(font);
         int fontHeight = fontMetrics.getHeight();
-        g.setFont(FONT);
+        g.setFont(font);
         
         int topTextY = fontMetrics.getAscent();
         
@@ -442,7 +442,7 @@ public class ViewerHistory extends JComponent {
                         prevItem != null && prevItem.getStreamType() == StreamType.WATCH_PARTY) {
                     g.setColor(Color.LIGHT_GRAY);
                 } else {
-                    g.setColor(Color.BLACK);
+                    g.setColor(foreground_color);
                 }
                 g.drawLine(x,y,prevX,prevY);
             }
@@ -719,6 +719,11 @@ public class ViewerHistory extends JComponent {
      */
     public void setBackgroundColor(Color color) {
         background_color = color;
+        repaint();
+    }
+    
+    public void setFontSize(int size) {
+        font = new Font("Consolas", Font.PLAIN, size);
         repaint();
     }
     

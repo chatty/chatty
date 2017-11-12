@@ -4,6 +4,8 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.HtmlColors;
+import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
@@ -96,6 +98,7 @@ public class EmotesDialog extends JDialog {
     private final List<EmotesPanel> panels = new ArrayList<>();
     private final Map<JToggleButton, EmotesPanel> buttons = new HashMap<>();
     private final EmotesPanel defaultPanel;
+    private final Color emotesBackground;
     
     /**
      * GridBagConstraints for adding titles/emotes.
@@ -137,6 +140,10 @@ public class EmotesDialog extends JDialog {
         this.setFocusableWindowState(false);
         this.contextMenuListener = contextMenuListener;
         this.emoteManager = emotes;
+        emotesBackground = LaF.isDarkTheme() ? new Color(38, 38, 38) : new Color(250, 250, 250);
+        //emotesBackground = new JPanel().getBackground().brighter();
+        //emotesBackground = brighter(new JPanel().getBackground(), 0.8);
+        //emotesBackground = HtmlColors.decode(main.getSettings().getString("backgroundColor"));
         setResizable(true);
 
         //------------------
@@ -225,7 +232,6 @@ public class EmotesDialog extends JDialog {
         // This is using a CardLayout, showing just one of the added panels,
         // using the panel label as constraint to select which one to show
         emotesPanel = new JPanel();
-        emotesPanel.setBackground(Color.WHITE);
         emotesPanel.setLayout(cardLayout);
         for (EmotesPanel panel : panels) {
             emotesPanel.add(wrapPanel(panel), panel.label);
@@ -255,11 +261,11 @@ public class EmotesDialog extends JDialog {
      * @param panel
      * @return 
      */
-    private static JComponent wrapPanel(JComponent panel) {
-        panel.setBackground(Color.WHITE);
+    private JComponent wrapPanel(JComponent panel) {
+        panel.setBackground(emotesBackground);
         JPanel outer = new JPanel();
         outer.setLayout(new GridBagLayout());
-        outer.setBackground(Color.WHITE);
+        outer.setBackground(emotesBackground);
         GridBagConstraints gbcTest = new GridBagConstraints();
         gbcTest.fill = GridBagConstraints.HORIZONTAL;
         gbcTest.weightx = 1;
@@ -630,7 +636,7 @@ public class EmotesDialog extends JDialog {
          */
         void addTitle(String title) {
             JLabel titleLabel = new JLabel(StringUtil.shortenTo(title, 48, 34));
-            titleLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
+            titleLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, titleLabel.getForeground()));
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = TITLE_INSETS;
             gbc.anchor = GridBagConstraints.WEST;
@@ -665,7 +671,7 @@ public class EmotesDialog extends JDialog {
          */
         void addEmotesPanel(Collection<Emoticon> emotes) {
             JPanel panel = new JPanel();
-            panel.setBackground(new Color(250, 250, 250));
+            panel.setBackground(emotesBackground);
             panel.setLayout(new WrapLayout());
             /**
              * Using getParent() twice to get to JScrollPane viewport width,
@@ -1040,7 +1046,7 @@ public class EmotesDialog extends JDialog {
             lgbc.insets = new Insets(5, 7, 5, 7);
             
             JPanel panel = new JPanel();
-            panel.setBackground(new Color(250, 250, 250));
+            panel.setBackground(emotesBackground);
             panel.setLayout(new GridBagLayout());
             
             addScaledEmote(emote, panel, 1, "100%");
@@ -1125,7 +1131,8 @@ public class EmotesDialog extends JDialog {
             relayout();
         }
         
-        private void addScaledEmote(Emoticon emote, JPanel panel, float scale, String label) {
+        private void addScaledEmote(Emoticon emote, JPanel panel, float scale,
+                String label) {
             lgbc.anchor = GridBagConstraints.CENTER;
             lgbc.gridy = 0;
             panel.add(new EmoteLabel(emote, mouseListener, scale, emoteUser), lgbc);

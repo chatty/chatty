@@ -168,6 +168,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         history.setListener(this);
         history.setForegroundColor(gameLabel.getForeground());
         history.setBackgroundColor(gameLabel.getBackground());
+        history.setFontSize(gameLabel.getFont().getSize());
         history.setPreferredSize(new Dimension(300,150));
         history.setMinimumSize(new Dimension(1,20));
         gbc = makeGbc(0,5,2,1);

@@ -625,6 +625,9 @@ public class Settings {
                 return settingInvalidMessage(setting);
             }
             return "Setting '"+setting+"' (List): Removed '"+parameter+"', now: "+getList(setting);
+        } else if (isMapSetting(setting)) {
+            mapRemove(setting, parameter);
+            return "Setting '"+setting+"' (Map): Removed '"+parameter+"', now: "+getMap(setting);
         }
         return settingInvalidMessage(setting);
     }
@@ -677,6 +680,7 @@ public class Settings {
                 return "Invalid number of parameters to set map value.";
             }
             mapPut(setting, mapParameters[0], mapParameters[1]);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' (Map) set to "+getMap(setting);
         }
         return settingInvalidMessage(setting);

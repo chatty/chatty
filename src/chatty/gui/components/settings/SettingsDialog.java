@@ -1,6 +1,8 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
+import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
@@ -175,7 +177,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         selection.setSelectedIndex(0);
         selection.setSize(200, 200);
         Font defaultFont = selection.getFont();
-        selection.setFont(new Font(defaultFont.getFontName(), Font.BOLD, 12));
+        //selection.setFont(new Font(defaultFont.getFontName(), Font.BOLD, 12));
         selection.setFixedCellHeight(20);
         selection.setFixedCellWidth(100);
         selection.setBorder(BorderFactory.createEtchedBorder());
@@ -253,12 +255,18 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.weightx = 0.5;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(4,3,8,8);
+        gbc.ipadx = 16;
+        gbc.ipady = 4;
+        ok.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         add(ok,gbc);
         cancel.setMnemonic(KeyEvent.VK_C);
         gbc = makeGbc(2,2,1,1);
         gbc.weightx = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(4,3,8,8);
+        gbc.ipadx = 16;
+        gbc.ipady = 4;
+        cancel.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         add(cancel,gbc);
         
         // Listeners
@@ -728,6 +736,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private void cancel() {
         Sound.setDeviceName(settings.getString("soundDevice"));
+        if (!settings.getString("laf").equals(stringSettings.get("laf").getSettingValue())
+                || !settings.getString("lafTheme").equals(stringSettings.get("lafTheme").getSettingValue())) {
+            LaF.setLookAndFeel(settings.getString("laf"), settings.getString("lafTheme"));
+            LaF.updateLookAndFeel();
+        }
         close();
     }
     

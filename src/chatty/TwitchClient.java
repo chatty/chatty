@@ -16,6 +16,7 @@ import chatty.util.api.TwitchApi;
 import chatty.Version.VersionListener;
 import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
+import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
@@ -268,7 +269,9 @@ public class TwitchClient {
         
         initDxSettings();
         
-        GuiUtil.setLookAndFeel(settings.getString("laf"));
+        LaF.setSettings(settings);
+        LaF.setLookAndFeel(settings.getString("laf"), settings.getString("lafTheme"));
+        GuiUtil.addMacKeyboardActions();
         
         // Create GUI
         LOGGER.info("Create GUI..");

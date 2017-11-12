@@ -1,6 +1,9 @@
 
 package chatty.gui.components;
 
+import chatty.gui.HtmlColors;
+import chatty.gui.LaF;
+import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -29,10 +32,15 @@ public class LinkLabel extends JEditorPane {
         this.setFont(label.getFont());
         Font font = label.getFont();
         String bold = font.getStyle() == Font.BOLD ? "bold" : "normal";
+        String color = HtmlColors.getColorString(label.getForeground());
         String fontRule = "body { "
                 + "font-family: "+font.getFamily()+";"
                 + "font-size: "+font.getSize()+";"
                 + "font-weight: "+bold+";"
+                + "color: "+color+";"
+                + "}"
+                + "a {"
+                + "color: "+LaF.getLinkColor()+";"
                 + "}";
         ((HTMLDocument)getDocument()).getStyleSheet().addRule(fontRule);
         

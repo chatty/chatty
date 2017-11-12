@@ -4,10 +4,7 @@ package chatty.gui.components.admin;
 import chatty.Chatty;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
-import chatty.gui.components.settings.DurationSetting;
-import chatty.util.DateTime;
 import chatty.util.api.ChannelInfo;
-import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import java.awt.*;
@@ -16,15 +13,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * Dialog to change stream info and run commercials.
@@ -64,7 +55,7 @@ public class AdminDialog extends JDialog {
     
     // Current state/settings (currentChannel specific)
     private String currentChannel;
-    
+
     
 
 

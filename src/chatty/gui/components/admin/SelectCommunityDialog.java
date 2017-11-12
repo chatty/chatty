@@ -3,6 +3,7 @@ package chatty.gui.components.admin;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.HtmlColors;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.util.api.CommunitiesManager.Community;
@@ -30,6 +31,7 @@ import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.html.HTMLDocument;
 
 /**
  * Select a game by manually entering it, searching for it on Twitch or
@@ -186,6 +188,12 @@ public class SelectCommunityDialog extends JDialog {
         gbc.weighty = 1;
         description.setEditable(false);
         description.setContentType("text/html");
+        String textColor = HtmlColors.getColorString(searchResultInfo.getForeground());
+        int textSize = searchResultInfo.getFont().getSize();
+        ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(""
+                + "body { font: sans-serif; font-size: "+textSize+"pt; padding:3px; color:"+textColor+"; }"
+                + "a { color:"+textColor+"; }"
+                + "h2 { border-bottom: 1px solid "+textColor+"; font-size: "+(textSize+2)+"pt; }");
         add(new JScrollPane(description), gbc);
  
         gbc = makeGbc(0,5,1,1);
@@ -408,7 +416,7 @@ public class SelectCommunityDialog extends JDialog {
         Community maybe = api.getCachedCommunityInfo(selected.getId());
         if (maybe != null) {
             description.setText(String.format(
-                    "<html><body style='font: sans-serif 9pt;padding:3px;'>%s<h2 style='font-size:12pt;border-bottom: 1px solid black'>Rules</h2>%s",
+                    "<html><body>%s<h2>Rules</h2>%s",
                     maybe.getSummary(),
                     maybe.getRules()));
             description.setCaretPosition(0);

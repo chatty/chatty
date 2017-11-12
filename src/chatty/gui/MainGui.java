@@ -3949,6 +3949,11 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
+    private void updateLaF() {
+        LaF.setLookAndFeel(client.settings.getString("laf"), client.settings.getString("lafTheme"));
+        LaF.updateLookAndFeel();
+    }
+
     private class MySettingChangeListener implements SettingChangeListener {
         /**
          * Since this can also be called from other threads, run in EDT if
@@ -4024,9 +4029,6 @@ public class MainGui extends JFrame implements Runnable {
                     userInfoDialog.setUserDefinedButtonsDef((String) value);
                 } else if (setting.equals("token")) {
                     client.api.setToken((String)value);
-                } else if (setting.equals("laf")) {
-                    GuiUtil.setLookAndFeel((String)value);
-                    GuiUtil.updateLookAndFeel();
                 } else if (setting.equals("emoji")) {
                     emoticons.addEmoji((String)value);
                 } else if (setting.equals("cheersType")) {
@@ -4101,6 +4103,10 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (setting.equals("ignoredEmotes")) {
                 emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
+            }
+            else if (setting.equals("laf") || setting.equals("lafTheme")
+                    || setting.equals("lafCustomTheme")) {
+                updateLaF();
             }
         }
     }
