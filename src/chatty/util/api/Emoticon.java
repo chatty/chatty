@@ -56,8 +56,6 @@ public class Emoticon {
         FEATURE_FRIDAY, EVENT, CHEER
     }
     
-    private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");
-    
     /**
      * Try loading the image these many times, which will be tried if an error
      * occurs.
@@ -327,16 +325,24 @@ public class Emoticon {
     
     private void createMatcher() {
         if (matcher == null) {
-            // Only match at word boundaries, unless there is a character that
-            // isn't a word character
             String search = code;
             int flags = 0;
-            if ((literal && NOT_WORD.matcher(code).find()) || type == Type.EMOJI) {
+            
+            if (type == Type.EMOJI) {
+                // Some Emoji seemed to not compile without this, although not
+                // sure why, but just do it just in case
                 flags = Pattern.LITERAL;
             } else {
-                search = "(?<=^|\\s)"+code+"(?=$|\\s)";
+                // Any regular emotes should be separated by spaces
+                if (literal) {
+                    // Literal emotes come from a source that doesn't provide
+                    // regex, but may contain regex special characters
+                    search = Pattern.quote(search);
+                }
+                search = "(?<=^|\\s)"+search+"(?=$|\\s)";
             }
-            // Actually compile a Pattern from it
+            
+            // Compile the prepared Pattern
             try {
                 matcher = Pattern.compile(search, flags).matcher("");
             } catch (PatternSyntaxException ex) {
