@@ -587,9 +587,11 @@ public class Settings {
         if (isListSetting(setting)) {
             if (isOfSubtype(setting, Setting.STRING)) {
                 listAdd(setting, parameter);
+                setSettingChanged(setting);
             } else if (isOfSubtype(setting, Setting.LONG)) {
                 try {
                     listAdd(setting, Long.parseLong(parameter));
+                    setSettingChanged(setting);
                 } catch (NumberFormatException ex) {
                     return settingInvalidMessage(setting);
                 }
@@ -615,9 +617,11 @@ public class Settings {
         if (isListSetting(setting)) {
             if (isOfSubtype(setting, Setting.STRING)) {
                 listRemove(setting, parameter);
+                setSettingChanged(setting);
             } else if (isOfSubtype(setting, Setting.LONG)) {
                 try {
                     listRemove(setting, Long.parseLong(parameter));
+                    setSettingChanged(setting);
                 } catch (NumberFormatException ex) {
                     return settingInvalidMessage(setting);
                 }
@@ -627,6 +631,7 @@ public class Settings {
             return "Setting '"+setting+"' (List): Removed '"+parameter+"', now: "+getList(setting);
         } else if (isMapSetting(setting)) {
             mapRemove(setting, parameter);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' (Map): Removed '"+parameter+"', now: "+getMap(setting);
         }
         return settingInvalidMessage(setting);
@@ -672,6 +677,7 @@ public class Settings {
         else if (isListSetting(setting) && isOfSubtype(setting, Setting.STRING)) {
             listClear(setting);
             listAdd(setting, parameter);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' (List) set to "+getList(setting);
         }
         else if (isMapSetting(setting) && isOfSubtype(setting, Setting.STRING)) {

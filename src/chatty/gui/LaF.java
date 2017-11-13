@@ -1,7 +1,6 @@
 
 package chatty.gui;
 
-import static chatty.gui.GuiUtil.addMacKeyboardActions;
 import chatty.util.settings.Settings;
 import com.jtattoo.plaf.aero.AeroLookAndFeel;
 import com.jtattoo.plaf.fast.FastLookAndFeel;
@@ -10,18 +9,14 @@ import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
 import com.jtattoo.plaf.luna.LunaLookAndFeel;
 import com.jtattoo.plaf.mint.MintLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
-import java.awt.Frame;
 import java.awt.Window;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 
 /**
  *
@@ -145,8 +140,10 @@ public class LaF {
     private static Properties addCustom(Properties properties) {
         if (settings != null) {
             Map<String, String> map = settings.getMap("lafCustomTheme");
-            properties.putAll(map);
-            LOGGER.info("[LAF] Set Custom: "+map);
+            if (!map.isEmpty()) {
+                properties.putAll(map);
+                LOGGER.info("[LAF] Set Custom: "+map);
+            }
         }
         return properties;
     }
