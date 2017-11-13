@@ -56,7 +56,7 @@ public class Emoticon {
         FEATURE_FRIDAY, EVENT, CHEER
     }
     
-    private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");
+    private static final Pattern NOT_WORD = Pattern.compile("[^\\w|:]");
     
     /**
      * Try loading the image these many times, which will be tried if an error
