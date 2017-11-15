@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.gui.LaF;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -184,7 +185,12 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         lafSettingsPanel.add(lafPreviewButton, gbc);
         
         gbc = d.makeGbc(0, 1, 5, 1);
+        gbc.insets = new Insets(0, 5, 7, 5);
         lafSettingsPanel.add(new JLabel("(Restart of Chatty required for all changes to take effect.)"), gbc);
+        
+        gbc = d.makeGbc(0, 2, 5, 1);
+        lafSettingsPanel.add(new JLabel("<html><body><em>Note:</em> "
+                + "Chat Colors can be changed on the 'Colors' settings page."), gbc);
     }
 
     @Override

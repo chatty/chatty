@@ -51,7 +51,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "tabOrder", "tabsMwheelScrolling", "tabsMwheelScrollingAnywhere", "inputFont",
             "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
             "logPath", "logTimestamp", "logSplit", "logSubdirectories",
-            "tabsPlacement", "tabsLayout", "logLockFiles"
+            "tabsPlacement", "tabsLayout", "logLockFiles",
+            "laf", "lafTheme"
     ));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(

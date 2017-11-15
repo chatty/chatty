@@ -66,6 +66,13 @@ public class ColorSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 0, 1, 1);
         main.add(presets, gbc);
+        
+        gbc = d.makeGbc(0, 10, 1, 1);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(15, 5, 5, 5);
+        main.add(new JLabel("<html><body style='width:300px;'>"
+                + "These are Chat Colors. To change the overall look of the "
+                + "program, change the Look&Feel on the 'Main' settings page."), gbc);
     }
     
     

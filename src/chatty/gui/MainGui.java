@@ -69,7 +69,6 @@ import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
-import chatty.util.commands.Parser;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
@@ -100,6 +99,9 @@ public class MainGui extends JFrame implements Runnable {
     
     public static final Color COLOR_NEW_MESSAGE = new Color(200,0,0);
     public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE = new Color(255,80,0);
+    
+    public static final Color COLOR_NEW_MESSAGE_DARK = new Color(255,80,80);
+    public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE_DARK = new Color(255,180,40);
     
     public final Emoticons emoticons = new Emoticons();
     
@@ -768,9 +770,21 @@ public class MainGui extends JFrame implements Runnable {
         if (!isVisible()) {
             return;
         }
-        final boolean hide = menu.isVisible();
-
-        menu.setVisible(!hide);
+        final boolean hide = getJMenuBar() != null;
+        
+        //menu.setVisible(!hide);
+        if (hide) {
+            setJMenuBar(null);
+        } else {
+            setJMenuBar(menu);
+            /**
+             * Seems like adding the menubar adds the default F10 hotkey again
+             * (that opens the menu), so refresh custom hotkeys in case one of
+             * them uses F10.
+             */
+            hotkeyManager.refreshHotkeys(getRootPane());
+        }
+        revalidate();
         if (maximize) {
             if (hide) {
                 setExtendedState(MAXIMIZED_BOTH);

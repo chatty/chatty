@@ -71,7 +71,8 @@ public class LaF {
                         p.put("buttonForegroundColor", "210 220 215");
                         p.put("buttonColorLight", "96 96 96");
                         p.put("buttonColorDark", "44 44 44");
-                        p.put("backgroundColorDark", "255 0 0");
+                        //p.put("backgroundColorDark", "255 0 0");
+                        //p.put("backgroundColorLight", "0 0 0");
                         HiFiLookAndFeel.setCurrentTheme(addCustom(p));
                         break;
                     case "mint":
