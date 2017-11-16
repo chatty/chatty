@@ -965,7 +965,8 @@ public class TwitchConnection {
             }
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
-            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")) {
+            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")
+                    || tags.isValue("msg-id", "subgift")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
                 listener.onInfo(channel, "[Charity] "+text);
