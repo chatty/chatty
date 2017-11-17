@@ -2613,11 +2613,14 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 // If channel was changed from the given one, change accordingly
                 channel = chan.getName();
-                client.chatLog.message(chan.getName(), user, text, action);
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
+                
+                if (!ignored || client.settings.getBoolean("logIgnored")) {
+                    client.chatLog.message(chan.getName(), user, text, action);
+                }
                 
                 boolean highlighted = false;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
@@ -2664,8 +2667,9 @@ public class MainGui extends JFrame implements Runnable {
                 if (ignored && (ignoreMode <= IgnoredMessages.MODE_COUNT || 
                         !showIgnoredInfo())) {
                     // Don't print message
-                    if (isOwnMessage) {
-                        printLine(channel, "Own message ignored.");
+                    if (isOwnMessage && channels.isChannel(channel)) {
+                        // Don't log to file
+                        channels.getChannel(channel).printLine("Own message ignored.");
                     }
                 } else {
                     // Print message, but determine how exactly

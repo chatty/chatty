@@ -70,6 +70,8 @@ public class LogSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 1, 2, 1);
         gbc.insets = new Insets(5,10,5,5);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
         mode.add(cards, gbc);
         
         // Info Text
@@ -123,6 +125,11 @@ public class LogSettings extends SettingsPanel {
                 "Mod Actions",
                 "Log who performed which command (only your own channel)."),
                 d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
+        types.add(d.addSimpleBooleanSetting(
+                "logIgnored",
+                "Ignored Msg.",
+                "Log messages ignored by the ignore list."),
+                d.makeGbcCloser(0, 8, 1, 1, GridBagConstraints.WEST));
 
 
         JPanel otherSettings = createTitledPanel("Other Settings");
@@ -184,6 +191,7 @@ public class LogSettings extends SettingsPanel {
          */
         gbc = getGbc(0);
         gbc.anchor = GridBagConstraints.NORTH;
+        gbc.fill = GridBagConstraints.BOTH;
         addPanel(mode, gbc);
         
         gbc = getGbc(0);

@@ -495,6 +495,7 @@ public class SettingsManager {
         settings.addBoolean("logViewerstats", true);
         settings.addBoolean("logViewercount", false);
         settings.addBoolean("logModAction", true);
+        settings.addBoolean("logIgnored", true);
         settings.addList("logWhitelist",new ArrayList(), Setting.STRING);
         settings.addList("logBlacklist",new ArrayList(), Setting.STRING);
         settings.addString("logPath", "");
