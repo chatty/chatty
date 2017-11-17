@@ -101,7 +101,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_OTHER = "Other";
     private static final String PANEL_ADVANCED = "Advanced";
     private static final String PANEL_HOTKEYS = "Hotkeys";
-    private static final String PANEL_COMPLETION = "Completion";
+    private static final String PANEL_COMPLETION = "TAB Completion";
     private static final String PANEL_CHAT = "Chat";
     private static final String PANEL_NAMES = "Names";
     private static final String PANEL_MODERATION = "Moderation";

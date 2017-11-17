@@ -142,6 +142,12 @@ public class EmoteSettings extends SettingsPanel {
         main.add(emojiSet,
                 d.makeGbc(1, 6, 1, 1, GridBagConstraints.WEST));
         
+        main.add(d.addSimpleBooleanSetting("emojiReplace",
+                "Replace Emoji codes in entered text",
+                "Codes like :joy: entered into the inputbox are turned into the"
+                        + " corresponding Emoji (Tip: Use TAB-Completion)"),
+                d.makeGbcSub(0, 7, 3, 1, GridBagConstraints.WEST));
+        
         //---------
         // Cheering
         //---------

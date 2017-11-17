@@ -61,6 +61,7 @@ public class AutoCompletion {
     private AutoCompletionServer server;
     private String prevCompletion = null;
     private int prevCompletionIndex = 0;
+    private int prevStart = 0;
     private String prevCompletionText = null;
     private int prevCaretPos;
     private AutoCompletionServer.CompletionItems prevCompletionItems;
@@ -258,21 +259,11 @@ public class AutoCompletion {
         // Get current state
         int pos = textField.getCaretPosition();
         String text = textField.getText();
-
-        // Find start and end of the word where the caret is
-        int end = findWordEnd(text, pos);
-        int start = findWordStart(text, pos);
-
-        // Get the word
-        String word = text.substring(start, end);
-        if (word.isEmpty()) {
-            return;
-        }
-        String actualWord = word;
         
-        /**
-         * Move index back or forth
-         */
+        //-----------------
+        // Index in result
+        //-----------------
+        // Gets reset if new completion
         int index = prevCompletionIndex;
 
         if (forward) {
@@ -280,11 +271,12 @@ public class AutoCompletion {
         } else {
             index--;
         }
-
-        /**
-         * If text was manually edited after the previous completion, start
-         * fresh, which means it counts as a new completion
-         */
+        
+        //-----------------
+        // New Completion?
+        //-----------------
+        // If text was manually edited after the previous completion, start
+        // fresh, which means it counts as a new completion
         boolean newCompletion = false;
         if (!text.equals(prevCompletionText) || !inCompletion
                 || (prevCompletionItems != null && prevCompletionItems.items.size() == 1)) {
@@ -292,6 +284,26 @@ public class AutoCompletion {
             index = 0;
             newCompletion = true;
         }
+
+        //-------------------------
+        // Current word in textbox
+        //-------------------------
+        // Find start and end of the word based on where the caret is
+        int end = findWordEnd(text, pos);
+        int start = prevStart;
+        if (newCompletion) {
+            // This is necessary if a prefix was removed which separated the
+            // word from previous characters (in the same completion)
+            start = findWordStart(text, pos);
+        }
+
+        // Get the word
+        String word = text.substring(start, end);
+        if (word.isEmpty()) {
+            return;
+        }
+        String actualWord = word;
+
         if (prevCompletion != null) {
             word = prevCompletion;
         }
@@ -301,6 +313,9 @@ public class AutoCompletion {
             prefix = text.substring(0, start);
         }
 
+        //-------------
+        // Get results
+        //-------------
         AutoCompletionServer.CompletionItems results;
         if (newCompletion) {
             // Get new list of completion items
@@ -310,16 +325,28 @@ public class AutoCompletion {
             results = prevCompletionItems;
         }
 
+        //---------------
+        // Remove prefix
+        //---------------
         List<String> items = results.items;
-        start -= results.prefixToRemove.length();
-        actualWord = results.prefixToRemove + actualWord;
-            //System.out.println(searchResult);
+        if (prefix.endsWith(results.prefixToRemove) && newCompletion) {
+            /**
+             * Only remove prefix if it is still present. This might not be the
+             * case if only the initial search contains that prefix, but not the
+             * result items.
+             */
+            start -= results.prefixToRemove.length();
+            actualWord = results.prefixToRemove + actualWord;
+        }
 
+        //------------------
+        // Results checking
+        //------------------
+        
         // If no matches were found, quit now
         if (items.isEmpty() || (items.size() == 1 && items.get(0).equals(word))) {
             return;
         }
-
         
         // If previous completion reached the end, start from the beginning
         if (index >= items.size()) {
@@ -328,11 +355,12 @@ public class AutoCompletion {
             index = items.size() - 1;
         }
 
-            // Get the value for this completion and replace the correct word
-        // with it
-        
+        // Get the replacement value for this completion step
         String nick = items.get(index);
 
+        //---------------
+        // Common prefix
+        //---------------
         String commonPrefix = "";
         if (!newCompletion && prevCommonPrefix != null) {
             commonPrefix = prevCommonPrefix;
@@ -350,6 +378,9 @@ public class AutoCompletion {
             caretPosBefore = pos;
         }
 
+        //------------------------
+        // Set new text and caret
+        //------------------------
         // Create new text and set it
         String newText = text.substring(0, start) + nick + text.substring(end);
         textField.setText(newText);
@@ -358,7 +389,12 @@ public class AutoCompletion {
         int newEnd = end + (nick.length() - actualWord.length());
         prevCaretPos = newEnd;
         textField.setCaretPosition(newEnd);
+        
+        //System.out.println("'"+prefix+"'"+nick.codePointCount(0, nick.length())+" "+nick.length()+" "+actualWord+" "+end+" "+newEnd+" "+textField.getText().length());
 
+        //------------
+        // Info popup
+        //------------
         if (showPopup) {
             // Will only do something if more than one item was found or item
             // info has to be displayed
@@ -372,6 +408,7 @@ public class AutoCompletion {
          */
         prevCompletion = word;
         prevCompletionIndex = index;
+        prevStart = start;
         prevCompletionText = newText;
         prevCompletionItems = results;
         prevCommonPrefix = commonPrefix;

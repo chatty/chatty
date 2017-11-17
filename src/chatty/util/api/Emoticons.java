@@ -29,6 +29,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Add emoticons and get a list of them matching a certain emoteset.
@@ -292,6 +294,12 @@ public class Emoticons {
         return customEmotesById.get(id);
     }
     
+    /**
+     * Get the sorted set of all Emoji. Note that this returns the original set,
+     * so it should not be modified and only be accessed out of the EDT.
+     * 
+     * @return 
+     */
     public Set<Emoticon> getEmoji() {
         return emoji;
     }
@@ -964,9 +972,34 @@ public class Emoticons {
         }
     }
     
+    private final Map<Pattern, String> emojiReplacement = new HashMap<>();
+    
     public void addEmoji(String sourceId) {
         emoji.clear();
         emoji.addAll(EmojiUtil.makeEmoticons(sourceId));
+        emojiReplacement.clear();
+        for (Emoticon e : emoji) {
+            if (e.stringId != null) {
+                emojiReplacement.put(Pattern.compile(e.stringId), e.code);
+            }
+        }
+    }
+    
+    /**
+     * Replace Emoji shortcodes in the given text with the corresponding Emoji
+     * characters.
+     * 
+     * @param input
+     * @return 
+     */
+    public String emojiReplace(String input) {
+        for (Pattern p : emojiReplacement.keySet()) {
+            Matcher m = p.matcher(input);
+            if (m.find()) {
+                input = p.matcher(input).replaceAll(emojiReplacement.get(p));
+            }
+        }
+        return input;
     }
     
     public void setCheerEmotes(Set<CheerEmoticon> newCheerEmotes) {

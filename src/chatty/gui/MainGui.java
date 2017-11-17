@@ -1170,7 +1170,11 @@ public class MainGui extends JFrame implements Runnable {
             // text input
             Channel chan = channels.getChannelFromInput(event.getSource());
             if (chan != null) {
-                client.textInput(chan.getName(), chan.getInputText());
+                if (client.settings.getBoolean("emojiReplace")) {
+                    client.textInput(chan.getName(), emoticons.emojiReplace(chan.getInputText()));
+                } else {
+                    client.textInput(chan.getName(), chan.getInputText());
+                }
             }
 
             Object source = event.getSource();
@@ -1801,6 +1805,8 @@ public class MainGui extends JFrame implements Runnable {
             String url = null;
             if (e.getActionCommand().equals("code")) {
                 channels.getActiveChannel().insertText(emote.code, true);
+            } else if (e.getActionCommand().equals("codeEmoji")) {
+                channels.getActiveChannel().insertText(emote.stringId, true);
             } else if (e.getActionCommand().equals("cheer")) {
                 url = "http://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {

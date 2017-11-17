@@ -60,8 +60,9 @@ public class CompletionSettings extends SettingsPanel {
         
         entries.add(new JLabel("<html><body style='width:300px;padding-bottom:5px;'>"
                 + "<em>Tip:</em> Independant of these settings, you can prefix "
-                + "with @ to always TAB-complete to Names and with . (dot) to "
-                + "use Custom Completion."),
+                + "with <code>@</code> to always TAB-complete to Names, with "
+                + "<code>.</code> (dot) to use Custom Completion and with "
+                + "<code>:</code> to complete Emoji."),
                 d.makeGbc(0, 1, 4, 1));
 
         //================

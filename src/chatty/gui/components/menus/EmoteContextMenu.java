@@ -31,6 +31,9 @@ public class EmoteContextMenu extends ContextMenu {
             addItem("cheer","Cheering Emote");
         } else {
             addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
+            if (emote.type == Emoticon.Type.EMOJI && emote.stringId != null) {
+                addItem("codeEmoji", emote.stringId);
+            }
         }
         addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
         if (emote.numericId != Emoticon.ID_UNDEFINED) {
@@ -60,7 +63,9 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             } else {
                 for (String info : emote.getInfos()) {
-                    addItem("", info);
+                    if (!info.equals(emote.stringId)) {
+                        addItem("", info);
+                    }
                 }
             }
             
