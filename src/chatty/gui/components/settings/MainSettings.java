@@ -36,13 +36,13 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         GridBagConstraints gbc;
         
         JPanel fontSettingsPanel = addTitledPanel("Chat Font", 0);
-        JPanel inputFontSettingsPanel = addTitledPanel("Input Font", 1);
+        JPanel inputFontSettingsPanel = addTitledPanel("Input/Userlist Font", 1);
         JPanel startSettingsPanel = addTitledPanel("Startup", 2);
         JPanel lafSettingsPanel = addTitledPanel("Look&Feel", 3);
         
-        /*
-         * Font settings (Panel)
-         */
+        //===========
+        // Chat Font
+        //===========
         // Font Name
         gbc = d.makeGbc(0,0,1,1);
         fontSettingsPanel.add(new JLabel("Font Name:"),gbc);
@@ -94,8 +94,11 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         gbc = d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST);
         fontSettingsPanel.add(paragraphSpacing, gbc);
         
+        //=============
+        // Other Fonts
+        //=============
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
-        inputFontSettingsPanel.add(new JLabel("Input Font:"), gbc);
+        inputFontSettingsPanel.add(new JLabel("Input:"), gbc);
         
         List<String> inputFonts = new ArrayList<>();
         for (int i=12; i<=32; i++) {
@@ -104,11 +107,28 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         for (int i=12; i<=32; i++) {
             inputFonts.add("Monospaced "+i);
         }
+        for (int i=12; i<=32; i++) {
+            inputFonts.add("Dialog Bold "+i);
+        }
+        for (int i=12; i<=32; i++) {
+            inputFonts.add("Monospaced Bold "+i);
+        }
         ComboStringSetting inputFont = new ComboStringSetting(inputFonts);
         d.addStringSetting("inputFont", inputFont);
         gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
         inputFontSettingsPanel.add(inputFont, gbc);
         
+        gbc = d.makeGbc(2, 0, 1, 1);
+        inputFontSettingsPanel.add(new JLabel("Userlist:"), gbc);
+        
+        ComboStringSetting userlistFont = new ComboStringSetting(inputFonts);
+        d.addStringSetting("userlistFont", userlistFont);
+        gbc = d.makeGbc(3, 0, 1, 1);
+        inputFontSettingsPanel.add(userlistFont, gbc);
+        
+        //=========
+        // Startup
+        //=========
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
         startSettingsPanel.add(new JLabel("On start:"), gbc);
         

@@ -35,7 +35,7 @@ public class StyleManager implements StyleServer {
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
             "colorCorrection", "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
-            "paragraphSpacing", "bufferSizes"
+            "paragraphSpacing", "bufferSizes", "userlistFont"
             ));
     
     private MutableAttributeSet baseStyle;
@@ -45,7 +45,8 @@ public class StyleManager implements StyleServer {
     private MutableAttributeSet paragraphStyle;
     private MutableAttributeSet other;
     private MutableAttributeSet highlightStyle;
-    private Font font;
+    private Font inputFont;
+    private Font userlistFont;
     private Color backgroundColor;
     private Color foregroundColor;
     private Color inputBackgroundColor;
@@ -72,8 +73,8 @@ public class StyleManager implements StyleServer {
     
     private void makeStyles() {
 
-        String fontName = settings.getString("inputFont");
-        font = Font.decode(fontName);
+        inputFont = Font.decode(settings.getString("inputFont"));
+        userlistFont = Font.decode(settings.getString("userlistFont"));
         //font = new Font("Comic Sans MS", Font.PLAIN, 12);
         
         foregroundColor = makeColor("foregroundColor", Color.BLACK);
@@ -190,8 +191,14 @@ public class StyleManager implements StyleServer {
     }
 
     @Override
-    public Font getFont() {
-        return font;
+    public Font getFont(String type) {
+        switch (type) {
+            case "input":
+                return inputFont;
+            case "userlist":
+                return userlistFont;
+        }
+        return null;
     }
 
     @Override

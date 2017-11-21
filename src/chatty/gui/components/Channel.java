@@ -234,7 +234,7 @@ public class Channel extends JPanel {
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
             "follow", "unfollow", "ffzws", "followers", "followersoff",
-            "setcolor", "untimeout"
+            "setcolor", "untimeout", "userinfo"
         }));
         
         private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
@@ -585,10 +585,11 @@ public class Channel extends JPanel {
     }
     
     private void setStyles() {
-        input.setFont(styleManager.getFont());
+        input.setFont(styleManager.getFont("input"));
         input.setBackground(styleManager.getColor("inputBackground"));
         input.setCaretColor(styleManager.getColor("inputForeground"));
         input.setForeground(styleManager.getColor("inputForeground"));
+        users.setFont(styleManager.getFont("userlist"));
         users.setBackground(styleManager.getColor("background"));
         users.setForeground(styleManager.getColor("foreground"));
         refreshBufferSize();
