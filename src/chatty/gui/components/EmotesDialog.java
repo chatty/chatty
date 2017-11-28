@@ -1085,10 +1085,11 @@ public class EmotesDialog extends JDialog {
                 if (setInfo != null) {
                     emoteSetInfo += " ("+setInfo.product+")";
                 }
-                addInfo(panel2, "Emoteset:", emoteSetInfo);
-            }
-            if (emote.emoteSet == Emoticon.SET_UNKNOWN) {
-                addInfo(panel2, "Twitch Emoteset:", "unknown");
+                if (emote.emoteSet == Emoticon.SET_UNKNOWN) {
+                    addInfo(panel2, "Emoteset:", "unknown");
+                } else {
+                    addInfo(panel2, "Emoteset:", emoteSetInfo);
+                }
             }
             if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
                 addInfo(panel2, "Channel:", emote.getStream());

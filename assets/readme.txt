@@ -5,6 +5,7 @@ Website: http://chatty.github.io
 E-Mail: chattyclient@gmail.com
 Twitter: @ChattyClient (https://twitter.com/ChattyClient)
 YouTube: http://www.youtube.com/user/chattyclient
+Discord: https://discord.gg/WTuqGeJ
 
 Requirements
 ------------

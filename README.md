@@ -8,6 +8,7 @@ Twitch specific features.
 * E-Mail: chattyclient@gmail.com
 * Twitter: @ChattyClient (https://twitter.com/ChattyClient)
 * YouTube: http://www.youtube.com/user/chattyclient
+* Discord: https://discord.gg/WTuqGeJ
 
 I learned about most of the Java techniques and APIs used in this during
 development, so many things won't be designed ideally. I also never

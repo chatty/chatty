@@ -7,8 +7,10 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JCheckBox;
@@ -37,19 +39,24 @@ public class MessageSettings extends SettingsPanel {
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
 
         final Map<String,String> timestampOptions = new LinkedHashMap<>();
-        addTimestampFormat(timestampOptions, "off");
-        addTimestampFormat(timestampOptions, "[HH:mm:ss]");
-        addTimestampFormat(timestampOptions, "[HH:mm]");
-        addTimestampFormat(timestampOptions, "[hh:mm:ss a]");
-        addTimestampFormat(timestampOptions, "[hh:mm a]");
-        addTimestampFormat(timestampOptions, "[h:mm a]");
-        addTimestampFormat(timestampOptions, "[hh:mm:ssa]");
-        addTimestampFormat(timestampOptions, "[hh:mma]");
-        addTimestampFormat(timestampOptions, "[h:mma]");
+        List<String> dateFormats = Arrays.asList(new String[]{"","YYYY-MM-dd ",
+            "MMM d ", "d MMM ", "dd.MM. "});
+        for (String dateFormat : dateFormats) {
+            addTimestampFormat(timestampOptions, "off");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm:ss]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ss a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mm a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ssa]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mma]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mma]");
+        }
         ComboStringSetting combo = new ComboStringSetting(timestampOptions);
         combo.setEditable(false);
         d.addStringSetting("timestamp", combo);
-        otherSettingsPanel.add(combo, d.makeGbc(1, 0, 1, 1));
+        otherSettingsPanel.add(combo,
+                d.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST));
 
         
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
