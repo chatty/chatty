@@ -2632,8 +2632,10 @@ public class MainGui extends JFrame implements Runnable {
                 
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
-                    highlightedMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bits, whisper);
+                    if (!highlighter.getLastMatchNoWindow()) {
+                        highlightedMessages.addMessage(channel, user, text, action,
+                                tagEmotes, bits, whisper);
+                    }
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(chan);
                     } else {
