@@ -34,6 +34,7 @@ public class Highlighter {
     private Color lastMatchColor;
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
+    private boolean lastMatchNoWindow;
     
     // Settings
     private boolean highlightUsername;
@@ -115,6 +116,10 @@ public class Highlighter {
         return lastMatchNoSound;
     }
     
+    public boolean getLastMatchNoWindow() {
+        return lastMatchNoWindow;
+    }
+    
     /**
      * Checks whether the given message consisting of username and text should
      * be highlighted.
@@ -128,6 +133,7 @@ public class Highlighter {
         lastMatchColor = null;
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
+        lastMatchNoWindow = false;
         
         String lowercaseText = text.toLowerCase();
         
@@ -143,6 +149,7 @@ public class Highlighter {
                 lastMatchColor = item.getColor();
                 lastMatchNoNotification = item.noNotification();
                 lastMatchNoSound = item.noSound();
+                lastMatchNoWindow = item.noWindow();
                 return true;
             }
         }
@@ -209,6 +216,7 @@ public class Highlighter {
         private Color color;
         private boolean noNotification;
         private boolean noSound;
+        private boolean noWindow;
         private boolean appliesToInfo;
         
         private boolean error;
@@ -347,6 +355,8 @@ public class Highlighter {
                             noSound = true;
                         } else if (part.equals("!notify")) {
                             noNotification = true;
+                        } else if (part.equals("!window")) {
+                            noWindow = true;
                         } else if (part.equals("info")) {
                             appliesToInfo = true;
                         }
@@ -541,6 +551,10 @@ public class Highlighter {
         
         public boolean noSound() {
             return noSound;
+        }
+        
+        public boolean noWindow() {
+            return noWindow;
         }
         
         public boolean hasError() {
