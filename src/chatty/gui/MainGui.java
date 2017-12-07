@@ -100,6 +100,8 @@ public class MainGui extends JFrame implements Runnable {
     public static final Color COLOR_NEW_MESSAGE = new Color(200,0,0);
     public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE = new Color(255,80,0);
     
+    // For the JTattoo dark LaF the color has to be light enough to not get a
+    // white outline
     public static final Color COLOR_NEW_MESSAGE_DARK = new Color(255,80,80);
     public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE_DARK = new Color(255,180,40);
     
@@ -180,9 +182,9 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void setWindowIcons() {
         ArrayList<Image> windowIcons = new ArrayList<>();
-        windowIcons.add(createImage("app_16.png"));
-        windowIcons.add(createImage("app_64.png"));
-        this.setIconImages(windowIcons);
+        windowIcons.add(createImage("app_main_16.png"));
+        windowIcons.add(createImage("app_main_64.png"));
+        setIconImages(windowIcons);
     }
     
     private void setLiveStreamsWindowIcons() {
@@ -199,6 +201,13 @@ public class MainGui extends JFrame implements Runnable {
         aboutDialog.setIconImages(windowIcons);
     }
     
+    private void setDebugWindowIcons() {
+        ArrayList<Image> windowIcons = new ArrayList<>();
+        windowIcons.add(createImage("app_debug_16.png"));
+        windowIcons.add(createImage("app_debug_64.png"));
+        debugWindow.setIconImages(windowIcons);
+    }
+    
     /**
      * Creates the gui, run in the EDT.
      */
@@ -210,6 +219,7 @@ public class MainGui extends JFrame implements Runnable {
         
         // Error/debug stuff
         debugWindow = new DebugWindow(new DebugCheckboxListener());
+        setDebugWindowIcons();
         errorMessage = new ErrorMessage(this, linkLabelListener);
         
         // Dialogs and stuff
@@ -1980,7 +1990,7 @@ public class MainGui extends JFrame implements Runnable {
     public java.util.List<UsercolorItem> getUsercolorData() {
         return client.usercolorManager.getData();
     }
-    
+
     public void setUsercolorData(java.util.List<UsercolorItem> data) {
         client.usercolorManager.setData(data);
     }
