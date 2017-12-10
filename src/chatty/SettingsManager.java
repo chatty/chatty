@@ -242,6 +242,10 @@ public class SettingsManager {
         settings.addBoolean("colorCorrection", true);
         settings.addList("colorPresets", new ArrayList<>(), Setting.LIST);
         
+        // Message Colors
+        settings.addBoolean("msgColorsEnabled", false);
+        settings.addList("msgColors", new LinkedList(), Setting.STRING);
+        
         // Usercolors
         settings.addBoolean("customUsercolors", false);
         settings.addList("usercolors", new LinkedList(), Setting.STRING);

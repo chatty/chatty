@@ -1,6 +1,8 @@
 
-package chatty;
+package chatty.gui.colors;
 
+import chatty.Helper;
+import chatty.User;
 import chatty.gui.HtmlColors;
 import chatty.util.settings.Settings;
 import java.awt.Color;

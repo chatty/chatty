@@ -103,6 +103,7 @@ public class ColorSettings extends SettingsPanel {
                 colorSetting.update(newColor);
             }
         }
+        d.updateBackgroundColor();
     }
     
     /**

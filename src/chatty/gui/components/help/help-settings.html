@@ -516,6 +516,52 @@
         settings page.</p>
     
     <h2>
+        <a name="Msg_Colors">Message Colors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>You can customize the color of messages based on the same message
+        matching rules and patterns that are used for the
+        <a href="#Highlight_Matching">Highlight system</a> (not all prefixes
+        apply). Add a new item, enter what messages you want to match and select
+        the color you want them to have.</p>
+    
+    <p>The order of entries can matter, the first color from the top that
+        matches is used.</p>
+    
+    <p><em>Note:</em> The default message color is set on the "Colors" settings
+        page ("Normal message").</p>
+    
+    <p><em>Note:</em> This feature only changes the message <em>color</em>. Use
+        the Highlight system instead if you want
+        to highlight important messages, have them added to a separate
+        Highlighted Messages window and maybe show a notification or play a
+        sound for it at the same time.</p>
+
+    <h3>Examples</h3>
+    <p>Examples of how to match certain messages, so you can assign it a custom
+        color.</p>
+    <dl>
+        <dt><code>status:r</code></dt>
+        <dd>Matches all messages from a known bot (FFZ, BTTV or the
+            <code>botNames</code> setting).</dd>
+        
+        <dt><code>cat:vip</code></dt>
+        <dd>Matches all messages from users in the <code>vip</code> Addressbook
+            category.</dd>
+        
+        <dt><code>chan:#tailsgaming start:!points</code></dt>
+        <dd>Matches all messages in channel <code>#tailsgaming</code>, starting
+            with <code>!points</code>.</dd>
+        
+        <dt><code>re*:(?i)(?&lt;!practice |debug )\bROM\b(?! hack)</code></dt>
+        <dd>Matches all messages containing the word <code>ROM</code>, not
+            preceded by <code>practice&nbsp;</code> or <code>debug&nbsp;</code>, nor
+            followed by <code>&nbsp;hack</code> (case-insensitive).</dd>
+    </dl>
+    
+    <div class="moreInfo">More examples: <a href="#Highlight_Examples">Highlight settings help</a></div>
+    
+    <h2>
         <a name="Usercolors">Usercolors</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -625,7 +671,7 @@
     match the message. The following two types of prefixes can be used to change
     highlighting behaviour per item.</p>
     
-    <h3>Text Matching Prefixes</h3>
+    <h3><a name="Highlight_Matching">Text Matching Prefixes</a></h3>
     <p>By default, matching is done case-insensitive and when the word or phrase
         appears anywhere in the message. However, you can add the following
         prefixes in front of the text to change this matching behaviour. You can
@@ -733,7 +779,7 @@
             </ul></li>
     </ul>
     
-    <h3>Examples</h3>
+    <h3><a name="Highlight_Examples">Examples</a></h3>
     <dl>
         <dt><code>word1 word2</code></dt>
         <dd>Matches e.g. <code>word1 word2</code>, <code>Word1 word2</code> anywhere in the message</dd>

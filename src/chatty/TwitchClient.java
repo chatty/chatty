@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.colors.UsercolorManager;
 import chatty.gui.components.admin.StatusHistory;
 import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;

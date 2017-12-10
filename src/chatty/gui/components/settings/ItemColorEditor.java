@@ -1,8 +1,9 @@
 
 package chatty.gui.components.settings;
 
-import chatty.UsercolorItem;
+import chatty.gui.colors.UsercolorItem;
 import chatty.gui.HtmlColors;
+import chatty.gui.colors.ColorItem;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -10,6 +11,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -23,20 +28,23 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author tduva
  */
-public class UsercolorEditor extends TableEditor<UsercolorItem> {
+public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
 
     private final MyTableModel data = new MyTableModel();
+    private final BiFunction<String, Color, T> createItem;
+    private final ColorRenderer colorRenderer = new ColorRenderer();
     
-    public UsercolorEditor(JDialog owner) {
+    public ItemColorEditor(JDialog owner,
+            BiFunction<String, Color, T> createItem) {
         super(SORTING_MODE_MANUAL, false);
+        this.createItem = createItem;
         setModel(data);
-        setItemEditor(new MyItemEditor(owner));
-        setDefaultRenderer(UsercolorItem.class, new ItemIdRenderer());
-        setDefaultRenderer(Color.class, new ColorRenderer());
+        setItemEditor(new MyItemEditor<T>(owner, createItem));
+        setDefaultRenderer(Color.class, colorRenderer);
     }
     
     public void edit(String item) {
-        UsercolorItem preset = new UsercolorItem(item, Color.BLACK);
+        T preset = createItem.apply(item, Color.BLACK);
         int index = data.indexOf(preset);
         if (index == -1) {
             addItem(preset);
@@ -44,16 +52,20 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
             editItem(index);
         }
     }
-
-    private static class MyTableModel extends ListTableModel<UsercolorItem> {
+   
+    public void setBackgroundColor(Color color) {
+        colorRenderer.setBackgroundColor(color);
+    }
+    
+    private static class MyTableModel<T extends ColorItem> extends ListTableModel<T> {
         
         public MyTableModel() {
             super(new String[]{"Item", "Color"});
         }
 
-        public int indexOfId(String id) {
-            return indexOf(new UsercolorItem(id, Color.BLACK));
-        }
+//        public int indexOfId(String id) {
+//            return indexOf(new UsercolorItem(id, Color.BLACK));
+//        }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -67,7 +79,7 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         @Override
         public String getSearchValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
-                return get(rowIndex).id;
+                return get(rowIndex).getId();
             } else {
                 return HtmlColors.getNamedColorString(get(rowIndex).getColor());
             }
@@ -76,7 +88,7 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         @Override
         public Class getColumnClass(int c) {
             if (c == 0) {
-                return UsercolorItem.class;
+                return ColorItem.class;
             } else {
                 return Color.class;
             }
@@ -89,8 +101,14 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
      */
     public static class ColorRenderer extends JLabel implements TableCellRenderer {
 
+        private Color backgroundColor;
+        
         public ColorRenderer() {
             setOpaque(true);
+        }
+        
+        public void setBackgroundColor(Color color) {
+            this.backgroundColor = color;
         }
 
         @Override
@@ -121,66 +139,16 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
             } else {
-                setBackground(table.getBackground());
+                setBackground(backgroundColor);
             }
             return this;
         }
 
     }
     
-    /**
-     * Renderer for the item column, which uses a {@code UsercolorItem} to
-     * display the item id and displays an error if the item type is undefined.
-     */
-    public static class ItemIdRenderer extends JLabel implements TableCellRenderer {
-
-        public ItemIdRenderer() {
-            // So background can be seen
-            setOpaque(true);
-        }
+    public static class MyItemEditor<T extends ColorItem> implements ItemEditor<T> {
         
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            
-            if (value == null) {
-                setText("");
-                setToolTipText("error");
-                return this;
-            }
-            
-            UsercolorItem item = (UsercolorItem)value;
-            
-            // Use the default table font so it's not bold
-            setFont(table.getFont());
-            
-            // Set text and color based on the item type and id
-            if (item.type == UsercolorItem.TYPE_UNDEFINED) {
-                setText(item.id+" (error)");
-                setForeground(Color.RED);
-            } else {
-                setText(item.id);
-                setForeground(table.getForeground());
-            }
-            
-            // Add a tooltip text if the id is a color
-            if (item.type == UsercolorItem.TYPE_COLOR) {
-                setToolTipText(HtmlColors.getColorString(item.idColor));
-            } else {
-                setToolTipText(null);
-            }
-            
-            // Set background color based on selection status
-            if (isSelected) {
-                setBackground(table.getSelectionBackground());
-            } else {
-                setBackground(table.getBackground());
-            }
-            return this;
-        }
-        
-    }
-    
-    public static class MyItemEditor implements ItemEditor<UsercolorItem> {
+        private final BiFunction<String, Color, T> createItem;
         
         private final ColorChooser colorChooser;
         private final JDialog dialog;
@@ -192,12 +160,13 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         private final JButton ok = new JButton("Done");
         private final JButton cancel = new JButton("Cancel");
         
-        public MyItemEditor(JDialog owner) {
+        public MyItemEditor(JDialog owner, BiFunction<String, Color, T> createItem) {
             colorChooser = new ColorChooser(owner);
             dialog = new JDialog(owner);
             dialog.setTitle("Edit Item");
             color.setEditable(false);
             dialog.setModal(true);
+            this.createItem = createItem;
             
             id.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -261,7 +230,7 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
         }
         
         @Override
-        public UsercolorItem showEditor(UsercolorItem preset, Component c, boolean edit, int column) {
+        public T showEditor(T preset, Component c, boolean edit, int column) {
             if (edit) {
                 dialog.setTitle("Edit item");
             } else {
@@ -279,7 +248,7 @@ public class UsercolorEditor extends TableEditor<UsercolorItem> {
             id.requestFocusInWindow();
             dialog.setVisible(true);
             if (!id.getText().isEmpty() && currentColor != null) {
-                return new UsercolorItem(id.getText(), currentColor);
+                return createItem.apply(id.getText(), currentColor);
             }
             return null;
         }

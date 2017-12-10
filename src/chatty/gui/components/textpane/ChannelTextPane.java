@@ -317,13 +317,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (highlighted) {
             style = styles.highlight(color);
         } else {
-            style = styles.standard();
+            style = styles.standard(color);
         }
         print(getTimePrefix(), style);
         printUser(user, action, message.whisper, message.id);
         
         // Change style for text if /me and no highlight (if enabled)
-        if (!highlighted && action && styles.actionColored()) {
+        if (!highlighted && color == null && action && styles.actionColored()) {
             style = styles.standard(user.getDisplayColor());
         }
         printSpecials(text, user, style, emotes, false, message.bits > 0);

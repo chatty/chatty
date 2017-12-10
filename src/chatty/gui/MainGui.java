@@ -28,9 +28,11 @@ import chatty.Helper;
 import chatty.User;
 import chatty.Irc;
 import chatty.gui.components.admin.StatusHistory;
-import chatty.UsercolorItem;
+import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
+import chatty.gui.colors.MsgColorItem;
+import chatty.gui.colors.MsgColorManager;
 import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.AutoModDialog;
 import chatty.gui.components.ChatRulesDialog;
@@ -148,6 +150,7 @@ public class MainGui extends JFrame implements Runnable {
     // Helpers
     private final Highlighter highlighter = new Highlighter();
     private final Highlighter ignoreChecker = new Highlighter();
+    private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
     private final StateUpdater state = new StateUpdater();
@@ -164,6 +167,7 @@ public class MainGui extends JFrame implements Runnable {
     
     public MainGui(TwitchClient client) {
         this.client = client;
+        msgColorManager = new MsgColorManager(client.settings);
         SwingUtilities.invokeLater(this);
     }
     
@@ -1995,6 +1999,14 @@ public class MainGui extends JFrame implements Runnable {
         client.usercolorManager.setData(data);
     }
     
+    public java.util.List<MsgColorItem> getMsgColorData() {
+        return msgColorManager.getData();
+    }
+    
+    public void setMsgColorData(java.util.List<MsgColorItem> data) {
+        msgColorManager.setData(data);
+    }
+    
     public java.util.List<Usericon> getUsericonData() {
         return client.usericonManager.getData();
     }
@@ -2685,6 +2697,9 @@ public class MainGui extends JFrame implements Runnable {
                     // Print message, but determine how exactly
                     UserMessage message = new UserMessage(user, text, tagEmotes, id, bits);
                     message.color = highlighter.getLastMatchColor();
+                    if (!highlighted) {
+                        message.color = msgColorManager.getColor(user, text);
+                    }
                     message.whisper = whisper;
                     message.action = action;
                     if (highlighted) {

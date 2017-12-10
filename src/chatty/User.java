@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.gui.HtmlColors;

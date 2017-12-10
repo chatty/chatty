@@ -428,10 +428,22 @@ public class Highlighter {
             if (startsWith != null && !lowercaseText.startsWith(startsWith)) {
                 return false;
             }
+            /**
+             * This was called without User object, so only match if either
+             * "config:info" was present or wanted by the caller (e.g. if only
+             * applied to one message type).
+             */
             if (user == null) {
                 return appliesToInfo || noUserRequired;
             }
-            // Everything else from here is user-based
+            /**
+             * If a User object was supplied and "config:info" was present, then
+             * this shouldn't be matched, because it can't be an info message.
+             * 
+             * TODO: If message types should be matched more reliably, there
+             * should probably be an extra message type parameter instead of
+             * reyling on whether an User object was supplied.
+             */
             if (user != null && appliesToInfo) {
                 return false;
             }
