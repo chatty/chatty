@@ -164,6 +164,7 @@ public class CommandMenuItems {
                 }
                 if (sep) {
                     result.add(makeItem(null, null, submenu, -1, null));
+                    sep = false;
                 }
                 result.add(item);
             }

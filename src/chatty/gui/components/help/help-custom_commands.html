@@ -26,6 +26,7 @@
                 <li><a href="#commands-list">Format 1: List Custom Command Names</a></li>
                 <li><a href="#inline-commands">Format 2: Inline-Commands</a></li>
                 <li><a href="#submenus">Format 3: Submenus</a></li>
+                <li><a href="#separators">Separators</a></li>
                 <li><a href="#shortcuts">Shortcuts</a></li>
                 <li><a href="#positioning">Positioning</a></li>
                 <li><a href="#special-commands">Special Commands</a></li>
@@ -66,6 +67,13 @@
         way to can add variations of commands for specific channels.</p>
     
     <h2><a name="replacements">Replacements</a></h2>
+    <ul>
+        <li><a href="#simple-replacements">Simple Replacements</a></li>
+        <li><a href="#parameters-context">Pre-defined Parameters</a></li>
+        <li><a href="#functions">Functions</a></li>
+        <li><a href="#custom-replacements">Custom Replacements</a></li>
+    </ul>
+    
     <p>Anything starting with <code>$</code> in the <code>&lt;what the command
         should do&gt;</code> section is treated as some sort of replacement.
         Each replacement must contain an <strong>identifier</strong>
@@ -303,6 +311,16 @@
     
     
     <h2><a name="menus">Custom Context Menus / User Dialog Buttons</a></h2>
+    <ul>
+        <li><a href="#commands-list">Format 1: List Custom Command Names</a></li>
+        <li><a href="#inline-commands">Format 2: Inline-Commands</a></li>
+        <li><a href="#submenus">Format 3: Submenus</a></li>
+        <li><a href="#separators">Separators</a></li>
+        <li><a href="#shortcuts">Shortcuts</a></li>
+        <li><a href="#positioning">Positioning</a></li>
+        <li><a href="#special-commands">Special Commands</a></li>
+    </ul>
+    
     <p>Under <code>Settings - Commands</code> there are several settings that
         allow you to add additional entries/buttons in a few different places:</p>
     
@@ -445,6 +463,25 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         timeout buttons as well as a single bottom row for the <code>Slap</code>
         command.</p>
     
+    
+    <h3><a name="separators">Separators</a></h3>
+    <p>In <strong>Context menus</strong> you can add separators between entries.
+        When you use a <a href="#commands-list">commands list</a>, you can add
+        a vertical bar (<code>|</code>) between entries.</p>
+    
+    <p>You can also add a separator by adding a single dash (<code>-</code>) on
+        it's own line.</p>
+    
+    <p>Example (separator before <code>Timeout</code> menu, before <code>Message</code>
+        and before <code>Vods</code>):</p>
+    <div class="codeblock"><pre>
+/Ban /Purge
+-
+@Timeout
+.5s 10m
+-
+/Message /Report | /Vods
+</pre></div>
     
     <h3><a name="shortcuts">Shortcuts</a></h3>
     <p>You can add a shortcut to the end of a label or command name by enclosing
