@@ -64,7 +64,7 @@ public class Emoticons {
         EMOTICONS_MAP.put("\\:-?(o|O)", ":O");
         EMOTICONS_MAP.put("\\:-?\\)", ":)");
         EMOTICONS_MAP.put("\\;-?(p|P)", ";P");
-        EMOTICONS_MAP.put("[o|O](_|\\.)[o|O]", "o_O");
+        EMOTICONS_MAP.put("[oO](_|\\.)[oO]", "o_O");
         EMOTICONS_MAP.put(">\\(", ">(");
         EMOTICONS_MAP.put("\\:-?(?:\\/|\\\\)(?!\\/)", ":/");
         EMOTICONS_MAP.put("\\:-?\\(", ":(");
@@ -76,6 +76,7 @@ public class Emoticons {
         EMOTICONS_MAP.put("#-?[\\\\/]", "#/");
         EMOTICONS_MAP.put("<\\]", "<]");
         EMOTICONS_MAP.put("\\:-?[\\\\/]", ":/");
+        EMOTICONS_MAP.put("\\:-?\\)", ":)");
     }
     
     /**
