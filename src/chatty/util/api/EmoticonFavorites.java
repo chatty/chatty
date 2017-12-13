@@ -141,6 +141,7 @@ public class EmoticonFavorites {
         List list = new ArrayList();
         list.add(f.code);
         list.add(f.emoteset);
+        list.add(0); // In case loaded in older version where this is expeceted
         return list;
     }
     

@@ -17,6 +17,11 @@ public class StatusHistoryEntry {
     
     public final String title;
     public final String game;
+    
+    /**
+     * A list of Community objects. May be null (meaning communities should be
+     * completely disregarded) or empty (meaning set no communities).
+     */
     public final List<Community> communities;
     public final long lastActivity;
     public final int timesUsed;
@@ -28,7 +33,11 @@ public class StatusHistoryEntry {
         this.lastActivity = lastSet;
         this.timesUsed = timesUsed;
         this.favorite = favorite;
-        this.communities = new ArrayList<>(communities);
+        if (communities == null) {
+            this.communities = null;
+        } else {
+            this.communities = new ArrayList<>(communities);
+        }
     }
     
     public StatusHistoryEntry(String title, String game, List<Community> communities) {

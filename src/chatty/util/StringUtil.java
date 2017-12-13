@@ -49,7 +49,7 @@ public class StringUtil {
     }
     
     public static String join(Collection<?> items, String delimiter, int start, int end) {
-        if (items.isEmpty()) {
+        if (items == null || items.isEmpty()) {
             return "";
         }
         start = start > -1 ? start : 0;

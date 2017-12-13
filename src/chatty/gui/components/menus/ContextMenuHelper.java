@@ -22,7 +22,10 @@ public class ContextMenuHelper {
     protected static final ImageIcon ICON_COPY = new ImageIcon(ContextMenuHelper.class.getResource("edit-copy.png"));
 
     public static boolean enableLivestreamer = true;
-    public static String livestreamerQualities;
+    
+    // This shouldn't usually be used before it is set, but just to be sure set
+    // it to an empty String instead of null by default
+    public static String livestreamerQualities = "";
     public static Settings settings;
     
     /**
