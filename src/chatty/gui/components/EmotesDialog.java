@@ -807,7 +807,8 @@ public class EmotesDialog extends JDialog {
             Set<Integer> turboEmotes = new HashSet<>();
             Map<String, Set<Emoteset>> perStream = new HashMap<>();
             Map<String, Set<Emoteset>> perInfo = new HashMap<>();
-            Set<Integer> others = new HashSet<>();
+            Set<Integer> unknownEmotesets = new HashSet<>();
+            Set<Integer> unknownEmotesetsSingle = new HashSet<>();
             for (Integer emoteset : localUserEmotesets) {
                 if (Emoticons.isTurboEmoteset(emoteset)) {
                     // Turbo emotes
@@ -830,8 +831,12 @@ public class EmotesDialog extends JDialog {
                             perStream.get(info.stream).add(info);
                         }
                     } else {
-                        // Unknown emotesets
-                        others.add(emoteset);
+                        // Unknown emoteset
+                        if (emoteManager.getEmoticons(emoteset).size() == 1) {
+                            unknownEmotesetsSingle.add(emoteset);
+                        } else {
+                            unknownEmotesets.add(emoteset);
+                        }
                     }
                 }
             }
@@ -847,9 +852,17 @@ public class EmotesDialog extends JDialog {
                 addEmotes(info, perInfo.get(info));
             }
             
-            for (Integer emoteset : others) {
+            for (Integer emoteset : unknownEmotesets) {
                 addEmotes(emoteset);
             }
+            
+            // Unknown emotesets that only contain a single emote should be
+            // grouped together
+            Set<Emoticon> unknownEmotesGrouped = new HashSet<>();
+            for (int emoteset : unknownEmotesetsSingle) {
+                unknownEmotesGrouped.addAll(emoteManager.getEmoticons(emoteset));
+            }
+            addEmotes(unknownEmotesGrouped, "Other");
 
             int turboSetA = 793;
             int turboSetB = 19194;
