@@ -188,6 +188,7 @@ public class MainGui extends JFrame implements Runnable {
         ArrayList<Image> windowIcons = new ArrayList<>();
         windowIcons.add(createImage("app_main_16.png"));
         windowIcons.add(createImage("app_main_64.png"));
+        windowIcons.add(createImage("app_main_128.png"));
         setIconImages(windowIcons);
     }
     
@@ -195,6 +196,7 @@ public class MainGui extends JFrame implements Runnable {
         ArrayList<Image> windowIcons = new ArrayList<>();
         windowIcons.add(createImage("app_live_16.png"));
         windowIcons.add(createImage("app_live_64.png"));
+        windowIcons.add(createImage("app_live_128.png"));
         liveStreamsDialog.setIconImages(windowIcons);
     }
     
@@ -202,6 +204,7 @@ public class MainGui extends JFrame implements Runnable {
         ArrayList<Image> windowIcons = new ArrayList<>();
         windowIcons.add(createImage("app_help_16.png"));
         windowIcons.add(createImage("app_help_64.png"));
+        windowIcons.add(createImage("app_help_128.png"));
         aboutDialog.setIconImages(windowIcons);
     }
     
@@ -209,6 +212,7 @@ public class MainGui extends JFrame implements Runnable {
         ArrayList<Image> windowIcons = new ArrayList<>();
         windowIcons.add(createImage("app_debug_16.png"));
         windowIcons.add(createImage("app_debug_64.png"));
+        windowIcons.add(createImage("app_debug_128.png"));
         debugWindow.setIconImages(windowIcons);
     }
     
@@ -254,7 +258,7 @@ public class MainGui extends JFrame implements Runnable {
                 this, client.api, contextMenuListener);
         
         // Tray/Notifications
-        trayIcon = new TrayIconManager(createImage("app_16.png"));
+        trayIcon = new TrayIconManager(createImage("app_main_16.png"));
         trayIcon.addActionListener(new TrayMenuListener());
         notificationWindowManager = new NotificationWindowManager<>(this);
         notificationWindowManager.setNotificationActionListener(new MyNotificationActionListener());
