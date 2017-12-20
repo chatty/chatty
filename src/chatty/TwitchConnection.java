@@ -977,6 +977,10 @@ public class TwitchConnection {
                     m += " ["+message+"]";
                 }
                 listener.onInfo(channel, "[Raid] "+m);
+            } else {
+                // Just output like this if unknown, since Twitch keeps adding
+                // new messages types for this
+                listener.onInfo(channel, "[Usernotice] "+text);
             }
         }
 
