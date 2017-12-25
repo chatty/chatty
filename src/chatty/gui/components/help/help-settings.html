@@ -74,9 +74,10 @@
     </ul>
     
     <h3>Look&amp;Feel</h3>
-    <p>The Look&amp;Feel changes the overall design of the program. The "System"
-        Look&amp;Feel depends on system you are on, the others are
-        cross-platform.</p>
+    <p>The Look&amp;Feel changes the overall look of the program. The "System"
+        Look&amp;Feel depends on the system you are on, the others are
+        cross-platform. Some Look&amp;Feels also allow you to additionally
+        select a different font size, which affects most of Chatty.</p>
     
     <h2>
         <a name="Messages">Messages</a>
@@ -952,7 +953,7 @@
     
     <p><img src="Notifications_example.jpg" /></p>
     
-    <p>Possible event types that can be selected for an entry:</p>
+    <p>Possible <strong>event types</strong> that can be selected for an entry:</p>
     
     <dl class="dl-settings">
         <dt>Stream Status</dt>
@@ -985,7 +986,7 @@
         <dd>When a new chat message filtered by AutoMod is received.</dd>
     </dl>
     
-    <h3>Settings for an entry (Notification/Sound)</h3>
+    <h3>Event settings (Notification/Sound)</h3>
     <dl class="dl-settings">
         <dt>Channel</dt>
         <dd>Name of the channel this item should be restricted to.</dd>
@@ -1039,6 +1040,23 @@
     
     
     <h3>General Notification Settings</h3>
+    <p>There are different types of Notifications:</p>
+    <dl class="dl-settings">
+        <dt>Chatty Notifications</dt>
+        <dd>The default popup Notification created by Chatty, with additional
+            settings (see below).</dd>
+        
+        <dt>Tray Notifications (OS dependant)</dt>
+        <dd>Native Tray Notifications, which will act differently depending on
+            what OS you are on.</dd>
+        
+        <dt>Run OS Command</dt>
+        <dd>Execute a program on your system, for example to run native
+            notifications in Linux. <em>For advanced users only, read the help
+            in the "Edit system command" dialog.</em></dd>
+    </dl>
+    
+    <p>If you have selected <strong>Chatty Notifications</strong>:</p>
     <dl class="dl-settings">
         <dt>Position</dt>
         <dd>The corner of the screen the notification is displayed.</dd>
@@ -1186,6 +1204,11 @@
         <dt>Mod Actions</dt>
         <dd>Logs the commands performed by mods in your channel (Broadcaster/Mods only).</dd>
         <dd><code>MOD_ACTION: tduva (host coollertmb)</code></dd>
+        
+        <dt>Ignored Msg.</dt>
+        <dd>Logs messages that have been hidden by the Ignore list, like normal
+            messages. You can disable this if you don't want ignored messages to
+            show up in the chat log files.</dd>
     </dl>
     
     <h2>
@@ -1530,6 +1553,7 @@
     <ul>
         <li>Prefixing <code>@</code> always completes usernames</li>
         <li>Prefixing <code>/</code> always completes command names</li>
+        <li>Prefixing <code>:</code> always completes Emoji codes (not Twitch Emotes!)</li>
         <li>Prefixing <code>.</code> always performs Custom Completion</li>
         <li>Certain commands such as <code>/ban</code> always complete usernames</li>
     </ul>

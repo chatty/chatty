@@ -53,8 +53,17 @@
         <a name="0.9">Version 0.9</a> <a name="latest">(This one!)</a> (2017-??-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>This version includes more Look and Feels which you can select in the
+        settings, including some fully dark themes. There might also be a slight
+        improvement in memory usage, since not all emote metadata is loaded at
+        once anymore (which actually takes up a lot of resources with more than
+        300k emotes).</p>
     
-    <p>Beta</p>
+    <p>Also check out TAB Completion for Emoji, with which you can e.g. enter
+        <code>:think</code> and <kbd>TAB</kbd> to complete to <code>:thinking:</code>,
+        which when send through the inputbox is replaced with the appropriate
+        Emoji character (which is also a new feature).</p>
+    
     <pre>
 ### Twitch Updates
 - Added /raid command and display of incoming raids, joining raids doesn't work
@@ -70,11 +79,12 @@
   except it only colors messages)
 - Updated help
 
-### Emoticons
-- Changed how emoticon metadata is requested to improve memory usage
+### Emoticons / Emoji
+- Load emoticon metadata only as needed to improve memory usage
 - Updated source for subscriber emoticon metadata, fixing e.g. which channel an
   emote is from, added display of emote tiers
 - Improved display of information in emote context menu and emote dialog
+- Grouped together sets with only one emote in Emote Dialog
 - Fixed some BTTV emotes (like D:) appearing when they shouldn't
 - Added Emoji TAB Completion (anything starting with ":")
 - Added conversion of Emoji short code to Emoji character when entered into the
@@ -86,8 +96,8 @@
   notification)
 - Added ability to change spamProtection setting without restart
 - Added F1 to open help to settings (instead of it being hardcoded)
-- Added "log ignored messages" setting to be able to turn that off (it does it
-  by default, as before)
+- Added "log ignored messages" setting, to be able to turn that off (by default
+  it does log them, as before)
 - Added more timestamp options to the settings (anything can be set via setting
   commands anyway, but that's not very accessible)
 
@@ -96,7 +106,6 @@
 - Fixed some emote code conversions
 - Fixed error on "Use title only" in Admin Dialog
 - Possibly fixed rare error with parsing livestreamer menu options
-
     </pre>
     
     <h2>
