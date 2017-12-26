@@ -135,8 +135,8 @@ public class NotificationSettings extends SettingsPanel {
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 
-        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit system command to execute (read help):", false, ""
-                + "<html><body style='width: 300px;'>"
+        nCommand = d.addEditorStringSetting("nCommand", 20, true, "Edit system command (recommended for advanced users only, read help):", false, ""
+                + "<html><body style='width: 400px;'>"
                 + "<p>Enter a command/program with parameters, which will be "
                 + "executed as a new process on your system (so please be "
                 + "careful with this, especially considering the <code>$(message)</code> "
@@ -149,7 +149,7 @@ public class NotificationSettings extends SettingsPanel {
                 + "to include them as their actual character. "
                 + "Quotes in the replacements are escaped automatically.</p>"
                 + "<p>For example to run 'notify-send' to show a native notification on Linux: "
-                + "<code>notify-send \"$(title)\" \"$(message)\"</code></p>"
+                + "<code>notify-send&nbsp;\"$(title)\"&nbsp;\"$(message)\"</code></p>"
                 + "<p>To view the output of executed commands (for example to "
                 + "debug if it doesn't work as expected) you can open &lt;Extra"
                 + " - Debug window&gt;.</p>"

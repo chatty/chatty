@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.9b4)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.9)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -530,11 +530,14 @@
         <a name="TAB_Completion">TAB Completion</a><a name="nickCompletion"></a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>When typing in the inputbox, <kbd>TAB</kbd> completes usernames and
-        <kbd>Shift-TAB</kbd> completes Emoticons (by default). This can be
-        changed in the <a href="help-settings.html#Completion">Completion settings</a>.
-        Once a completion is started, <kbd>TAB</kbd>/<kbd>Shift-TAB</kbd> cycle
-        forwards/backward through the results.</p>
+    <p>When typing in the inputbox, you can use the following keys by default
+        (this can be changed in the <a href="help-settings.html#Completion">Completion settings</a>):</p>
+    <ul>
+        <li><kbd>TAB</kbd> to complete usernames</li>
+        <li><kbd>Shift-TAB</kbd> to complete Emoticons</li>
+    </ul>
+    <p>Once a completion is initiated, <kbd>TAB</kbd> and <kbd>Shift-TAB</kbd>
+        cycle forwards and backward through the results.</p>
 
     <p>Some prefixes always force a certain completion type
         no matter if you use <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>:</p>
@@ -736,7 +739,7 @@
     <div class="moreInfo">More information: <a href="help-settings.html#Usercolors">Usercolor Settings</a></div>
     
     <h2>
-        <a name="emoticons">Emoticons/Emote Dialog</a>
+        <a name="emoticons">Emoticons / Emote Dialog</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>Chatty supports the following types of emoticons:</p>
@@ -764,7 +767,14 @@
                 <li><strong>Not supported</strong> are Personal Emotes</li>
             </ul>
         </li>
+        <li>Emoji, turns the Unicode Emoji character into an image (you can
+            enter Emoji either by pasting the character directly, or by entering
+            a shortcode (e.g. <code>:thinking:</code>) into the inputbox, which
+            will be turned into the character when you press Enter to send it.</li>
     </ul>
+    
+    <p><em>Tip:</em> You can use <a href="#TAB_Completion">TAB Completion</a>
+        for Emoticon codes (Shift-TAB by default) and Emoji shortcodes.</p>
     
     <p>You can enable/disable Emoticons in general (displaying the images instead
         of the text) in the settings under <code>Emoticons</code>. You can also

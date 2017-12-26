@@ -54,26 +54,32 @@ public class LaF {
                         break;
                     case "hifi":
                         laf = "com.jtattoo.plaf.hifi.HiFiLookAndFeel";
-                        HiFiLookAndFeel.setCurrentTheme(
-                                addCustom(prepareTheme(HiFiLookAndFeel.getThemeProperties(theme)))
-                        );
+                        Properties p1 = prepareTheme(HiFiLookAndFeel.getThemeProperties(theme));
+                        // Default selection background color isn't really well
+                        // visible with "Dark" preset input box colors, a better
+                        // color than this could probably be chosen, it has to
+                        // fit in other place as well though (see hifi2 as well)
+                        p1.put("selectionBackgroundColor", "65 65 65");
+                        HiFiLookAndFeel.setCurrentTheme(addCustom(p1));
                         break;
                     case "hifi2":
                         laf = "com.jtattoo.plaf.hifi.HiFiLookAndFeel";
-                        Properties p = prepareTheme(HiFiLookAndFeel.getThemeProperties(theme));
+                        Properties p2 = prepareTheme(HiFiLookAndFeel.getThemeProperties(theme));
                         //p.put("backgroundColor", "50 54 52");
-                        p.put("backgroundColor", "50 52 51");
-                        p.put("foregroundColor", "180 190 185");
-                        p.put("menuForegroundColor", "200 210 204");
-                        p.put("menuBackgroundColor", "40 42 40");
-                        p.put("inputForegroundColor", "190 200 195");
-                        p.put("inputBackgroundColor", "60 64 62");
-                        p.put("buttonForegroundColor", "210 220 215");
-                        p.put("buttonColorLight", "96 96 96");
-                        p.put("buttonColorDark", "44 44 44");
+                        p2.put("backgroundColor", "50 52 51");
+                        p2.put("foregroundColor", "180 190 185");
+                        p2.put("menuForegroundColor", "200 210 204");
+                        p2.put("menuBackgroundColor", "40 42 40");
+                        p2.put("inputForegroundColor", "190 200 195");
+                        p2.put("inputBackgroundColor", "60 64 62");
+                        p2.put("buttonForegroundColor", "210 220 215");
+                        p2.put("buttonColorLight", "96 96 96");
+                        p2.put("buttonColorDark", "44 44 44");
+                        // See "hifi" comment
+                        p2.put("selectionBackgroundColor", "65 65 65");
                         //p.put("backgroundColorDark", "255 0 0");
                         //p.put("backgroundColorLight", "0 0 0");
-                        HiFiLookAndFeel.setCurrentTheme(addCustom(p));
+                        HiFiLookAndFeel.setCurrentTheme(addCustom(p2));
                         break;
                     case "mint":
                         laf = "com.jtattoo.plaf.mint.MintLookAndFeel";

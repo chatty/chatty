@@ -747,6 +747,14 @@ public class Settings {
             setString(setting, "");
             return "Setting '"+setting+"' set to empty string.";
         }
+        if (isListSetting(setting)) {
+            listClear(setting);
+            return "Setting '"+setting+"' is now empty.";
+        }
+        if (isMapSetting(setting)) {
+            mapClear(setting);
+            return "Setting '"+setting+"' is now empty.";
+        }
         return settingInvalidMessage(setting);
     }
     
