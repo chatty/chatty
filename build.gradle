@@ -105,88 +105,12 @@ task allPlatformsZip(type: Zip, group: 'build') {
     archiveName = "${archivesBaseName}_${version}.zip"
 }
 
-task hotkey32Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype32.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_32bit.zip"
-}
-
-task hotkey64Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype64.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_64bit.zip"
-}
-
 // Builds all the release zips
 task releaseZips(group: 'build') {
-    dependsOn allPlatformsZip, hotkey32Zip, hotkey64Zip
+    dependsOn allPlatformsZip
 }
 
 // Builds the full project, runs the unit tests and packages the release zips.
 task release(group: 'build') {
     dependsOn releaseZips, build
-}
-
-//--------
-// Windows
-//--------
-
-def javapackagerBuildDir = new File(buildDir, 'javapackager')
-
-task javapackager(type: Exec, group: 'build') {
-    dependsOn shadowJar
-
-    doFirst {
-        if (!project.hasProperty('javapackagerPath')) {
-            throw new GradleException('Path to javapackager.exe must be defined with -PjavapackagerPath=<path>')
-        }
-    }
-    if (project.hasProperty('javapackagerPath')) {
-        def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
-        command << "-Bicon=assets-bundle/Chatty.ico"
-        command << "-BappVersion=${version}"
-        command << "-BjvmProperties=sun.java2d.d3d=false"
-        command << "-BjvmOptions=-Xmx400M"
-        if (project.hasProperty('jrePath')) {
-            command << "-Bruntime=${jrePath}"
-        }
-        commandLine command
-    }
-}
-
-task windowsZip(type: Zip, group: 'build') {
-    dependsOn javapackager
-
-    from new File(javapackagerBuildDir, 'bundles/Chatty')
-    from ('assets') {
-        exclude 'lib'
-	into 'app'
-    }
-    from ('assets/lib/dlls/JIntellitype32.dll') {
-        into 'app'
-    }
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-    from ('assets-bundle/fallback-fonts') {
-        into 'runtime/lib/fonts/fallback'
-    }
-    from 'assets-bundle/readme-bundle.txt'
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_windows_standalone.zip"
-}
-
-task releaseWindows(group: 'build') {
-    dependsOn release, windowsZip
 }

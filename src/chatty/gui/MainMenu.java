@@ -141,7 +141,7 @@ public class MainMenu extends JMenuBar {
         srlStreams.addMenuListener((MenuListener)itemListener);
 
         // Extra
-        addItem(extra,"livestreamer","Livestreamer", KeyEvent.VK_L);
+        addItem(extra,"streamlink","Streamlink", KeyEvent.VK_L);
         addItem(extra,"dialog.toggleEmotes","Emoticons");
         extra.addSeparator();
         addItem(extra,"dialog.followers","Followers");
