@@ -81,13 +81,13 @@ public class EmotesDialog extends JDialog {
     //----------------
     // Page Constants
     //----------------
-    private static final String FAVORITE_EMOTES = "Favorites";
-    private static final String MY_EMOTES = "My Emotes";
-    private static final String CHANNEL_EMOTES = "Channel";
+    private static final String FAVORITE_EMOTES = Chatty.lang.GET("EMOTESDIAG_FAVORITES", "Favorites");
+    private static final String MY_EMOTES = Chatty.lang.GET("EMOTESDIAG_MYEMOTES", "My Emotes");
+    private static final String CHANNEL_EMOTES = Chatty.lang.GET("EMOTESDIAG_CHANNEL", "Channel");
     private static final String TWITCH_EMOTES = "Twitch";
-    private static final String OTHER_EMOTES = "Other";
-    private static final String EMOJI = "Emoji";
-    private static final String EMOTE_DETAILS = "Emote Details";
+    private static final String OTHER_EMOTES = Chatty.lang.GET("EMOTESDIAG_OTHER", "Other");
+    private static final String EMOJI = Chatty.lang.GET("EMOTESDIAG_EMOJI", "Emoji");
+    private static final String EMOTE_DETAILS = Chatty.lang.GET("EMOTESDIAG_EMOTE_DETAILS", "Emote Details");
     private static final String BITS = "B";
     
     //--------
@@ -407,11 +407,11 @@ public class EmotesDialog extends JDialog {
      * Sets the title according to the current stream.
      */
     private void updateTitle() {
-        String base = "Global/Subscriber/Turbo";
+        String base = Chatty.lang.GET("EMOTESDIAG_GLOBSUBTURBO", "Global/Subscriber/Turbo");
         if (stream == null) {
-            setTitle("Emoticons ("+base+")");
+            setTitle(Chatty.lang.GET("EMOTESDIAG_TITLE", "Emoticons") + " ("+base+")");
         } else {
-            setTitle("Emoticons ("+base+"/#"+stream+")");
+            setTitle(Chatty.lang.GET("EMOTESDIAG_TITLE", "Emoticons") + " ("+base+"/#"+stream+")");
         }
     }
     

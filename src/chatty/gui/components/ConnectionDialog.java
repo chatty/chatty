@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.Chatty;
 import chatty.gui.MainGui;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,12 +20,12 @@ public class ConnectionDialog extends JDialog {
     private final JLabel passwordLabel = new JLabel("Access token:");
     private final JLabel name = new JLabel("");
     private final JTextField password = new JPasswordField(14);
-    private final JButton connect = new JButton("Connect");
-    private final JButton cancel = new JButton("Cancel");
-    private final JButton favorites = new JButton("Favorites / History");
+    private final JButton connect = new JButton(Chatty.lang.GET("CONNECTDIAG_CONNECT", "Connect"));
+    private final JButton cancel = new JButton(Chatty.lang.GET("CONNECTDIAG_CANCEL", "Cancel"));
+    private final JButton favorites = new JButton(Chatty.lang.GET("CONNECTDIAG_FAVORITES_HISTORY", "Favorites / History"));
     private final JTextField channel = new JTextField(16);
-    private final JButton getToken = new JButton("Configure login..");
-    private final JCheckBox rejoinOpenChannels = new JCheckBox("Rejoin open channels");
+    private final JButton getToken = new JButton(Chatty.lang.GET("CONNECTDIAG_CONFIGURE_LOGIN", "Configure login.."));
+    private final JCheckBox rejoinOpenChannels = new JCheckBox(Chatty.lang.GET("CONNECTDIAG_REJOIN_OPEN_CHANNELS", "Rejoin open channels"));
     
     private final GridBagConstraints passwordGc = makeGbc(1,1,2,1,GridBagConstraints.WEST);
     private final GridBagConstraints passwordLabelGc = makeGbc(0,1,1,1,GridBagConstraints.WEST);
@@ -32,7 +33,7 @@ public class ConnectionDialog extends JDialog {
     private String currentUsername = "";
     
     public ConnectionDialog(MainGui owner) {
-        super(owner,"Connect",true);
+        super(owner,Chatty.lang.GET("CONNECTDIAG_TITLE", "Connect"),true);
         this.setResizable(false);
         setLayout(new GridBagLayout());
 
@@ -51,7 +52,7 @@ public class ConnectionDialog extends JDialog {
         GridBagConstraints gbc;
         
         // Account
-        final JLabel nameLabel = new JLabel("Account:");
+        final JLabel nameLabel = new JLabel(Chatty.lang.GET("CONNECTDIAG_ACCOUNT", "Account:"));
         add(nameLabel, makeGbc(0,0,1,1,GridBagConstraints.EAST));
         add(name, makeGbc(1,0,2,1,GridBagConstraints.WEST));
         
@@ -83,7 +84,7 @@ public class ConnectionDialog extends JDialog {
         });
         
         // Channels and Favorites
-        final JLabel channelLabel = new JLabel("Channel:");
+        final JLabel channelLabel = new JLabel(Chatty.lang.GET("CONNECTDIAG_CHANNEL", "Channel:"));
         add(channelLabel, makeGbc(0,4,1,1,GridBagConstraints.EAST));
 
         gbc = makeGbc(1,4,2,1,GridBagConstraints.WEST);
@@ -190,7 +191,7 @@ public class ConnectionDialog extends JDialog {
         if (usePasswordInstead) {
             // Using password
             password.setEditable(true);
-            passwordLabel.setText("Password:");
+            passwordLabel.setText(Chatty.lang.GET("CONNECTDIAG_PASSWORD", "Password:"));
             password.setText(currentPassword);
             add(password,passwordGc);
             add(passwordLabel,passwordLabelGc);
@@ -200,12 +201,12 @@ public class ConnectionDialog extends JDialog {
             remove(password);
             remove(passwordLabel);
             if (currentUsername.isEmpty() || currentToken.isEmpty()) {
-                name.setText("<none>");
-                getToken.setText("Create login..");
+                name.setText(Chatty.lang.GET("CONNECTDIAG_USERNAME_EMPTY", "<none>"));
+                getToken.setText(Chatty.lang.GET("CONNECTDIAG_CREATE_LOGIN", "Create login.."));
             }
             else {
                 name.setText(currentUsername);
-                getToken.setText("Configure login..");
+                getToken.setText(Chatty.lang.GET("CONNECTDIAG_CONFIGURE_LOGIN", "Configure login.."));
             }
         }
         pack();

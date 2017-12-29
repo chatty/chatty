@@ -200,6 +200,8 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        Chatty.lang.setLanguage(settings.getString("language"));
+        
         pubsub = new chatty.util.api.pubsub.Manager(
                 settings.getString("pubsub"), new PubSubResults(), api);
         

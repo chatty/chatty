@@ -34,11 +34,11 @@ import javax.swing.event.MenuListener;
  */
 public class MainMenu extends JMenuBar {
     
-    private final JMenu main = new JMenu("Main");
-    protected final JMenu view = new JMenu("View");
-    private final JMenu channels = new JMenu("Channels");
-    private final JMenu extra = new JMenu("Extra");
-    private final JMenu help = new JMenu("Help");
+    private final JMenu main = new JMenu(Chatty.lang.GET("MENUBAR_MAIN", "Main"));
+    protected final JMenu view = new JMenu(Chatty.lang.GET("MENUBAR_VIEW", "View"));
+    private final JMenu channels = new JMenu(Chatty.lang.GET("MENUBAR_CHANNELS", "Channels"));
+    private final JMenu extra = new JMenu(Chatty.lang.GET("MENUBAR_EXTRA", "Extra"));
+    private final JMenu help = new JMenu(Chatty.lang.GET("MENUBAR_HELP", "Help"));
     
     private final JMenuItem highlights;
     private final JMenuItem ignored;
@@ -48,8 +48,8 @@ public class MainMenu extends JMenuBar {
     private final LinkLabelListener linkLabelListener;
     
     // Set here because it is used more than once
-    private final String IGNORED_LABEL = "Ignored";
-    private final String HIGHLIGHTS_LABEL = "Highlights";
+    private final String IGNORED_LABEL = Chatty.lang.GET("MENUBAR_IGNORED_MSG_LABEL", "Ignored");
+    private final String HIGHLIGHTS_LABEL = Chatty.lang.GET("MENUBAR_HIGHLIGHTS_MSG_LABEL", "Highlights");
     
     private final Notification notification = new Notification();
     
@@ -82,21 +82,21 @@ public class MainMenu extends JMenuBar {
         help.setMnemonic(KeyEvent.VK_H);
         
         // Main
-        addItem(main,"connect","Connect");
-        addItem(main,"disconnect","Disconnect").setEnabled(false);
+        addItem(main,"connect",Chatty.lang.GET("MENUBAR_CONNECT", "Connect"));
+        addItem(main,"disconnect",Chatty.lang.GET("MENUBAR_DISCONNECT", "Disconnect")).setEnabled(false);
         main.addSeparator();
-        setIcon(addItem(main,"settings","Settings", KeyEvent.VK_S), "preferences-system.png");
-        addItem(main,"configureLogin","Login..");
+        setIcon(addItem(main,"settings",Chatty.lang.GET("MENUBAR_SETTINGS", "Settings"), KeyEvent.VK_S), "preferences-system.png");
+        addItem(main,"configureLogin",Chatty.lang.GET("MENUBAR_CONFIGURE_LOGIN", "Login.."));
         main.addSeparator();
-        addItem(main,"saveSettings","Save..");
+        addItem(main,"saveSettings",Chatty.lang.GET("MENUBAR_SAVE_SETTINGS", "Save.."));
         main.addSeparator();
-        addItem(main,"application.exit","Exit");
+        addItem(main,"application.exit",Chatty.lang.GET("MENUBAR_APPLICATION_EXIT", "Exit"));
         
         // View
-        addCheckboxItem(view,"ontop","Always on top");
+        addCheckboxItem(view,"ontop",Chatty.lang.GET("MENUBAR_ALWAYSONTOP", "Always on top"));
         
         
-        JMenu viewOptions = new JMenu("Options");
+        JMenu viewOptions = new JMenu(Chatty.lang.GET("MENUBAR_OPTIONS", "Options"));
         
         JMenu titleOptions = new JMenu("Titlebar");
         addCheckboxItem(titleOptions, "titleShowUptime", "Stream Uptime");
@@ -111,35 +111,35 @@ public class MainMenu extends JMenuBar {
         addCheckboxItem(viewOptions,"showJoinsParts","Show joins/parts");
         addCheckboxItem(viewOptions, "showModMessages", "Show mod/unmod");
         addCheckboxItem(viewOptions, "attachedWindows", "Attached dialogs");
-        addCheckboxItem(viewOptions, "mainResizable", "Window resizable");
+        addCheckboxItem(viewOptions, "mainResizable", Chatty.lang.GET("MENUBAR_WINDOW_RESIZABLE", "Window resizable"));
 
         view.add(viewOptions);
         view.addSeparator();
-        addItem(view,"dialog.channelInfo","Channel Info");
-        addItem(view,"dialog.channelAdmin","Channel Admin");
+        addItem(view,"dialog.channelInfo",Chatty.lang.GET("MENUBAR_CHANNELINFO", "Channel Info"));
+        addItem(view,"dialog.channelAdmin",Chatty.lang.GET("MENUBAR_CHANNELADMIN", "Channel Admin"));
         view.addSeparator();
         highlights = addItem(view,"dialog.highlightedMessages",HIGHLIGHTS_LABEL);
         ignored = addItem(view,"dialog.ignoredMessages",IGNORED_LABEL);
         view.addSeparator();
-        addItem(view,"dialog.search","Find text..");
+        addItem(view,"dialog.search",Chatty.lang.GET("MENUBAR_SEARCH", "Find text.."));
         
         // Channels
-        addItem(channels, "favoritesDialog", "Favorites/History", KeyEvent.VK_F);
-        addItem(channels, "dialog.streams", "Live Channels");
-        addItem(channels, "dialog.addressbook", "Addressbook");
+        addItem(channels, "favoritesDialog", Chatty.lang.GET("MENUBAR_FAVORITESDIAG", "Favorites/History"), KeyEvent.VK_F);
+        addItem(channels, "dialog.streams", Chatty.lang.GET("MENUBAR_LIVE_CHANNELS", "Live Channels"));
+        addItem(channels, "dialog.addressbook", Chatty.lang.GET("MENUBAR_ADDRESSBOOK", "Addressbook"));
         channels.addSeparator();
-        addItem(channels, "dialog.joinChannel", "Join Channel");
+        addItem(channels, "dialog.joinChannel", Chatty.lang.GET("MENUBAR_JOIN_CHANNEL", "Join Channel"));
 
         // Extra
-        addItem(extra,"streamlink","Streamlink", KeyEvent.VK_L);
-        addItem(extra,"dialog.toggleEmotes","Emoticons");
+        addItem(extra,"streamlink","Streamlink", KeyEvent.VK_L); // not translatable! application name // brand
+        addItem(extra,"dialog.toggleEmotes",Chatty.lang.GET("MENUBAR_EMOTICONS", "Emoticons"));
         extra.addSeparator();
         addItem(extra,"dialog.followers","Followers");
         addItem(extra,"dialog.subscribers","Subscribers");
         extra.addSeparator();
         addItem(extra,"dialog.moderationLog", "Moderation Log");
         addItem(extra,"dialog.autoModDialog", "AutoMod");
-        addItem(extra,"dialog.chatRules", "Chat Rules");
+        addItem(extra,"dialog.chatRules", Chatty.lang.GET("MENUBAR_CHAT_RULES", "Chat Rules"));
         extra.addSeparator();
         JMenu streamChat = new JMenu("Stream Chat");
         addItem(streamChat,"dialog.streamchat", "Open");
@@ -166,7 +166,7 @@ public class MainMenu extends JMenuBar {
         helpItem.setAccelerator(KeyStroke.getKeyStroke("F1"));
         setIcon(helpItem, "help-browser.png");
         help.addSeparator();
-        addItem(help,"news","Announcements");
+        addItem(help,"news",Chatty.lang.GET("MENUBAR_ANNOUNCEMENTS", "Announcements"));
         
         
         add(main);

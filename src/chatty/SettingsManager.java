@@ -173,6 +173,7 @@ public class SettingsManager {
         // Appearance / GUI
         //=================
 
+        settings.addString("language", "en_US", true);
         settings.addBoolean("ontop", false);
         settings.addString("laf","default");
         settings.addString("lafTheme","Default");

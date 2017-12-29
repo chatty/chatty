@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import lang.Language;
 
 /**
  * Main class that starts the client as well as parses the commandline
@@ -81,6 +82,9 @@ public class Chatty {
     private static final int DEFAULT_SINGLE_INSTANCE_PORT = 48724;
     
     // End of configuration
+    
+    // multilingual support
+    public static Language lang = new Language();
     
     /**
      * When this program was started

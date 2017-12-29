@@ -436,7 +436,7 @@ public class MainGui extends JFrame implements Runnable {
 
         
         addMenuAction("dialog.search", "Dialog: Open Search Dialog",
-                "Find text..", KeyEvent.VK_F, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_SEARCH", "Find text.."), KeyEvent.VK_F, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -445,7 +445,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.addressbook", "Dialog: Addressbook (toggle)",
-                "Addressbook", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_ADDRESSBOOK", "Addressbook"), KeyEvent.VK_UNDEFINED, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -472,7 +472,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.channelInfo", "Dialog: Channel Info Dialog (toggle)",
-                "Channel Info", KeyEvent.VK_C, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_CHANNELINFO", "Channel Info"), KeyEvent.VK_C, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -481,7 +481,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.channelAdmin", "Dialog: Channel Admin Dialog (toggle)",
-                "Channel Admin", KeyEvent.VK_A, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_CHANNELADMIN", "Channel Admin"), KeyEvent.VK_A, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -490,7 +490,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.chatRules", "Dialog: Chat Rules (toggle)",
-                "Chat Rules", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_CHAT_RULES", "Chat Rules"), KeyEvent.VK_UNDEFINED, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -499,7 +499,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.toggleEmotes", "Dialog: Emotes Dialog (toggle)",
-                "Emoticons", KeyEvent.VK_E, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_EMOTICONS", "Emoticons"), KeyEvent.VK_E, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -508,7 +508,7 @@ public class MainGui extends JFrame implements Runnable {
         });
 
         addMenuAction("dialog.highlightedMessages", "Dialog: Highlighted Messages (toggle)",
-                "Highlights", KeyEvent.VK_H, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_HIGHLIGHTS_MSG_LABEL", "Highlights"), KeyEvent.VK_H, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -517,7 +517,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.ignoredMessages", "Dialog: Ignored Messages (toggle)",
-                "Ignored", KeyEvent.VK_I, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_IGNORED_MSG_LABEL", "Ignored"), KeyEvent.VK_I, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -526,7 +526,7 @@ public class MainGui extends JFrame implements Runnable {
         });
         
         addMenuAction("dialog.streams", "Dialog: Live Channels Dialog (toggle)",
-                "Live Channels", KeyEvent.VK_L, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_LIVE_CHANNELS", "Live Channels"), KeyEvent.VK_L, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -553,7 +553,7 @@ public class MainGui extends JFrame implements Runnable {
         });
 
         addMenuAction("dialog.joinChannel", "Dialog: Join Channel",
-                "Join Channel", KeyEvent.VK_J, new AbstractAction() {
+                Chatty.lang.GET("MENUBAR_JOIN_CHANNEL", "Join Channel"), KeyEvent.VK_J, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -744,8 +744,8 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
-        addMenuAction("application.exit", "Exit Chatty",
-                "Exit", KeyEvent.VK_UNDEFINED, new AbstractAction() {
+        addMenuAction("application.exit", Chatty.lang.GET("ACTION_EXIT_CHATTY", "Exit Chatty"),
+                Chatty.lang.GET("MENUBAR_APPLICATION_EXIT", "Exit"), KeyEvent.VK_UNDEFINED, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
