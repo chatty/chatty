@@ -172,29 +172,20 @@ The project is compiled using Gradle. Once you've checked it out, you can run
 `gradlew build` to compile and run the tests, and `gradlew release` to package
 the release artifacts.
 
-If you have Hotkey Support enabled (Windows only), you need to include the
-JIntellitype32.dll or the JIntellitype64.dll for the 32/64bit versions of Java
-respectively (but always renamed to JIntellitype.dll). If you use the release
-task mentioned above, several different zip versions are created for this.
-
 In Chatty.java you should set your own client id which you get from Twitch. You
 may also want to disable the Version Checker depending on how you will distribute
 the compiled program. See the comments in Chatty.java for more information.
 
-Windows Standalone Bundle
+Multilanguage Support
 -------------------------
 
-You can create a standalone Windows version (including a JRE) using the
-javapackager program included in the JDK. Use the `releaseWindows` task to
-build both the regular zip files and the standalone version, or the
-`windowsZip` task to just build the standalone version.
+This fork of Chatty has multilanguage support and comes with bundled language packs.
+This feature is work-in-progress and lacks a lot of strings. There is no setting in
+the GUI either. To change the language type `/set language LANG_COUNTRY` in the chat.
+Replace `LANG` with a **ISO 639-1** code and `COUNTRY` with a **ISO ALPHA-2** code.
 
-You must specify the path to the javapackager program like this:
-`gradlew windowsZip -PjavapackagerPath="<path_to>/javapackager.exe"`
+Example: `en_US` for English (default language, built-in).
 
-You may also specify the path to the JRE to bundle using the `-PjrePath`
-parameter, otherwise it will use the default JRE of the system.
-
-Currently the build includes the JIntellitype32.dll, so you may have to
-exchange that file if you bundle a 64bit version of Java.
-
+Currently supported and WIP language packs are:
+ - `de_AT`, `de_DE` (German)
+ - `ja_JP` (Japanese)
