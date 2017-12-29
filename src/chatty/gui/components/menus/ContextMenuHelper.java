@@ -72,7 +72,6 @@ public class ContextMenuHelper {
         m.addItem("streamPopout", "Popout", streamSubmenu);
         m.addSeparator(streamSubmenu);
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
-        m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
         m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);
         addStreamlinkOptions(m);
         if (join) {

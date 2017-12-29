@@ -37,8 +37,6 @@ public class MainMenu extends JMenuBar {
     private final JMenu main = new JMenu("Main");
     protected final JMenu view = new JMenu("View");
     private final JMenu channels = new JMenu("Channels");
-    private final JMenu srl = new JMenu("SRL");
-    protected final JMenu srlStreams = new JMenu("Races with..");
     private final JMenu extra = new JMenu("Extra");
     private final JMenu help = new JMenu("Help");
     
@@ -72,7 +70,6 @@ public class MainMenu extends JMenuBar {
         main.addActionListener(actionListener);
         view.addActionListener(actionListener);
         channels.addActionListener(actionListener);
-        srl.addActionListener(actionListener);
         extra.addActionListener(actionListener);
         help.addActionListener(actionListener);
         
@@ -81,7 +78,6 @@ public class MainMenu extends JMenuBar {
         main.setMnemonic(KeyEvent.VK_M);
         view.setMnemonic(KeyEvent.VK_V);
         channels.setMnemonic(KeyEvent.VK_C);
-        srl.setMnemonic(KeyEvent.VK_S);
         extra.setMnemonic(KeyEvent.VK_E);
         help.setMnemonic(KeyEvent.VK_H);
         
@@ -133,12 +129,6 @@ public class MainMenu extends JMenuBar {
         addItem(channels, "dialog.addressbook", "Addressbook");
         channels.addSeparator();
         addItem(channels, "dialog.joinChannel", "Join Channel");
-        
-        // SRL
-        addItem(srl, "srlRaces", "Race List");
-        srl.addSeparator();
-        srl.add(srlStreams);
-        srlStreams.addMenuListener((MenuListener)itemListener);
 
         // Extra
         addItem(extra,"streamlink","Streamlink", KeyEvent.VK_L);
@@ -169,12 +159,6 @@ public class MainMenu extends JMenuBar {
             addItem(extra,"unhandledException", "Unhandled Exception");
         }
         addItem(extra,"debug","Debug window");
-        
-        // Maybe add own submenu later when more functions are available
-//        extra.addSeparator();
-//        JMenu speedruncom = new JMenu("Speedrun.com");
-//        addItem(speedruncom, "srcOpen", "Open Game Website");
-//        extra.add(speedruncom);
 
         // Help
         addItem(help,"website","Website");
@@ -188,7 +172,6 @@ public class MainMenu extends JMenuBar {
         add(main);
         add(view);
         add(channels);
-        add(srl);
         add(extra);
         add(help);
     }
@@ -318,27 +301,6 @@ public class MainMenu extends JMenuBar {
             return label;
         }
         return label+" ("+countNew+"/"+count+")";
-    }
-    
-    /**
-     * Update the entries for the "Races with.." submenu.
-     * 
-     * @param active The currently active stream
-     * @param popout Current streams in popout dialogs
-     */
-    public void updateSrlStreams(String active, List<String> popout) {
-        srlStreams.removeAll();
-        if (active == null || active.isEmpty()) {
-            addItem(srlStreams, "", "No channel joined");
-        } else {
-            addItem(srlStreams, "srlRaceActive", active);
-        }
-        if (!popout.isEmpty()) {
-            srlStreams.addSeparator();
-            for (String chan : popout) {
-                addItem(srlStreams, "srlRace4"+chan, chan);
-            }
-        }
     }
     
     public void setUpdateNotification(boolean enabled) {

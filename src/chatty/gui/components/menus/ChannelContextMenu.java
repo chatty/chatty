@@ -33,8 +33,6 @@ public class ChannelContextMenu extends ContextMenu {
         addSeparator(MISC_MENU);
         addItem("follow", "Follow Channel", MISC_MENU);
         addItem("unfollow", "Unfollow Channel", MISC_MENU);
-        addSeparator(MISC_MENU);
-        addItem("srcOpen", "Open Speedrun.com", MISC_MENU);
         
         addSeparator();
         addItem("closeChannel", "Close Channel");

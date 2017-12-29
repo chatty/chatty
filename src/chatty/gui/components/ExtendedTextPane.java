@@ -50,18 +50,6 @@ public class ExtendedTextPane extends JTextPane {
      */
     private static final Matcher urlMatcher = Helper.getUrlPattern().matcher("");
     
-    /**
-     * The regex and matcher for finding SRL channels (e.g. #srl-abc).
-     */
-    private static final String srlRegex = "#srl-([a-z0-9]{2,6})";
-    private static final Matcher srlMatcher
-            = Pattern.compile(srlRegex).matcher("");
-    
-    /**
-     * To build an SRL race URL.
-     */
-    private static final String SRL_URL = "http://speedrunslive.com/race/?id=";
-    
     private final LinkController linkController;
     
     public ExtendedTextPane() {
@@ -114,7 +102,6 @@ public class ExtendedTextPane extends JTextPane {
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
         
         findLinks(text, ranges, rangesStyle);
-        findSrl(text, ranges, rangesStyle);
 
         // Actually print everything
         int lastPrintedPos = 0;
@@ -175,29 +162,6 @@ public class ExtendedTextPane extends JTextPane {
                     }
                     rangesStyle.put(start, url(foundUrl));
                 }
-            }
-        }
-    }
-    
-    /**
-     * Finds all SRL channels and saves them to be printed as clickable links.
-     * 
-     * @param text The text to find the SRL channels in.
-     * @param ranges The ranges in the text that are already take by other
-     * links.
-     * @param rangesStyle The style associated with a range (metadata).
-     */
-    private void findSrl(String text, Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle) {
-        srlMatcher.reset(text);
-        while (srlMatcher.find()) {
-            int start = srlMatcher.start();
-            int end = srlMatcher.end() - 1;
-            if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
-                String foundSrl = srlMatcher.group();
-                String url = SRL_URL+foundSrl;
-                ranges.put(start, end);
-                rangesStyle.put(start, url(url));
             }
         }
     }

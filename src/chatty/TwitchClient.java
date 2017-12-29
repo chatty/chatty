@@ -30,7 +30,6 @@ import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
 import chatty.util.RawMessageTest;
-import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
@@ -57,7 +56,6 @@ import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
-import chatty.util.srl.SpeedrunsLive;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
@@ -125,10 +123,6 @@ public class TwitchClient {
     public final UsericonManager usericonManager;
     
     public final Addressbook addressbook;
-    
-    public final SpeedrunsLive speedrunsLive;
-    
-    public final Speedruncom speedruncom;
     
     public final StatusHistory statusHistory;
     
@@ -242,9 +236,6 @@ public class TwitchClient {
             addressbook.enableAutoImport();
         }
         testUser.setAddressbook(addressbook);
-        
-        speedrunsLive = new SpeedrunsLive();
-        speedruncom = new Speedruncom(api);
         
         statusHistory = new StatusHistory(settings);
         settings.addSettingsListener(statusHistory);

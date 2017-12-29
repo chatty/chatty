@@ -84,7 +84,7 @@ public class EmoteSettings extends SettingsPanel {
         final JCheckBox ffzEvent = d.addSimpleBooleanSetting(
                 "ffzEvent",
                 "Enable FFZ Featured Emotes",
-                "Show Featured Emotes available in some Event channels (like Speedrunning Marathons)");
+                "Show Featured Emotes available in some Event channels.");
         other.add(ffzEvent,
                 d.makeGbcCloser(1, 2, 1, 1, GridBagConstraints.WEST));
 

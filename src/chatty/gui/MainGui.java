@@ -43,7 +43,6 @@ import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.StreamlinkDialog;
 import chatty.gui.components.ModerationLog;
 import chatty.gui.components.NewsDialog;
-import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
 import chatty.gui.components.UpdateMessage;
@@ -135,7 +134,6 @@ public class MainGui extends JFrame implements Runnable {
     private NotificationManager notificationManager;
     private ErrorMessage errorMessage;
     private AddressbookDialog addressbookDialog;
-    private SRL srl;
     private StreamlinkDialog streamlinkDialog;
     private UpdateMessage updateMessage;
     private NewsDialog newsDialog;
@@ -277,7 +275,6 @@ public class MainGui extends JFrame implements Runnable {
         
         // Some newer stuff
         addressbookDialog = new AddressbookDialog(this, client.addressbook);
-        srl = new SRL(this, client.speedrunsLive, contextMenuListener);
         streamlinkDialog = new StreamlinkDialog(this, linkLabelListener, client.settings);
         updateMessage = new UpdateMessage(this);
         newsDialog = new NewsDialog(this, client.settings);
@@ -1403,15 +1400,6 @@ public class MainGui extends JFrame implements Runnable {
                 String a = array[1];
             } else if (cmd.equals("addressbook")) {
                 openAddressbook(null);
-            } else if (cmd.equals("srlRaces")) {
-                openSrlRaces();
-            } else if (cmd.equals("srlRaceActive")) {
-                srl.searchRaceWithEntrant(channels.getActiveTab().getStreamName());
-            } else if (cmd.startsWith("srlRace4")) {
-                String stream = cmd.substring(8);
-                if (!stream.isEmpty()) {
-                    srl.searchRaceWithEntrant(stream);
-                }
             } else if (cmd.equals("streamlink")) {
                 streamlinkDialog.open(null, null);
             } else if (cmd.equals("configureLogin")) {
@@ -1420,20 +1408,12 @@ public class MainGui extends JFrame implements Runnable {
                 client.commandAddStreamHighlight(channels.getActiveChannel().getName(), null);
             } else if (cmd.equals("openStreamHighlights")) {
                 client.commandOpenStreamHighlights(channels.getActiveChannel().getName());
-            } else if (cmd.equals("srcOpen")) {
-                client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
         }
 
         @Override
         public void menuSelected(MenuEvent e) {
-            if (e.getSource() == menu.srlStreams) {
-                ArrayList<String> popoutStreams = new ArrayList<>();
-                for (Channel channel : channels.getPopoutChannels().keySet()) {
-                    popoutStreams.add(channel.getStreamName());
-                }
-                menu.updateSrlStreams(channels.getActiveTab().getStreamName(), popoutStreams);
-            } else if (e.getSource() == menu.view) {
+            if (e.getSource() == menu.view) {
                 menu.updateCount(highlightedMessages.getNewCount(),
                         highlightedMessages.getDisplayedCount(),
                         ignoredMessages.getNewCount(),
@@ -1582,9 +1562,6 @@ public class MainGui extends JFrame implements Runnable {
                 } else {
                     client.joinChannel(chan);
                 }
-            }
-            else if (cmd.equals("srcOpen")) {
-                client.speedruncom.openCurrentGame(channels.getActiveChannel());
             }
             else if (cmd.equals("popoutChannel")) {
                 channels.popoutActiveChannel();
@@ -1769,9 +1746,6 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 String type = TwitchUrl.MULTITWITCH;
                 switch (cmd) {
-                    case "streamsSpeedruntv":
-                        type = TwitchUrl.SPEEDRUNTV;
-                        break;
                     case "streamsKadgar":
                         type = TwitchUrl.KADGAR;
                         break;
@@ -2459,10 +2433,6 @@ public class MainGui extends JFrame implements Runnable {
         if (!closeDialog(addressbookDialog)) {
             openAddressbook(null);
         }
-    }
-    
-    private void openSrlRaces() {
-        srl.openRaceList();
     }
     
     /*

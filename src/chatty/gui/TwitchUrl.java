@@ -90,7 +90,6 @@ public class TwitchUrl {
     }
     
     public static final String MULTITWITCH = "http://multitwitch.tv/";
-    public static final String SPEEDRUNTV = "http://speedrun.tv/";
     public static final String KADGAR = "http://kadgar.net/live/";
     
     public static void openMultitwitch(List<String> streams, Component parent, String type) {
@@ -104,17 +103,5 @@ public class TwitchUrl {
         String streamsText = StringUtil.join(streams, "/");
         String url = type+streamsText;
         return url;
-    }
-    
-    public static String makeSrlRaceLink(String id) {
-        return "http://speedrunslive.com/race/?id="+id;
-    }
-    
-    public static String makeSrtRaceLink(String id) {
-        return "http://speedrun.tv/?race="+id;
-    }
-    
-    public static String makeSrlIrcLink(String id) {
-        return "irc://irc.speedrunslive.com/srl-"+id;
     }
 }
