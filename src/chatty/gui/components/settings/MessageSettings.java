@@ -52,6 +52,12 @@ public class MessageSettings extends SettingsPanel {
             addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mma]");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mma]");
         }
+        addTimestampFormat(timestampOptions, "[HH時mm分]");
+        addTimestampFormat(timestampOptions, "[HH時mm分ss秒]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日HH時mm分]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日HH時mm分ss秒]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日 HH時mm分]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日 HH時mm分ss秒]");
         ComboStringSetting combo = new ComboStringSetting(timestampOptions);
         combo.setEditable(false);
         d.addStringSetting("timestamp", combo);

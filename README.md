@@ -177,7 +177,7 @@ may also want to disable the Version Checker depending on how you will distribut
 the compiled program. See the comments in Chatty.java for more information.
 
 Multilanguage Support
--------------------------
+=====================
 
 This fork of Chatty has multilanguage support and comes with bundled language packs.
 This feature is work-in-progress and lacks a lot of strings. There is no setting in

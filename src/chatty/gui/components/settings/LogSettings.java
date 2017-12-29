@@ -171,6 +171,10 @@ public class LogSettings extends SettingsPanel {
         addTimestampFormat(timestampOptions, "[yyyy-MM-dd HH:mm:ss]");
         addTimestampFormat(timestampOptions, "[yyyy-MM-dd hh:mm:ss a]");
         addTimestampFormat(timestampOptions, "[yyyy-MM-dd hh:mm:ssa]");
+        addTimestampFormat(timestampOptions, "[HH時mm分]");
+        addTimestampFormat(timestampOptions, "[HH時mm分ss秒]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日 HH時mm分]");
+        addTimestampFormat(timestampOptions, "[yyyy年MM月dd日 HH時mm分ss秒]");
         ComboStringSetting timestampCombo = new ComboStringSetting(timestampOptions);
         timestampCombo.setEditable(false);
         d.addStringSetting("logTimestamp", timestampCombo);
