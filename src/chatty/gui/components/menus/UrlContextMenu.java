@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Chatty;
 import java.awt.event.ActionEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,17 +32,17 @@ public class UrlContextMenu extends ContextMenu {
         this.listener = listener;
         
         if (deleted) {
-            addItem("","Warning: Link may be malicious");
+            addItem("",Chatty.lang.GET("URLCONTEXTMENU_MALICIOUS_LINK", "Warning: Link may be malicious"));
             addSeparator();
         }
-        addItem("open", "Open link");
-        addItem("copy", "Copy to clipboard");
+        addItem("open", Chatty.lang.GET("URLCONTEXTMENU_OPEN_LINK", "Open link"));
+        addItem("copy", Chatty.lang.GET("URLCONTEXTMENU_COPY_TO_CLIPBOARD", "Copy to clipboard"));
         
         Matcher m = channelFromUrl.matcher(url);
         if (m.matches()) {
             channel = m.group(1);
             addSeparator();
-            addItem("join", "Join #"+channel);
+            addItem("join", String.format(Chatty.lang.GET("URLCONTEXTMENU_JOIN_CHANHASH", "Join #%s"), channel));
         }
     }
 

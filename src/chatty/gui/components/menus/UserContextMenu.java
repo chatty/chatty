@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Chatty;
 import chatty.User;
 import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
@@ -19,7 +20,7 @@ public class UserContextMenu extends ContextMenu {
     private final User user;
     private final String autoModMsgId;
     
-    private static final String MISC_MENU = "Miscellaneous";
+    private static final String MISC_MENU = Chatty.lang.GET("USERCONTEXTMENU_MISC_MENU", "Miscellaneous");
     
     public UserContextMenu(User user, String autoModMsgId,
             ContextMenuListener listener) {
@@ -27,11 +28,11 @@ public class UserContextMenu extends ContextMenu {
         this.user = user;
         this.autoModMsgId = autoModMsgId;
         
-        addItem("userinfo", "User: "+user.getDisplayNick());
+        addItem("userinfo", String.format(Chatty.lang.GET("USERCONTEXTMENU_USERINFO", "User: %s"), user.getDisplayNick()));
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
-        addItem("join","Join #"+user.getName());
+        addItem("join",String.format(Chatty.lang.GET("USERCONTEXTMENU_JOIN_CHANHASH", "Join #%s"), user.getName()));
         addSeparator();
         if (autoModMsgId != null) {
             addItem("autoModApprove", "Approve");
