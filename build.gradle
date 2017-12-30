@@ -1,12 +1,12 @@
 import java.util.regex.Matcher
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "1.2.3"
+    id "com.github.johnrengelman.shadow" version "2.0.2"
 }
 
 apply plugin: 'java'
 
-// This seems to fix non-ASCII characters in the code not appearing correctly after compiling
+// default to Unicode
 compileJava.options.encoding = 'UTF-8'
 
 sourceCompatibility = 1.8
@@ -62,7 +62,7 @@ dependencies {
 // The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
 // installed. It allows you to specify the project's Gradle version for everyone that has checked out the project.
 wrapper {
-    gradleVersion = '2.13'
+    gradleVersion = '4.4'
 }
 
 jar {
