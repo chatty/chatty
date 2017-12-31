@@ -105,4 +105,42 @@ EMOTESDIAG_OTHER その他
 EMOTESDIAG_EMOJI 絵文字
 EMOTESDIAG_EMOTE_DETAILS 絵文字の詳細
 EMOTESDIAG_GLOBSUBTURBO グローバル/購読/Turbo
+EMOTESDIAG_N_EMOTES %dえもじ
+EMOTESDIAG_NO_FAVORITES_ADDED あなたはお気に入りのエモートを追加していません
+EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE このチャンネルを購読する必要があります：
+EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE_CHAN （このチャンネルを購読する必要があります）
 # todo: missing a lot of strings here...
+
+##
+## Channel Text Pane
+##
+CHANNELTEXTPANE_NOTIFICATION 【お知らせ】
+# todo: missing a lot of strings here...
+
+##
+## ChannelInfoDialog
+##
+CHANNELINFODIAG_TITLE チャンネル情報
+CHANNELINFODIAG_STATUS 状態：
+CHANNELINFODIAG_STATUS_HISTORY 状態（年代記）：
+CHANNELINFODIAG_PLAYING ゲーム：
+CHANNELINFODIAG_VODCAST ゲーム［VODCAST］：
+CHANNELINFODIAG_VIEWERS ビューア：
+# todo: missing some strings here...
+CHANNELINFODIAG_NOGAME ゲーム無し
+CHANNELINFODIAG_STREAMOFFLINE オフラインでストリームする
+CHANNELINFODIAG_NOSTREAMINFO ［ストリーム情報なし］
+# todo: missing strings here...
+
+##
+## TwitchClient (Chat Panel)
+##
+CHAT_JOINING_CHANNEL 【%s】に参加する。。。
+CHAT_JOINED_CHANNEL あなたは【%s】に参加しました。
+
+##
+## (General Strings)
+##
+STREAMOFFLINE オフラインでストリームする
+VERSION_UPDATECHECK アップデートを検索中...
+VERSION_ALREADYNEWEST あなたはすでに最新バージョンを持っています。

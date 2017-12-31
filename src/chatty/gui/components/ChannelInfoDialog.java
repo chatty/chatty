@@ -37,13 +37,13 @@ import javax.swing.*;
  */
 public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener {
 
-    private static final String STATUS_LABEL_TEXT = "Status:";
-    private static final String STATUS_LABEL_TEXT_HISTORY = "Status (History):";
+    private static final String STATUS_LABEL_TEXT = Chatty.lang.GET("CHANNELINFODIAG_STATUS", "Status:");
+    private static final String STATUS_LABEL_TEXT_HISTORY = Chatty.lang.GET("CHANNELINFODIAG_STATUS_HISTORY", "Status (History):");
     
-    private static final String GAME_LABEL_TEXT = "Playing:";
-    private static final String GAME_LABEL_TEXT_VOD = "VODCAST / Playing:";
+    private static final String GAME_LABEL_TEXT = Chatty.lang.GET("CHANNELINFODIAG_PLAYING", "Playing:");
+    private static final String GAME_LABEL_TEXT_VOD = Chatty.lang.GET("CHANNELINFODIAG_VODCAST", "VODCAST / Playing:");
     
-    private final JLabel statusLabel = new JLabel("Status:");
+    private final JLabel statusLabel = new JLabel(Chatty.lang.GET("CHANNELINFODIAG_STATUS", "Status:"));
     private final ExtendedTextPane title = new ExtendedTextPane();
     
     private final JLabel onlineSince = new JLabel();
@@ -56,7 +56,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     private final LinkLabel testLabel = new LinkLabel(null, null);
     private List<Community> communities;
     
-    private final JLabel historyLabel = new JLabel("Viewers:");
+    private final JLabel historyLabel = new JLabel(Chatty.lang.GET("CHANNELINFODIAG_VIEWERS", "Viewers:"));
     private final ViewerHistory history = new ViewerHistory();
     
     private StreamInfo currentStreamInfo;
@@ -72,7 +72,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     
     public ChannelInfoDialog(Frame owner) {
         super(owner);
-        setTitle("Channel Info");
+        setTitle(Chatty.lang.GET("CHANNELINFODIAG_TITLE", "Channel Info"));
         
         setLayout(new GridBagLayout());
         
@@ -207,7 +207,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             statusText = streamInfo.getTitle();
             gameText = streamInfo.getGame();
             if (gameText.isEmpty()) {
-                gameText = "No game";
+                gameText = Chatty.lang.GET("CHANNELINFODIAG_NOGAME", "No game");
             }
             timeStarted = streamInfo.getTimeStarted();
             onlineSince.setText(null);
@@ -215,13 +215,13 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             updateStreamType(streamInfo.getStreamType());
         }
         else if (streamInfo.isValid()) {
-            statusText = "Stream offline";
+            statusText = Chatty.lang.GET("CHANNELINFODIAG_STREAMOFFLINE", "Stream offline");
             gameText = "";
             timeStarted = -1;
             setCommunities(null);
         }
         else {
-            statusText = "[No Stream Information]";
+            statusText = Chatty.lang.GET("CHANNELINFODIAG_NOSTREAMINFO", "[No Stream Information]");
             gameText = "";
             timeStarted = -1;
             onlineSince.setText(null);

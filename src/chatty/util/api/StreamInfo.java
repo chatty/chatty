@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -365,7 +366,7 @@ public class StreamInfo {
             return fullStatus;
         }
         else {
-            return "Stream offline";
+            return Chatty.lang.GET("STREAMOFFLINE", "Stream offline");
         }
     }
     

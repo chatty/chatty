@@ -1,6 +1,7 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.Chatty;
 import chatty.gui.components.ChannelEditBox;
 import chatty.Helper;
 import chatty.SettingsManager;
@@ -264,10 +265,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         
         String text = message.text;
-        if (DateTime.isAprilFirst()) {
-            text = text.replace("months in a row", "years in a row");
-        }
-        print("[Notification] "+text+" ", style);
+        print(Chatty.lang.GET("CHANNELTEXTPANE_NOTIFICATION", "[Notification]") + " "+text+" ", style);
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print("[", styles.info());
             // Output with emotes, but don't turn URLs into clickable links

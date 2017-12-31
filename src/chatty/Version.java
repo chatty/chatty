@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.Chatty;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,7 @@ public class Version {
     }
     
     private void checkForNewVersion() {
-        LOGGER.info("Checking for new version..");
+        LOGGER.info(Chatty.lang.GET("VERSION_UPDATECHECK", "Checking for new version.."));
         new Thread(new VersionChecker()).start();
     }
     

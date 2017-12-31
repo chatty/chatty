@@ -598,7 +598,7 @@ public class EmotesDialog extends JDialog {
             Set<Emoticon> emotes = emoteManager.getEmoticons(emoteset);
             List<Emoticon> sorted = new ArrayList<>(emotes);
             Collections.sort(sorted, new SortEmotesByTypeAndName());
-            addTitle(stream + " [" + emoteset + "] (" + emotes.size() + " emotes)");
+            addTitle(stream + " [" + emoteset + "] (" + String.format(Chatty.lang.GET("EMOTESDIAG_N_EMOTES", "%d emotes"), emotes.size()) + ")");
             addEmotesPanel(sorted);
         }
         
@@ -621,7 +621,7 @@ public class EmotesDialog extends JDialog {
                 sorted.addAll(emoteManager.getEmoticons(set));
             }
             Collections.sort(sorted, new SortEmotesByEmotesetAndName());
-            addTitle(String.format("%s %s (%d emotes)",
+            addTitle(String.format("%s %s (" + Chatty.lang.GET("EMOTESDIAG_N_EMOTES", "%d emotes") + ")",
                     titlePrefix,
                     sets,
                     sorted.size()));
@@ -711,7 +711,7 @@ public class EmotesDialog extends JDialog {
         
         void addEmotes(Collection<Emoticon> emotes, String title) {
             if (!emotes.isEmpty()) {
-                addTitle(title+" ("+emotes.size()+" emotes)");
+                addTitle(title+" ("+String.format(Chatty.lang.GET("EMOTESDIAG_N_EMOTES", "%d emotes"), emotes.size()) + ")");
                 addEmotesPanel(sortEmotes(emotes));
             }
         }
@@ -744,7 +744,7 @@ public class EmotesDialog extends JDialog {
             reset();
             Set<Emoticon> emotes = emoteManager.getFavorites();
             if (emotes.isEmpty()) {
-                addTitle("You haven't added any favorite emotes");
+                addTitle(Chatty.lang.GET("EMOTESDIAG_NO_FAVORITES_ADDED", "You haven't added any favorite emotes"));
 //                if (emoteManager.getNumNotFoundFavorites() > 0) {
 //                    addSubtitle("(Emotes may not have been loaded yet.)", false);
 //                }
@@ -771,7 +771,7 @@ public class EmotesDialog extends JDialog {
             // Add emotes
             addEmotesPanel(sorted);
             if (!subEmotesNotSubbedTo.isEmpty()) {
-                addTitle("You need to subscribe to use these emotes:");
+                addTitle(Chatty.lang.GET("EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE", "You need to subscribe to use these emotes:"));
                 addEmotesPanel(subEmotesNotSubbedTo);
             }
             if (!notFoundFavorites.isEmpty()) {
@@ -927,7 +927,7 @@ public class EmotesDialog extends JDialog {
                 if (sets != null && !sets.isEmpty()) {
                     if (addEmotes("Subemotes "+stream, sets)) {
                         if (!TwitchEmotes.hasAccessTo(localUserEmotesets, sets)) {
-                            addSubtitle("(Need to be subscribed to use these.)", true);
+                            addSubtitle(Chatty.lang.GET("EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE_CHAN", "(Need to be subscribed to use these.)"), true);
                         }
                     }
                 }

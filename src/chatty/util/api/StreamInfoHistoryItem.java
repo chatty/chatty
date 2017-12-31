@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.Chatty;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.List;
@@ -32,7 +33,7 @@ public class StreamInfoHistoryItem {
         this.online = false;
         this.statusAndGame = null;
         this.time = time;
-        this.title = "Stream offline";
+        this.title = Chatty.lang.GET("STREAMOFFLINE", "Stream offline");
         this.streamType = null;
         this.community = null;
         this.streamDuration = -1;

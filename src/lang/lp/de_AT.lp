@@ -105,4 +105,42 @@ EMOTESDIAG_OTHER Andere
 EMOTESDIAG_EMOJI Emoji
 EMOTESDIAG_EMOTE_DETAILS Emote Details
 EMOTESDIAG_GLOBSUBTURBO Global/Abonnent/Turbo
+EMOTESDIAG_N_EMOTES %d Emojis
+EMOTESDIAG_NO_FAVORITES_ADDED Du hast noch keine Favoriten hinzugefügt
+EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE Du musst diesen Kanal abonnieren um diese Emotes zu verwenden:
+EMOTESDIAG_NEED_TO_BE_SUBBED_TO_USE_CHAN (Du musst diesen Kanal abonnieren um diese Emotes zu verwenden)
 # todo: missing a lot of strings here...
+
+##
+## Channel Text Pane
+##
+CHANNELTEXTPANE_NOTIFICATION [Benachrichtigung]
+# todo: missing a lot of strings here...
+
+##
+## ChannelInfoDialog
+##
+CHANNELINFODIAG_TITLE Kanal-Info
+CHANNELINFODIAG_STATUS Status:
+CHANNELINFODIAG_STATUS_HISTORY Status (Chronik):
+CHANNELINFODIAG_PLAYING Spiel:
+CHANNELINFODIAG_VODCAST VODCAST / Spiel:
+CHANNELINFODIAG_VIEWERS Zuschauer:
+# todo: missing some strings here...
+CHANNELINFODIAG_NOGAME Kein Spiel
+CHANNELINFODIAG_STREAMOFFLINE Stream offline
+CHANNELINFODIAG_NOSTREAMINFO [Keine Streaminformationen]
+# todo: missing strings here...
+
+##
+## TwitchClient (Chat Panel)
+##
+CHAT_JOINING_CHANNEL %s beitreten...
+CHAT_JOINED_CHANNEL Du bist %s beigetreten.
+
+##
+## (General Strings)
+##
+STREAMOFFLINE Stream offline
+VERSION_UPDATECHECK Nach Updates suchen...
+VERSION_ALREADYNEWEST Du hast bereits die neueste Version.

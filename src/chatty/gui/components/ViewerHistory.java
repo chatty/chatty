@@ -304,7 +304,7 @@ public class ViewerHistory extends JComponent {
                 text = "now: " + Helper.formatViewerCount(viewers);
             }
             if (viewers == -1) {
-                text = "Stream offline";
+                text = Chatty.lang.GET("STREAMOFFLINE", "Stream offline");
             }
             nowTextX = getWidth() - fontMetrics.stringWidth(text);
             g.drawString(text, nowTextX, topTextY);
@@ -352,7 +352,7 @@ public class ViewerHistory extends JComponent {
             Date d = new Date(hoverEntry);
             String text = "Viewers: "+Helper.formatViewerCount(viewers)+" ("+sdf.format(d)+")";
             if (viewers == -1) {
-                text = "Stream offline ("+sdf.format(d)+")";
+                text = Chatty.lang.GET("STREAMOFFLINE", "Stream offline") + " ("+sdf.format(d)+")";
             }
             int x = getWidth() - fontMetrics.stringWidth(text);
             if (maxValueEnd > x) {
