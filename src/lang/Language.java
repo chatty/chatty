@@ -116,6 +116,7 @@ public class Language
                        s.substring(s.indexOf(' ') + 1)); // value (string)
                 System.out.print("Language: added entry: "+s+"\n");
             }
+            this.CURRENT_LANGUAGE = lang;
         }
         else
         {
