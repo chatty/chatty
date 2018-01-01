@@ -38,6 +38,8 @@ MENUBAR_EMOTICONS Emoticons
 MENUBAR_CHAT_RULES Chat-Regeln
 # todo: missing strings in between here...
 MENUBAR_ANNOUNCEMENTS Neuigkeiten
+MENUBAR_VERSION Version: %s
+MENUBAR_CURRENT_LANGUAGE Sprache: %s
 
 ##
 ## Context Menus

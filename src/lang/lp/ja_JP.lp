@@ -38,6 +38,8 @@ MENUBAR_EMOTICONS 絵文字
 MENUBAR_CHAT_RULES チャットルール
 # todo: missing strings in between here...
 MENUBAR_ANNOUNCEMENTS アナウンス
+MENUBAR_VERSION バージョン：%s
+MENUBAR_CURRENT_LANGUAGE 言語：%s
 
 ##
 ## Context Menus

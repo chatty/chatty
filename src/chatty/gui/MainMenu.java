@@ -167,6 +167,9 @@ public class MainMenu extends JMenuBar {
         setIcon(helpItem, "help-browser.png");
         help.addSeparator();
         addItem(help,"news",Chatty.lang.GET("MENUBAR_ANNOUNCEMENTS", "Announcements"));
+        help.addSeparator();
+        addItem(help,"version",String.format(Chatty.lang.GET("MENUBAR_VERSION", "Version: %s"), Chatty.VERSION));
+        addItem(help,"language",String.format(Chatty.lang.GET("MENUBAR_CURRENT_LANGUAGE", "Language: %s"), Chatty.lang.languageCode()));
         
         
         add(main);
