@@ -1576,12 +1576,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             else if (cmd.equals("joinHostedChannel")) {
-                String chan = client.getHostedChannel(channels.getActiveChannel().getName());
-                if (chan == null) {
-                    printLine("No channel is currently being hosted.");
-                } else {
-                    client.joinChannel(chan);
-                }
+                client.command(channels.getActiveChannel().getName(), "joinhosted", null);
             }
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());

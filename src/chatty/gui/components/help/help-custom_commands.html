@@ -494,7 +494,11 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         dialog is open and focused. They are interpreted by
         <a href="https://docs.oracle.com/javase/7/docs/api/javax/swing/KeyStroke.html#getKeyStroke%28java.lang.String%29">getKeyStroke()</a>
         which means anything that function understands can be used. However
-        spaces are not allowed, so a plus sign <code>+</code> can be used instead.</p>
+        spaces are not allowed, so a plus sign <code>+</code> can be used instead.
+        Examples: <code>alt+Q</code>, <code>shift+1</code>, <code>INSERT</code></p>
+    
+    <p><em>Note:</em> The lowercase/uppercase matters for it to be parsed
+        correctly.</p>
     
     <p>Adding a vertical bar <code>|</code> after the shortcut will use the text
         after it as label for the shortcut on the button (no spaces allowed). If
