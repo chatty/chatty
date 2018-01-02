@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
+import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes.Emoteset;
 import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.settings.Settings;
@@ -707,7 +708,13 @@ public class Emoticons {
         try (BufferedReader r = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
             int countLoaded = 0;
             String line;
+            boolean firstLine = true;
             while ((line = r.readLine()) != null) {
+                if (firstLine) {
+                    // Remove BOM, if present
+                    line = StringUtil.removeUTF8BOM(line);
+                    firstLine = false;
+                }
                 if (loadCustomEmote(line)) {
                     countLoaded++;
                 }

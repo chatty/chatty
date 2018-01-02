@@ -837,6 +837,14 @@ public class TwitchClient {
         else if (command.equals("part") || command.equals("close")) {
             commandPartChannel(channel);
         }
+        else if (command.equals("joinhosted")) {
+            String hostedChan = getHostedChannel(channel);
+            if (hostedChan == null) {
+                g.printLine("No channel is currently being hosted.");
+            } else {
+                joinChannel(hostedChan);
+            }
+        }
         else if (command.equals("raw")) {
             if (parameter != null) {
                 c.sendRaw(parameter);
@@ -1008,6 +1016,22 @@ public class TwitchClient {
         }
         else if (command.equals("unfollow")) {
             commandUnfollow(channel, parameter);
+        }
+        else if (command.equals("favorite")) {
+            if (Helper.validateChannel(parameter)) {
+                settings.listAdd("channelFavorites", Helper.toStream(parameter));
+                g.printSystem("Added '"+parameter+"' to favorites");
+            } else {
+                g.printSystem("No valid channel");
+            }
+        }
+        else if (command.equals("unfavorite")) {
+            if (Helper.validateChannel(parameter)) {
+                settings.listRemove("channelFavorites", Helper.toStream(parameter));
+                g.printSystem("Removed '"+parameter+"' from favorites");
+            } else {
+                g.printSystem("No valid channel");
+            }
         }
         else if (command.equals("automod_approve")) {
             autoModCommandHelper.approve(channel, parameter);

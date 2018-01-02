@@ -234,7 +234,7 @@ public class Channel extends JPanel {
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
             "follow", "unfollow", "ffzws", "followers", "followersoff",
-            "setcolor", "untimeout", "userinfo"
+            "setcolor", "untimeout", "userinfo", "joinhosted", "favorite", "unfavorite"
         }));
         
         private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
