@@ -244,7 +244,7 @@ public class Highlighter {
             } else if (item.startsWith("re*:") && item.length() > 4) {
                 compilePattern2(item.substring(4));
             } else if (item.startsWith("w:") && item.length() > 2) {
-                compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
+                compilePattern("(?iu).*\\b"+item.substring(2)+"\\b.*");
             } else if (item.startsWith("wcs:") && item.length() > 4) {
                 compilePattern(".*\\b"+item.substring(4)+"\\b.*");
             } else if (item.startsWith("cs:") && item.length() > 3) {
