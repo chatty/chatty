@@ -478,7 +478,7 @@ public class SelectCommunityDialog extends JDialog {
     }
     
     private void doSearch() {
-        String searchString = input.getText().trim();
+        String searchString = input.getText().trim().toLowerCase();
         if (searchString.isEmpty()) {
             searchResultInfo.setText("Enter something to search.");
             return;
