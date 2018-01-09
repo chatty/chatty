@@ -3,6 +3,7 @@ package chatty.gui.components.admin;
 
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
+import chatty.lang.Language;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
 import java.awt.Component;
@@ -18,6 +19,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -30,25 +33,27 @@ import javax.swing.event.ListSelectionListener;
 public class SelectGameDialog extends JDialog {
 
     private static final String INFO = "<html><body style='width:280px'>"
-            + "The game name has to be exact so your game shows up in the right "
-            + "category on Twitch, so best use the search.<br />"
-            + "Enter the beginning of your game and press enter or 'Search'.";
+            +Language.getString("admin.game.info");
+    
+    private static String s(String key) {
+        return Language.getString("admin.game."+key);
+    }
 
     private final MainGui main;
     private final TwitchApi api;
 
     // General Buttons
-    private final JButton ok = new JButton("Ok");
-    private final JButton cancel = new JButton("Cancel");
+    private final JButton ok = new JButton(Language.getString("dialog.button.ok"));
+    private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     
     // Game search/fav buttons
-    private final JButton searchButton = new JButton("Search");
-    private final JButton addToFavoritesButton = new JButton("Add to favorites");
-    private final JButton removeFromFavoritesButton = new JButton("Remove from favorites");
-    private final JButton clearSearchButton = new JButton("Clear search");
+    private final JButton searchButton = new JButton(s("button.search"));
+    private final JButton addToFavoritesButton = new JButton(s("button.favorite"));
+    private final JButton removeFromFavoritesButton = new JButton(s("button.unfavorite"));
+    private final JButton clearSearchButton = new JButton(s("button.clearSearch"));
 
     // Current info elements
-    private final JLabel searchResultInfo = new JLabel("No search performed yet.");
+    private final JLabel searchResultInfo = new JLabel();
     private final JTextField gameInput = new JTextField(30);
     private final JList<String> list = new JList<>();
     private final DefaultListModel<String> listData = new DefaultListModel<>();
@@ -149,6 +154,24 @@ public class SelectGameDialog extends JDialog {
         removeFromFavoritesButton.addActionListener(actionListener);
         clearSearchButton.addActionListener(actionListener);
         
+        gameInput.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateButtons();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateButtons();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateButtons();
+            }
+        });
+        
         updateButtons();
         
         pack();
@@ -201,15 +224,14 @@ public class SelectGameDialog extends JDialog {
         for (String game : favorites) {
             listData.addElement(game);
         }
-        searchResultInfo.setText("Search: "+searchResult.size()+" / "
-            +"Favorites: "+favorites.size()+"");
+        searchResultInfo.setText(Language.getString("admin.game.listInfo",
+                searchResult.size(), favorites.size()));
         list.setSelectedValue(gameInput.getText(), false);
     }
     
     private void doSearch() {
         String searchString = gameInput.getText().trim();
         if (searchString.isEmpty()) {
-            searchResultInfo.setText("Enter something to search.");
             return;
         }
         api.performGameSearch(searchString, r -> {
@@ -219,7 +241,7 @@ public class SelectGameDialog extends JDialog {
                 update();
             });
         });
-        searchResultInfo.setText("Searching..");
+        searchResultInfo.setText(s("searching"));
     }
     
     /**
@@ -290,6 +312,7 @@ public class SelectGameDialog extends JDialog {
         }
         addToFavoritesButton.setEnabled(nonFavoriteSelected);
         removeFromFavoritesButton.setEnabled(favoriteSelected);
+        searchButton.setEnabled(!gameInput.getText().isEmpty());
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {

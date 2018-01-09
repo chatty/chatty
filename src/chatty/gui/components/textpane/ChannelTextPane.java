@@ -2089,7 +2089,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (styles.timestampFormat() != null) {
             return DateTime.currentTime(styles.timestampFormat())+" ";
         }
-        return " ";
+        return "";
     }
     
     public void refreshStyles() {

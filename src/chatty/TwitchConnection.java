@@ -1,5 +1,6 @@
 package chatty;
 
+import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
@@ -685,7 +686,8 @@ public class TwitchConnection {
             if (this == irc) {
                 channelStates.reset();
                 twitchCommands.clearModsAlreadyRequested(null);
-                listener.onGlobalInfo("Disconnected" + Helper.makeDisconnectReason(reason, reasonMessage));
+                listener.onGlobalInfo(Language.getString("chat.disconnected",
+                        Helper.makeDisconnectReason(reason, reasonMessage)));
 
                 if (reason != Irc.REQUESTED_DISCONNECT) {
                     startReconnectTimer(reason);

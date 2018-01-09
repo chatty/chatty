@@ -168,6 +168,10 @@ public class LiveStreamsDialog extends JFrame {
         channelInfo.setHistoryRange(range);
     }
     
+    public void setHistoryVerticalZoom(boolean zoom) {
+        channelInfo.setHistoryVerticalZoom(zoom);
+    }
+    
     /**
      * Sets the sorting of the list to the given comparator and changes the
      * title accordingly.
