@@ -178,6 +178,8 @@ public class SettingsManager {
         settings.addString("lafTheme","Default");
         settings.addMap("lafCustomTheme", new HashMap<>(), Setting.STRING);
         
+        settings.addString("language", "");
+        
         settings.addLong("dialogFontSize", -1);
 
         // Chat Appearance
@@ -371,6 +373,7 @@ public class SettingsManager {
 
         settings.addString("liveStreamsSorting", "recent");
         settings.addLong("historyRange", 0);
+        settings.addBoolean("historyVerticalZoom", false);
 
         //=======
         // Sounds

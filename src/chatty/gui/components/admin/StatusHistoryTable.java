@@ -2,6 +2,7 @@
 package chatty.gui.components.admin;
 
 import chatty.gui.components.settings.ListTableModel;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import java.awt.Color;
@@ -32,7 +33,14 @@ import javax.swing.table.TableRowSorter;
  */
 public class StatusHistoryTable extends JTable {
     
-    private final Model data = new Model(new String[]{"Fav","Title","Game","Communities","Last Activity","Usage"});
+    private final Model data = new Model(new String[]{
+        Language.getString("admin.presets.column.fav"),
+        Language.getString("admin.presets.column.title"),
+        Language.getString("admin.presets.column.game"),
+        Language.getString("admin.presets.column.communities"),
+        Language.getString("admin.presets.column.lastActivity"),
+        Language.getString("admin.presets.column.usage")
+    });
     private final TableRowSorter sorter;
     private final JPopupMenu contextMenu;
     

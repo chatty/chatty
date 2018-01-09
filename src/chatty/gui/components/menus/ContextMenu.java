@@ -9,11 +9,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  * A Popup Menu with convenience methods to add items as well as items in
@@ -30,9 +32,12 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             ContextMenu.this.actionPerformed(getCommandActionEvent(e));
         }
     };
+    
     private final Map<String, JMenu> subMenus = new HashMap<>();
     private final Set<ContextMenuListener> listeners = new HashSet<>();
     private final Map<String, CustomCommand> commands = new HashMap<>();
+    private final Map<String, ButtonGroup> buttonGroups = new HashMap<>();
+    private final Map<String, JMenuItem> items = new HashMap<>();
     
     private JMenuItem makeItem(String action, String text, ImageIcon icon) {
         JMenuItem item = new JMenuItem(text);
@@ -48,6 +53,17 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         JMenuItem item = new JCheckBoxMenuItem(text, selected);
         item.setActionCommand(action);
         item.addActionListener(listener);
+        return item;
+    }
+    
+    private JMenuItem makeRadioItem(String action, String text, String group) {
+        JMenuItem item = new JRadioButtonMenuItem(text);
+        item.setActionCommand(action);
+        item.addActionListener(listener);
+        if (!buttonGroups.containsKey(group)) {
+            buttonGroups.put(group, new ButtonGroup());
+        }
+        buttonGroups.get(group).add(item);
         return item;
     }
     
@@ -73,6 +89,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             } else {
                 getSubmenu(parent).add(item);
             }
+            items.put(action, item);
             return item;
         } else {
             JMenuItem item = makeItem(action, text, icon);
@@ -81,6 +98,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             } else {
                 add(item);
             }
+            items.put(action, item);
             return item;
         }
     }
@@ -126,14 +144,30 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     }
     
     protected void addCheckboxItem(String action, String text, boolean selected) {
-        add(makeCheckboxItem(action, text, selected));
+        items.put(action, add(makeCheckboxItem(action, text, selected)));
     }
     
     protected void addCheckboxItem(String action, String text, String parent, boolean selected) {
         if (parent != null) {
-            getSubmenu(parent).add(makeCheckboxItem(action, text, selected));
+            JMenuItem item = makeCheckboxItem(action, text, selected);
+            getSubmenu(parent).add(item);
+            items.put(action, item);
         } else {
             addCheckboxItem(action, text, selected);
+        }
+    }
+    
+    protected void addRadioItem(String action, String text, String group) {
+        items.put(action, add(makeRadioItem(action, text, group)));
+    }
+    
+    protected void addRadioItem(String action, String text, String group, String parent) {
+        if (parent != null) {
+            JMenuItem item = makeRadioItem(action, text, group);
+            getSubmenu(parent).add(item);
+            items.put(action, item);
+        } else {
+            addRadioItem(action, text, group);
         }
     }
     
@@ -196,6 +230,10 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     
     protected void setSubMenuIcon(String name, ImageIcon icon) {
         getSubmenu(name, -1).setIcon(icon);
+    }
+    
+    protected JMenuItem getItem(String action) {
+        return items.get(action);
     }
  
 }

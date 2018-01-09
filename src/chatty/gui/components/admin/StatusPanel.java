@@ -5,6 +5,7 @@ import chatty.gui.MainGui;
 import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import static chatty.gui.components.admin.AdminDialog.hideableLabel;
 import static chatty.gui.components.admin.AdminDialog.makeGbc;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
@@ -47,16 +48,16 @@ public class StatusPanel extends JPanel {
     private final JTextArea status = new JTextArea();
     private final JTextField game = new JTextField(20);
     private final JTextArea community = new JTextArea();
-    private final JButton update = new JButton("Update");
+    private final JButton update = new JButton(Language.getString("admin.button.update"));
     private final JLabel updated = new JLabel("No info loaded");
     private final JLabel putResult = new JLabel("...");
-    private final JButton selectGame = new JButton("Select game");
-    private final JButton removeGame = new JButton("Remove");
-    private final JButton selectCommunity = new JButton("Select community");
-    private final JButton removeCommunity = new JButton("Remove");
-    private final JButton reloadButton = new JButton("reload");
-    private final JButton historyButton = new JButton("Presets");
-    private final JButton addToHistoryButton = new JButton("Fav");
+    private final JButton selectGame = new JButton(Language.getString("admin.button.selectGame"));
+    private final JButton removeGame = new JButton(Language.getString("admin.button.removeGame"));
+    private final JButton selectCommunity = new JButton(Language.getString("admin.button.selectCommunity"));
+    private final JButton removeCommunity = new JButton(Language.getString("admin.button.removeCommunity"));
+    private final JButton reloadButton = new JButton(Language.getString("admin.button.reload"));
+    private final JButton historyButton = new JButton(Language.getString("admin.button.presets"));
+    private final JButton addToHistoryButton = new JButton(Language.getString("admin.button.fav"));
     private final SelectGameDialog selectGameDialog;
     private final SelectCommunityDialog selectCommunityDialog;
     private final StatusHistoryDialog statusHistoryDialog;
@@ -344,7 +345,7 @@ public class StatusPanel extends JPanel {
      */
     public void setPutResult(TwitchApi.RequestResultCode result) {
         if (result == TwitchApi.RequestResultCode.SUCCESS) {
-            statusPutResult = "Info updated.";
+            statusPutResult = Language.getString("admin.infoUpdated");
         } else {
             if (result == TwitchApi.RequestResultCode.ACCESS_DENIED) {
                 statusPutResult = "Changing info: Access denied";
@@ -407,7 +408,7 @@ public class StatusPanel extends JPanel {
     private void checkLoadingDone() {
         if (!loadingStatus && !loadingCommunity) {
             statusEdited = false;
-            updated.setText("Info last loaded: just now");
+            updated.setText(Language.getString("admin.infoLoaded.now"));
             if (statusPutResult != null || communityPutResult != null) {
                 setPutResult(statusPutResult+" / "+communityPutResult);
                 statusPutResult = null;
@@ -446,7 +447,7 @@ public class StatusPanel extends JPanel {
      */
     private void setLoading(boolean loading) {
         if (loading) {
-            updated.setText("Loading..");
+            updated.setText(Language.getString("admin.loading"));
             lastPutResult = -1;
         }
         update.setEnabled(!loading);
@@ -463,9 +464,11 @@ public class StatusPanel extends JPanel {
     public void update() {
         if (!loading && infoLastLoaded > 0) {
             long timePassed = System.currentTimeMillis() - infoLastLoaded;
-            updated.setText("Info last loaded: "
-                    + DateTime.duration(timePassed, 1, 0) + " ago"
-                    + (statusEdited ? " (edited)" : ""));
+            if (statusEdited) {
+                updated.setText(Language.getString("admin.infoLoaded.edited", DateTime.duration(timePassed, 1, 0)));
+            } else {
+                updated.setText(Language.getString("admin.infoLoaded", DateTime.duration(timePassed, 1, 0)));
+            }
         }
         if (loading && lastPutResult > 0) {
             long ago = System.currentTimeMillis() - lastPutResult;

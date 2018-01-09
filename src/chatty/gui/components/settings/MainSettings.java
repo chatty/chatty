@@ -36,9 +36,10 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         GridBagConstraints gbc;
         
         JPanel fontSettingsPanel = addTitledPanel("Chat Font", 0);
-        JPanel inputFontSettingsPanel = addTitledPanel("Input/Userlist Font", 1);
+        JPanel inputFontSettingsPanel = addTitledPanel("Input / Userlist Font", 1);
         JPanel startSettingsPanel = addTitledPanel("Startup", 2);
         JPanel lafSettingsPanel = addTitledPanel("Look&Feel", 3);
+        JPanel languagePanel = addTitledPanel("Language", 4);
         
         //===========
         // Chat Font
@@ -211,6 +212,22 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         gbc = d.makeGbc(0, 2, 5, 1);
         lafSettingsPanel.add(new JLabel("<html><body><em>Note:</em> "
                 + "Chat Colors can be changed on the 'Colors' settings page."), gbc);
+        
+        //==========
+        // Language
+        //==========
+        
+        Map<String, String> languageOptions = new LinkedHashMap<>();
+        languageOptions.put("", "Default");
+        languageOptions.put("en", "English");
+        languageOptions.put("de", "German / Deutsch");
+        
+        languagePanel.add(new JLabel("Language:"),
+                d.makeGbc(0, 0, 1, 1));
+        ComboStringSetting languageSetting = d.addComboStringSetting(
+                "language", 0, false, languageOptions);
+        languagePanel.add(languageSetting,
+                d.makeGbc(1, 0, 1, 1));
     }
 
     @Override

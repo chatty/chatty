@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.gui.components.admin.StatusHistory;
 import chatty.util.commands.CustomCommands;
@@ -205,6 +206,8 @@ public class TwitchClient {
         settingsManager.loadCommandLineSettings(args);
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
+        
+        Language.setLanguage(settings.getString("language"));
         
         pubsub = new chatty.util.api.pubsub.Manager(
                 settings.getString("pubsub"), new PubSubResults(), api);
@@ -2348,7 +2351,7 @@ public class TwitchClient {
             String channel = user.getChannel();
             channelFavorites.addChannelToHistory(channel);
             
-            g.printLine(channel,"You have joined " + channel);
+            g.printLine(channel, Language.getString("chat.joined", channel));
             
             // Icons and FFZ/BTTV Emotes
             //api.requestChatIcons(Helper.toStream(channel), false);
@@ -2437,7 +2440,7 @@ public class TwitchClient {
             if (!isChannelOpen(channel)) {
                 g.printStreamInfo(channel);
             }
-            g.printLine(channel, "Joining "+channel+"..");
+            g.printLine(channel, Language.getString("chat.joining", channel));
         }
 
         @Override
@@ -2544,15 +2547,15 @@ public class TwitchClient {
                 if (c.isOffline()) {
                     g.openConnectDialog(validChannels);
                 }
-                g.printLine("Can't join '" + validChannels + "' (not connected)");
+                g.printLine(Language.getString("chat.joinError.notConnected", validChannels));
             } else if (error == TwitchConnection.JoinError.ALREADY_JOINED) {
                 if (toJoin.size() == 1) {
                     g.switchToChannel(errorChannel);
                 } else {
-                    g.printLine("Can't join '" + errorChannel + "' (already joined)");
+                    g.printLine(Language.getString("chat.joinError.alreadyJoined", errorChannel));
                 }
             } else if (error == TwitchConnection.JoinError.INVALID_NAME) {
-                g.printLine("Can't join '"+errorChannel+"' (invalid channelname)");
+                g.printLine(Language.getString("chat.joinError.invalid", errorChannel));
             }
         }
 

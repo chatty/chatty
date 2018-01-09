@@ -4,6 +4,7 @@ package chatty.gui.components.admin;
 import chatty.Chatty;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
+import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResultCode;
@@ -50,7 +51,7 @@ public class AdminDialog extends JDialog {
 
     // Shared
     private final JTabbedPane tabs;
-    private final JButton close = new JButton("Close");
+    private final JButton close = new JButton(Language.getString("dialog.button.close"));
     private final LinkLabel infoText;
     
     // Current state/settings (currentChannel specific)
@@ -91,8 +92,8 @@ public class AdminDialog extends JDialog {
                 updateInfoText();
             }
         });
-        tabs.addTab("Status", statusPanel);
-        tabs.addTab("Commercial", commercialPanel);
+        tabs.addTab(Language.getString("admin.tab.status"), statusPanel);
+        tabs.addTab(Language.getString("admin.tab.commercial"), commercialPanel);
         gbc = makeGbc(0,0,2,1);
         gbc.insets = new Insets(0,0,0,0);
         add(tabs, gbc);
@@ -227,7 +228,7 @@ public class AdminDialog extends JDialog {
         if (channel != null && !channel.isEmpty()) {
             //update.setEnabled(true);
         }
-        setTitle("Channel Admin - "+currentChannel);
+        setTitle(Language.getString("admin.title", currentChannel));
     }
 
     /**
