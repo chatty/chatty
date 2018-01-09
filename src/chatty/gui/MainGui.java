@@ -1596,8 +1596,8 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.startsWith("command")) {
                 customCommand(channels.getActiveChannel().getName(), e, channels.getActiveChannel().getStreamName());
             }
-            else if (cmd.startsWith("range")) {
-                int range = Integer.parseInt(cmd.substring("range".length()));
+            else if (cmd.startsWith("historyRange")) {
+                int range = Integer.parseInt(cmd.substring("historyRange".length()));
                 // Change here as well, because even if it's the same value,
                 // update may be needed. This will make it update twice often.
                 //updateHistoryRange();

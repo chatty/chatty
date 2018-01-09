@@ -14,13 +14,13 @@ public class HistoryContextMenu extends ContextMenu {
     private static final String RANGE_MENU = Language.getString("channelInfo.viewers.cm.timeRange");
     
     public HistoryContextMenu() {
-        addRadioItem("range60", format(1), RANGE_MENU, RANGE_MENU);
-        addRadioItem("range120", format(2), RANGE_MENU, RANGE_MENU);
-        addRadioItem("range240", format(4), RANGE_MENU, RANGE_MENU);
-        addRadioItem("range480", format(8), RANGE_MENU, RANGE_MENU);
-        addRadioItem("range720", format(12), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange60", format(1), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange120", format(2), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange240", format(4), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange480", format(8), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange720", format(12), RANGE_MENU, RANGE_MENU);
         addSeparator(RANGE_MENU);
-        addRadioItem("range-1", Language.getString("channelInfo.viewers.cm.timeRange.all"), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange-1", Language.getString("channelInfo.viewers.cm.timeRange.all"), RANGE_MENU, RANGE_MENU);
         addCheckboxItem("toggleVerticalZoom", Language.getString("channelInfo.viewers.cm.verticalZoom"), false);
     }
     
@@ -36,7 +36,7 @@ public class HistoryContextMenu extends ContextMenu {
     }
     
     public void setRange(int range) {
-        String key = "range"+range;
+        String key = "historyRange"+range;
         JMenuItem item = getItem(key);
         if (item != null) {
             item.setSelected(true);
