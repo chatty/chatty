@@ -9,7 +9,7 @@ apply plugin: 'java'
 // default to Unicode
 compileJava.options.encoding = 'UTF-8'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 // Tells Netbeans what the main class is
 ext.mainClass = 'chatty.Chatty'
