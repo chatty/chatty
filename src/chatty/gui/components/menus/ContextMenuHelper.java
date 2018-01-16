@@ -1,9 +1,11 @@
 
 package chatty.gui.components.menus;
 
-import chatty.Helper;
 import chatty.gui.components.help.About;
 import chatty.util.settings.Settings;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
@@ -32,7 +34,7 @@ public class ContextMenuHelper {
      * Pattern for finding the qualities in the Livestreamer qualities setting
      */
     private static final Pattern LIVESTREAMER_PATTERN
-            = Pattern.compile("(\\|)|(?:\\{(.+?)\\})|([^,\\s]+)");
+            = Pattern.compile("(\\|)|(?:\\{(?<name>[^:}]+:)?(?<qualities>.+?)\\})|(?<basic>[^,\\s]+)");
     
     /**
      * Adds menu items to the given ContextMenu that provide ways to do stream
@@ -98,24 +100,89 @@ public class ContextMenuHelper {
         if (enableLivestreamer) {
             String livestreamerMenu = "Livestreamer";
             m.setSubMenuIcon(livestreamerMenu, ICON_COMMANDLINE);
-            
-            Matcher matcher = LIVESTREAMER_PATTERN.matcher(livestreamerQualities);
-            boolean sep = false;
-            while (matcher.find()) {
-                String match = matcher.group();
-                if (match.equals("|")) {
-                    sep = true;
+            List<Quality> qualities = parseLivestreamerQualities(livestreamerQualities);
+            for (Quality q : qualities) {
+                if (q == null) {
+                    m.addSeparator(livestreamerMenu);
                 } else {
-                    if (sep) {
-                        m.addSeparator(livestreamerMenu);
-                    }
-                    if (match.charAt(0) == '{') {
-                    	match = livestreamerQualities.substring(matcher.start()+1, matcher.end()-1);
-                    }
-                    m.addItem("livestreamerQ"+match, match, livestreamerMenu);
-                    sep = false;
+                    m.addItem("livestreamerQ"+q.qualities, q.displayName, livestreamerMenu);
                 }
             }
+        }
+    }
+
+    static List<Quality> parseLivestreamerQualities(String input) {
+        List<Quality> result = new ArrayList<>();
+        Matcher matcher = LIVESTREAMER_PATTERN.matcher(input);
+        boolean sep = false;
+        while (matcher.find()) {
+            if (matcher.group().equals("|")) {
+                // Separator found, add before next quality
+                sep = true;
+            } else {
+                // Quality found
+                if (sep) {
+                    result.add(null);
+                }
+                String match;
+                String displayName;
+
+                // Quality
+                if (matcher.group("qualities") != null) {
+                    // Advanced format { }
+                    match = matcher.group("qualities");
+                } else {
+                    // Basic format
+                    match = matcher.group();
+                }
+
+                // Display name
+                if (matcher.group("name") != null) {
+                    displayName = matcher.group("name").replace(":", "");
+                } else {
+                    displayName = match;
+                }
+
+                result.add(new Quality(displayName, match));
+                sep = false;
+            }
+        }
+        return result;
+    }
+    
+    static class Quality {
+        String displayName;
+        String qualities;
+        
+        Quality(String displayName, String qualities) {
+            this.displayName = displayName;
+            this.qualities = qualities;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Quality other = (Quality) obj;
+            if (!Objects.equals(this.displayName, other.displayName)) {
+                return false;
+            }
+            if (!Objects.equals(this.qualities, other.qualities)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 83 * hash + Objects.hashCode(this.displayName);
+            hash = 83 * hash + Objects.hashCode(this.qualities);
+            return hash;
         }
     }
     
