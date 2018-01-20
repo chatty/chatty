@@ -4,6 +4,7 @@ package chatty;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
+import chatty.util.StringUtil;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -184,19 +185,16 @@ public class UserManager {
         if (name == null || name.isEmpty()) {
             return errorUser;
         }
-        String displayName = name;
-        name = name.toLowerCase(Locale.ENGLISH);
+        name = StringUtil.toLowerCase(name);
         User user = getUserIfExists(channel, name);
         if (user == null) {
-            String capitalizedName = null;
-            if (displayName.equals(name)) {
-                if (capitalizedName != null) {
-                    displayName = capitalizedName;
-                } else if (capitalizedNames) {
-                    displayName = name.substring(0, 1).toUpperCase() + name.substring(1);
-                }
+            // Capitalize name if enabled (might still be overwritten by setting
+            // displayNick from tags)
+            String capitalizedName = name;
+            if (capitalizedNames) {
+                capitalizedName = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
             }
-            user = new User(displayName, capitalizedName, channel);
+            user = new User(capitalizedName, channel);
             user.setUsercolorManager(usercolorManager);
             user.setAddressbook(addressbook);
             user.setUsericonManager(usericonManager);
