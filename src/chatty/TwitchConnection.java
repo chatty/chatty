@@ -592,7 +592,7 @@ public class TwitchConnection {
         
         @Override
         void onUserlist(String channel, String[] nicknames) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (isChannelOpen(channel)) {
                 
                 /**
@@ -719,7 +719,7 @@ public class TwitchConnection {
 
         @Override
         void onJoinAttempt(String channel) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             joinChecker.joinAttempt(channel);
             if (this == irc) {
                 listener.onJoinAttempt(channel);
@@ -729,7 +729,7 @@ public class TwitchConnection {
 
         @Override
         void onJoin(String channel, String nick, String prefix) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick.equalsIgnoreCase(username)) {
                 /**
                  * Local user has joined a channel.
@@ -771,7 +771,7 @@ public class TwitchConnection {
 
         @Override
         void onPart(String channel, String nick, String prefix, String message) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick.isEmpty()) {
                 return;
             }
@@ -811,7 +811,7 @@ public class TwitchConnection {
 
         @Override
         void onModeChange(String channel, String nick, boolean modeAdded, String mode, String prefix) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (!onChannel(channel)) {
                 return;
             }
@@ -904,7 +904,7 @@ public class TwitchConnection {
         @Override
         void onChannelMessage(String channel, String nick, String from, String text,
                 MsgTags tags, boolean action) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (this != irc) {
                 return;
             }
@@ -938,7 +938,7 @@ public class TwitchConnection {
         
         @Override
         void onNotice(String channel, String text, MsgTags tags) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (this != irc) {
                 return;
             }
@@ -1102,7 +1102,7 @@ public class TwitchConnection {
         
         @Override
         public void onUserstate(String channel, MsgTags tags) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (onChannel(channel)) {
                 updateUserstate(channel, tags);
             }
@@ -1156,7 +1156,7 @@ public class TwitchConnection {
         @Override
         public void onClearChat(MsgTags tags, String channel, 
                 String nick) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick != null) {
                 // A single user was timed out/banned
                 User user = users.getUserIfExists(channel, nick);
@@ -1177,7 +1177,7 @@ public class TwitchConnection {
         @Override
         public void onChannelCommand(MsgTags tags, String nick,
                 String channel, String command, String trailing) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (command.equals("HOSTTARGET")) {
                 String[] parameters = trailing.split(" ");
                 if (parameters.length == 2) {

@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Logging;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
+import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -192,7 +193,7 @@ public class StreamInfoManager {
         if (stream == null || stream.isEmpty()) {
             return invalidStreamInfo;
         }
-        stream = stream.toLowerCase(Locale.ENGLISH);
+        stream = StringUtil.toLowerCase(stream);
         StreamInfo cached = cachedStreamInfo.get(stream);
         if (cached == null) {
             cached = new StreamInfo(stream, listener);

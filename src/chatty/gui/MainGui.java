@@ -1777,18 +1777,18 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 for (String stream : streams) {
-                    livestreamerDialog.open(stream.toLowerCase(), quality);
+                    livestreamerDialog.open(StringUtil.toLowerCase(stream), quality);
                 }
             } else if (cmd.equals("showChannelEmotes")) {
                 if (firstStream != null) {
                     // Should add the stream to be requested
-                    openEmotesDialogChannelEmotes(firstStream.toLowerCase());
+                    openEmotesDialogChannelEmotes(StringUtil.toLowerCase(firstStream));
                     // Request immediately in this case
                     client.api.requestEmotesNow();
                 }
             } else if (cmd.equals("hostchannel")) {
                 if (firstStream != null && streams.size() == 1) {
-                    client.command(null, "host2", firstStream.toLowerCase());
+                    client.command(null, "host2", StringUtil.toLowerCase(firstStream));
                 } else {
                     printLine("Can't host more than one channel.");
                 }

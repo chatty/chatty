@@ -129,7 +129,11 @@ public class Highlighter {
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
         
-        String lowercaseText = text.toLowerCase();
+        // Not sure if default locale or not is better here, but it should at
+        // least be the same between input text and match strings.
+        //
+        // Always using english locale may be more consistent though.
+        String lowercaseText = text.toLowerCase(Locale.ENGLISH);
         
         // Try to match own name first (if enabled)
         if (highlightUsername && usernamePattern != null &&
@@ -250,7 +254,7 @@ public class Highlighter {
             } else if (item.startsWith("cs:") && item.length() > 3) {
                 caseSensitive = item.substring(3);
             } else if (item.startsWith("start:") && item.length() > 6) {
-                startsWith = item.substring(6).toLowerCase();
+                startsWith = item.substring(6).toLowerCase(Locale.ENGLISH);
             } else if (item.startsWith("cat:")) {
                 category = parsePrefix(item, "cat:");
             } else if (item.startsWith("!cat:")) {
@@ -279,7 +283,7 @@ public class Highlighter {
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
             } else {
-                caseInsensitive = item.toLowerCase();
+                caseInsensitive = item.toLowerCase(Locale.ENGLISH);
             }
         }
         

@@ -7,6 +7,7 @@ import chatty.gui.HtmlColors;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
@@ -499,7 +500,7 @@ public class SelectCommunityDialog extends JDialog {
     }
     
     private void doSearch() {
-        String searchString = input.getText().trim().toLowerCase();
+        String searchString = StringUtil.toLowerCase(input.getText().trim());
         if (searchString.isEmpty()) {
             return;
         }

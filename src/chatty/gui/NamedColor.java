@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,7 +37,7 @@ public class NamedColor extends Color {
         names = new HashSet<>();
         names.add(name);
         namesLowercase = new HashSet<>();
-        namesLowercase.add(name.toLowerCase());
+        namesLowercase.add(StringUtil.toLowerCase(name));
     }
     
     /**
@@ -55,7 +56,7 @@ public class NamedColor extends Color {
         names.addAll(Arrays.asList(namesArray));
         namesLowercase = new HashSet<>();
         for (String thisName : namesArray) {
-            namesLowercase.add(thisName.toLowerCase());
+            namesLowercase.add(StringUtil.toLowerCase(thisName));
         }
         if (namesArray.length == 0) {
             name = "";
@@ -80,7 +81,7 @@ public class NamedColor extends Color {
      * @return true if this color contains the given name, false otherwise
      */
     public boolean hasName(String nameToCheck) {
-        return namesLowercase.contains(nameToCheck.toLowerCase());
+        return namesLowercase.contains(StringUtil.toLowerCase(nameToCheck));
     }
     
     /**

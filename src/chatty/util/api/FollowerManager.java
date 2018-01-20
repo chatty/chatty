@@ -113,7 +113,7 @@ public class FollowerManager {
         if (streamName == null || streamName.isEmpty()) {
             return;
         }
-        final String stream = streamName.toLowerCase(Locale.ENGLISH);
+        final String stream = StringUtil.toLowerCase(streamName);
         FollowerInfo cachedInfo = cached.get(stream);
         if (cachedInfo == null || checkTimePassed(cachedInfo)) {
             api.userIDs.getUserIDsAsap(r -> {

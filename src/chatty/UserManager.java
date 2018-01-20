@@ -146,7 +146,7 @@ public class UserManager {
      * @return The List of User-objects.
      */
     public synchronized List<User> getUsersByName(String name) {
-        name = name.toLowerCase();
+        name = StringUtil.toLowerCase(name);
         List<User> result = new ArrayList<>();
         Iterator<HashMap<String, User>> it = users.values().iterator();
         while (it.hasNext()) {
@@ -241,7 +241,7 @@ public class UserManager {
      * @return A Map with channel->User association
      */
     public synchronized HashMap<String,User> getChannelsAndUsersByUserName(String name) {
-        String lowercaseName = name.toLowerCase(Locale.ENGLISH);
+        String lowercaseName = StringUtil.toLowerCase(name);
         HashMap<String,User> result = new HashMap<>();
         
         Iterator<Entry<String, HashMap<String, User>>> it = users.entrySet().iterator();
@@ -318,7 +318,7 @@ public class UserManager {
      * @param color String The color as a string representation
      */
     protected synchronized void setColorForUsername(String userName, String color) {
-        userName = userName.toLowerCase();
+        userName = StringUtil.toLowerCase(userName);
         cachedColors.put(userName,color);
         
         List<User> userAllChans = getUsersByName(userName);

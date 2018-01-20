@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.IgnoredMessages;
 import chatty.gui.components.LinkLabel;
+import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -155,7 +156,7 @@ public class IgnoreSettings extends SettingsPanel {
 
             @Override
             public String format(String input) {
-                return input.replaceAll("\\s", "").toLowerCase();
+                return StringUtil.toLowerCase(input.replaceAll("\\s", ""));
             }
         };
         

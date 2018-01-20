@@ -107,7 +107,7 @@ public class StreamInfo {
 
     public StreamInfo(String stream, StreamInfoListener listener) {
         this.listener = listener;
-        this.stream = stream.toLowerCase(Locale.ENGLISH);
+        this.stream = StringUtil.toLowerCase(stream);
     }
     
     private void streamInfoUpdated(UpdateResult r) {
@@ -397,7 +397,7 @@ public class StreamInfo {
      */
     public void setDisplayName(String name) {
         this.display_name = name;
-        if (name != null && name.toLowerCase().equals(stream)) {
+        if (name != null && StringUtil.toLowerCase(name).equals(stream)) {
             capitalizedName = name;
         }
     }

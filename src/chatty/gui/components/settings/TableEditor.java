@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -764,7 +765,7 @@ public class TableEditor<T> extends JPanel {
         
         // Update state
         String pressed = String.valueOf(input);
-        search += pressed.toLowerCase();
+        search += StringUtil.toLowerCase(pressed);
         searchColumn = column;
         searchTime = System.currentTimeMillis();
 
@@ -781,12 +782,12 @@ public class TableEditor<T> extends JPanel {
         
         // Perform search and select first result
         for (int i = 0; i < data.getRowCount(); i++) {
-            String item = data.getSearchValueAt(i, column);
-            if (item.toLowerCase().startsWith(search)) {
+            String item = StringUtil.toLowerCase(data.getSearchValueAt(i, column));
+            if (item.startsWith(search)) {
                 setRowSelected(indexToView(i));
                 return;
             }
-            if (item.toLowerCase().contains(search)) {
+            if (item.contains(search)) {
                 setRowSelected(indexToView(i));
             }
         }

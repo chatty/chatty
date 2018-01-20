@@ -1365,7 +1365,7 @@ public class TwitchClient {
     public void commandSetIgnored(String parameter, String type, boolean ignore) {
         if (parameter != null && !parameter.isEmpty()) {
             String[] split = parameter.split(" ");
-            String name = split[0].toLowerCase();
+            String name = StringUtil.toLowerCase(split[0]);
             String message = "";
             List<String> setting = new ArrayList<>();
             if (type == null || type.equals("chat")) {

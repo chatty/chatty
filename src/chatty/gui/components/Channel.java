@@ -253,7 +253,7 @@ public class Channel extends JPanel {
         @Override
         public CompletionItems getCompletionItems(String type, String prefix, String search) {
             updateSettings();
-            search = search.toLowerCase(Locale.ENGLISH);
+            search = StringUtil.toLowerCase(search);
             if (type == null) {
                 return getRegularCompletionItems(prefix, search);
             } else if (type.equals("special")) {
@@ -398,7 +398,7 @@ public class Channel extends JPanel {
                 String search) {
             List<String> matched = new ArrayList<>();
             for (String name : data) {
-                if (name.toLowerCase().startsWith(search)) {
+                if (StringUtil.toLowerCase(name).startsWith(search)) {
                     matched.add(name);
                 }
             }
@@ -417,11 +417,11 @@ public class Channel extends JPanel {
                     matched = true;
                     regularMatched.add(user);
                 }
-                if (!user.hasRegularDisplayNick() && user.getDisplayNick().toLowerCase(Locale.ROOT).startsWith(search)) {
+                if (!user.hasRegularDisplayNick() && StringUtil.toLowerCase(user.getDisplayNick()).startsWith(search)) {
                     matched = true;
                     localizedMatched.add(user);
                 }
-                if (user.hasCustomNickSet() && user.getCustomNick().toLowerCase(Locale.ROOT).startsWith(search)) {
+                if (user.hasCustomNickSet() && StringUtil.toLowerCase(user.getCustomNick()).startsWith(search)) {
                     matched = true;
                     customMatched.add(user);
                 }
