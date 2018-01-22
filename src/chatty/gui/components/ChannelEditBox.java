@@ -9,33 +9,44 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Utilities;
 
 /**
- * A TextField that supports auto-completion and a history of entered text.
+ * Input box that supports auto-completion, input history and automatically
+ * grows to several lines for long text.
  * 
  * @author tduva
  */
-public class ChannelEditBox extends JTextField implements KeyListener,
-        ActionListener, DocumentListener {
+public class ChannelEditBox extends JTextArea implements KeyListener,
+        DocumentListener {
     
     // History
-    Vector<String> history = new Vector<>();
-    int historyPosition = 0;
-    boolean historyTextEdited = false;
+    private final List<String> history = new ArrayList<>();
+    private int historyPosition = 0;
+    private boolean historyTextEdited = false;
+    
+    private boolean historyRequireCtrlMultirow = false;
+    
+    private final Set<ActionListener> listeners = new HashSet<>();
     
     // Auto completion
     private final AutoCompletion autoCompletion;
     
     public ChannelEditBox(int size) {
-        super(size);
         autoCompletion = new AutoCompletion(this);
         this.addKeyListener(this);
-        this.addActionListener(this);
+        setLineWrap(true);
+        setWrapStyleWord(true);
+        setBorder(new JTextField().getBorder());
+        getDocument().putProperty("filterNewlines", true);
         this.setFocusTraversalKeysEnabled(false);
         getDocument().addDocumentListener(this);
         
@@ -82,6 +93,16 @@ public class ChannelEditBox extends JTextField implements KeyListener,
         autoCompletion.setCompleteToCommonPrefix(value);
     }
     
+    public void setHistoryRequireCtrlMultirow(boolean require) {
+        this.historyRequireCtrlMultirow = require;
+    }
+    
+    public void addActionListener(ActionListener actionListener) {
+        if (actionListener != null) {
+            listeners.add(actionListener);
+        }
+    }
+    
     /**
      * Inserts the given text at the current caret position, adding a space in
      * front and after the inserted text, if {@code withSpace} is true and if
@@ -122,15 +143,26 @@ public class ChannelEditBox extends JTextField implements KeyListener,
 
     @Override
     public void keyPressed(KeyEvent e) {
-        
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            historyBack();
+        if (!historyRequireCtrlMultirow || e.isControlDown() || isSingleRow()) {
+            if (e.getKeyCode() == KeyEvent.VK_UP
+                    && (e.isControlDown() || isCaretInFirstRow())) {
+                historyBack();
+                e.consume();
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN
+                    && (e.isControlDown() || isCaretInLastRow())) {
+                historyForward();
+                e.consume();
+            }
         }
-        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            historyForward();
+        if (e.getKeyCode() == KeyEvent.VK_TAB) {
+            e.consume();
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            submit();
+            e.consume();
         }
     }
-    
+
     @Override
     public void keyReleased(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
@@ -149,6 +181,32 @@ public class ChannelEditBox extends JTextField implements KeyListener,
         } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
             autoCompletion.cancelAutoCompletion();
         }
+    }
+    
+    private boolean isCaretInFirstRow() {
+        return getRow(getCaretPosition()) == 0;
+    }
+    
+    private boolean isCaretInLastRow() {
+        return getRow(getCaretPosition()) == getRow(getText().length());
+    }
+    
+    private boolean isSingleRow() {
+        return getRow(getText().length()) == 0;
+    }
+    
+    private int getRow(int pos) {
+        int row = (pos == 0) ? 0 : -1;
+        try {
+            int offset = pos;
+            while (offset > 0) {
+                offset = Utilities.getRowStart(this, offset) - 1;
+                row++;
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return row;
     }
     
     //###############
@@ -215,14 +273,10 @@ public class ChannelEditBox extends JTextField implements KeyListener,
         }
     }
     
-    /**
-     * Adds sent text to the history, sets history position and clears the
-     * input field.
-     * 
-     * @param e 
-     */
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    private void submit() {
+        for (ActionListener l : listeners) {
+            l.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, getText()));
+        }
         historyAdd(getText());
         historyPosition = history.size();
         setText("");
@@ -232,18 +286,15 @@ public class ChannelEditBox extends JTextField implements KeyListener,
     @Override
     public void insertUpdate(DocumentEvent e) {
         historyTextEdited = true;
-        //hideCompletionInfoWindow();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
         historyTextEdited = true;
-        //hideCompletionInfoWindow();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        //hideCompletionInfoWindow();
     }
     
     public void setCompletionServer(AutoCompletionServer server) {

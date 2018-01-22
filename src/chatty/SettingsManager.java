@@ -117,6 +117,7 @@ public class SettingsManager {
         addDefaultHotkeyAppWide("0.9b1", "about", "F1");
         settings.addList("hotkeys", getDefaultHotkeySettingValue(), Setting.LIST);
         settings.addBoolean("globalHotkeysEnabled", true);
+        settings.addBoolean("inputHistoryRequireCtrl", true);
         
 
         //===========

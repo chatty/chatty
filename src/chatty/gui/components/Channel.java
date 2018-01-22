@@ -589,6 +589,7 @@ public class Channel extends JPanel {
         input.setBackground(styleManager.getColor("inputBackground"));
         input.setCaretColor(styleManager.getColor("inputForeground"));
         input.setForeground(styleManager.getColor("inputForeground"));
+        input.setHistoryRequireCtrlMultirow(main.getSettings().getBoolean("inputHistoryRequireCtrl"));
         users.setFont(styleManager.getFont("userlist"));
         users.setBackground(styleManager.getColor("background"));
         users.setForeground(styleManager.getColor("foreground"));

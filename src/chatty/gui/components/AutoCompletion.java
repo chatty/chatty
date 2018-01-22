@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.JTextComponent;
 
 /**
  * Provides the feature to complete text when the user performs a certain action
@@ -49,7 +50,7 @@ public class AutoCompletion {
     /**
      * The JTextField the completion is performed in.
      */
-    private final JTextField textField;
+    private final JTextComponent textField;
 
     // Settings
     private int maxResultsShown = 5;
@@ -82,7 +83,7 @@ public class AutoCompletion {
      *
      * @param textField The JTextField to perform the completion on
      */
-    public AutoCompletion(JTextField textField) {
+    public AutoCompletion(JTextComponent textField) {
         this.textField = textField;
         textField.addCaretListener(new CaretListener() {
 
