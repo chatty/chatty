@@ -340,6 +340,8 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(userInfoDialog, "userInfo", true, false);
         windowStateManager.addWindow(autoModDialog, "autoMod", true, true);
         
+        GuiUtil.installTextComponentFocusWorkaround();
+        
         guiCreated = true;
     }
     

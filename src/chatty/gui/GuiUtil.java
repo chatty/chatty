@@ -15,12 +15,16 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -43,6 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 
 /**
  * Some Utility functions or constants for GUI related stuff
@@ -360,6 +365,62 @@ public class GuiUtil {
         param.put("channel", channel);
 
         ProcessManager.execute(command.replace(param), "Notification");
+    }
+    
+    /**
+     * Java 8u161/162 introduced a bug that causes high CPU usage when a
+     * JTextField/JTextArea is focused as first component after the window is
+     * focused.
+     * 
+     * This workaround aims to prevent this by rejecting that focus change if it
+     * occurs and focusing another component first, then focusing the original
+     * text component.
+     * 
+     * This may or may not actually work, but it seemed fine in testing.
+     */
+    public static void installTextComponentFocusWorkaround() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addVetoableChangeListener(new VetoableChangeListener() {
+
+            private boolean rejectNext = false;
+            private JComponent target;
+
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                if (evt.getNewValue() != null) {
+                    if (rejectNext && evt.getPropertyName().equals("focusOwner")) {
+                        if (evt.getNewValue() instanceof JTextComponent) {
+                            JComponent component = (JComponent) evt.getNewValue();
+                            // Move focus up, this usually moves it to the
+                            // window itself
+                            KeyboardFocusManager.getCurrentKeyboardFocusManager().upFocusCycle(component);
+                            target = component;
+                            LOGGER.info("[Focus] Rejected JTextComponent focus");
+                            // Reject focus change as well, otherwise this
+                            // didn't seem to work
+                            throw new PropertyVetoException("Rejected JTextComponent focus", evt);
+                        } else {
+                            // If anything else was focused, no need to reject
+                            // anymore, change focus back if necessary
+                            rejectNext = false;
+                            if (target != null) {
+                                LOGGER.info("[Focus] Temp: " + evt.getNewValue());
+                                target.requestFocus();
+                                target = null;
+                            }
+                        }
+                    } else if (evt.getPropertyName().equals("focusedWindow")) {
+                        // Next focus on a text component should be rejected
+                        LOGGER.info("[Focus] Window focused");
+                        rejectNext = true;
+                    }
+                }
+
+                // Debug
+                String oldV = evt.getOldValue() != null ? evt.getOldValue().getClass().toString() : null;
+                String newV = evt.getNewValue() != null ? evt.getNewValue().getClass().toString() : null;
+                //System.out.println(evt.getPropertyName()+": "+oldV+" -> "+newV);
+            }
+        });
     }
     
 }
