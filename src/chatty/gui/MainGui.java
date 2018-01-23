@@ -340,7 +340,10 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(userInfoDialog, "userInfo", true, false);
         windowStateManager.addWindow(autoModDialog, "autoMod", true, true);
         
-        GuiUtil.installTextComponentFocusWorkaround();
+        if (System.getProperty("java.version").equals("1.8.0_161")
+                || System.getProperty("java.version").equals("1.8.0_162")) {
+            GuiUtil.installTextComponentFocusWorkaround();
+        }
         
         guiCreated = true;
     }
