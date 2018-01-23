@@ -164,7 +164,7 @@ public class MainMenu extends JMenuBar {
         extra.addSeparator();
         JMenu streamChat = new JMenu("Stream Chat");
         addItem(streamChat,"dialog.streamchat");
-        MainMenu.this.addCheckboxItem(streamChat, "streamChatResizable", "Resizable");
+        addCheckboxItem(streamChat, "streamChatResizable", "Resizable");
         extra.add(streamChat);
         
         JMenu streamHighlights = new JMenu("Stream Highlights");
@@ -174,7 +174,7 @@ public class MainMenu extends JMenuBar {
         
         extra.addSeparator();
         JMenu debugOptions = new JMenu("Options");
-        MainMenu.this.addCheckboxItem(debugOptions,"globalHotkeysEnabled","Global Hotkeys");
+        addCheckboxItem(debugOptions,"globalHotkeysEnabled","Global Hotkeys");
         extra.add(debugOptions);
         if (Chatty.DEBUG) {
             addItem(extra,"unhandledException", "Unhandled Exception");
@@ -269,7 +269,7 @@ public class MainMenu extends JMenuBar {
      * @return 
      */
     public final JMenuItem addCheckboxItemSetting(JMenu menu, String key) {
-        return MainMenu.this.addCheckboxItem(menu, key, Language.getString("menubar.setting."+key));
+        return addCheckboxItem(menu, key, Language.getString("menubar.setting."+key));
     }
     
     /**
