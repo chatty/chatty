@@ -36,7 +36,7 @@ public class StyleManager implements StyleServer {
             "colorCorrection", "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
-            "inputHistoryRequireCtrl" // Not delievered through this
+            "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
     private MutableAttributeSet baseStyle;

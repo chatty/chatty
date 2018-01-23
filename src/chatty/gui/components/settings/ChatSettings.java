@@ -67,6 +67,10 @@ public class ChatSettings extends SettingsPanel {
         main.add(bufferSizesButton,
                 gbc);
         
+        gbc = d.makeGbc(0, 5, 3, 1);
+        main.add(d.addSimpleBooleanSetting("inputHistoryMultirowRequireCtrl",
+                "On a multirow inputbox require Ctrl to navigate input history",
+                ""), gbc);
         
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
