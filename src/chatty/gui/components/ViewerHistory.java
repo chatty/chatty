@@ -443,8 +443,8 @@ public class ViewerHistory extends JComponent {
             
             // Draw connecting line
             if (prevX != -1) {
-                if (entry.getValue().getStreamType() == StreamType.WATCH_PARTY &&
-                        prevItem != null && prevItem.getStreamType() == StreamType.WATCH_PARTY) {
+                if (entry.getValue().getStreamType() != StreamType.LIVE &&
+                        prevItem != null && prevItem.getStreamType() != StreamType.LIVE) {
                     g.setColor(Color.LIGHT_GRAY);
                 } else {
                     g.setColor(foreground_color);

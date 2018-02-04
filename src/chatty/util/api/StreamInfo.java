@@ -26,7 +26,7 @@ public class StreamInfo {
     private static final Logger LOGGER = Logger.getLogger(StreamInfo.class.getName());
     
     private enum UpdateResult { UPDATED, CHANGED, SET_OFFLINE };
-    public enum StreamType { LIVE, WATCH_PARTY };
+    public enum StreamType { LIVE, WATCH_PARTY, RERUN };
     
     /**
      * All lowercase name of the stream
@@ -445,7 +445,8 @@ public class StreamInfo {
     }
     
     public synchronized String getStreamTypeString() {
-        if (streamType == StreamType.WATCH_PARTY) {
+        if (streamType == StreamType.WATCH_PARTY
+                || streamType == StreamType.RERUN) {
             return "[VOD] ";
         }
         return "";
