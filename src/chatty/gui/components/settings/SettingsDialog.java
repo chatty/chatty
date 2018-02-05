@@ -7,6 +7,7 @@ import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.lang.Language;
 import chatty.util.Sound;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
@@ -64,8 +65,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private boolean restartRequired = false;
     private boolean reconnectRequired = false;
     
-    private static final String RESTART_REQUIRED_INFO = "<html><body style='width: 280px'>One or more settings "
-            + "you have changed require a restart of Chatty to take any or full effect.";
+    private static final String RESTART_REQUIRED_INFO = "<html><body style='width: 280px'>"
+            + Language.getString("settings.restartRequired");
     
     private static final String RECONNECT_REQUIRED_INFO = "<html><body style='width: 280px'>One or more settings "
             + "you have changed require you to reconnect to have any effect.";

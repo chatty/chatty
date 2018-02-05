@@ -361,7 +361,7 @@ public class SettingsManager {
         // Tabs
         settings.addString("tabOrder", "normal");
         settings.addBoolean("tabsMwheelScrolling", false);
-        settings.addBoolean("tabsMwheelScrollingAnywhere", false);
+        settings.addBoolean("tabsMwheelScrollingAnywhere", true);
         settings.addString("tabsPlacement", "top");
         settings.addString("tabsLayout", "wrap");
 

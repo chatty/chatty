@@ -6,6 +6,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.LiveStreamsList.ListDataChangedListener;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.lang.Language;
 import chatty.util.api.StreamInfo;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -179,26 +180,26 @@ public class LiveStreamsDialog extends JFrame {
      * @param mode 
      */
     private void setSorting(Comparator<StreamInfo> mode) {
-        String text = "Sorting: ";
         if (mode == NAME_COMPARATOR) {
-            text += "Name";
+            titleSorting = Language.getString("streams.sorting.name");
         } else if (mode == CHANGED_COMPARATOR) {
-            text += "Recent";
+            titleSorting = Language.getString("streams.sorting.recent");
         } else if (mode == GAME_COMPARATOR) {
-            text += "Game";
+            titleSorting = Language.getString("streams.sorting.game");
         } else if (mode == VIEWERS_COMPARATOR) {
-            text += "Viewers";
+            titleSorting = Language.getString("streams.sorting.viewers");
         }
-        titleSorting = text;
         updateTitle();
         list.setComparator(mode);
     }
     
     private void updateTitle() {
         if (liveStreamListSelected) {
-            setTitle(BASE_TITLE+" ("+titleCounts+") ["+titleSorting+"]");
+            setTitle(Language.getString("streams.title",
+                    list.getModel().getSize(),
+                    titleSorting));
         } else {
-            setTitle("Offline/Left Streams");
+            setTitle(Language.getString("streams.removed.title"));
         }
     }
     

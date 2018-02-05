@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.LaF;
+import chatty.lang.Language;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -22,7 +23,7 @@ import javax.swing.JTextField;
  */
 public class MainSettings extends SettingsPanel implements ActionListener {
     
-    private final JButton selectFontButton = new JButton("Select font");
+    private final JButton selectFontButton = new JButton(Language.getString("settings.chatFont.button.selectFont"));
     private final FontChooser fontChooser;
     private final ComboLongSetting onStart;
     private final JTextField channels;
@@ -35,21 +36,21 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         
         GridBagConstraints gbc;
         
-        JPanel fontSettingsPanel = addTitledPanel("Chat Font", 0);
-        JPanel inputFontSettingsPanel = addTitledPanel("Input / Userlist Font", 1);
-        JPanel startSettingsPanel = addTitledPanel("Startup", 2);
-        JPanel lafSettingsPanel = addTitledPanel("Look&Feel", 3);
-        JPanel languagePanel = addTitledPanel("Language", 4);
+        JPanel fontSettingsPanel = addTitledPanel(Language.getString("settings.section.chatFont"), 0);
+        JPanel inputFontSettingsPanel = addTitledPanel(Language.getString("settings.section.otherFonts"), 1);
+        JPanel startSettingsPanel = addTitledPanel(Language.getString("settings.section.startup"), 2);
+        JPanel lafSettingsPanel = addTitledPanel(Language.getString("settings.section.lookandfeel"), 3);
+        JPanel languagePanel = addTitledPanel(Language.getString("settings.section.language"), 4);
         
         //===========
         // Chat Font
         //===========
         // Font Name
         gbc = d.makeGbc(0,0,1,1);
-        fontSettingsPanel.add(new JLabel("Font Name:"),gbc);
+        fontSettingsPanel.add(new JLabel(Language.getString("settings.chatFont.fontName")),gbc);
         gbc = d.makeGbc(0,1,1,1);
         gbc.anchor = GridBagConstraints.EAST;
-        fontSettingsPanel.add(new JLabel("Font Size:"),gbc);
+        fontSettingsPanel.add(new JLabel(Language.getString("settings.chatFont.fontSize")),gbc);
         
         // Font Size
         gbc = d.makeGbc(1,0,2,1);
@@ -67,23 +68,23 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         fontSettingsPanel.add(selectFontButton,gbc);
         
         gbc = d.makeGbc(2,1,1,1);
-        fontSettingsPanel.add(new JLabel("Line Spacing:"), gbc);
+        fontSettingsPanel.add(new JLabel(Language.getString("settings.chatFont.lineSpacing")), gbc);
         
         Map<Long, String> lineSpacingDef = new HashMap<>();
-        lineSpacingDef.put((long)0, "Smallest");
-        lineSpacingDef.put((long)1, "Smaller");
-        lineSpacingDef.put((long)2, "Small");
-        lineSpacingDef.put((long)3, "Normal");
-        lineSpacingDef.put((long)4, "Big");
-        lineSpacingDef.put((long)5, "Bigger");
-        lineSpacingDef.put((long)6, "Biggest");
+        lineSpacingDef.put((long)0, Language.getString("settings.chatFont.option.smallest"));
+        lineSpacingDef.put((long)1, Language.getString("settings.chatFont.option.smaller"));
+        lineSpacingDef.put((long)2, Language.getString("settings.chatFont.option.small"));
+        lineSpacingDef.put((long)3, Language.getString("settings.chatFont.option.normal"));
+        lineSpacingDef.put((long)4, Language.getString("settings.chatFont.option.big"));
+        lineSpacingDef.put((long)5, Language.getString("settings.chatFont.option.bigger"));
+        lineSpacingDef.put((long)6, Language.getString("settings.chatFont.option.biggest"));
         ComboLongSetting lineSpacing = new ComboLongSetting(lineSpacingDef);
         d.addLongSetting("lineSpacing", lineSpacing);
         gbc = d.makeGbc(3,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         fontSettingsPanel.add(lineSpacing, gbc);
         
-        fontSettingsPanel.add(new JLabel("Message Spacing:"),
+        fontSettingsPanel.add(new JLabel(Language.getString("settings.chatFont.messageSpacing")),
                 d.makeGbc(1, 2, 2, 1, GridBagConstraints.EAST));
         
         Map<Long, String> paragraphSpacingDef = new LinkedHashMap<>();
@@ -99,7 +100,7 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         // Other Fonts
         //=============
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
-        inputFontSettingsPanel.add(new JLabel("Input:"), gbc);
+        inputFontSettingsPanel.add(new JLabel(Language.getString("settings.otherFonts.inputFont")), gbc);
         
         List<String> inputFonts = new ArrayList<>();
         for (int i=12; i<=32; i++) {
@@ -120,7 +121,7 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         inputFontSettingsPanel.add(inputFont, gbc);
         
         gbc = d.makeGbc(2, 0, 1, 1);
-        inputFontSettingsPanel.add(new JLabel("Userlist:"), gbc);
+        inputFontSettingsPanel.add(new JLabel(Language.getString("settings.otherFonts.userlistFont")), gbc);
         
         ComboStringSetting userlistFont = new ComboStringSetting(inputFonts);
         d.addStringSetting("userlistFont", userlistFont);
@@ -131,14 +132,14 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         // Startup
         //=========
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
-        startSettingsPanel.add(new JLabel("On start:"), gbc);
+        startSettingsPanel.add(new JLabel(Language.getString("settings.startup.onStart")), gbc);
         
         Map<Long, String> onStartDef = new LinkedHashMap<>();
-        onStartDef.put((long)0, "Do nothing");
-        onStartDef.put((long)1, "Open connect dialog");
-        onStartDef.put((long)2, "Connect and join specified channels");
-        onStartDef.put((long)3, "Connect and join previously open channels");
-        onStartDef.put((long)4, "Connect and join favorited channels");
+        onStartDef.put((long)0, Language.getString("settings.startup.option.doNothing"));
+        onStartDef.put((long)1, Language.getString("settings.startup.option.openConnect"));
+        onStartDef.put((long)2, Language.getString("settings.startup.option.connectJoinSpecified"));
+        onStartDef.put((long)3, Language.getString("settings.startup.option.connectJoinPrevious"));
+        onStartDef.put((long)4, Language.getString("settings.startup.option.connectJoinFavorites"));
         onStart = new ComboLongSetting(onStartDef);
         onStart.addActionListener(this);
         d.addLongSetting("onStart", onStart);
@@ -146,7 +147,7 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         startSettingsPanel.add(onStart, gbc);
         
         gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST);
-        startSettingsPanel.add(new JLabel("Channels:"), gbc);
+        startSettingsPanel.add(new JLabel(Language.getString("settings.startup.channels")), gbc);
         
         gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
         channels = d.addSimpleStringSetting("autojoinChannel", 25, true);
@@ -172,10 +173,10 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         d.addStringSetting("laf", laf);
         
         Map<String, String> themeDef = new LinkedHashMap<>();
-        themeDef.put("Default", "Default");
-        themeDef.put("Small-Font", "Small Font");
-        themeDef.put("Large-Font", "Large Font");
-        themeDef.put("Giant-Font", "Giant Font");
+        themeDef.put("Default", Language.getString("settings.laf.option.defaultFont"));
+        themeDef.put("Small-Font", Language.getString("settings.laf.option.smallFont"));
+        themeDef.put("Large-Font", Language.getString("settings.laf.option.largeFont"));
+        themeDef.put("Giant-Font", Language.getString("settings.laf.option.giantFont"));
         ComboStringSetting theme = new ComboStringSetting(themeDef);
         d.addStringSetting("lafTheme", theme);
         
@@ -191,13 +192,13 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         });
         
         gbc = d.makeGbc(0, 0, 1, 1);
-        lafSettingsPanel.add(new JLabel("Look&Feel:"), gbc);
+        lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.lookandfeel")), gbc);
         
         gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(laf, gbc);
         
         gbc = d.makeGbc(2, 0, 1, 1);
-        lafSettingsPanel.add(new JLabel("Font:"), gbc);
+        lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.font")), gbc);
         
         gbc = d.makeGbc(3, 0, 1, 1);
         lafSettingsPanel.add(theme, gbc);
@@ -207,22 +208,21 @@ public class MainSettings extends SettingsPanel implements ActionListener {
         
         gbc = d.makeGbc(0, 1, 5, 1);
         gbc.insets = new Insets(0, 5, 7, 5);
-        lafSettingsPanel.add(new JLabel("(Restart of Chatty required for all changes to take effect.)"), gbc);
+        lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.restartRequired")), gbc);
         
         gbc = d.makeGbc(0, 2, 5, 1);
-        lafSettingsPanel.add(new JLabel("<html><body><em>Note:</em> "
-                + "Chat Colors can be changed on the 'Colors' settings page."), gbc);
+        lafSettingsPanel.add(new JLabel("<html><body>"+Language.getString("settings.laf.colors")), gbc);
         
         //==========
         // Language
         //==========
         
         Map<String, String> languageOptions = new LinkedHashMap<>();
-        languageOptions.put("", "Default");
+        languageOptions.put("", Language.getString("settings.language.option.defaultLanguage"));
         languageOptions.put("en", "English");
         languageOptions.put("de", "German / Deutsch");
         
-        languagePanel.add(new JLabel("Language:"),
+        languagePanel.add(new JLabel(Language.getString("settings.language.language")),
                 d.makeGbc(0, 0, 1, 1));
         ComboStringSetting languageSetting = d.addComboStringSetting(
                 "language", 0, false, languageOptions);

@@ -269,9 +269,13 @@ public class MainGui extends JFrame implements Runnable {
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
         highlightedMessages = new HighlightedMessages(this, styleManager,
-                "Highlighted Messages","Highlighted", contextMenuListener);
+                Language.getString("highlightedDialog.title"),
+                Language.getString("highlightedDialog.info"),
+                contextMenuListener);
         ignoredMessages = new HighlightedMessages(this, styleManager,
-                "Ignored Messages", "Ignored", contextMenuListener);
+                Language.getString("ignoredDialog.title"),
+                Language.getString("ignoredDialog.info"),
+                contextMenuListener);
         channels = new Channels(this,styleManager, contextMenuListener);
         channels.getComponent().setPreferredSize(new Dimension(600,300));
         add(channels.getComponent(), BorderLayout.CENTER);
@@ -2390,8 +2394,7 @@ public class MainGui extends JFrame implements Runnable {
     public Set<String> chooseFavorites(Component owner, String channel) {
         updateFavoritesDialog();
         favoritesDialog.setLocationRelativeTo(owner);
-        int result = favoritesDialog.showDialog(channel, "Use chosen channels",
-                "Use chosen channel");
+        int result = favoritesDialog.showDialog(channel);
         if (result == FavoritesDialog.ACTION_DONE) {
             return favoritesDialog.getChannels();
         }
@@ -2401,8 +2404,7 @@ public class MainGui extends JFrame implements Runnable {
     private void openFavoritesDialogToJoin(String channel) {
         updateFavoritesDialog();
         favoritesDialog.setLocationRelativeTo(this);
-        int result = favoritesDialog.showDialog(channel, "Join chosen channels",
-                "Join chosen channel");
+        int result = favoritesDialog.showDialog(channel);
         if (result == FavoritesDialog.ACTION_DONE) {
             Set<String> selectedChannels = favoritesDialog.getChannels();
             client.joinChannels(selectedChannels);

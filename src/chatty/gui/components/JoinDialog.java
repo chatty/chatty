@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Helper;
 import chatty.gui.MainGui;
+import chatty.lang.Language;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,16 +28,16 @@ public class JoinDialog extends JDialog {
     
     private final JTextField channels = new JTextField(20);
     
-    private final JButton joinButton = new JButton("Join");
-    private final JButton cancelButton = new JButton("Cancel");
+    private final JButton joinButton = new JButton(Language.getString("join.button.join"));
+    private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
     
-    private final JButton favoritesButton = new JButton("Favorites / History");
+    private final JButton favoritesButton = new JButton(Language.getString("join.button.favoritesHistory"));
     
     private boolean join = false;
     
     public JoinDialog(final MainGui owner) {
         super(owner);
-        setTitle("Join Channel");
+        setTitle(Language.getString("join.title"));
         setResizable(false);
         setModal(true);
         
@@ -63,7 +64,7 @@ public class JoinDialog extends JDialog {
         GridBagConstraints gbc;
         
         gbc = makeGbc(0,0,1,1);
-        add(new JLabel("Channel: "), gbc);
+        add(new JLabel(Language.getString("join.channel")), gbc);
         
         gbc = makeGbc(1,0,2,1);
         gbc.insets = new Insets(5,5,5,5);
@@ -135,12 +136,7 @@ public class JoinDialog extends JDialog {
         Set<String> chans = getChannels();
         boolean empty = chans.isEmpty();
         joinButton.setEnabled(!empty);
-        if (chans.size() > 1) {
-            joinButton.setText("Join channels");
-        }
-        else {
-            joinButton.setText("Join channel");
-        }
+        joinButton.setText(Language.getString("join.button.join", chans.size()));
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {

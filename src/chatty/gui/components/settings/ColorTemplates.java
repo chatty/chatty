@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -31,9 +32,9 @@ public class ColorTemplates extends JPanel {
     private final List<Preset> hardcodedPresets = new ArrayList<>();
     private final List<Preset> userPresets = new ArrayList<>();
     
-    private final JButton saveButton = new JButton("Save");
-    private final JButton saveAsButton = new JButton("Save as..");
-    private final JButton removeButton = new JButton("Delete");
+    private final JButton saveButton = new JButton(Language.getString("settings.colorPresets.button.save"));
+    private final JButton saveAsButton = new JButton(Language.getString("settings.colorPresets.button.saveAs"));
+    private final JButton removeButton = new JButton(Language.getString("settings.colorPresets.button.delete"));
     
     private final GenericComboSetting<Preset> selection = new GenericComboSetting<>();
     
@@ -81,7 +82,7 @@ public class ColorTemplates extends JPanel {
         add(removeButton, gbc);
         
         gbc = GuiUtil.makeGbc(0, 2, 3, 1);
-        JLabel saveNote = new JLabel("(Presets are directly saved to settings)");
+        JLabel saveNote = new JLabel(Language.getString("settings.colorPresets.info"));
         add(saveNote, gbc);
         
         selection.addItemListener(e -> {
@@ -125,7 +126,7 @@ public class ColorTemplates extends JPanel {
      */
     public void init() {
         selection.clear();
-        selection.add((Preset)null, "-- Color Presets --");
+        selection.add((Preset)null, "-- "+Language.getString("settings.colorPresets.colorPresets")+" --");
         for (Preset p : userPresets) {
             selection.add(p, p.name);
         }

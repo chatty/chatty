@@ -62,7 +62,7 @@ public class ViewerHistory extends JComponent {
     /**
      * The font to use for text.
      */
-    private Font font = new Font("Consolas", Font.PLAIN, 12);
+    private Font font = new Font(Font.DIALOG, Font.PLAIN, 12);
     /**
      * The margin all around the graph area.
      */
@@ -727,8 +727,8 @@ public class ViewerHistory extends JComponent {
         repaint();
     }
     
-    public void setFontSize(int size) {
-        font = new Font("Consolas", Font.PLAIN, size);
+    public void setBaseFont(Font newFont) {
+        font = newFont.deriveFont(Font.PLAIN);
         repaint();
     }
     

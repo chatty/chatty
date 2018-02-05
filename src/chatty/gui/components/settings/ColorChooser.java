@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.HtmlColors;
+import chatty.lang.Language;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,8 +44,8 @@ public class ColorChooser extends JDialog {
     
     private final JColorChooser chooser = new JColorChooser();
     private final MyPreview preview = new MyPreview();
-    private final JButton doneButton = new JButton("Use selected color");
-    private final JButton cancelButton = new JButton("Cancel");
+    private final JButton doneButton = new JButton(Language.getString("settings.colorChooser.button.useSelected"));
+    private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
     
     /**
      * The secondary color that is used for the preview.
@@ -168,7 +169,7 @@ public class ColorChooser extends JDialog {
         // Update dialog
         setLocationRelativeTo(getParent());
         returnNewColor = false;
-        setTitle("Change Color: "+name);
+        setTitle(Language.getString("settings.colorChooser.title", name));
         
         // Save type and secondary color for further use (primary color is not
         // used outside this method and the chooser)

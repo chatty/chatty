@@ -2,6 +2,7 @@
 package chatty.gui.components.menus;
 
 import chatty.gui.components.help.About;
+import chatty.lang.Language;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,15 +60,8 @@ public class ContextMenuHelper {
      * @param join Whether to add a join channel menu item
      */
     protected static void addStreamsOptions(ContextMenu m, int numStreams, boolean join) {
-        
-        String count = "";
-        String s = "";
-        if (numStreams > 1) {
-            s = "s";
-            count = String.valueOf(numStreams)+" ";
-        }
         String streamSubmenu = "Twitch Stream";
-        String miscSubmenu = "Miscellaneous";
+        String miscSubmenu = Language.getString("channelCm.menu.misc");
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
@@ -78,14 +72,14 @@ public class ContextMenuHelper {
         addLivestreamerOptions(m);
         if (join) {
             m.addSeparator();
-            m.addItem("join", "Join " + count + "channel" + s);
+            m.addItem("join", Language.getString("channelCm.join", numStreams));
             m.addSeparator();
-            m.addItem("hostchannel", "Host Channel", miscSubmenu);
+            m.addItem("hostchannel", Language.getString("channelCm.hostChannel"), miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addItem("copy", "Copy Stream Name", miscSubmenu);
+            m.addItem("copy", Language.getString("channelCm.copyStreamname"), miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addItem("follow", "Follow Channel", miscSubmenu);
-            m.addItem("unfollow", "Unfollow Channel", miscSubmenu);
+            m.addItem("follow", Language.getString("channelCm.follow"), miscSubmenu);
+            m.addItem("unfollow", Language.getString("channelCm.unfollow"), miscSubmenu);
         }
         CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m);
     }

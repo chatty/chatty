@@ -634,7 +634,9 @@ public class TwitchConnection {
             }
             
             if (server != null) {
-                listener.onGlobalInfo("Trying to connect to " + server + ":" + port+(secured ? " (secured)" : ""));
+                listener.onGlobalInfo(Language.getString("chat.connecting",
+                        server+":"+port)
+                        +(secured ? " ("+Language.getString("chat.secured")+")" : ""));
             } else {
                 listener.onGlobalInfo("Failed to connect (server or port invalid)");
             }
