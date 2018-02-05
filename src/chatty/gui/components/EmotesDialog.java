@@ -85,7 +85,7 @@ public class EmotesDialog extends JDialog {
     private static final String FAVORITE_EMOTES = Language.getString("emotesDialog.tab.favorites");
     private static final String MY_EMOTES = Language.getString("emotesDialog.tab.myEmotes");
     private static final String CHANNEL_EMOTES = Language.getString("emotesDialog.tab.channel");
-    private static final String TWITCH_EMOTES = "Twitch";
+    private static final String TWITCH_EMOTES = Language.getString("emotesDialog.tab.twitch");
     private static final String OTHER_EMOTES = Language.getString("emotesDialog.tab.other");
     private static final String EMOJI = "Emoji";
     private static final String EMOTE_DETAILS = "Emote Details";
