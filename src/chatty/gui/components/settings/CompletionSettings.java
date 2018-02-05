@@ -97,25 +97,25 @@ public class CompletionSettings extends SettingsPanel {
         appearance.add(popup,
             d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
+        JPanel popupSettings = new JPanel();
+
+        popupSettings.add(new JLabel(Language.getString("settings.completion.itemsShown")));
+        final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
+        popupSettings.add(max);
+        
         final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix",
                 Language.getString("settings.completion.commonPrefix"),
                 Language.getString("settings.completion.commonPrefix.tip"));
-        appearance.add(common,
-                d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
-        
-        
-        
-        appearance.add(new JLabel(Language.getString("settings.completion.itemsShown")),
-                d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST));
-        final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
-        appearance.add(max,
-                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+        popupSettings.add(common);
         
         popup.addChangeListener(e -> {
                 common.setEnabled(popup.isSelected());
                 max.setEnabled(popup.isSelected());
             }
         );
+        
+        appearance.add(popupSettings,
+                d.makeGbcSub(0, 1, 2, 1, GridBagConstraints.WEST));
         
         //-----------------
         // Username Sorting
@@ -130,7 +130,7 @@ public class CompletionSettings extends SettingsPanel {
         
         appearance.add(
             d.addComboStringSetting("completionSorting", 4, false, choices),
-            d.makeGbc(1, 2, 2, 1));
+            d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
 
         //==================
         // Custom Completion

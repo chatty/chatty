@@ -107,7 +107,7 @@ public class EmoteSettings extends SettingsPanel {
         
         // Maximum Emote Height (Chat)
         main.add(new JLabel(Language.getString("settings.emoticons.maxHeight")),
-                d.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(2, 3, 1, 1, GridBagConstraints.EAST));
         main.add(d.addSimpleLongSetting("emoteMaxHeight", 3, true),
                 d.makeGbc(3, 3, 1, 1, GridBagConstraints.WEST));
         main.add(new JLabel(Language.getString("settings.emoticons.maxHeightPixels")),
@@ -162,7 +162,7 @@ public class EmoteSettings extends SettingsPanel {
         emojiSettings.add(d.addSimpleBooleanSetting("emojiReplace",
                 Language.getString("settings.emoji.replaceCodes"),
                 Language.getString("settings.emoji.replaceCodes.tip")),
-                d.makeGbcSub(2, 0, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
         //---------
         // Cheering

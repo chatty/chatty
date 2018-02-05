@@ -91,6 +91,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_MESSAGES = "Messages";
     private static final String PANEL_EMOTES = "Emoticons";
     private static final String PANEL_USERICONS = "Usericons";
+    private static final String PANEL_LOOK = "Look / Fonts";
     private static final String PANEL_COLORS = "Colors";
     private static final String PANEL_MSGCOLORS = "Msg Colors";
     private static final String PANEL_HIGHLIGHT = "Highlight";
@@ -121,6 +122,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private static final String[] MENU = {
         PANEL_MAIN,
+        PANEL_LOOK,
         PANEL_MESSAGES,
         PANEL_MODERATION,
         PANEL_CHAT,
@@ -206,6 +208,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new EmoteSettings(this), PANEL_EMOTES);
         imageSettings = new ImageSettings(this);
         cards.add(imageSettings, PANEL_USERICONS);
+        cards.add(new LookSettings(this), PANEL_LOOK);
         cards.add(new ColorSettings(this, settings), PANEL_COLORS);
         cards.add(new HighlightSettings(this), PANEL_HIGHLIGHT);
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);

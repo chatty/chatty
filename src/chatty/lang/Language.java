@@ -32,7 +32,7 @@ public class Language {
      * @param language 
      */
     public synchronized static void setLanguage(String language) {
-        String[] split = language.split("-");
+        String[] split = language.split("_");
         Locale locale;
         if (language.trim().isEmpty()) {
             locale = Locale.getDefault();
