@@ -25,6 +25,7 @@ public class MsgColorSettings extends SettingsPanel {
         super(true);
         
         JPanel main = addTitledPanel("Custom Message Colors", 0, true);
+        JPanel other = addTitledPanel("Other Message Color Settings", 1);
         
         GridBagConstraints gbc;
         
@@ -43,6 +44,12 @@ public class MsgColorSettings extends SettingsPanel {
         
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         main.add(info, d.makeGbc(0, 2, 1, 1));
+        
+        other.add(d.addSimpleBooleanSetting(
+                "actionColored",
+                "Color action messages (/me) with Usercolor",
+                ""),
+                d.makeGbc(0, 10, 2, 1, GridBagConstraints.WEST));
         
     }
     

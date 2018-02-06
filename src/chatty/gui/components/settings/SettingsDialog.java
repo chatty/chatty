@@ -26,6 +26,7 @@ import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,8 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
  * Main settings dialog class that provides ways to add different kinds of
@@ -91,8 +94,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private static final String PANEL_MESSAGES = "Messages";
     private static final String PANEL_EMOTES = "Emoticons";
     private static final String PANEL_USERICONS = "Usericons";
-    private static final String PANEL_LOOK = "Look / Fonts";
-    private static final String PANEL_COLORS = "Colors";
+    private static final String PANEL_LOOK = "Look";
+    private static final String PANEL_FONTS = "Fonts";
+    private static final String PANEL_COLORS = "Chat Colors";
     private static final String PANEL_MSGCOLORS = "Msg Colors";
     private static final String PANEL_HIGHLIGHT = "Highlight";
     private static final String PANEL_IGNORE = "Ignore";
@@ -116,36 +120,69 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private final CardLayout cardManager;
     private final JPanel cards;
-    private final JList<String> selection;
+    private final JTree selection;
     
     private final LinkLabelListener settingsHelpLinkLabelListener;
     
-    private static final String[] MENU = {
-        PANEL_MAIN,
-        PANEL_LOOK,
-        PANEL_MESSAGES,
-        PANEL_MODERATION,
-        PANEL_CHAT,
-        PANEL_EMOTES,
-        PANEL_USERICONS,
-        PANEL_COLORS,
-        PANEL_MSGCOLORS,
-        PANEL_USERCOLORS,
-        PANEL_NAMES,
-        PANEL_HIGHLIGHT,
-        PANEL_IGNORE,
-        PANEL_HISTORY,
-        PANEL_SOUND,
-        PANEL_NOTIFICATIONS,
-        PANEL_LOG,
-        PANEL_WINDOW,
-        PANEL_TABS,
-        PANEL_COMMANDS,
-        PANEL_OTHER,
-        PANEL_ADVANCED,
-        PANEL_HOTKEYS,
-        PANEL_COMPLETION
-    };
+    private final static Map<String, List<String>> MENU2 = new LinkedHashMap<>();
+    
+    static {
+        MENU2.put(PANEL_MAIN, Arrays.asList(new String[]{}));
+        MENU2.put(PANEL_LOOK, Arrays.asList(new String[]{
+            PANEL_COLORS,
+            PANEL_MSGCOLORS,
+            PANEL_USERCOLORS,
+            PANEL_USERICONS,
+            PANEL_EMOTES,
+            PANEL_FONTS,
+        }));
+        MENU2.put(PANEL_CHAT, Arrays.asList(new String[]{
+            PANEL_MESSAGES,
+            PANEL_MODERATION,
+            PANEL_NAMES,
+            PANEL_HIGHLIGHT,
+            PANEL_IGNORE,
+            PANEL_LOG,
+        }));
+        MENU2.put(PANEL_WINDOW, Arrays.asList(new String[]{
+            PANEL_TABS,
+            PANEL_NOTIFICATIONS,
+        }));
+        MENU2.put(PANEL_OTHER, Arrays.asList(new String[]{
+            PANEL_COMMANDS,
+            PANEL_ADVANCED,
+            PANEL_COMPLETION,
+            PANEL_HISTORY,
+            PANEL_HOTKEYS,
+        }));
+    }
+    
+//    private static final String[] MENU = {
+//        PANEL_MAIN,
+//        PANEL_LOOK,
+//        PANEL_MESSAGES,
+//        PANEL_MODERATION,
+//        PANEL_CHAT,
+//        PANEL_EMOTES,
+//        PANEL_USERICONS,
+//        PANEL_COLORS,
+//        PANEL_MSGCOLORS,
+//        PANEL_USERCOLORS,
+//        PANEL_NAMES,
+//        PANEL_HIGHLIGHT,
+//        PANEL_IGNORE,
+//        PANEL_HISTORY,
+//        PANEL_SOUND,
+//        PANEL_NOTIFICATIONS,
+//        PANEL_LOG,
+//        PANEL_WINDOW,
+//        PANEL_TABS,
+//        PANEL_COMMANDS,
+//        PANEL_OTHER,
+//        PANEL_ADVANCED,
+//        PANEL_HOTKEYS,
+//        PANEL_COMPLETION
+//    };
 
     public SettingsDialog(final MainGui owner, final Settings settings) {
         super(owner,"Settings",true);
@@ -181,17 +218,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
         /*
          * Add to Tabs
          */
-        //JTabbedPane tabs = new JTabbedPane();
-        selection = new JList<>(MENU);
-        selection.setSelectedIndex(0);
+        selection = Tree.createTree(MENU2);
         selection.setSize(200, 200);
-        Font defaultFont = selection.getFont();
-        //selection.setFont(new Font(defaultFont.getFontName(), Font.BOLD, 12));
-        selection.setFixedCellHeight(20);
-        selection.setFixedCellWidth(100);
+        selection.setSelectionRow(0);
         selection.setBorder(BorderFactory.createEtchedBorder());
-//        selection.setBackground(getBackground());
-//        selection.setForeground(getForeground());
 
         gbc = makeGbc(0,0,1,1);
         gbc.insets = new Insets(10,10,10,3);
@@ -200,6 +230,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.weighty = 1;
         add(selection, gbc);
         
+        // Create setting pages, the order here doesn't matter
         cardManager = new CardLayout();
         cards = new JPanel(cardManager);
         cards.add(new MainSettings(this), PANEL_MAIN);
@@ -209,6 +240,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         imageSettings = new ImageSettings(this);
         cards.add(imageSettings, PANEL_USERICONS);
         cards.add(new LookSettings(this), PANEL_LOOK);
+        cards.add(new FontSettings(this), PANEL_FONTS);
         cards.add(new ColorSettings(this, settings), PANEL_COLORS);
         cards.add(new HighlightSettings(this), PANEL_HIGHLIGHT);
         cards.add(new IgnoreSettings(this), PANEL_IGNORE);
@@ -234,11 +266,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(nameSettings, PANEL_NAMES);
 
         currentlyShown = PANEL_MAIN;
-        selection.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                showPanel(selection.getSelectedValue());
+//        selection.addListSelectionListener(new ListSelectionListener() {
+//
+//            @Override
+//            public void valueChanged(ListSelectionEvent e) {
+//                showPanel(selection.getSelectedValue());
+//            }
+//        });
+        selection.addTreeSelectionListener(e -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selection.getLastSelectedPathComponent();
+            if (node != null) {
+                showPanel((String)node.getUserObject());
             }
         });
         
@@ -336,7 +374,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void showPanel(String showCard) {
         cardManager.show(cards, showCard);
         currentlyShown = showCard;
-        selection.setSelectedValue(showCard, true);
+        Tree.setSelected(selection, showCard);
         stuffBasedOnPanel();
     }
     

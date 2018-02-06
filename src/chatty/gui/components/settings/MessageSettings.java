@@ -31,89 +31,9 @@ public class MessageSettings extends SettingsPanel {
         JPanel timeoutSettingsPanel = addTitledPanel("Deleted Messages (Timeouts/Bans)", 0);
         JPanel otherSettingsPanel = addTitledPanel("Other", 1);
 
-        /*
-         * Other settings (Panel)
-         */
-        // Timestamp
-        otherSettingsPanel.add(new JLabel("Timestamp: "),
-                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
-
-        final Map<String,String> timestampOptions = new LinkedHashMap<>();
-        List<String> dateFormats = Arrays.asList(new String[]{"","YYYY-MM-dd ",
-            "MMM d ", "d MMM ", "dd.MM. "});
-        for (String dateFormat : dateFormats) {
-            addTimestampFormat(timestampOptions, "off");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm:ss]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ss a]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm a]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mm a]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ssa]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mma]");
-            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mma]");
-        }
-        ComboStringSetting combo = new ComboStringSetting(timestampOptions);
-        combo.setEditable(false);
-        d.addStringSetting("timestamp", combo);
-        otherSettingsPanel.add(combo,
-                d.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST));
-
-        
-        otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "showModMessages",
-                "Show mod/unmod (unreliable)",
-                "Whether to show when someone was modded/unmodded or a mod "
-                        + "joined/left the channel. Twitch Chat is not very "
-                        + "reliable in reporting these events correctly."),
-                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
-
-        otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "showJoinsParts", "Show joins/parts (unreliable)",
-                "Show users joining/parting the channel (only with "
-                                + "Userlist Connection enabled, see Advanced "
-                                + "settings)."),
-                d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
-
-        otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "actionColored",
-                "/me messages colored",
-                "If enabled, action messages (/me) have the same color as the nick"),
-                d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
-        
-        
-        // Combining Characters
-        otherSettingsPanel.add(new JLabel("Filter combining chars:"),
-                d.makeGbc(2, 2, 1, 1));
-
-        Map<Long, String> filterSetting = new LinkedHashMap<>();
-        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_OFF), "Off");
-        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_LENIENT), "Lenient");
-        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_STRICT), "Strict");
-        ComboLongSetting filterCombiningCharacters = new ComboLongSetting(filterSetting);
-        d.addLongSetting("filterCombiningCharacters", filterCombiningCharacters);
-
-        otherSettingsPanel.add(filterCombiningCharacters,
-                d.makeGbc(3, 2, 1, 1));
-        
-        
-        otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "printStreamStatus",
-                "Show stream status in chat",
-                "Output stream status when you join a channel and when it changes"),
-                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
-
-        otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "colorCorrection",
-                "Correct readability of usercolors",
-                "If enabled, changes some usercolors to make them more readable on the current background"),
-                d.makeGbc(2, 3, 2, 1, GridBagConstraints.WEST));
-        
-
-
-        
-        /**
-         * Deleted Messages settings
-         */
+        //==========================
+        // Deleted Messages (Panel)
+        //==========================
         DeletedMessagesModeSetting deletedMessagesModeSetting = new DeletedMessagesModeSetting(d);
         timeoutSettingsPanel.add(deletedMessagesModeSetting,
                 d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
@@ -180,6 +100,70 @@ public class MessageSettings extends SettingsPanel {
         for (JCheckBox cb : timeoutMessageSettings) {
             cb.setEnabled(false);
         }
+        
+        //========================
+        // Other Settings (Panel)
+        //========================
+        // Timestamp
+        otherSettingsPanel.add(new JLabel("Timestamp:"),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+
+        final Map<String,String> timestampOptions = new LinkedHashMap<>();
+        List<String> dateFormats = Arrays.asList(new String[]{"","YYYY-MM-dd ",
+            "MMM d ", "d MMM ", "dd.MM. "});
+        for (String dateFormat : dateFormats) {
+            addTimestampFormat(timestampOptions, "off");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm:ss]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ss a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mm a]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ssa]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mma]");
+            addTimestampFormat(timestampOptions, "[" + dateFormat + "h:mma]");
+        }
+        ComboStringSetting combo = new ComboStringSetting(timestampOptions);
+        combo.setEditable(false);
+        d.addStringSetting("timestamp", combo);
+        otherSettingsPanel.add(combo,
+                d.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST));
+
+        otherSettingsPanel.add(d.addSimpleBooleanSetting(
+                "showModMessages",
+                "Show mod/unmod (unreliable)",
+                "Whether to show when someone was modded/unmodded or a mod "
+                        + "joined/left the channel. Twitch Chat is not very "
+                        + "reliable in reporting these events correctly."),
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+
+        otherSettingsPanel.add(d.addSimpleBooleanSetting(
+                "showJoinsParts", "Show joins/parts (unreliable)",
+                "Show users joining/parting the channel (only with "
+                                + "Userlist Connection enabled, see Advanced "
+                                + "settings)."),
+                d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
+
+        // Combining Characters
+        otherSettingsPanel.add(new JLabel("Filter combining chars:"),
+                d.makeGbc(0, 2, 1, 1));
+
+        Map<Long, String> filterSetting = new LinkedHashMap<>();
+        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_OFF), "Off");
+        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_LENIENT), "Lenient");
+        filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_STRICT), "Strict");
+        ComboLongSetting filterCombiningCharacters = new ComboLongSetting(filterSetting);
+        d.addLongSetting("filterCombiningCharacters", filterCombiningCharacters);
+
+        otherSettingsPanel.add(filterCombiningCharacters,
+                d.makeGbc(1, 2, 1, 1));
+        
+        
+        otherSettingsPanel.add(d.addSimpleBooleanSetting(
+                "printStreamStatus",
+                "Show stream status in chat",
+                "Output stream status when you join a channel and when it changes"),
+                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+
         
     }
     
