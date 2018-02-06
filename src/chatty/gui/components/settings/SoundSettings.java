@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 class SoundSettings extends SettingsPanel {
 
     public SoundSettings(SettingsDialog d) {
-        add(new JLabel("Sounds are now integrated into 'Notifications'."),
+        add(new JLabel("Sounds are integrated into 'Notifications'."),
                 GuiUtil.makeGbc(0, 0, 1, 1, GridBagConstraints.CENTER));
     }
     

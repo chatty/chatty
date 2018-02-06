@@ -14,7 +14,6 @@ import chatty.util.settings.Settings;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -32,10 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
  * Main settings dialog class that provides ways to add different kinds of
@@ -90,31 +86,31 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final HotkeySettings hotkeySettings;
     private final NameSettings nameSettings;
 
-    private static final String PANEL_MAIN = "Main";
-    private static final String PANEL_MESSAGES = "Messages";
-    private static final String PANEL_EMOTES = "Emoticons";
-    private static final String PANEL_USERICONS = "Usericons";
-    private static final String PANEL_LOOK = "Look";
-    private static final String PANEL_FONTS = "Fonts";
-    private static final String PANEL_COLORS = "Chat Colors";
-    private static final String PANEL_MSGCOLORS = "Msg Colors";
-    private static final String PANEL_HIGHLIGHT = "Highlight";
-    private static final String PANEL_IGNORE = "Ignore";
-    private static final String PANEL_HISTORY = "History";
-    private static final String PANEL_SOUND = "Sounds";
-    private static final String PANEL_NOTIFICATIONS = "Notifications";
-    private static final String PANEL_USERCOLORS = "Usercolors";
-    private static final String PANEL_LOG = "Log to file";
-    private static final String PANEL_WINDOW = "Window";
-    private static final String PANEL_TABS = "Tabs";
-    private static final String PANEL_COMMANDS = "Commands";
-    private static final String PANEL_OTHER = "Other";
-    private static final String PANEL_ADVANCED = "Advanced";
-    private static final String PANEL_HOTKEYS = "Hotkeys";
-    private static final String PANEL_COMPLETION = "TAB Completion";
-    private static final String PANEL_CHAT = "Chat";
-    private static final String PANEL_NAMES = "Names";
-    private static final String PANEL_MODERATION = "Moderation";
+    private static final String PANEL_MAIN = Language.getString("settings.page.main");
+    private static final String PANEL_MESSAGES = Language.getString("settings.page.messages");
+    private static final String PANEL_EMOTES = Language.getString("settings.page.emoticons");
+    private static final String PANEL_USERICONS = Language.getString("settings.page.usericons");
+    private static final String PANEL_LOOK = Language.getString("settings.page.look");
+    private static final String PANEL_FONTS = Language.getString("settings.page.fonts");
+    private static final String PANEL_COLORS = Language.getString("settings.page.chatColors");
+    private static final String PANEL_MSGCOLORS = Language.getString("settings.page.msgColors");
+    private static final String PANEL_HIGHLIGHT = Language.getString("settings.page.highlight");
+    private static final String PANEL_IGNORE = Language.getString("settings.page.ignore");
+    private static final String PANEL_HISTORY = Language.getString("settings.page.history");
+    private static final String PANEL_NOTIFICATIONS = Language.getString("settings.page.notifications");
+    private static final String PANEL_SOUND = Language.getString("settings.page.sound");
+    private static final String PANEL_USERCOLORS = Language.getString("settings.page.usercolors");
+    private static final String PANEL_LOG = Language.getString("settings.page.logging");
+    private static final String PANEL_WINDOW = Language.getString("settings.page.window");
+    private static final String PANEL_TABS = Language.getString("settings.page.tabs");
+    private static final String PANEL_COMMANDS = Language.getString("settings.page.commands");
+    private static final String PANEL_OTHER = Language.getString("settings.page.other");
+    private static final String PANEL_ADVANCED = Language.getString("settings.page.advanced");
+    private static final String PANEL_HOTKEYS = Language.getString("settings.page.hotkeys");
+    private static final String PANEL_COMPLETION = Language.getString("settings.page.completion");
+    private static final String PANEL_CHAT = Language.getString("settings.page.chat");
+    private static final String PANEL_NAMES = Language.getString("settings.page.names");
+    private static final String PANEL_MODERATION = Language.getString("settings.page.moderation");
 
     private String currentlyShown;
     
@@ -126,6 +122,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private final static Map<String, List<String>> MENU2 = new LinkedHashMap<>();
     
+    // Page definition for JTree navigation
     static {
         MENU2.put(PANEL_MAIN, Arrays.asList(new String[]{}));
         MENU2.put(PANEL_LOOK, Arrays.asList(new String[]{
@@ -147,6 +144,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         MENU2.put(PANEL_WINDOW, Arrays.asList(new String[]{
             PANEL_TABS,
             PANEL_NOTIFICATIONS,
+            PANEL_SOUND,
         }));
         MENU2.put(PANEL_OTHER, Arrays.asList(new String[]{
             PANEL_COMMANDS,
@@ -156,36 +154,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
             PANEL_HOTKEYS,
         }));
     }
-    
-//    private static final String[] MENU = {
-//        PANEL_MAIN,
-//        PANEL_LOOK,
-//        PANEL_MESSAGES,
-//        PANEL_MODERATION,
-//        PANEL_CHAT,
-//        PANEL_EMOTES,
-//        PANEL_USERICONS,
-//        PANEL_COLORS,
-//        PANEL_MSGCOLORS,
-//        PANEL_USERCOLORS,
-//        PANEL_NAMES,
-//        PANEL_HIGHLIGHT,
-//        PANEL_IGNORE,
-//        PANEL_HISTORY,
-//        PANEL_SOUND,
-//        PANEL_NOTIFICATIONS,
-//        PANEL_LOG,
-//        PANEL_WINDOW,
-//        PANEL_TABS,
-//        PANEL_COMMANDS,
-//        PANEL_OTHER,
-//        PANEL_ADVANCED,
-//        PANEL_HOTKEYS,
-//        PANEL_COMPLETION
-//    };
 
     public SettingsDialog(final MainGui owner, final Settings settings) {
-        super(owner,"Settings",true);
+        super(owner, Language.getString("settings.title"), true);
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
@@ -197,6 +168,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             }
         });
         
+        // For help links on setting pages
         settingsHelpLinkLabelListener = new LinkLabelListener() {
 
             @Override
@@ -209,17 +181,12 @@ public class SettingsDialog extends JDialog implements ActionListener {
         this.owner = owner;
         this.settings = settings;
 
-        /*
-         * Layout
-         */
+        // Layout
         setLayout(new GridBagLayout());
         GridBagConstraints gbc;
 
-        /*
-         * Add to Tabs
-         */
+        // Create and add tree
         selection = Tree.createTree(MENU2);
-        selection.setSize(200, 200);
         selection.setSelectionRow(0);
         selection.setBorder(BorderFactory.createEtchedBorder());
 
@@ -265,14 +232,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         nameSettings = new NameSettings(this);
         cards.add(nameSettings, PANEL_NAMES);
 
+        // Track current settings page
         currentlyShown = PANEL_MAIN;
-//        selection.addListSelectionListener(new ListSelectionListener() {
-//
-//            @Override
-//            public void valueChanged(ListSelectionEvent e) {
-//                showPanel(selection.getSelectedValue());
-//            }
-//        });
         selection.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) selection.getLastSelectedPathComponent();
             if (node != null) {
@@ -319,7 +280,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cancel.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         add(cancel,gbc);
         
-        // Listeners
+        // Button Listeners
         ok.addActionListener(this);
         cancel.addActionListener(this);
 
