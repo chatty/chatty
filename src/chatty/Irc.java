@@ -382,7 +382,7 @@ public abstract class Irc {
             }
         }
         if (command.equals("USERNOTICE")) {
-            if (parameters.length == 1 && parameters[0].startsWith("#")) {
+            if (parameters.length > 0 && parameters[0].startsWith("#")) {
                 onUsernotice(parameters[0], trailing, tags);
             }
         }

@@ -2,6 +2,7 @@
 package chatty.gui.notifications;
 
 import chatty.Helper;
+import chatty.gui.MainGui;
 import chatty.util.ActivityListener;
 import chatty.util.ActivityTracker;
 import java.awt.Color;
@@ -34,7 +35,7 @@ public class NotificationWindow {
     
     private static final int SECOND = 1000;
     
-    private static final ImageIcon ICON = new ImageIcon(NotificationWindow.class.getResource("app_16.png"));
+    private static final ImageIcon ICON = new ImageIcon(MainGui.class.getResource("app_main_16.png"));
 
     private static final Border PADDING_BORDER = BorderFactory.createEmptyBorder(9, 9, 9, 8);
     private static final Border LINE_BORDER = BorderFactory.createLineBorder(new Color(50, 50, 50), 1);

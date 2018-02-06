@@ -3,8 +3,11 @@ package chatty.gui.components.admin;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.HtmlColors;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
+import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
@@ -27,9 +30,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.html.HTMLDocument;
 
 /**
  * Select a game by manually entering it, searching for it on Twitch or
@@ -40,8 +46,7 @@ import javax.swing.event.ListSelectionListener;
 public class SelectCommunityDialog extends JDialog {
 
     private static final String INFO = "<html><body style='width:340px'>"
-            + "Twitch currently does not offer a search API, so enter the exact "
-            + "name of a community and click 'Search' (or press Enter) to verify it's name.";
+            + Language.getString("admin.communities.info");
 
     private static final ImageIcon ADD_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-add.png"));
     private static final ImageIcon REMOVE_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-remove.png"));
@@ -50,19 +55,19 @@ public class SelectCommunityDialog extends JDialog {
     private final TwitchApi api;
 
     // General Buttons
-    private final JButton ok = new JButton("Save changes");
-    private final JButton cancel = new JButton("Cancel");
+    private final JButton ok = new JButton(Language.getString("dialog.button.save"));
+    private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     
     // Game search/fav buttons
-    private final JButton searchButton = new JButton("Search");
-    private final JButton addToFavoritesButton = new JButton("Favorite");
-    private final JButton removeFromFavoritesButton = new JButton("Unfavorite");
-    private final JButton clearSearchButton = new JButton("Clear");
-    private final JButton openUrl = new JButton("Open URL");
-    private final JButton top100 = new JButton("Top 100");
+    private final JButton searchButton = new JButton(Language.getString("admin.communities.button.search"));
+    private final JButton addToFavoritesButton = new JButton(Language.getString("admin.communities.button.favorite"));
+    private final JButton removeFromFavoritesButton = new JButton(Language.getString("admin.communities.button.unfavorite"));
+    private final JButton clearSearchButton = new JButton(Language.getString("admin.communities.button.clear"));
+    private final JButton openUrl = new JButton(Language.getString("admin.communities.button.openUrl"));
+    private final JButton top100 = new JButton(Language.getString("admin.communities.button.top100"));
 
     // Current info elements
-    private final JLabel searchResultInfo = new JLabel("No search performed yet.");
+    private final JLabel searchResultInfo = new JLabel();
     private final JTextField input = new JTextField(30);
     private final JList<Community> list = new JList<>();
     private final DefaultListModel<Community> listData = new DefaultListModel<>();
@@ -70,7 +75,7 @@ public class SelectCommunityDialog extends JDialog {
     
     // Currently selected communities
     private final JPanel currentPanel = new JPanel();
-    private final JButton addButton = new JButton("Add selected");
+    private final JButton addButton = new JButton(Language.getString("admin.communities.button.addSelected"));
     
     private static final int MAX_COMMUNITIES = 3;
     
@@ -90,7 +95,7 @@ public class SelectCommunityDialog extends JDialog {
     private boolean save;
     
     public SelectCommunityDialog(MainGui main, TwitchApi api) {
-        super(main, "Choose up to "+MAX_COMMUNITIES+" communities", true);
+        super(main, Language.getString("admin.communities.title", MAX_COMMUNITIES), true);
         setResizable(true);
         
         this.main = main;
@@ -186,6 +191,12 @@ public class SelectCommunityDialog extends JDialog {
         gbc.weighty = 1;
         description.setEditable(false);
         description.setContentType("text/html");
+        String textColor = HtmlColors.getColorString(searchResultInfo.getForeground());
+        int textSize = searchResultInfo.getFont().getSize();
+        ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(""
+                + "body { font: sans-serif; font-size: "+textSize+"pt; padding:3px; color:"+textColor+"; }"
+                + "a { color:"+textColor+"; }"
+                + "h2 { border-bottom: 1px solid "+textColor+"; font-size: "+(textSize+2)+"pt; }");
         add(new JScrollPane(description), gbc);
  
         gbc = makeGbc(0,5,1,1);
@@ -236,6 +247,24 @@ public class SelectCommunityDialog extends JDialog {
         removeFromFavoritesButton.addActionListener(actionListener);
         clearSearchButton.addActionListener(actionListener);
         
+        input.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateSearchButton();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateSearchButton();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateSearchButton();
+            }
+        });
+        
         description.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 String url = e.getURL().toString();
@@ -248,10 +277,11 @@ public class SelectCommunityDialog extends JDialog {
         addButton.addActionListener(e -> {
             addSelected();
         });
-        addButton.setToolTipText("Tip: Double-click on list entry to add");
+        addButton.setToolTipText(Language.getString("admin.communities.button.addSelected.tip"));
         addButton.setIcon(ADD_ICON);
         
         updateFavoriteButtons();
+        updateSearchButton();
         
         pack();
         
@@ -310,13 +340,13 @@ public class SelectCommunityDialog extends JDialog {
     private void updateCurrent() {
         currentPanel.removeAll();
         if (current.isEmpty()) {
-            currentPanel.add(new JLabel("No Community chosen."));
+            currentPanel.add(new JLabel(Language.getString("admin.communities.none")));
         } else {
             for (Community c : current) {
                 JLabel label = new JLabel(c.toString());
                 currentPanel.add(label);
                 JButton removeButton = new JButton(REMOVE_ICON);
-                removeButton.setToolTipText("Remove '"+c.toString()+"'");
+                removeButton.setToolTipText(Language.getString("admin.communities.button.remove.tip", c.toString()));
                 removeButton.setMargin(new Insets(0,0,0,0));
                 removeButton.setSize(10, 10);
                 removeButton.addActionListener(e -> {
@@ -408,7 +438,7 @@ public class SelectCommunityDialog extends JDialog {
         Community maybe = api.getCachedCommunityInfo(selected.getId());
         if (maybe != null) {
             description.setText(String.format(
-                    "<html><body style='font: sans-serif 9pt;padding:3px;'>%s<h2 style='font-size:12pt;border-bottom: 1px solid black'>Rules</h2>%s",
+                    "<html><body>%s<h2>Rules</h2>%s",
                     maybe.getSummary(),
                     maybe.getRules()));
             description.setCaretPosition(0);
@@ -464,15 +494,14 @@ public class SelectCommunityDialog extends JDialog {
         for (Community c : favorites) {
             listData.addElement(c);
         }
-        searchResultInfo.setText("Search: "+searchResult.size()+" / "
-            +"Favorites: "+favorites.size()+"");
+        searchResultInfo.setText(Language.getString("admin.communities.listInfo",
+                searchResult.size(), favorites.size()));
         list.setSelectedValue(selected, false);
     }
     
     private void doSearch() {
-        String searchString = input.getText().trim();
+        String searchString = StringUtil.toLowerCase(input.getText().trim());
         if (searchString.isEmpty()) {
-            searchResultInfo.setText("Enter something to search.");
             return;
         }
         api.getCommunityByName(searchString, (r, e) -> {
@@ -494,11 +523,10 @@ public class SelectCommunityDialog extends JDialog {
                     searchResult.clear();
                     searchResult.add(r);
                     update();
-                    searchResultInfo.setText("Community found.");
                 }
             });
         });
-        searchResultInfo.setText("Searching..");
+        searchResultInfo.setText(Language.getString("admin.communities.searching"));
     }
     
     private void showTop() {
@@ -507,10 +535,10 @@ public class SelectCommunityDialog extends JDialog {
                 searchResult.clear();
                 searchResult.addAll(r);
                 update();
-                searchResultInfo.setText("Loaded current Top 100 (alphabetical)");
+                searchResultInfo.setText(Language.getString("admin.communities.top100"));
             });
         });
-        searchResultInfo.setText("Loading..");
+        searchResultInfo.setText(Language.getString("admin.communities.loading"));
     }
     
     /**
@@ -591,6 +619,10 @@ public class SelectCommunityDialog extends JDialog {
         removeFromFavoritesButton.setEnabled(favoriteSelected);
     }
     
+    private void updateSearchButton() {
+        searchButton.setEnabled(!input.getText().isEmpty());
+    }
+    
     private void updateOkButton() {
         ok.setEnabled(!preset.equals(current));
     }
@@ -634,7 +666,7 @@ public class SelectCommunityDialog extends JDialog {
 
             List<Community> listSelected = list.getSelectedValuesList();
             JPopupMenu menu = new JPopupMenu();
-            menu.add(new AbstractAction("Replace All") {
+            menu.add(new AbstractAction(Language.getString("admin.communities.cm.replaceAll")) {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -648,7 +680,7 @@ public class SelectCommunityDialog extends JDialog {
                     && !current.contains(list.getSelectedValue())) {
                 menu.addSeparator();
                 for (Community c : current) {
-                    menu.add(new AbstractAction("Replace '" + c + "'") {
+                    menu.add(new AbstractAction(Language.getString("admin.communities.cm.replace", c)) {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {

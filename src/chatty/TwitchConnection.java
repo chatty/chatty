@@ -1,5 +1,7 @@
 package chatty;
 
+import chatty.lang.Language;
+import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.BotNameManager;
@@ -128,10 +130,6 @@ public class TwitchConnection {
         return channelStates.getState(channel);
     }
     
-    public void setEmotesets(Map<Integer, String> emotesets) {
-        users.setEmotesets(emotesets);
-    }
-    
     public void setUsercolorManager(UsercolorManager m) {
         users.setUsercolorManager(m);
     }
@@ -154,6 +152,14 @@ public class TwitchConnection {
     
     public void setMaxReconnectionAttempts(long num) {
         this.maxReconnectionAttempts = num;
+    }
+    
+    public void setSpamProtection(String setting) {
+        spamProtection.setLinesPerSeconds(setting);
+    }
+    
+    public String getSpamProtectionInfo() {
+        return spamProtection.toString();
     }
     
     public User getUser(String channel, String name) {
@@ -586,7 +592,7 @@ public class TwitchConnection {
         
         @Override
         void onUserlist(String channel, String[] nicknames) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (isChannelOpen(channel)) {
                 
                 /**
@@ -628,7 +634,9 @@ public class TwitchConnection {
             }
             
             if (server != null) {
-                listener.onGlobalInfo("Trying to connect to " + server + ":" + port+(secured ? " (secured)" : ""));
+                listener.onGlobalInfo(Language.getString("chat.connecting",
+                        server+":"+port)
+                        +(secured ? " ("+Language.getString("chat.secured")+")" : ""));
             } else {
                 listener.onGlobalInfo("Failed to connect (server or port invalid)");
             }
@@ -680,7 +688,8 @@ public class TwitchConnection {
             if (this == irc) {
                 channelStates.reset();
                 twitchCommands.clearModsAlreadyRequested(null);
-                listener.onGlobalInfo("Disconnected" + Helper.makeDisconnectReason(reason, reasonMessage));
+                listener.onGlobalInfo(Language.getString("chat.disconnected",
+                        Helper.makeDisconnectReason(reason, reasonMessage)));
 
                 if (reason != Irc.REQUESTED_DISCONNECT) {
                     startReconnectTimer(reason);
@@ -712,7 +721,7 @@ public class TwitchConnection {
 
         @Override
         void onJoinAttempt(String channel) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             joinChecker.joinAttempt(channel);
             if (this == irc) {
                 listener.onJoinAttempt(channel);
@@ -722,7 +731,7 @@ public class TwitchConnection {
 
         @Override
         void onJoin(String channel, String nick, String prefix) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick.equalsIgnoreCase(username)) {
                 /**
                  * Local user has joined a channel.
@@ -764,7 +773,7 @@ public class TwitchConnection {
 
         @Override
         void onPart(String channel, String nick, String prefix, String message) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick.isEmpty()) {
                 return;
             }
@@ -804,7 +813,7 @@ public class TwitchConnection {
 
         @Override
         void onModeChange(String channel, String nick, boolean modeAdded, String mode, String prefix) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (!onChannel(channel)) {
                 return;
             }
@@ -897,7 +906,7 @@ public class TwitchConnection {
         @Override
         void onChannelMessage(String channel, String nick, String from, String text,
                 MsgTags tags, boolean action) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (this != irc) {
                 return;
             }
@@ -931,7 +940,7 @@ public class TwitchConnection {
         
         @Override
         void onNotice(String channel, String text, MsgTags tags) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (this != irc) {
                 return;
             }
@@ -953,7 +962,7 @@ public class TwitchConnection {
                 return;
             }
             String login = tags.get("login");
-            String text = tags.get("system-msg");
+            String text = StringUtil.removeLinebreakCharacters(tags.get("system-msg"));
             String emotes = tags.get("emotes");
             int months = tags.getInteger("msg-param-months", -1);
             if (StringUtil.isNullOrEmpty(login, text)) {
@@ -961,10 +970,21 @@ public class TwitchConnection {
             }
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
-            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")) {
+            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")
+                    || tags.isValue("msg-id", "subgift")) {
                 listener.onSubscriberNotification(channel, user, text, message, months, emotes);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
-                listener.onInfo(channel, text);
+                listener.onInfo(channel, "[Charity] "+text);
+            } else if (tags.isValue("msg-id", "raid")) {
+                String m = text;
+                if (!message.isEmpty()) {
+                    m += " ["+message+"]";
+                }
+                listener.onInfo(channel, "[Raid] "+m);
+            } else {
+                // Just output like this if unknown, since Twitch keeps adding
+                // new messages types for this
+                listener.onInfo(channel, "[Usernotice] "+text);
             }
         }
 
@@ -1084,7 +1104,7 @@ public class TwitchConnection {
         
         @Override
         public void onUserstate(String channel, MsgTags tags) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (onChannel(channel)) {
                 updateUserstate(channel, tags);
             }
@@ -1138,7 +1158,7 @@ public class TwitchConnection {
         @Override
         public void onClearChat(MsgTags tags, String channel, 
                 String nick) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (nick != null) {
                 // A single user was timed out/banned
                 User user = users.getUserIfExists(channel, nick);
@@ -1159,7 +1179,7 @@ public class TwitchConnection {
         @Override
         public void onChannelCommand(MsgTags tags, String nick,
                 String channel, String command, String trailing) {
-            channel = channel.toLowerCase();
+            channel = StringUtil.toLowerCase(channel);
             if (command.equals("HOSTTARGET")) {
                 String[] parameters = trailing.split(" ");
                 if (parameters.length == 2) {

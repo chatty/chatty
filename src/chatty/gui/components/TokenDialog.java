@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.gui.MainGui;
+import chatty.lang.Language;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -21,29 +22,29 @@ public class TokenDialog extends JDialog {
     private final static String OK_IMAGE = "<img style='vertical-align:bottom' src='"+TokenDialog.class.getResource("ok.png").toString()+"'>";
     private final static String NO_IMAGE = "<img src='"+TokenDialog.class.getResource("no.png").toString()+"'>";
     
-    JLabel nameLabel = new JLabel("Account name:");
+    JLabel nameLabel = new JLabel(Language.getString("login.accountName"));
     JLabel name = new JLabel("<no account>");
     LinkLabel accessLabel;
     JLabel access = new JLabel("<none>");
     
     JLabel info = new JLabel("<html><body style='width:200px'>");
-    JButton deleteToken = new JButton("Remove login");
-    JButton requestToken = new JButton("Request login data");
-    JButton verifyToken = new JButton("Verify login");
+    JButton deleteToken = new JButton(Language.getString("login.button.removeLogin"));
+    JButton requestToken = new JButton(Language.getString("login.button.requestLogin"));
+    JButton verifyToken = new JButton(Language.getString("login.button.verifyLogin"));
     private final LinkLabel tokenInfo;
     private final LinkLabel foreignTokenInfo;
-    JButton done = new JButton("Done");
+    JButton done = new JButton(Language.getString("dialog.button.close"));
     
     String currentUsername = "";
     String currentToken = "";
     
     public TokenDialog(MainGui owner) {
-        super(owner,"Login configuration",true);
+        super(owner, Language.getString("login.title"), true);
         this.setResizable(false);
        
         this.setLayout(new GridBagLayout());
         
-        accessLabel = new LinkLabel("Access [help:login (?)]:", owner.getLinkLabelListener());
+        accessLabel = new LinkLabel("Access: [help:login (help)]", owner.getLinkLabelListener());
         //tokenInfo = new JLabel();
         tokenInfo = new LinkLabel("", owner.getLinkLabelListener());
         foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
@@ -77,7 +78,8 @@ public class TokenDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(verifyToken, gbc);
         
-        gbc = makeGridBagConstraints(1,7,1,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(0,7,2,1,GridBagConstraints.EAST);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(done, gbc);
         
         ActionListener actionListener = owner.getActionListener();
@@ -117,7 +119,7 @@ public class TokenDialog extends JDialog {
         this.currentUsername = username;
         this.currentToken = currentToken;
         if (currentUsername.isEmpty() || currentToken.isEmpty()) {
-            name.setText("<click below to create a login>");
+            name.setText(Language.getString("login.createLogin"));
         }
         else {
             name.setText(currentUsername);
@@ -142,12 +144,12 @@ public class TokenDialog extends JDialog {
         accessLabel.setVisible(!empty);
 
         StringBuilder b = new StringBuilder("<html><body style='line-height:28px;'>");
-        b.append(accessStatusImage(chat)).append("&nbsp;Chat access<br />");
-        b.append(accessStatusImage(user)).append("&nbsp;Read user info<br />");
-        b.append(accessStatusImage(editor)).append("&nbsp;Editor access<br />");
-        b.append(accessStatusImage(commercial)).append("&nbsp;Run commercials<br />");
-        b.append(accessStatusImage(subs)).append("&nbsp;Show subscribers<br />");
-        b.append(accessStatusImage(follow)).append("&nbsp;Follow channels");
+        b.append(accessStatusImage(chat)).append("&nbsp;").append(Language.getString("login.access.chat")).append("<br />");
+        b.append(accessStatusImage(user)).append("&nbsp;").append(Language.getString("login.access.user")).append("<br />");
+        b.append(accessStatusImage(editor)).append("&nbsp;").append(Language.getString("login.access.editor")).append("<br />");
+        b.append(accessStatusImage(commercial)).append("&nbsp;").append(Language.getString("login.access.commercials")).append("<br />");
+        b.append(accessStatusImage(subs)).append("&nbsp;").append(Language.getString("login.access.subscribers")).append("<br />");
+        b.append(accessStatusImage(follow)).append("&nbsp;").append(Language.getString("login.access.follow"));
 
         access.setText(b.toString());
         update();
@@ -164,7 +166,7 @@ public class TokenDialog extends JDialog {
      * Change status to verifying token.
      */
     public void verifyingToken() {
-        setTokenInfo("Verifying login..");
+        setTokenInfo(Language.getString("login.verifyingLogin"));
         verifyToken.setEnabled(false);
     }
     

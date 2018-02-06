@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
+import javax.swing.SwingUtilities;
 
 /**
  * Static methods to play sounds.
@@ -72,6 +73,7 @@ public class Sound {
 
                 @Override
                 public void update(LineEvent event) {
+                    LOGGER.info("LineEvent: "+event);
                     if (event.getType() == LineEvent.Type.STOP) {
                         clip.close();
                     }
@@ -79,7 +81,7 @@ public class Sound {
             });
             
             clip.start();
-            LOGGER.info("Playing sound "+id+"/"+file+" ("+volumeInfo+")");
+            LOGGER.info("Playing sound "+id+"/"+file+" ("+volumeInfo+") EDT:"+SwingUtilities.isEventDispatchThread());
         } catch (Exception ex) {
             LOGGER.warning("Couldn't play sound ("+id+"/"+file+"): "+ex);
             throw ex;

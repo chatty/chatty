@@ -1,5 +1,6 @@
-package chatty;
+package chatty.gui.colors;
 
+import chatty.Helper;
 import chatty.gui.HtmlColors;
 import java.awt.Color;
 import java.util.Arrays;
@@ -12,7 +13,7 @@ import java.util.Set;
  * 
  * @author tduva
  */
-public class UsercolorItem {
+public class UsercolorItem extends ColorItem {
 
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
@@ -76,26 +77,6 @@ public class UsercolorItem {
 
     public String getId() {
         return id;
-    }
-
-    @Override
-    public String toString() {
-        return id;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof UsercolorItem) {
-            return id.equals(((UsercolorItem)o).getId());
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.id);
-        return hash;
     }
 
 }

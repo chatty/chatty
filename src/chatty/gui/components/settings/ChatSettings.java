@@ -66,14 +66,16 @@ public class ChatSettings extends SettingsPanel {
         gbc = d.makeGbc(2, 4, 1, 1, GridBagConstraints.WEST);
         main.add(bufferSizesButton,
                 gbc);
-        
-        JCheckBox noInputAtStartPanel = new JCheckBox();
-        noInputAtStartPanel.add(d.addSimpleBooleanSetting("noInputAtStart",
-                "input field is hidden as default",
-                "input field is hidden as default"));
 
         gbc = d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST);
-        main.add(noInputAtStartPanel, gbc);       
+        main.add(d.addSimpleBooleanSetting("noInputAtStart",
+                "input field is hidden as default",
+                "input field is hidden as default"), gbc);       
+
+        gbc = d.makeGbc(0, 6, 3, 1);
+        main.add(d.addSimpleBooleanSetting("inputHistoryMultirowRequireCtrl",
+                "On a multirow inputbox require Ctrl to navigate input history",
+                ""), gbc);
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
         

@@ -26,7 +26,7 @@ public class CommandSettings extends SettingsPanel {
             + "Add Custom Commands as <code>/Command</code> (no parameters), "
             + "separated by spaces (several per line), <code>//Command</code> "
             + "to put into submenu, <code>|</code> (vertical bar) to add "
-            + "separator."
+            + "separator (or <code>-</code> on it's own line)."
             + "</li>"
             + "<li>"
             + "Add timeouts by specifying a number (<code>30</code> interpreted "

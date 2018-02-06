@@ -16,6 +16,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotes.Emoteset;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -316,13 +317,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (highlighted) {
             style = styles.highlight(color);
         } else {
-            style = styles.standard();
+            style = styles.standard(color);
         }
         print(getTimePrefix(), style);
         printUser(user, action, message.whisper, message.id);
         
         // Change style for text if /me and no highlight (if enabled)
-        if (!highlighted && action && styles.actionColored()) {
+        if (!highlighted && color == null && action && styles.actionColored()) {
             style = styles.standard(user.getDisplayColor());
         }
         printSpecials(text, user, style, emotes, false, message.bits > 0);
@@ -1851,8 +1852,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 } else {
                     emoticon = emoticons.get(id);
                 }
-                boolean isIgnored = emoticon != null && main.emoticons.isEmoteIgnored(emoticon);
-                if (end < text.length() && !isIgnored) {
+                if (end < text.length()) {
                     if (emoticon == null) {
                         /**
                          * Add emote from message alone
@@ -1862,13 +1862,21 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         Emoticon.Builder b = new Emoticon.Builder(
                                 Emoticon.Type.TWITCH, code, url);
                         b.setNumericId(id);
-                        b.setEmoteset(Emoticon.SET_UNKNOWN);
+                        Emoteset emotesetInfo = main.emoticons.getInfoByEmoteId(id);
+                        if (emotesetInfo != null) {
+                            b.setEmoteset(emotesetInfo.emoteset_id);
+                            b.setStream(emotesetInfo.stream);
+                            b.setEmotesetInfo(emotesetInfo.product);
+                        } else {
+                            b.setEmoteset(Emoticon.SET_UNKNOWN);
+                        }
                         emoticon = b.build();
                         main.emoticons.addTempEmoticon(emoticon);
                         LOGGER.info("Added emote from message: "+emoticon);
                     }
-                    addEmoticon(emoticon, start, end, ranges,
-                            rangesStyle);
+                    if (!main.emoticons.isEmoteIgnored(emoticon)) {
+                        addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                    }
                 }
             }
             /**
@@ -2081,7 +2089,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (styles.timestampFormat() != null) {
             return DateTime.currentTime(styles.timestampFormat())+" ";
         }
-        return " ";
+        return "";
     }
     
     public void refreshStyles() {
@@ -2903,9 +2911,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             StyleConstants.setIcon(emoteStyle, emoteImage.getImageIcon());
             
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);
-            if (!emoticon.hasStreamSet()) {
-                emoticon.setStream(main.emoticons.getStreamFromEmoteset(emoticon.emoteSet));
-            }
+            Emoticons.addInfo(main.emoticons.getEmotesetInfo(), emoticon);
             return emoteStyle;
         }
         

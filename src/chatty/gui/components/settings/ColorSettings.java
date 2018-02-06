@@ -1,6 +1,8 @@
 
 package chatty.gui.components.settings;
 
+import chatty.lang.Language;
+import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -9,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -21,31 +24,72 @@ public class ColorSettings extends SettingsPanel {
     private final Map<String, ColorSetting> colorSettings = new HashMap<>();
     private final ColorChooser colorChooser;
     private final JPanel main;
+    private final ColorTemplates presets;
     
-    public ColorSettings(SettingsDialog d) {
+    public ColorSettings(SettingsDialog d, Settings settings) {
         this.d = d;
         colorChooser = new ColorChooser(d);
 
-        main = addTitledPanel("Customize Colors", 0);
+        main = addTitledPanel(Language.getString("settings.section.colors"), 0);
         
         GridBagConstraints gbc;
+
+        presets = new ColorTemplates(settings, "colorPresets",
+                addColorSetting("backgroundColor", ColorSetting.BACKGROUND, "foregroundColor",
+                        Language.getString("settings.colors.background"), 1),
+                addColorSetting("foregroundColor", ColorSetting.FOREGROUND, "backgroundColor",
+                        Language.getString("settings.colors.foreground"), 2),
+                addColorSetting("infoColor", ColorSetting.FOREGROUND, "backgroundColor",
+                        Language.getString("settings.colors.info"), 3),
+                addColorSetting("compactColor", ColorSetting.FOREGROUND, "backgroundColor",
+                        Language.getString("settings.colors.compact"), 4),
+                addColorSetting("highlightColor", ColorSetting.FOREGROUND, "backgroundColor",
+                        Language.getString("settings.colors.highlight"), 5),
+                addColorSetting("inputBackgroundColor", ColorSetting.BACKGROUND, "inputForegroundColor",
+                        Language.getString("settings.colors.inputBackground"), 6),
+                addColorSetting("inputForegroundColor", ColorSetting.FOREGROUND, "inputBackgroundColor",
+                        Language.getString("settings.colors.inputForeground"), 7),
+                addColorSetting("searchResultColor", ColorSetting.BACKGROUND, "foregroundColor",
+                        Language.getString("settings.colors.searchResult"), 8),
+                addColorSetting("searchResultColor2", ColorSetting.BACKGROUND, "foregroundColor",
+                        Language.getString("settings.colors.searchResult2"), 9)
+        );
+        
+        presets.addPreset(Language.getString("settings.colorPresets.option.default"),
+                settings.getStringDefault("backgroundColor"),
+                settings.getStringDefault("foregroundColor"),
+                settings.getStringDefault("infoColor"),
+                settings.getStringDefault("compactColor"),
+                settings.getStringDefault("highlightColor"),
+                settings.getStringDefault("inputBackgroundColor"),
+                settings.getStringDefault("inputForegroundColor"),
+                settings.getStringDefault("searchResultColor"),
+                settings.getStringDefault("searchResultColor2"));
+            
+        presets.addPreset(Language.getString("settings.colorPresets.option.dark"),
+                "#111111", "LightGrey", "DeepSkyBlue", "#A0A0A0", "Red",
+                "#222222", "White", "DarkSlateBlue", "SlateBlue");
+        
+        presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
+                "Black", "White", "#FF9900", "#FFCC00", "#66FF66",
+                "#FFFFFF", "#000000", "#333333", "#555555");
+        
+        presets.init();
+        
         gbc = d.makeGbc(0, 0, 1, 1);
-        main.add(new Presets(), gbc);
-        addColorSetting("backgroundColor", ColorSetting.BACKGROUND, "foregroundColor", "Background","Background Color", 1);
-        addColorSetting("foregroundColor", ColorSetting.FOREGROUND, "backgroundColor", "Foreground","Normal message", 2);
-        addColorSetting("infoColor", ColorSetting.FOREGROUND, "backgroundColor", "Info","You have joined #channel", 3);
-        addColorSetting("compactColor", ColorSetting.FOREGROUND, "backgroundColor", "Compact","MOD: nick1, nick2", 4);
-        addColorSetting("highlightColor", ColorSetting.FOREGROUND, "backgroundColor", "Highlight","Highlighted message", 5);
-        addColorSetting("inputBackgroundColor", ColorSetting.BACKGROUND, "inputForegroundColor", "Input Background","Input Background", 6);
-        addColorSetting("inputForegroundColor", ColorSetting.FOREGROUND, "inputBackgroundColor", "Input Foreground","Input Foreground", 7);
-        addColorSetting("searchResultColor", ColorSetting.BACKGROUND, "foregroundColor", "Search Result","Search Result", 8);
-        addColorSetting("searchResultColor2", ColorSetting.BACKGROUND, "foregroundColor", "Search Result 2","Search Result 2", 9);
+        main.add(presets, gbc);
+
+        gbc = d.makeGbc(0, 10, 1, 1);
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(15, 5, 5, 5);
+        main.add(new JLabel("<html><body style='width:300px;'>"
+                +Language.getString("settings.colors.lookandfeel")), gbc);
     }
     
     
     private ColorSetting addColorSetting(String setting, int type,
-            String baseSetting, String name, String text, int row) {
-        ColorSetting colorSetting = new ColorSetting(type, baseSetting, name, text, colorChooser);
+            String baseSetting, String colorDescription, int row) {
+        ColorSetting colorSetting = new ColorSetting(type, baseSetting, colorDescription, colorDescription, colorChooser);
         colorSetting.addListener(new MyColorSettingListener(setting));
         d.addStringSetting(setting, colorSetting);
         colorSettings.put(setting, colorSetting);
@@ -70,6 +114,7 @@ public class ColorSettings extends SettingsPanel {
                 colorSetting.update(newColor);
             }
         }
+        d.updateBackgroundColor();
     }
     
     /**
@@ -78,7 +123,7 @@ public class ColorSettings extends SettingsPanel {
      */
     class MyColorSettingListener implements ColorSettingListener {
 
-        private String setting;
+        private final String setting;
         
         MyColorSettingListener(String setting) {
             this.setting = setting;

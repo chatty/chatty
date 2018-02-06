@@ -21,6 +21,8 @@
         <dd>For Boolean settings you can use <code>true</code>, <code>1</code>
                 or <code>on</code> to enable the setting, <code>!</code> to
                 toggle it and any other value to disable it.</dd>
+        <dd>Can be used to set the value of a key of a Map setting (for example
+            <code>/set lafCustomTheme selectionBackgroundColor 255 180 0</code>).</dd>
         
         <dt><code>/get &lt;setting&gt;</code></dt>
         <dd>Shows the current value of a setting.</dd>
@@ -29,13 +31,15 @@
         <dd>Resets the setting to the default (hard-coded) value.</dd>
         
         <dt><code>/clearsetting &lt;setting&gt;</code></dt>
-        <dd>Sets String (text) settings to an empty String.</dd>
+        <dd>Sets String (text) settings to an empty String. Removes all entries
+            from List or Map settings.</dd>
         
         <dt><code>/add &lt;setting&gt; &lt;value&gt;</code></dt>
-        <dd>Adds an item to a list setting.</dd>
+        <dd>Adds an item to a List setting.</dd>
         
         <dt><code>/remove &lt;setting&gt; &lt;value&gt;</code></dt>
-        <dd>Removes an item from a list setting.</dd>
+        <dd>Removes an item from a List setting or removes a key (and the
+            associated value) from a Map setting.</dd>
     </dl>
 
     <p><em>Tip:</em> You can use <a href="help.html#nickCompletion">TAB Completion</a>
@@ -61,6 +65,7 @@
     viewed with <code>/get</code>.</p>
     
     <p>
+        <a href="#laf">Look and Feel</a> |
         <a href="#font">Font</a> |
         <a href="#time">Time</a> |
         <a href="#server">Server/Connection</a> |
@@ -148,6 +153,45 @@
                     files.</td>
                 </tr>
             </table>
+    
+            <h3><a name="laf">Look and Feel</a></h3>
+            <table class="settings">
+                <tr style="border-bottom: 1px solid #EEE">
+                    <th>Setting</th>
+                    <th>Type</th>
+                    <th>Values</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td class="setting">laf</td>
+                    <td>String</td>
+                    <td>Look&amp;Feel code</td>
+                    <td>default</td>
+                    <td>Look&amp;Feel code used by Chatty (can be set in the
+                        Settings Dialog), although if starting with <code>:</code>
+                        you can directly set a Look&amp;Feel class name, for
+                        example <code>:javax.swing.plaf.metal.MetalLookAndFeel</code>.</td>
+                </tr>
+                <tr>
+                    <td class="setting">lafTheme</td>
+                    <td>String</td>
+                    <td>Look&amp;Feel theme code</td>
+                    <td>Default</td>
+                    <td>Look&amp;Feel theme code used by Chatty (can be set in the
+                        Settings Dialog), mostly to change the global font size.</td>
+                </tr>
+                <tr>
+                    <td class="setting">lafCustomTheme</td>
+                    <td>Map</td>
+                    <td>Theme properties</td>
+                    <td><em>empty</em></td>
+                    <td>This setting can be used to directly set your own
+                        <a href="http://www.jtattoo.net/ThemeProps.html">JTattoo Theme properties</a>.</td>
+                </tr>
+            </table>
+            <p><em>Note:</em> You may need to restart Chatty for Look and Feel
+                settings to take full effect.</p>
             
             <h3><a name="font">Font</a></h3>
             

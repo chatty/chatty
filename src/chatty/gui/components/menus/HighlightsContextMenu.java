@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.lang.Language;
 import java.awt.event.ActionEvent;
 
 /**
@@ -12,7 +13,7 @@ import java.awt.event.ActionEvent;
 public class HighlightsContextMenu extends ContextMenu {
 
     public HighlightsContextMenu() {
-        addItem("clearHighlights", "Clear");
+        addItem("clearHighlights", Language.getString("highlightedDialog.cm.clear"));
     }
     
     @Override

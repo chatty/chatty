@@ -1,7 +1,9 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.HtmlColors;
+import chatty.lang.Language;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -56,7 +58,7 @@ public class ColorSetting extends JPanel implements StringSetting {
     private final Set<ColorSettingListener> listeners = new HashSet<>();
     
     private final ColorChooser colorChooser;
-    private final JButton chooseColor = new JButton("Choose");
+    private final JButton chooseColor = new JButton(Language.getString("settings.colors.button.choose"));
     
     /**
      * 
@@ -79,7 +81,7 @@ public class ColorSetting extends JPanel implements StringSetting {
             preview.setText(" "+text);
             preview.setOpaque(true);
         }
-        preview.setPreferredSize(new Dimension(140,20));
+        preview.setPreferredSize(new Dimension(160,20));
         
         // Choose color button action
         chooseColor.addActionListener(new ActionListener() {
@@ -90,7 +92,7 @@ public class ColorSetting extends JPanel implements StringSetting {
                 setSettingValue(result);
             }
         });
-        chooseColor.setPreferredSize(new Dimension(80,20));
+        chooseColor.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         
         // Textfield settings
         textField.setEditable(false);

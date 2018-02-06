@@ -14,6 +14,7 @@ public class SpamProtection {
     
     private boolean enabled = false;
     private int lines;
+    private int seconds;
 
     /**
      * Changes the lines per seconds. If either lines or seconds is 0, then the
@@ -25,6 +26,7 @@ public class SpamProtection {
     public synchronized void setLinesPerSeconds(int lines, int seconds) {
         enabled = lines > 0 && seconds > 0;
         this.lines = lines;
+        this.seconds = seconds;
         counter.setInterval(seconds*1000);
     }
     
@@ -68,6 +70,12 @@ public class SpamProtection {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("%d lines in %d seconds, %d left",
+                lines, seconds, getAllowance());
     }
     
 }

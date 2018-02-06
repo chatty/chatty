@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
@@ -212,7 +213,7 @@ public class Helper {
         
         switch (reason) {
             case Irc.ERROR_UNKNOWN_HOST:
-                result = "Unknown host";
+                result = Language.getString("chat.error.unknownHost");
                 break;
             case Irc.REQUESTED_DISCONNECT:
                 result = "Requested";
@@ -221,10 +222,10 @@ public class Helper {
                 result = "";
                 break;
             case Irc.ERROR_REGISTRATION_FAILED:
-                result = "Failed to complete login.";
+                result = Language.getString("chat.error.loginFailed");
                 break;
             case Irc.ERROR_SOCKET_TIMEOUT:
-                result = "Connection timed out.";
+                result = Language.getString("chat.error.connectionTimeout");
                 break;
             case Irc.SSL_ERROR:
                 result = "Could not established secure connection ("+reasonMessage+")";

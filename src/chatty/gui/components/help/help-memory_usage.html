@@ -33,15 +33,16 @@
         and add the appropriate parameter after the <code>javaw.exe</code> but
         before the <code>-jar</code> parameter.</p>
     
-    <p>For example to restrict memory to 150 MB: <code>javaw -Xmx150M -jar "D:\Chatty\Chatty.jar"</code>.
-        You should test out yourself how low you can go, although more than 100 MB
+    <p>For example to restrict memory to 400 MB: <code>javaw -Xmx400M -jar "D:\Chatty\Chatty.jar"</code>.
+        You should test out yourself how low you can go, although more than 150 MB
         is usually recommended. Note that Java will show a higher usage than
         this in the Task Manager, since this pretty much only restricts how much
         the program can store, Java will need some more for it's own management
         and data.</p>
     
     <p>For the Windows Standalone version you can add this value to the file
-        <code>&lt;path to Chatty&gt;/app/Chatty.cfg</code>.</p>
+        <code>Chatty.cfg</code> located in the <code>app</code> subfolder of
+        the Chatty folder.</p>
     
     <h2><a name="error">OutOfMemoryError</a></h2>
     <p>If you get an OutOfMemoryError then Java ran out of memory. This can

@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.CommunitiesManager.CommunitiesListener;
 import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.CommunitiesManager.CommunityListener;
@@ -38,6 +39,7 @@ public class TwitchApi {
     
     protected final StreamInfoManager streamInfoManager;
     protected final EmoticonManager emoticonManager;
+    protected final EmoticonManager2 emoticonManager2;
     protected final CheerEmoticonManager cheersManager;
     protected final CheerEmoticonManager2 cheersManager2;
     protected final FollowerManager followerManager;
@@ -67,7 +69,7 @@ public class TwitchApi {
         channelInfoManager = new ChannelInfoManager(this, resultListener);
         userIDs = new UserIDs(this);
         communitiesManager = new CommunitiesManager(this);
-        
+        emoticonManager2 = new EmoticonManager2(resultListener, requests);
         getCommunityTop(r -> {});
     }
     
@@ -82,10 +84,32 @@ public class TwitchApi {
         }
     }
     
-    public void requestEmoticons(boolean forcedUpdate) {
-        if (forcedUpdate || !emoticonManager.load(false)) {
-            requests.requestEmoticons(forcedUpdate);
-        }
+    public void getEmotesBySets(Integer... emotesets) {
+        getEmotesBySets(new HashSet<>(Arrays.asList(emotesets)));
+    }
+    
+    public void getEmotesBySets(Set<Integer> emotesets) {
+        emoticonManager2.addEmotesets(emotesets);
+    }
+    
+    public void getEmotesByStreams(String... streams) {
+        emoticonManager2.addStreams(new HashSet<>(Arrays.asList(streams)));
+    }
+    
+    public void refreshEmotes() {
+        emoticonManager2.refresh();
+    }
+    
+    public void refreshEmotesOld() {
+        requests.requestEmoticons(true);
+    }
+    
+    public void requestEmotesNow() {
+        emoticonManager2.requestNow();
+    }
+    
+    public void setEmotesetInfo(EmotesetInfo info) {
+        emoticonManager2.setEmotesetInfo(info);
     }
     
     public void getGlobalBadges(boolean forceRefresh) {

@@ -7,6 +7,8 @@ Twitch specific features.
 * Website: http://chatty.github.io
 * E-Mail: chattyclient@gmail.com
 * Twitter: @ChattyClient (https://twitter.com/ChattyClient)
+* YouTube: http://www.youtube.com/user/chattyclient
+* Discord: https://discord.gg/WTuqGeJ
 
 I learned about most of the Java techniques and APIs used in this during
 development, so many things won't be designed ideally. I also never
@@ -19,106 +21,149 @@ Download
 Go to the [website](http://chatty.github.io) for ready to use downloads
 and more information on the features.
 
+Contributions
+=============
+
+Contributions to Chatty under the terms of the GPLv3 License (or compatible) are
+welcome.
+
+If you're contributing code that you didn't write yourself, make sure to adhere
+to whatever license terms it is under (like retaining copyright notices) and to
+detail that in the Pull Request.
+
+Obviously, I won't be able to accept all contributions, for example I may
+already be working on something similiar. If you plan to put more than a little
+effort into a Pull Request, consider asking first if what you're doing has a
+chance of being added.
+
 License Information
 ===================
 
-External Libraries/Resources
-----------------------------
+Chatty, as a whole, is released under the GPLv3 or later (see included
+`LICENSE` file).
+
+    Copyright (C) 2017  tduva and contributors
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Partly based on source code (most files located in the `src/chatty/` directory
+and subdirectories) licensed under the MIT license.
+
+    Copyright (c) 2014-2017  tduva and contributors
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+External Libraries
+------------------
 
 * JSON-Simple:
-  * File: `assets/lib/json-simple-*.jar`
-  * Website: https://code.google.com/p/json-simple/
+  * Files under `assets/lib/`: `json-simple-*.jar`, `json-simple-tag_release_1_1_1.zip`
+  * Website: <https://code.google.com/p/json-simple/>
   * License: "Apache License 2.0"
 	(for the license text see the APACHE_LICENSE file
-	or http://www.apache.org/licenses/LICENSE-2.0).
+	or <http://www.apache.org/licenses/LICENSE-2.0>).
 
 * JIntellitype:
-  * Files: `assets/lib/jintellitype-*.jar, Jintellitype*.dll`
-  * Website: https://code.google.com/p/jintellitype/
+  * Files under `assets/lib/`: `jintellitype-*.jar`, `Jintellitype*.dll`, `jintellitype-*-dist.zip`
+  * Website: <https://code.google.com/p/jintellitype/>
   * License: "Apache License 2.0"
 	(for the license text see the APACHE_LICENSE file
-	or http://www.apache.org/licenses/LICENSE-2.0).
+	or <http://www.apache.org/licenses/LICENSE-2.0>).
+
+* JTattoo by MH Software-Entwicklung:
+  * Files under `assets/lib/`: `JTattoo-*.jar`, `JTattoo-*-sources.zip`
+  * Website: <http://www.jtattoo.net>
+  * License: GPLv2 or later (see <https://www.gnu.org/licenses/gpl-2.0.txt>)
 
 * Tyrus:
-  * Files: `assets/lib/tyrus-standalone-client-1.12.jar`
-  * Website: https://tyrus.java.net
+  * Files under `assets/lib/`: `tyrus-standalone-client-*.jar`
+  * Website: <https://tyrus-project.github.io/>
   * License: "CDDL 1.1" and "GPL 2 with CPE"
-	(see https://tyrus.java.net/license.html)
+	(see <https://tyrus.java.net/license.html>)
+
+Images / Other
+--------------
 
 * Favorites Icon by Everaldo Coelho:
-  * File: `star.png`
-  * Source: https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon 
+  * File (in various folders): `star.png`
+  * Source: <https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon>
   * License: LGPL
 	(for the license text see the LGPL file or
-	http://www.gnu.org/licenses/lgpl.html)
+	<http://www.gnu.org/licenses/lgpl.html>)
 
 * Misc Icons from the Tango Icon Theme:
-  * Files: `list-add.png, list-remove.png, view-refresh.png,
+  * Files (in various folders): `list-add.png, list-remove.png, view-refresh.png,
 		help-browser.png, preferences-system.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
 		go-previous.png, go-home.png, go-web.png,
 		image-icon.png, commandline.png, edit-copy.png, sort.png,
 		edit-all.png (edited)`
-  * Source: http://tango.freedesktop.org/Tango_Icon_Library
+  * Source: <http://tango.freedesktop.org>/Tango_Icon_Library
   * License: Released into the Public Domain
 
 * Misc Icons from NUVOLA ICON THEME for KDE 3.x
 		by David Vignoni:
-  * Files: `edit.png, ok.png, no.png`
-  * Source: http://www.icon-king.com/projects/nuvola/
+  * Files (in various folders): `edit.png, ok.png, no.png`
+  * Source: <http://www.icon-king.com/projects/nuvola/>
   * License: LGPL
 	(for the license text see the LGPL file or
 	http://www.gnu.org/licenses/lgpl.html)
 
 * Robot Icon by Yusuke Kamiyamane:
-  * File: `icon_bot.png`
+  * File (in various folders): `icon_bot.png`
   * Source: https://www.iconfinder.com/icons/46205/robot_icon
   * License: CC-BY 3.0
 	(http://creativecommons.org/licenses/by/3.0/)
 
-* Twitter Emoji Images
-  * Files: `gui/emoji/twemoji`
-  * Source: https://github.com/twitter/twemoji
+* Twitter Emoji Images:
+  * Files: `gui/emoji/twemoji/*`
+  * Source: <https://github.com/twitter/twemoji>
   * License: CC-BY 4.0
 	(https://creativecommons.org/licenses/by/4.0/)
 
-* Emoji One Images
-  * Files: `gui/emoji/e1`
-  * Source: http://emojione.com/
+* Emoji One Images:
+  * Files: `gui/emoji/e1/*`
+  * Source: <http://emojione.com/>
   * License: CC-BY 4.0
-	(https://creativecommons.org/licenses/by/4.0/)
+	(<https://creativecommons.org/licenses/by/4.0/>)
 
-* Emoji Metadata based on EmojiOne emoji.json
+* Emoji Metadata based on EmojiOne emoji.json:
   * Source: https://github.com/Ranks/emojione/blob/master/emoji.json
   * License: MIT
-	(https://opensource.org/licenses/MIT)
+	(<https://opensource.org/licenses/MIT>)
 
-Chatty
-------
-
-This application (except the parts mentioned above) is released under the
-MIT License.
-
-Copyright (c) 2014 tduva
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
+* Example Sounds by tduva:
+  * Files: `assets/sounds/*`
+  * Source: Recorded myself
+  * License: CC-BY 4.0
+	(<https://creativecommons.org/licenses/by/4.0/>)
 
 Notes on building the program yourself
 ======================================
@@ -152,3 +197,4 @@ parameter, otherwise it will use the default JRE of the system.
 
 Currently the build includes the JIntellitype32.dll, so you may have to
 exchange that file if you bundle a 64bit version of Java.
+

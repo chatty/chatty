@@ -30,7 +30,9 @@ public class SpeedrunsLive {
     public void requestRaces() {
         if (!requestPending) {
             requestPending = true;
-            new Thread(new SpeedrunsLiveRequest()).start();
+            new SpeedrunsLiveRequest().async((result, responseCode) -> {
+                result(result, responseCode);
+            });
         }
     }
     
@@ -167,11 +169,6 @@ public class SpeedrunsLive {
          */
         private SpeedrunsLiveRequest() {
             super(URL);
-        }
-
-        @Override
-        public void requestResult(String result, int responseCode) {
-            result(result, responseCode);
         }
     }
     

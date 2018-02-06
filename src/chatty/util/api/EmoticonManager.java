@@ -34,7 +34,7 @@ public class EmoticonManager extends CachedManager {
     }
     
     @Override
-    protected boolean handleData(String data) {
+    public boolean handleData(String data) {
         Set<Emoticon> result = parseEmoticons(data);
         if (result == null || result.isEmpty()) {
             return false;
@@ -49,7 +49,7 @@ public class EmoticonManager extends CachedManager {
      * @param json
      * @return 
      */
-    private Set<Emoticon> parseEmoticons(String json) {
+    private static Set<Emoticon> parseEmoticons(String json) {
         Set<Emoticon> result = new HashSet<>();
         if (json == null) {
             return null;
@@ -92,7 +92,7 @@ public class EmoticonManager extends CachedManager {
      * @param json
      * @return 
      */
-    private Set<Emoticon> parseEmoticonSets(String json) {
+    protected static Set<Emoticon> parseEmoticonSets(String json) {
         Set<Emoticon> result = new HashSet<>();
         if (json == null) {
             return null;
@@ -137,7 +137,7 @@ public class EmoticonManager extends CachedManager {
      * @param emote The JSONObject containing the emoticon data
      * @return The Emoticon object or null if an error occured
      */
-    private Emoticon parseEmoticon(JSONObject emote, int emoteSet) {
+    private static Emoticon parseEmoticon(JSONObject emote, int emoteSet) {
         try {
             String code = (String)emote.get("code");
             int id = ((Number)emote.get("id")).intValue();

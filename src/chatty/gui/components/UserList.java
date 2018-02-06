@@ -46,6 +46,7 @@ public class UserList extends JList<User> {
                     setToolTipText("error");
                     return this;
                 }
+                // Configure some default stuff like colors
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 
                 User user = (User)value;

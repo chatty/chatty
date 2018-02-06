@@ -5,14 +5,14 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.8.7)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.9.1b1)</a></h1>
     <table>
         <tr>
             <td valign="top">
                 <strong>General usage</strong>
                 <ul class="menu">
                     <li><a href="#title">Title and Tabs</a></li>
-                    <li><a href="#shortcuts">Shortcuts</a></li>
+                    <li><a href="#shortcuts">Hotkeys</a></li>
                     <li><a href="#commands">Commands</a></li>
                     <li><a href="#login">Twitch Login</a></li>
                 </ul>
@@ -27,10 +27,10 @@
                 
                 <strong>Chat moderation / utility</strong>
                 <ul class="menu">
-                    <li><a href="#nickCompletion">TAB Completion</a></li>
+                    <li><a href="#TAB_Completion">TAB Completion</a></li>
                     <li><a href="#inputHistory">Input History</a></li>
                     <li><a href="#userselection">User Selection Mode</a></li>
-                    <li><a href="#emoticons">Emoticons/Emote Dialog</a></li>
+                    <li><a href="#emoticons">Emoticons / Emote Dialog</a></li>
                     <li><a href="#pausechat">Pause Chat / One-click moderation</a></li>
                     <li><a href="#automod">AutoMod</a></li>
                 </ul>
@@ -73,8 +73,8 @@
                     <li><a href="help-releases.html">Release Information</a></li>
                     <li><a href="help-troubleshooting.html">Troubleshooting</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="#thanks">Miscellaneous/Thanks</a></li>
-                    <li><a href="#about">About/License</a></li>
+                    <li><a href="help-about.html#thanks">Miscellaneous / Thanks</a></li>
+                    <li><a href="help-about.html">About / License</a></li>
                     <li><a href="#ignoreJoinsParts">Ignore joins/parts</a></li>
                     <li><a href="help-memory_usage.html">About Memory Usage</a></li>
                     <li><a href="#custom-processes">Run Custom Processes</a></li>
@@ -124,21 +124,21 @@
         also heavily cached).</p>
     
     <h2>
-        <a name="shortcuts">Shortcuts</a>
+        <a name="shortcuts">Hotkeys</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p><em>You can customize most of these shortcuts in the settings, and also
-            add shortcuts for some functions not listed here.</em></p>
-    <p>Default shortcuts which can't be changed:</p>
+    <p><em>You can customize most of these hotkeys in the settings, and also
+            add hotkeys for some functions not listed here.</em></p>
+    <p>Default hotkeys which can't be changed:</p>
     <ul>
-        <li><kbd>F1</kbd> - Open help</li>
         <li><kbd>PageUp/PageDown</kbd> - Scroll up or down in chat</li>
         <li><kbd>Arrow Up/Down</kbd> - Go through <a href="#inputHistory">Input History</a></li>
-        <li><kbd>TAB</kbd> - For <a href="#nickCompletion">TAB Completion</a></li>
+        <li><kbd>TAB</kbd> - For <a href="#TAB_Completion">TAB Completion</a></li>
     </ul>
-    <p>The following are more default shortcuts, however these can be changed
+    <p>The following are more default hotkeys, however these can be changed
     in the settings:</p>
     <ul>
+        <li><kbd>F1</kbd> - Open help</li>
         <li><kbd>Ctrl-F</kbd> - Find text in chat</li>
         <li><kbd>Ctrl-L</kbd> - Open Live Channels window</li>
         <li><kbd>Ctrl-J</kbd> - Open dialog to join channel</li>
@@ -174,7 +174,8 @@
                 <code>/slow</code>, <code>/slowoff</code>,
                 <code>/subscribers</code>, <code>/subscribersoff</code>,
                 <code>/clear</code>, <code>/mods</code>, <code>/host</code>,
-                <code>/unhost</code>, <code>/color</code>
+                <code>/unhost</code>, <code>/raid</code>, <code>/unraid</code>,
+                <code>/color</code>
                 just like in normal Twitch Chat</li>
         <li><code>/join &lt;channel&gt;</code> - Joins the given channel</li>
         <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
@@ -526,21 +527,26 @@
         seriously.</p>
     
     <h2>
-        <a name="nickCompletion">TAB Completion</a>
+        <a name="TAB_Completion">TAB Completion</a><a name="nickCompletion"></a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>When you type in the inputbox, you can TAB-complete different types of
-        things, by using either <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd> to
-        initiate Completion, which complete different types depending on the
-        <a href="help-settings.html#Completion">Completion settings</a>.</p>
-    
-    <p>Some prefixes automatically switch to a certain type of completion
-        independant of whether you use <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>:</p>
+    <p>When typing in the inputbox, you can use the following keys by default
+        (this can be changed in the <a href="help-settings.html#Completion">Completion settings</a>):</p>
+    <ul>
+        <li><kbd>TAB</kbd> to complete usernames</li>
+        <li><kbd>Shift-TAB</kbd> to complete Emoticons</li>
+    </ul>
+    <p>Once a completion is initiated, <kbd>TAB</kbd> and <kbd>Shift-TAB</kbd>
+        cycle forwards and backward through the results.</p>
+
+    <p>Some prefixes always force a certain completion type
+        no matter if you use <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>:</p>
     
     <ul>
         <li>Prefixing <code>@</code> completes usernames</li>
         <li>Prefixing <code>/</code> completes command names</li>
-        <li>Prefixing <code>.</code> performs <a href="help-settings.html#Completion-custom">Custom completion</a></li>
+        <li>Prefixing <code>:</code> completes Emoji codes (not Twitch Emotes!)</li>
+        <li>Prefixing <code>.</code> performs <a href="help-settings.html#TAB_Completion-custom">Custom completion</a></li>
         <li>Certain commands such as <code>/ban</code> complete usernames for
             their first parameter</li>
         <li>Setting commands such as <code>/set</code> complete setting names
@@ -733,7 +739,7 @@
     <div class="moreInfo">More information: <a href="help-settings.html#Usercolors">Usercolor Settings</a></div>
     
     <h2>
-        <a name="emoticons">Emoticons/Emote Dialog</a>
+        <a name="emoticons">Emoticons / Emote Dialog</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>Chatty supports the following types of emoticons:</p>
@@ -761,7 +767,14 @@
                 <li><strong>Not supported</strong> are Personal Emotes</li>
             </ul>
         </li>
+        <li>Emoji, turns the Unicode Emoji character into an image (you can
+            enter Emoji either by pasting the character directly, or by entering
+            a shortcode (e.g. <code>:thinking:</code>) into the inputbox, which
+            will be turned into the character when you press Enter to send it.</li>
     </ul>
+    
+    <p><em>Tip:</em> You can use <a href="#TAB_Completion">TAB Completion</a>
+        for Emoticon codes (Shift-TAB by default) and Emoji shortcodes.</p>
     
     <p>You can enable/disable Emoticons in general (displaying the images instead
         of the text) in the settings under <code>Emoticons</code>. You can also
@@ -824,6 +837,9 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         preference. For example you could also add an image for you own name to
         have it highlighted in chat in a different way.</p>
         
+        <p><em>Note:</em> The <code>emotes.txt</code> should be saved in the
+            UTF-8 encoding (or ASCII I guess).</p>
+        
         <h3>Syntax</h3>
         
         <p>The syntax per line is (you can use as many spaces or TABs as seperators as you want):</p>
@@ -863,6 +879,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
             command for it to take effect.
         Emote images may be cached, so if you change the image, you MAY have to
         clear the cache (<code>/clearemotecache CUSTOM</code>).</p>
+        
     <h2>
         <a name="addressbook">Addressbook</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -1480,83 +1497,19 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <li>Website: <a href="http://chatty.github.io">http://chatty.github.io</a></li>
         <li>E-Mail: chattyclient@gmail.com</li>
         <li>Twitch Account: <a href="http://twitch.tv/tduva">tduva</a></li>
-        <li>Twitch Chat: Channel <a href="http://www.twitch.tv/chattyclient/chat?popout=">#chattyclient</a> (Highlight "tduva" to get my attention if I'm there)</li>
         <li>Twitter: <a href="https://twitter.com/ChattyClient">@ChattyClient</a></li>
+        <li><a href="https://discord.gg/WTuqGeJ">Discord</a></li>
     </ul>
     <p>If you are referring to a specific version of Chatty, please provide the
     actual version number, which you can find on the top of the main help page in Chatty
     (this one if you are reading this in Chatty, otherwise go to Chatty and open
     <code>Help - About/Help</code> or press <kbd>F1</kbd>).</p>
-    
-    <h2>
-        <a name="thanks">Miscellaneous/Thanks</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p>Some of the resources that were helpful in the development of this program:</p>
-    <ul>
-        <li>Thanks to <a href="http://java-sl.com">java-sl.com</a> for some nice articles.</li>
-        <li>Thanks to <a href="http://twitchemotes.com">Twitchemotes.com</a> for
-            their <a href="http://twitchemotes.com/api/sets">Emoteset API endpoint</a>.</li>
-        <li>Thanks to <a href="https://frankerfacez.com">FrankerFaceZ</a> for
-            their Emotes/APIs and support</li>
-        <li>Thanks to <a href="http://www.nightdev.com">Nightdev</a> for allowing the use
-            of the <a href="http://www.nightdev.com/betterttv/">BetterTTV</a> emotes.</li>
-    </ul>
 
     <h2>
         <a name="about">About/License</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>Chatty is using a few libraries/resources made freely available by others:</p>
-    <ul>
-        <li>Using <a href="https://code.google.com/p/json-simple/">JSON-Simple</a>, which is licensed under
-            the <a href="http://www.apache.org/licenses/LICENSE-2.0">"Apache License 2.0"</a>.</li>
-        <li>Versions with Windows Global Hotkey support use <a href="https://code.google.com/p/jintellitype/">JIntellitype</a>,
-            which is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">"Apache License 2.0"</a>.</li>
-        <li>Using the <a href="https://tyrus.java.net">Tyrus</a> standalone websocket client library licensed under
-            <a href="https://tyrus.java.net/license.html">CDDL 1.1 and GPL 2 with CPE</a>.</li>
-        <li><a href="https://www.iconfinder.com/icons/17999/bookmark_favorite_star_icon">Favorite Icon</a>
-            (Star Icon) by Everaldo Coelho under <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>.</li>
-        <li>Several Icons from the <a href="http://tango.freedesktop.org/Tango_Icon_Library">Tango Icon Theme</a>
-        (Public Domain).</li>
-        <li>Edit Icon (Pencil Image), Ok Icon (Green Arrow), Invalid Icon (Cross) from <a href="http://www.icon-king.com/projects/nuvola/">NUVOLA ICON THEME</a> for KDE 3.x by David Vignoni
-        under <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>.</li>
-        <li>Robot Icon by <a href="http://p.yusukekamiyamane.com">Yusuke Kamiyamane</a> under <a href="http://creativecommons.org/licenses/by/3.0/">CC-BY 3.0</a>.</li>
-        <li>Emoji:
-            <ul>
-                <li>Emoji info (description, category) based on <a href="https://github.com/Ranks/emojione/blob/master/emoji.json">emoji.json by EmojiOne</a>
-                    under the <a href="https://opensource.org/licenses/MIT">MIT License</a></li>
-                <li><a href="http://emojione.com/">EmojiOne</a> images licensed under
-                    <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International</a></li>
-                <li><a href="https://github.com/twitter/twemoji">Twitter Emoji (Twemoji)</a> images licensed under
-                    <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a></li>
-            </ul>
-        </li>
-    </ul>
-
-    <p>This application (except for the parts mentioned in the previous paragraph)
-        is released under the MIT License.</p>
-    <pre>
-
-Copyright (c) 2014 tduva
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.</pre>
+    <p><em>Moved to <a href="help-about.html">About page</a>.</em></p>
 </body>
 </html>
 

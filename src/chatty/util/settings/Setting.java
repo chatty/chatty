@@ -127,6 +127,10 @@ public class Setting {
         return setValue(defaultValue);
     }
     
+    public Object getDefault() {
+        return defaultValue;
+    }
+    
     /**
      * Set whether this setting should be saved to a file.
      * 

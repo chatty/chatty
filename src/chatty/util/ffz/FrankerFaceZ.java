@@ -170,17 +170,13 @@ public class FrankerFaceZ {
         requestPending.add(url);
         
         // Create request and run it in a seperate thread
-        UrlRequest request = new UrlRequest() {
-
-            @Override
-            public void requestResult(String result, int responseCode) {
-                requestPending.remove(url);
-                parseResult(type, stream, result);
-            }
-        };
+        UrlRequest request = new UrlRequest();
         request.setLabel("[FFZ]");
         request.setUrl(url);
-        new Thread(request).start();
+        request.async((result, responseCode) -> {
+            requestPending.remove(url);
+            parseResult(type, stream, result);
+        });
     }
     
     /**
@@ -328,18 +324,14 @@ public class FrankerFaceZ {
      * Request and parse FFZ bot names.
      */
     public void requestBotNames() {
-        UrlRequest request = new UrlRequest("https://api.frankerfacez.com/v1/badge/bot") {
-            
-            @Override
-            public void requestResult(String result, int responseCode) {
-                if (result != null && responseCode == 200) {
-                    Set<String> botNames = FrankerFaceZParsing.getBotNames(result);
-                    LOGGER.info("[FFZ Bots] Found "+botNames.size()+" names");
-                    listener.botNamesReceived(botNames);
-                }
-            }
-        };
+        UrlRequest request = new UrlRequest("https://api.frankerfacez.com/v1/badge/bot");
         request.setLabel("[FFZ Bots]");
-        new Thread(request).start();
+        request.async((result, responseCode) -> {
+            if (result != null && responseCode == 200) {
+                Set<String> botNames = FrankerFaceZParsing.getBotNames(result);
+                LOGGER.info("[FFZ Bots] Found " + botNames.size() + " names");
+                listener.botNamesReceived(botNames);
+            }
+        });
     }
 }

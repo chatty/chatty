@@ -11,6 +11,7 @@
         | <a href="#Chat">Chat</a>
         | <a href="#Emoticons">Emoticons</a>
         | <a href="#Usericons">Usericons</a>
+        | <a href="#Colors">Colors</a>
         | <a href="#Usercolors">Usercolors</a>
         | <a href="#Highlight">Highlight</a>
         | <a href="#Ignore">Ignore</a>
@@ -23,7 +24,7 @@
         | <a href="#Other">Other</a>
         | <a href="#Advanced">Advanced</a>
         | <a href="#Hotkeys">Hotkeys</a>
-        | <a href="#Completion">Completion</a></p>
+        | <a href="#TAB_Completion">TAB Completion</a></p>
     <p>This page details some of the settings in the Settings Dialog
         (<code>Main Menu - Settings</code>). Also try hovering over settings
     in the settings dialog itself, sometimes you can get a tooltip with some
@@ -48,7 +49,7 @@
             indiviual line height.</dd>
     </dl>
     
-    <h3>Input Font</h3>
+    <h3>Input/Userlist Font</h3>
     <p>Input font is restricted to two fonts by default, because other fonts
         cause issues due to a bug in Java. The number behind the font is the
         font size. You can manually change this setting via
@@ -72,21 +73,21 @@
         Favorites/History dialog.</li>
     </ul>
     
+    <h3>Look&amp;Feel</h3>
+    <p>The Look&amp;Feel changes the overall look of the program. The "System"
+        Look&amp;Feel depends on the system you are on, the others are
+        cross-platform. Some Look&amp;Feels also allow you to additionally
+        select a different font size, which affects most of Chatty.</p>
+    
     <h2>
         <a name="Messages">Messages</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <h3>Deleted Messages (Timeouts/Bans)</h3>
-    <p>This allows you to define how timeouts or bans are displayed in Chatty.</p>
     <p><em>Tip:</em> Click on a username in chat to open the User Info Dialog,
         which also shows the timeouts/bans and the original messages.</p>
-    <p><strong>Please Note:</strong> The timeout duration/reason is in Beta at
-        Twitch, so stuff <em>may or may not</em> change at some point and break
-        the display in Chatty. Telling the difference between a timeout and
-        permanent ban also depends on this, so if this info isn't available
-        users who were just timed out may be shown as banned.</p>
     <ul>
-        <li>There are three options on how to handle deleted messages in chat:
+        <li>How to handle deleted messages (timeouts/bans) in chat window:
             <dl class="dl-settings">
                 <dt>Delete Message</dt>
                 <dd>Completely replaces the message with <code>&lt;message deleted&gt;</code>.</dd>
@@ -303,15 +304,40 @@
         <a name="Emoticons">Emoticons</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <h3>General Settings</h3>
+    <h3>General Emoticon Settings</h3>
     
     <dl class="dl-settings">
         <dt>Show emoticons</dt>
         <dd>Turns emoticon codes into images. This needs to be enabled for any
             emotes to show up.</dd>
+
+        <dt>Scale (Chat)</dt>
+        <dd>The relative size of how emotes are displayed in chat (100% is regular size).</dd>
         
+        <dt>Maximum Height</dt>
+        <dd>The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</dd>
+        
+        <dt>Emotes Dialog</dt>
+        <dd>The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</dd>
+        
+        <dt>Double-click on emote closes Emote Dialog</dt>
+        <dd>If enabled, double-clicking on an emote in the Emote Dialog closes
+            the Emote Dialog.</dd>
+
+        <dt>Cheers (Bits)</dt>
+        <dd>You can choose whether to show <a href="https://help.twitch.tv/customer/portal/articles/2449458">Cheering</a>
+            emotes in chat animated, as static images (like other emotes) or
+            not at all (so they'll just show up as text).</dd>
+        <dd>Sending Cheers is not supported at this point.</dd>
+    </dl>
+    
+    <h3>Third-Party Emoticons</h3>
+    <dl class="dl-settings">
         <dt>Enable BetterTTV Emotes</dt>
         <dd>Shows BetterTTV emotes (Personal Emotes not supported at this time).</dd>
+        
+        <dt>Allow animated emotes</dt>
+        <dd>Show animated emotes (BTTV GIF emotes).</dd>
         
         <dt>Enable FrankerFaceZ (FFZ)</dt>
         <dd>Downloads <a href="help.html#emoticons">FrankerFaceZ</a> emotes and
@@ -325,34 +351,21 @@
         <dd>Show special FFZ emotes available in some channels (mainly
             Speedrunning Events). To receive these emotes Chatty maintains a
             connection to the FFZ Socket Server.</dd>
-        
-        <dt>Allow animated emotes</dt>
-        <dd>Show animated emotes (BTTV GIF emotes).</dd>
-        
-        <dt>Scale</dt>
-        <dd>The relative size of how emotes are displayed in chat (100% is regular size).</dd>
-        
-        <dt>Maximum Height</dt>
-        <dd>The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</dd>
-        
-        <dt>Emotes Dialog</dt>
-        <dd>The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</dd>
-        
-        <dt>Double-click on emote closes Emote Dialog</dt>
-        <dd>If enabled, double-clicking on an emote in the Emote Dialog closes
-            the Emote Dialog.</dd>
-        
-        <dt>Emoji Set</dt>
+    </dl>
+    
+    <h3>Emoji</h3>
+    <dl class="dl-settings">
+        <dt>Set</dt>
         <dd>Turns Emoji characters into images. You can choose between different
             sets of Emoji images, or choose <code>None</code> to turn off Emoji
             images altogether.</dd>
         
-        <dt>Cheers (Bits)</dt>
-        <dd>You can choose whether to show <a href="https://help.twitch.tv/customer/portal/articles/2449458">Cheering</a>
-            emotes in chat animated, as static images (like other emotes) or
-            not at all (so they'll just show up as text).</dd>
-        <dd>Showing Cheering Badges and sending Cheers is not supported at this
-            point.</dd>
+        <dt>Replace Emoji codes in entered text</dt>
+        <dd>Emoji codes like <code>:joy:</code> or <code>:mouse:</code> get
+            replaced with their respective Emoji character (and thus image, if
+            a Set is chosen) when entering them into the inputbox.</dd>
+        <dd><em>Tip:</em> Use <a href="help.html#TAB_Completion">TAB Completion</a>
+            to complete partially entered Emoji codes.</dd>
     </dl>
     
     <h3>Ignored Emotes</h3>
@@ -496,6 +509,60 @@
         start to type. Backspace or wait to get out of the search mode.</p>
     
     <h2>
+        <a name="Colors">Colors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>Customize colors of certain types of chat messages. For the general look
+        of the program you can choose another Look&amp;Feel from the "Main"
+        settings page.</p>
+    
+    <h2>
+        <a name="Msg_Colors">Message Colors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>You can customize the color of messages based on the same message
+        matching rules and patterns that are used for the
+        <a href="#Highlight_Matching">Highlight system</a> (not all prefixes
+        apply). Add a new item, enter what messages you want to match and select
+        the color you want them to have.</p>
+    
+    <p>The order of entries can matter, the first color from the top that
+        matches is used.</p>
+    
+    <p><em>Note:</em> The default message color is set on the "Colors" settings
+        page ("Normal message").</p>
+    
+    <p><em>Note:</em> This feature only changes the message <em>color</em>. Use
+        the Highlight system instead if you want
+        to highlight important messages, have them added to a separate
+        Highlighted Messages window and maybe show a notification or play a
+        sound for it at the same time.</p>
+
+    <h3>Examples</h3>
+    <p>Examples of how to match certain messages, so you can assign it a custom
+        color.</p>
+    <dl>
+        <dt><code>status:r</code></dt>
+        <dd>Matches all messages from a known bot (FFZ, BTTV or the
+            <code>botNames</code> setting).</dd>
+        
+        <dt><code>cat:vip</code></dt>
+        <dd>Matches all messages from users in the <code>vip</code> Addressbook
+            category.</dd>
+        
+        <dt><code>chan:#tailsgaming start:!points</code></dt>
+        <dd>Matches all messages in channel <code>#tailsgaming</code>, starting
+            with <code>!points</code>.</dd>
+        
+        <dt><code>re*:(?i)(?&lt;!practice |debug )\bROM\b(?! hack)</code></dt>
+        <dd>Matches all messages containing the word <code>ROM</code>, not
+            preceded by <code>practice&nbsp;</code> or <code>debug&nbsp;</code>, nor
+            followed by <code>&nbsp;hack</code> (case-insensitive).</dd>
+    </dl>
+    
+    <div class="moreInfo">More examples: <a href="#Highlight_Examples">Highlight settings help</a></div>
+    
+    <h2>
         <a name="Usercolors">Usercolors</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
@@ -605,7 +672,7 @@
     match the message. The following two types of prefixes can be used to change
     highlighting behaviour per item.</p>
     
-    <h3>Text Matching Prefixes</h3>
+    <h3><a name="Highlight_Matching">Text Matching Prefixes</a></h3>
     <p>By default, matching is done case-insensitive and when the word or phrase
         appears anywhere in the message. However, you can add the following
         prefixes in front of the text to change this matching behaviour. You can
@@ -713,7 +780,7 @@
             </ul></li>
     </ul>
     
-    <h3>Examples</h3>
+    <h3><a name="Highlight_Examples">Examples</a></h3>
     <dl>
         <dt><code>word1 word2</code></dt>
         <dd>Matches e.g. <code>word1 word2</code>, <code>Word1 word2</code> anywhere in the message</dd>
@@ -886,7 +953,7 @@
     
     <p><img src="Notifications_example.jpg" /></p>
     
-    <p>Possible event types that can be selected for an entry:</p>
+    <p>Possible <strong>event types</strong> that can be selected for an entry:</p>
     
     <dl class="dl-settings">
         <dt>Stream Status</dt>
@@ -919,7 +986,7 @@
         <dd>When a new chat message filtered by AutoMod is received.</dd>
     </dl>
     
-    <h3>Settings for an entry (Notification/Sound)</h3>
+    <h3>Event settings (Notification/Sound)</h3>
     <dl class="dl-settings">
         <dt>Channel</dt>
         <dd>Name of the channel this item should be restricted to.</dd>
@@ -973,6 +1040,23 @@
     
     
     <h3>General Notification Settings</h3>
+    <p>There are different types of Notifications:</p>
+    <dl class="dl-settings">
+        <dt>Chatty Notifications</dt>
+        <dd>The default popup Notification created by Chatty, with additional
+            settings (see below).</dd>
+        
+        <dt>Tray Notifications (OS dependant)</dt>
+        <dd>Native Tray Notifications, which will act differently depending on
+            what OS you are on.</dd>
+        
+        <dt>Run OS Command</dt>
+        <dd>Execute a program on your system, for example to run native
+            notifications in Linux. <em>For advanced users only, read the help
+            in the "Edit system command" dialog.</em></dd>
+    </dl>
+    
+    <p>If you have selected <strong>Chatty Notifications</strong>:</p>
     <dl class="dl-settings">
         <dt>Position</dt>
         <dd>The corner of the screen the notification is displayed.</dd>
@@ -1120,6 +1204,11 @@
         <dt>Mod Actions</dt>
         <dd>Logs the commands performed by mods in your channel (Broadcaster/Mods only).</dd>
         <dd><code>MOD_ACTION: tduva (host coollertmb)</code></dd>
+        
+        <dt>Ignored Msg.</dt>
+        <dd>Logs messages that have been hidden by the Ignore list, like normal
+            messages. You can disable this if you don't want ignored messages to
+            show up in the chat log files.</dd>
     </dl>
     
     <h2>
@@ -1436,7 +1525,7 @@
                 </ul>
                 
     <h2>
-        <a name="Completion">Completion</a>
+        <a name="TAB_Completion">TAB Completion</a><a name="Completion"></a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>TAB Completion allows you to write the beginning characters
@@ -1464,6 +1553,7 @@
     <ul>
         <li>Prefixing <code>@</code> always completes usernames</li>
         <li>Prefixing <code>/</code> always completes command names</li>
+        <li>Prefixing <code>:</code> always completes Emoji codes (not Twitch Emotes!)</li>
         <li>Prefixing <code>.</code> always performs Custom Completion</li>
         <li>Certain commands such as <code>/ban</code> always complete usernames</li>
     </ul>
@@ -1545,7 +1635,7 @@
         
     </dl>
 
-    <h3><a name="Completion-custom">Custom Completion Items</a></h3>
+    <h3><a name="TAB_Completion-custom">Custom Completion Items</a><a name="Completion-custom"></a></h3>
     
     <p>Custom Completion allows you to add your own keyword/value pairs for
         completion. Custom Completion can always be performed by prepending the

@@ -7,6 +7,7 @@ import chatty.util.ImageCache;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -48,14 +49,12 @@ public class Emoticon {
     public static final int ID_UNDEFINED = -1;
     
     public static enum Type {
-        TWITCH, FFZ, BTTV, CUSTOM, EMOJI
+        TWITCH, FFZ, BTTV, CUSTOM, EMOJI, NOT_FOUND_FAVORITE
     }
     
     public static enum SubType {
         FEATURE_FRIDAY, EVENT, CHEER
     }
-    
-    private static final Pattern NOT_WORD = Pattern.compile("[^\\w]");
     
     /**
      * Try loading the image these many times, which will be tried if an error
@@ -100,6 +99,7 @@ public class Emoticon {
     
     private String stream;
     private Set<String> infos;
+    private String emotesetInfo;
     
     private volatile int width;
     private volatile int height;
@@ -126,6 +126,7 @@ public class Emoticon {
         private int height = -1;
         private boolean literal = false;
         private String stream;
+        private String emotesetInfo;
         private Set<String> streamRestrictions;
         private Set<String> infos;
         private int emoteset = SET_UNDEFINED;
@@ -163,6 +164,11 @@ public class Emoticon {
         
         public Builder setStream(String stream) {
             this.stream = stream;
+            return this;
+        }
+        
+        public Builder setEmotesetInfo(String info) {
+            this.emotesetInfo = info;
             return this;
         }
         
@@ -307,6 +313,7 @@ public class Emoticon {
         this.height = height;
         this.streamRestrictions = builder.streamRestrictions;
         this.stream = builder.stream;
+        this.emotesetInfo = builder.emotesetInfo;
         this.literal = builder.literal;
         this.numericId = builder.numericId;
         this.stringId = builder.stringId;
@@ -318,16 +325,24 @@ public class Emoticon {
     
     private void createMatcher() {
         if (matcher == null) {
-            // Only match at word boundaries, unless there is a character that
-            // isn't a word character
             String search = code;
             int flags = 0;
-            if ((literal && NOT_WORD.matcher(code).find()) || type == Type.EMOJI) {
+            
+            if (type == Type.EMOJI) {
+                // Some Emoji seemed to not compile without this, although not
+                // sure why, but just do it just in case
                 flags = Pattern.LITERAL;
             } else {
-                search = "(?<=^|\\s)"+code+"(?=$|\\s)";
+                // Any regular emotes should be separated by spaces
+                if (literal) {
+                    // Literal emotes come from a source that doesn't provide
+                    // regex, but may contain regex special characters
+                    search = Pattern.quote(search);
+                }
+                search = "(?<=^|\\s)"+search+"(?=$|\\s)";
             }
-            // Actually compile a Pattern from it
+            
+            // Compile the prepared Pattern
             try {
                 matcher = Pattern.compile(search, flags).matcher("");
             } catch (PatternSyntaxException ex) {
@@ -390,6 +405,13 @@ public class Emoticon {
         infos.addAll(infosToAdd);
     }
     
+    public synchronized void addInfo(String info) {
+        if (infos == null) {
+            infos = new HashSet<>();
+        }
+        infos.add(info);
+    }
+    
     /**
      * Creates a copy of the info strings.
      * 
@@ -421,6 +443,18 @@ public class Emoticon {
      */
     public void setStream(String stream) {
         this.stream = stream;
+    }
+    
+    public void setEmotesetInfo(String info) {
+        this.emotesetInfo = info;
+    }
+    
+    public String getEmotesetInfo() {
+        return emotesetInfo;
+    }
+    
+    public boolean hasEmotesetInfo() {
+        return emotesetInfo != null;
     }
     
     /**
@@ -874,7 +908,9 @@ public class Emoticon {
         public ImageIcon getImageIcon() {
             if (icon == null) {
                 icon = getDefaultIcon();
-                loadImage();
+                if (type != Type.NOT_FOUND_FAVORITE) {
+                    loadImage();
+                }
             } else if (loadingError) {
                 if (loadImage()) {
                     LOGGER.warning("Trying to load " + code + " again (" + loadedFrom + ")");
@@ -989,7 +1025,8 @@ public class Emoticon {
             if (error) {
                 g.setColor(Color.red);
             }
-            g.drawString("[x]", width / 2, height / 2);
+            int sWidth = g.getFontMetrics().stringWidth("[x]");
+            g.drawString("[x]", width / 2 - sWidth / 2, height / 2);
 
             g.dispose();
             return res;

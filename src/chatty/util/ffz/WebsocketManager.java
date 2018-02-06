@@ -4,7 +4,9 @@ package chatty.util.ffz;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.JSONUtil;
+import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
+import chatty.util.UrlRequest.FullResult;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.settings.Settings;
@@ -157,7 +159,7 @@ public class WebsocketManager {
             return;
         }
         connect();
-        room = room.toLowerCase();
+        room = StringUtil.toLowerCase(room);
         if (rooms.add(room)) {
             subRoom(room);
         }
@@ -173,7 +175,7 @@ public class WebsocketManager {
         if (!Helper.validateStream(room)) {
             return;
         }
-        room = room.toLowerCase();
+        room = StringUtil.toLowerCase(room);
         if (rooms.remove(room)) {
             unsubRoom(room);
             removeEmotes(room);
@@ -254,7 +256,7 @@ public class WebsocketManager {
         try {
             JSONObject data = (JSONObject) parser.parse(json);
             for (Object key : data.keySet()) {
-                String room = ((String)key).toLowerCase();
+                String room = StringUtil.toLowerCase((String)key);
                 Set<Integer> emotesets = new HashSet<>();
                 for (Object set : (JSONArray)data.get(key)) {
                     emotesets.add(((Number)set).intValue());
@@ -322,10 +324,10 @@ public class WebsocketManager {
      */
     private Set<Emoticon> fetchEmoteSet(String room, int emoteset) {
         UrlRequest r = new UrlRequest("https://api.frankerfacez.com/v1/set/"+emoteset);
-        r.run();
-        if (r.getResult() != null) {
+        FullResult result = r.sync();
+        if (result.getResult() != null) {
             Set<Emoticon> emotes = FrankerFaceZParsing.parseSetEmotes(
-                    r.getResult(), Emoticon.SubType.EVENT, room);
+                    result.getResult(), Emoticon.SubType.EVENT, room);
             return emotes;
         }
         return new HashSet<>();

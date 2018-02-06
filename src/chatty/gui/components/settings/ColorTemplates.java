@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -30,9 +32,9 @@ public class ColorTemplates extends JPanel {
     private final List<Preset> hardcodedPresets = new ArrayList<>();
     private final List<Preset> userPresets = new ArrayList<>();
     
-    private final JButton saveButton = new JButton("Save");
-    private final JButton saveAsButton = new JButton("Save as..");
-    private final JButton removeButton = new JButton("Delete");
+    private final JButton saveButton = new JButton(Language.getString("settings.colorPresets.button.save"));
+    private final JButton saveAsButton = new JButton(Language.getString("settings.colorPresets.button.saveAs"));
+    private final JButton removeButton = new JButton(Language.getString("settings.colorPresets.button.delete"));
     
     private final GenericComboSetting<Preset> selection = new GenericComboSetting<>();
     
@@ -65,15 +67,23 @@ public class ColorTemplates extends JPanel {
         
         gbc = GuiUtil.makeGbc(0, 1, 1, 1);
         gbc.insets = insets;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.3;
         add(saveButton, gbc);
         
         gbc = GuiUtil.makeGbc(1, 1, 1, 1);
         gbc.insets = insets;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.3;
         add(saveAsButton, gbc);
         
         gbc = GuiUtil.makeGbc(2, 1, 1, 1);
         gbc.insets = insets;
         add(removeButton, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 2, 3, 1);
+        JLabel saveNote = new JLabel(Language.getString("settings.colorPresets.info"));
+        add(saveNote, gbc);
         
         selection.addItemListener(e -> {
             boolean hardcoded = hardcodedPresets.contains(selection.getSettingValue());
@@ -116,7 +126,7 @@ public class ColorTemplates extends JPanel {
      */
     public void init() {
         selection.clear();
-        selection.add((Preset)null, "-- Color Presets --");
+        selection.add((Preset)null, "-- "+Language.getString("settings.colorPresets.colorPresets")+" --");
         for (Preset p : userPresets) {
             selection.add(p, p.name);
         }

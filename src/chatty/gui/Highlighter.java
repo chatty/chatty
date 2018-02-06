@@ -129,7 +129,11 @@ public class Highlighter {
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
         
-        String lowercaseText = text.toLowerCase();
+        // Not sure if default locale or not is better here, but it should at
+        // least be the same between input text and match strings.
+        //
+        // Always using english locale may be more consistent though.
+        String lowercaseText = text.toLowerCase(Locale.ENGLISH);
         
         // Try to match own name first (if enabled)
         if (highlightUsername && usernamePattern != null &&
@@ -244,13 +248,13 @@ public class Highlighter {
             } else if (item.startsWith("re*:") && item.length() > 4) {
                 compilePattern2(item.substring(4));
             } else if (item.startsWith("w:") && item.length() > 2) {
-                compilePattern("(?i).*\\b"+item.substring(2)+"\\b.*");
+                compilePattern("(?iu).*\\b"+item.substring(2)+"\\b.*");
             } else if (item.startsWith("wcs:") && item.length() > 4) {
                 compilePattern(".*\\b"+item.substring(4)+"\\b.*");
             } else if (item.startsWith("cs:") && item.length() > 3) {
                 caseSensitive = item.substring(3);
             } else if (item.startsWith("start:") && item.length() > 6) {
-                startsWith = item.substring(6).toLowerCase();
+                startsWith = item.substring(6).toLowerCase(Locale.ENGLISH);
             } else if (item.startsWith("cat:")) {
                 category = parsePrefix(item, "cat:");
             } else if (item.startsWith("!cat:")) {
@@ -279,7 +283,7 @@ public class Highlighter {
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
             } else {
-                caseInsensitive = item.toLowerCase();
+                caseInsensitive = item.toLowerCase(Locale.ENGLISH);
             }
         }
         
@@ -428,10 +432,22 @@ public class Highlighter {
             if (startsWith != null && !lowercaseText.startsWith(startsWith)) {
                 return false;
             }
+            /**
+             * This was called without User object, so only match if either
+             * "config:info" was present or wanted by the caller (e.g. if only
+             * applied to one message type).
+             */
             if (user == null) {
                 return appliesToInfo || noUserRequired;
             }
-            // Everything else from here is user-based
+            /**
+             * If a User object was supplied and "config:info" was present, then
+             * this shouldn't be matched, because it can't be an info message.
+             * 
+             * TODO: If message types should be matched more reliably, there
+             * should probably be an extra message type parameter instead of
+             * reyling on whether an User object was supplied.
+             */
             if (user != null && appliesToInfo) {
                 return false;
             }

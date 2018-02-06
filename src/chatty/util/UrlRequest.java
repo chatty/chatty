@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
@@ -17,7 +19,7 @@ import java.util.zip.GZIPInputStream;
  * 
  * @author tduva
  */
-public class UrlRequest implements Runnable {
+public class UrlRequest {
     
     private static final Logger LOGGER = Logger.getLogger(UrlRequest.class.getName());
     
@@ -28,9 +30,6 @@ public class UrlRequest implements Runnable {
     private static final String VERSION = "Chatty "+Chatty.VERSION;
     
     private String url;
-    private int responseCode;
-    private String result;
-    private String encoding;
     
     /**
      * Label used for debug messages, which can be set by the user.
@@ -64,53 +63,54 @@ public class UrlRequest implements Runnable {
      * is automatically added after it)
      */
     public final void setLabel(String label) {
-        this.label = label+" ";
+        this.label = "["+label+"] ";
     }
 
-    @Override
-    public void run() {
-        LOGGER.info(label+"Request: "+url);
-        getUrl(url);
-        if (result != null) {
-            LOGGER.info(label+"Response (" + responseCode + ", " + result.length()
-                    + (encoding != null ? ", " + encoding : "") + "): " + url);
-        }
-        requestResult(result, responseCode);
+    public void async(ResultListener listener) {
+        new Thread(() -> {
+            FullResult result = new FullResult();
+            performRequest(result);
+            listener.result(result.getResult(), result.getResponseCode());
+        }).start();
     }
     
-    /**
-     * Override this to get the result of the request. The {@code result}
-     * contains all the text returned by the request (may be null if the request
-     * failed), the {@code responseCode} is the HTTP Response Code (which may be
-     * 0 depending on whether/how the request failed).
-     * 
-     * @param result The text returned by the request, with linebreaks preserved
-     * @param responseCode The HTTP Response Code
-     */
-    public void requestResult(String result, int responseCode) { }
+    public void asyncLines(ResultLinesListener listener) {
+        new Thread(() -> {
+            LinesResult result = new LinesResult();
+            performRequest(result);
+            listener.result(result.getResult(), result.getResponseCode());
+        }).start();
+    }
     
-    public final String getResult() {
+    public FullResult sync() {
+        FullResult result = new FullResult();
+        performRequest(result);
+        return result;
+    }
+    
+    public LinesResult syncLines() {
+        LinesResult result = new LinesResult();
+        performRequest(result);
         return result;
     }
 
     /**
-     * Gets the given URL and reads the result line by line.
+     * Gets the given URL and reads the result.
      *
      * @param targetUrl
      * @return
      */
-    private void getUrl(String targetUrl) {
+    private void performRequest(Result result) {
+        LOGGER.info(label+"Request: "+url);
         HttpURLConnection connection = null;
-        Exception exception = null;
         try {
-            URL url = new URL(targetUrl);
-            connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestProperty("User-Agent", VERSION);
             connection.setRequestProperty("Accept-Encoding", "gzip");
             
             connection.setConnectTimeout(CONNECT_TIMEOUT);
             connection.setReadTimeout(READ_TIMEOUT);
-            encoding = connection.getContentEncoding();
+            String encoding = connection.getContentEncoding();
             
             // Read response
             InputStream input = connection.getInputStream();
@@ -118,31 +118,118 @@ public class UrlRequest implements Runnable {
                 input = new GZIPInputStream(input);
             }
 
-            StringBuilder response = new StringBuilder();
+            int responseCode = connection.getResponseCode();
+            
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, CHARSET))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                    response.append("\n");
-                }
+                result.fill(reader, responseCode);
             }
-            result = response.toString();
+            LOGGER.info(String.format("%sResponse (%s, %,d%s): %s",
+                    label,
+                    responseCode,
+                    result.getLength(),
+                    (encoding != null ? ", " + encoding : ""),
+                    url));
         } catch (IOException ex) {
-            exception = ex;
+            LOGGER.warning(label+"Request Error [" + url + "] (" + ex + ")");
         } finally {
             if (connection != null) {
-                try {
-                    responseCode = connection.getResponseCode();
-                    connection.disconnect();
-                    if (responseCode != 200) {
-                        LOGGER.warning(label+"Request Error [" + url + "] ("+responseCode+", " + exception + ")");
-                    }
-                } catch (IOException ex) {
-                    LOGGER.warning(label+"Request Error [" + url + "] (" + exception + ")");
-                }
-            } else {
-                LOGGER.warning(label+"Request Error [" + url + "] (" + exception + ")");
+                connection.disconnect();
             }
         }
     }
+    
+    
+    public interface ResultListener {
+        public void result(String result, int responseCode);
+    }
+    
+    public interface ResultLinesListener {
+        public void result(List<String> lines, int responseCode);
+    }
+    
+    
+    public static abstract class Result {
+        
+        protected int responseCode;
+        protected int length;
+        
+        public abstract void fill(BufferedReader reader, int responseCode) throws IOException;
+        
+        public int getResponseCode() {
+            return responseCode;
+        }
+        
+        public int getLength() {
+            return length;
+        }
+    }
+    
+    public static class FullResult extends Result {
+        
+        private String result;
+        
+        @Override
+        public void fill(BufferedReader reader, int responseCode) throws IOException {
+            this.responseCode = responseCode;
+            
+            StringBuilder b = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                b.append(line).append("\n");
+                length += line.length() + 1;
+            }
+            result = b.toString();
+        }
+        
+        /**
+         * The result of the request as text.
+         * 
+         * @return the result, or null if an error occured
+         */
+        public String getResult() {
+            return result;
+        }
+    }
+    
+    public static class LinesResult extends Result {
+        
+        private List<String> result;
+
+        @Override
+        public void fill(BufferedReader reader, int responseCode) throws IOException {
+            this.responseCode = responseCode;
+            
+            List<String> lines = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+                length += line.length();
+            }
+            result = lines;
+        }
+        
+        /**
+         * The result of the request as lines of text.
+         * 
+         * @return the result, or null if an error occured
+         */
+        public List<String> getResult() {
+            return result;
+        }
+        
+    }
+    
+    
+    public static void main(String[] args) {
+        UrlRequest request = new UrlRequest("http://tduva.com/res/emotesetinfo.txt");
+        //UrlRequest request = new UrlRequest("https://google.de");
+        request.setLabel("Test");
+        
+        FullResult result = request.sync();
+        //System.out.println(result.getResult());
+        
+        //FullResult result2 = request.sync();
+        //System.out.println(result2.getResult());
+    }
+    
 }

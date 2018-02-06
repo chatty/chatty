@@ -7,6 +7,7 @@ import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamsContextMenu;
+import chatty.lang.Language;
 import chatty.util.BitEncoder;
 import chatty.util.DateTime;
 import java.awt.GridBagConstraints;
@@ -46,14 +47,11 @@ public class FavoritesDialog extends JDialog {
     
     private final JTextField input = new JTextField(30);
     
-    private final JButton addToFavoritesButton = new JButton("Add to favorites");
-    private final JButton removeFromFavoritesButton = new JButton("Remove selected from favorites");
-    private final JButton removeButton = new JButton("Remove selected");
-    private final JButton doneButton = new JButton("Use chosen channels");
-    private final JButton cancelButton = new JButton("Cancel");
-    
-    private String doneButtonText = "";
-    private String doneButtonTextOneChannel = "";
+    private final JButton addToFavoritesButton = new JButton(Language.getString("favorites.button.addToFavorites"));
+    private final JButton removeFromFavoritesButton = new JButton(Language.getString("favorites.button.removeFromFavorites"));
+    private final JButton removeButton = new JButton(Language.getString("favorites.button.remove"));
+    private final JButton doneButton = new JButton();
+    private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
  
     public static final int ACTION_CANCEL = 0;
     public static final int ACTION_DONE = 1;
@@ -74,7 +72,7 @@ public class FavoritesDialog extends JDialog {
     
     public FavoritesDialog(MainGui main, ContextMenuListener contextMenuListener) {
         super(main);
-        setTitle("Favorites / History");
+        setTitle(Language.getString("favorites.title"));
         setModal(true);
         
         this.contextMenuListener = contextMenuListener;
@@ -260,21 +258,13 @@ public class FavoritesDialog extends JDialog {
      * @param actionOneChannel The secondary description, to be used for one channel
      * @return 
      */
-    public int showDialog(String channelPreset, String action, String actionOneChannel) {
-        doneButton.setText(action);
-        doneButtonText = action;
-        doneButtonTextOneChannel = actionOneChannel;
+    public int showDialog(String channelPreset) {
         setChannel(channelPreset);
         result = -1;
         updateEditButtons();
         setVisible(true);
         return result;
     }
-    
-    public int showDialog(String channelPreset, String action) {
-        return showDialog(channelPreset, action, null);
-    }
-    
 
     /**
      * Gets the action associated with this Object (should be JButton).
@@ -316,14 +306,10 @@ public class FavoritesDialog extends JDialog {
      * When the chosen channels changed. Update the done button.
      */
     private void channelsChanged() {
-        boolean channelsPresent = !getChannels().isEmpty();
-        doneButton.setEnabled(channelsPresent);
-        int count = getChannels().size();
-        if (count == 1 && doneButtonTextOneChannel != null) {
-            doneButton.setText(doneButtonTextOneChannel);
-        } else {
-            doneButton.setText(doneButtonText);
-        }
+        Set<String> currentChannels = getChannels();
+        doneButton.setEnabled(!currentChannels.isEmpty());
+        doneButton.setText(Language.getString("favorites.button.joinChannels",
+                currentChannels.size()));
     }
     
     /**
@@ -503,7 +489,11 @@ public class FavoritesDialog extends JDialog {
          * The columns. Changing this requires adjustments of column stuff in
          * some places (e.g. sorter).
          */
-        private final String[] columns = {"Fav","Channel","Last joined"};
+        private final String[] columns = {
+            Language.getString("favorites.column.fav"),
+            Language.getString("favorites.column.channel"),
+            Language.getString("favorites.column.lastJoined")
+        };
         
         @Override
         public int getRowCount() {

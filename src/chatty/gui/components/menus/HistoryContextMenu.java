@@ -1,7 +1,9 @@
 
 package chatty.gui.components.menus;
 
+import chatty.lang.Language;
 import java.awt.event.ActionEvent;
+import javax.swing.JMenuItem;
 
 /**
  *
@@ -9,17 +11,21 @@ import java.awt.event.ActionEvent;
  */
 public class HistoryContextMenu extends ContextMenu {
 
-    private static final String RANGE_MENU = "Range";
+    private static final String RANGE_MENU = Language.getString("channelInfo.viewers.cm.timeRange");
     
     public HistoryContextMenu() {
-        addItem("range1h", "1 Hour",RANGE_MENU);
-        addItem("range2h", "2 Hours",RANGE_MENU);
-        addItem("range4h", "4 Hours",RANGE_MENU);
-        addItem("range8h", "8 Hours",RANGE_MENU);
-        addItem("range12h", "12 Hours",RANGE_MENU);
+        addRadioItem("historyRange60", format(1), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange120", format(2), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange240", format(4), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange480", format(8), RANGE_MENU, RANGE_MENU);
+        addRadioItem("historyRange720", format(12), RANGE_MENU, RANGE_MENU);
         addSeparator(RANGE_MENU);
-        addItem("rangeAll", "All",RANGE_MENU);
-        addItem("toggleShowFullVerticalRange", "Toggle Vertical");
+        addRadioItem("historyRange-1", Language.getString("channelInfo.viewers.cm.timeRange.all"), RANGE_MENU, RANGE_MENU);
+        addCheckboxItem("toggleVerticalZoom", Language.getString("channelInfo.viewers.cm.verticalZoom"), false);
+    }
+    
+    private String format(int hours) {
+        return Language.getString("channelInfo.viewers.cm.timeRange.option", hours);
     }
     
     @Override
@@ -28,4 +34,17 @@ public class HistoryContextMenu extends ContextMenu {
             l.menuItemClicked(e);
         }
     }
+    
+    public void setRange(int range) {
+        String key = "historyRange"+range;
+        JMenuItem item = getItem(key);
+        if (item != null) {
+            item.setSelected(true);
+        }
+    }
+    
+    public void setZoom(boolean zoom) {
+        getItem("toggleVerticalZoom").setSelected(zoom);
+    }
+    
 }

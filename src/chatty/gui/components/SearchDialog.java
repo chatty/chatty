@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
+import chatty.lang.Language;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -33,7 +34,7 @@ public class SearchDialog extends JDialog {
     
     private final Timer timer;
     private final JTextField searchText = new JTextField(20);
-    private final JButton searchButton = new JButton("Search");
+    private final JButton searchButton = new JButton(Language.getString("searchDialog.button.search"));
     //private final JCheckBox highlightAll = new JCheckBox("Highlight all occurences");
     
     private static final Map<Window, SearchDialog> created = new HashMap<>();
@@ -51,7 +52,7 @@ public class SearchDialog extends JDialog {
     
     public SearchDialog(final MainGui g, final Window owner) {
         super(owner);
-        setTitle("Search");
+        setTitle(Language.getString("searchDialog.title"));
         setResizable(false);
         setLayout(new GridBagLayout());
  

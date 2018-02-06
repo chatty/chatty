@@ -54,7 +54,7 @@ public class BotNameManager {
             if (!botNames.containsKey(channel)) {
                 botNames.put(channel, new HashSet<String>());
             }
-            botNames.get(channel).add(botName.toLowerCase());
+            botNames.get(channel).add(StringUtil.toLowerCase(botName));
         }
         informListeners(channel, botName);
     }

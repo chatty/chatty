@@ -240,6 +240,16 @@ public class HotkeyManager {
     }
     
     /**
+     * Remove and re-add all regular custom hotkeys for the given pane.
+     * 
+     * @param pane 
+     */
+    public void refreshHotkeys(JRootPane pane) {
+        removeHotkeys(pane);
+        addHotkeys(pane);
+    }
+    
+    /**
      * Whether this Hotkey has an action registered.
      * 
      * @param hotkey The Hotkey to check

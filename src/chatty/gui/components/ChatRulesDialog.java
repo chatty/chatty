@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Helper;
 import chatty.gui.MainGui;
+import chatty.lang.Language;
 import chatty.util.api.ChatInfo;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -42,7 +43,7 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
         rulesText.setWrapStyleWord(true);
         rulesText.setBorder(BorderFactory.createEmptyBorder(6, 5, 10, 4));
         
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = new JButton(Language.getString("dialog.button.close"));
         closeButton.addActionListener(new ActionListener() {
 
             @Override
@@ -51,8 +52,8 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
             }
         });
         
-        autoShowCheckbox = new JCheckBox("Auto-show first time you write in a channel");
-        autoShowCheckbox.setToolTipText("You can also open this via 'Extra - Chat Rules' or the channel context menu");
+        autoShowCheckbox = new JCheckBox(Language.getString("chatRules.setting.autoShow"));
+        autoShowCheckbox.setToolTipText(Language.getString("chatRules.setting.autoShow.tip"));
         autoShowCheckbox.addChangeListener(new ChangeListener() {
 
             @Override
@@ -132,7 +133,7 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
     
     private void setRoom(String room) {
         currentRoom = room;
-        setTitle("Chat Rules ("+room+")");
+        setTitle(Language.getString("chatRules.title", room));
     }
     
     public void setChatInfo(ChatInfo info) {
@@ -148,7 +149,7 @@ public class ChatRulesDialog extends JDialog implements Channel.OnceOffEditListe
                 // If dialog not yet visible, don't show it if no rules
                 return;
             }
-            rulesText.setText("No rules have been set for this channel");
+            rulesText.setText(Language.getString("chatRules.noRules"));
         }
         else {
             StringBuilder b = new StringBuilder();

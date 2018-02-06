@@ -91,19 +91,15 @@ public class UpdateMessage extends JDialog {
             return;
         }
         changelog.setText("Loading..");
-        UrlRequest request = new UrlRequest(CHANGELOG_URL) {
-            
-            @Override
-            public void requestResult(String result, int responseCode) {
-                if (responseCode == 200) {
-                    changelog.setText(result);
-                    changelogLoaded = true;
-                } else {
-                    changelog.setText("Error loading changelog.");
-                }
+        UrlRequest request = new UrlRequest(CHANGELOG_URL);
+        request.async((result, responseCode) -> {
+            if (responseCode == 200) {
+                changelog.setText(result);
+                changelogLoaded = true;
+            } else {
+                changelog.setText("Error loading changelog.");
             }
-        };
-        new Thread(request).start();
+        });
     }
     
 }

@@ -1,8 +1,10 @@
 
 package chatty;
 
+import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
+import chatty.util.StringUtil;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -103,10 +105,6 @@ public class UserManager {
         this.addressbook = addressbook;
     }
     
-    public void setEmotesets(Map<Integer, String> newEmotesets) {
-        emotesets.putAll(newEmotesets);
-    }
-    
     public void setCustomNamesManager(CustomNames m) {
         if (m != null) {
             this.customNamesManager = m;
@@ -148,7 +146,7 @@ public class UserManager {
      * @return The List of User-objects.
      */
     public synchronized List<User> getUsersByName(String name) {
-        name = name.toLowerCase();
+        name = StringUtil.toLowerCase(name);
         List<User> result = new ArrayList<>();
         Iterator<HashMap<String, User>> it = users.values().iterator();
         while (it.hasNext()) {
@@ -187,19 +185,16 @@ public class UserManager {
         if (name == null || name.isEmpty()) {
             return errorUser;
         }
-        String displayName = name;
-        name = name.toLowerCase(Locale.ENGLISH);
+        name = StringUtil.toLowerCase(name);
         User user = getUserIfExists(channel, name);
         if (user == null) {
-            String capitalizedName = null;
-            if (displayName.equals(name)) {
-                if (capitalizedName != null) {
-                    displayName = capitalizedName;
-                } else if (capitalizedNames) {
-                    displayName = name.substring(0, 1).toUpperCase() + name.substring(1);
-                }
+            // Capitalize name if enabled (might still be overwritten by setting
+            // displayNick from tags)
+            String capitalizedName = name;
+            if (capitalizedNames) {
+                capitalizedName = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
             }
-            user = new User(displayName, capitalizedName, channel);
+            user = new User(capitalizedName, channel);
             user.setUsercolorManager(usercolorManager);
             user.setAddressbook(addressbook);
             user.setUsericonManager(usericonManager);
@@ -246,7 +241,7 @@ public class UserManager {
      * @return A Map with channel->User association
      */
     public synchronized HashMap<String,User> getChannelsAndUsersByUserName(String name) {
-        String lowercaseName = name.toLowerCase(Locale.ENGLISH);
+        String lowercaseName = StringUtil.toLowerCase(name);
         HashMap<String,User> result = new HashMap<>();
         
         Iterator<Entry<String, HashMap<String, User>>> it = users.entrySet().iterator();
@@ -323,7 +318,7 @@ public class UserManager {
      * @param color String The color as a string representation
      */
     protected synchronized void setColorForUsername(String userName, String color) {
-        userName = userName.toLowerCase();
+        userName = StringUtil.toLowerCase(userName);
         cachedColors.put(userName,color);
         
         List<User> userAllChans = getUsersByName(userName);

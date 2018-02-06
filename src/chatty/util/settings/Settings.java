@@ -248,13 +248,20 @@ public class Settings {
      * @param type The type of the setting.
      * @return The Object value, which is actually of 'type'.
      */
-    private Object get(String settingName, int type) {
+    private Object get(String settingName, int type, boolean getDefault) {
         synchronized(LOCK) {
             if (!isOfType(settingName, type)) {
                 throw new SettingNotFoundException("Could not find setting: " + settingName);
             }
+            if (getDefault) {
+                return settings.get(settingName).getDefault();
+            }
             return settings.get(settingName).getValue();
         }
+    }
+    
+    private Object get(String settingName, int type) {
+        return get(settingName, type, false);
     }
     
     private Object get(String settingName) {
@@ -275,6 +282,10 @@ public class Settings {
      */
     public String getString(String setting) {
         return (String)get(setting, Setting.STRING);
+    }
+    
+    public String getStringDefault(String setting) {
+        return (String)get(setting, Setting.STRING, true);
     }
     
     public long getLong(String setting) {
@@ -576,9 +587,11 @@ public class Settings {
         if (isListSetting(setting)) {
             if (isOfSubtype(setting, Setting.STRING)) {
                 listAdd(setting, parameter);
+                setSettingChanged(setting);
             } else if (isOfSubtype(setting, Setting.LONG)) {
                 try {
                     listAdd(setting, Long.parseLong(parameter));
+                    setSettingChanged(setting);
                 } catch (NumberFormatException ex) {
                     return settingInvalidMessage(setting);
                 }
@@ -604,9 +617,11 @@ public class Settings {
         if (isListSetting(setting)) {
             if (isOfSubtype(setting, Setting.STRING)) {
                 listRemove(setting, parameter);
+                setSettingChanged(setting);
             } else if (isOfSubtype(setting, Setting.LONG)) {
                 try {
                     listRemove(setting, Long.parseLong(parameter));
+                    setSettingChanged(setting);
                 } catch (NumberFormatException ex) {
                     return settingInvalidMessage(setting);
                 }
@@ -614,6 +629,10 @@ public class Settings {
                 return settingInvalidMessage(setting);
             }
             return "Setting '"+setting+"' (List): Removed '"+parameter+"', now: "+getList(setting);
+        } else if (isMapSetting(setting)) {
+            mapRemove(setting, parameter);
+            setSettingChanged(setting);
+            return "Setting '"+setting+"' (Map): Removed '"+parameter+"', now: "+getMap(setting);
         }
         return settingInvalidMessage(setting);
     }
@@ -658,6 +677,7 @@ public class Settings {
         else if (isListSetting(setting) && isOfSubtype(setting, Setting.STRING)) {
             listClear(setting);
             listAdd(setting, parameter);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' (List) set to "+getList(setting);
         }
         else if (isMapSetting(setting) && isOfSubtype(setting, Setting.STRING)) {
@@ -666,6 +686,7 @@ public class Settings {
                 return "Invalid number of parameters to set map value.";
             }
             mapPut(setting, mapParameters[0], mapParameters[1]);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' (Map) set to "+getMap(setting);
         }
         return settingInvalidMessage(setting);
@@ -725,6 +746,14 @@ public class Settings {
         if (isStringSetting(setting)) {
             setString(setting, "");
             return "Setting '"+setting+"' set to empty string.";
+        }
+        if (isListSetting(setting)) {
+            listClear(setting);
+            return "Setting '"+setting+"' is now empty.";
+        }
+        if (isMapSetting(setting)) {
+            mapClear(setting);
+            return "Setting '"+setting+"' is now empty.";
         }
         return settingInvalidMessage(setting);
     }

@@ -4,10 +4,8 @@ package chatty.gui.components.admin;
 import chatty.Chatty;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
-import chatty.gui.components.settings.DurationSetting;
-import chatty.util.DateTime;
+import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
-import chatty.util.api.CommunitiesManager.Community;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import java.awt.*;
@@ -16,15 +14,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /**
  * Dialog to change stream info and run commercials.
@@ -59,12 +51,12 @@ public class AdminDialog extends JDialog {
 
     // Shared
     private final JTabbedPane tabs;
-    private final JButton close = new JButton("Close");
+    private final JButton close = new JButton(Language.getString("dialog.button.close"));
     private final LinkLabel infoText;
     
     // Current state/settings (currentChannel specific)
     private String currentChannel;
-    
+
     
 
 
@@ -100,8 +92,8 @@ public class AdminDialog extends JDialog {
                 updateInfoText();
             }
         });
-        tabs.addTab("Status", statusPanel);
-        tabs.addTab("Commercial", commercialPanel);
+        tabs.addTab(Language.getString("admin.tab.status"), statusPanel);
+        tabs.addTab(Language.getString("admin.tab.commercial"), commercialPanel);
         gbc = makeGbc(0,0,2,1);
         gbc.insets = new Insets(0,0,0,0);
         add(tabs, gbc);
@@ -236,7 +228,7 @@ public class AdminDialog extends JDialog {
         if (channel != null && !channel.isEmpty()) {
             //update.setEnabled(true);
         }
-        setTitle("Channel Admin - "+currentChannel);
+        setTitle(Language.getString("admin.title", currentChannel));
     }
 
     /**

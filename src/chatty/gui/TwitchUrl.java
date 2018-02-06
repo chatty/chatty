@@ -50,11 +50,11 @@ public class TwitchUrl {
     }
     
     public static String makeTwitchProfileUrl(String channel) {
-        return "http://twitch.tv/" + channel.toLowerCase() + "/profile";
+        return "http://twitch.tv/" + StringUtil.toLowerCase(channel) + "/profile";
     }
     
     public static String makeTwitchStreamUrl(String channel, boolean popout) {
-        String url = "http://twitch.tv/" + channel.toLowerCase() + "";
+        String url = "http://twitch.tv/" + StringUtil.toLowerCase(channel) + "";
         if (popout) {
             url += "/popout";
         }
@@ -62,7 +62,7 @@ public class TwitchUrl {
     }
     
     public static String makeTwitchPlayerUrl(String channel) {
-        return "http://player.twitch.tv/?channel="+channel.toLowerCase();
+        return "http://player.twitch.tv/?channel="+StringUtil.toLowerCase(channel);
     }
     
     public static String makeTwitchTurboUrl() {
@@ -78,7 +78,7 @@ public class TwitchUrl {
     }
     
     public static String makeFFZUrl(String user) {
-        return "http://www.frankerfacez.com/emoticons/user/"+user.toLowerCase();
+        return "http://www.frankerfacez.com/emoticons/user/"+StringUtil.toLowerCase(user);
     }
     
     public static String makeBttvUrl() {

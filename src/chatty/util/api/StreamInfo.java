@@ -26,7 +26,7 @@ public class StreamInfo {
     private static final Logger LOGGER = Logger.getLogger(StreamInfo.class.getName());
     
     private enum UpdateResult { UPDATED, CHANGED, SET_OFFLINE };
-    public enum StreamType { LIVE, WATCH_PARTY };
+    public enum StreamType { LIVE, WATCH_PARTY, RERUN, PREMIERE };
     
     /**
      * All lowercase name of the stream
@@ -107,7 +107,7 @@ public class StreamInfo {
 
     public StreamInfo(String stream, StreamInfoListener listener) {
         this.listener = listener;
-        this.stream = stream.toLowerCase(Locale.ENGLISH);
+        this.stream = StringUtil.toLowerCase(stream);
     }
     
     private void streamInfoUpdated(UpdateResult r) {
@@ -397,7 +397,7 @@ public class StreamInfo {
      */
     public void setDisplayName(String name) {
         this.display_name = name;
-        if (name != null && name.toLowerCase().equals(stream)) {
+        if (name != null && StringUtil.toLowerCase(name).equals(stream)) {
             capitalizedName = name;
         }
     }
@@ -445,7 +445,7 @@ public class StreamInfo {
     }
     
     public synchronized String getStreamTypeString() {
-        if (streamType == StreamType.WATCH_PARTY) {
+        if (streamType != StreamType.LIVE) {
             return "[VOD] ";
         }
         return "";

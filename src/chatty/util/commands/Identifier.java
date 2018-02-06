@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.StringUtil;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ class Identifier implements Item {
     private final String name;
 
     public Identifier(String name) {
-        this.name = name.toLowerCase();
+        this.name = StringUtil.toLowerCase(name);
     }
 
     @Override

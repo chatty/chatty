@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.gui.UrlOpener;
 import chatty.util.WrapHistory;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -55,6 +56,8 @@ public class About extends JFrame implements ActionListener {
         JScrollPane scroll = new JScrollPane(textPane);
         scroll.getVerticalScrollBar().setUnitIncrement(40);
         textPane.setEditable(false);
+        // Explicitly set to white, as long as the HTML pages themselves are
+        textPane.setBackground(Color.WHITE);
         textPane.addHyperlinkListener(new HyperlinkListener() {
 
             @Override

@@ -2,9 +2,11 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -32,17 +34,17 @@ public class CompletionSettings extends SettingsPanel {
         //========
         // Entries
         //========
-        JPanel entries = addTitledPanel("TAB Completion (Names, Emotes, Commands)", 0);
+        JPanel entries = addTitledPanel(Language.getString("settings.section.completion"), 0);
         
         //--------------
         // TAB/Shift-TAB
         //--------------
         Map<String, String> tabChoices = new LinkedHashMap<>();
-        tabChoices.put("names", "Names");
-        tabChoices.put("emotes", "Emotes");
-        tabChoices.put("both", "Names, then Emotes");
-        tabChoices.put("both2", "Emotes, then Names");
-        tabChoices.put("custom", "Custom Completion");
+        tabChoices.put("names", Language.getString("settings.completion.option.names"));
+        tabChoices.put("emotes", Language.getString("settings.completion.option.emotes"));
+        tabChoices.put("both", Language.getString("settings.completion.option.namesEmotes"));
+        tabChoices.put("both2", Language.getString("settings.completion.option.emotesNames"));
+        tabChoices.put("custom", Language.getString("settings.completion.option.custom"));
 
         entries.add(new JLabel("TAB:"),
                 d.makeGbc(0, 0, 1, 1));
@@ -59,9 +61,7 @@ public class CompletionSettings extends SettingsPanel {
                 d.makeGbc(3, 0, 1, 1));
         
         entries.add(new JLabel("<html><body style='width:300px;padding-bottom:5px;'>"
-                + "<em>Tip:</em> Independant of these settings, you can prefix "
-                + "with @ to always TAB-complete to Names and with . (dot) to "
-                + "use Custom Completion."),
+                + Language.getString("settings.completion.info")),
                 d.makeGbc(0, 1, 4, 1));
 
         //================
@@ -89,25 +89,24 @@ public class CompletionSettings extends SettingsPanel {
         //===========
         // Appearance
         //===========
-        JPanel appearance = addTitledPanel("Appearance / Behaviour", 2);
+        JPanel appearance = addTitledPanel(Language.getString("settings.section.completionAppearance"), 2);
 
-        final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup", "Show popup",
-                "Shows the info popup (also requirement for \"Complete to common prefix\")");
+        final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup",
+                Language.getString("settings.completion.showPopup"),
+                "");
         appearance.add(popup,
             d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
-        final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix", "Complete to common prefix",
-                "If more than one match, complete to common prefix (\"Show popup\" required as well)");
-        appearance.add(common,
-                d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
-        
-        
-        
-        appearance.add(new JLabel("Max Items Shown:"),
-                d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST));
+        JPanel popupSettings = new JPanel();
+
+        popupSettings.add(new JLabel(Language.getString("settings.completion.itemsShown")));
         final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
-        appearance.add(max,
-                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+        popupSettings.add(max);
+        
+        final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix",
+                Language.getString("settings.completion.commonPrefix"),
+                Language.getString("settings.completion.commonPrefix.tip"));
+        popupSettings.add(common);
         
         popup.addChangeListener(e -> {
                 common.setEnabled(popup.isSelected());
@@ -115,16 +114,23 @@ public class CompletionSettings extends SettingsPanel {
             }
         );
         
+        appearance.add(popupSettings,
+                d.makeGbcSub(0, 1, 2, 1, GridBagConstraints.WEST));
+        
         //-----------------
         // Username Sorting
         //-----------------
-        appearance.add(new JLabel("Name Sorting:"),
+        appearance.add(new JLabel(Language.getString("settings.completion.nameSorting")),
                 d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
-        String[] choices = new String[]{"predictive", "alphabetical", "userlist"};
+        
+        Map<String, String> choices = new HashMap<>();
+        choices.put("predictive", Language.getString("settings.completion.option.predictive"));
+        choices.put("alphabetical", Language.getString("settings.completion.option.alphabetical"));
+        choices.put("userlist", Language.getString("settings.completion.option.userlist"));
         
         appearance.add(
             d.addComboStringSetting("completionSorting", 4, false, choices),
-            d.makeGbc(1, 2, 2, 1));
+            d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
 
         //==================
         // Custom Completion
