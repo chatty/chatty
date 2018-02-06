@@ -179,8 +179,7 @@ public class Channels {
             channel.setUserlistEnabled(false);
         }
         
-        boolean noInputAtStart = gui.getSettings().getBoolean("noInputAtStart");
-        if (noInputAtStart) {
+        if (!gui.getSettings().getBoolean("inputEnabled")) {
             channel.toggleInput();
         }
         

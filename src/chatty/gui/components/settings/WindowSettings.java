@@ -71,8 +71,12 @@ public class WindowSettings extends SettingsPanel {
         other.add(d.addSimpleBooleanSetting("userlistEnabled",
                 "Enable userlist by default",
                 "Enables the userlist by default when joining a channel (you can always use Shift+F10 to toggle it)"),
-                d.makeGbc(0,5,1,1, GridBagConstraints.WEST));
+                d.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST));
         
+        other.add(d.addSimpleBooleanSetting("inputEnabled",
+                "Enable input field by default",
+                ""),
+                d.makeGbc(0, 6, 1, 1, GridBagConstraints.WEST));   
         
         JPanel popout = addTitledPanel("Popout", 2);
         

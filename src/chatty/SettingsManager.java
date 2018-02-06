@@ -233,8 +233,6 @@ public class SettingsManager {
         
         settings.addBoolean("imageCache", true);
         
-        settings.addBoolean("noInputAtStart", false);
-        
         // Colors
         settings.addString("foregroundColor","#111111");
         settings.addString("backgroundColor","#FAFAFA");
@@ -372,6 +370,7 @@ public class SettingsManager {
         settings.addLong("userlistWidth", 120);
         settings.addLong("userlistMinWidth", 0);
         settings.addBoolean("userlistEnabled", true);
+        settings.addBoolean("inputEnabled", true);
         settings.addLong("bufferSize", 500);
         settings.addMap("bufferSizes", new HashMap<>(), Setting.LONG);
 
