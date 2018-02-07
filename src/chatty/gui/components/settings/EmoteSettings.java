@@ -24,17 +24,13 @@ public class EmoteSettings extends SettingsPanel {
     
     protected EmoteSettings(SettingsDialog d) {
         
-        //=================
+        //==================
         // General Settings
-        //=================
-        
+        //==================
         JPanel main = addTitledPanel(Language.getString("settings.section.emoticons"), 0);
 
         main.add(
-                d.addSimpleBooleanSetting("emoticonsEnabled",
-                        Language.getString("settings.emoticons.showEmoticons"),
-                        "Whether to show emotes as icons. "
-                        + "Changing this only affects new lines."),
+                d.addSimpleBooleanSetting("emoticonsEnabled"),
                 d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
         IgnoredEmotesDialog ignoredEmotesDialog = new IgnoredEmotesDialog(d);
@@ -47,47 +43,9 @@ public class EmoteSettings extends SettingsPanel {
         main.add(ignoredEmotesButton,
                 d.makeGbc(2, 0, 3, 1, GridBagConstraints.EAST));
         
-        //---------
-        // FFZ/BTTV
-        //---------
-        
-        JPanel other = addTitledPanel(Language.getString("settings.section.3rdPartyEmotes"), 1);
-        other.add(d.addSimpleBooleanSetting("bttvEmotes",
-                Language.getString("settings.3rdPartyEmotes.showBTTV"),
-                ""),
-                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
-        
-        other.add(d.addSimpleBooleanSetting(
-                "showAnimatedEmotes",
-                Language.getString("settings.3rdPartyEmotes.showAnimated"),
-                "Show animated emotes (currently only BTTV has GIF emotes)"),
-                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
-
-        final JCheckBox ffz = d.addSimpleBooleanSetting(
-                "ffz",
-                Language.getString("settings.3rdPartyEmotes.showFFZ"),
-                "Show FFZ emotes (and custom mod icons, if enabled)");
-        other.add(ffz,
-                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
-        
-        final JCheckBox ffzMod = d.addSimpleBooleanSetting(
-                "ffzModIcon",
-                Language.getString("settings.3rdPartyEmotes.showFFZModIcon"),
-                "Show custom mod icon for some channels (only works if FFZ is enabled).");
-        other.add(ffzMod,
-                d.makeGbcSub(0, 2, 1, 1, GridBagConstraints.WEST));
-        
-        final JCheckBox ffzEvent = d.addSimpleBooleanSetting(
-                "ffzEvent",
-                Language.getString("settings.3rdPartyEmotes.showFFZFeatured"),
-                "Show Featured Emotes available in some Event channels (like Speedrunning Marathons)");
-        other.add(ffzEvent,
-                d.makeGbcCloser(1, 2, 1, 1, GridBagConstraints.WEST));
-
-        //-----------
+        //------------
         // Emote Size
-        //-----------
-
+        //------------
         // Emote Scale Defintion, used for both Chat and Emotes Dialog
         final Map<Long, String> scaleDef = new LinkedHashMap<>();
         for (int i=50;i<=200;i += 10) {
@@ -120,30 +78,63 @@ public class EmoteSettings extends SettingsPanel {
         d.addLongSetting("emoteScaleDialog", emoteScaleDialog);
         main.add(emoteScaleDialog, d.makeGbc(1, 4, 1, 1, GridBagConstraints.CENTER));
         
-        //------
+        //-------
         // Other
-        //------
-        main.add(d.addSimpleBooleanSetting(
-                "closeEmoteDialogOnDoubleClick",
-                Language.getString("settings.emoticons.closeDialogDoubleClick"),
-                "Double-clicking on an emote in the Emotes Dialog closes the Dialog"),
+        //-------
+        main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick"),
                 d.makeGbc(0, 5, 3, 1));
         
-        // Checkbox status
+        //----------
+        // Cheering
+        //----------
+        Map<String, String> cheeringTypeDef = new LinkedHashMap<>();
+        cheeringTypeDef.put("none", Language.getString("settings.emoticons.cheers.option.text"));
+        cheeringTypeDef.put("static", Language.getString("settings.emoticons.cheers.option.static"));
+        cheeringTypeDef.put("animated", Language.getString("settings.emoticons.cheers.option.animated"));
+        ComboStringSetting cheersType = new ComboStringSetting(cheeringTypeDef);
+        
+        d.addStringSetting("cheersType", cheersType);
+        
+        main.add(new JLabel(Language.getString("settings.emoticons.cheers")),
+                d.makeGbc(0, 6, 1, 1, GridBagConstraints.CENTER));
+        main.add(cheersType,
+                d.makeGbc(1, 6, 2, 1, GridBagConstraints.WEST));
+        
+        //==========
+        // FFZ/BTTV
+        //==========
+        
+        JPanel other = addTitledPanel(Language.getString("settings.section.3rdPartyEmotes"), 1);
+        other.add(d.addSimpleBooleanSetting("bttvEmotes"),
+                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        other.add(d.addSimpleBooleanSetting("showAnimatedEmotes"),
+                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+
+        final JCheckBox ffz = d.addSimpleBooleanSetting("ffz");
+        other.add(ffz,
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
+        final JCheckBox ffzMod = d.addSimpleBooleanSetting("ffzModIcon");
+        other.add(ffzMod,
+                d.makeGbcSub(0, 2, 1, 1, GridBagConstraints.WEST));
+        
+        final JCheckBox ffzEvent = d.addSimpleBooleanSetting("ffzEvent");
+        other.add(ffzEvent,
+                d.makeGbcCloser(1, 2, 1, 1, GridBagConstraints.WEST));
+        
+        // FFZ checkbox status
         ffzMod.setEnabled(false);
         ffzEvent.setEnabled(false);
-        ffz.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
+        ffz.addItemListener(e -> {
                 ffzMod.setEnabled(ffz.isSelected());
                 ffzEvent.setEnabled(ffz.isSelected());
             }
-        });
-        
-        //------
+        );
+
+        //=======
         // Emoji
-        //------
+        //=======
         JPanel emojiSettings = addTitledPanel(Language.getString("settings.section.emoji"), 2);
         
         Map<String, String> emojiSetDef = new LinkedHashMap<>();
@@ -159,27 +150,8 @@ public class EmoteSettings extends SettingsPanel {
         emojiSettings.add(emojiSet,
                 d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
         
-        emojiSettings.add(d.addSimpleBooleanSetting("emojiReplace",
-                Language.getString("settings.emoji.replaceCodes"),
-                Language.getString("settings.emoji.replaceCodes.tip")),
+        emojiSettings.add(d.addSimpleBooleanSetting("emojiReplace"),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
-        
-        //---------
-        // Cheering
-        //---------
-        
-        Map<String, String> cheeringTypeDef = new LinkedHashMap<>();
-        cheeringTypeDef.put("none", Language.getString("settings.emoticons.cheers.option.text"));
-        cheeringTypeDef.put("static", Language.getString("settings.emoticons.cheers.option.static"));
-        cheeringTypeDef.put("animated", Language.getString("settings.emoticons.cheers.option.animated"));
-        ComboStringSetting cheersType = new ComboStringSetting(cheeringTypeDef);
-        
-        d.addStringSetting("cheersType", cheersType);
-        
-        main.add(new JLabel(Language.getString("settings.emoticons.cheers")),
-                d.makeGbc(0, 6, 1, 1, GridBagConstraints.CENTER));
-        main.add(cheersType,
-                d.makeGbc(1, 6, 2, 1, GridBagConstraints.WEST));
     }
     
     private static class IgnoredEmotesDialog extends JDialog {

@@ -47,7 +47,7 @@ public class Language {
         LOGGER.info(String.format("[Localization] Loaded locale '%s' for requested '%s'",
                 strings.getLocale(), language));
     }
-
+    
     /**
      * Gets the String with the given key for the current language. If the key
      * wasn't found a String consisting of a single questionmark is returned.
@@ -55,11 +55,31 @@ public class Language {
      * @param key The key as defined in the properties files
      * @return The language specific String, or "?" if none could be found
      */
-    public synchronized static String getString(String key) {
+    public static String getString(String key) {
+        return getString(key, true);
+    }
+
+    /**
+     * Gets the String with the given key for the current language. If the key
+     * wasn't found, either null or a String consisting of a single questionmark
+     * is returned, depending on the nonNull parameter.
+     *
+     * @param key The key as defined in the properties files
+     * @param nonNull If true, expect a non-null result ("?" is returned for
+     * missing keys)
+     * @return The language specific String, or null or "?" if none could be
+     * found
+     */
+    public synchronized static String getString(String key, boolean nonNull) {
         loadIfNecessary();
         if (!strings.containsKey(key)) {
-            LOGGER.warning("Missing string key: "+key);
-            return "?";
+            if (nonNull) {
+                // Only output warning if non-null is expected, since otherwise
+                // the program doesn't necessarily expect the key to exist
+                LOGGER.warning("Missing string key: "+key);
+                return "?";
+            }
+            return null;
         }
         return strings.getString(key);
     }

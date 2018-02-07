@@ -18,6 +18,10 @@ public class TabSettings extends SettingsPanel {
     public TabSettings(final SettingsDialog d) {
         
         JPanel other = addTitledPanel(Language.getString("settings.section.tabs"), 0);
+        
+        //------------
+        // Tabs Order
+        //------------
         other.add(new JLabel(Language.getString("settings.tabs.order")), d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         Map<String, String> options = new HashMap<>();
         options.put("normal", Language.getString("settings.tabs.option.normal"));
@@ -27,6 +31,9 @@ public class TabSettings extends SettingsPanel {
                 d.makeGbc(1, 0, 3, 1, GridBagConstraints.WEST)
         );
         
+        //---------------
+        // Tabs Location
+        //---------------
         Map<String, String> tabPlacementOptions = new HashMap<>();
         tabPlacementOptions.put("top", Language.getString("settings.tabs.option.top"));
         tabPlacementOptions.put("left", Language.getString("settings.tabs.option.left"));
@@ -39,6 +46,9 @@ public class TabSettings extends SettingsPanel {
             d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST)
         );
         
+        //-------------
+        // Tabs Layout
+        //-------------
         Map<String, String> tabLayoutOptions = new HashMap<>();
         tabLayoutOptions.put("wrap", Language.getString("settings.tabs.option.wrap"));
         tabLayoutOptions.put("scroll",  Language.getString("settings.tabs.option.scroll"));
@@ -49,22 +59,21 @@ public class TabSettings extends SettingsPanel {
         other.add(tabLayoutSetting,
                 d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST));
         
-        JCheckBox scroll = d.addSimpleBooleanSetting("tabsMwheelScrolling",
-                Language.getString("settings.tabs.scrollTabs"), "");
-        JCheckBox scroll2 = d.addSimpleBooleanSetting("tabsMwheelScrollingAnywhere",
-                Language.getString("settings.tabs.scrollTabs2"), "");
-        scroll.addItemListener(e -> {
-            scroll2.setEnabled(scroll.isSelected());
-        });
-        scroll2.setEnabled(false);
-        
-        
+        //----------------
+        // Tabs Scrolling
+        //----------------
+        JCheckBox scroll = d.addSimpleBooleanSetting("tabsMwheelScrolling");
+        JCheckBox scroll2 = d.addSimpleBooleanSetting("tabsMwheelScrollingAnywhere");
         other.add(scroll,
                 d.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
-        
         other.add(scroll2,
                 d.makeGbcSub(0, 6, 4, 1, GridBagConstraints.WEST));
 
+        // Tab scrolling checkbox status
+        scroll2.setEnabled(false);
+        scroll.addItemListener(e -> {
+            scroll2.setEnabled(scroll.isSelected());
+        });
     }
     
 }

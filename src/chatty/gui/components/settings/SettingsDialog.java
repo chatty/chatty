@@ -553,13 +553,27 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.gridy = y;
         gbc.gridwidth = w;
         gbc.gridheight = h;
-        gbc.insets = new Insets(1,18,1,5);
+        gbc.insets = new Insets(1,18,2,5);
         gbc.anchor = anchor;
         return gbc;
     }
     
     protected void addBooleanSetting(String name, BooleanSetting setting) {
         booleanSettings.put(name, setting);
+    }
+    
+    /**
+     * Add boolean setting where the description is in the Strings file as
+     * "settings.boolean.[settingName]" and the optional tooltip as
+     * "settings.boolean.[settingName].tip".
+     * 
+     * @param name The setting name
+     * @return 
+     */
+    protected JCheckBox addSimpleBooleanSetting(String name) {
+        return addSimpleBooleanSetting(name,
+                Language.getString("settings.boolean."+name),
+                Language.getString("settings.boolean."+name+".tip", false));
     }
     
     protected JCheckBox addSimpleBooleanSetting(String name, String description, String tooltipText) {

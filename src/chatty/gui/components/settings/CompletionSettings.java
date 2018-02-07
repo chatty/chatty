@@ -6,6 +6,7 @@ import chatty.lang.Language;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,8 +16,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -67,48 +66,42 @@ public class CompletionSettings extends SettingsPanel {
         //================
         // Localized Names
         //================
-        JPanel localized = addTitledPanel("Localized Names", 1);
+        JPanel localized = addTitledPanel(Language.getString("settings.section.completionNames"), 1);
         
-        localized.add(d.addSimpleBooleanSetting(
-                "completionPreferUsernames",
-                "Prefer Regular name for username-based commands",
-                "Prefer Regular name for commands like /ban even when entering a Localized or Custom name"),
+        localized.add(d.addSimpleBooleanSetting("completionPreferUsernames"),
                 d.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST));
         
-        localized.add(d.addSimpleBooleanSetting(
-                "completionAllNameTypes",
-                "Include all name types in result (Regular/Localized/Custom)",
-                "For example entering the Localized name will also put the Regular name in the results"),
+        localized.add(d.addSimpleBooleanSetting("completionAllNameTypes"),
                 d.makeGbcCloser(0, 3, 4, 1, GridBagConstraints.WEST));
         
-        localized.add(d.addSimpleBooleanSetting("completionAllNameTypesRestriction",
-                "Only when no more than two matches",
-                ""),
+        localized.add(d.addSimpleBooleanSetting("completionAllNameTypesRestriction"),
                 d.makeGbcSub(0, 4, 4, 1, GridBagConstraints.WEST));
         
         //===========
         // Appearance
         //===========
         JPanel appearance = addTitledPanel(Language.getString("settings.section.completionAppearance"), 2);
-
-        final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup",
-                Language.getString("settings.completion.showPopup"),
-                "");
+        
+        final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup");
         appearance.add(popup,
             d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
-        JPanel popupSettings = new JPanel();
+        JPanel popupSettings = new JPanel(new GridBagLayout());
 
-        popupSettings.add(new JLabel(Language.getString("settings.completion.itemsShown")));
+        popupSettings.add(new JLabel(Language.getString("settings.completion.itemsShown")),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
-        popupSettings.add(max);
+        popupSettings.add(max,
+                d.makeGbc(1, 0, 1, 1, GridBagConstraints.LINE_START));
         
-        final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix",
-                Language.getString("settings.completion.commonPrefix"),
-                Language.getString("settings.completion.commonPrefix.tip"));
-        popupSettings.add(common);
+        final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix");
+        popupSettings.add(common,
+                d.makeGbcCloser(0, 1, 2, 1, GridBagConstraints.WEST));
         
-        popup.addChangeListener(e -> {
+        // Popup checkbox state
+        common.setEnabled(false);
+        max.setEnabled(false);
+        popup.addItemListener(e -> {
                 common.setEnabled(popup.isSelected());
                 max.setEnabled(popup.isSelected());
             }
