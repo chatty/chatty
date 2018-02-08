@@ -52,7 +52,7 @@ public class WindowSettings extends SettingsPanel {
                 d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
 
         other.add(d.addSimpleBooleanSetting("userlistEnabled"),
-                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
         
         JPanel userlistWidthPanel = new JPanel();
         userlistWidthPanel.add(new JLabel("Default Userlist Width:"));
@@ -63,7 +63,7 @@ public class WindowSettings extends SettingsPanel {
                 d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("inputEnabled"),
-                d.makeGbc(0, 6, 1, 1, GridBagConstraints.WEST));   
+                d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));   
         
         JPanel popout = addTitledPanel("Popout", 2);
         

@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.HtmlColors;
 import chatty.gui.colors.UsercolorItem;
 import chatty.gui.components.LinkLabel;
+import chatty.lang.Language;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -41,7 +42,7 @@ public class UsercolorSettings extends SettingsPanel {
         super(true);
         
         JPanel customPanel = addTitledPanel("Custom Usercolors", 0, true);
-        JPanel mainPanel = addTitledPanel("Other Usercolor Settings", 1);
+        JPanel mainPanel = addTitledPanel(Language.getString("settings.section.usercolorsOther"), 1);
         
         GridBagConstraints gbc;
         
@@ -69,10 +70,7 @@ public class UsercolorSettings extends SettingsPanel {
         //================
         // Other Settings
         //================
-        mainPanel.add(d.addSimpleBooleanSetting(
-                "colorCorrection",
-                "Adjust usercolors to improve readability on current background",
-                ""),
+        mainPanel.add(d.addSimpleBooleanSetting("colorCorrection"),
                 d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
     }
     

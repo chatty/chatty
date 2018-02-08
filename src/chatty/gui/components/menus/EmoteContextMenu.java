@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import static chatty.gui.components.menus.ContextMenuHelper.ICON_IMAGE;
 import static chatty.gui.components.menus.ContextMenuHelper.ICON_WEB;
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -53,7 +54,7 @@ public class EmoteContextMenu extends ContextMenu {
                 addItem("", "Emoji ("+emote.creator+")");
             }
             if (emote.creator != null) {
-                addItem("emoteCreator", "Emote by: " + emote.creator);
+                addItem("emoteCreator", Language.getString("emoteCm.emoteBy", emote.creator));
             }
             
             // Info
@@ -84,7 +85,7 @@ public class EmoteContextMenu extends ContextMenu {
             } else if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
                 addItem("", emote.getEmotesetInfo()+" Emoticon");
             } else {
-                addItem("", "Subscriber Emoticon");
+                addItem("", Language.getString("emoteCm.subEmote"));
                 addStreamSubmenu(emote);
             }
             addItem("", "Emoteset: "+emote.emoteSet+
@@ -96,16 +97,16 @@ public class EmoteContextMenu extends ContextMenu {
         }
         
         addSeparator();
-        addItem("emoteDetails", "Show Details");
+        addItem("emoteDetails", Language.getString("emoteCm.showDetails"));
         
         addSeparator();
-        addItem("ignoreEmote", "Ignore");
+        addItem("ignoreEmote", Language.getString("emoteCm.ignore"));
         if (emote.subType != Emoticon.SubType.CHEER) {
             if (!emote.hasStreamRestrictions()) {
                 if (emoteManager.isFavorite(emote)) {
-                    addItem("unfavoriteEmote", "UnFavorite");
+                    addItem("unfavoriteEmote", Language.getString("emoteCm.unfavorite"));
                 } else {
-                    addItem("favoriteEmote", "Favorite");
+                    addItem("favoriteEmote", Language.getString("emoteCm.favorite"));
                 }
             }
         }
@@ -131,9 +132,9 @@ public class EmoteContextMenu extends ContextMenu {
         if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
             String subMenu = emote.getStream();
             addItem("stream", "Twitch Stream", subMenu);
-            addItem("join", "Join " + Helper.toValidChannel(emote.getStream()), subMenu);
+            addItem("join", Language.getString("userCm.join", emote.getStream()), subMenu);
             addSeparator(subMenu);
-            addItem("showChannelEmotes", "Show Emotes", subMenu);
+            addItem("showChannelEmotes", Language.getString("emoteCm.showEmotes"), subMenu);
         }
     }
     

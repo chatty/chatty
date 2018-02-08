@@ -1,11 +1,13 @@
 
 package chatty.gui.components.settings;
 
+import chatty.lang.Language;
 import chatty.util.api.usericons.Usericon;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -22,41 +24,46 @@ public class ImageSettings extends SettingsPanel {
         
         GridBagConstraints gbc;
         
-        JPanel usericons = addTitledPanel("Usericon Settings (Badges)", 0, true);
+        JPanel usericons = addTitledPanel(Language.getString("settings.section.usericons"), 0, true);
 
-        gbc = d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST);
-        usericons.add(d.addSimpleBooleanSetting("usericonsEnabled","Show Usericons",
-                "Show mod/turbo/.. as icons. Changing this only affects new lines."),
-                gbc);
+        JCheckBox usericonsEnabled = d.addSimpleBooleanSetting("usericonsEnabled");
+        JCheckBox botBadgeEnabled = d.addSimpleBooleanSetting("botBadgeEnabled");
+        JCheckBox customUsericonsEnabled = d.addSimpleBooleanSetting("customUsericonsEnabled",
+                "Enable Custom Usericons (table)", "");
         
-        gbc = d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST);
-        gbc.insets.left += 10;
-        usericons.add(d.addSimpleBooleanSetting("customUsericonsEnabled", "Enable Custom Usericons (table below)",
-                "Configure custom usericons in the table below."), gbc);
+        //==================
+        // General Settings
+        //==================
+        gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
+        usericons.add(usericonsEnabled, gbc);
+
+        gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
+        usericons.add(botBadgeEnabled, gbc);
         
-        gbc = d.makeGbcCloser(1, 0, 2, 1, GridBagConstraints.WEST);
-        usericons.add(d.addSimpleBooleanSetting("botBadgeEnabled", "Enable Bot Badge", ""), gbc);
-        
-        gbc = d.makeGbcCloser(1, 1, 1, 1, GridBagConstraints.WEST);
-        gbc.insets.left += 10;
-        usericons.add(d.addSimpleBooleanSetting("botNamesBTTV", "BTTV",
-                "Loads bot names from the BTTV API to give them the bot badge. BTTV emotes have to be enabled."), gbc);
-        
-        gbc = d.makeGbcCloser(2, 1, 1, 1, GridBagConstraints.WEST);
-        gbc.insets.left += 10;
-        usericons.add(d.addSimpleBooleanSetting("botNamesFFZ", "FFZ",
-                "Loads bot names from the FFZ API to give them the bot badge. FFZ emotes have to be enabled."), gbc);
+        //==================
+        // Custom Usericons
+        //==================
+        gbc = d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST);
+        usericons.add(customUsericonsEnabled, gbc);
         
         usericonsData = new UsericonEditor(d, d.getLinkLabelListener());
         usericonsData.setPreferredSize(new Dimension(150, 250));
-        gbc = d.makeGbc(0, 2, 3, 1);
+        gbc = d.makeGbc(0, 2, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
         usericons.add(usericonsData, gbc);
         
-        gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
         usericons.add(new JLabel("Tip: Add a Usericon with no image to hide badges of that type"), gbc);
+        
+        // Usericons enabled state
+        customUsericonsEnabled.setEnabled(false);
+        botBadgeEnabled.setEnabled(false);
+        usericonsEnabled.addItemListener(e -> {
+            customUsericonsEnabled.setEnabled(usericonsEnabled.isSelected());
+            botBadgeEnabled.setEnabled(usericonsEnabled.isSelected());
+        });
     }
     
     public void setData(List<Usericon> data) {
