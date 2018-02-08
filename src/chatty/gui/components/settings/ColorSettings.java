@@ -74,6 +74,10 @@ public class ColorSettings extends SettingsPanel {
                 "Black", "White", "#FF9900", "#FFCC00", "#66FF66",
                 "#FFFFFF", "#000000", "#333333", "#555555");
         
+        presets.addPreset(Language.getString("settings.colorPresets.option.dracul"),
+                "#2B2B2B", "#629755", "#9876AA", "#A0A0A0", "#BC3F3C",
+                "#2B2B2B", "#A9B7C6", "#155221", "#294436");
+        
         presets.init();
         
         gbc = d.makeGbc(0, 0, 1, 1);
@@ -229,6 +233,19 @@ public class ColorSettings extends SettingsPanel {
             darkColors2.put("searchResultColor2", "#555555");
             
             presets.put("dark2", darkColors2);
+            
+            Map<String, String> dracul = new HashMap<>();
+            dracul.put("backgroundColor", "#2B2B2B");
+            dracul.put("foregroundColor", "#629755");
+            dracul.put("infoColor", "#9876AA");
+            dracul.put("compactColor", "#A0A0A0");
+            dracul.put("highlightColor", "#BC3F3C");
+            dracul.put("inputBackgroundColor", "#2B2B2B");
+            dracul.put("inputForegroundColor", "#A9B7C6");
+            dracul.put("searchResultColor", "#155221");
+            dracul.put("searchResultColor2", "#294436");
+            
+            presets.put("dracul", dracul);
         }
     }
     
