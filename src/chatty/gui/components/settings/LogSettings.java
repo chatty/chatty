@@ -154,7 +154,7 @@ public class LogSettings extends SettingsPanel {
         d.addStringSetting("logTimestamp", timestampCombo);
 
         otherSettings.add(new JLabel(Language.getString("settings.log.timestamp")),
-                d.makeGbc(0, 2, 1, 1));
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
         otherSettings.add(timestampCombo,
                 d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
         
