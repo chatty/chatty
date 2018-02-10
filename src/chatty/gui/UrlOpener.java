@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
 import java.awt.Component;
@@ -207,21 +208,26 @@ public class UrlOpener {
             text += url + "<br />";
         }
         // Make options
-        String okOption = "Open URL";
-        if (urls.size() > 1) {
-            okOption = "Open "+urls.size()+" URLs";
-        }
-        String[] options = {okOption, "Cancel"};
+        String okOption = Language.getString("openUrl.button.open", urls.size());
+        String cancelOption = Language.getString("dialog.button.cancel");
+        String copyOption = Language.getString("openUrl.button.copy");
+        String[] options;
         if (urls.size() == 1) {
-            options = new String[]{okOption, "Copy URL", "Cancel"};
+            options = new String[]{okOption, copyOption, cancelOption};
+        } else {
+            options = new String[]{okOption, cancelOption};
         }
         // Show dialog
         int chosenOption = JOptionPane.showOptionDialog(parent,
                 text,
-                "Open in default browser?",
+                Language.getString("openUrl.title"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, 1);
         
+        // If only two options, then 2nd option (Cancel) is 1, but should be 2
+        if (urls.size() > 1 && chosenOption == 1) {
+            return 2;
+        }
         return chosenOption;
     }
     
