@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.components.settings.SettingsDialog.Page;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,16 +26,16 @@ import javax.swing.tree.TreePath;
  */
 public class Tree {
     
-    public static JTree createTree(Map<String, List<String>> nodes) {
+    public static JTree createTree(Map<Page, List<Page>> nodes) {
         
         // Create nodes structure based on Map
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (String key : nodes.keySet()) {
-            DefaultMutableTreeNode category = new DefaultMutableTreeNode(key);
+        for (Page parent : nodes.keySet()) {
+            DefaultMutableTreeNode category = new DefaultMutableTreeNode(parent);
             root.add(category);
-            List<String> subNodes = nodes.get(key);
-            for (String value : subNodes) {
-                category.add(new DefaultMutableTreeNode(value));
+            List<Page> subNodes = nodes.get(parent);
+            for (Page child : subNodes) {
+                category.add(new DefaultMutableTreeNode(child));
             }
         }
         
