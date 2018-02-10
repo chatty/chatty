@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import static chatty.gui.components.settings.MessageSettings.addTimestampFormat;
+import chatty.lang.Language;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,6 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -28,16 +30,22 @@ public class LogSettings extends SettingsPanel {
     private final JPanel cards;
     
     public LogSettings(final SettingsDialog d) {
+        super(true); // Expand
         
         GridBagConstraints gbc;
         
-        JPanel mode = createTitledPanel("Channels to log to file");
+        JPanel modePanel = createTitledPanel(Language.getString("settings.log.section.channels"));
         
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
         gbc.weightx = 0.4;
-        mode.add(new JLabel("Logging Mode: "), gbc);
+        modePanel.add(new JLabel(Language.getString("settings.log.loggingMode")), gbc);
         
-        modeSetting = d.addComboStringSetting("logMode", 1, false, new String[]{"always", "blacklist", "whitelist", "off"});
+        Map<String, String> logModeOptions = new HashMap<>();
+        logModeOptions.put("always", Language.getString("settings.option.logMode.always"));
+        logModeOptions.put("blacklist", Language.getString("settings.option.logMode.blacklist"));
+        logModeOptions.put("whitelist", Language.getString("settings.option.logMode.whitelist"));
+        logModeOptions.put("off", Language.getString("settings.option.logMode.off"));
+        modeSetting = d.addComboStringSetting("logMode", 1, false, logModeOptions);
         modeSetting.addItemListener(new ItemListener() {
 
             @Override
@@ -47,7 +55,7 @@ public class LogSettings extends SettingsPanel {
         });
         gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
         gbc.weightx = 0.6;
-        mode.add(modeSetting, gbc);
+        modePanel.add(modeSetting, gbc);
         
         // Lists
         cardManager = new CardLayout();
@@ -63,7 +71,7 @@ public class LogSettings extends SettingsPanel {
         cards.add(whitelist, "whitelist");
         cards.add(blacklist, "blacklist");
         JPanel empty = new JPanel(new GridBagLayout());
-        JLabel emptyLabel = new JLabel("<No List in this mode>");
+        JLabel emptyLabel = new JLabel(Language.getString("settings.log.noList"));
         emptyLabel.setForeground(Color.gray);
         empty.add(emptyLabel, d.makeGbc(0,0,1,1));
         cards.add(empty, "none");
@@ -72,7 +80,7 @@ public class LogSettings extends SettingsPanel {
         gbc.insets = new Insets(5,10,5,5);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
-        mode.add(cards, gbc);
+        modePanel.add(cards, gbc);
         
         // Info Text
         info = new JLabel();
@@ -81,62 +89,35 @@ public class LogSettings extends SettingsPanel {
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
-        mode.add(info, gbc);
+        modePanel.add(info, gbc);
         
-        JPanel types = createTitledPanel("Message Types");
+        JPanel typesPanel = createTitledPanel("Message Types");
         
-        types.add(d.addSimpleBooleanSetting(
-                "logInfo",
-                "Chat Info",
-                "Log infos like stream title, messages from twitch, connecting, disconnecting."),
+        typesPanel.add(d.addSimpleBooleanSetting("logInfo"),
                 d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.NORTHWEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logBan",
-                "Bans/Timeouts",
-                "Log Bans/Timeouts as BAN messages."),
+        typesPanel.add(d.addSimpleBooleanSetting("logBan"),
                 d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logMod",
-                "Mod/Unmod",
-                "Log MOD/UNMOD messages."),
+        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
                 d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logJoinPart",
-                "Joins/Parts",
-                "Log JOIN/PART messages."),
+        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
                 d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logSystem",
-                "System Info",
-                "Messages that concern Chatty rather than chat."),
+        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
                 d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logViewerstats",
-                "Viewerstats",
-                "Log viewercount stats in a semi-regular interval."),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
                 d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logViewercount",
-                "Viewercount",
-                "Log the viewercount as it is updated."),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
                 d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logModAction",
-                "Mod Actions",
-                "Log who performed which command (only your own channel)."),
+        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
                 d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
-        types.add(d.addSimpleBooleanSetting(
-                "logIgnored",
-                "Ignored Msg.",
-                "Log messages ignored by the ignore list."),
+        typesPanel.add(d.addSimpleBooleanSetting("logIgnored"),
                 d.makeGbcCloser(0, 8, 1, 1, GridBagConstraints.WEST));
 
 
-        JPanel otherSettings = createTitledPanel("Other Settings");
+        JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         
         PathSetting logPath = new PathSetting(d, Chatty.getUserDataDirectory()+"logs");
         d.addStringSetting("logPath", logPath);
-        otherSettings.add(new JLabel("Folder:"),
+        otherSettings.add(new JLabel(Language.getString("settings.log.folder")),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.NORTHWEST));
         gbc = d.makeGbc(1, 0, 2, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -145,26 +126,23 @@ public class LogSettings extends SettingsPanel {
         otherSettings.add(logPath, gbc);
 
         final Map<String,String> organizationOptions = new LinkedHashMap<>();
-        organizationOptions.put("never", "Never");
-        organizationOptions.put("daily", "Daily");
-        organizationOptions.put("weekly", "Weekly");
-        organizationOptions.put("monthly", "Monthly");
+        organizationOptions.put("never", Language.getString("settings.option.logSplit.never"));
+        organizationOptions.put("daily", Language.getString("settings.option.logSplit.daily"));
+        organizationOptions.put("weekly", Language.getString("settings.option.logSplit.weekly"));
+        organizationOptions.put("monthly", Language.getString("settings.option.logSplit.monthly"));
         ComboStringSetting organizationCombo = new ComboStringSetting(organizationOptions);
         organizationCombo.setEditable(false);
         d.addStringSetting("logSplit", organizationCombo);
 
-        otherSettings.add(new JLabel("Split Logs:"), d.makeGbc(0, 1, 1, 1));
+        otherSettings.add(new JLabel(Language.getString("settings.log.splitLogs")), d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         otherSettings.add(organizationCombo,
                 d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
 
-        otherSettings.add(d.addSimpleBooleanSetting(
-                "logSubdirectories",
-                "Channel Subdirectories",
-                "Organize logs into channel subdirectories."),
+        otherSettings.add(d.addSimpleBooleanSetting("logSubdirectories"),
                 d.makeGbcCloser(2, 1, 1, 1, GridBagConstraints.WEST));
 
         final Map<String,String> timestampOptions = new LinkedHashMap<>();
-        addTimestampFormat(timestampOptions, "off");
+        timestampOptions.put("off", Language.getString("settings.option.logTimestamp.off"));
         addTimestampFormat(timestampOptions, "[HH:mm:ss]");
         addTimestampFormat(timestampOptions, "[hh:mm:ss a]");
         addTimestampFormat(timestampOptions, "[hh:mm:ssa]");
@@ -175,29 +153,27 @@ public class LogSettings extends SettingsPanel {
         timestampCombo.setEditable(false);
         d.addStringSetting("logTimestamp", timestampCombo);
 
-        otherSettings.add(new JLabel("Timestamp:"),
+        otherSettings.add(new JLabel(Language.getString("settings.log.timestamp")),
                 d.makeGbc(0, 2, 1, 1));
         otherSettings.add(timestampCombo,
                 d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
         
-        otherSettings.add(d.addSimpleBooleanSetting(
-                "logLockFiles",
-                "Lock files while writing",
-                "Gets exclusive access to logfiles to ensure no other program writes to it."),
+        otherSettings.add(d.addSimpleBooleanSetting("logLockFiles"),
                 d.makeGbcCloser(2, 2, 1, 1, GridBagConstraints.WEST));
         
         /**
          * Add panels to the dialog
          */
         gbc = getGbc(0);
+        gbc.weighty = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.BOTH;
-        addPanel(mode, gbc);
+        addPanel(modePanel, gbc);
         
         gbc = getGbc(0);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.gridx = 1;
-        addPanel(types, gbc);
+        addPanel(typesPanel, gbc);
         
         gbc = getGbc(2);
         gbc.gridwidth = 2;
@@ -212,19 +188,19 @@ public class LogSettings extends SettingsPanel {
         String switchTo = "none";
         switch (mode) {
             case "off":
-                infoText = "Nothing is logged.";
+                infoText = Language.getString("settings.log.offInfo");
                 switchTo = "none";
                 break;
             case "always":
-                infoText = "All channels are logged.";
+                infoText = Language.getString("settings.log.alwaysInfo");
                 switchTo = "none";
                 break;
             case "blacklist":
-                infoText = "All channels but those on the list are logged.";
+                infoText = Language.getString("settings.log.blacklistInfo");
                 switchTo = "blacklist";
                 break;
             case "whitelist":
-                infoText = "Only the channels on the list are logged.";
+                infoText = Language.getString("settings.log.whitelistInfo");
                 switchTo = "whitelist";
                 break;
         }

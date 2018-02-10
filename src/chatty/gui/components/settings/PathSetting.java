@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -26,9 +27,9 @@ import javax.swing.JTextField;
 public class PathSetting extends JPanel implements StringSetting {
 
     private final JTextField display = new JTextField();
-    private final JButton changeButton = new JButton("Change");
-    private final JButton resetButton = new JButton("Default");
-    private final JButton openButton = new JButton("Open");
+    private final JButton changeButton = new JButton(Language.getString("settings.chooseFolder.button.change"));
+    private final JButton resetButton = new JButton(Language.getString("settings.chooseFolder.button.default"));
+    private final JButton openButton = new JButton(Language.getString("settings.chooseFolder.button.open"));
     
     private String value;
     private final String defaultPath;
@@ -116,7 +117,7 @@ public class PathSetting extends JPanel implements StringSetting {
                 listener.pathChanged(getCurrentPath());
             }
         }
-        display.setText((value.isEmpty() ? "[default] " : "")+getCurrentPathValue());
+        display.setText((value.isEmpty() ? "["+Language.getString("settings.chooseFolder.default")+"] " : "")+getCurrentPathValue());
     }
     
     /**
@@ -160,7 +161,7 @@ public class PathSetting extends JPanel implements StringSetting {
         JFileChooser chooser = new JFileChooser(getCurrentPath().toFile());
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (chooser.showDialog(parentComponent, "Select folder") == JFileChooser.APPROVE_OPTION) {
+        if (chooser.showDialog(parentComponent, Language.getString("settings.chooseFolder")) == JFileChooser.APPROVE_OPTION) {
             setSettingValue(chooser.getSelectedFile().getPath());
         }
     }

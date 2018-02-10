@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.lang.Language;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -43,10 +44,10 @@ public class Editor {
     private final JDialog dialog;
     private final JLabel label;
     private final JTextArea input;
-    private final JButton okButton = new JButton("Save");
-    private final JButton cancelButton = new JButton("Cancel");
-    private final JButton testButton = new JButton("Test");
-    private final JToggleButton toggleInfoButton = new JToggleButton("Help");
+    private final JButton okButton = new JButton(Language.getString("dialog.button.save"));
+    private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
+    private final JButton testButton = new JButton(Language.getString("dialog.button.test"));
+    private final JToggleButton toggleInfoButton = new JToggleButton(Language.getString("dialog.button.help"));
     private final Window parent;
     private final LinkLabel info;
     

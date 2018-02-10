@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -38,8 +39,8 @@ public class FontChooser extends JDialog implements InputListListener,
     private final JTextField test = new JTextField();
 
     // Buttons
-    private final JButton ok = new JButton("Ok");
-    private final JButton cancel = new JButton("Cancel");
+    private final JButton ok = new JButton(Language.getString("dialog.button.ok"));
+    private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     
     // Close Action
     private int closeAction;
@@ -64,7 +65,7 @@ public class FontChooser extends JDialog implements InputListListener,
      * @param owner 
      */
     public FontChooser(Dialog owner) {
-        super(owner,"Choose font",true);
+        super(owner, Language.getString("settings.chooseFont.title"), true);
         this.owner = owner;
 
         setLayout(new GridBagLayout());
@@ -89,7 +90,7 @@ public class FontChooser extends JDialog implements InputListListener,
         
         fontSelection.add(fontList);
         fontSelection.add(fontSizeList);
-        fontSelection.setBorder(BorderFactory.createTitledBorder("Select font family and size"));
+        fontSelection.setBorder(BorderFactory.createTitledBorder(Language.getString("settings.chooseFont.selectFont")));
         
         // List listeners
         fontList.addInputListListener(this);
@@ -100,7 +101,7 @@ public class FontChooser extends JDialog implements InputListListener,
          */
         JPanel fontPreview = new JPanel(new BorderLayout());
         fontPreview.add(preview);
-        fontPreview.setBorder(BorderFactory.createTitledBorder("Preview"));
+        fontPreview.setBorder(BorderFactory.createTitledBorder(Language.getString("settings.chooseFont.preview")));
         
         /*
          * Font test (Panel)
@@ -124,7 +125,7 @@ public class FontChooser extends JDialog implements InputListListener,
                 updatePreviewText();
             }
         });
-        fontTest.setBorder(BorderFactory.createTitledBorder("Enter additional text to test"));
+        fontTest.setBorder(BorderFactory.createTitledBorder(Language.getString("settings.chooseFont.enterText")));
         
         /*
          * Add everything to the dialog

@@ -112,7 +112,7 @@ public class MessageSettings extends SettingsPanel {
         List<String> dateFormats = Arrays.asList(new String[]{"","YYYY-MM-dd ",
             "MMM d ", "d MMM ", "dd.MM. "});
         for (String dateFormat : dateFormats) {
-            addTimestampFormat(timestampOptions, "off");
+            timestampOptions.put("off", "Off");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm:ss]");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm]");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ss a]");
@@ -168,14 +168,12 @@ public class MessageSettings extends SettingsPanel {
     }
     
     public static void addTimestampFormat(Map<String, String> timestampOptions, String format) {
-        String label = format;
-        if (!format.equals("off")) {
-            int hour = DateTime.currentHour12Hour();
-            if (hour > 0 && hour < 10) {
-                label = DateTime.currentTime(format);
-            } else {
-                label = DateTime.format(System.currentTimeMillis() - 4*60*60*1000, new SimpleDateFormat(format));
-            }
+        String label;
+        int hour = DateTime.currentHour12Hour();
+        if (hour > 0 && hour < 10) {
+            label = DateTime.currentTime(format);
+        } else {
+            label = DateTime.format(System.currentTimeMillis() - 4 * 60 * 60 * 1000, new SimpleDateFormat(format));
         }
         timestampOptions.put(format, label);
     }

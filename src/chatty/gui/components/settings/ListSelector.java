@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.gui.components.LinkLabelListener;
 import chatty.gui.components.settings.Editor.Tester;
+import chatty.lang.Language;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -110,13 +111,13 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         });
         
         // Buttons
-        configureButton(add, "list-add.png", "Add item (or press enter in inputbox)");
-        configureButton(remove, "list-remove.png", "Remove selected item");
-        configureButton(change, "edit.png", "Edit selected item (or double-click on item)");
-        configureButton(moveUp, "go-up.png", "Move selected item up");
-        configureButton(moveDown, "go-down.png", "Move selected item down");
-        configureButton(sort, "sort.png", "Sort list alphabetically");
-        configureButton(editAll, "edit-all.png", "Edit all entries at once");
+        configureButton(add, "list-add.png", Language.getString("settings.listSelector.button.add.tip"));
+        configureButton(remove, "list-remove.png", Language.getString("settings.listSelector.button.remove.tip"));
+        configureButton(change, "edit.png", Language.getString("settings.listSelector.button.edit.tip"));
+        configureButton(moveUp, "go-up.png", Language.getString("settings.listSelector.button.moveUp.tip"));
+        configureButton(moveDown, "go-down.png", Language.getString("settings.listSelector.button.moveDown.tip"));
+        configureButton(sort, "sort.png", Language.getString("settings.listSelector.button.sort.tip"));
+        configureButton(editAll, "edit-all.png", Language.getString("settings.listSelector.button.editAll.tip"));
         
         // Listeners
         add.addActionListener(buttonAction);
@@ -209,7 +210,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
      * in the list.
      */
     private void addItem() {
-        String item = editor.showDialog("Add entry:", "", info);
+        String item = editor.showDialog(
+                Language.getString("settings.listSelector.addEntry"), "", info);
         item = format(item);
         if (item != null && !item.isEmpty() && !data.contains(item)) {
             int selectedIndex = list.getSelectedIndex();
@@ -244,7 +246,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         String selectedValue = list.getSelectedValue();
         int selectedIndex = list.getSelectedIndex();
         if (selectedIndex > -1) {
-            String newValue = editor.showDialog("Change entry:", selectedValue, info);
+            String newValue = editor.showDialog(
+                    Language.getString("settings.listSelector.editEntry"), selectedValue, info);
             newValue = format(newValue);
             if (newValue != null && !newValue.isEmpty()) {
                 data.set(selectedIndex, newValue);
@@ -257,7 +260,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         for (int i=0;i<data.size();i++) {
             b.append(data.get(i)).append("\n");
         }
-        String result = allEditor.showDialog("Edit all entries (one per line)", b.toString(), info);
+        String result = allEditor.showDialog(
+                Language.getString("settings.listSelector.editAllEntries"), b.toString(), info);
         if (result != null) {
             String[] split = result.split("\n");
             data.clear();
@@ -294,8 +298,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     private void sort() {
         if (JOptionPane.showConfirmDialog(sort,
-                "Sort list alphabetically (case sensitive)?",
-                "Sort",
+                Language.getString("settings.listSelector.sortEntries"),
+                Language.getString("settings.listSelector.sortEntries.title"),
                 JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION) {
             List<String> sortData = getData();
             Collections.sort(sortData);
