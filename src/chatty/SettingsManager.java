@@ -3,6 +3,7 @@ package chatty;
 
 import chatty.gui.HtmlColors;
 import chatty.gui.WindowStateManager;
+import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.notifications.Notification;
 import chatty.util.BackupManager;
 import chatty.util.DateTime;
@@ -414,9 +415,7 @@ public class SettingsManager {
         settings.addBoolean("ignoreOfflineNotifications", false);
         settings.addBoolean("requestFollowedStreams", true);
         
-        settings.addBoolean("useCustomNotifications", true);
-        
-        settings.addLong("nType", 0);
+        settings.addLong("nType", NotificationSettings.NOTIFICATION_TYPE_CUSTOM);
         settings.addLong("nScreen", -1);
         settings.addLong("nPosition", 3);
         settings.addLong("nDisplayTime", 10);

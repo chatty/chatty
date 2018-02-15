@@ -2534,11 +2534,12 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void showNotification(String title, String message, Color foreground, Color background, String channel) {
-        if (client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {
+        long setting = client.settings.getLong("nType");
+        if (setting == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {
             notificationWindowManager.showMessage(title, message, foreground, background, channel);
-        } else if (client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
+        } else if (setting == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.displayInfo(title, message);
-        } else if (client.settings.getLong("nType") == NotificationSettings.NOTIFICATION_TYPE_COMMAND) {
+        } else if (setting == NotificationSettings.NOTIFICATION_TYPE_COMMAND) {
             GuiUtil.showCommandNotification(client.settings.getString("nCommand"),
                     title, message, channel);
         }
