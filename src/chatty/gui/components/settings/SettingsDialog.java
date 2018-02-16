@@ -43,8 +43,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private final static Logger LOGGER = Logger.getLogger(SettingsDialog.class.getName());
     
-    private final JButton ok = new JButton("Save");
-    private final JButton cancel = new JButton("Cancel");
+    private final JButton ok = new JButton(Language.getString("dialog.button.save"));
+    private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     
     private final Set<String> restartRequiredDef = new HashSet<>(Arrays.asList(
             "ffz", "nod3d", "noddraw",

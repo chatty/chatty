@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.lang.Language;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.LinkedHashMap;
@@ -16,14 +17,14 @@ import javax.swing.JPanel;
  */
 public class DeletedMessagesModeSetting extends JPanel {
 
-    private static final String OPTION_DELETE = "Delete Message";
-    private static final String OPTION_STRIKE_THROUGH = "Strike through";
-    private static final String OPTION_STRIKE_THROUGH_SHORTEN = "Strike through, shorten";
+    private static final String OPTION_DELETE = Language.getString("settings.option.deletedMessagesMode.delete");
+    private static final String OPTION_STRIKE_THROUGH = Language.getString("settings.option.deletedMessagesMode.strikeThrough");
+    private static final String OPTION_STRIKE_THROUGH_SHORTEN = Language.getString("settings.option.deletedMessagesMode.strikeThroughShorten");
     
     private final ComboStringSetting combo;
     private final SimpleLongSetting maxLength = new SimpleLongSetting(3, true);
-    private final JLabel maxLengthLabel = new JLabel(" (max. ");
-    private final JLabel maxLengthLabel2 = new JLabel("characters)");
+    private final JLabel maxLengthLabel = new JLabel(" ("+Language.getString("settings.deletedMessages.max")+" ");
+    private final JLabel maxLengthLabel2 = new JLabel(Language.getString("settings.deletedMessages.characters")+")");
 
     public DeletedMessagesModeSetting(SettingsDialog d) {
         Map<String,String> options = new LinkedHashMap<>();

@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import java.awt.GridBagConstraints;
 import java.awt.event.ItemEvent;
@@ -28,8 +29,8 @@ public class MessageSettings extends SettingsPanel {
     
     public MessageSettings(final SettingsDialog d) {
 
-        JPanel timeoutSettingsPanel = addTitledPanel("Deleted Messages (Timeouts/Bans)", 0);
-        JPanel otherSettingsPanel = addTitledPanel("Other", 1);
+        JPanel timeoutSettingsPanel = addTitledPanel(Language.getString("settings.section.deletedMessages"), 0);
+        JPanel otherSettingsPanel = addTitledPanel(Language.getString("settings.section.otherMessageSettings"), 1);
 
         //==========================
         // Deleted Messages (Panel)
@@ -38,22 +39,13 @@ public class MessageSettings extends SettingsPanel {
         timeoutSettingsPanel.add(deletedMessagesModeSetting,
                 d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
 
-        timeoutSettingsPanel.add(d.addSimpleBooleanSetting(
-                "banDurationAppended",
-                "Show ban duration",
-                "Shows the duration in seconds for timeouts behind the latest deleted message [BETA]"),
+        timeoutSettingsPanel.add(d.addSimpleBooleanSetting("banDurationAppended"),
                 d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST));
 
-        timeoutSettingsPanel.add(d.addSimpleBooleanSetting(
-                "banReasonAppended",
-                "Show ban reason (mod only)",
-                "Shows the reason of a ban behind the latest deleted message (mod only, except for your own bans) [BETA]"),
+        timeoutSettingsPanel.add(d.addSimpleBooleanSetting("banReasonAppended"),
                 d.makeGbcSub(1, 1, 1, 1, GridBagConstraints.WEST));
 
-        final JCheckBox timeoutMessages = d.addSimpleBooleanSetting(
-                "showBanMessages",
-                "Show separate ban messages, with following options:",
-                "Shows separate '<user> has been banned from talking' messages for bans/timeouts");
+        final JCheckBox timeoutMessages = d.addSimpleBooleanSetting("showBanMessages");
         timeoutMessages.addItemListener(new ItemListener() {
 
             @Override
@@ -67,33 +59,25 @@ public class MessageSettings extends SettingsPanel {
                 d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
         
         JCheckBox banDuration = d.addSimpleBooleanSetting(
-                "banDurationMessage",
-                "Show ban duration",
-                "Shows the duration in seconds for timeouts in separate ban messages [BETA]");
+                "banDurationMessage");
         timeoutMessageSettings.add(banDuration);
         timeoutSettingsPanel.add(banDuration,
                 d.makeGbcSub(0, 4, 1, 1, GridBagConstraints.WEST));
         
         JCheckBox banReason = d.addSimpleBooleanSetting(
-                "banReasonMessage",
-                "Show ban reason (mod only)",
-                "Shows the reason of a ban in separate ban messages (mod only, except for your own bans) [BETA]");
+                "banReasonMessage");
         timeoutMessageSettings.add(banReason);
         timeoutSettingsPanel.add(banReason,
                 d.makeGbcSub(1, 4, 1, 1, GridBagConstraints.WEST));
         
         JCheckBox timeoutsCombine = d.addSimpleBooleanSetting(
-                "combineBanMessages",
-                "Combine ban messages",
-                "Combines similiar ban messages into one, appending the number of bans");
+                "combineBanMessages");
         timeoutMessageSettings.add(timeoutsCombine);
         timeoutSettingsPanel.add(timeoutsCombine,
                 d.makeGbcSub(0, 5, 1, 1, GridBagConstraints.WEST));
 
         timeoutSettingsPanel.add(d.addSimpleBooleanSetting(
-                "clearChatOnChannelCleared",
-                "Clear chat when cleared by a moderator",
-                "If enabled, removes all text from the channel when a moderator clears the channel."),
+                "clearChatOnChannelCleared"),
                 d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
         
         
@@ -105,7 +89,7 @@ public class MessageSettings extends SettingsPanel {
         // Other Settings (Panel)
         //========================
         // Timestamp
-        otherSettingsPanel.add(new JLabel("Timestamp:"),
+        otherSettingsPanel.add(new JLabel(Language.getString("settings.otherMessageSettings.timestamp")),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
 
         final Map<String,String> timestampOptions = new LinkedHashMap<>();
@@ -129,18 +113,11 @@ public class MessageSettings extends SettingsPanel {
                 d.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST));
 
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "showModMessages",
-                "Show mod/unmod (unreliable)",
-                "Whether to show when someone was modded/unmodded or a mod "
-                        + "joined/left the channel. Twitch Chat is not very "
-                        + "reliable in reporting these events correctly."),
+                "showModMessages"),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
 
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "showJoinsParts", "Show joins/parts (unreliable)",
-                "Show users joining/parting the channel (only with "
-                                + "Userlist Connection enabled, see Advanced "
-                                + "settings)."),
+                "showJoinsParts"),
                 d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
 
         // Combining Characters
@@ -159,10 +136,8 @@ public class MessageSettings extends SettingsPanel {
         
         
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
-                "printStreamStatus",
-                "Show stream status in chat",
-                "Output stream status when you join a channel and when it changes"),
-                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+                "printStreamStatus"),
+                d.makeGbc(0, 3, 4, 1, GridBagConstraints.WEST));
 
         
     }
