@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.Chatty;
+import chatty.Room;
 import chatty.lang.Language;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
@@ -13,10 +14,13 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -24,6 +28,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.event.MenuListener;
@@ -37,7 +43,7 @@ public class MainMenu extends JMenuBar {
     
     private final JMenu main = new JMenu(Language.getString("menubar.menu.main"));
     protected final JMenu view = new JMenu(Language.getString("menubar.menu.view"));
-    private final JMenu channels = new JMenu(Language.getString("menubar.menu.channels"));
+    protected final JMenu channels = new JMenu(Language.getString("menubar.menu.channels"));
     private final JMenu srl = new JMenu(Language.getString("menubar.menu.srl"));
     protected final JMenu srlStreams = new JMenu("Races with..");
     private final JMenu extra = new JMenu(Language.getString("menubar.menu.extra"));
@@ -73,6 +79,7 @@ public class MainMenu extends JMenuBar {
         main.addActionListener(actionListener);
         view.addActionListener(actionListener);
         channels.addActionListener(actionListener);
+        channels.addMenuListener((MenuListener)itemListener);
         srl.addActionListener(actionListener);
         extra.addActionListener(actionListener);
         help.addActionListener(actionListener);
@@ -140,6 +147,8 @@ public class MainMenu extends JMenuBar {
         addItem(channels, "dialog.addressbook");
         channels.addSeparator();
         addItem(channels, "dialog.joinChannel");
+        channels.addSeparator();
+        setRooms(null);
         
         //-----
         // SRL
@@ -368,6 +377,27 @@ public class MainMenu extends JMenuBar {
                 addItem(srlStreams, "srlRace4"+chan, chan);
             }
         }
+    }
+    
+    private final Set<JMenuItem> roomItems = new HashSet<>();
+    
+    public void setRooms(Collection<Room> rooms) {
+        for (JMenuItem item : roomItems) {
+            channels.remove(item);
+        }
+        roomItems.clear();
+        if (rooms == null || rooms.isEmpty()) {
+            JMenuItem item = addItem(channels, "", "No rooms found");
+            item.setEnabled(false);
+            roomItems.add(item);
+        } else {
+            for (Room room : rooms) {
+                roomItems.add(addItem(channels, "room:" + room.getChannel(), room.getDisplayName()));
+            }
+        }
+        roomItems.add(addItem(channels, "refreshRooms", "Reload rooms"));
+        revalidate();
+        repaint();
     }
     
     public void setUpdateNotification(boolean enabled) {

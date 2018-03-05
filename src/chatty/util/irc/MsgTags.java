@@ -1,5 +1,5 @@
 
-package chatty.util;
+package chatty.util.irc;
 
 import chatty.Helper;
 import java.util.Arrays;

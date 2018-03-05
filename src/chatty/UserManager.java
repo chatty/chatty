@@ -27,18 +27,16 @@ public class UserManager {
     private final Set<UserManagerListener> listeners = new HashSet<>();
     
     private volatile String localUsername;
-    public final User specialUser = new User("[specialUser]", "[nochannel]");
+    public final User specialUser = new User("[specialUser]", Room.createRegular("[nochannel]"));
     
     private final HashMap<String, HashMap<String, User>> users = new HashMap<>();
     private final HashMap<String, String> cachedColors = new HashMap<>();
     private boolean capitalizedNames = false;
     
-    private final Map<Integer, String> emotesets = Collections.synchronizedMap(new HashMap<Integer, String>());
-    
-    private final User errorUser = new User("[Error]", "#[error]");
+    private final User errorUser = new User("[Error]", Room.createRegular("#[error]"));
     
     // Stupid hack to get Usericons in ChannelTextPane without a user (twitchnotify messages)
-    public final User dummyUser = new User("", "#[error]");
+    public final User dummyUser = new User("", Room.createRegular("#[error]"));
 
     private CustomNames customNamesManager;
     private UsericonManager usericonManager;
@@ -85,6 +83,13 @@ public class UserManager {
     private void userUpdated(User user) {
         for (UserManagerListener listener : listeners) {
             listener.userUpdated(user);
+        }
+    }
+    
+    public  void updateRoom(Room room) {
+        Map<String, User> data = getUsersByChannel(room.getChannel());
+        for (User user : data.values()) {
+            user.setRoom(room);
         }
     }
     
@@ -180,13 +185,13 @@ public class UserManager {
      * @return The matching User object
      * @see User
      */
-    public synchronized User getUser(String channel, String name) {
+    public synchronized User getUser(Room room, String name) {
         // Not sure if this makes sense
         if (name == null || name.isEmpty()) {
             return errorUser;
         }
         name = StringUtil.toLowerCase(name);
-        User user = getUserIfExists(channel, name);
+        User user = getUserIfExists(room.getChannel(), name);
         if (user == null) {
             // Capitalize name if enabled (might still be overwritten by setting
             // displayNick from tags)
@@ -194,14 +199,14 @@ public class UserManager {
             if (capitalizedNames) {
                 capitalizedName = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
             }
-            user = new User(capitalizedName, channel);
+            user = new User(capitalizedName, room);
             user.setUsercolorManager(usercolorManager);
             user.setAddressbook(addressbook);
             user.setUsericonManager(usericonManager);
             if (customNamesManager != null) {
                 user.setCustomNick(customNamesManager.getCustomName(name));
             }
-            if (botNameManager != null && botNameManager.isBotName(channel, name)) {
+            if (botNameManager != null && botNameManager.isBotName(room.getOwnerChannel(), name)) {
                 user.setBot(true);
             }
             // Initialize some values if present for this name
@@ -228,7 +233,7 @@ public class UserManager {
                 }
             }
             // Put User into the map for the channel
-            getUsersByChannel(channel).put(name, user);
+            getUsersByChannel(room.getChannel()).put(name, user);
         }
         return user;
     }
@@ -335,18 +340,18 @@ public class UserManager {
      * @param modsList
      * @return 
      */
-    protected synchronized List<User> modsListReceived(String channel, List<String> modsList) {
+    protected synchronized List<User> modsListReceived(Room room, List<String> modsList) {
         // Demod everyone on the channel
-        Map<String,User> usersToDemod = getUsersByChannel(channel);
+        Map<String,User> usersToDemod = getUsersByChannel(room.getChannel());
         for (User user : usersToDemod.values()) {
             user.setModerator(false);
         }
         // Mod everyone in the list
-        LOGGER.info("Setting users as mod for "+channel+": "+modsList);
+        LOGGER.info("Setting users as mod for "+room.getChannel()+": "+modsList);
         List<User> changedUsers = new ArrayList<>();
         for (String userName : modsList) {
-            if (Helper.validateChannel(userName)) {
-                User user = getUser(channel, userName);
+            if (Helper.isValidChannel(userName)) {
+                User user = getUser(room, userName);
                 if (user.setModerator(true)) {
                     userUpdated(user);
                 }

@@ -19,7 +19,7 @@ public class TwitchUrl {
     public static void removeInvalidStreams(Collection<String> streams) {
         Iterator<String> it = streams.iterator();
         while (it.hasNext()) {
-            if (!Helper.validateChannel(it.next())) {
+            if (!Helper.isValidChannel(it.next())) {
                 it.remove();
             }
         }

@@ -45,7 +45,7 @@ public class BTTVEmotes {
     
     public synchronized void requestEmotes(String channel, boolean forcedUpdate) {
         String stream = Helper.toStream(channel);
-        if (!Helper.validateStream(stream) && !"$global$".equals(stream)) {
+        if (!Helper.isValidStream(stream) && !"$global$".equals(stream)) {
             return;
         }
         if (!forcedUpdate && alreadyRequested.contains(stream)) {

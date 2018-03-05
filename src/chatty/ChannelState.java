@@ -38,7 +38,8 @@ public class ChannelState {
     
     private String lang;
     
-    private int followersOnly;
+    // Should be -1, since 0 means on as well
+    private int followersOnly = -1;
     
     /**
      * Cached info text based on the current state.

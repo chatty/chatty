@@ -27,6 +27,7 @@ import chatty.TwitchClient;
 import chatty.Helper;
 import chatty.User;
 import chatty.Irc;
+import chatty.Room;
 import chatty.gui.components.admin.StatusHistory;
 import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
@@ -68,6 +69,7 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.FollowerInfo;
+import chatty.util.api.RoomsInfo;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
@@ -244,7 +246,7 @@ public class MainGui extends JFrame implements Runnable {
         channelInfoDialog = new ChannelInfoDialog(this);
         channelInfoDialog.addContextMenuListener(contextMenuListener);
         adminDialog = new AdminDialog(this, client.api);
-        favoritesDialog = new FavoritesDialog(this, contextMenuListener);
+        favoritesDialog = new FavoritesDialog(this, client.channelFavorites, contextMenuListener);
         GuiUtil.installEscapeCloseOperation(favoritesDialog);
         joinDialog = new JoinDialog(this);
         GuiUtil.installEscapeCloseOperation(joinDialog);
@@ -388,7 +390,7 @@ public class MainGui extends JFrame implements Runnable {
         if (!selectedUserName.isEmpty() || parameter2 != null) {
             parameter = selectedUserName+(parameter2 != null ? " "+parameter2 : "");
         }
-        client.command(channels.getLastActiveChannel().getName(), command, parameter);
+        client.command(channels.getLastActiveChannel().getRoom(), command, parameter);
     }
     
     /**
@@ -443,7 +445,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                client.closeChannel(channels.getActiveChannel().getName());
+                client.closeChannel(channels.getActiveChannel().getChannel());
             }
         });
         
@@ -1124,18 +1126,6 @@ public class MainGui extends JFrame implements Runnable {
         tokenDialog.setForeignToken(client.settings.getBoolean("foreignToken"));
     }
     
-    private void updateFavoritesDialog() {
-        Set<String> favorites = client.channelFavorites.getFavorites();
-        Map<String, Long> history = client.channelFavorites.getHistory();
-        favoritesDialog.setData(favorites, history);
-    }
-    
-    private void updateFavoritesDialogWhenVisible() {
-        if (favoritesDialog.isVisible()) {
-            updateFavoritesDialog();
-        }
-    }
-    
     public void updateUserinfo(final User user) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -1207,9 +1197,9 @@ public class MainGui extends JFrame implements Runnable {
             Channel chan = channels.getChannelFromInput(event.getSource());
             if (chan != null) {
                 if (client.settings.getBoolean("emojiReplace")) {
-                    client.textInput(chan.getName(), emoticons.emojiReplace(chan.getInputText()));
+                    client.textInput(chan.getRoom(), emoticons.emojiReplace(chan.getInputText()));
                 } else {
-                    client.textInput(chan.getName(), chan.getInputText());
+                    client.textInput(chan.getRoom(), chan.getInputText());
                 }
             }
 
@@ -1281,7 +1271,6 @@ public class MainGui extends JFrame implements Runnable {
                 CustomCommand command = userInfoDialog.getCommand(source);
                 User user = userInfoDialog.getUser();
                 String nick = user.getName();
-                String channel = userInfoDialog.getChannel();
                 String reason = userInfoDialog.getBanReason();
                 if (!reason.isEmpty()) {
                     reason = " "+reason;
@@ -1290,17 +1279,7 @@ public class MainGui extends JFrame implements Runnable {
                 parameters.put("msg-id", userInfoDialog.getMsgId());
                 parameters.put("target-msg-id", userInfoDialog.getTargetMsgId());
                 parameters.put("automod-msg-id", userInfoDialog.getAutoModMsgId());
-                client.anonCustomCommand(channel, command, parameters);
-            // Favorites Dialog
-            } else if (favoritesDialog.getAction(source) == FavoritesDialog.BUTTON_ADD_FAVORITES) {
-                Set<String> channels = favoritesDialog.getChannels();
-                client.channelFavorites.addChannelsToFavorites(channels);
-            } else if (favoritesDialog.getAction(source) == FavoritesDialog.BUTTON_REMOVE_FAVORITES) {
-                Set<String> channels = favoritesDialog.getSelectedChannels();
-                client.channelFavorites.removeChannelsFromFavorites(channels);
-            } else if (favoritesDialog.getAction(source) == FavoritesDialog.BUTTON_REMOVE) {
-                Set<String> channels = favoritesDialog.getSelectedChannels();
-                client.channelFavorites.removeChannels(channels);
+                client.anonCustomCommand(user.getRoom(), command, parameters);
             }
         }
         
@@ -1435,11 +1414,16 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("configureLogin")) {
                 openTokenDialog();
             } else if (cmd.equals("addStreamHighlight")) {
-                client.commandAddStreamHighlight(channels.getActiveChannel().getName(), null);
+                client.commandAddStreamHighlight(channels.getActiveChannel().getRoom(), null);
             } else if (cmd.equals("openStreamHighlights")) {
-                client.commandOpenStreamHighlights(channels.getActiveChannel().getName());
+                client.commandOpenStreamHighlights(channels.getActiveChannel().getRoom());
             } else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());
+            } else if (cmd.startsWith("room:")) {
+                String channel = cmd.substring("room:".length());
+                client.joinChannel(channel);
+            } else if (cmd.equals("refreshRooms")) {
+                loadRooms(true);
             }
         }
 
@@ -1448,7 +1432,9 @@ public class MainGui extends JFrame implements Runnable {
             if (e.getSource() == menu.srlStreams) {
                 ArrayList<String> popoutStreams = new ArrayList<>();
                 for (Channel channel : channels.getPopoutChannels().keySet()) {
-                    popoutStreams.add(channel.getStreamName());
+                    if (channel.getStreamName() != null) {
+                        popoutStreams.add(channel.getStreamName());
+                    }
                 }
                 menu.updateSrlStreams(channels.getActiveTab().getStreamName(), popoutStreams);
             } else if (e.getSource() == menu.view) {
@@ -1456,6 +1442,8 @@ public class MainGui extends JFrame implements Runnable {
                         highlightedMessages.getDisplayedCount(),
                         ignoredMessages.getNewCount(),
                         ignoredMessages.getDisplayedCount());
+            } else if (e.getSource() == menu.channels) {
+                loadRooms(false);
             }
         }
 
@@ -1467,6 +1455,34 @@ public class MainGui extends JFrame implements Runnable {
         public void menuCanceled(MenuEvent e) {
         }
     
+    }
+    
+    public void setRooms(RoomsInfo info) {
+        SwingUtilities.invokeLater(() -> {
+            //System.out.println(channels.getActiveChannel().getStreamName());
+            if (Objects.equals(channels.getActiveChannel().getStreamName(), info.stream)) {
+                menu.setRooms(info.rooms);
+            }
+            
+            for (Channel chan : channels.getExistingChannelsByOwner(Helper.toChannel(info.stream))) {
+                chan.printLine(info.makeInfo());
+            }
+        });
+    }
+    
+    private void loadRooms(boolean forceRefresh) {
+        RoomsInfo cached = client.roomManager.getRoomsInfo(channels.getActiveChannel().getOwnerChannel(), forceRefresh);
+        if (cached != null) {
+            menu.setRooms(cached.rooms);
+        } else {
+            menu.setRooms(null);
+        }
+    }
+    
+    public void updateRoom(Room room) {
+        SwingUtilities.invokeLater(() -> {
+            channels.updateRoom(room);
+        });
     }
     
     /**
@@ -1512,7 +1528,7 @@ public class MainGui extends JFrame implements Runnable {
                 setCustomName(user.getName());
             }
             else if (cmd.startsWith("command")) {
-                customCommand(user.getChannel(), e, user.getRegularDisplayNick());
+                customCommand(user.getRoom(), e, user.getRegularDisplayNick());
             } else if (cmd.equals("copyNick")) {
                 MiscUtil.copyToClipboard(user.getName());
             } else if (cmd.equals("copyDisplayNick")) {
@@ -1574,7 +1590,7 @@ public class MainGui extends JFrame implements Runnable {
                 openChatRules();
             }
             else if (cmd.equals("closeChannel")) {
-                client.closeChannel(channels.getActiveChannel().getName());
+                client.closeChannel(channels.getActiveChannel().getChannel());
             }
             else if (cmd.startsWith("closeAllTabs")) {
                 Collection<Channel> chans = null;
@@ -1589,12 +1605,12 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 if (chans != null) {
                     for (Channel c : chans) {
-                        client.closeChannel(c.getName());
+                        client.closeChannel(c.getChannel());
                     }
                 }
             }
             else if (cmd.equals("joinHostedChannel")) {
-                client.command(channels.getActiveChannel().getName(), "joinhosted", null);
+                client.command(channels.getActiveChannel().getRoom(), "joinhosted", null);
             }
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());
@@ -1603,7 +1619,8 @@ public class MainGui extends JFrame implements Runnable {
                 channels.popoutActiveChannel();
             }
             else if (cmd.startsWith("command")) {
-                customCommand(channels.getActiveChannel().getName(), e, channels.getActiveChannel().getStreamName());
+                // TODO: Check getStreamName()
+                customCommand(channels.getActiveChannel().getRoom(), e, channels.getActiveChannel().getStreamName());
             }
             else if (cmd.startsWith("historyRange")) {
                 int range = Integer.parseInt(cmd.substring("historyRange".length()));
@@ -1619,6 +1636,12 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
 
+        @Override
+        public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
+            streamStuff(e, streams);
+            channelStuff(e, streams);
+        }
+
         /**
          * Context menu event associated with a list of stream or channel names.
          * 
@@ -1626,8 +1649,8 @@ public class MainGui extends JFrame implements Runnable {
          * @param streams 
          */
         @Override
-        public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
-            streamStuff(e, streams);
+        public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
+            roomsStuff(e, rooms);
         }
 
         /**
@@ -1637,7 +1660,7 @@ public class MainGui extends JFrame implements Runnable {
          * @param e The event
          * @param streamInfos The list of {@code StreamInfo} objects associated
          * with this event
-         * @see streamsMenuItemClicked(ActionEvent, Collection)
+         * @see #roomsMenuItemClicked(ActionEvent, Collection)
          */
         @Override
         public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos) {
@@ -1659,7 +1682,8 @@ public class MainGui extends JFrame implements Runnable {
                 for (StreamInfo info : streamInfos) {
                     streams.add(info.getCapitalizedName());
                 }
-                streamsMenuItemClicked(e, streams);
+                streamStuff(e, streams);
+                channelStuff(e, streams);
             }
             if (cmd.equals("manualRefreshStreams")) {
                 client.api.manualRefreshStreams();
@@ -1678,6 +1702,7 @@ public class MainGui extends JFrame implements Runnable {
             Collection<String> list = new ArrayList<>();
             list.add(name);
             streamStuff(e, list);
+            channelStuff(e, list);
         }
         
         /**
@@ -1720,6 +1745,28 @@ public class MainGui extends JFrame implements Runnable {
          * @param cmd The command
          * @param streams The list of stream or channel names
          */
+        private void roomsStuff(ActionEvent e, Collection<Room> rooms) {
+            Collection<String> channels = new ArrayList<>();
+            Collection<String> streams = new ArrayList<>();
+            for (Room room : rooms) {
+                channels.add(room.getChannel());
+                if (room.hasStream()) {
+                    streams.add(room.getStream());
+                }
+            }
+            channelStuff(e, channels);
+            streamStuff(e, streams);
+        }
+        
+        private void channelStuff(ActionEvent e, Collection<String> channels) {
+            String cmd = e.getActionCommand();
+            TwitchUrl.removeInvalidStreams(channels);
+            if (cmd.equals("join")) {
+                makeVisible();
+                client.joinChannels(new HashSet<>(channels));
+            } 
+        }
+        
         private void streamStuff(ActionEvent e, Collection<String> streams) {
             String cmd = e.getActionCommand();
             TwitchUrl.removeInvalidStreams(streams);
@@ -1754,13 +1801,6 @@ public class MainGui extends JFrame implements Runnable {
                     urls.add(url);
                 }
                 UrlOpener.openUrlsPrompt(getActiveWindow(), urls, true);
-            } else if (cmd.equals("join")) {
-                Set<String> channels = new HashSet<>();
-                for (String stream : streams) {
-                    channels.add(stream);
-                }
-                makeVisible();
-                client.joinChannels(channels);
             } else if (cmd.startsWith("streams")) {
                 ArrayList<String> streams2 = new ArrayList<>();
                 for (String stream : streams) {
@@ -1812,7 +1852,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             } else if (cmd.startsWith("command")) {
-                customCommand(channels.getLastActiveChannel().getName(), e, StringUtil.join(streams, " "));
+                customCommand(channels.getLastActiveChannel().getRoom(), e, StringUtil.join(streams, " "));
             }
         }
 
@@ -1903,10 +1943,10 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         
-        private void customCommand(String channel, ActionEvent e, String args) {
+        private void customCommand(Room room, ActionEvent e, String args) {
             CommandActionEvent ce = (CommandActionEvent)e;
             CustomCommand command = ce.getCommand();
-            client.anonCustomCommand(channel, command, Parameters.create(args));
+            client.anonCustomCommand(room, command, Parameters.create(args));
         }
         
     }
@@ -1955,7 +1995,7 @@ public class MainGui extends JFrame implements Runnable {
                 command = command.substring(1);
             }
             if (e.isControlDown() && !command.isEmpty()) {
-                client.command(user.getChannel(), command, user.getRegularDisplayNick());
+                client.command(user.getRoom(), command, user.getRegularDisplayNick());
             } else if (!e.isAltDown()) {
                 openUserInfoDialog(user, msgId, autoModMsgId);
             }
@@ -2366,7 +2406,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void openChatRules() {
-        openChatRules(channels.getLastActiveChannel().getName());
+        openChatRules(channels.getLastActiveChannel().getChannel());
     }
     
     private void openChatRules(String channel) {
@@ -2392,7 +2432,6 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public Set<String> chooseFavorites(Component owner, String channel) {
-        updateFavoritesDialog();
         favoritesDialog.setLocationRelativeTo(owner);
         int result = favoritesDialog.showDialog(channel);
         if (result == FavoritesDialog.ACTION_DONE) {
@@ -2402,7 +2441,6 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void openFavoritesDialogToJoin(String channel) {
-        updateFavoritesDialog();
         favoritesDialog.setLocationRelativeTo(this);
         int result = favoritesDialog.showDialog(channel);
         if (result == FavoritesDialog.ACTION_DONE) {
@@ -2513,13 +2551,9 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void setChannelNewStatus(final String channel, final String newStatus) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                channels.setChannelNewStatus(channels.getChannel(channel));
-            }
+    public void setChannelNewStatus(final String ownerChannel, final String newStatus) {
+        SwingUtilities.invokeLater(() -> {
+                channels.setChannelNewStatus(ownerChannel);
         });
     }
     
@@ -2577,7 +2611,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public boolean isChanActive(String channel) {
-        return channels.getLastActiveChannel().getName().equals(channel);
+        return channels.getLastActiveChannel().getChannel().equals(channel);
     }
     
     public Window getActiveWindow() {
@@ -2593,19 +2627,19 @@ public class MainGui extends JFrame implements Runnable {
      * # Messages #
      */
     
-    public void printMessage(String toChan, User user, String text, boolean action,
+    public void printMessage(User user, String text, boolean action,
             String emotes, int bits) {
-        printMessage(toChan, user, text, action, emotes, bits, null);
+        printMessage(user, text, action, emotes, bits, null);
     }
     
-    public void printMessage(final String toChan, final User user,
+    public void printMessage(final User user,
             final String text, final boolean action, final String emotes,
             final int origBits, final String id) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Channel chan;
-                String channel = toChan;
+                String channel = user.getChannel();
                 boolean whisper = false;
                 
                 // Disable Cheer emotes altogether if disabled in the settings
@@ -2621,10 +2655,10 @@ public class MainGui extends JFrame implements Runnable {
                 if (channel.equals(WhisperManager.WHISPER_CHANNEL)) {
                     int whisperSetting = (int)client.settings.getLong("whisperDisplayMode");
                     if (whisperSetting == WhisperManager.DISPLAY_ONE_WINDOW) {
-                        chan = channels.getChannel(channel);
+                        chan = channels.getChannel(client.roomManager.getRoom(channel));
                     } else if (whisperSetting == WhisperManager.DISPLAY_PER_USER) {
                         if (!userIgnored(user, true)) {
-                            chan = channels.getChannel("$"+user.getName());
+                            chan = channels.getChannel(client.roomManager.getRoom("$"+user.getName()));
                         } else {
                             chan = channels.getActiveChannel();
                         }
@@ -2633,17 +2667,17 @@ public class MainGui extends JFrame implements Runnable {
                     }
                     whisper = true;
                 } else {
-                    chan = channels.getChannel(channel);
+                    chan = channels.getChannel(user.getRoom());
                 }
                 // If channel was changed from the given one, change accordingly
-                channel = chan.getName();
+                channel = chan.getChannel();
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
                         || (userIgnored(user, whisper) && !isOwnMessage);
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
-                    client.chatLog.message(chan.getName(), user, text, action);
+                    client.chatLog.message(chan.getFilename(), user, text, action);
                 }
                 
                 boolean highlighted = false;
@@ -2693,7 +2727,7 @@ public class MainGui extends JFrame implements Runnable {
                     // Don't print message
                     if (isOwnMessage && channels.isChannel(channel)) {
                         // Don't log to file
-                        channels.getChannel(channel).printLine("Own message ignored.");
+                        chan.printLine("Own message ignored.");
                     }
                 } else {
                     // Print message, but determine how exactly
@@ -2727,7 +2761,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void printSubscriberMessage(final String channel, final User user,
+    public void printSubscriberMessage(final User user,
             final String text, final String message, final int months,
             final String emotes) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -2746,14 +2780,14 @@ public class MainGui extends JFrame implements Runnable {
                 if (!checkInfoIgnore(fullMessage)) {
                     Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
                     SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
-                    channels.getChannel(channel).printMessage(m);
+                    channels.getChannel(user.getRoom()).printMessage(m);
                     notificationManager.newSubscriber(user, text, message);
                 } else {
-                    ignoredMessages.addInfoMessage(channel, fullMessage);
+                    ignoredMessages.addInfoMessage(user.getRoom().getDisplayName(), fullMessage);
                 }
 
                 // Chatlog/User Info
-                client.chatLog.info(channel, fullMessage);
+                client.chatLog.info(user.getRoom().getFilename(), fullMessage);
                 if (!user.getName().isEmpty()) {
                     user.addSub(message != null ? processMessage(message) : "", text);
                     updateUserInfoDialog(user);
@@ -2798,7 +2832,7 @@ public class MainGui extends JFrame implements Runnable {
         if (client.settings.getLong("ignoreMode") == IgnoredMessages.MODE_COUNT
                 && showIgnoredInfo()) {
             if (channels.isChannel(channel)) {
-                channels.getChannel(channel).printLine(message);
+                channels.getExistingChannel(channel).printLine(message);
             }
         }
     }
@@ -2818,7 +2852,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                channels.getChannel(user.getChannel()).userBanned(user, duration, reason, id);
+                channels.getChannel(user.getRoom()).userBanned(user, duration, reason, id);
                 user.addBan(duration, reason, id);
                 updateUserInfoDialog(user);
                 if (client.settings.listContains("streamChatChannels", user.getChannel())) {
@@ -2832,16 +2866,16 @@ public class MainGui extends JFrame implements Runnable {
         clearChat(null);
     }
     
-    public void clearChat(final String channel) {
+    public void clearChat(final Room room) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Channel panel;
-                if (channel == null) {
+                if (room == null) {
                     panel = channels.getActiveChannel();
                 } else {
-                    panel = channels.getChannel(channel);
-                    if (client.settings.listContains("streamChatChannels", channel)) {
+                    panel = channels.getChannel(room);
+                    if (client.settings.listContains("streamChatChannels", room.getChannel())) {
                         streamChat.clear();
                     }
                 }
@@ -2871,7 +2905,7 @@ public class MainGui extends JFrame implements Runnable {
                 Channel panel = channels.getLastActiveChannel();
                 if (panel != null) {
                     printInfo(panel, line);
-                    client.chatLog.info(panel.getName(), line);
+                    client.chatLog.info(panel.getFilename(), line);
                 }
             }
         });
@@ -2884,21 +2918,21 @@ public class MainGui extends JFrame implements Runnable {
                 Channel panel = channels.getActiveChannel();
                 if (panel != null) {
                     printInfo(panel, line);
-                    client.chatLog.system(panel.getName(), line);
+                    client.chatLog.system(panel.getFilename(), line);
                 }
             }
         });
     }
 
-    public void printLine(final String channel, final String line) {
+    public void printLine(final Room room, final String line) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (channel == null) {
+                if (room == null) {
                     printLine(line);
                 } else {
-                    printInfo(channels.getChannel(channel), line);
-                    client.chatLog.info(channel, line);
+                    printInfo(channels.getChannel(room), line);
+                    client.chatLog.info(room.getFilename(), line);
                 }
             }
         });
@@ -2918,8 +2952,16 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 for (Channel channel : channels.channels()) {
                     printInfo(channel, line);
-                    client.chatLog.info(channel.getName(), line);
+                    client.chatLog.info(channel.getFilename(), line);
                 }
+            }
+        });
+    }
+    
+    public void printLineByOwnerChannel(final String channel, final String text) {
+        SwingUtilities.invokeLater(() -> {
+            for (Channel chan : channels.getExistingChannelsByOwner(channel)) {
+                chan.printLine(text);
             }
         });
     }
@@ -2931,7 +2973,7 @@ public class MainGui extends JFrame implements Runnable {
                 channels.setChannelNewMessage(channel);
             }
         } else {
-            ignoredMessages.addInfoMessage(channel.getName(), line);
+            ignoredMessages.addInfoMessage(channel.getChannel(), line);
         }
     }
     
@@ -2943,11 +2985,11 @@ public class MainGui extends JFrame implements Runnable {
      * @param type The type of event.
      * @param user The User object of who was the target of this event (mod/..).
      */
-    public void printCompact(final String channel, final String type, final User user) {
+    public void printCompact(final String type, final User user) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                channels.getChannel(channel).printCompact(type, user);
+                channels.getChannel(user.getRoom()).printCompact(type, user);
             }
         });
     }
@@ -3039,8 +3081,10 @@ public class MainGui extends JFrame implements Runnable {
                 autoModDialog.addData(data);
                 
                 String channel = Helper.toValidChannel(data.stream);
+                
+                // AutoMod only seems to work in Stream Chat
                 if (channels.isChannel(channel)) {
-                    // Output directly to chat (if enabled)
+                    Channel chan = channels.getExistingChannel(channel);
                     if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED
                             && data.args.size() > 1) {
                         // Automod
@@ -3048,15 +3092,24 @@ public class MainGui extends JFrame implements Runnable {
                         String message = data.args.get(1);
                         if (client.settings.getBoolean("showAutoMod")) {
                             User user = client.getUser(channel, username);
-                            channels.getChannel(channel).printMessage(new AutoModMessage(user, message, data.msgId));
+                            chan.printMessage(new AutoModMessage(user, message, data.msgId));
                         }
                         notificationManager.autoModMessage(channel, username, message);
-                    } else if (!ownAction && client.settings.getBoolean("showModActions")) {
+                    }
+                }
+                
+                // Moderator Actions apparently apply to all rooms
+                Collection<Channel> chans = channels.getExistingChannelsByOwner(channel);
+                if (!chans.isEmpty()) {
+                    // Output directly to chat (if enabled)
+                    if (!ownAction && client.settings.getBoolean("showModActions")) {
                         // Other Mod Actions
-                        channels.getChannel(channel).printLine(String.format("[ModAction] %s: /%s %s",
-                                data.created_by,
-                                data.moderation_action,
-                                StringUtil.join(data.args, " ")));
+                        for (Channel chan : chans) {
+                            chan.printLine(String.format("[ModAction] %s: /%s %s",
+                                    data.created_by,
+                                    data.moderation_action,
+                                    StringUtil.join(data.args, " ")));
+                        }
                     }
                 }
             }
@@ -3100,12 +3153,10 @@ public class MainGui extends JFrame implements Runnable {
      * @param channel
      * @param user 
      */
-    public void addUser(final String channel, final User user) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (!shouldUpdateUser(user)) return;
-                Channel c = channels.getChannel(channel);
+    public void addUser(final User user) {
+        SwingUtilities.invokeLater(() -> {
+            if (shouldUpdateUser(user)) {
+                Channel c = channels.getChannel(user.getRoom());
                 c.addUser(user);
                 if (channels.getActiveChannel() == c) {
                     state.update();
@@ -3120,12 +3171,10 @@ public class MainGui extends JFrame implements Runnable {
      * @param channel
      * @param user 
      */
-    public void removeUser(final String channel, final User user) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (!shouldUpdateUser(user)) return;
-                Channel c = channels.getChannel(channel);
+    public void removeUser(final User user) {
+        SwingUtilities.invokeLater(() -> {
+            if (shouldUpdateUser(user)) {
+                Channel c = channels.getChannel(user.getRoom());
                 c.removeUser(user);
                 if (channels.getActiveChannel() == c) {
                     state.update();
@@ -3140,11 +3189,9 @@ public class MainGui extends JFrame implements Runnable {
      * @param user 
      */
     public void updateUser(final User user) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (!shouldUpdateUser(user)) return;
-                channels.getChannel(user.getChannel()).updateUser(user);
+        SwingUtilities.invokeLater(() -> {
+            if (shouldUpdateUser(user)) {
+                channels.getChannel(user.getRoom()).updateUser(user);
                 state.update();
             }
         });
@@ -3158,14 +3205,11 @@ public class MainGui extends JFrame implements Runnable {
     /**
      * Resort users in the userlist of the given channel.
      * 
-     * @param channel
+     * @param room
      */
-    public void resortUsers(final String channel) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                channels.getChannel(channel).resortUserlist();
-            }
+    public void resortUsers(final Room room) {
+        SwingUtilities.invokeLater(() -> {
+            channels.getChannel(room).resortUserlist();
         });
     }
     
@@ -3177,7 +3221,7 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 if (channel != null) {
-                    Channel c = channels.get(channel);
+                    Channel c = channels.getExistingChannel(channel);
                     if (c != null) {
                         c.clearUsers();
                     }
@@ -3372,6 +3416,7 @@ public class MainGui extends JFrame implements Runnable {
          */
         private String makeTitle(Channel channel, int state) {
             String channelName = channel.getName();
+            String chan = channel.getChannel();
 
             // Current state
             String stateText = "";
@@ -3403,7 +3448,7 @@ public class MainGui extends JFrame implements Runnable {
                     title += " - ";
                 }
                 String numUsers = Helper.formatViewerCount(channel.getNumUsers());
-                if (!client.isUserlistLoaded(channelName)) {
+                if (!client.isUserlistLoaded(chan)) {
                     numUsers += "*";
                 }
                 if (hideCounts) {
@@ -3412,10 +3457,14 @@ public class MainGui extends JFrame implements Runnable {
                 
                 String chanState = "";
                 if (client.settings.getBoolean("titleShowChannelState")) {
-                    chanState = client.getChannelState(channelName).getInfo();
+                    chanState = client.getChannelState(chan).getInfo();
                 }
                 if (!chanState.isEmpty()) {
                     chanState = " "+chanState;
+                }
+                String topic = "";
+                if (channel.getRoom().hasTopic()) {
+                    topic = "["+channel.getRoom().getTopic()+"]";
                 }
 
                 StreamInfo streamInfo = getStreamInfo(channel.getStreamName());
@@ -3445,13 +3494,14 @@ public class MainGui extends JFrame implements Runnable {
                             title += " [" + numUsers + "]";
                         }
                     }
-                    title += chanState+" - " + streamInfo.getFullStatus();
+                    title += chanState+topic+" - " + streamInfo.getFullStatus();
                 } else {
                     title += chanNameText;
                     if (!hideCounts) {
                         title += " [" + numUsers + "]";
                     }
                     title += chanState;
+                    title += topic;
                 }
             } else if (client.isWhisperAvailable()) {
                 title += " [W]";
@@ -3948,7 +3998,7 @@ public class MainGui extends JFrame implements Runnable {
     public List<String> getOpenChannels() {
         List<String> result = new ArrayList<>();
         for (Channel chan : channels.getChannelsOfType(Channel.Type.CHANNEL)) {
-            result.add(chan.getName());
+            result.add(chan.getChannel());
         }
         return result;
     }
@@ -3963,7 +4013,9 @@ public class MainGui extends JFrame implements Runnable {
     public StreamInfo getStreamInfo(String stream) {
         Set<String> streams = new HashSet<>();
         for (Channel chan : channels.getChannelsOfType(Channel.Type.CHANNEL)) {
-            streams.add(chan.getStreamName());
+            if (chan.getStreamName() != null) {
+                streams.add(chan.getStreamName());
+            }
         }
         return client.api.getStreamInfo(stream, streams);
     }
@@ -3973,16 +4025,15 @@ public class MainGui extends JFrame implements Runnable {
      * 
      * @param channel 
      */
-    public void printStreamInfo(final String channel) {
-        final String stream = channel.replace("#", "");
+    public void printStreamInfo(final Room room) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 if (client.settings.getBoolean("printStreamStatus")) {
-                    StreamInfo info = getStreamInfo(stream);
+                    StreamInfo info = getStreamInfo(room.getStream());
                     if (info.isValid()) {
-                        printLine(channel, "~" + info.getFullStatus() + "~");
+                        printLine(room, "~" + info.getFullStatus() + "~");
                     }
                 }
             }
@@ -4107,11 +4158,6 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (setting.equals("emoteScaleDialog")) {
                     emotesDialog.setEmoteScale(((Long)value).intValue());
                 }
-            }
-            if (setting.equals("channelFavorites") || setting.equals("channelHistory")) {
-                // TOCONSIDER: This means that it is updated twice in a row when an action
-                // requires both settings to be changed
-                updateFavoritesDialogWhenVisible();
             }
             if (setting.equals("liveStreamsSorting")) {
                 updateLiveStreamsDialog();

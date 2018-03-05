@@ -1,28 +1,30 @@
 
 package chatty.gui.components;
 
+import chatty.ChannelFavorites;
+import chatty.ChannelFavorites.Favorite;
 import chatty.Helper;
+import chatty.Room;
 import chatty.gui.GuiUtil;
-import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
-import chatty.gui.components.menus.StreamsContextMenu;
 import chatty.lang.Language;
+import chatty.gui.components.menus.RoomsContextMenu;
 import chatty.util.BitEncoder;
 import chatty.util.DateTime;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -44,6 +46,7 @@ public class FavoritesDialog extends JDialog {
     private final JTable table;
     private final MyTableModel data;
     private final CustomSorter sorter;
+    private final ChannelFavorites favorites;
     
     private final JTextField input = new JTextField(30);
     
@@ -70,11 +73,13 @@ public class FavoritesDialog extends JDialog {
     
     private final ContextMenuListener contextMenuListener;
     
-    public FavoritesDialog(MainGui main, ContextMenuListener contextMenuListener) {
+    public FavoritesDialog(Window main, ChannelFavorites favorites,
+            ContextMenuListener contextMenuListener) {
         super(main);
         setTitle(Language.getString("favorites.title"));
         setModal(true);
         
+        this.favorites = favorites;
         this.contextMenuListener = contextMenuListener;
         
         setLayout(new GridBagLayout());
@@ -147,17 +152,34 @@ public class FavoritesDialog extends JDialog {
         removeButton.setToolTipText("Remove selected channel(s) from favorites "
                 + "and history");
         
-        
-        // Button Listeners
-        ActionListener listener = new FavoritesActionListener();
-        cancelButton.addActionListener(listener);
-        doneButton.addActionListener(listener);
-        
-        ActionListener actionListener = main.getActionListener();
+        ActionListener actionListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == addToFavoritesButton) {
+                    addToFavorites();
+                } else if (e.getSource() == removeFromFavoritesButton) {
+                    removeFromFavorites();
+                } else if (e.getSource() == removeButton) {
+                    remove();
+                } else if (e.getSource() == input) {
+                    addToFavorites();
+                } else if (e.getSource() == doneButton) {
+                    result = ACTION_DONE;
+                    setVisible(false);
+                } else if (e.getSource() == cancelButton) {
+                    result = ACTION_CANCEL;
+                    setVisible(false);
+                }
+            }
+        };
+
         addToFavoritesButton.addActionListener(actionListener);
         removeFromFavoritesButton.addActionListener(actionListener);
         removeButton.addActionListener(actionListener);
         input.addActionListener(actionListener);
+        cancelButton.addActionListener(actionListener);
+        doneButton.addActionListener(actionListener);
         
         channelsChanged();
         
@@ -165,9 +187,62 @@ public class FavoritesDialog extends JDialog {
         setMinimumSize(getSize());
     }
     
+    /**
+     * Add channels currently in the inputbox to the favorites. This allows both
+     * channels selected in the list to be added as well as manually entered
+     * ones.
+     */
+    private void addToFavorites() {
+        for (String channel : getChannels()) {
+            removeEntry(channel);
+            Favorite r = favorites.addFavorite(channel);
+            data.add(r);
+        }
+    }
+    
+    /**
+     * Remove favorites selected in the list.
+     */
+    private void removeFromFavorites() {
+        for (Favorite f : getSelected()) {
+            data.remove(f);
+            Favorite r = favorites.removeFavorite(f.room);
+            data.add(r);
+        }
+    }
+    
+    /**
+     * Remove entries selected in the list.
+     */
+    private void remove() {
+        int index = table.getSelectedRow();
+        for (Favorite f : getSelected()) {
+            data.remove(f);
+            favorites.remove(f);
+        }
+        if (table.getRowCount() > index) {
+            table.setRowSelectionInterval(index, index);
+        } else if (table.getRowCount() > 0) {
+            index = table.getRowCount() - 1;
+            table.setRowSelectionInterval(index, index);
+        }
+    }
+    
+    /**
+     * Remove the entry for the given channel, if it exists.
+     * 
+     * @param channel The channel
+     */
+    private void removeEntry(String channel) {
+        Favorite existing = favorites.get(channel);
+        if (existing != null) {
+            data.remove(existing);
+        }
+    }
+    
     private void setupTable() {
         table.setShowGrid(false);
-        table.setDefaultRenderer(Boolean.class, new TestRenderer());
+        table.setDefaultRenderer(Boolean.class, new FavoriteRenderer());
         table.setDefaultRenderer(Long.class, new TimeRenderer());
         
         table.getTableHeader().addMouseListener(sorter);
@@ -218,7 +293,7 @@ public class FavoritesDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                removeButton.doClick();
+                remove();
             }
         });
         
@@ -254,41 +329,15 @@ public class FavoritesDialog extends JDialog {
      * as button description.
      * 
      * @param channelPreset
-     * @param action The description of the done-button
-     * @param actionOneChannel The secondary description, to be used for one channel
      * @return 
      */
     public int showDialog(String channelPreset) {
         setChannel(channelPreset);
         result = -1;
         updateEditButtons();
+        data.setData(favorites.getAll());
         setVisible(true);
         return result;
-    }
-
-    /**
-     * Gets the action associated with this Object (should be JButton).
-     * 
-     * @param source
-     * @return 
-     */
-    public int getAction(Object source) {
-        if (source == addToFavoritesButton || source == input) {
-            return BUTTON_ADD_FAVORITES;
-        }
-        else if (source == removeFromFavoritesButton) {
-            return BUTTON_REMOVE_FAVORITES;
-        }
-        else if (source == cancelButton) {
-            return ACTION_CANCEL;
-        }
-        else if (source == doneButton) {
-            return ACTION_DONE;
-        }
-        else if (source == removeButton) {
-            return BUTTON_REMOVE;
-        }
-        return -1;
     }
     
     /**
@@ -334,14 +383,19 @@ public class FavoritesDialog extends JDialog {
     public Set<String> getSelectedChannels() {
         Set<String> selectedChannels = new HashSet<>();
         int[] selected = table.getSelectedRows();
-        for (int i=0;i<selected.length;i++) {
-            int row = selected[i];
-            Object channel = table.getValueAt(row, 1);
-            if (channel != null) {
-                selectedChannels.add((String)channel);
-            }
+        for (int row : selected) {
+            Favorite favorite = data.get(table.convertRowIndexToModel(row));
+            selectedChannels.add(favorite.room.getChannel());
         }
         return selectedChannels;
+    }
+    
+    public List<Favorite> getSelected() {
+        List<Favorite> result = new ArrayList<>();
+        for (int row : table.getSelectedRows()) {
+            result.add(data.get(table.convertRowIndexToModel(row)));
+        }
+        return result;
     }
     
     /**
@@ -353,17 +407,7 @@ public class FavoritesDialog extends JDialog {
      */
     public Set<String> getChannels() {
         String channels = input.getText();
-        return Helper.parseChannelsFromString(channels, false);
-    }
-    
-    public void setData(Set<String> favorites, Map<String, Long> history) {
-        Map<String, Long> favoritesWithHistory = new HashMap<>();
-        for (String channel : favorites) {
-            favoritesWithHistory.put(channel, history.get(channel));
-        }
-        //favoritesWithHistory = MapUtil.sortByValue(favoritesWithHistory);
-        //history = MapUtil.sortByValue(history);
-        data.setData(favoritesWithHistory, history);
+        return Helper.parseChannelsFromString(channels, true);
     }
     
     private void openContextMenu(MouseEvent e) {
@@ -375,8 +419,11 @@ public class FavoritesDialog extends JDialog {
                 }
             }
             if (table.getSelectedRow() != -1) {
-                Set<String> selected = getSelectedChannels();
-                ContextMenu m = new StreamsContextMenu(selected, contextMenuListener);
+                Collection<Room> selected = new ArrayList<>();
+                for (Favorite f : getSelected()) {
+                    selected.add(f.room);
+                }
+                ContextMenu m = new RoomsContextMenu(selected, contextMenuListener);
                 m.show(table, e.getX(), e.getY());
             }
         }
@@ -412,7 +459,10 @@ public class FavoritesDialog extends JDialog {
         return gbc;
     }
     
-    static class TestRenderer extends DefaultTableCellRenderer {
+    /**
+     * Renderer to draw the star icon for favorited entries.
+     */
+    private static class FavoriteRenderer extends DefaultTableCellRenderer {
         
         ImageIcon icon = new ImageIcon(getClass().getResource("/chatty/gui/star.png"));
         
@@ -433,6 +483,9 @@ public class FavoritesDialog extends JDialog {
         
     }
     
+    /**
+     * Renderer to format and output the last join time.
+     */
     static class TimeRenderer extends DefaultTableCellRenderer {
         
         @Override
@@ -454,9 +507,9 @@ public class FavoritesDialog extends JDialog {
     }
 
     /**
-     * Table Header renderer that always uses the second SortKey to determine
-     * which column is sorted, because the first one is always the favorites
-     * row, to keep the favorites at the top.
+     * Table Header renderer that always uses the second SortKey to show which
+     * column is sorted, because the first one is always the favorites row, to
+     * keep the favorites at the top.
      */
     private static class MyDefaultTableHeaderCellRenderer extends ExtendableDefaultTableHeaderCellRenderer {
 
@@ -467,23 +520,24 @@ public class FavoritesDialog extends JDialog {
                 return null;
             }
 
-            List sortedColumns = rowSorter.getSortKeys();
-            if (sortedColumns.size() > 1) {
-                return (RowSorter.SortKey) sortedColumns.get(1);
-            } else if (sortedColumns.size() == 1) {
-                return (RowSorter.SortKey) sortedColumns.get(0);
+            List<RowSorter.SortKey> sortedColumns = rowSorter.getSortKeys();
+            for (RowSorter.SortKey key : sortedColumns) {
+                if (key.getColumn() == column) {
+                    return key;
+                }
             }
+//            if (sortedColumns.size() > 1) {
+//                return (RowSorter.SortKey) sortedColumns.get(1);
+//            } else if (sortedColumns.size() == 1) {
+//                return (RowSorter.SortKey) sortedColumns.get(0);
+//            }
             return null;
         }
     }
     
-    class MyTableModel extends AbstractTableModel {
+    private static class MyTableModel extends AbstractTableModel {
 
-        Object[][] data = {
-            {true,"joshimuz",new Integer(1000)},
-            {true,"ninkortek",new Integer(1234)},
-            {false,"abc",new Integer(1)}
-        };
+        private List<Favorite> data = new ArrayList<>();
         
         /**
          * The columns. Changing this requires adjustments of column stuff in
@@ -494,91 +548,65 @@ public class FavoritesDialog extends JDialog {
             Language.getString("favorites.column.channel"),
             Language.getString("favorites.column.lastJoined")
         };
+
+        public void setData(List<Favorite> newData) {
+            this.data = newData;
+            fireTableDataChanged();
+        }
+        
+        public Favorite get(int index) {
+            return data.get(index);
+        }
+        
+        public void add(Favorite f) {
+            data.add(f);
+            int index = data.size() - 1;
+            fireTableRowsInserted(index, index);
+        }
+        
+        public void remove(Favorite f) {
+            int index = data.indexOf(f);
+            if (index != -1) {
+                data.remove(index);
+                fireTableRowsDeleted(index, index);
+            }
+        }
         
         @Override
         public int getRowCount() {
-            return data.length;
+            return data.size();
         }
 
         @Override
         public int getColumnCount() {
             return columns.length;
         }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return data[rowIndex][columnIndex];
-        }
-        
-        @Override
-        public Class getColumnClass(int c) {
-            if (data.length == 0) {
-                return Object.class;
-            }
-            return getValueAt(0, c).getClass();
-        }
         
         @Override
         public String getColumnName(int col) {
             return columns[col];
         }
-        
-        
-        public void setData(Map<String, Long> favorites, Map<String, Long> history) {
-            int count = 0;
-            for (String entry : favorites.keySet()) {
-                if (!history.containsKey(entry)) {
-                    count++;
-                }
-            }
-            count += history.size();
-            
-            data = new Object[count][columns.length];
-            int i = 0;
-            
-            for (String entry : favorites.keySet()) {
-                
-                addEntry(i, true, entry, history.get(entry));
-                i++;
-            }
-            
-            for (String channel : history.keySet()) {
-                Long time = history.get(channel);
-                if (!favorites.containsKey(channel)) {
-                    
-                    addEntry(i, false, channel, time);
-                    i++;
-                }
-            }
-            fireTableDataChanged();
-        }
-        
-        private void addEntry(int i, boolean favorite, String channel, Long time) {
-            if (time == null) {
-                time = -1l;
-            }
-            //System.out.println(i+" "+channel);
-            data[i] = new Object[3];
-            data[i][0] = favorite;
-            data[i][1] = channel;
-            data[i][2] = time;
-        }
-    }
-    
-    private class FavoritesActionListener implements ActionListener {
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == doneButton) {
-                result = ACTION_DONE;
-                setVisible(false);
-            }
-            else if (e.getSource() == cancelButton) {
-                result = ACTION_CANCEL;
-                setVisible(false);
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Favorite f = data.get(rowIndex);
+            if (columnIndex == 0) {
+                return f.isFavorite;
+            } else if (columnIndex == 1) {
+                return Helper.toStream(f.room.getDisplayName());
+            } else {
+                return f.lastJoined;
             }
         }
         
+        @Override
+        public Class getColumnClass(int c) {
+            if (data.isEmpty()) {
+                return Object.class;
+            }
+            return getValueAt(0, c).getClass();
+        }
+
     }
     
     /**

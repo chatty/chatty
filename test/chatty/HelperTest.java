@@ -2,10 +2,6 @@
 package chatty;
 
 import chatty.util.StringUtil;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -15,44 +11,49 @@ import static org.junit.Assert.*;
  */
 public class HelperTest {
     
-    public HelperTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
-    }
-
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
-    
     @Test
     public void validateChannelTest() {
-        assertTrue(Helper.validateChannel("joshimuz"));
-        assertTrue(Helper.validateChannel("51nn3r"));
-        assertTrue(Helper.validateChannel("#joshimuz"));
-        assertFalse(Helper.validateChannel("##joshimuz"));
-        assertFalse(Helper.validateChannel(""));
-        assertFalse(Helper.validateChannel(" "));
-        assertFalse(Helper.validateChannel("abc$"));
-    }
-    
-    @Test
-    public void checkChannelTest() {
+        assertTrue(Helper.isValidChannel("joshimuz"));
+        assertTrue(Helper.isValidChannel("51nn3r"));
+        assertTrue(Helper.isValidChannel("#joshimuz"));
+        assertFalse(Helper.isValidChannel("##joshimuz"));
+        assertFalse(Helper.isValidChannel(""));
+        assertFalse(Helper.isValidChannel(" "));
+        assertFalse(Helper.isValidChannel("abc$"));
+        
+        assertTrue(Helper.isValidChannelStrict("#joshimuz"));
+        assertFalse(Helper.isValidChannelStrict("joshimuz"));
+        
+        assertTrue(Helper.isRegularChannel("#joshimuz"));
+        assertTrue(Helper.isRegularChannel("joshimuz"));
+        assertFalse(Helper.isRegularChannel(""));
+        assertFalse(Helper.isRegularChannel("#chatrooms:1234:abc-def"));
+        assertFalse(Helper.isRegularChannel("chatrooms:"));
+        
+        assertTrue(Helper.isRegularChannelStrict("#joshimuz"));
+        assertTrue(Helper.isRegularChannelStrict("#underscore_"));
+        assertFalse(Helper.isRegularChannelStrict("joshimuz"));
+        assertFalse(Helper.isRegularChannelStrict("#chatrooms:1234:abc-def"));
+        
+        assertTrue(Helper.isValidStream("joshimuz"));
+        assertTrue(Helper.isValidStream("51nn3r"));
+        assertFalse(Helper.isValidStream("chatrooms:1234:abc-def"));
+        assertFalse(Helper.isValidStream(null));
+        assertFalse(Helper.isValidStream(""));
+        assertFalse(Helper.isValidStream(" "));
+        
+        assertEquals(Helper.toStream("#channel"), "channel");
+        assertEquals(Helper.toStream(""), "");
+        assertEquals(Helper.toStream("#chatrooms:1234:abc-def"), "chatrooms:1234:abc-def");
+        
+        assertEquals(Helper.toValidStream("#channel"), "channel");
+        assertEquals(Helper.toValidStream(""), null);
+        assertEquals(Helper.toValidStream("#chatrooms:1234:abc-def"), null);
+        
+        assertEquals(Helper.toValidChannel("#channel"), "#channel");
+        assertEquals(Helper.toValidChannel("channel"), "#channel");
+        assertEquals(Helper.toValidChannel("$channel"), null);
+        assertEquals(Helper.toValidChannel("chatrooms:1234:abc-def"), "#chatrooms:1234:abc-def");
         assertEquals(Helper.toValidChannel("abc"), "#abc");
         assertNull(Helper.toValidChannel(""));
         assertNull(Helper.toValidChannel("#"));

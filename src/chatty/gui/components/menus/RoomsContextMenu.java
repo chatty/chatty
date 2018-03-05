@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Room;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 
@@ -10,22 +11,22 @@ import java.util.Collection;
  * 
  * @author tduva
  */
-public class StreamsContextMenu extends ContextMenu {
+public class RoomsContextMenu extends ContextMenu {
     
     private final ContextMenuListener listener;
-    private final Collection<String> streams;
+    private final Collection<Room> rooms;
     
-    public StreamsContextMenu(Collection<String> streams, ContextMenuListener listener) {
+    public RoomsContextMenu(Collection<Room> rooms, ContextMenuListener listener) {
         this.listener = listener;
-        this.streams = streams;
+        this.rooms = rooms;
         
-        ContextMenuHelper.addStreamsOptions(this, streams.size());
+        ContextMenuHelper.addStreamsOptions(this, rooms.size());
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (listener != null) {
-            listener.streamsMenuItemClicked(e, streams);
+            listener.roomsMenuItemClicked(e, rooms);
         }
     }
     

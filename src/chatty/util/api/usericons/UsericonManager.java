@@ -281,7 +281,7 @@ public class UsericonManager {
         
         // If channelRestriction doesn't match, don't have to continue
         if (!icon.channel.isEmpty()) {
-            if (icon.channel.equalsIgnoreCase(user.getChannel())) {
+            if (icon.channel.equalsIgnoreCase(user.getOwnerChannel())) {
                 if (icon.channelInverse) {
                     return false;
                 }

@@ -6,6 +6,7 @@ import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.menus.RoomsContextMenu;
 import chatty.gui.components.menus.StreamsContextMenu;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
@@ -229,7 +230,7 @@ public class FollowersDialog extends JDialog {
                 streams.add(StringUtil.toLowerCase(selected.name));
             }
             if (!streams.isEmpty()) {
-                StreamsContextMenu m = new StreamsContextMenu(streams, contextMenuListener);
+                ContextMenu m = new StreamsContextMenu(streams, contextMenuListener);
                 m.show(table, e.getX(), e.getY());
             }
         }

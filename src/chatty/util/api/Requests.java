@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Room;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.CommunitiesManager.CommunitiesListener;
@@ -423,7 +424,7 @@ public class Requests {
     //=================
     
     public void requestChatInfo(String stream) {
-        if (stream == null || !Helper.validateStream(stream)) {
+        if (!Helper.isValidStream(stream)) {
             return;
         }
         String url = "https://api.twitch.tv/api/channels/"+stream+"/chat_properties";
@@ -515,6 +516,17 @@ public class Requests {
         }
     }
     
+    public void requestRooms(String channelId, String stream) {
+        String url = "https://api.twitch.tv/kraken/chat/"+channelId+"/rooms";
+        if (attemptRequest(url)) {
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            request.setToken(api.defaultToken);
+            execute(request, r -> {
+                RoomsInfo result = Parsing.parseRoomsInfo(stream, r.text);
+                listener.roomsInfo(result);
+            });
+        }
+    }
     
     //===================
     // Management Methods

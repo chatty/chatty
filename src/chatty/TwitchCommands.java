@@ -2,7 +2,7 @@
 package chatty;
 
 import chatty.util.DateTime;
-import chatty.util.MsgTags;
+import chatty.util.irc.MsgTags;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

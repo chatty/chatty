@@ -54,7 +54,7 @@ public class StreamHighlightHelper {
      * @return A response to either echo or send to the channel
      */
     public String modCommand(User user, String line) {
-        String channel = user.getChannel();
+        String channel = user.getOwnerChannel();
         String settingChannel = Helper.toChannel(settings.getString("streamHighlightChannel"));
         String command = StringUtil.toLowerCase(settings.getString("streamHighlightCommand"));
         if (command != null && !command.isEmpty()

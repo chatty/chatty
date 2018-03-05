@@ -315,7 +315,7 @@ public class Usericon implements Comparable {
                 matchType = MatchType.COLOR;
             } else if (statusDef.contains(restrict)) {
                 matchType = MatchType.STATUS;
-            } else if (Helper.validateStream(restrict)) {
+            } else if (Helper.isValidStream(restrict)) {
                 matchType = MatchType.NAME;
             } else if (restrict.equals("$all") || restrict.isEmpty()) {
                 matchType = MatchType.ALL;

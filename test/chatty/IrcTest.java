@@ -1,7 +1,7 @@
 
 package chatty;
 
-import chatty.util.MsgTags;
+import chatty.util.irc.MsgTags;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -98,6 +98,7 @@ public class IrcTest {
         try {
             irc.received(":tduva!tduva@tduva.tmi.twitch.tv JOIN #lotsofs");
             irc.received("tduva!tduva@tduva.tmi.twitch.tv JOIN #lotsofs");
+            irc.received("tduva!tduva@tduva.tmi.twitch.tv JOIN #lotsofs ");
             irc.received(":tduva!tduva@tduva.tmi.twitch.tv JOIN");
             irc.received(":tduvatduva@tduva.tmi.twitch.tv JOIN");
         } catch (Exception ex) {

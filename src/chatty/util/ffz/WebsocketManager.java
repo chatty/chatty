@@ -155,7 +155,7 @@ public class WebsocketManager {
      * @param room 
      */
     public synchronized void addRoom(String room) {
-        if (!Helper.validateStream(room)) {
+        if (!Helper.isValidStream(room)) {
             return;
         }
         connect();
@@ -172,7 +172,7 @@ public class WebsocketManager {
      * @param room 
      */
     public synchronized void removeRoom(String room) {
-        if (!Helper.validateStream(room)) {
+        if (!Helper.isValidStream(room)) {
             return;
         }
         room = StringUtil.toLowerCase(room);
@@ -188,7 +188,7 @@ public class WebsocketManager {
         JSONArray rooms = new JSONArray();
         for (String item : split) {
             item = item.trim();
-            if (Helper.validateStream(item)) {
+            if (Helper.isValidStream(item)) {
                 rooms.add(item);
             }
         }

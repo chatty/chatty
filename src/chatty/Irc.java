@@ -4,13 +4,12 @@ package chatty;
 import chatty.util.DateTime;
 import chatty.util.DelayedActionQueue;
 import chatty.util.DelayedActionQueue.DelayedActionListener;
-import chatty.util.MsgTags;
+import chatty.util.irc.MsgParameters;
+import chatty.util.irc.MsgTags;
+import chatty.util.irc.ParsedMsg;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -99,9 +98,6 @@ public abstract class Irc {
      * Indicates that the user wanted the connection to be closed.
      */
     private boolean requestedDisconnect = false;
-    
-    
-    private static final Pattern SPACE_PATTERN = Pattern.compile(" ");
     
     private final String id;
     private final String idPrefix;
@@ -259,150 +255,98 @@ public abstract class Irc {
         }
         raw(data);
         
-        MsgTags tags = MsgTags.EMPTY;
-        if (data.startsWith("@")) {
-            int endOfTags = data.indexOf(" ");
-            if (endOfTags == -1) {
-                warning("Parsing error: Couldn't find whitespace after tags: "+data);
-                return;
-            }
-            tags = MsgTags.parse(data.substring(1, endOfTags));
-            data = data.substring(endOfTags+1);
+        ParsedMsg p = ParsedMsg.parse(data);
+
+        if (p != null) {
+            receivedCommand(p.getPrefix(), p.getNick(), p.getCommand(),
+                    p.getParameters(), p.getTags());
         }
-        //System.out.println("Tags: "+tags);
-        
-        String prefix = "";
-        String command;
-        String[] parameters = new String[0];
-        String trailing = "";
-        
-        int endOfPrefix = 0;
-        int endOfCommand = 0;
-        
-        // Get prefix if available
-        if (data.startsWith(":")) {
-            endOfPrefix = data.indexOf(" ");
-            if (endOfPrefix == -1) {
-                warning("Parsing error: Couldn't find whitespace after prefix: "+data);
-                return;
-            }
-            prefix = data.substring(1,endOfPrefix);
-        }
-        
-        // Find and get trailing if available
-        endOfCommand = data.indexOf(":",endOfPrefix);
-        if (endOfCommand == -1) {
-            // No trailing, so the command takes up the remaining length
-            endOfCommand = data.length();
-        }
-        else {
-            trailing = data.substring(endOfCommand+1,data.length());
-        }
-        
-        // Get commands and parameters
-        String commandAndParameter = data.substring(endOfPrefix,endOfCommand).trim();
-        // Trying precompiled Pattern, but may not change the performance
-        // that much (it's an easy Pattern after all)
-        String[] parts = SPACE_PATTERN.split(commandAndParameter);
-        //String[] parts = commandAndParameter.split(" ");
-        if (parts.length > 1) {
-            // Get parameters if available
-            parameters = new String[parts.length - 1];
-            System.arraycopy(parts, 1, parameters, 0, parts.length - 1);
-        }
-        // First part must be command
-        command = parts[0];
-        
-        // An exception shouldn't happen unless the message is malformed (hopefully :P)
-//        try {
-            receivedCommand(prefix, command, parameters, trailing, tags);
-//        } catch (NullPointerException | ArrayIndexOutOfBoundsException ex) {
-//            warning("Error parsing irc message: "+data+" ["+ex+"]");
-//        }
     }
     
     /**
      * Message has already been parsed, so let's check what command it is.
      * 
      * @param prefix
+     * @param nick
      * @param command The name of the command, can't be null
      * @param parameters String array of parameters, array can have different
      * length, so checking there may be necessary
-     * @param trailing The trailing of the raw message (usually the message
-     * text), can not be null, only empty
      * @param tags The IRCv3 tags, can be null
      */
-    private void receivedCommand(String prefix, String command,
-            String[] parameters, String trailing, MsgTags tags) {
-        String nick = getNickFromPrefix(prefix);
+    private void receivedCommand(String prefix, String nick, String command,
+            MsgParameters parameters, MsgTags tags) {
         
-        parsed(prefix,command,parameters,trailing);
+        parsed(prefix, command, parameters);
         
-        if (parameters.length == 1) {
-            if (parameters[0].startsWith("#")) {
-                onChannelCommand(tags, nick, parameters[0], command, trailing);
-            } else if (parameters[0].length() > 0) {
-                onCommand(nick, command, parameters[0], trailing, tags);
+        if (!parameters.isEmpty(0)) {
+            if (parameters.isChan(0)) {
+                onChannelCommand(tags, nick, parameters.get(0), command, parameters.getOrEmpty(1));
+            } else {
+                onCommand(nick, command, parameters.get(0), parameters.getOrEmpty(1), tags);
             }
         }
         
         if (command.equals("PING")) {
-            sendCommand("PONG",trailing);
+            sendCommand("PONG", parameters.getOrEmpty(0));
         }
-        
-        if (command.equals("PRIVMSG") && !trailing.isEmpty()) {
-            if (parameters.length == 0) {
+        else if (command.equals("PRIVMSG")) {
+            if (parameters.has(1)) {
+                String channel = parameters.get(0);
+                String message = parameters.get(1);
+                if (parameters.get(0).startsWith("#")) {
+                    if (message.charAt(0) == (char) 1 && message.startsWith("ACTION", 1)) {
+                        onChannelMessage(channel, nick, prefix, message.substring(7).trim(), tags, true);
+                    } else {
+                        onChannelMessage(channel, nick, prefix, message, tags, false);
+                    }
+                } else if (channel.equalsIgnoreCase(this.nick)) {
+                    onQueryMessage(nick, prefix, message);
+                }
+            } else if (parameters.has(0)) {
                 /**
                  * For hosting message, which is as follows (no channel/name as
-                 * PRIVMSG target):
-                 * :jtv!jtv@jtv.tmi.twitch.tv PRIVMSG  :tduvatest is now hosting you for 0 viewers. [0]
+                 * PRIVMSG target): :jtv!jtv@jtv.tmi.twitch.tv PRIVMSG
+                 * :tduvatest is now hosting you for 0 viewers. [0]
                  */
-                onQueryMessage(nick, prefix, trailing);
-            } else if (parameters[0].startsWith("#")) {
-                //System.out.println((int)trailing.charAt(0));
-                //filter.reset(trailing).replaceAll("?");
-                if (trailing.charAt(0) == (char)1 && trailing.startsWith("ACTION", 1)) {
-                    onChannelMessage(parameters[0], nick, prefix, trailing.substring(7).trim(), tags, true);
+                String message = parameters.get(0);
+                onQueryMessage(nick, prefix, message);
+            }
+        }
+        else if (command.equals("NOTICE")) {
+            if (parameters.has(1)) {
+                String channel = parameters.get(0);
+                String message = parameters.get(1);
+                if (!channel.startsWith("#")) {
+                    onNotice(nick, prefix, message);
                 } else {
-                    onChannelMessage(parameters[0], nick, prefix, trailing, tags, false);
+                    onNotice(channel, message, tags);
                 }
-            } else if (parameters[0].equalsIgnoreCase(this.nick)) {
-                onQueryMessage(nick, prefix, trailing);
             }
         }
-        if (command.equals("NOTICE")) {
-            if (parameters.length == 1) {
-                if (!parameters[0].startsWith("#")) {
-                    onNotice(nick, prefix, trailing);
-                } else {
-                    onNotice(parameters[0], trailing, tags);
+        else if (command.equals("USERNOTICE")) {
+            if (parameters.has(1)) {
+                String channel = parameters.get(0);
+                String message = parameters.get(1);
+                if (channel.startsWith("#")) {
+                    onUsernotice(channel, message, tags);
                 }
-            } else {
-                LOGGER.info("Unknown info message: "+trailing);
             }
         }
-        if (command.equals("USERNOTICE")) {
-            if (parameters.length > 0 && parameters[0].startsWith("#")) {
-                onUsernotice(parameters[0], trailing, tags);
-            }
-        }
-        if (command.equals("JOIN")) {
-            if (trailing.isEmpty() && parameters.length > 0) {
-                onJoin(parameters[0], nick, prefix);
-            } else {
-                onJoin(trailing, nick, prefix);
+        else if (command.equals("JOIN")) {
+            if (parameters.has(0)) {
+                onJoin(parameters.get(0), nick, prefix);
             }
         }
         else if (command.equals("PART")) {
-            if (parameters.length == 1) {
-                onPart(parameters[0], nick, prefix, trailing);
+            if (parameters.has(0)) {
+                onPart(parameters.get(0), nick, prefix, "");
             }
         }
         else if (command.equals("MODE")) {
-            if (parameters.length == 3) {
-                String chan = parameters[0];
-                String mode = parameters[1];
-                String name = parameters[2];
+            if (parameters.size() == 3) {
+                String chan = parameters.get(0);
+                String mode = parameters.get(1);
+                String name = parameters.get(2);
                 
                 if (mode.length() == 2) {
                     String modeChar = mode.substring(1, 2);
@@ -423,22 +367,22 @@ public abstract class Irc {
         }
         // Nick list, usually on channel join
         else if (command.equals("353")) {
-            if (parameters.length == 3 && parameters[1].equals("=") && parameters[2].startsWith("#")) {
-                String[] names = trailing.split(" ");
-                onUserlist(parameters[2],names);
+            if (parameters.size() == 4 && parameters.get(1).equals("=") && parameters.isChan(2)) {
+                String[] names = parameters.get(3).split(" ");
+                onUserlist(parameters.get(2), names);
             }
             
         }
         // WHO response not really correct now
         else if (command.equals("352")) {
-            String[] parts = trailing.split(" ");
-            if (parts.length > 1) {
+            //String[] parts = trailing.split(" ");
+            //if (parts.length > 1) {
                 //onWhoResponse(parts[0],parts[1]);
-            }
+            //}
         }
         else if (command.equals("USERSTATE")) {
-            if (tags != null && parameters.length > 0 && parameters[0].startsWith("#")) {
-                String channel = parameters[0];
+            if (tags != null && parameters.isChan(0)) {
+                String channel = parameters.get(0);
                 onUserstate(channel, tags);
             }
         }
@@ -448,12 +392,13 @@ public abstract class Irc {
             }
         }
         else if (command.equals("CLEARCHAT")) {
-            if (parameters.length == 1 && parameters[0].startsWith("#")) {
-                String channel = parameters[0];
-                if (trailing.isEmpty()) {
+            if (parameters.isChan(0)) {
+                String channel = parameters.get(0);
+                String message = parameters.getOrEmpty(1);
+                if (message.isEmpty()) {
                     onClearChat(tags, channel, null);
                 } else {
-                    onClearChat(tags, channel, trailing);
+                    onClearChat(tags, channel, message);
                 }
             }
         }
@@ -669,7 +614,7 @@ public abstract class Irc {
     
     void onDisconnect(int reason, String reasonMessage) { }
     
-    void parsed(String prefix, String command, String[] parameters, String trailing) { }
+    void parsed(String prefix, String command, MsgParameters parameters) { }
     
     void raw(String message) { }
     

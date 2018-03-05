@@ -301,7 +301,7 @@ public class AutoModDialog extends JDialog {
         if (channel == null) {
             return;
         }
-        if (!Helper.validateStream(username)) {
+        if (!Helper.isValidStream(username)) {
             return;
         }
         

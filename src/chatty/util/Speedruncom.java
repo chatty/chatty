@@ -20,7 +20,7 @@ public class Speedruncom {
     }
     
     public void openCurrentGame(Channel chan) {
-        if (Helper.isRegularChannel(chan.getName())) {
+        if (Helper.isRegularChannel(chan.getStreamName())) {
             StreamInfo info = twitchApi.getStreamInfo(chan.getStreamName(), null);
             if (info.isValid() && !info.getGame().isEmpty()) {
                 String game = info.getGame();

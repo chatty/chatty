@@ -23,7 +23,7 @@ public class CheerEmoticonManager2 {
     
     public void request(String stream, boolean force) {
         stream = Helper.toStream(stream);
-        if (!Helper.validateStream(stream)) {
+        if (!Helper.isValidStream(stream)) {
             return;
         }
         synchronized(alreadyRequested) {

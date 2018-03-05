@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Room;
 import chatty.User;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -47,6 +48,10 @@ public class ContextMenuAdapter implements ContextMenuListener {
 
     @Override
     public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+    }
+
+    @Override
+    public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
     }
     
 }

@@ -51,7 +51,7 @@ public class TwitchApi {
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
-    private volatile String defaultToken;
+    protected volatile String defaultToken;
 
     protected final Requests requests;
 
@@ -124,6 +124,20 @@ public class TwitchApi {
         cheersManager2.request(room, forceRefresh);
     }
     
+    public void requestRoomsNow(String channel) {
+        if (!Helper.isRegularChannel(channel)) {
+            return;
+        }
+        String room = Helper.toStream(channel);
+        getUserIdAsap(r -> {
+            if (r.hasError()) {
+                resultListener.roomsInfo(new RoomsInfo(room, null));
+            } else {
+                requests.requestRooms(r.getId(room), room);
+            }
+        }, room);
+    }
+    
     //====================
     // Channel Information
     //====================
@@ -147,9 +161,7 @@ public class TwitchApi {
     }
 
     public void getChatInfo(String stream) {
-        if (Helper.validateStreamStrict(stream)) {
-            requests.requestChatInfo(stream);
-        }
+        requests.requestChatInfo(stream);
     }
     
     public void getFollowers(String stream) {

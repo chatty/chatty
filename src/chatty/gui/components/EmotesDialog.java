@@ -1096,7 +1096,7 @@ public class EmotesDialog extends JDialog {
                     addInfo(panel2, "Emoteset:", emoteSetInfo);
                 }
             }
-            if (emote.hasStreamSet() && Helper.validateStream(emote.getStream())) {
+            if (emote.hasStreamSet() && Helper.isValidStream(emote.getStream())) {
                 addInfo(panel2, Language.getString("emotesDialog.details.channel"), emote.getStream());
             }
             addInfo(panel2, Language.getString("emotesDialog.details.usableIn"),

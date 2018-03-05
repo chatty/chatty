@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.Room;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import java.util.List;
@@ -49,4 +50,6 @@ public interface TwitchApiResultListener {
     void followResult(String message);
     
     void autoModResult(String result, String msgId);
+    
+    void roomsInfo(RoomsInfo info);
 }

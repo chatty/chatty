@@ -57,7 +57,7 @@ public class CustomNames {
             if (split.length == 2) {
                 String name = split[0];
                 String customName = split[1];
-                if (!Helper.validateStream(name)) {
+                if (!Helper.isValidStream(name)) {
                     return "Invalid name.";
                 } else {
                     setCustomName(name, customName);
@@ -73,7 +73,7 @@ public class CustomNames {
             String[] split = parameter.split(" ");
             if (split.length == 1) {
                 String name = split[0];
-                if (!Helper.validateStream(name)) {
+                if (!Helper.isValidStream(name)) {
                     return "Invalid name.";
                 } else {
                     setCustomName(name, null);

@@ -335,10 +335,11 @@ public class Tabs extends JPanel {
         }
     }
     
-    public void setTitleForComponent(Component comp, String title) {
+    public void setTitleForComponent(Component comp, String title, String tooltip) {
         int index = tabs.indexOfComponent(comp);
         if (index != -1) {
             tabs.setTitleAt(index, title);
+            tabs.setToolTipTextAt(index, tooltip);
         }
     }
     

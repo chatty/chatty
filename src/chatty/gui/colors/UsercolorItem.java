@@ -62,7 +62,7 @@ public class UsercolorItem extends ColorItem {
             type = TYPE_CATEGORY;
         } else if (statusDef.contains(id)) {
             type = TYPE_STATUS;
-        } else if (Helper.validateChannel(id)) {
+        } else if (Helper.isValidChannel(id)) {
             type = TYPE_NAME;
         } else if (id.equals("$all")) {
             type = TYPE_ALL;

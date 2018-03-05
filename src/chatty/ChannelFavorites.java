@@ -5,9 +5,9 @@ import chatty.util.settings.Settings;
 import java.util.*;
 
 /**
- * Manages channel favorites and history. Reads and writes directly from the
- * Settings and performs actions like add items, remove items, remove old from
- * history etc.
+ * Manages channel favorites and history in one setting.
+ * 
+ * Settings are loaded once and saved when required.
  * 
  * @author tduva
  */
@@ -15,13 +15,19 @@ public class ChannelFavorites {
     
     private static final int DAY = 1000*60*60*24;
     
-    private static final String FAVORITES_SETTING = "channelFavorites";
-    private static final String HISTORY_SETTING = "channelHistory";
+    private static final String SETTING = "roomFavorites";
     
     /**
      * The Settings object used throughout the class.
      */
     private final Settings settings;
+    private final RoomManager roomManager;
+    
+    /**
+     * Current data. The Favorite objects contain all necessary data, however
+     * they can be looked-up by channel in this Map for easier editing.
+     */
+    private final Map<String, Favorite> data = new HashMap<>();
 
     /**
      * Construct a new object, requires the Settings object to work on. Deletes
@@ -29,178 +35,293 @@ public class ChannelFavorites {
      * 
      * @param settings The Settings object that contains the favorites and
      *  history
+     * @param roomManager
      */
-    public ChannelFavorites(Settings settings) {
+    public ChannelFavorites(Settings settings, RoomManager roomManager) {
         this.settings = settings;
+        this.roomManager = roomManager;
+        
+        // Load settings
+        loadFromSettings();
         if (settings.getBoolean("historyClear")) {
             removeOld();
         }
-    }
-    
-    /**
-     * Remove this Set of channels from favorites and history.
-     * 
-     * @param channels 
-     */
-    public synchronized void removeChannels(Set<String> channels) {
-        removeChannelsFromHistory(channels);
-        removeChannelsFromFavorites(channels);
-    }
-    
-    /**
-     * Remove this Set of channels from history.
-     * 
-     * @param channels 
-     */
-    public synchronized void removeChannelsFromHistory(Set<String> channels) {
-        for (String channel : channels) {
-            removeChannelFromHistory(channel);
+        
+        // Send favorited rooms to Room Manager
+        Collection<Room> rooms = new HashSet<>();
+        for (Favorite f : data.values()) {
+            rooms.add(f.room);
         }
-        settings.setSettingChanged("channelHistory");
+        roomManager.addRoomsIfNone(rooms);
+        
+        // Listener for saving settings
+        settings.addSettingsListener((s) -> {
+            saveToSettings();
+        });
     }
     
     /**
-     * Remove a single channel from history.
-     * 
-     * @param channel 
-     */
-    private synchronized void removeChannelFromHistory(String channel) {
-        channel = prepareChannel(channel);
-        if (channel != null) {
-            settings.mapRemove(HISTORY_SETTING, channel);
-        }
-    }
-    
-    /**
-     * Removes any channels from the history, that are older than the number
-     * of days specified in the settings.
+     * Remove expired entries that are not favorited.
      */
     private synchronized void removeOld() {
         long days = settings.getLong("channelHistoryKeepDays");
-        Map<String, Long> h = settings.getMap(HISTORY_SETTING);
         long keepAfter = System.currentTimeMillis() - days * DAY;
-        Iterator<String> it = h.keySet().iterator();
+        clearHistory(keepAfter);
+    }
+    
+    /**
+     * Remove all entries that are not favorited.
+     */
+    public void clearHistory() {
+        // Remove all non-favorited last joined before the current time, so all
+        clearHistory(System.currentTimeMillis());
+    }
+    
+    /**
+     * Remove all entries that are not favorited and are older (smaller) than
+     * the "removeIfBefore" timestamp.
+     * 
+     * @param removeIfBefore All non-favorited entries before this point in time
+     * (smaller number) are removed
+     */
+    private synchronized void clearHistory(long removeIfBefore) {
+        Iterator<Map.Entry<String, Favorite>> it = data.entrySet().iterator();
         while (it.hasNext()) {
-            String channel = it.next();
-            long time = h.get(channel);
-            if (time < keepAfter) {
+            Favorite f = it.next().getValue();
+            if (!f.isFavorite && f.lastJoined < removeIfBefore) {
                 it.remove();
             }
         }
-        settings.putMap(HISTORY_SETTING, h);
-        settings.setSettingChanged("channelHistory");
     }
     
-    public synchronized void clearHistory() {
-        settings.mapClear(HISTORY_SETTING);
-        settings.setSettingChanged("channelHistory");
+    //=========
+    // Getting
+    //=========
+    
+    public synchronized Favorite get(String channel) {
+        return data.get(channel);
     }
     
-    /**
-     * Adds a single channel to history, with the current time.
-     * 
-     * @param channel 
-     */
-    public synchronized void addChannelToHistory(String channel) {
-        if (!settings.getBoolean("saveChannelHistory")) {
-            return;
-        }
-        channel = prepareChannel(channel);
-        if (channel == null) {
-            return;
-        }
-        settings.mapPut(HISTORY_SETTING, channel, System.currentTimeMillis());
-        settings.setSettingChanged("channelHistory");
+    public synchronized List<Favorite> getAll() {
+        return new ArrayList<>(data.values());
     }
     
-    /**
-     * Checks if a channel is null or empty and removes any '#' in front of
-     * it if necessary.
-     * 
-     * @param channel
-     * @return The channel or null if it was null or empty.
-     */
-    private synchronized String prepareChannel(String channel) {
-        if (channel == null || channel.isEmpty()) {
-            return null;
-        }
-        if (channel.startsWith("#")) {
-            channel = channel.substring(1);
-            if (channel.isEmpty()) {
-                return null;
+    public synchronized Set<String> getFavorites() {
+        Set<String> result = new HashSet<>();
+        for (Favorite f : data.values()) {
+            if (f.isFavorite) {
+                result.add(f.getChannel());
             }
         }
-        return channel;
+        return result;
+    }
+    
+    //===========
+    // Favorites
+    //===========
+    
+    public synchronized Favorite addFavorite(Favorite favorite) {
+        Favorite existing = data.get(favorite.getChannel());
+        if (existing != null) {
+            return set(existing.setFavorite(true));
+        }
+        return set(favorite.setFavorite(true));
+    }
+    
+    public synchronized Favorite addFavorite(String channel) {
+        if (!Helper.isValidChannelStrict(channel)) {
+            return null;
+        }
+        Room room = roomManager.getRoom(channel);
+        return addFavorite(room);
+    }
+    
+    public synchronized Favorite addFavorite(Room room) {
+        return setFavorite(room, true);
     }
     
     /**
-     * Adds the given Set of channels to favorites.
+     * Remove the given Room as favorite, leaving the history entry (which may
+     * be automatically removed at next start, depending on settings).
      * 
-     * @param channels 
+     * @param room
+     * @return 
      */
-    public synchronized void addChannelsToFavorites(Set<String> channels) {
-        for (String channel : channels) {
-            addChannelToFavorites(channel);
-        }
-        settings.setSettingChanged(FAVORITES_SETTING);
+    public synchronized Favorite removeFavorite(Room room) {
+        return setFavorite(room, false);
     }
     
     /**
-     * Adds the given channel to favorites.
+     * Remove the given channel as favorite, leaving the history entry (which
+     * may be automatically removed at next start, depending on settings).
      * 
-     * @param channel 
+     * @param channel
+     * @return 
      */
-    private void addChannelToFavorites(String channel) {
-        channel = prepareChannel(channel);
-        if (channel != null) {
-            settings.setAdd(FAVORITES_SETTING, channel);
+    public synchronized Favorite removeFavorite(String channel) {
+        if (!Helper.isValidChannelStrict(channel)) {
+            return null;
         }
-    }
-    
-    /**
-     * Remove the given Set of channels from the favorites.
-     * 
-     * @param channels 
-     */
-    public synchronized void removeChannelsFromFavorites(Set<String> channels) {
-        for (String channel : channels) {
-            removeChannelFromFavorites(channel);
-        }
-        settings.setSettingChanged(FAVORITES_SETTING);
-    }
-    
-    /**
-     * Remove a single channel from favorites.
-     * 
-     * @param channel 
-     */
-    private void removeChannelFromFavorites(String channel) {
-        channel = prepareChannel(channel);
-        if (channel != null) {
-            settings.listRemove(FAVORITES_SETTING, channel);
-        }
+        Room room = roomManager.getRoom(channel);
+        return removeFavorite(room);
     }
 
+    public synchronized Favorite setFavorite(Room room, boolean isFavorite) {
+        Favorite existing = data.get(room.getChannel());
+        if (existing != null) {
+            // Change isFavorite state of existing entry
+            return set(existing.setFavorite(isFavorite));
+        } else if (isFavorite) {
+            // Create new entry if favoriting
+            return set(new Favorite(room, -1, isFavorite));
+        }
+        // If setFavorite(<no existing entry>, false) then don't do anything
+        return null;
+    }
+    
+    //=========
+    // History
+    //=========
+
     /**
-     * Returns a copy of the current history. A copy, so changes to the history
-     * won't affect this Map (thread safety) and it can't be changed from
-     * outside.
+     * Set the given Room as joined in the history.
      * 
-     * @return 
+     * @param room 
      */
-    public synchronized Map<String, Long> getHistory() {
-        return settings.getMap(HISTORY_SETTING);
+    public synchronized void addJoined(Room room) {
+        Favorite existing = data.get(room.getChannel());
+        boolean isFavorite = false;
+        if (existing != null) {
+            isFavorite = existing.isFavorite;
+        }
+        set(new Favorite(room, System.currentTimeMillis(), isFavorite));
     }
     
     /**
-     * Returns a copy of the current favorites. A copy, so changes to the
-     * favorites won't affect this Set (thread safety) and it can't be changed
-     * from outside.
-     * 
+     * Remove the entry associated with the channel from the given Favorite (it
+     * doesn't have to be the same actual Favorite object).
+     *
+     * @param favorite
      * @return 
      */
-    public synchronized Set<String> getFavorites() {
-        return new HashSet<>(settings.getList(FAVORITES_SETTING));
+    public synchronized Favorite remove(Favorite favorite) {
+        if (data.containsKey(favorite.getChannel())) {
+            return data.remove(favorite.getChannel());
+        }
+        return null;
+    }
+    
+    //========
+    // Helper
+    //========
+    
+    /**
+     * Store the given Favorite object in the current data, potentially
+     * replacing an already existing one.
+     *
+     * @param fav The Favorite object to store
+     * @return The Favorite object itself
+     */
+    private Favorite set(Favorite fav) {
+        data.put(fav.getChannel(), fav);
+        return fav;
+    }
+    
+    //==========
+    // Settings
+    //==========
+    
+    private synchronized void loadFromSettings() {
+        data.clear();
+        Map<String, List> entries = settings.getMap(SETTING);
+        for (String channel : entries.keySet()) {
+            List entryValues = entries.get(channel);
+            Favorite fav = Favorite.fromList(entryValues, channel);
+            if (fav != null) {
+                data.put(fav.room.getChannel(), fav);
+            }
+        }
+    }
+    
+    private synchronized void saveToSettings() {
+        Map<String, List> entries = new HashMap<>();
+        for (Favorite f : data.values()) {
+            List list = f.toList();
+            entries.put(f.getChannel(), list);
+        }
+        settings.putMap(SETTING, entries);
+    }
+    
+    //================
+    // Favorite Class
+    //================
+    
+    public static class Favorite {
+        
+        public final Room room;
+        public final long lastJoined;
+        public final boolean isFavorite;
+
+        public Favorite(Room room, long lastJoined, boolean isFavorite) {
+            this.room = room;
+            this.lastJoined = lastJoined;
+            this.isFavorite = isFavorite;
+        }
+        
+        public String getChannel() {
+            return room.getChannel();
+        }
+        
+        /**
+         * Turn this favorite into a list, except for the channel.
+         * 
+         * @param input
+         * @param channel
+         * @return 
+         */
+        public static Favorite fromList(List input, String channel) {
+            long lastJoined = ((Number)input.get(0)).longValue();
+            boolean isFavorite = (Boolean)input.get(1);
+            if (input.size() == 2) {
+                return new Favorite(Room.createRegular(channel), lastJoined, isFavorite);
+            } else if (input.size() == 3) {
+                String ownerId = (String)input.get(2);
+                return new Favorite(Room.createRegularWithId(channel, ownerId), lastJoined, isFavorite);
+            } else if (input.size() == 4) {
+                String name = (String)input.get(2);
+                String ownerStream = (String)input.get(3);
+                Room room = Room.createFromChannel(channel, name, Helper.toChannel(ownerStream));
+                if (room != null) {
+                    return new Favorite(room, lastJoined, isFavorite);
+                }
+            }
+            return null;
+        }
+        
+        public List toList() {
+            List result = new ArrayList<>();
+            result.add(lastJoined);
+            result.add(isFavorite);
+            if (room.hasOwnerChannel() && room.hasStream() && !room.isOwner()) {
+                result.add(room.getName());
+                result.add(room.getStream());
+            } else if (room.getStreamId() != null) {
+                result.add(room.getStreamId());
+            }
+            return result;
+        }
+        
+        public Favorite setFavorite(boolean isFavorite) {
+            if (this.isFavorite == isFavorite) {
+                return this;
+            }
+            return new Favorite(this.room, this.lastJoined, isFavorite);
+        }
+        
+        public Favorite setJoined(long lastJoined) {
+            return new Favorite(room, lastJoined, isFavorite);
+        }
+        
     }
     
 }

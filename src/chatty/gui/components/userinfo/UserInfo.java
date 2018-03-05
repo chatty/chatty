@@ -233,7 +233,7 @@ public class UserInfo extends JDialog {
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
                 +(!user.hasRegularDisplayNick() ? " ("+user.getName()+")" : "")
                 +displayNickInfo
-                +" / "+user.getChannel()
+                +" / "+user.getRoom().getDisplayName()
                 +" "+categoriesString);
         pastMessages.update(user, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
         infoPanel.update(user);
@@ -247,7 +247,8 @@ public class UserInfo extends JDialog {
         if (currentUser == null) {
             return;
         }
-        boolean localIsStreamer = currentUser.getStream().equalsIgnoreCase(currentLocalUsername);
+        boolean localIsStreamer = currentUser.getStream() != null
+                && currentUser.getStream().equalsIgnoreCase(currentLocalUsername);
         buttons.updateModButtons(localIsStreamer, currentUser.isModerator());
     }
 

@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.Addressbook;
+import chatty.Room;
 import chatty.User;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -19,9 +20,9 @@ import static org.junit.Assert.*;
  */
 public class HighlighterTest {
     
-    private static final User user = new User("testUser", "#testChannel");
-    private static final User user2 = new User("testUser2", "#testChannel");
-    private static final User user3 = new User("testUser2", "#testChannel2");
+    private static final User user = new User("testUser", Room.createRegular("#testChannel"));
+    private static final User user2 = new User("testUser2", Room.createRegular("#testChannel"));
+    private static final User user3 = new User("testUser2", Room.createRegular("#testChannel2"));
     private static Highlighter highlighter;
     private static Addressbook ab;
     
@@ -135,27 +136,27 @@ public class HighlighterTest {
     
     @Test
     public void testStatusReq() {
-        User broadcaster = new User("test", "#test");
+        User broadcaster = new User("test", Room.createRegular("#test"));
         broadcaster.setBroadcaster(true);
         
-        User normal = new User("test2","#test");
+        User normal = new User("test2", Room.createRegular("#test"));
         
-        User modTurbo = new User("test3","#test");
+        User modTurbo = new User("test3", Room.createRegular("#test"));
         modTurbo.setModerator(true);
         modTurbo.setTurbo(true);
         
-        User admin = new User("test4","#test");
+        User admin = new User("test4", Room.createRegular("#test"));
         admin.setAdmin(true);
         
-        User adminBroadcasterTurbo = new User("test5","#test");
+        User adminBroadcasterTurbo = new User("test5", Room.createRegular("#test"));
         adminBroadcasterTurbo.setAdmin(true);
         adminBroadcasterTurbo.setBroadcaster(true);
         adminBroadcasterTurbo.setTurbo(true);
         
-        User staff = new User("test6","#test");
+        User staff = new User("test6", Room.createRegular("#test"));
         staff.setStaff(true);
         
-        User subscriber = new User("test7","#test");
+        User subscriber = new User("test7", Room.createRegular("#test"));
         subscriber.setSubscriber(true);
         
         highlighter.update(Arrays.asList(new String[]{"status:b"}));

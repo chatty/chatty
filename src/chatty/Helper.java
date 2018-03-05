@@ -6,11 +6,14 @@ import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import java.awt.Dimension;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -42,7 +45,7 @@ public class Helper {
         Set<String> result = new LinkedHashSet<>();
         for (String part : parts) {
             String channel = part.trim();
-            if (validateChannel(channel)) {
+            if (isValidChannel(channel)) {
                 if (prepend && !channel.startsWith("#")) {
                     channel = "#"+channel;
                 }
@@ -77,61 +80,75 @@ public class Helper {
         return result;
     }
     
-    public static String USERNAME_REGEX = "[a-zA-Z0-9_]+";
-    public static String USERNAME_REGEX_STRICT = "[a-zA-Z0-9][a-zA-Z0-9_]+";
+    public static String USERNAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9_]+";
+    public static Pattern CHANNEL_PATTERN = Pattern.compile("(?i)^#?"+USERNAME_REGEX+"$");
+    public static Pattern CHATROOM_PATTERN = Pattern.compile("(?i)^#?chatrooms:[0-9a-z-:]+$");
+    public static Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
     
     /**
      * Kind of relaxed valiadation if a channel, which can have a leading # or
-     * not.
+     * not, can also be a chatroom.
      * 
      * @param channel
      * @return 
      */
-    public static boolean validateChannel(String channel) {
+    public static boolean isValidChannel(String channel) {
         try {
-            return channel.matches("(?i)^#{0,1}"+USERNAME_REGEX+"$");
+            return CHANNEL_PATTERN.matcher(channel).matches()
+                    || CHATROOM_PATTERN.matcher(channel).matches();
         } catch (PatternSyntaxException | NullPointerException ex) {
             return false;
         }
     }
     
+    public static boolean isValidChannelStrict(String channel) {
+        return isValidChannel(channel) && channel.startsWith("#");
+    }
+    
     /**
-     * Checks if the given channel is a regular channel, which means it starts
-     * with a # (and is valid otherwise).
-     * 
+     * Checks if the given channel is a regular channel, which means it is valid
+     * and is not a chatroom.
+     *
      * @param channel
      * @return 
      */
     public static boolean isRegularChannel(String channel) {
-        return validateChannel(channel) && channel.startsWith("#");
-    }
-    
-    /**
-     * Checks if the given name is a valid stream (no leading # and valid
-     * otherwise).
-     * 
-     * @param stream
-     * @return 
-     */
-    public static boolean validateStream(String stream) {
         try {
-            return stream.matches("(?i)^"+USERNAME_REGEX+"$");
-        } catch (PatternSyntaxException | NullPointerException ex) {
-            return false;
-        }
-    }
-    
-    public static boolean validateStreamStrict(String stream) {
-        try {
-            return stream.matches("(?i)^"+USERNAME_REGEX_STRICT+"$");
+            return CHANNEL_PATTERN.matcher(channel).matches();
         } catch (Exception ex) {
             return false;
         }
     }
     
     /**
+     * Checks if the given channel is a regular channel, which means it starts
+     * with a #, is valid otherwise and is not a chatroom.
+     * 
+     * @param channel
+     * @return 
+     */
+    public static boolean isRegularChannelStrict(String channel) {
+        return isRegularChannel(channel) && channel.startsWith("#");
+    }
+    
+    /**
+     * Checks if the given name is a valid stream (no leading # and valid
+     * otherwise, basicially just the username).
+     * 
+     * @param stream
+     * @return 
+     */
+    public static boolean isValidStream(String stream) {
+        try {
+            return STREAM_PATTERN.matcher(stream).matches();
+        } catch (PatternSyntaxException | NullPointerException ex) {
+            return false;
+        }
+    }
+    
+    /**
      * Checks if the given stream/channel is valid and turns it into a channel
-     * if necessary (leading # and all lowercase).
+     * if necessary (leading # and all lowercase). Can also be a chatroom.
      *
      * @param channel The channel, valid or invalid, leading # or not.
      * @return The channelname with leading #, or null if channel was invalid.
@@ -140,7 +157,7 @@ public class Helper {
         if (channel == null) {
             return null;
         }
-        if (!validateChannel(channel)) {
+        if (!isValidChannel(channel)) {
             return null;
         }
         if (!channel.startsWith("#")) {
@@ -161,11 +178,8 @@ public class Helper {
         if (chan == null) {
             return null;
         }
-        if (!validateChannel(chan)) {
-            return StringUtil.toLowerCase(chan);
-        }
-        if (!chan.startsWith("#")) {
-            chan = "#"+chan;
+        if (isValidChannel(chan) && !chan.startsWith("#")) {
+            return StringUtil.toLowerCase("#"+chan);
         }
         return StringUtil.toLowerCase(chan);
     }
@@ -187,10 +201,11 @@ public class Helper {
     }
     
     public static String toValidStream(String channel) {
-        if (!validateChannel(channel)) {
+        String stream = Helper.toStream(channel);
+        if (!isValidStream(stream)) {
             return null;
         }
-        return toStream(channel);
+        return stream;
     }
     
     public static String[] toStream(String[] channels) {
@@ -705,6 +720,18 @@ public class Helper {
             return user.getModeSymbol() + user.getName();
         }
         return user.getFullNick();
+    }
+    
+    public static String encodeFilename(String input) {
+        try {
+            return URLEncoder.encode(input, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException("Unsupported encoding lol");
+        }
+    }
+    
+    public static String encodeFilename2(String input) {
+        return input.replaceAll("[%\\.\"\\*/:<>\\?\\\\\\|\\+,\\.;=\\[\\]]", "_");
     }
     
 }

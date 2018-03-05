@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.Room;
 import chatty.User;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.UserMessage;
@@ -205,6 +206,11 @@ public class HighlightedMessages extends JDialog {
         @Override
         public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
             contextMenuListener.usericonMenuItemClicked(e, usericon);
+        }
+
+        @Override
+        public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
+            contextMenuListener.roomsMenuItemClicked(e, rooms);
         }
     }
     

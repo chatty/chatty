@@ -205,7 +205,7 @@ public class UserIDs {
         requests.stream().forEach(r -> {
             r.usernames.stream().forEach(n -> {
                 if (!requestPending.contains(n) && data.shouldRequest(n) && namesToRequest.size() < 100) {
-                    if (Helper.validateStreamStrict(n)) {
+                    if (Helper.isValidStream(n)) {
                         namesToRequest.add(n);
                         requestPending.add(n);
                     } else {

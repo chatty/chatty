@@ -114,7 +114,7 @@ public class ChatLog {
     }
     
     public void modAction(ModeratorActionData data) {
-        if (!Helper.validateStream(data.stream)) {
+        if (!Helper.isValidStream(data.stream)) {
             return;
         }
         String channel = Helper.toChannel(data.stream);
