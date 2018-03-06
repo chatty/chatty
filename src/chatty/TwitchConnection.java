@@ -397,11 +397,13 @@ public class TwitchConnection {
     }
 
     public String getConnectionInfo() {
-        String regular = irc.getConnectionInfo();
-        if (regular == null) {
+        if (irc.getConnectionInfo() == null) {
             return "Not connected.";
         }
-        return "Connected to: "+regular;
+        return String.format("Connected to: %s (%s, %s channels)",
+                irc.getConnectionInfo(),
+                irc.getConnectedSince(),
+                irc.joinedChannels.size());
     }
     
     public boolean autoRequestModsEnabled() {

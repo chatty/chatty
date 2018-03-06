@@ -147,14 +147,12 @@ public abstract class Irc {
     
     public String getConnectionInfo() {
         if (state >= STATE_CONNECTED) {
-            String text = connectedIp+":"+connectedPort+" ";
-            text += "["+getConnectedSince()+"]";
-            return text;
+            return connectedIp+":"+connectedPort;
         }
         return null;
     }
     
-    private String getConnectedSince() {
+    public String getConnectedSince() {
         return DateTime.ago(connectedSince);
     }
  

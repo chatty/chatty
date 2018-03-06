@@ -918,7 +918,7 @@ public class TwitchClient {
             g.printSystem("Chatty has been running for "+Chatty.uptime());
         }
         else if (command.equals("appinfo")) {
-            g.printSystem(LogUtil.getMemoryUsage());
+            g.printSystem(LogUtil.getAppInfo()+" [Connection] "+c.getConnectionInfo());
         }
         
         //-----------------------

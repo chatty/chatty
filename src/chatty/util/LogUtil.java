@@ -2,6 +2,7 @@
 package chatty.util;
 
 import chatty.Chatty;
+import chatty.Helper;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -29,6 +30,10 @@ public class LogUtil {
                 runtime.freeMemory() / 1024,
                 (runtime.totalMemory() - runtime.freeMemory()) / 1024,
                 Chatty.uptime());
+    }
+    
+    public static String getAppInfo() {
+        return Chatty.chattyVersion()+" "+getMemoryUsage()+" [System] "+Helper.systemInfo();
     }
     
     /**
