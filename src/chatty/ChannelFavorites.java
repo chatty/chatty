@@ -129,10 +129,10 @@ public class ChannelFavorites {
     }
     
     public synchronized Favorite addFavorite(String channel) {
-        if (!Helper.isValidChannelStrict(channel)) {
+        if (!Helper.isValidChannel(channel)) {
             return null;
         }
-        Room room = roomManager.getRoom(channel);
+        Room room = roomManager.getRoom(Helper.toChannel(channel));
         return addFavorite(room);
     }
     
@@ -159,10 +159,10 @@ public class ChannelFavorites {
      * @return 
      */
     public synchronized Favorite removeFavorite(String channel) {
-        if (!Helper.isValidChannelStrict(channel)) {
+        if (!Helper.isValidChannel(channel)) {
             return null;
         }
-        Room room = roomManager.getRoom(channel);
+        Room room = roomManager.getRoom(Helper.toChannel(channel));
         return removeFavorite(room);
     }
 
@@ -320,6 +320,11 @@ public class ChannelFavorites {
         
         public Favorite setJoined(long lastJoined) {
             return new Favorite(room, lastJoined, isFavorite);
+        }
+        
+        @Override
+        public String toString() {
+            return room.toString();
         }
         
     }

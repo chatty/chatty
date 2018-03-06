@@ -225,6 +225,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void createGui() {
         
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setWindowIcons();
         
         actionListener = new MyActionListener();
@@ -1463,15 +1464,23 @@ public class MainGui extends JFrame implements Runnable {
             if (Objects.equals(channels.getActiveChannel().getStreamName(), info.stream)) {
                 menu.setRooms(info.rooms);
             }
-            
-            for (Channel chan : channels.getExistingChannelsByOwner(Helper.toChannel(info.stream))) {
-                chan.printLine(info.makeInfo());
+            printLineByOwnerChannel(Helper.toChannel(info.stream), info.makeInfo());
+            if (info.rooms != null) {
+                for (Room room : info.rooms) {
+                    if (room.hasTopic() && channels.isChannel(room.getChannel())) {
+                        printLine(room, room.getTopicText());
+                    }
+                }
             }
         });
     }
     
     private void loadRooms(boolean forceRefresh) {
-        RoomsInfo cached = client.roomManager.getRoomsInfo(channels.getActiveChannel().getOwnerChannel(), forceRefresh);
+        String channel = channels.getActiveChannel().getOwnerChannel();
+        if (!Helper.isRegularChannel(channel) && forceRefresh) {
+            printSystem("[ChatRooms] Invalid channel");
+        }
+        RoomsInfo cached = client.roomManager.getRoomsInfo(channel, forceRefresh);
         if (cached != null) {
             menu.setRooms(cached.rooms);
         } else {
@@ -2962,6 +2971,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(() -> {
             for (Channel chan : channels.getExistingChannelsByOwner(channel)) {
                 chan.printLine(text);
+                client.chatLog.info(chan.getFilename(), text);
             }
         });
     }
@@ -4316,13 +4326,17 @@ public class MainGui extends JFrame implements Runnable {
      * Minimize window to tray.
      */
     private void minimizeToTray() {
+        //trayIcon.displayInfo("Minimized to tray", "Double-click icon to show again..");
+        
+        trayIcon.setIconVisible(true);
         if (!isMinimized()) {
             setExtendedState(getExtendedState() | ICONIFIED);
         }
-        trayIcon.setIconVisible(true);
-        // Set visible to false, so it is removed from the taskbar
-        setVisible(false);
-        //trayIcon.displayInfo("Minimized to tray", "Double-click icon to show again..");
+        if (trayIcon.isAvailable()) {
+            // Set visible to false, so it is removed from the taskbar, but only
+            // if tray icon is actually added
+            setVisible(false);
+        }
     }
     
     /**

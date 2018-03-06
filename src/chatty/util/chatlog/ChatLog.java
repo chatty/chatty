@@ -92,7 +92,7 @@ public class ChatLog {
     }
 
     public void message(String channel, User user, String message, boolean action) {
-        if (isEnabled(channel)) {
+        if (isSettingEnabled("logMessage") && isChanEnabled(channel)) {
             String line;
             String name = user.getFullNick();
             if (!user.hasRegularDisplayNick()) {
@@ -108,7 +108,7 @@ public class ChatLog {
     }
 
     public void info(String channel, String message) {
-        if (isTypeEnabled("Info") && isEnabled(channel)) {
+        if (isSettingEnabled("logInfo") && isChanEnabled(channel)) {
             writeLine(channel, timestamp()+message);
         }
     }
@@ -118,7 +118,7 @@ public class ChatLog {
             return;
         }
         String channel = Helper.toChannel(data.stream);
-        if (isTypeEnabled("ModAction") && isEnabled(channel)) {
+        if (isSettingEnabled("logModAction") && isChanEnabled(channel)) {
             writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
                     data.created_by,
                     data.moderation_action,
@@ -127,7 +127,7 @@ public class ChatLog {
     }
 
     public void viewerstats(String channel, ViewerStats stats) {
-        if (isTypeEnabled("Viewerstats") && isEnabled(channel)) {
+        if (isSettingEnabled("logViewerstats") && isChanEnabled(channel)) {
             if (stats != null && stats.isValid()) {
                 writeLine(channel, timestamp()+stats);
                 //System.out.println(stats);
@@ -136,14 +136,14 @@ public class ChatLog {
     }
     
     public void viewercount(String channel, int viewercount) {
-        if (isTypeEnabled("Viewercount") && isEnabled(channel)) {
+        if (isSettingEnabled("logViewercount") && isChanEnabled(channel)) {
             writeLine(channel, timestamp()+"VIEWERS: "
                     +Helper.formatViewerCount(viewercount));
         }
     }
     
     public void system(String channel, String message) {
-        if (isEnabled(channel) && isTypeEnabled("System")) {
+        if (isSettingEnabled("logSystem") && isChanEnabled(channel)) {
             writeLine(channel, timestamp()+message);
         }
     }
@@ -171,10 +171,12 @@ public class ChatLog {
     }
 
     public void compact(String channel, String type, String info) {
-        if (isEnabled(channel)) {
-            if ((type.equals("MOD") || type.equals("UNMOD")) && isTypeEnabled("Mod")
-                    || (type.equals("JOIN") || type.equals("PART")) && isTypeEnabled("JoinPart")
-                    || type.equals("BAN") && isTypeEnabled("Ban")) {
+        if (isChanEnabled(channel)) {
+            if (
+                    ((type.equals("MOD") || type.equals("UNMOD")) && isSettingEnabled("logMod"))
+                    || ((type.equals("JOIN") || type.equals("PART")) && isSettingEnabled("logJoinPart"))
+                    || (type.equals("BAN") && isSettingEnabled("logBan"))
+                ) {
                 compactAdd(channel, type, info);
             }
         }
@@ -233,7 +235,7 @@ public class ChatLog {
         }
     }
     
-    private boolean isEnabled(String channel) {
+    private boolean isChanEnabled(String channel) {
         if (log == null) {
             return false;
         }
@@ -256,8 +258,8 @@ public class ChatLog {
         return false;
     }
     
-    private boolean isTypeEnabled(String type) {
-        return settings.getBoolean("log"+type);
+    private boolean isSettingEnabled(String setting) {
+        return settings.getBoolean(setting);
     }
 
     private class Compact {

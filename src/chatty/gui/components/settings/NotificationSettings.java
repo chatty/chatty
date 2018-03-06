@@ -57,6 +57,9 @@ public class NotificationSettings extends SettingsPanel {
     private final NotificationEditor editor;
     
     public NotificationSettings(SettingsDialog d, Settings settings) {
+        // Expand
+        super(true);
+        
         editor = new NotificationEditor(d, settings);
         editor.setLinkLabelListener(d.getSettingsHelpLinkLabelListener());
         

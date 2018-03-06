@@ -78,7 +78,7 @@ public abstract class CachedManager {
             if (!wasForcedUpdate) {
                 load(true);
             } else {
-                LOGGER.log(Logging.USERINFO, "Error requesting "+label+" from API.");
+                LOGGER.log(Logging.USERINFO, "Error requesting "+label+"from API.");
             }
         }
     }

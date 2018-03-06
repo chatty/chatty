@@ -87,7 +87,7 @@ public class TrayIconManager {
      * added.
      */
     private void addIcon() {
-        if (!iconAdded && tray != null) {
+        if (tray != null && !iconAdded && !isIconAdded()) {
             try {
                 tray.add(trayIcon);
                 iconAdded = true;
@@ -96,7 +96,7 @@ public class TrayIconManager {
             }
         }
     }
-    
+
     /**
      * Removes the tray icon if the tray is available and the icon is currently
      * added.
@@ -106,6 +106,15 @@ public class TrayIconManager {
             tray.remove(trayIcon);
             iconAdded = false;
         }
+    }
+    
+    private boolean isIconAdded() {
+        for (TrayIcon icon : tray.getTrayIcons()) {
+            if (icon == trayIcon) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -121,6 +130,16 @@ public class TrayIconManager {
         } else {
             removeIcon();
         }
+    }
+    
+    /**
+     * Test if SystemTray is supported and the TrayIcon is actually currently
+     * added.
+     * 
+     * @return 
+     */
+    public boolean isAvailable() {
+        return SystemTray.isSupported() && isIconAdded();
     }
     
 }

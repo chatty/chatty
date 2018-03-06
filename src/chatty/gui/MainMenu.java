@@ -387,7 +387,7 @@ public class MainMenu extends JMenuBar {
         }
         roomItems.clear();
         if (rooms == null || rooms.isEmpty()) {
-            JMenuItem item = addItem(channels, "", "No rooms found");
+            JMenuItem item = addItem(channels, "", Language.getString("menubar.rooms.none"));
             item.setEnabled(false);
             roomItems.add(item);
         } else {
@@ -395,7 +395,7 @@ public class MainMenu extends JMenuBar {
                 roomItems.add(addItem(channels, "room:" + room.getChannel(), room.getDisplayName()));
             }
         }
-        roomItems.add(addItem(channels, "refreshRooms", "Reload rooms"));
+        roomItems.add(addItem(channels, "refreshRooms", Language.getString("menubar.rooms.reload")));
         revalidate();
         repaint();
     }

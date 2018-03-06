@@ -80,10 +80,10 @@ public class Helper {
         return result;
     }
     
-    public static String USERNAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9_]+";
-    public static Pattern CHANNEL_PATTERN = Pattern.compile("(?i)^#?"+USERNAME_REGEX+"$");
-    public static Pattern CHATROOM_PATTERN = Pattern.compile("(?i)^#?chatrooms:[0-9a-z-:]+$");
-    public static Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
+    public static final String USERNAME_REGEX = "[a-zA-Z0-9][a-zA-Z0-9_]+";
+    public static final Pattern CHANNEL_PATTERN = Pattern.compile("(?i)^#?"+USERNAME_REGEX+"$");
+    public static final Pattern CHATROOM_PATTERN = Pattern.compile("(?i)^#?chatrooms:[0-9a-z-:]+$");
+    public static final Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
     
     /**
      * Kind of relaxed valiadation if a channel, which can have a leading # or

@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Room;
+import chatty.lang.Language;
 import java.util.Set;
 
 /**
@@ -26,12 +27,12 @@ public class RoomsInfo {
     public String makeInfo() {
         if (rooms != null) {
             if (rooms.isEmpty()) {
-                return "[ChatRooms] No rooms available";
+                return "[ChatRooms] "+Language.getString("chat.rooms.none", stream);
             } else {
-                return "[ChatRooms] "+rooms.size() + " rooms available to join for "+stream+" ('Channels'-Menu)";
+                return "[ChatRooms] "+Language.getString("chat.rooms.available", rooms.size(), stream);
             }
         } else {
-            return "[ChatRooms] Error loading rooms";
+            return "[ChatRooms] "+Language.getString("chat.rooms.error");
         }
     }
     

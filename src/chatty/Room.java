@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.util.Locale;
 import java.util.Objects;
@@ -99,10 +100,21 @@ public class Room {
         return name;
     }
     
+    /**
+     * Name purely for display. Might identical to the channel, but doesn't
+     * have to be.
+     * 
+     * @return 
+     */
     public String getDisplayName() {
         return displayName;
     }
     
+    /**
+     * The name of the IRC channel.
+     * 
+     * @return 
+     */
     public String getChannel() {
         return channel;
     }
@@ -159,6 +171,10 @@ public class Room {
     
     public boolean hasTopic() {
         return topic != null && !topic.isEmpty();
+    }
+    
+    public String getTopicText() {
+        return "["+Language.getString("chat.topic")+"] "+topic;
     }
     
     public boolean sameChannel(Room other) {

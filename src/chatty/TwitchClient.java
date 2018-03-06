@@ -1051,11 +1051,16 @@ public class TwitchClient {
             }
         }
         else if (command.equals("unfavorite")) {
-            if (Helper.isValidChannel(parameter)) {
-                settings.listRemove("channelFavorites", Helper.toStream(parameter));
-                g.printSystem("Removed '"+parameter+"' from favorites");
+            Favorite result;
+            if (parameter == null) {
+                result = channelFavorites.removeFavorite(channel);
             } else {
-                g.printSystem("No valid channel");
+                result = channelFavorites.removeFavorite(parameter);
+            }
+            if (result != null) {
+                g.printSystem("Removed '"+result+"' from favorites");
+            } else {
+                g.printSystem("Failed removing favorite");
             }
         }
         else if (command.equals("automod_approve")) {
@@ -2399,6 +2404,9 @@ public class TwitchClient {
             channelFavorites.addJoined(user.getRoom());
             
             g.printLine(user.getRoom(), Language.getString("chat.joined", user.getRoom()));
+            if (user.getRoom().hasTopic()) {
+                g.printLine(user.getRoom(), user.getRoom().getTopicText());
+            }
             
             // Icons and FFZ/BTTV Emotes
             //api.requestChatIcons(Helper.toStream(channel), false);

@@ -15,6 +15,7 @@ import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -93,25 +94,33 @@ public class LogSettings extends SettingsPanel {
         
         JPanel typesPanel = createTitledPanel("Message Types");
         
-        typesPanel.add(d.addSimpleBooleanSetting("logInfo"),
-                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.NORTHWEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logBan"),
+        JCheckBox logMessages = d.addSimpleBooleanSetting("logMessage");
+        JCheckBox logIgnored = d.addSimpleBooleanSetting("logIgnored");
+        logIgnored.setEnabled(false);
+        logMessages.addItemListener(e -> {
+            logIgnored.setEnabled(logMessages.isSelected());
+        });
+        
+        typesPanel.add(logMessages,
+                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
+        typesPanel.add(logIgnored,
                 d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
+        typesPanel.add(d.addSimpleBooleanSetting("logInfo"),
                 d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
+        typesPanel.add(d.addSimpleBooleanSetting("logBan"),
                 d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
+        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
                 d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
+        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
                 d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
+        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
                 d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
                 d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logIgnored"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
                 d.makeGbcCloser(0, 8, 1, 1, GridBagConstraints.WEST));
-
+        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
+                d.makeGbcCloser(0, 9, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         
