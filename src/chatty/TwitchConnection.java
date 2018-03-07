@@ -945,7 +945,7 @@ public class TwitchConnection {
                     info(channel, "[Notification] "+text);
                 } else {
                     boolean outputMessage = true;
-                    if (lastSentMessage.containsKey(channel)) {
+                    if (nick.equalsIgnoreCase(username) && lastSentMessage.containsKey(channel)) {
                         System.out.println(lastSentMessage);
                         if (System.currentTimeMillis() - lastSentMessage.get(channel) < 2000) {
                             // Prevent duplicate messages when sending to Chatrooms
