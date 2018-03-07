@@ -59,10 +59,11 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("", Language.getString("settings.language.option.defaultLanguage"));
         languageOptions.put("en", "English");
         languageOptions.put("de", "German / Deutsch");
-        //languageOptions.put("es", "Spanish / Español");
-        //languageOptions.put("ja", "Japanese / 日本語");
-        //languageOptions.put("zh_TW", "Chinese (traditional)");
+        languageOptions.put("es", "Spanish / Español");
+        languageOptions.put("ja", "Japanese / 日本語");
+        languageOptions.put("zh_TW", "Chinese (traditional)");
         //languageOptions.put("fr", "French / Français");
+        languageOptions.put("tr", "Turkish / Türk");
         
         languagePanel.add(new JLabel(Language.getString("settings.language.language")),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
