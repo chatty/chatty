@@ -1984,7 +1984,6 @@ public class TwitchClient {
 
         @Override
         public void roomsInfo(RoomsInfo info) {
-            System.out.println(info);
             g.setRooms(info);
             roomManager.addRoomsInfo(info);
         }
@@ -1994,7 +1993,6 @@ public class TwitchClient {
 
         @Override
         public void roomUpdated(Room room) {
-            System.out.println("Update"+room);
             if (c != null) {
                 c.updateRoom(room);
             }

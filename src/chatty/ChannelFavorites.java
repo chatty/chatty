@@ -189,6 +189,10 @@ public class ChannelFavorites {
      * @param room 
      */
     public synchronized void addJoined(Room room) {
+        if (!settings.getBoolean("saveChannelHistory")) {
+            return;
+        }
+        
         Favorite existing = data.get(room.getChannel());
         boolean isFavorite = false;
         if (existing != null) {

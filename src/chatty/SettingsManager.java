@@ -714,20 +714,39 @@ public class SettingsManager {
                         + ".Deny=/Automod_deny");
             }
         }
-        if (switchedFromVersionBefore("0.9.1b2")) {
+        if (switchedFromVersionBefore("0.9.1b3")) {
+            /**
+             * Migrate both favorites and history, but only channels that don't
+             * have a value in the new setting yet.
+             * 
+             * This won't turn an already existing entry into a favorite even if
+             * it was a favorite before, however this usually shouldn't be an
+             * issue (except in some cases where 0.9.1b2 was used before, where
+             * not all favorites were migrated correctly).
+             */
             LOGGER.info("Migrating Favorites/History");
             List<String> favs = settings.getList("channelFavorites");
-            Map<String, Long> h = settings.getMap("channelHistory");
-            Map<String, List> entries = new HashMap<>();
-            for (String stream : h.keySet()) {
+            Map<String, Long> history = settings.getMap("channelHistory");
+            Map<String, List> data = settings.getMap("roomFavorites");
+            // Migrate history
+            for (String stream : history.keySet()) {
                 boolean isFavorite = favs.contains(stream);
-                long lastJoined = h.get(stream);
+                long lastJoined = history.get(stream);
                 String channel = Helper.toChannel(stream);
-                favs.remove(stream);
-                entries.put(channel, new ChannelFavorites.Favorite(
-                        Room.createRegular(channel), lastJoined, isFavorite).toList());
+                if (!data.containsKey(channel)) {
+                    data.put(channel, new ChannelFavorites.Favorite(
+                            Room.createRegular(channel), lastJoined, isFavorite).toList());
+                }
             }
-            settings.putMap("roomFavorites", entries);
+            // Migrate favorites
+            for (String fav : favs) {
+                String channel = Helper.toChannel(fav);
+                if (!data.containsKey(channel)) {
+                    data.put(channel, new ChannelFavorites.Favorite(
+                            Room.createRegular(channel), -1, true).toList());
+                }
+            }
+            settings.putMap("roomFavorites", data);
         }
         overrideHotkeySettings();
     }
