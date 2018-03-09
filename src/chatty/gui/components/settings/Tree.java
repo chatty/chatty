@@ -109,9 +109,9 @@ public class Tree {
      */
     public static void setSelected(JTree tree, Object object) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
-        Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+        Enumeration e = root.depthFirstEnumeration();
         while (e.hasMoreElements()) {
-            DefaultMutableTreeNode node = e.nextElement();
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
             if (node.getUserObject() != null
                     && node.getUserObject().equals(object)) {
                 tree.setSelectionPath(new TreePath(node.getPath()));

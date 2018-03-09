@@ -755,7 +755,7 @@ public class TwitchConnection {
         }
 
         @Override
-        void onJoin(String channel, String nick, String prefix) {
+        void onJoin(String channel, String nick) {
             channel = StringUtil.toLowerCase(channel);
             if (nick.equalsIgnoreCase(username)) {
                 /**
@@ -797,7 +797,7 @@ public class TwitchConnection {
         }
 
         @Override
-        void onPart(String channel, String nick, String prefix, String message) {
+        void onPart(String channel, String nick) {
             channel = StringUtil.toLowerCase(channel);
             if (nick.isEmpty()) {
                 return;

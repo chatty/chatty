@@ -85,6 +85,10 @@ public class ParsedMsgTest {
         test(":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG tduva :この名前は使用できません is now hosting you.",
                 "jtv!jtv@jtv.tmi.twitch.tv", "jtv", "PRIVMSG",
                 "tduva", "この名前は使用できません is now hosting you.");
+        
+        test("@badges=subscriber/0,bits/100;color=#B22222;display-name=Name;emotes=;id=123;login=name;mod=0;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name=Name2;msg-param-recipient-id=123;msg-param-recipient-user-name=name2;msg-param-sub-plan-name=Abc;msg-param-sub-plan=1000;room-id=123;subscriber=1;system-msg=Name\\sgifted\\sa\\sTier\\s1\\ssub\\sto\\sName2!;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE #kz_frew",
+                "tmi.twitch.tv", "tmi.twitch.tv", "USERNOTICE",
+                "#kz_frew");
 
         assertNull(ParsedMsg.parse(""));
         assertNull(ParsedMsg.parse(" "));

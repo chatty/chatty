@@ -211,7 +211,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.weightx = 0;
         gbc.weighty = 1;
         add(selection, gbc);
-        
+
         // Create setting pages, the order here doesn't matter
         cardManager = new CardLayout();
         cards = new JPanel(cardManager);
@@ -319,6 +319,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         stuffBasedOnPanel();
         selection.requestFocusInWindow();
         
+        pack();
         setVisible(true);
     }
     

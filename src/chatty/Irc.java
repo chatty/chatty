@@ -322,22 +322,22 @@ public abstract class Irc {
             }
         }
         else if (command.equals("USERNOTICE")) {
-            if (parameters.has(1)) {
+            if (parameters.isChan(0)) {
                 String channel = parameters.get(0);
-                String message = parameters.get(1);
-                if (channel.startsWith("#")) {
-                    onUsernotice(channel, message, tags);
-                }
+                String message = parameters.getOrEmpty(1);
+                onUsernotice(channel, message, tags);
             }
         }
         else if (command.equals("JOIN")) {
             if (parameters.has(0)) {
-                onJoin(parameters.get(0), nick, prefix);
+                String channel = parameters.get(0);
+                onJoin(channel, nick);
             }
         }
         else if (command.equals("PART")) {
             if (parameters.has(0)) {
-                onPart(parameters.get(0), nick, prefix, "");
+                String channel = parameters.get(0);
+                onPart(channel, nick);
             }
         }
         else if (command.equals("MODE")) {
@@ -594,9 +594,9 @@ public abstract class Irc {
     
     void onJoinAttempt(String channel) {}
     
-    void onJoin(String channel, String nick, String prefix) {}
+    void onJoin(String channel, String nick) {}
     
-    void onPart(String channel, String nick, String prefix, String message) { }
+    void onPart(String channel, String nick) { }
     
     void onModeChange(String channel, String nick, boolean modeAdded, String mode, String prefix) { }
     

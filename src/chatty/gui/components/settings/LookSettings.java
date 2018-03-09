@@ -62,6 +62,7 @@ public class LookSettings extends SettingsPanel {
         lafPreviewButton.addActionListener(e -> {
             LaF.setLookAndFeel(laf.getSettingValue(), theme.getSettingValue());
             LaF.updateLookAndFeel();
+            d.pack();
         });
 
         gbc = d.makeGbc(0, 0, 1, 1);

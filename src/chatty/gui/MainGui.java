@@ -1846,7 +1846,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             } else if (cmd.equals("hostchannel")) {
                 if (firstStream != null && streams.size() == 1) {
-                    client.command(null, "host2", StringUtil.toLowerCase(firstStream));
+                    client.command(Room.EMPTY, "host2", StringUtil.toLowerCase(firstStream));
                 } else {
                     printLine("Can't host more than one channel.");
                 }
@@ -3112,7 +3112,8 @@ public class MainGui extends JFrame implements Runnable {
                 Collection<Channel> chans = channels.getExistingChannelsByOwner(channel);
                 if (!chans.isEmpty()) {
                     // Output directly to chat (if enabled)
-                    if (!ownAction && client.settings.getBoolean("showModActions")) {
+                    if (!ownAction && client.settings.getBoolean("showModActions")
+                            && data.type != ModeratorActionData.Type.AUTOMOD_REJECTED) {
                         // Other Mod Actions
                         for (Channel chan : chans) {
                             chan.printLine(String.format("[ModAction] %s: /%s %s",
