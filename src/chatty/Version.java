@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Request a version file and check if it's a new version.
@@ -103,23 +105,27 @@ public class Version {
     
     /**
      * Convert a version in the form "x.y.z" (any length) into an array of
-     * integers "[x, y, z]". If the version contains a "b", then everything
-     * after the "b" is interpreted as number and put at the end, with a -1 as
-     * separator ("0.8.5b3" -> "[0, 8, 5, -1, 3]").
+     * integers "[x, y, z]".
+     * 
+     * The version may end in any letters and an optional number, optionally
+     * separated by a dash (-), with the number put at the end of the array,
+     * with a -1 as separator ("0.8.5b3" -> "[0, 8, 5, -1, 3]").
      * 
      * @param version
      * @return 
      */
     public static int[] versionToIntArray(String version) {
         int betaVersion = 0;
-        if (version.contains("b")) {
+        Matcher m = Pattern.compile("([.0-9]+)(?:-?([a-z]+)([0-9]+)?)").matcher(version);
+        if (m.matches()) {
             try {
-                betaVersion = Integer.parseInt(version.substring(version.indexOf("b")+1));
+                betaVersion = Integer.parseInt(m.group(3));
             } catch (NumberFormatException ex) {
-                // Just keep at default
+                // Just keep default value
             }
-            version = version.substring(0, version.indexOf("b"));
+            version = m.group(1);
         }
+        
         String[] split = version.split("\\.");
         int[] intVersion = new int[split.length+(betaVersion > 0 ? 2 : 0)];
         
