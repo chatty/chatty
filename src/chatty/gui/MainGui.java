@@ -955,6 +955,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void updateHighlight() {
         highlighter.update(StringUtil.getStringList(client.settings.getList("highlight")));
+        highlighter.updateBlacklist(StringUtil.getStringList(client.settings.getList("highlightBlacklist")));
     }
     
     private void updateIgnore() {
@@ -4153,7 +4154,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             if (type == Setting.LIST) {
-                if (setting.equals("highlight")) {
+                if (setting.equals("highlight") || setting.equals("highlightBlacklist")) {
                     updateHighlight();
                 } else if (setting.equals("ignore")) {
                     updateIgnore();

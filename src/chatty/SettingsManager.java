@@ -486,6 +486,7 @@ public class SettingsManager {
         settings.addBoolean("highlightNextMessages", false);
         settings.addBoolean("highlightIgnored", false);
         settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
+        settings.addList("highlightBlacklist", new ArrayList(), Setting.STRING);
 
         // Ignore
         settings.addList("ignore", new ArrayList(), Setting.STRING);

@@ -39,7 +39,7 @@ import javax.swing.event.DocumentListener;
  * 
  * @author tduva
  */
-public class Editor {
+public class Editor implements StringEditor {
 
     private final JDialog dialog;
     private final JLabel label;
@@ -152,7 +152,7 @@ public class Editor {
      */
     public String showDialog(String title, String preset, String info) {
         input.setText(preset);
-        label.setText(title);
+        label.setText(title+":");
         this.info.setText(info);
         if (info == null) {
             this.info.setVisible(false);

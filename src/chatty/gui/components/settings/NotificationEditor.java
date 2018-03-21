@@ -300,10 +300,11 @@ class NotificationEditor extends TableEditor<Notification> {
 
                         @Override
                         public String test(Window parent, Component component, int x, int y, String value) {
-                            HighlighterTester tester = new HighlighterTester(parent, value);
-                            return tester.test();
+                            HighlighterTester tester = new HighlighterTester(parent, false);
+                            return tester.showDialog("Match Notification Text", value, null);
                         }
-                    });
+                    }
+            );
             
             optionsPanel.add(new JLabel("Channel:"), GuiUtil.makeGbc(0, 1, 1, 1));
             optionsPanel.add(channel, GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));

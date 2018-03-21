@@ -6,6 +6,7 @@ import chatty.User;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -30,7 +32,8 @@ public class Highlighter {
     
     private final Map<String, Long> lastHighlighted = new HashMap<>();
     private final List<HighlightItem> items = new ArrayList<>();
-    private Pattern usernamePattern;
+    private final List<HighlightItem> blacklistItems = new ArrayList<>();
+    private HighlightItem usernameItem;
     private Color lastMatchColor;
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
@@ -46,10 +49,21 @@ public class Highlighter {
      * @throws NullPointerException if newItems is null
      */
     public void update(List<String> newItems) {
-        items.clear();
+        compile(newItems, items);
+    }
+    
+    public void updateBlacklist(List<String> newItems) {
+        compile(newItems, blacklistItems);
+    }
+    
+    private void compile(List<String> newItems, List<HighlightItem> into) {
+        into.clear();
         for (String item : newItems) {
             if (item != null && !item.isEmpty()) {
-                items.add(new HighlightItem(item));
+                HighlightItem compiled = new HighlightItem(item);
+                if (!compiled.hasError()) {
+                    into.add(compiled);
+                }
             }
         }
     }
@@ -61,15 +75,14 @@ public class Highlighter {
      */
     public void setUsername(String username) {
         if (username == null) {
-            usernamePattern = null;
+            usernameItem = null;
         }
         else {
-            // Create pattern to match username on word boundaries
-            try {
-                usernamePattern = Pattern.compile("(?i).*\\b"+username+"\\b.*");
-            } catch (PatternSyntaxException ex) {
-                LOGGER.warning("Invalid regex for username: " + ex.getLocalizedMessage());
-                usernamePattern = null;
+            HighlightItem newItem = new HighlightItem("w:"+username);
+            if (!newItem.hasError()) {
+                usernameItem = newItem;
+            } else {
+                usernameItem = null;
             }
         }
     }
@@ -125,6 +138,8 @@ public class Highlighter {
      */
     private boolean checkMatch(User user, String text) {
         
+        Blacklist blacklist = new Blacklist(user, text, blacklistItems, false);
+        
         lastMatchColor = null;
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
@@ -136,14 +151,14 @@ public class Highlighter {
         String lowercaseText = text.toLowerCase(Locale.ENGLISH);
         
         // Try to match own name first (if enabled)
-        if (highlightUsername && usernamePattern != null &&
-                usernamePattern.matcher(text).matches()) {
+        if (highlightUsername && usernameItem != null &&
+                usernameItem.matches(user, text, lowercaseText, true, blacklist)) {
             return true;
         }
         
         // Then try to match against the items
         for (HighlightItem item : items) {
-            if (item.matches(user, text, lowercaseText)) {
+            if (item.matches(user, text, lowercaseText, false, blacklist)) {
                 lastMatchColor = item.getColor();
                 lastMatchNoNotification = item.noNotification();
                 lastMatchNoSound = item.noSound();
@@ -197,13 +212,11 @@ public class Highlighter {
      */
     public static class HighlightItem {
         
+        private static final Pattern NO_MATCH = Pattern.compile("(?!)");
+        
         private String username;
         private Pattern usernamePattern;
         private Pattern pattern;
-        private Pattern pattern2;
-        private String caseSensitive;
-        private String caseInsensitive;
-        private String startsWith;
         private String category;
         private final Set<String> notChannels = new HashSet<>();
         private final Set<String> channels = new HashSet<>();
@@ -216,6 +229,7 @@ public class Highlighter {
         private boolean appliesToInfo;
         
         private boolean error;
+        private String textWithoutPrefix = "";
         
         private final Set<Status> statusReq = new HashSet<>();
         private final Set<Status> statusReqNot = new HashSet<>();
@@ -244,17 +258,23 @@ public class Highlighter {
         private void prepare(String item) {
             item = item.trim();
             if (item.startsWith("re:") && item.length() > 3) {
-                compilePattern(item.substring(3));
+                textWithoutPrefix = item.substring(3);
+                compilePattern("^"+textWithoutPrefix+"$");
             } else if (item.startsWith("re*:") && item.length() > 4) {
-                compilePattern2(item.substring(4));
+                textWithoutPrefix = item.substring(4);
+                compilePattern(textWithoutPrefix);
             } else if (item.startsWith("w:") && item.length() > 2) {
-                compilePattern("(?iu).*\\b"+item.substring(2)+"\\b.*");
+                textWithoutPrefix = item.substring(2);
+                compilePattern("(?iu)\\b"+textWithoutPrefix+"\\b");
             } else if (item.startsWith("wcs:") && item.length() > 4) {
-                compilePattern(".*\\b"+item.substring(4)+"\\b.*");
+                textWithoutPrefix = item.substring(4);
+                compilePattern("\\b"+textWithoutPrefix+"\\b");
             } else if (item.startsWith("cs:") && item.length() > 3) {
-                caseSensitive = item.substring(3);
+                textWithoutPrefix = item.substring(3);
+                compilePattern(Pattern.quote(textWithoutPrefix));
             } else if (item.startsWith("start:") && item.length() > 6) {
-                startsWith = item.substring(6).toLowerCase(Locale.ENGLISH);
+                textWithoutPrefix = item.substring(6);
+                compilePattern("(?iu)^"+Pattern.quote(textWithoutPrefix));
             } else if (item.startsWith("cat:")) {
                 category = parsePrefix(item, "cat:");
             } else if (item.startsWith("!cat:")) {
@@ -283,7 +303,8 @@ public class Highlighter {
             } else if (item.startsWith("config:")) {
                 parseListPrefix(item, "config:");
             } else {
-                caseInsensitive = item.toLowerCase(Locale.ENGLISH);
+                textWithoutPrefix = item;
+                compilePattern("(?iu)"+Pattern.quote(item));
             }
         }
         
@@ -369,16 +390,8 @@ public class Highlighter {
                 pattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
                 error = true;
+                pattern = NO_MATCH;
                 LOGGER.warning("Invalid regex: " + ex);
-            }
-        }
-        
-        private void compilePattern2(String patternString) {
-            try {
-                pattern2 = Pattern.compile(patternString);
-            } catch (PatternSyntaxException ex) {
-                error = true;
-                LOGGER.warning("Invalid regex2: " + ex);
             }
         }
         
@@ -387,20 +400,50 @@ public class Highlighter {
                 usernamePattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
                 error = true;
+                pattern = NO_MATCH;
                 LOGGER.warning("Invalid username regex: " + ex);
             }
         }
         
+        private boolean matchesPattern(String text, Blacklist blacklist) {
+            if (pattern == null) {
+                return true;
+            }
+            Matcher m = pattern.matcher(text);
+            while (m.find()) {
+                if (blacklist == null || !blacklist.isBlacklisted(m.start(), m.end())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public List<Match> getTextMatches(String text) {
+            if (pattern == null) {
+                return null;
+            }
+            List<Match> result = new ArrayList<>();
+            Matcher m = pattern.matcher(text);
+            while (m.find()) {
+                result.add(new Match(m.start(), m.end()));
+            }
+            return result;
+        }
+        
+        public String getTextWithoutPrefix() {
+            return textWithoutPrefix;
+        }
+        
         public boolean matches(String text) {
-            return matches(null, text, StringUtil.toLowerCase(text), true);
+            return matches(null, text, StringUtil.toLowerCase(text), true, null);
         }
         
         public boolean matches(String text, String lowercaseText) {
-            return matches(null, text, lowercaseText, true);
+            return matches(null, text, lowercaseText, true, null);
         }
         
         public boolean matches(User user, String text, String lowercaseText) {
-            return matches(user, text, lowercaseText, false);
+            return matches(user, text, lowercaseText, false, null);
         }
         
         /**
@@ -415,21 +458,8 @@ public class Highlighter {
          * @return true if it matches, false otherwise
          */
         public boolean matches(User user, String text, String lowercaseText,
-                boolean noUserRequired) {
-            
-            if (pattern != null && !pattern.matcher(text).matches()) {
-                return false;
-            }
-            if (pattern2 != null && !pattern2.matcher(text).find()) {
-                return false;
-            }
-            if (caseSensitive != null && !text.contains(caseSensitive)) {
-                return false;
-            }
-            if (caseInsensitive != null && !lowercaseText.contains(caseInsensitive)) {
-                return false;
-            }
-            if (startsWith != null && !lowercaseText.startsWith(startsWith)) {
+                boolean noUserRequired, Blacklist blacklist) {
+            if (pattern != null && !matchesPattern(text, blacklist)) {
                 return false;
             }
             /**
@@ -563,6 +593,46 @@ public class Highlighter {
             return error;
         }
         
+    }
+    
+    public static class Blacklist {
+        
+        private final Collection<Match> blacklisted;
+        
+        public Blacklist(User user, String text, Collection<HighlightItem> items, boolean noUserReq) {
+            blacklisted = new ArrayList<>();
+            for (HighlightItem item : items) {
+                if (item.matches(user, text, StringUtil.toLowerCase(text), noUserReq, null)) {
+                    blacklisted.addAll(item.getTextMatches(text));
+                }
+            }
+        }
+        
+        public boolean isBlacklisted(int start, int end) {
+            for (Match section : blacklisted) {
+                if (section.spans(start, end)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    }
+    
+    public static class Match {
+
+        public final int start;
+        public final int end;
+
+        private Match(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public boolean spans(int start, int end) {
+            return this.start <= start && this.end >= end;
+        }
+
     }
     
 }

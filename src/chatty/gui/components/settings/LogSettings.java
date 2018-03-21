@@ -64,9 +64,9 @@ public class LogSettings extends SettingsPanel {
         cards.setPreferredSize(new Dimension(220,130));
         
         final ChannelFormatter formatter = new ChannelFormatter();
-        ListSelector whitelist = d.addListSetting("logWhitelist", 1, 1, true, true);
+        ListSelector whitelist = d.addListSetting("logWhitelist", "Chatlog Whitelist", 1, 1, true, true);
         whitelist.setDataFormatter(formatter);
-        ListSelector blacklist = d.addListSetting("logBlacklist", 1, 1, true, true);
+        ListSelector blacklist = d.addListSetting("logBlacklist", "Chatlog Blacklist", 1, 1, true, true);
         blacklist.setDataFormatter(formatter);
         
         cards.add(whitelist, "whitelist");

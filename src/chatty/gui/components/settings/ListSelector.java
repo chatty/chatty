@@ -41,15 +41,19 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     private final JButton editAll = new JButton();
     private final JTextField input = new JTextField();
     
+    private final String title;
+    
     private String info;
     
     private DataFormatter<String> formatter;
     
-    private final Editor editor;
+    private StringEditor editor;
     private final Editor allEditor;
 
-    public ListSelector(Window parent, boolean manualSorting,
+    public ListSelector(Window parent, String title, boolean manualSorting,
             boolean alphabeticSorting) {
+        
+        this.title = title;
         
         // Button actions
         ActionListener buttonAction = new ActionListener() {
@@ -86,6 +90,14 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             @Override
             public void actionPerformed(ActionEvent e) {
                 removeItem();
+            }
+        });
+        list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "editItem");
+        list.getActionMap().put("editItem", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeItem();
             }
         });
         
@@ -176,7 +188,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         add(new JScrollPane(list), gbc);
         
         updateEditButtons();
-        
+
         editor = new Editor(parent);
         allEditor = new Editor(parent);
         allEditor.setAllowLinebreaks(true);
@@ -193,7 +205,13 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     }
     
     public void setTester(Tester tester) {
-        editor.setTester(tester);
+        if (editor instanceof Editor) {
+            ((Editor)editor).setTester(tester);
+        }
+    }
+    
+    public void setEditor(StringEditor editor) {
+        this.editor = editor;
     }
     
     private void configureButton(JButton button, String icon, String tooltip) {
@@ -211,7 +229,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
      */
     private void addItem() {
         String item = editor.showDialog(
-                Language.getString("settings.listSelector.addEntry"), "", info);
+                Language.getString("settings.listSelector.addEntry", title), "", info);
         item = format(item);
         if (item != null && !item.isEmpty() && !data.contains(item)) {
             int selectedIndex = list.getSelectedIndex();
@@ -247,7 +265,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         int selectedIndex = list.getSelectedIndex();
         if (selectedIndex > -1) {
             String newValue = editor.showDialog(
-                    Language.getString("settings.listSelector.editEntry"), selectedValue, info);
+                    Language.getString("settings.listSelector.editEntry", title), selectedValue, info);
             newValue = format(newValue);
             if (newValue != null && !newValue.isEmpty()) {
                 data.set(selectedIndex, newValue);
@@ -381,4 +399,5 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         }
         return input;
     }
+    
 }

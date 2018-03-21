@@ -168,7 +168,7 @@ public class EmoteSettings extends SettingsPanel {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
-            add(d.addListSetting("ignoredEmotes", 180, 220, false, true), gbc);
+            add(d.addListSetting("ignoredEmotes", "Ignored Emote", 180, 220, false, true), gbc);
             
             gbc = d.makeGbc(1, 0, 1, 1);
             gbc.anchor = GridBagConstraints.NORTH;

@@ -40,20 +40,18 @@ public class HighlighterTest {
         ab.add("testUser", "testCat");
     }
     
-    @AfterClass
-    public static void tearDownClass() {
+    private void update(String... items) {
+        highlighter.update(Arrays.asList(items));
     }
     
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
+    private void updateBlacklist(String... items) {
+        highlighter.updateBlacklist(Arrays.asList(items));
     }
 
     @Test
     public void test() {
+        updateBlacklist();
+        
         assertFalse(highlighter.check(user, "test message"));
         highlighter.update(Arrays.asList(new String[]{"test"}));
         assertTrue(highlighter.check(user, "test message"));
@@ -132,10 +130,17 @@ public class HighlighterTest {
         highlighter.setHighlightNextMessages(true);
         assertTrue(highlighter.check(user, "mäh"));
         highlighter.setHighlightNextMessages(false);
+        
+        highlighter.update(Arrays.asList(new String[]{"mäh"}));
+        assertTrue(highlighter.check(user, "mäh"));
+        assertTrue(highlighter.check(user, "Mäh"));
+        assertTrue(highlighter.check(user, "MÄH"));
     }
     
     @Test
     public void testStatusReq() {
+        updateBlacklist();
+        
         User broadcaster = new User("test", Room.createRegular("#test"));
         broadcaster.setBroadcaster(true);
         
@@ -267,6 +272,44 @@ public class HighlighterTest {
         assertFalse(highlighter.check(adminBroadcasterTurbo, "hello"));
         assertFalse(highlighter.check(staff, ""));
         assertFalse(highlighter.check(subscriber, ""));
+    }
+    
+    @Test
+    public void testBlacklist() {
+        updateBlacklist();
+        update("test");
+        assertTrue(highlighter.check(user, "Hello testi"));
+        updateBlacklist("testi");
+        assertFalse(highlighter.check(user, "Hello testi"));
+        
+        updateBlacklist();
+        update("w:ROM");
+        assertTrue(highlighter.check(user, "Heard of that nice ROM hack?"));
+        assertFalse(highlighter.check(user, "Heard of that nice ROMhack?"));
+        updateBlacklist("rom hack");
+        assertFalse(highlighter.check(user, "Heard of that nice ROM hack?"));
+        
+        updateBlacklist();
+        update("w:Prom");
+        assertTrue(highlighter.check(user, "Heard of that nice Prom Hack?"));
+        updateBlacklist("rom hack");
+        assertTrue(highlighter.check(user, "Heard of that nice Prom Hack?"));
+        
+        updateBlacklist();
+        update("josh");
+        assertTrue(highlighter.check(user, "joshBarksAtKitty joshimuz"));
+        assertTrue(highlighter.check(user, "joshBarksAtKitty joshBarksAtKitty"));
+        updateBlacklist("joshBarksAtKitty");
+        assertTrue(highlighter.check(user, "joshBarksAtKitty joshimuz"));
+        assertFalse(highlighter.check(user, "joshBarksAtKitty joshBarksAtKitty"));
+        updateBlacklist("start:joshBarksAtKitty");
+        assertTrue(highlighter.check(user, "joshBarksAtKitty joshimuz"));
+        assertTrue(highlighter.check(user, "joshBarksAtKitty joshBarksAtKitty"));
+        
+        update("josh");
+        updateBlacklist("chan:testChannel joshBarksAtKitty");
+        assertFalse(highlighter.check(user, "joshBarksAtKitty"));
+        assertTrue(highlighter.check(user3, "joshBarksAtKitty"));
     }
     
 }

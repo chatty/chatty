@@ -135,7 +135,7 @@ public class CommandSettings extends SettingsPanel {
         GridBagConstraints gbc;
         
         gbc = d.makeGbc(0, 0, 1, 1);
-        ListSelector items = d.addListSetting("commands", 400, 150, true, true);
+        ListSelector items = d.addListSetting("commands", "Custom Command", 400, 150, true, true);
         items.setDataFormatter(new DataFormatter<String>() {
 
             @Override

@@ -730,9 +730,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
      * @param height
      * @return 
      */
-    protected ListSelector addListSetting(String name, int width, int height, 
+    protected ListSelector addListSetting(String name, String title, int width, int height, 
             boolean manualSorting, boolean alphabeticSorting) {
-        ListSelector result = new ListSelector(this, manualSorting, alphabeticSorting);
+        ListSelector result = new ListSelector(this, title, manualSorting, alphabeticSorting);
         result.setPreferredSize(new Dimension(width, height));
         listSettings.put(name, result);
         return result;
