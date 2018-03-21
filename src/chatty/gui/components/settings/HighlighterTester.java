@@ -77,9 +77,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final MutableAttributeSet defaultAttr = new SimpleAttributeSet();
     private final MutableAttributeSet blacklistAttr = new SimpleAttributeSet();
     
-    private boolean blacklistPreset;
+    private boolean editingBlacklistItem;
     private String result;
     private ActionListener addToBlacklistListener;
+    
+    /**
+     * Previous automatically set test text.
+     */
+    private String prevTestText;
     
     private HighlightItem highlightItem;
     private HighlightItem blacklistItem;
@@ -92,7 +97,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         // Styles
         StyleConstants.setBackground(matchAttr1, Color.BLUE);
         StyleConstants.setForeground(matchAttr1, Color.WHITE);
-        StyleConstants.setBackground(matchAttr2, Color.MAGENTA);
+        StyleConstants.setBackground(matchAttr2, new Color(0, 140, 120));
         StyleConstants.setForeground(matchAttr2, Color.WHITE);
         StyleConstants.setStrikeThrough(blacklistAttr, true);
         
@@ -170,7 +175,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         add(infoText, gbc);
         
         okButton.addActionListener(e -> {
-            result = blacklistPreset ? blacklistValue.getText() : itemValue.getText();
+            result = editingBlacklistItem ? blacklistValue.getText() : itemValue.getText();
             setVisible(false);
         });
         cancelButton.addActionListener(e -> setVisible(false));
@@ -248,6 +253,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         });
         
         updateEditIndicator();
+        updateSaveButton();
     }
     
     private void updateItem() {
@@ -259,22 +265,23 @@ public class HighlighterTester extends JDialog implements StringEditor {
         }
         updateInfoText();
         updateMatches(doc);
+        updateSaveButton();
+        updateTestText();
     }
     
     private void updateBlacklistItem() {
         String value = blacklistValue.getText();
         blacklistItem = null;
         if (!value.isEmpty()) {
-            HighlightItem newItem = new HighlightItem(value);
-            if (!newItem.hasError()) {
-                blacklistItem = newItem;
-            }
-            addToBlacklistButton.setEnabled(!newItem.hasError());
+            blacklistItem = new HighlightItem(value);
+            addToBlacklistButton.setEnabled(!blacklistItem.hasError());
         } else {
             addToBlacklistButton.setEnabled(false);
         }
         updateInfoText();
         updateMatches(doc);
+        updateSaveButton();
+        updateTestText();
     }
     
     private void updateInfoText() {
@@ -285,11 +292,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (highlightItem == null) {
             testResult.setText("No pattern.");
         } else if (highlightItem.hasError()) {
-            testResult.setText("Invalid pattern.");
+            testResult.setText("Invalid pattern: "+highlightItem.getError());
         } else if (highlightItem.matches(null, testInput.getText(), null, true, blacklist)) {
             testResult.setText("Matched.");
         } else {
             testResult.setText("No match.");
+        }
+        if (blacklistItem != null && blacklistItem.hasError()) {
+            testResult.setText("Invalid blacklist pattern: "+blacklistItem.getError());
         }
     }
 
@@ -328,13 +338,20 @@ public class HighlighterTester extends JDialog implements StringEditor {
             BorderFactory.createLineBorder(Color.BLACK), BorderFactory.createEmptyBorder(1, 2, 1, 2));
     private static final Border DEFAULT_BORDER = new JTextField().getBorder();
     
-    public void setBlacklistPreset(boolean blacklistPreset) {
-        this.blacklistPreset = blacklistPreset;
+    /**
+     * Set to true if this instance is used for editing a blacklist item, which
+     * sets the preset to the Blacklist field and also returns that value, as
+     * well as changes some other related behaviour.
+     * 
+     * @param editingBlacklistItem 
+     */
+    public void setEditingBlacklistItem(boolean editingBlacklistItem) {
+        this.editingBlacklistItem = editingBlacklistItem;
         updateEditIndicator();
     }
     
     private void updateEditIndicator() {
-        if (blacklistPreset) {
+        if (editingBlacklistItem) {
             blacklistValue.setBorder(EDITING_BORDER);
             itemValue.setBorder(DEFAULT_BORDER);
         } else {
@@ -344,18 +361,29 @@ public class HighlighterTester extends JDialog implements StringEditor {
     }
     
     private void updateTestText() {
-        if (testInput.getText().isEmpty() || testInput.getText().startsWith(TEST_PRESET)) {
-            if (highlightItem != null) {
-                testInput.setText(TEST_PRESET_EXAMPLE+highlightItem.getTextWithoutPrefix());
+        HighlightItem item = editingBlacklistItem ? blacklistItem : highlightItem;
+        boolean matches = item != null && item.matches(null, testInput.getText(), null, true, null);
+        if (!matches && (testInput.getText().isEmpty() || testInput.getText().equals(prevTestText))) {
+            if (item != null) {
+                testInput.setText(TEST_PRESET_EXAMPLE+item.getTextWithoutPrefix());
             } else {
                 testInput.setText(TEST_PRESET);
             }
+            prevTestText = testInput.getText();
+        }
+    }
+    
+    private void updateSaveButton() {
+        if (editingBlacklistItem) {
+            okButton.setEnabled(blacklistItem != null && !blacklistItem.hasError());
+        } else {
+            okButton.setEnabled(highlightItem != null && !highlightItem.hasError());
         }
     }
 
     @Override
     public String showDialog(String title, String preset, String info) {
-        if (blacklistPreset) {
+        if (editingBlacklistItem) {
             blacklistValue.requestFocusInWindow();
         } else {
             itemValue.requestFocusInWindow();
@@ -364,7 +392,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         this.result = null;
         infoText.setText(info);
         infoText.setVisible(info != null);
-        if (blacklistPreset) {
+        if (editingBlacklistItem) {
             blacklistValue.setText(preset);
         } else {
             itemValue.setText(preset);
@@ -418,8 +446,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 System.out.println(e);
             });
             //tester.setDefaultCloseOperation(EXIT_ON_CLOSE);
-            //tester.setBlacklistPreset(true);
-            System.out.println(tester.showDialog("Highlight Item", "user:botimuz cs:Bets open", INFO2));
+            //tester.setEditingBlacklistItem(true);
+            System.out.println(tester.showDialog("Highlight Item", "w:[a-z]+", INFO2));
             System.exit(0);
         });
     }

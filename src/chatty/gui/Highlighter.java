@@ -228,7 +228,7 @@ public class Highlighter {
         private boolean noSound;
         private boolean appliesToInfo;
         
-        private boolean error;
+        private String error;
         private String textWithoutPrefix = "";
         
         private final Set<Status> statusReq = new HashSet<>();
@@ -389,7 +389,7 @@ public class Highlighter {
             try {
                 pattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
-                error = true;
+                error = ex.getDescription();
                 pattern = NO_MATCH;
                 LOGGER.warning("Invalid regex: " + ex);
             }
@@ -399,7 +399,7 @@ public class Highlighter {
             try {
                 usernamePattern = Pattern.compile(patternString);
             } catch (PatternSyntaxException ex) {
-                error = true;
+                error = ex.getDescription();
                 pattern = NO_MATCH;
                 LOGGER.warning("Invalid username regex: " + ex);
             }
@@ -590,6 +590,10 @@ public class Highlighter {
         }
         
         public boolean hasError() {
+            return error != null;
+        }
+        
+        public String getError() {
             return error;
         }
         

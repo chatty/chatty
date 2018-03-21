@@ -221,7 +221,7 @@ public class HighlightSettings extends SettingsPanel {
             setting.setInfo(INFO);
             setting.setDataFormatter(input -> input.trim());
             HighlighterTester tester = new HighlighterTester(d, true);
-            tester.setBlacklistPreset(true);
+            tester.setEditingBlacklistItem(true);
             tester.setLinkLabelListener(d.getLinkLabelListener());
             setting.setEditor(tester);
             
