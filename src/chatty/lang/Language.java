@@ -32,6 +32,17 @@ public class Language {
      * @param language 
      */
     public synchronized static void setLanguage(String language) {
+        strings = getBundleForLanguage(language);
+        LOGGER.info(String.format("[Localization] Loaded locale '%s' for requested '%s'",
+                strings.getLocale(), language));
+    }
+    
+    public static ResourceBundle getBundleForLanguage(String language) {
+        Locale locale = parseLanguage(language);
+        return ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
+    }
+    
+    public static Locale parseLanguage(String language) {
         String[] split = language.split("_");
         Locale locale;
         if (language.trim().isEmpty()) {
@@ -43,9 +54,7 @@ public class Language {
         else {
             locale = new Locale(language);
         }
-        strings = ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
-        LOGGER.info(String.format("[Localization] Loaded locale '%s' for requested '%s'",
-                strings.getLocale(), language));
+        return locale;
     }
     
     /**
@@ -112,8 +121,11 @@ public class Language {
     
     /**
      * Control to load properties files using UTF-8 encoding.
+     * 
+     * Might be caching, but shouldn't matter as long as stuff is only loaded
+     * once on start.
      */
-    private static final ResourceBundle.Control CONTROL = new ResourceBundle.Control() {
+    public static final ResourceBundle.Control CONTROL = new ResourceBundle.Control() {
         
         @Override
         public List<String> getFormats(String name) {

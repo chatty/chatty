@@ -54,7 +54,19 @@ public class MainSettings extends SettingsPanel {
         //==========
         // Language
         //==========
+        languagePanel.add(new JLabel(Language.getString("settings.language.language")),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
+        ComboStringSetting languageSetting = d.addComboStringSetting(
+                "language", 0, false, getLanguageOptions());
+        languagePanel.add(languageSetting,
+                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
         
+        languagePanel.add(new JLabel(SettingConstants.HTML_PREFIX
+                +Language.getString("settings.language.info")),
+                d.makeGbc(0, 1, 2, 1));
+    }
+    
+    public static Map<String, String> getLanguageOptions() {
         Map<String, String> languageOptions = new LinkedHashMap<>();
         languageOptions.put("", Language.getString("settings.language.option.defaultLanguage"));
         languageOptions.put("en", "English");
@@ -64,17 +76,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("zh_TW", "Chinese (traditional)");
         //languageOptions.put("fr", "French / Français");
         languageOptions.put("tr", "Turkish / Türk");
-        
-        languagePanel.add(new JLabel(Language.getString("settings.language.language")),
-                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
-        ComboStringSetting languageSetting = d.addComboStringSetting(
-                "language", 0, false, languageOptions);
-        languagePanel.add(languageSetting,
-                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
-        
-        languagePanel.add(new JLabel(SettingConstants.HTML_PREFIX
-                +Language.getString("settings.language.info")),
-                d.makeGbc(0, 1, 2, 1));
+        return languageOptions;
     }
   
 }
