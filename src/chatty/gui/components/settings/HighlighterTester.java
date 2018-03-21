@@ -97,7 +97,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         // Styles
         StyleConstants.setBackground(matchAttr1, Color.BLUE);
         StyleConstants.setForeground(matchAttr1, Color.WHITE);
-        StyleConstants.setBackground(matchAttr2, new Color(0, 140, 120));
+        StyleConstants.setBackground(matchAttr2, new Color(0, 140, 100));
         StyleConstants.setForeground(matchAttr2, Color.WHITE);
         StyleConstants.setStrikeThrough(blacklistAttr, true);
         

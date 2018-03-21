@@ -34,6 +34,7 @@ public class LanguageTest {
         //languages.remove("tr");
         //String[] languages = new String[]{"adas", "en", "es", "ja", "ru", "zh_TW"};
         
+        boolean failed = false;
         for (String lang : languages) {
             // Get the bundle as Chatty would normally get it
             ResourceBundle bundle = Language.getBundleForLanguage(lang);
@@ -45,10 +46,16 @@ public class LanguageTest {
                     // because it should work for everything (hopefully)
                     MessageFormat.format(bundle.getString(key), 1);
                 } catch (Exception ex) {
-                    Assert.fail(String.format("Error in '%s' [%s = %s] (%s)",
+                    // Don't fail immediately, output all errors first
+                    // (will output errors in parent strings as well)
+                    failed = true;
+                    System.out.println(String.format("Error in '%s' [%s = %s] (%s)",
                             lang, key, bundle.getString(key), ex.toString()));
                 }
             }
+        }
+        if (failed) {
+            Assert.fail("MessageFormat error");
         }
     }
     
