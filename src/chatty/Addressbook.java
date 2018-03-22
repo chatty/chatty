@@ -752,15 +752,17 @@ public class Addressbook {
         Path tempFile = Paths.get(fileName+"-temp");
         LOGGER.info("Writing addressbook to "+fileName);
         System.out.println("Saving addressbook.");
-        try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
-            for (AddressbookEntry entry : entries.values()) {
-                writer.write(makeLine(entry));
-                writer.newLine();
+        try {
+            try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
+                for (AddressbookEntry entry : entries.values()) {
+                    writer.write(makeLine(entry));
+                    writer.newLine();
+                }
             }
             MiscUtil.moveFile(tempFile, file);
             saved = true;
         } catch (IOException ex) {
-            LOGGER.warning("Error writing addressbook: "+ex.getLocalizedMessage());
+            LOGGER.warning("Error writing addressbook: " + ex);
         }
     }
     

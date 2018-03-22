@@ -286,11 +286,11 @@ public class SettingsManager {
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);
-        settings.setFile("channelHistory", historyFile);
+        //settings.setFile("channelHistory", historyFile);
         settings.addList("channelFavorites", new ArrayList(), Setting.STRING);
-        settings.setFile("channelFavorites", historyFile);
+        //settings.setFile("channelFavorites", historyFile);
         settings.addMap("roomFavorites", new HashMap(), Setting.LIST);
-        settings.setFile("roomFavorites", historyFile);
+        //settings.setFile("roomFavorites", historyFile);
         settings.addLong("channelHistoryKeepDays", 30);
         settings.addBoolean("saveChannelHistory", true);
         settings.addBoolean("historyClear", true);
@@ -302,15 +302,15 @@ public class SettingsManager {
 
         // Game Presets
         settings.addList("gamesFavorites",new ArrayList(), Setting.STRING);
-        settings.setFile("gamesFavorites", historyFile);
+        //settings.setFile("gamesFavorites", historyFile);
         
         // Community Presets
         settings.addMap("communityFavorites", new HashMap(), Setting.STRING);
-        settings.setFile("communityFavorites", historyFile);
+        //settings.setFile("communityFavorites", historyFile);
 
         // Stream Status Presets
         settings.addList("statusPresets", new ArrayList(), Setting.LIST);
-        settings.setFile("statusPresets", statusPresetsFile);
+        //settings.setFile("statusPresets", statusPresetsFile);
 
         settings.addBoolean("saveStatusHistory", true);
         settings.addBoolean("statusHistoryClear", true);

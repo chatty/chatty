@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
@@ -97,20 +98,14 @@ public class MiscUtil {
      * @param from The file to move
      * @param to The target filename, which will be overwritten if it already
      * exists
+     * @throws java.io.IOException
      */
-    public static void moveFile(Path from, Path to) {
+    public static void moveFile(Path from, Path to) throws IOException {
         try {
             Files.move(from, to, ATOMIC_MOVE);
-        } catch (IOException ex) {
-            LOGGER.warning("Error moving file "+from+": " + ex);
-            System.out.println("Error moving file "+from+": " + ex);
-
-            try {
-                Files.move(from, to, REPLACE_EXISTING);
-            } catch (IOException ex2) {
-                LOGGER.warning("Error moving file "+from+" (2): " + ex2);
-                System.out.println("Error moving file "+from+" (2): " + ex2);
-            }
+        } catch (AtomicMoveNotSupportedException ex) {
+            LOGGER.info("ATOMIC_MOVE not available: "+ex);
+            Files.move(from, to, REPLACE_EXISTING);
         }
     }
     
