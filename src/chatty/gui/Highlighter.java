@@ -146,21 +146,15 @@ public class Highlighter {
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
         
-        // Not sure if default locale or not is better here, but it should at
-        // least be the same between input text and match strings.
-        //
-        // Always using english locale may be more consistent though.
-        String lowercaseText = text.toLowerCase(Locale.ENGLISH);
-        
         // Try to match own name first (if enabled)
         if (highlightUsername && usernameItem != null &&
-                usernameItem.matches(user, text, lowercaseText, true, blacklist)) {
+                usernameItem.matches(user, text, true, blacklist)) {
             return true;
         }
         
         // Then try to match against the items
         for (HighlightItem item : items) {
-            if (item.matches(user, text, lowercaseText, false, blacklist)) {
+            if (item.matches(user, text, false, blacklist)) {
                 lastMatchColor = item.getColor();
                 lastMatchNoNotification = item.noNotification();
                 lastMatchNoSound = item.noSound();
@@ -438,6 +432,14 @@ public class Highlighter {
             }
         }
         
+        /**
+         * Check if the given text matches the text matching pattern,
+         * disregarding matches that are blacklisted.
+         *
+         * @param text The input text to find the match in
+         * @param blacklist The blacklist for the same input text
+         * @return true if matches taking account the blacklist, false otherwise
+         */
         private boolean matchesPattern(String text, Blacklist blacklist) {
             if (pattern == null) {
                 return true;
@@ -487,15 +489,11 @@ public class Highlighter {
         }
         
         public boolean matches(String text) {
-            return matches(null, text, StringUtil.toLowerCase(text), true, null);
+            return matches(null, text, true, null);
         }
         
-        public boolean matches(String text, String lowercaseText) {
-            return matches(null, text, lowercaseText, true, null);
-        }
-        
-        public boolean matches(User user, String text, String lowercaseText) {
-            return matches(user, text, lowercaseText, false, null);
+        public boolean matches(User user, String text) {
+            return matches(user, text, false, null);
         }
         
         /**
@@ -503,14 +501,16 @@ public class Highlighter {
          * 
          * @param user The User object, or null if this message has none
          * @param text The text as received
-         * @param lowercaseText The text in lowercase (minor optimization, so
-         *  it doesn't have to be made lowercase for every item)
          * @param noUserRequired Will continue matching when no User object is
          * given, even without config:info
+         * @param blacklist
          * @return true if it matches, false otherwise
          */
-        public boolean matches(User user, String text, String lowercaseText,
-                boolean noUserRequired, Blacklist blacklist) {
+        public boolean matches(User user, String text, boolean noUserRequired,
+                Blacklist blacklist) {
+            /**
+             * Check text matching, if present.
+             */
             if (pattern != null && !matchesPattern(text, blacklist)) {
                 return false;
             }
@@ -658,7 +658,7 @@ public class Highlighter {
         public Blacklist(User user, String text, Collection<HighlightItem> items, boolean noUserReq) {
             blacklisted = new ArrayList<>();
             for (HighlightItem item : items) {
-                if (item.matches(user, text, StringUtil.toLowerCase(text), noUserReq, null)) {
+                if (item.matches(user, text, noUserReq, null)) {
                     List<Match> matches = item.getTextMatches(text);
                     if (matches != null) {
                         blacklisted.addAll(matches);

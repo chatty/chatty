@@ -299,7 +299,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             testResult.setText("No pattern.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Invalid pattern: "+highlightItem.getError());
-        } else if (highlightItem.matches(null, testInput.getText(), null, true, blacklist)) {
+        } else if (highlightItem.matches(null, testInput.getText(), true, blacklist)) {
             testResult.setText("Matched.");
         } else {
             testResult.setText("No match.");
@@ -337,6 +337,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
                         Match m = blacklistMatches.get(i);
                         doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
                     }
+                } else {
+                    doc.setCharacterAttributes(0, doc.getLength(), blacklistAttr, false);
                 }
             }
         } catch (Exception ex) {
@@ -372,7 +374,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     private void updateTestText() {
         HighlightItem item = editingBlacklistItem ? blacklistItem : highlightItem;
-        boolean matches = item != null && item.matches(null, testInput.getText(), null, true, null);
+        boolean matches = item != null && item.matches(null, testInput.getText(), true, null);
         if (!matches && (testInput.getText().isEmpty() || testInput.getText().equals(prevTestText))) {
             if (item != null) {
                 testInput.setText(TEST_PRESET_EXAMPLE+item.getTextWithoutPrefix());

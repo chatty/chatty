@@ -33,7 +33,7 @@ public class MsgColorItem extends ColorItem {
     }
     
     public boolean matches(User user, String text) {
-        return search.matches(user, text, StringUtil.toLowerCase(text));
+        return search.matches(user, text);
     }
     
 }

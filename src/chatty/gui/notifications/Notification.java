@@ -269,7 +269,7 @@ public class Notification {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(user, text, StringUtil.toLowerCase(text), true, null);
+        return matcherItem.matches(user, text, true, null);
     }
     
     public boolean hasChannel() {
