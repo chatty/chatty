@@ -652,8 +652,7 @@
     </h2>
     <h3>General settings</h3>
     <ul>
-        <li><strong>Enable Highlight</strong>: Determines whether highlighting
-        is enabled at all.</li>
+        <li><strong>Enable Highlight</strong>: Enable/disable Highlighting.</li>
         <li><strong>Highlight own name</strong>: Makes messages that contain your
         own name (case-insensitive) highlighted, even if you didn't add it to the list manually.</li>
         <li><strong>Highlight follow-up</strong>: After a highlighted message,
@@ -673,53 +672,49 @@
     highlighting behaviour per item.</p>
     
     <h3><a name="Highlight_Matching">Text Matching Prefixes</a></h3>
-    <p>By default, matching is done case-insensitive and when the word or phrase
-        appears anywhere in the message. However, you can add the following
-        prefixes in front of the text to change this matching behaviour. You can
-        only use one of these prefixes per item, because all text following the
-        prefix is interpreted as text to match.</p>
+    <p>By default, matching is performed <em>case-insensitive</em> and <em>anywhere</em> in the
+        message. However, you can add one of the following prefixes in front of
+        the search text to modify the matching behaviour:<code>[text-prefix:]&lt;search text&gt;</code></p>
+    
     <ul>
         <li><code>cs:</code> makes it case-sensitive, so <code>cs:test</code>
             matches <code>test</code> but not <code>Test</code>.</li>
         <li><code>w:</code> matches at word boundaries, e.g. <code>w:anna</code>
             will match <code>anna</code> or <code>Anna:</code> but not
-            <code>Hannah</code> or <code>annah</code>. <em>(Is actually just a
-                shortcut for a special regex, so special regex characters will work.)</em></li>
+            <code>Hannah</code> or <code>annah</code>.<br />
+            <em>Note:</em> This doesn't take Regex anymore, please use <code>regwi:</code> instead.</li>
         <li><code>wcs:</code> is the same as <code>w:</code>, but case-sensitive.</li>
         <li><code>start:</code> to match at the start, so <code>start:!bet</code> will
             match messages starting with <code>!bet</code>.</li>
-        <li><code>re:</code> or <code>re*:</code> to use a
-            <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expression</a>:
+        <li><code>reg:</code> (and variations) to use a
+            <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expression</a> (Regex), which are case-sensitive by default:
             <ul>
-                <li><code>re:</code> will always try to match the whole message,
-                    so for example <code>re:GTA5</code> will only match the message
-                    "GTA5", but not anything added to it even just a space like
-                    "GTA5 ". Regular Expressions are also case-sensitive by
-                    default, so "gta5" won't match either in this case, but
-                    you can add <code>(?i)</code> for case-insensitive matching.
-                    <br />
-                    Example: <code>re:(?i).*\bGTA ?[V5]\b.*</code> will match
-                    "GTA5", "GTA 5", "GTA V", "gta5", .. anywhere in the message
-                    (<code>.*</code>), but only on word boundaries (<code>\b</code>)
-                    and case-insensitive (<code>(?i)</code> in front).
-                </li>
-                <li><code>re*:</code> does the same as <code>re:</code> except
-                    that a partial match anywhere in the message is enough, so
-                    to get the same behaviour as in the above example you can
-                    just use <code>re*:(?i)\bGTA&nbsp;?[V5]\b</code> (omitting
-                    the surrounding <code>.*</code>).</li>
+                <li><code>reg:</code> (alias <code>re*:</code>) will search anywhere in the message.<br />
+                    Example: <code>reg:(?i)\bGTA&nbsp;?[V5]\b</code> will match <code>GTA5</code>,
+                    <code>GTA 5</code>, <code>GTA V</code>, <code>gta5</code>..
+                    anywhere in the message, case-insensitive (<code>(?i)</code>), but only on word boundaries (<code>\b</code>).</li>
+                <li><code>regi:</code> matches case-insensitive (adds <code>(?iu)</code>),
+                    so the example would be: <code>regi:\bGTA&nbsp;?[V5]\b</code></li>
+                <li><code>regw:</code> matches on word boundaries (surrounds with <code>\b</code>),
+                    so the example would be: <code>regw:(?i)GTA&nbsp;?[V5]</code></li>
+                <li><code>regwi:</code> matches on word boundaries and case-insensitive,
+                    so the example would be: <code>regwi:GTA&nbsp;?[V5]</code></li>
+                <li><code>regm:</code> (alias <code>re:</code>) always tries to match the entire message (adds <code>^</code> and <code>$</code>),
+                    which means <code>regm:Test</code> will only match the message
+                    "<code>Test</code>", but not anything added to it, even just a space
+                    like "<code>Test </code>" (which <code>reg:Test</code> would
+                    match).</li>
             </ul>
         </li>
     </ul>
     
     <h3>Meta Prefixes</h3>
-    <p>The following prefixes mostly influence which messages are matched,
-        however they don't change the matching of the text itself, but instead
-        provide other information for the highlight system. They can be
-        placed in front of the Text Matching Prefixes (or the text if you don't
-        have any other prefixes) and you can even use more than one per item.
-        These prefixes have to be seperated from eachother and the text by a
-        space.</p>
+    <p>The following prefixes don't change the matching of the text itself, but
+        rather provide other information for the highlight system. You can place
+        one or several of these prefixes before the search text (separated by
+        spaces):
+        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
+
     <ul>
         <li><code>user:</code> to specifiy one exact username (case-insensitive)
             which should highlight only if this user send the message, doesn't

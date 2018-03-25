@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -192,26 +194,16 @@ public class Highlighter {
     }
     
     /**
-     * A single item that itself parses the item String and prepares it for
-     * matching. The item can be asked whether it matches a message.
-     * 
-     * A message matches the item if the message text contains the text of this
-     * item (case-insensitive).
-     * 
-     * Prefixes that change this behaviour:
-     * user: - to match the exact username the message is from
-     * cs: - to match the following term case-sensitive
-     * re: - to match as regex
-     * chan: - to match when the user is on this channel (can be a
-     * comma-seperated list)
-     * !chan: - same as chan: but inverted
-     * status:m
-     * 
-     * An item can be prefixed with a user:username, so the username as well
-     * as the item after it has to match.
+     * A single Highlight item that parses the item string and prepares it for
+     * matching. It provides methods to check if an error occured parsing, as
+     * well as methods to check if the item matches a message or text, to
+     * retrieve all match indices and some meta information.
      */
     public static class HighlightItem {
         
+        /**
+         * A regex that will never match.
+         */
         private static final Pattern NO_MATCH = Pattern.compile("(?!)");
         
         private String username;
@@ -234,7 +226,7 @@ public class Highlighter {
         private final Set<Status> statusReq = new HashSet<>();
         private final Set<Status> statusReqNot = new HashSet<>();
         
-        enum Status {
+        private enum Status {
             MOD("m"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
             TURBO("t"), ANY_MOD("M"), GLOBAL_MOD("g"), BOT("r");
             
@@ -243,6 +235,29 @@ public class Highlighter {
             Status(String id) {
                 this.id = id;
             }
+        }
+        
+        /**
+         * Contains all the text matching prefixes that are turned into a Regex
+         * and their associated pattern builder functions.
+         */
+        private static final Map<String, Function<String, String>> patternPrefixes = new HashMap<>();
+        
+        static {
+            /**
+             * Add text matching prefixes and their pattern builder functions
+             * (with possible aliases).
+             */
+            addPatternPrefix(text -> text, "re*:", "reg:");
+            addPatternPrefix(text -> "(?iu)"+text, "regi:");
+            addPatternPrefix(text -> "\\b(?:"+text+")\\b", "regw:");
+            addPatternPrefix(text -> "(?iu)\\b(?:"+text+")\\b", "regwi:");
+            addPatternPrefix(text -> "^(?:"+text+")$", "re:", "regm:");
+            addPatternPrefix(text -> "(?iu)^(?:"+text+")$", "regmi:");
+            addPatternPrefix(text -> "(?iu)\\b"+Pattern.quote(text)+"\\b", "w:");
+            addPatternPrefix(text -> "\\b"+Pattern.quote(text)+"\\b", "wcs:");
+            addPatternPrefix(text -> Pattern.quote(text), "cs:");
+            addPatternPrefix(text -> "(?iu)^"+Pattern.quote(text), "start:");
         }
         
         public HighlightItem(String item) {
@@ -257,54 +272,39 @@ public class Highlighter {
          */
         private void prepare(String item) {
             item = item.trim();
-            if (item.startsWith("re:") && item.length() > 3) {
-                textWithoutPrefix = item.substring(3);
-                compilePattern("^"+textWithoutPrefix+"$");
-            } else if (item.startsWith("re*:") && item.length() > 4) {
-                textWithoutPrefix = item.substring(4);
-                compilePattern(textWithoutPrefix);
-            } else if (item.startsWith("w:") && item.length() > 2) {
-                textWithoutPrefix = item.substring(2);
-                compilePattern("(?iu)\\b"+textWithoutPrefix+"\\b");
-            } else if (item.startsWith("wcs:") && item.length() > 4) {
-                textWithoutPrefix = item.substring(4);
-                compilePattern("\\b"+textWithoutPrefix+"\\b");
-            } else if (item.startsWith("cs:") && item.length() > 3) {
-                textWithoutPrefix = item.substring(3);
-                compilePattern(Pattern.quote(textWithoutPrefix));
-            } else if (item.startsWith("start:") && item.length() > 6) {
-                textWithoutPrefix = item.substring(6);
-                compilePattern("(?iu)^"+Pattern.quote(textWithoutPrefix));
-            } else if (item.startsWith("cat:")) {
-                category = parsePrefix(item, "cat:");
-            } else if (item.startsWith("!cat:")) {
-                categoryNot = parsePrefix(item, "!cat:");
-            } else if (item.startsWith("user:")) {
-                username = parsePrefix(item, "user:").toLowerCase(Locale.ENGLISH);
-            } else if (item.startsWith("reuser:")) {
-                String regex = parsePrefix(item, "reuser:").toLowerCase(Locale.ENGLISH);
-                compileUsernamePattern(regex);
-            } else if (item.startsWith("chan:")) {
-                parseListPrefix(item, "chan:");
-            } else if (item.startsWith("!chan:")) {
-                parseListPrefix(item, "!chan:");
-            } else if (item.startsWith("chanCat:")) {
-                channelCategory = parsePrefix(item, "chanCat:");
-            } else if (item.startsWith("!chanCat:")) {
-                channelCategoryNot = parsePrefix(item, "!chanCat:");
-            } else if (item.startsWith("color:")) {
-                color = HtmlColors.decode(parsePrefix(item, "color:"));
-            } else if (item.startsWith("status:")) {
-                String status = parsePrefix(item, "status:");
-                parseStatus(status, true);
-            } else if (item.startsWith("!status:")) {
-                String status = parsePrefix(item, "!status:");
-                parseStatus(status, false);
-            } else if (item.startsWith("config:")) {
-                parseListPrefix(item, "config:");
-            } else {
-                textWithoutPrefix = item;
-                compilePattern("(?iu)"+Pattern.quote(item));
+            if (!findPatternPrefixAndCompile(item)) {
+                // If not a text matching prefix, search for other prefixes
+                if (item.startsWith("cat:")) {
+                    category = parsePrefix(item, "cat:");
+                } else if (item.startsWith("!cat:")) {
+                    categoryNot = parsePrefix(item, "!cat:");
+                } else if (item.startsWith("user:")) {
+                    username = parsePrefix(item, "user:").toLowerCase(Locale.ENGLISH);
+                } else if (item.startsWith("reuser:")) {
+                    String regex = parsePrefix(item, "reuser:").toLowerCase(Locale.ENGLISH);
+                    compileUsernamePattern(regex);
+                } else if (item.startsWith("chan:")) {
+                    parseListPrefix(item, "chan:");
+                } else if (item.startsWith("!chan:")) {
+                    parseListPrefix(item, "!chan:");
+                } else if (item.startsWith("chanCat:")) {
+                    channelCategory = parsePrefix(item, "chanCat:");
+                } else if (item.startsWith("!chanCat:")) {
+                    channelCategoryNot = parsePrefix(item, "!chanCat:");
+                } else if (item.startsWith("color:")) {
+                    color = HtmlColors.decode(parsePrefix(item, "color:"));
+                } else if (item.startsWith("status:")) {
+                    String status = parsePrefix(item, "status:");
+                    parseStatus(status, true);
+                } else if (item.startsWith("!status:")) {
+                    String status = parsePrefix(item, "!status:");
+                    parseStatus(status, false);
+                } else if (item.startsWith("config:")) {
+                    parseListPrefix(item, "config:");
+                } else {
+                    textWithoutPrefix = item;
+                    compilePattern("(?iu)" + Pattern.quote(item));
+                }
             }
         }
         
@@ -381,6 +381,39 @@ public class Highlighter {
         }
         
         /**
+         * Based on the pre-defined static pattern map, look if the given input
+         * contains a text matching prefix and compile the associated pattern.
+         * 
+         * @param input The input string
+         * @return true if a text matching prefix was found, false otherwise
+         */
+        private boolean findPatternPrefixAndCompile(String input) {
+            for (String prefix : patternPrefixes.keySet()) {
+                // Check for prefix and that there is more text after it
+                if (input.startsWith(prefix) && input.length() > prefix.length()) {
+                    String withoutPrefix = input.substring(prefix.length());
+                    String pattern = patternPrefixes.get(prefix).apply(withoutPrefix);
+                    textWithoutPrefix = withoutPrefix;
+                    compilePattern(pattern);
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        /**
+         * Adds a prefix and associated pattern builder to the static map.
+         * 
+         * @param patternBuilder
+         * @param prefixes 
+         */
+        private static void addPatternPrefix(Function<String, String> patternBuilder, String... prefixes) {
+            for (String prefix : prefixes) {
+                patternPrefixes.put(prefix, patternBuilder);
+            }
+        }
+        
+        /**
          * Compiles a pattern (regex) and sets it as pattern.
          * 
          * @param patternString 
@@ -418,6 +451,13 @@ public class Highlighter {
             return false;
         }
         
+        /**
+         * Returns all matches by the text pattern, or null if this item has no
+         * text pattern.
+         * 
+         * @param text The string to look for matches in
+         * @return List of Match objects, or null if no text pattern is set
+         */
         public List<Match> getTextMatches(String text) {
             if (pattern == null) {
                 return null;
@@ -430,8 +470,20 @@ public class Highlighter {
             return result;
         }
         
+        /**
+         * Get the text part of this item, without any prefixes.
+         * 
+         * @return The text, may be empty
+         */
         public String getTextWithoutPrefix() {
             return textWithoutPrefix;
+        }
+        
+        public String getPatternText() {
+            if (pattern != null) {
+                return pattern.pattern();
+            }
+            return null;
         }
         
         public boolean matches(String text) {
@@ -607,14 +659,19 @@ public class Highlighter {
             blacklisted = new ArrayList<>();
             for (HighlightItem item : items) {
                 if (item.matches(user, text, StringUtil.toLowerCase(text), noUserReq, null)) {
-                    blacklisted.addAll(item.getTextMatches(text));
+                    List<Match> matches = item.getTextMatches(text);
+                    if (matches != null) {
+                        blacklisted.addAll(matches);
+                    } else {
+                        blacklisted.add(null);
+                    }
                 }
             }
         }
         
         public boolean isBlacklisted(int start, int end) {
             for (Match section : blacklisted) {
-                if (section.spans(start, end)) {
+                if (section == null || section.spans(start, end)) {
                     return true;
                 }
             }

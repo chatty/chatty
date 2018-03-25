@@ -2,15 +2,11 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.Highlighter;
-import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -27,20 +23,20 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 public class HighlightSettings extends SettingsPanel {
     
     public static final String INFO = "<html><body style='width:300px;font-weight:normal;'>"
-            + "Quick reference (see [help-settings:Highlight help] for more):"
+            + "Quick reference (see [help-settings:Highlight_Matching help] for more):"
             + "<ul style='margin-left:30px'>"
             + "<li><code>Bets open</code> - 'Bets open' anywhere in the message"
             + "<li><code>cs:Bets open</code> - Same, but case-sensitive</li>"
             + "<li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>"
             + "<li><code>wcs:Clip</code> - Same, but case-sensitive</li>"
             + "<li><code>start:!slot</code> - Message beginning with '!slot'</li>"
-            + "<li><code>re*:(?i)^!\\w+$</code> - Regular expression, anywhere</li>"
+            + "<li><code>reg:(?i)^!\\w+$</code> - Regular expression, anywhere</li>"
             + "</ul>"
             + "Meta prefixes (in front of text matching):"
-            + "<ul>"
+            + "<ul style='margin-left:30px'>"
             + "<li><code>chan:joshimuz</code> - Restrict to channel 'joshimuz'</li>"
             + "<li><code>user:Elorie</code> - Restrict to user 'Elorie'</li>"
-            + "<li><code>cat:vip</code> - Restrict to users in category 'vip'</li>"
+            + "<li><code>cat:vip</code> - Restrict to users in Addressbook category 'vip'</li>"
             + "<li><code>config:info</code> - Match info messages</li>"
             + "</ul>";
     

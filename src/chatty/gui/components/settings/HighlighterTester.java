@@ -59,6 +59,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
             + "be used to test how an entry on the Highlight Blacklist would "
             + "affect Highlighting.";
     
+    private final static String TOOLTIP_PREFIX = "<html><body style='font-family:Monospaced'>Full pattern: ";
+    
     private final static String TEST_PRESET = "Enter test text.";
     private final static String TEST_PRESET_EXAMPLE = TEST_PRESET+" Example: ";
     
@@ -170,7 +172,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         add(cancelButton,
                 GuiUtil.makeGbc(2, 6, 1, 1, GridBagConstraints.EAST));
         
-        gbc = GuiUtil.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST);
+        gbc = GuiUtil.makeGbc(0, 7, 3, 1, GridBagConstraints.CENTER);
         gbc.insets = new Insets(10, 5, 5, 5);
         add(infoText, gbc);
         
@@ -260,8 +262,10 @@ public class HighlighterTester extends JDialog implements StringEditor {
         String value = itemValue.getText();
         if (value.isEmpty()) {
             highlightItem = null;
+            itemValue.setToolTipText(null);
         } else {
             highlightItem = new HighlightItem(value);
+            itemValue.setToolTipText(TOOLTIP_PREFIX+highlightItem.getPatternText());
         }
         updateInfoText();
         updateMatches(doc);
@@ -271,12 +275,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     private void updateBlacklistItem() {
         String value = blacklistValue.getText();
-        blacklistItem = null;
-        if (!value.isEmpty()) {
+        if (value.isEmpty()) {
+            blacklistItem = null;
+            addToBlacklistButton.setEnabled(false);
+            blacklistValue.setToolTipText(null);
+        } else {
             blacklistItem = new HighlightItem(value);
             addToBlacklistButton.setEnabled(!blacklistItem.hasError());
-        } else {
-            addToBlacklistButton.setEnabled(false);
+            blacklistValue.setToolTipText(TOOLTIP_PREFIX+blacklistItem.getPatternText());
         }
         updateInfoText();
         updateMatches(doc);
@@ -311,12 +317,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
             // Regular item
             if (highlightItem != null) {
                 List<Match> matches = highlightItem.getTextMatches(testInput.getText());
-                for (int i = 0; i < matches.size(); i++) {
-                    Match m = matches.get(i);
-                    if (i % 2 == 0) {
-                        doc.setCharacterAttributes(m.start, m.end - m.start, matchAttr1, false);
-                    } else {
-                        doc.setCharacterAttributes(m.start, m.end - m.start, matchAttr2, false);
+                if (matches != null) {
+                    for (int i = 0; i < matches.size(); i++) {
+                        Match m = matches.get(i);
+                        if (i % 2 == 0) {
+                            doc.setCharacterAttributes(m.start, m.end - m.start, matchAttr1, false);
+                        } else {
+                            doc.setCharacterAttributes(m.start, m.end - m.start, matchAttr2, false);
+                        }
                     }
                 }
             }
@@ -324,9 +332,11 @@ public class HighlighterTester extends JDialog implements StringEditor {
             // Blacklist item
             if (blacklistItem != null) {
                 List<Match> blacklistMatches = blacklistItem.getTextMatches(testInput.getText());
-                for (int i = 0; i < blacklistMatches.size(); i++) {
-                    Match m = blacklistMatches.get(i);
-                    doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
+                if (blacklistMatches != null) {
+                    for (int i = 0; i < blacklistMatches.size(); i++) {
+                        Match m = blacklistMatches.get(i);
+                        doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -420,7 +430,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         }
     }
     
-    public static final String INFO2 = "<html><body style='width:300px;font-weight:normal;'>"
+    public static final String TEST_INFO = "<html><body style='width:300px;font-weight:normal;'>"
             + "Quick reference (see [help-settings:Highlight help] for more):"
             + "<ul style='margin-left:30px'>"
             + "<li><code>Bets open</code> - 'Bets open' anywhere in the message"
@@ -428,16 +438,15 @@ public class HighlighterTester extends JDialog implements StringEditor {
             + "<li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>"
             + "<li><code>wcs:Clip</code> - Same, but case-sensitive</li>"
             + "<li><code>start:!slot</code> - Message beginning with '!slot'</li>"
-            + "<li><code>re*:(?i)^!\\w+$</code> - Regular expression, anywhere</li>"
+            + "<li><code>reg:(?i)^!\\w+$</code> - Regular expression (Regex)</li>"
             + "</ul>"
             + "Meta prefixes (in front of text matching):"
-            + "<ul>"
+            + "<ul style='margin-left:30px'>"
             + "<li><code>chan:joshimuz</code> - Restrict to channel 'joshimuz'</li>"
             + "<li><code>user:Elorie</code> - Restrict to user 'Elorie'</li>"
             + "<li><code>cat:vip</code> - Restrict to users in category 'vip'</li>"
             + "<li><code>config:info</code> - Match info messages</li>"
-            + "</ul>"
-            + "Example: <code>user:botimuz cs:Bets open</code>";
+            + "</ul>";
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -447,7 +456,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             });
             //tester.setDefaultCloseOperation(EXIT_ON_CLOSE);
             //tester.setEditingBlacklistItem(true);
-            System.out.println(tester.showDialog("Highlight Item", "w:[a-z]+", INFO2));
+            System.out.println(tester.showDialog("Highlight Item", "regw:[a-z]+", TEST_INFO));
             System.exit(0);
         });
     }
