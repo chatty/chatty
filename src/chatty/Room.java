@@ -23,6 +23,7 @@ public class Room {
     private final String displayName;
     private final String fileName;
     private final boolean isOwner;
+    private final boolean isChatroom;
     private final String streamId;
     private final String stream;
     
@@ -55,6 +56,7 @@ public class Room {
         //System.out.println(channel);
         channel = StringUtil.toLowerCase(channel);
         this.isOwner = !channel.startsWith("#chatrooms:");
+        this.isChatroom = channel.startsWith("#chatrooms:");
         this.channel = channel;
         this.topic = topic;
         this.name = name;
@@ -159,6 +161,10 @@ public class Room {
      */
     public boolean hasOwnerChannel() {
         return ownerChannel != null;
+    }
+    
+    public boolean isChatroom() {
+        return isChatroom;
     }
     
     public String getFilename() {

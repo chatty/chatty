@@ -146,6 +146,14 @@ public class Helper {
         }
     }
     
+    public static boolean isChatroomChannel(String channel) {
+        try {
+            return channel.startsWith("#") && CHATROOM_PATTERN.matcher(channel).matches();
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
     /**
      * Checks if the given stream/channel is valid and turns it into a channel
      * if necessary (leading # and all lowercase). Can also be a chatroom.

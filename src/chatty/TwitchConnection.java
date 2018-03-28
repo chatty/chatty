@@ -9,10 +9,12 @@ import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
 import chatty.util.api.RoomsInfo;
 import chatty.util.settings.Settings;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -92,7 +94,7 @@ public class TwitchConnection {
     private final SpamProtection spamProtection;
     private final ChannelStateManager channelStates = new ChannelStateManager();
     
-    private final Map<String, Long> lastSentMessage = new HashMap<>();
+    private final SentMessages sentMessages = new SentMessages();
 
     public TwitchConnection(final ConnectionListener listener, Settings settings,
             String label, RoomManager rooms) {
@@ -471,7 +473,9 @@ public class TwitchConnection {
         if (!spamProtection.check()) {
             return false;
         } else {
-            lastSentMessage.put(channel, System.currentTimeMillis());
+            if (Helper.isChatroomChannel(channel)) {
+                sentMessages.messageSent(channel, message);
+            }
             spamProtection.increase();
             if (action) {
                 irc.sendActionMessage(channel, message);
@@ -944,22 +948,14 @@ public class TwitchConnection {
                     // but just in case
                     info(channel, "[Notification] "+text);
                 } else {
-                    boolean outputMessage = true;
-                    if (nick.equalsIgnoreCase(username) && lastSentMessage.containsKey(channel)) {
-                        System.out.println(lastSentMessage);
-                        if (System.currentTimeMillis() - lastSentMessage.get(channel) < 2000) {
-                            // Prevent duplicate messages when sending to Chatrooms
-                            outputMessage = false;
-                        } else {
-                            lastSentMessage.remove(channel);
-                        }
-                    }
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
                     String emotesTag = tags.get("emotes");
                     String id = tags.get("id");
                     int bits = tags.getInteger("bits", 0);
-                    if (outputMessage) {
+                    if (!user.getName().equals(username) || !sentMessages.shouldHide(channel, text)) {
+                        // Don't show if own name and message was sent recently,
+                        // to prevent echo message from being shown in chatrooms
                         listener.onChannelMessage(user, text, action, emotesTag, id, bits);
                     }
                 }
@@ -1420,6 +1416,86 @@ public class TwitchConnection {
         void onSpecialMessage(String name, String message);
         
         void onRoomId(String channel, String id);
+        
+    }
+    
+    /**
+     * Helps to hide the echo to sent messages in chatrooms.
+     */
+    private static class SentMessages {
+        
+        /**
+         * How long keep sent messages stored.
+         */
+        private static final long TIMEOUT = 2000;
+        
+        private final Map<String, List<Message>> messages = new HashMap<>();
+        
+        /**
+         * Store sent message. Should only be called for chatrooms (or possibly
+         * other cases where sent messages are repeated back).
+         * 
+         * @param channel The channel
+         * @param message The text of the message
+         */
+        public synchronized void messageSent(String channel, String message) {
+            if (!messages.containsKey(channel)) {
+                messages.put(channel, new ArrayList<>());
+            }
+            messages.get(channel).add(new Message(channel, message));
+        }
+        
+        /**
+         * Check if the given channel and message text is currently stored as
+         * a sent message.
+         * 
+         * @param channel The channel
+         * @param message The text of the message
+         * @return true if the message was sent and the echo should be hidden,
+         * false otherwise
+         */
+        public synchronized boolean shouldHide(String channel, String message) {
+            if (messages.containsKey(channel)) {
+                clearOld(channel);
+                for (Message m : messages.get(channel)) {
+                    if (m.message.equals(message)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        /**
+         * Remove stored messages for the given channel that have expired.
+         * 
+         * @param channel The channel
+         */
+        private void clearOld(String channel) {
+            Iterator<Message> it = messages.get(channel).iterator();
+            while (it.hasNext()) {
+                Message m = it.next();
+                if (System.currentTimeMillis() - m.time > TIMEOUT) {
+                    it.remove();
+                }
+            }
+        }
+        
+        private static class Message {
+            private final String channel;
+            private final String message;
+            private final long time = System.currentTimeMillis();
+            
+            public Message(String channel, String message) {
+                this.channel = channel;
+                this.message = message;
+            }
+            
+            @Override
+            public String toString() {
+                return channel+" "+message;
+            }
+        }
         
     }
 

@@ -92,6 +92,7 @@ public class RoomTest {
         assertEquals(r.getOwnerChannel(), ownerChannel);
         assertEquals(r.getStream(), stream);
         assertEquals(r.isOwner(), isOwner);
+        assertEquals(r.isChatroom(), !isOwner); // Currently !isOwner only applies to chatrooms
         assertEquals(r.getName(), name);
         assertEquals(r.getDisplayName(), displayName);
         assertEquals(r.getFilename(), fileName);
