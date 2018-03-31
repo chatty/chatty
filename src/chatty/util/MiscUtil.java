@@ -103,8 +103,8 @@ public class MiscUtil {
     public static void moveFile(Path from, Path to) throws IOException {
         try {
             Files.move(from, to, ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException ex) {
-            LOGGER.info("ATOMIC_MOVE not available: "+ex);
+        } catch (IOException ex) {
+            LOGGER.info("ATOMIC_MOVE failed: "+ex);
             Files.move(from, to, REPLACE_EXISTING);
         }
     }

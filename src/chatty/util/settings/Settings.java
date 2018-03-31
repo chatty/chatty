@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map.Entry;
@@ -891,9 +892,13 @@ public class Settings {
         String json = settingsToJson(fileName);
         Path file = Paths.get(fileName);
         if (json == null) {
-            LOGGER.info("Removing unused file: "+fileName);
             try {
-                Files.delete(file);
+                if (Files.exists(file)) {
+                    LOGGER.info("Removing unused file: "+fileName);
+                    Files.delete(file);
+                }
+            } catch (NoSuchFileException ex) {
+                // Don't need to remove non-existing file
             } catch (IOException ex) {
                 LOGGER.warning("Error removing unused file: "+ex);
             }
