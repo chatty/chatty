@@ -223,6 +223,8 @@ public class UrlRequest {
     public static void main(String[] args) {
         //UrlRequest request = new UrlRequest("http://tduva.com/res/emotesetinfo.txt");
         //UrlRequest request = new UrlRequest("https://google.de");
+        
+        // Testing a http URL that will try to redirect to a https URL
         UrlRequest request = new UrlRequest("http://bit.ly/1II1E2o");
         request.setLabel("Test");
         

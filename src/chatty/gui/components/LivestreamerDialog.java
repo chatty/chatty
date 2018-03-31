@@ -50,7 +50,7 @@ public class LivestreamerDialog extends JDialog {
     
     private final JCheckBox enableContextMenu = new JCheckBox("Enable context menu entry");
     private final JCheckBox openDialog = new JCheckBox("Show dialog when opening stream");
-    private final JTextField qualities = new JTextField(20);
+    private final EditorStringSetting qualities;
     
     private final EditorStringSetting commandDef;
     private final JCheckBox useAuth = new JCheckBox("Use Authorization (Twitch Oauth Token)");
@@ -121,6 +121,8 @@ public class LivestreamerDialog extends JDialog {
         gbc = GuiUtil.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(4, 5, 5, 30);
+        qualities = new EditorStringSetting(this,
+                "Context Menu Qualities", 24, false, false, null);
         infoPanel.add(qualities, gbc);
         
         gbc = GuiUtil.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST);
@@ -165,7 +167,7 @@ public class LivestreamerDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == closeButton) {
                     setVisible(false);
-                    settings.setString("livestreamerQualities", qualities.getText());
+                    settings.setString("livestreamerQualities", qualities.getSettingValue());
                 } else if (e.getSource() == openStreamButton
                         || e.getSource() == streamInput) {
                     String stream = streamInput.getText();
@@ -260,7 +262,7 @@ public class LivestreamerDialog extends JDialog {
     
     private void loadSettings() {
         enableContextMenu.setSelected(settings.getBoolean("livestreamer"));
-        this.qualities.setText(settings.getString("livestreamerQualities"));
+        this.qualities.setSettingValue(settings.getString("livestreamerQualities"));
         commandDef.setSettingValue(settings.getString("livestreamerCommand"));
         useAuth.setSelected(settings.getBoolean("livestreamerUseAuth"));
         openDialog.setSelected(settings.getBoolean("livestreamerShowDialog"));

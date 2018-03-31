@@ -23,6 +23,7 @@
                     <li><a href="#userlist">Userlist</a></li>
                     <li><a href="#favorites">Favorites / History</a></li>
                     <li><a href="help-whisper.html">Whisper Feature</a></li>
+                    <li><a href="#rooms">Rooms</a></li>
                 </ul>
                 
                 <strong>Chat moderation / utility</strong>
@@ -179,6 +180,8 @@
                 just like in normal Twitch Chat</li>
         <li><code>/join &lt;channel&gt;</code> - Joins the given channel</li>
         <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
+        <li><code>/joinhosted</code> - Join currently hosted channel (if any)</li>
+        <li><code>/favorite [channel]</code> and <code>/unfavorite [channel]</code> - Add/remove a channel to/from the Channel Favorites</li>
         <li><code>/reconnect</code> - Disconnects and reconnects</li>
         <li><code>/fixMods</code> - Temporarily fixes the list of mods (like
                 <code>/mods</code> but without showing the list of mods in chat)</li>
@@ -690,6 +693,29 @@
     <p>You can also add channels from the history or any
     you enter manually to the favorites, which will always be kept until you
     remove them yourself.</p>
+    
+    <h2>
+        <a name="rooms">Rooms</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>The new <a href="https://blog.twitch.tv/bring-your-community-together-with-rooms-ad60cab1af0a">Rooms</a>
+        can be used in Chatty:</p>
+    
+    <ul>
+        <li>Join rooms for the current stream via the <code>Channels</code> menu
+            and to reload available rooms manually</li>
+        <li>Rooms can be added to the Channel Favorites / History</li>
+        <li>The topic of a room is displayed on join and in the titlebar</li>
+        <li>Rooms chat is logged the same as main chat, with the room name as
+            filename</li>
+        <li>Emotes, badges and so on should be the same as in the main chat</li>
+    </ul>
+    
+    <p>Currently <em>not</em> available in Chatty:</p>
+    <ul>
+        <li>Rooms chat history</li>
+        <li>Getting notified of messages when not having joined the room</li>
+    </ul>
 
     <h2>
         <a name="highlight">Highlight</a>

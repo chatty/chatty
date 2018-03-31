@@ -1,8 +1,10 @@
 
 package chatty.gui.components.settings;
 
+import static chatty.gui.components.settings.SettingConstants.HTML_PREFIX;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -22,6 +24,7 @@ public class FontSettings extends SettingsPanel {
         
         JPanel fontSettingsPanel = addTitledPanel(Language.getString("settings.section.chatFont"), 0);
         JPanel inputFontSettingsPanel = addTitledPanel(Language.getString("settings.section.otherFonts"), 1);
+        JPanel notePanel = (JPanel)addPanel(new JPanel(new GridBagLayout()), getGbc(2));
         
         GridBagConstraints gbc;
         
@@ -120,6 +123,12 @@ public class FontSettings extends SettingsPanel {
         d.addStringSetting("userlistFont", userlistFont);
         gbc = d.makeGbc(1, 1, 1, 1);
         inputFontSettingsPanel.add(userlistFont, gbc);
+        
+        //============
+        // Note Panel
+        //============
+        gbc = d.makeGbc(0, 0, 1, 1);
+        notePanel.add(new JLabel(HTML_PREFIX+Language.getString("settings.otherFonts.info")), gbc);
     }
     
 }

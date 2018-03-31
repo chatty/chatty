@@ -54,7 +54,60 @@
         <a name="0.9.1">Version 0.9.1</a> <a name="latest">(This one!)</a> (2018-02-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Todo</p>
+    <p>This version has a lot of under-the-hood changes to allow for the new
+        Rooms feature that Twitch added. The implementation in Chatty is rather
+        basic: You can join rooms available for the current channel through the
+        "Channels" menu and you can favorite rooms, however for example there is
+        not yet an implementation for viewing the Room chat history.</p>
+    
+    <p>If you're a heavy user of the Highlight system you may appreciate the
+        addition of the Highlight Blacklist as well as improvements to the
+        dialog used for editing the text matching pattern. Also note that there
+        have been slight changes to some prefixes (see below).</p>
+    
+    <pre>
+### Main Features
+- Added basic support for Rooms (join through Channels-menu, favorite)
+- Added initial support for translating the Chatty GUI to other languages,
+  added some partial translations (thanks to volunteers translating)
+
+### Highlighting/Ignore
+- Added Highlight Blacklist, to prevent some matches from triggering Highlights
+- Improved Highlight pattern tester (used in other places as well), now with
+  match color highlighting, and open directly instead of hiding behind "Test"
+- Some text matching prefixes changes (Highlighting/Ignore/..):
+  - Changed `w:`/`wcs:` to not take Regex anymore
+  - Added `reg:` prefix and variations for using Regex with more consistent and
+    predictable naming scheme (`re:` and `re*:` still work as before)
+
+### Settings
+- Setting files `favoritesAndHistory` and `statusPresets` now both merged into
+  `settings` file, remove unused files
+- Reorganized Settings Dialog, added new menu for navgiation
+- Added setting for vertical zoom in Channel Info Dialog, improved context menu
+- Added setting for logging regular chat messages (and thus a way to disable it)
+- Added setting whether to enable chat inputbox by default (and thus a way to
+  hide it by default)
+- Added "Off" option for notification type setting
+- Added format to specify display names for Livestreamer/Streamlink context menu
+
+### Other Changes
+- Changed chat inputbox to automatically grow when entering long lines
+- Added /favorite and /unfavorite commands (Channel Favorites)
+- Added /joinhosted command to join currently hosted channel
+- Changed /appinfo command to contain more information
+- Don't add space anymore when chat timestamp is empty
+- Show more stream types as "[VOD]" (Premiere, Vodcast, Rerun..)
+- Updated help
+
+### Bugfixes
+- Fixed bug loading emotes.txt
+- Fixed possible Community search issue
+- Fixed username capitalization locale bug (e.g. Turkish locale)
+- Fixed bug where "Cancel" in the Open URL dialog would sometimes copy the URL
+- Fixed possible bug with tray icon
+- Fixed some FFZ API/other URLs not using https
+</pre>
     
     <h2>
         <a name="0.9">Version 0.9</a> (2017-12-26)
@@ -96,7 +149,7 @@
 - Fixed some BTTV emotes (like D:) appearing when they shouldn't
 - Added Emoji TAB Completion (anything starting with ":")
 - Added conversion of Emoji short code to Emoji character when entered into the
-  inputbox (e.g. :thinking: -> 🤔 when being sent)
+  inputbox (e.g. :thinking: -> &lt;unicode_character&gt; when being sent)
 
 ### Settings
 - Added -d launch argument to directly specify settings directory

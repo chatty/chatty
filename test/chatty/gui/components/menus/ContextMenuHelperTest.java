@@ -64,6 +64,12 @@ public class ContextMenuHelperTest {
                 new ArrayList<>(Arrays.asList(
                         new Quality("360p,240p", "360p,240p"),
                         new Quality("1080p60,1080p,720p60,720p", "1080p60,1080p,720p60,720p"))));
+        
+        assertEquals(ContextMenuHelper.parseLivestreamerQualities("{High Quality:1080p60,1080p,720p60,720p} {Low Quality:360p,240p}"),
+                new ArrayList<>(Arrays.asList(
+                        new Quality("High Quality", "1080p60,1080p,720p60,720p"),
+                        new Quality("Low Quality", "360p,240p")
+                )));
     }
     
 }

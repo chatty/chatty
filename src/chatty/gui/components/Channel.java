@@ -265,7 +265,7 @@ public class Channel extends JPanel {
             "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ", "/host ",
             "/unban ", "/ignore ", "/unignore ", "/ignoreChat ", "/unignoreChat ",
             "/ignoreWhisper ", "/unignoreWhisper ", "/follow ", "/unfollow ",
-            "/untimeout "
+            "/untimeout ", "/favorite ", "/unfavorite "
         }));
         
         private void updateSettings() {

@@ -98,8 +98,9 @@ public class SettingsPanel extends JPanel {
         return gbc;
     }
     
-    protected void addPanel(JComponent panel, GridBagConstraints gbc) {
+    protected JComponent addPanel(JComponent panel, GridBagConstraints gbc) {
         base.add(panel, gbc);
+        return panel;
     }
     
 }

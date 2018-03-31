@@ -6,25 +6,31 @@
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
     <h1><a name="top">Settings</a></h1>
     <p><a href="#Main">Main</a>
+        | <a href="#Look">Look</a>
+        | <a href="#Chat_Colors">Chat Colors</a>
+        | <a href="#Message_Colors">Message Colors</a>
+        | <a href="#Usercolors">Usercolors</a>
+        | <a href="#Usericons">Usericons</a>
+        | <a href="#Emoticons">Emoticons</a>
+        | <a href="#Fonts">Fonts</a>
+        | <a href="#Chat">Chat</a>
         | <a href="#Messages">Messages</a>
         | <a href="#Moderation">Moderation</a>
-        | <a href="#Chat">Chat</a>
-        | <a href="#Emoticons">Emoticons</a>
-        | <a href="#Usericons">Usericons</a>
-        | <a href="#Colors">Colors</a>
-        | <a href="#Usercolors">Usercolors</a>
+        | <a href="#Names">Names</a>
         | <a href="#Highlight">Highlight</a>
         | <a href="#Ignore">Ignore</a>
-        | <a href="#Sounds">Sounds</a>
-        | <a href="#Notifications">Notifications</a>
         | <a href="#Log_to_file">Log to file</a>
         | <a href="#Window">Window</a>
         | <a href="#Tabs">Tabs</a>
-        | <a href="#Commands">Commands</a>
+        | <a href="#Notifications">Notifications</a>
+        | <a href="#Sounds">Sounds</a>
         | <a href="#Other">Other</a>
+        | <a href="#Commands">Commands</a>
         | <a href="#Advanced">Advanced</a>
-        | <a href="#Hotkeys">Hotkeys</a>
-        | <a href="#TAB_Completion">TAB Completion</a></p>
+        | <a href="#TAB_Completion">TAB Completion</a>
+        | <a href="#History">History</a>
+        | <a href="#Hotkeys">Hotkeys</a></p>
+    
     <p>This page details some of the settings in the Settings Dialog
         (<code>Main Menu - Settings</code>). Also try hovering over settings
     in the settings dialog itself, sometimes you can get a tooltip with some
@@ -35,6 +41,344 @@
         <a name="Main">Main</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
+    <h3>Startup</h3>
+    <p>You can select what will happen when you start Chatty:</p>
+    <ul>
+        <li><strong>Do nothing</strong> - Just do nothing special</li>
+        <li><strong>Open connect dialog</strong> - Open dialog to connect</li>
+        <li><strong>Connect and join specified channels</strong> - Connect
+        immediately and join the channels specified in the field below. You can
+        define several channels by seperating them with a comma.</li>
+        <li><strong>Connect and join previously open channels</strong> - Connect
+        immediately and join the channels you had open when you closed Chatty.</li>
+        <li><strong>Connect and join favorited channels</strong> - Connect
+        immediately and join the channels that are favorited in the Channel
+        Favorites/History dialog.</li>
+    </ul>
+    
+    <h2>
+        <a name="Look">Look</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    
+    <h3>Look&amp;Feel</h3>
+    <p>The Look&amp;Feel changes the overall look of the program. The "System"
+        Look&amp;Feel depends on the system you are on, the others are
+        cross-platform. Some Look&amp;Feels also allow you to additionally
+        select a different font size, which affects most of Chatty.</p>
+    
+    <h2>
+        <a name="Chat_Colors">Chat Colors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    
+    <p>Customize colors of certain types of chat messages. For the general look
+        of the program you can choose another Look&amp;Feel from the "Look"
+        settings page.</p>
+    
+    
+    <h2>
+        <a name="Message_Colors">Message Colors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>You can customize the color of messages based on the same message
+        matching rules and patterns that are used for the
+        <a href="#Highlight_Matching">Highlight system</a> (not all prefixes
+        apply). Add a new item, enter what messages you want to match and select
+        the color you want them to have.</p>
+    
+    <p>The order of entries can matter, the first color from the top that
+        matches is used.</p>
+    
+    <p><em>Note:</em> The default message color is set on the "Colors" settings
+        page ("Normal message").</p>
+    
+    <p><em>Note:</em> This feature only changes the message <em>color</em>. Use
+        the Highlight system instead if you want
+        to highlight important messages, have them added to a separate
+        Highlighted Messages window and maybe show a notification or play a
+        sound for it at the same time.</p>
+
+    <h3>Examples</h3>
+    <p>Examples of how to match certain messages, so you can assign it a custom
+        color.</p>
+    <dl>
+        <dt><code>status:r</code></dt>
+        <dd>Matches all messages from a known bot (FFZ, BTTV or the
+            <code>botNames</code> setting).</dd>
+        
+        <dt><code>cat:vip</code></dt>
+        <dd>Matches all messages from users in the <code>vip</code> Addressbook
+            category.</dd>
+        
+        <dt><code>chan:#tailsgaming start:!points</code></dt>
+        <dd>Matches all messages in channel <code>#tailsgaming</code>, starting
+            with <code>!points</code>.</dd>
+        
+        <dt><code>re*:(?i)(?&lt;!practice |debug )\bROM\b(?! hack)</code></dt>
+        <dd>Matches all messages containing the word <code>ROM</code>, not
+            preceded by <code>practice&nbsp;</code> or <code>debug&nbsp;</code>, nor
+            followed by <code>&nbsp;hack</code> (case-insensitive).</dd>
+    </dl>
+    
+    <div class="moreInfo">More examples: <a href="#Highlight_Examples">Highlight settings help</a></div>
+    
+    
+    <h2>
+        <a name="Usercolors">Usercolors</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>This allows you to specify your own usercolors for either certain types
+        of users (mod, subscriber etc.) or specific usernames. There are special
+    items that you can use to specify that (to specify a username, just enter
+    it without anything else):</p>
+    <ul>
+        <li><code>$mod</code> - Moderators</li>
+        <li><code>$sub</code> - Subscribers</li>
+        <li><code>$turbo</code> - Turbo Users</li>
+        <li><code>$admin</code> - Admins</li>
+        <li><code>$staff</code> - Staff members</li>
+        <li><code>$all</code> - All users, this can be used to specify a default
+        color (should be put at the very end of the list)</li>
+        <li><code>$broadcaster</code> - Broadcasters</li>
+        <li><code>$cat:&lt;category&gt;</code> - A category from the <a href="help.html#addressbook">Addressbook</a></li>
+        <li><code>#&lt;color code&gt;</code> - A Html color code, e.g. <code>#0000FF</code> for blue, which can
+            be used to replace colors</li>
+        <li><code>$color:&lt;color code or name&gt;</code> - A Html color code or name (names
+            as hardcoded into Chatty, may be different from other programs), e.g. <code>$color:Blue</code> for blue,
+            which can be used to replace colors</li>
+    </ul>
+    
+    <p>The order of the
+    entries in the table matters, because it is checked from the top. If you
+    were to put the <code>$all</code> item at the very top, any items below
+    wouldn't do anything, because the first item would already match all users.
+    This e.g. allows you to specify what color a user should have when he is
+    both a subscriber and a moderator (by either putting <code>$mod</code>
+    or <code>$sub</code> first).</p>
+    
+    <p>If an item is red and has "(error)" appended (e.g. "<span style="color:red">$color.Blue (error)</span>"),
+    this means the item is invalid. In the example this is because a point has
+    been used instead of a colon, so "$color:Blue" would be correct. This can
+    also happen if it doesn't recognize the given color or the item is just in
+    an invalid format.</p>
+    
+    
+    <h2>
+        <a name="Usericons">Usericons</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>Usericon Settings</h3>
+    <ul>
+        <li><strong>Show Usericons</strong>: Shows badges as images instead of
+        just text</li>
+        <li><strong>Enable Custom Usericons</strong>: Use the custom icons
+        defined in the table below</li>
+        <li><strong>Enable Bot Badge</strong>: Enables showing of the bot badge
+        for known bots. Chatty shows a single bot badge for all known bots. The
+        list of bot names comes from different sources: The <code>botNames</code>
+        setting, the BTTV API and the FFZ API.
+        <ul>
+            <li><strong>BTTV</strong>: Use botnames from the BTTV API</li>
+            <li><strong>FFZ</strong>: Use botnames from the FFZ API</li>
+        </ul>
+        </li>
+    </ul>
+    
+    <h3><a name="CustomUsericons">Custom Usericons</a></h3>
+    <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
+        or replace the default icons (all other Types).</p>
+    <p>The order of the entries can matter, they are looked at from the top:</p>
+    <ul>
+        <li>All <code>Addon</code> icons that match are shown, unless you use
+            the <code>$stop</code> restriction (see section <em>Restriction</em>
+            below).</li>
+        <li>When replacing default icons (all other Types), the first entry that
+            matches is used. For example if you have several entries for
+            replacing the Turbo badge, then the first one from the top that
+            matches is used.</li>
+    </ul>
+    
+    <h3>Custom Usericon Properties</h3>
+    <dl class="dl-settings">
+        <dt>Type</dt>
+        <dd>A type of <code>Addon</code> will add an additional badge. All
+            Addon-badges that matche the Restrictions are shown at once.</dd>
+        <dd>Other types replace an already shown default badge. For example
+            adding an entry of Type <code>Turbo</code> allows you to define a
+            custom icon for all Turbo badges shown in chat. Accordingly, if you
+            selected <code>Bits</code> it would target all variations of the
+            Bits badge.</dd>
+        <dd>The Type <code>Other Twitch</code> allows you to directly select a
+            default icon via Twitch's own Badge ID/Version, which allows you to
+            target badges that are not a supported Type.</dd>
+        
+        <dt>ID/Version</dt>
+        <dd>You can only use this when you have the <code>Other Twitch</code>
+            Type selected. This specifies the Badge ID/Version that Twitch uses
+            to identify Badges, which allows you to target any Twitch Badge you
+            want, including a specific variation.</dd>
+        <dd>For example if you wanted to replace the 100-Bits Badge, you'd want
+            to use <code>bits/100</code>. If you don't specify a Version, so
+            just <code>bits</code>, then it matches all versions, in this case
+            it would match all Bits Badges.</dd>
+        <dd>If you are already connected to a channel, it should automatically
+            populate the list with known ID/Version combinations. Note that some
+            of these may only be used in some channels.</dd>
+        
+        <dt>Restriction</dt>
+        <dd>This is similiar to the <a href="#Usercolors">Usercolors</a> settings,
+        where you can enter special restrictions the user has to match in order
+        for the icon to be displayed. What makes the most sense in this case is
+        probably just entering a username (e.g. <code>serenity</code>) or an
+        addressbook category (e.g. <code>$cat:vip</code>, which would refer to
+        the category <code>vip</code>). If you keep this empty, then no restriction
+        is applied.</dd>
+        <dd>Specifying a <em>Type</em> other than <code>Addon</code> carries an
+        implicit restriction, since e.g. the default moderator icons are only
+        displayed if the user is a moderator.</dd>
+        <dd>Normally you can only specify <em>one</em> restriction, but you can
+            also add <strong>special restrictions</strong>:
+            <ul>
+                <li><code>$stop</code> means if this icon matches (and is thus used),
+                    it stops searching for further <code>Addon</code> icons. So
+                    it's not really a restriction for <em>this</em> icon, but
+                    rather a restriction that affects the following icons and
+                    can be used to limit the number of <code>Addon</code> icons.</li>
+                <li><code>$first</code> puts this <code>Addon</code> icon before
+                    the regular icons. The <code>$stop</code> restriction only
+                    applies to one group of <code>Addon</code> icons separately
+                    (before or after the regular icons).</li>
+                <li><code>$badge:&lt;ID/Version&gt;</code> matches a Twitch
+                    Badge a user has. For example <code>$badge:bits/100</code>
+                    will only target users that currently have the 100-Bits
+                    Badge</li>
+            </ul>
+        </dd>
+        <dd><em>Example:</em> <code>$cat:streamer $first</code> - Matches users
+            in the Addressbook category <code>streamer</code> and puts the badge
+            in front of the default ones.</dd>
+        <dd><em>Example:</em> <code>lotsofs</code> - Matches a user by the name
+            <code>lotsofs</code>.</dd>
+        <dd><em>Example:</em> <code>$cat:vip $badge:bits</code> - Matches users
+            in the Addresbook category <code>vip</code>, but only if they also
+            have a Bits-Badge displayed.</dd>
+        
+        <dt>Channel</dt>
+        <dd>You can enter a channel name here, so that the icon will only be
+            displayed in that channel. You can add an exclamation mark in front
+            of the channel name (like <code>!#channel</code>) to have it
+            displayed in all channels <em>except</em> the one you specified.</dd>
+        <dd>If you keep this empty, then it will be displayed in all channels.</dd>
+        
+        <dt>Image File</dt>
+        <dd>The image to use. Must be a <code>.png</code> and is recommended to
+            be about 18x18 pixels (because that is the default size). If you
+            specify no image, then the matching default icon is removed.</dd>
+        <dd>Chatty lookes for images in <code>&lt;working_directory&gt;/img/</code>
+            (<a href="help-guide_folders.html#wdir">Chatty directories help</a>).
+            You can click on <code>Image Folder</code> to show information about
+            it and rescan to update the list.</dd>
+        <dd>The <em>special image file name</em> <code>$default</code> will use
+            the default image file, that would be shown without defining
+            Custom Usericons. This can be useful if you e.g. want to replace all
+            Badge Types, except for one, so you can define that one to use the
+            default.</dd>
+        <dd><em>Tip:</em> You should also be able to manually enter the full
+            path to an image, in case you don't want to use the dedicated image
+            folder. A filename starting with <code>http</code> is interpreted as
+            URL.</dd>
+    </dl>
+    
+    <p><em>Tip:</em> Jump to entries in the table by clicking into a column and
+        start to type. Backspace or wait to get out of the search mode.</p>
+    
+    
+    <h2>
+        <a name="Emoticons">Emoticons</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>General Emoticon Settings</h3>
+    
+    <dl class="dl-settings">
+        <dt>Show emoticons</dt>
+        <dd>Turns emoticon codes into images. This needs to be enabled for any
+            emotes to show up.</dd>
+
+        <dt>Scale (Chat)</dt>
+        <dd>The relative size of how emotes are displayed in chat (100% is regular size).</dd>
+        
+        <dt>Maximum Height</dt>
+        <dd>The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</dd>
+        
+        <dt>Emotes Dialog</dt>
+        <dd>The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</dd>
+        
+        <dt>Double-click on emote closes Emote Dialog</dt>
+        <dd>If enabled, double-clicking on an emote in the Emote Dialog closes
+            the Emote Dialog.</dd>
+
+        <dt>Cheers (Bits)</dt>
+        <dd>You can choose whether to show <a href="https://help.twitch.tv/customer/portal/articles/2449458">Cheering</a>
+            emotes in chat animated, as static images (like other emotes) or
+            not at all (so they'll just show up as text).</dd>
+        <dd>Sending Cheers is not supported at this point.</dd>
+    </dl>
+    
+    <h3>Third-Party Emoticons</h3>
+    <dl class="dl-settings">
+        <dt>Enable BetterTTV Emotes</dt>
+        <dd>Shows BetterTTV emotes (Personal Emotes not supported at this time).</dd>
+        
+        <dt>Allow animated emotes</dt>
+        <dd>Show animated emotes (BTTV GIF emotes).</dd>
+        
+        <dt>Enable FrankerFaceZ (FFZ)</dt>
+        <dd>Downloads <a href="help.html#emoticons">FrankerFaceZ</a> emotes and
+            Mod Icons (where available).</dd>
+        <dd><em>Requires a restart to take full effect when you change it.</em></dd>
+        
+        <dt>Enable FFZ Mod Icon</dt>
+        <dd>Show the FFZ Mod Icon in place of the default Mod Icon (where available).</dd>
+        
+        <dt>Enable FFZ Featured Emotes</dt>
+        <dd>Show special FFZ emotes available in some channels (mainly
+            Speedrunning Events). To receive these emotes Chatty maintains a
+            connection to the FFZ Socket Server.</dd>
+    </dl>
+    
+    <h3>Emoji</h3>
+    <dl class="dl-settings">
+        <dt>Set</dt>
+        <dd>Turns Emoji characters into images. You can choose between different
+            sets of Emoji images, or choose <code>None</code> to turn off Emoji
+            images altogether.</dd>
+        
+        <dt>Replace Emoji codes in entered text</dt>
+        <dd>Emoji codes like <code>:joy:</code> or <code>:mouse:</code> get
+            replaced with their respective Emoji character (and thus image, if
+            a Set is chosen) when entering them into the inputbox.</dd>
+        <dd><em>Tip:</em> Use <a href="help.html#TAB_Completion">TAB Completion</a>
+            to complete partially entered Emoji codes.</dd>
+    </dl>
+    
+    <h3>Ignored Emotes</h3>
+    <p>Emotes added to this list will not be turned into an image, but instead
+        are just shown as their emote code.</p>
+    <p>The code added to the list has to be the
+    exact code used internally to find the emote in the messages. Usually this is simply
+    the emote code as you would type it in chat, but some emotes have a special syntax
+    that you might not even know (e.g. <code>:)</code> has <code>\:-?\)</code> as actual code).
+    It is recommended to use the emote context menu (right-click on an emote in chat) to
+    ignore emotes, because then the correct code will automatically be added to
+    the list.</p>
+    
+    
+    <h2>
+        <a name="Fonts">Fonts</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    
     <h3>Chat Font</h3>
     <p>Change font and font size by clicking on <code>Select font</code>.</p>
     
@@ -58,26 +402,56 @@
         <a href="help-setting_commands.html#font">note</a> about the adverse
         effects it may have.</p>
     
-    <h3>Startup</h3>
-    <p>You can select what will happen when you start Chatty:</p>
+    
+    <h2>
+        <a name="Chat">Chat</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>Chat Settings</h3>
     <ul>
-        <li><strong>Do nothing</strong> - Just do nothing special</li>
-        <li><strong>Open connect dialog</strong> - Open dialog to connect</li>
-        <li><strong>Connect and join specified channels</strong> - Connect
-        immediately and join the channels specified in the field below. You can
-        define several channels by seperating them with a comma.</li>
-        <li><strong>Connect and join previously open channels</strong> - Connect
-        immediately and join the channels you had open when you closed Chatty.</li>
-        <li><strong>Connect and join favorited channels</strong> - Connect
-        immediately and join the channels that are favorited in the Channel
-        Favorites/History dialog.</li>
+        <li><strong>Scroll down after <code>&lt;x&gt;</code> seconds of inactivity</strong>: If you scrolled
+            up in chat but haven't moved scrollposition in the given number of seconds, it will scroll down
+            if new messages come in. This prevents new messages from being hidden
+            indefinitely if you accidently stayed scrolled up.</li>
+        <li><strong>Chat buffer size</strong>: How many lines of text are kept
+            for each channel in chat to scroll back to.</li>
     </ul>
     
-    <h3>Look&amp;Feel</h3>
-    <p>The Look&amp;Feel changes the overall look of the program. The "System"
-        Look&amp;Feel depends on the system you are on, the others are
-        cross-platform. Some Look&amp;Feels also allow you to additionally
-        select a different font size, which affects most of Chatty.</p>
+    <h3>Pause Chat</h3>
+    <p>The Pause Chat feature stops Chatty from scrolling down when you move the
+        mouse over chat. This can be useful if you want to click specific stuff
+        in a fast moving chat, for example if you are moderating or just want to
+        click on an emote to see what it is.</p>
+    
+    <p><em>Please note:</em> This will not work properly until the chat window is filled with
+        text, because only then will Chatty actively scroll down. Also, this
+        only stops Chatty from actively scrolling down, so if e.g. a big message
+        is being timed out and thus shortened, stuff may still move around accordingly
+        (which in that case couldn't really be prevented anyway).</p>
+    
+    <p>Chat is paused as long as you move the mouse over chat or if you hold
+        <kbd>Ctrl</kbd> (and initiated pausing by moving the mouse). A little
+        popup in the top-right will indicate that the chat is paused.</p>
+    
+    <p>Holding <kbd>Ctrl</kbd> basicially acts as if you moved the mouse
+        continuously.</p>
+    
+    <ul>
+        <li><strong>Pause chat when moving the mouse over it:</strong> Enables
+        this feature.</li>
+        <li><strong>Require Ctrl being pressed to start pausing chat:</strong>
+            If this is enabled, you need to have <kbd>Ctrl</kbd> pressed to
+            start pausing chat when moving the mouse over it. Once it's paused,
+            you can let go of <kbd>Ctrl</kbd> and it will stay paused as long as
+            you move the mouse (or hold <kbd>Ctrl</kbd> again to keep it paused
+            even when not moving the mouse, as usual).</li>
+        <li><strong>Run command when clicking on user (holding Ctrl):</strong>
+            When you select a command here, then clicking on a user in chat
+            while holding <kbd>Ctrl</kbd> will run the command on that user. You
+            can <a href="help-setting_commands.html#chat">manually edit</a> this
+            setting to use another command.</li>
+    </ul>
+    
     
     <h2>
         <a name="Messages">Messages</a>
@@ -220,18 +594,7 @@
             </dl>
         
         </dd>
-        
-        <dt>Show moderator actions in chat</dt>
-        <dd>Outputs extra messages for commands that moderators execute in the
-            channel, except for the commands you exexcute yourself.</dd>
-        <dd>This is only available for the broadcaster and moderators.</dd>
-        <dd>This is a Twitch Beta, so it may still change and break things.</dd>
-        <dd>To view mod actions you can also open a separate dialog via
-            <code>Extra - Moderation Log</code>.</dd>
     </dl>
-    
-    <h3><a name="capitalization">Name Capitalization</a></h3>
-    <p>This has been moved to it's own <a href="#Names">settings page</a>.</p>
     
     
     <h2>
@@ -250,358 +613,7 @@
             can also view those messages even if this setting is disabled.</dd>
     </dl>
     
-    
-    <h2>
-        <a name="Chat">Chat</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <h3>Chat Settings</h3>
-    <ul>
-        <li><strong>Scroll down after <code>&lt;x&gt;</code> seconds of inactivity</strong>: If you scrolled
-            up in chat but haven't moved scrollposition in the given number of seconds, it will scroll down
-            if new messages come in. This prevents new messages from being hidden
-            indefinitely if you accidently stayed scrolled up.</li>
-        <li><strong>Chat buffer size</strong>: How many lines of text are kept
-            for each channel in chat to scroll back to.</li>
-    </ul>
-    
-    <h3>Pause Chat</h3>
-    <p>The Pause Chat feature stops Chatty from scrolling down when you move the
-        mouse over chat. This can be useful if you want to click specific stuff
-        in a fast moving chat, for example if you are moderating or just want to
-        click on an emote to see what it is.</p>
-    
-    <p><em>Please note:</em> This will not work properly until the chat window is filled with
-        text, because only then will Chatty actively scroll down. Also, this
-        only stops Chatty from actively scrolling down, so if e.g. a big message
-        is being timed out and thus shortened, stuff may still move around accordingly
-        (which in that case couldn't really be prevented anyway).</p>
-    
-    <p>Chat is paused as long as you move the mouse over chat or if you hold
-        <kbd>Ctrl</kbd> (and initiated pausing by moving the mouse). A little
-        popup in the top-right will indicate that the chat is paused.</p>
-    
-    <p>Holding <kbd>Ctrl</kbd> basicially acts as if you moved the mouse
-        continuously.</p>
-    
-    <ul>
-        <li><strong>Pause chat when moving the mouse over it:</strong> Enables
-        this feature.</li>
-        <li><strong>Require Ctrl being pressed to start pausing chat:</strong>
-            If this is enabled, you need to have <kbd>Ctrl</kbd> pressed to
-            start pausing chat when moving the mouse over it. Once it's paused,
-            you can let go of <kbd>Ctrl</kbd> and it will stay paused as long as
-            you move the mouse (or hold <kbd>Ctrl</kbd> again to keep it paused
-            even when not moving the mouse, as usual).</li>
-        <li><strong>Run command when clicking on user (holding Ctrl):</strong>
-            When you select a command here, then clicking on a user in chat
-            while holding <kbd>Ctrl</kbd> will run the command on that user. You
-            can <a href="help-setting_commands.html#chat">manually edit</a> this
-            setting to use another command.</li>
-    </ul>
-    
-    <h2>
-        <a name="Emoticons">Emoticons</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <h3>General Emoticon Settings</h3>
-    
-    <dl class="dl-settings">
-        <dt>Show emoticons</dt>
-        <dd>Turns emoticon codes into images. This needs to be enabled for any
-            emotes to show up.</dd>
 
-        <dt>Scale (Chat)</dt>
-        <dd>The relative size of how emotes are displayed in chat (100% is regular size).</dd>
-        
-        <dt>Maximum Height</dt>
-        <dd>The maximum height of emotes in chat (in pixels). Use 0 to allow any height.</dd>
-        
-        <dt>Emotes Dialog</dt>
-        <dd>The relative size of how emotes are displayed in the Emotes Dialog (100% is regular size).</dd>
-        
-        <dt>Double-click on emote closes Emote Dialog</dt>
-        <dd>If enabled, double-clicking on an emote in the Emote Dialog closes
-            the Emote Dialog.</dd>
-
-        <dt>Cheers (Bits)</dt>
-        <dd>You can choose whether to show <a href="https://help.twitch.tv/customer/portal/articles/2449458">Cheering</a>
-            emotes in chat animated, as static images (like other emotes) or
-            not at all (so they'll just show up as text).</dd>
-        <dd>Sending Cheers is not supported at this point.</dd>
-    </dl>
-    
-    <h3>Third-Party Emoticons</h3>
-    <dl class="dl-settings">
-        <dt>Enable BetterTTV Emotes</dt>
-        <dd>Shows BetterTTV emotes (Personal Emotes not supported at this time).</dd>
-        
-        <dt>Allow animated emotes</dt>
-        <dd>Show animated emotes (BTTV GIF emotes).</dd>
-        
-        <dt>Enable FrankerFaceZ (FFZ)</dt>
-        <dd>Downloads <a href="help.html#emoticons">FrankerFaceZ</a> emotes and
-            Mod Icons (where available).</dd>
-        <dd><em>Requires a restart to take full effect when you change it.</em></dd>
-        
-        <dt>Enable FFZ Mod Icon</dt>
-        <dd>Show the FFZ Mod Icon in place of the default Mod Icon (where available).</dd>
-        
-        <dt>Enable FFZ Featured Emotes</dt>
-        <dd>Show special FFZ emotes available in some channels (mainly
-            Speedrunning Events). To receive these emotes Chatty maintains a
-            connection to the FFZ Socket Server.</dd>
-    </dl>
-    
-    <h3>Emoji</h3>
-    <dl class="dl-settings">
-        <dt>Set</dt>
-        <dd>Turns Emoji characters into images. You can choose between different
-            sets of Emoji images, or choose <code>None</code> to turn off Emoji
-            images altogether.</dd>
-        
-        <dt>Replace Emoji codes in entered text</dt>
-        <dd>Emoji codes like <code>:joy:</code> or <code>:mouse:</code> get
-            replaced with their respective Emoji character (and thus image, if
-            a Set is chosen) when entering them into the inputbox.</dd>
-        <dd><em>Tip:</em> Use <a href="help.html#TAB_Completion">TAB Completion</a>
-            to complete partially entered Emoji codes.</dd>
-    </dl>
-    
-    <h3>Ignored Emotes</h3>
-    <p>Emotes added to this list will not be turned into an image, but instead
-        are just shown as their emote code.</p>
-    <p>The code added to the list has to be the
-    exact code used internally to find the emote in the messages. Usually this is simply
-    the emote code as you would type it in chat, but some emotes have a special syntax
-    that you might not even know (e.g. <code>:)</code> has <code>\:-?\)</code> as actual code).
-    It is recommended to use the emote context menu (right-click on an emote in chat) to
-    ignore emotes, because then the correct code will automatically be added to
-    the list.</p>
-    
-    <h2>
-        <a name="Usericons">Usericons</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <h3>Usericon Settings</h3>
-    <ul>
-        <li><strong>Show Usericons</strong>: Shows badges as images instead of
-        just text</li>
-        <li><strong>Enable Custom Usericons</strong>: Use the custom icons
-        defined in the table below</li>
-        <li><strong>Enable Bot Badge</strong>: Enables showing of the bot badge
-        for known bots. Chatty shows a single bot badge for all known bots. The
-        list of bot names comes from different sources: The <code>botNames</code>
-        setting, the BTTV API and the FFZ API.
-        <ul>
-            <li><strong>BTTV</strong>: Use botnames from the BTTV API</li>
-            <li><strong>FFZ</strong>: Use botnames from the FFZ API</li>
-        </ul>
-        </li>
-    </ul>
-    
-    <h3><a name="CustomUsericons">Custom Usericons</a></h3>
-    <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
-        or replace the default icons (all other Types).</p>
-    <p>The order of the entries can matter, they are looked at from the top:</p>
-    <ul>
-        <li>All <code>Addon</code> icons that match are shown, unless you use
-            the <code>$stop</code> restriction (see section <em>Restriction</em>
-            below).</li>
-        <li>When replacing default icons (all other Types), the first entry that
-            matches is used. For example if you have several entries for
-            replacing the Turbo badge, then the first one from the top that
-            matches is used.</li>
-    </ul>
-    
-    <h3>Custom Usericon Properties</h3>
-    <dl class="dl-settings">
-        <dt>Type</dt>
-        <dd>A type of <code>Addon</code> will add an additional badge. All
-            Addon-badges that matche the Restrictions are shown at once.</dd>
-        <dd>Other types replace an already shown default badge. For example
-            adding an entry of Type <code>Turbo</code> allows you to define a
-            custom icon for all Turbo badges shown in chat. Accordingly, if you
-            selected <code>Bits</code> it would target all variations of the
-            Bits badge.</dd>
-        <dd>The Type <code>Other Twitch</code> allows you to directly select a
-            default icon via Twitch's own Badge ID/Version, which allows you to
-            target badges that are not a supported Type.</dd>
-        
-        <dt>ID/Version</dt>
-        <dd>You can only use this when you have the <code>Other Twitch</code>
-            Type selected. This specifies the Badge ID/Version that Twitch uses
-            to identify Badges, which allows you to target any Twitch Badge you
-            want, including a specific variation.</dd>
-        <dd>For example if you wanted to replace the 100-Bits Badge, you'd want
-            to use <code>bits/100</code>. If you don't specify a Version, so
-            just <code>bits</code>, then it matches all versions, in this case
-            it would match all Bits Badges.</dd>
-        <dd>If you are already connected to a channel, it should automatically
-            populate the list with known ID/Version combinations. Note that some
-            of these may only be used in some channels.</dd>
-        
-        <dt>Restriction</dt>
-        <dd>This is similiar to the <a href="#Usercolors">Usercolors</a> settings,
-        where you can enter special restrictions the user has to match in order
-        for the icon to be displayed. What makes the most sense in this case is
-        probably just entering a username (e.g. <code>serenity</code>) or an
-        addressbook category (e.g. <code>$cat:vip</code>, which would refer to
-        the category <code>vip</code>). If you keep this empty, then no restriction
-        is applied.</dd>
-        <dd>Specifying a <em>Type</em> other than <code>Addon</code> carries an
-        implicit restriction, since e.g. the default moderator icons are only
-        displayed if the user is a moderator.</dd>
-        <dd>Normally you can only specify <em>one</em> restriction, but you can
-            also add <strong>special restrictions</strong>:
-            <ul>
-                <li><code>$stop</code> means if this icon matches (and is thus used),
-                    it stops searching for further <code>Addon</code> icons. So
-                    it's not really a restriction for <em>this</em> icon, but
-                    rather a restriction that affects the following icons and
-                    can be used to limit the number of <code>Addon</code> icons.</li>
-                <li><code>$first</code> puts this <code>Addon</code> icon before
-                    the regular icons. The <code>$stop</code> restriction only
-                    applies to one group of <code>Addon</code> icons separately
-                    (before or after the regular icons).</li>
-                <li><code>$badge:&lt;ID/Version&gt;</code> matches a Twitch
-                    Badge a user has. For example <code>$badge:bits/100</code>
-                    will only target users that currently have the 100-Bits
-                    Badge</li>
-            </ul>
-        </dd>
-        <dd><em>Example:</em> <code>$cat:streamer $first</code> - Matches users
-            in the Addressbook category <code>streamer</code> and puts the badge
-            in front of the default ones.</dd>
-        <dd><em>Example:</em> <code>lotsofs</code> - Matches a user by the name
-            <code>lotsofs</code>.</dd>
-        <dd><em>Example:</em> <code>$cat:vip $badge:bits</code> - Matches users
-            in the Addresbook category <code>vip</code>, but only if they also
-            have a Bits-Badge displayed.</dd>
-        
-        <dt>Channel</dt>
-        <dd>You can enter a channel name here, so that the icon will only be
-            displayed in that channel. You can add an exclamation mark in front
-            of the channel name (like <code>!#channel</code>) to have it
-            displayed in all channels <em>except</em> the one you specified.</dd>
-        <dd>If you keep this empty, then it will be displayed in all channels.</dd>
-        
-        <dt>Image File</dt>
-        <dd>The image to use. Must be a <code>.png</code> and is recommended to
-            be about 18x18 pixels (because that is the default size). If you
-            specify no image, then the matching default icon is removed.</dd>
-        <dd>Chatty lookes for images in <code>&lt;working_directory&gt;/img/</code>
-            (<a href="help-guide_folders.html#wdir">Chatty directories help</a>).
-            You can click on <code>Image Folder</code> to show information about
-            it and rescan to update the list.</dd>
-        <dd>The <em>special image file name</em> <code>$default</code> will use
-            the default image file, that would be shown without defining
-            Custom Usericons. This can be useful if you e.g. want to replace all
-            Badge Types, except for one, so you can define that one to use the
-            default.</dd>
-        <dd><em>Tip:</em> You should also be able to manually enter the full
-            path to an image, in case you don't want to use the dedicated image
-            folder. A filename starting with <code>http</code> is interpreted as
-            URL.</dd>
-    </dl>
-    
-    <p><em>Tip:</em> Jump to entries in the table by clicking into a column and
-        start to type. Backspace or wait to get out of the search mode.</p>
-    
-    <h2>
-        <a name="Colors">Colors</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p>Customize colors of certain types of chat messages. For the general look
-        of the program you can choose another Look&amp;Feel from the "Main"
-        settings page.</p>
-    
-    <h2>
-        <a name="Msg_Colors">Message Colors</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p>You can customize the color of messages based on the same message
-        matching rules and patterns that are used for the
-        <a href="#Highlight_Matching">Highlight system</a> (not all prefixes
-        apply). Add a new item, enter what messages you want to match and select
-        the color you want them to have.</p>
-    
-    <p>The order of entries can matter, the first color from the top that
-        matches is used.</p>
-    
-    <p><em>Note:</em> The default message color is set on the "Colors" settings
-        page ("Normal message").</p>
-    
-    <p><em>Note:</em> This feature only changes the message <em>color</em>. Use
-        the Highlight system instead if you want
-        to highlight important messages, have them added to a separate
-        Highlighted Messages window and maybe show a notification or play a
-        sound for it at the same time.</p>
-
-    <h3>Examples</h3>
-    <p>Examples of how to match certain messages, so you can assign it a custom
-        color.</p>
-    <dl>
-        <dt><code>status:r</code></dt>
-        <dd>Matches all messages from a known bot (FFZ, BTTV or the
-            <code>botNames</code> setting).</dd>
-        
-        <dt><code>cat:vip</code></dt>
-        <dd>Matches all messages from users in the <code>vip</code> Addressbook
-            category.</dd>
-        
-        <dt><code>chan:#tailsgaming start:!points</code></dt>
-        <dd>Matches all messages in channel <code>#tailsgaming</code>, starting
-            with <code>!points</code>.</dd>
-        
-        <dt><code>re*:(?i)(?&lt;!practice |debug )\bROM\b(?! hack)</code></dt>
-        <dd>Matches all messages containing the word <code>ROM</code>, not
-            preceded by <code>practice&nbsp;</code> or <code>debug&nbsp;</code>, nor
-            followed by <code>&nbsp;hack</code> (case-insensitive).</dd>
-    </dl>
-    
-    <div class="moreInfo">More examples: <a href="#Highlight_Examples">Highlight settings help</a></div>
-    
-    <h2>
-        <a name="Usercolors">Usercolors</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p>This allows you to specify your own usercolors for either certain types
-        of users (mod, subscriber etc.) or specific usernames. There are special
-    items that you can use to specify that (to specify a username, just enter
-    it without anything else):</p>
-    <ul>
-        <li><code>$mod</code> - Moderators</li>
-        <li><code>$sub</code> - Subscribers</li>
-        <li><code>$turbo</code> - Turbo Users</li>
-        <li><code>$admin</code> - Admins</li>
-        <li><code>$staff</code> - Staff members</li>
-        <li><code>$all</code> - All users, this can be used to specify a default
-        color (should be put at the very end of the list)</li>
-        <li><code>$broadcaster</code> - Broadcasters</li>
-        <li><code>$cat:&lt;category&gt;</code> - A category from the <a href="help.html#addressbook">Addressbook</a></li>
-        <li><code>#&lt;color code&gt;</code> - A Html color code, e.g. <code>#0000FF</code> for blue, which can
-            be used to replace colors</li>
-        <li><code>$color:&lt;color code or name&gt;</code> - A Html color code or name (names
-            as hardcoded into Chatty, may be different from other programs), e.g. <code>$color:Blue</code> for blue,
-            which can be used to replace colors</li>
-    </ul>
-    
-    <p>The order of the
-    entries in the table matters, because it is checked from the top. If you
-    were to put the <code>$all</code> item at the very top, any items below
-    wouldn't do anything, because the first item would already match all users.
-    This e.g. allows you to specify what color a user should have when he is
-    both a subscriber and a moderator (by either putting <code>$mod</code>
-    or <code>$sub</code> first).</p>
-    
-    <p>If an item is red and has "(error)" appended (e.g. "<span style="color:red">$color.Blue (error)</span>"),
-    this means the item is invalid. In the example this is because a point has
-    been used instead of a colon, so "$color:Blue" would be correct. This can
-    also happen if it doesn't recognize the given color or the item is just in
-    an invalid format.</p>
-    
-    
     <h2>
         <a name="Names">Names</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -668,8 +680,9 @@
     </ul>
     <h3>Add terms to be highlighted</h3>
     <p>Add items to the list to make a message highlighted if any one of them
-    match the message. The following two types of prefixes can be used to change
-    highlighting behaviour per item.</p>
+        match the message. The <code>Users to never highlight</code> and
+        <code>Highlight Blacklist</code> settings can be used to prevent some of
+        those Highlights.</p>
     
     <h3><a name="Highlight_Matching">Text Matching Prefixes</a></h3>
     <p>By default, matching is performed <em>case-insensitive</em> and <em>anywhere</em> in the
@@ -833,6 +846,7 @@
     </dl>
     <div class="moreInfo">More information: <a href="help.html#highlight">Highlight</a></div>
     
+    
     <h2>
         <a name="Ignore">Ignore</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -917,12 +931,216 @@
         <dd>Users who are already on the userlist when you ignore them stay on
             it until they leave, you rejoin the channel or restart Chatty.</dd>
     </dl>
+
     
     <h2>
-        <a name="Sounds">Sounds</a>
+        <a name="Log_to_file">Log to file</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>Sounds are now integrated into the <a href="#Notifications">Notifications</a>.</p>
+    <p>If you enable logging, chat messages (and more if enabled) will be written
+    into a seperate textfile for each channel.</p>
+    <h3>Channels</h3>
+    <p>You can specify which channels should be logged:</p>
+    <ul>
+        <li><strong>always</strong> - Log all channels without exception <em>(default)</em></li>
+        <li><strong>blacklist</strong> - Log all channels, except the ones on
+        the blacklist</li>
+        <li><strong>whitelist</strong> - Log no channels, except the ones on the
+        whitelist</li>
+        <li><strong>off</strong> - Log no channels whatsoever</li>
+    </ul>
+    
+    <h3>Other Settings</h3>
+    <dl class="dl-settings">
+        <dt>Folder</dt>
+        <dd>Select where to save the log files.</dd>
+        
+        <dt>Split Logs</dt>
+        <dd>Start a new log file every Day, Week or Month.</dd>
+        
+        <dt>Channel Subdirectories</dt>
+        <dd>Create a subfolder for each channel.</dd>
+        
+        <dt>Lock files while writing</dt>
+        <dd>By default Chatty requests exclusive access while writing to the
+            file, so that no other program can interfere. This can however cause
+            issues if you try to open the log while in the channel, for example
+            if you want to look something up for moderation, so disabling this
+            setting can make sense. This means that you have to ensure yourself
+            that only one instance of Chatty and no other programs write to or
+            the lock the files.</dd>
+        
+        <dt>Timestamp</dt>
+        <dd>Select the timestamp to be used in the logs.</dd>
+    </dl>
+    
+    <h3>Messages Types</h3>
+    <p>Normal chat messages are always logged, however you can log additional
+    information:</p>
+    
+    <dl class="dl-settings">
+        <dt>Chat Messages</dt>
+        <dd>Logs regular chat messages (that haven't been ignored).</dd>
+        
+        <dt>Ignored Msg.</dt>
+        <dd>Logs messages that have been hidden by the Ignore list. You can
+            disable this if you don't want ignored messages to show up in the
+            chat log files.</dd>
+        
+        <dt>Chat Info</dt>
+        <dd>General chat releated info messages like connecting, disconnecting,
+            trying to timeout someone, stream title..</dd>
+        
+        <dt>Bans/Timeouts</dt>
+        <dd>Bans and Timeouts in chat. Timeout length and reason will be added
+            if available.</dd>
+        <dd><code>BAN: name1, name2 (30s) [reason], name3 (600s)</code></dd>
+        <dd>The reason is specified by the mod taking the action, so it may be
+            consist of any text.</dd>
+        
+        <dt>Mod/Unmod</dt>
+        <dd>When someone in chat is modded or unmodded. Remember that this info
+            may be inaccurate, since mod/unmod events are not send immediately
+            by Twitch Chat.</dd>
+        <dd><code>MOD: name1, name2</code></dd>
+        <dd><code>UNMOD: name3, name4</code></dd>
+        
+        <dt>Joins/Parts</dt>
+        <dd>When someone enters/leaves the channel. Remember that this info may
+            be inaccurate, since joins/parts are not send immediately by Twitch
+            Chat (and sometimes not at all).</dd>
+        <dd><code>JOIN: name1, name2</code></dd>
+        <dd><code>PART: name3, name4</code></dd>
+        
+        <dt>System Info</dt>
+        <dd>Any info messages that are related more to Chatty itself than to
+            chat, like info about new versions, when you use setting commands..</dd>
+        
+        <dt>Viewerstats</dt>
+        <dd>Stats about the viewercount which are logged in a semi-regular
+            interval to give you an idea about the viewercount during that time.</dd>
+        <dd>Each Viewerstats line shows which interval it refers to, the
+            min/max/avg viewers, the number of values and the development:
+            First value/after offline is absolute, then +- relative change, _
+            means offline before/in between/after that value.</dd>
+        <dd><code>Viewerstats (21:03-21:06): avg:28.612 min:28.432 max:28.887 [3/28.519-87+455_]</code></dd>
+        <dd>In the example, the stats were recorded between 21:03 and 21:06 and
+            the Viewercount started out at 28.519, then went down (-87) and then
+            up (+455). After that the stream went offline (<code>_</code>).</dd>
+        
+        <dt>Viewercount</dt>
+        <dd>Directly logs the viewercount as it is received from Twitch, without
+            any processing, except being formatted depending on the current
+            locale.</dd>
+        <dd><code>VIEWERS: 12,521</code></dd>
+        
+        <dt>Mod Actions</dt>
+        <dd>Logs the commands performed by mods in your channel (Broadcaster/Mods only).</dd>
+        <dd><code>MOD_ACTION: tduva (host coollertmb)</code></dd>
+    </dl>
+    
+    
+    <h2>
+        <a name="Window">Window</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <h3>Dialogs Location/Size</h3>
+    <ul>
+        <li>Restore Dialogs
+            <ol>
+                <li><strong>Open dialogs in default location</strong>: Always
+                open dialogs in their default location (centered on the main
+                window) when you open them.</li>
+                <li><strong>Keep location during session</strong>: Puts dialogs
+                at the same position when you reopen them during the same
+                session (so they are put on the default location when you open
+                them the first time after starting Chatty).</li>
+                <li><strong>Restore dialogs from last session</strong>: Puts
+                dialogs at the same position they were at when you closed Chatty
+                last session and also keeps the position during the session.</li>
+                <li><strong>Reopen dialogs from last session</strong>: Reopens
+                any dialogs that were open when you closed Chatty last session
+                and also puts them at the same position they were before.</li>
+            </ol>
+        </li>
+        <li><strong>Restore position only if on screen</strong>: If enabled,
+            restores the position on start only if a large portion of the top of
+            the dialog/window is visible on screen. This is to prevent dialogs
+            from being lost off-screen by accident.</li>
+        <li><strong>Attach dialogs position to main window</strong>: If enabled,
+        moves the dialogs like Channel Info or Admin Dialog along with the
+        main window, so they always keep the same relative position. You can
+        still move the dialogs by themselves of course.</li>
+    </ul>
+    
+    <h3>Other</h3>
+    <ul>
+        <li><strong>Open URL Prompt</strong>: Enable this to be asked
+            when opening a URL. Even if this is disabled, you may still asked on
+            some occasions, but not for URLs in chat.</li>
+        <li><strong>Always show chat scrollbar</strong>: Always show the vertical
+        scrollbar in the chat window (there should never be a horizontal one),
+        even if no scrolling is necessary. This can be useful for using window
+        capture for streaming, because you can always keep the same subregion.</li>
+        <li><strong>Minimize to tray</strong>: When minimizing the main Chatty
+        window, it will be minimized to tray.</li>
+        <li><strong>Close to tray</strong>: Closing the main Chatty window will
+        not actually exit the program, but instead minimize it to tray. You can
+        actually close the program via <code>Main - Exit</code> or the tray icon
+        context menu.</li>
+        <li><strong>Default Userlist Width</strong>: The default width of the
+            userlist in pixels.</li>
+        <li><strong>Min. Width</strong>: The minimum width of the userlist in
+            pixels.</li>
+        <li><strong>Enable userlist by default</strong>: Show the userlist by
+            default. When you disable this the userlist will be entirely hidden
+            from the start. You can always use a shortcut (<kbd>Shift+F10</kbd>
+            by default) to toggle the userlist per channel.</li>
+    </ul>
+    
+    <h3>Popout</h3>
+    <ul>
+        <li><strong>Restore location/size</strong>: When you close a popout
+        window then it's location/size is saved and used for the next popout
+        window that is opened. Each saved location/size is only used once, if
+        there is none left then the default attributes are used. This is also
+        saved between sessions (attributes of popouts that are open when you
+        close Chatty are saved as well).</li>
+        <li><strong>Close popout when only channel</strong>: When you have a
+        channel popout window open and close the last channel in the main window,
+        then the popout window will automatically be closed and the channel
+        moved to the main window. Disable this if the popout shouldn't be closed
+        automatically.</li>
+    </ul>
+    
+    <h2>
+        <a name="Tabs">Tabs</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <dl class="dl-settings">
+        <dt>Tab Order</dt>
+        <dd>Whether to show tabs in the order they were opened or alphabetically.</dd>
+        
+        <dt>Tab Placement</dt>
+        <dd>Where to put the tabs bar.</dd>
+        
+        <dt>Tab Layout</dt>
+        <dd>If the amount of tabs doesn't fit, choose whether tabs should wrap
+            into multiple rows (or columns) or keep in one row, while having to
+            scroll through them.</dd>
+        
+        <dt>Scroll through tabs with mousewheel</dt>
+        <dd>Hover mouse over tabs and scroll to change tabs.
+            <dl class="dl-settings-sub">
+                <dt>Scroll through tabs anywhere</dt>
+                <dd>Don't restrict scrolling through tabs to the tab bar,
+                    although this mostly only applies to the inputbox. So you
+                    can hover your mouse over the inputbox and scroll to switch
+                    between tabs.</dd>
+            </dl>
+        </dd>
+    </dl>
+    
     
     <h2>
         <a name="Notifications">Notifications</a>
@@ -1033,10 +1251,12 @@
         currently selected tab</li>
     </ul>
     
-    
     <h3>General Notification Settings</h3>
     <p>There are different types of Notifications:</p>
     <dl class="dl-settings">
+        <dt>Off</dt>
+        <dd>Don't show any notification</dd>
+        
         <dt>Chatty Notifications</dt>
         <dd>The default popup Notification created by Chatty, with additional
             settings (see below).</dd>
@@ -1104,216 +1324,12 @@
     
     
     <h2>
-        <a name="Log_to_file">Log to file</a>
+        <a name="Sounds">Sounds</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>If you enable logging, chat messages (and more if enabled) will be written
-    into a seperate textfile for each channel.</p>
-    <h3>Channels</h3>
-    <p>You can specify which channels should be logged:</p>
-    <ul>
-        <li><strong>always</strong> - Log all channels without exception <em>(default)</em></li>
-        <li><strong>blacklist</strong> - Log all channels, except the ones on
-        the blacklist</li>
-        <li><strong>whitelist</strong> - Log no channels, except the ones on the
-        whitelist</li>
-        <li><strong>off</strong> - Log no channels whatsoever</li>
-    </ul>
+    <p>Sounds are now integrated into the <a href="#Notifications">Notifications</a>.</p>
     
-    <h3>Other Settings</h3>
-    <dl class="dl-settings">
-        <dt>Folder</dt>
-        <dd>Select where to save the log files.</dd>
-        
-        <dt>Split Logs</dt>
-        <dd>Start a new log file every Day, Week or Month.</dd>
-        
-        <dt>Channel Subdirectories</dt>
-        <dd>Create a subfolder for each channel.</dd>
-        
-        <dt>Lock files while writing</dt>
-        <dd>By default Chatty requests exclusive access while writing to the
-            file, so that no other program can interfere. This can however cause
-            issues if you try to open the log while in the channel, for example
-            if you want to look something up for moderation, so disabling this
-            setting can make sense. This means that you have to ensure yourself
-            that only one instance of Chatty and no other programs write to or
-            the lock the files.</dd>
-        
-        <dt>Timestamp</dt>
-        <dd>Select the timestamp to be used in the logs.</dd>
-    </dl>
     
-    <h3>Messages Types</h3>
-    <p>Normal chat messages are always logged, however you can log additional
-    information:</p>
-    
-    <dl class="dl-settings">
-        <dt>Chat Info</dt>
-        <dd>General chat releated info messages like connecting, disconnecting,
-            trying to timeout someone, stream title..</dd>
-        
-        <dt>Bans/Timeouts</dt>
-        <dd>Bans and Timeouts in chat. Timeout length and reason will be added
-            if available.</dd>
-        <dd><code>BAN: name1, name2 (30s) [reason], name3 (600s)</code></dd>
-        <dd>The reason is specified by the mod taking the action, so it may be
-            consist of any text.</dd>
-        
-        <dt>Mod/Unmod</dt>
-        <dd>When someone in chat is modded or unmodded. Remember that this info
-            may be inaccurate, since mod/unmod events are not send immediately
-            by Twitch Chat.</dd>
-        <dd><code>MOD: name1, name2</code></dd>
-        <dd><code>UNMOD: name3, name4</code></dd>
-        
-        <dt>Joins/Parts</dt>
-        <dd>When someone enters/leaves the channel. Remember that this info may
-            be inaccurate, since joins/parts are not send immediately by Twitch
-            Chat (and sometimes not at all).</dd>
-        <dd><code>JOIN: name1, name2</code></dd>
-        <dd><code>PART: name3, name4</code></dd>
-        
-        <dt>System Info</dt>
-        <dd>Any info messages that are related more to Chatty itself than to
-            chat, like info about new versions, when you use setting commands..</dd>
-        
-        <dt>Viewerstats</dt>
-        <dd>Stats about the viewercount which are logged in a semi-regular
-            interval to give you an idea about the viewercount during that time.</dd>
-        <dd>Each Viewerstats line shows which interval it refers to, the
-            min/max/avg viewers, the number of values and the development:
-            First value/after offline is absolute, then +- relative change, _
-            means offline before/in between/after that value.</dd>
-        <dd><code>Viewerstats (21:03-21:06): avg:28.612 min:28.432 max:28.887 [3/28.519-87+455_]</code></dd>
-        <dd>In the example, the stats were recorded between 21:03 and 21:06 and
-            the Viewercount started out at 28.519, then went down (-87) and then
-            up (+455). After that the stream went offline (<code>_</code>).</dd>
-        
-        <dt>Viewercount</dt>
-        <dd>Directly logs the viewercount as it is received from Twitch, without
-            any processing, except being formatted depending on the current
-            locale.</dd>
-        <dd><code>VIEWERS: 12,521</code></dd>
-        
-        <dt>Mod Actions</dt>
-        <dd>Logs the commands performed by mods in your channel (Broadcaster/Mods only).</dd>
-        <dd><code>MOD_ACTION: tduva (host coollertmb)</code></dd>
-        
-        <dt>Ignored Msg.</dt>
-        <dd>Logs messages that have been hidden by the Ignore list, like normal
-            messages. You can disable this if you don't want ignored messages to
-            show up in the chat log files.</dd>
-    </dl>
-    
-    <h2>
-        <a name="Window">Window</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <h3>Dialogs Location/Size</h3>
-    <ul>
-        <li>Restore Dialogs
-            <ol>
-                <li><strong>Open dialogs in default location</strong>: Always
-                open dialogs in their default location (centered on the main
-                window) when you open them.</li>
-                <li><strong>Keep location during session</strong>: Puts dialogs
-                at the same position when you reopen them during the same
-                session (so they are put on the default location when you open
-                them the first time after starting Chatty).</li>
-                <li><strong>Restore dialogs from last session</strong>: Puts
-                dialogs at the same position they were at when you closed Chatty
-                last session and also keeps the position during the session.</li>
-                <li><strong>Reopen dialogs from last session</strong>: Reopens
-                any dialogs that were open when you closed Chatty last session
-                and also puts them at the same position they were before.</li>
-            </ol>
-        </li>
-        <li><strong>Restore position only if on screen</strong>: If enabled,
-            restores the position on start only if a large portion of the top of
-            the dialog/window is visible on screen. This is to prevent dialogs
-            from being lost off-screen by accident.</li>
-        <li><strong>Attach dialogs position to main window</strong>: If enabled,
-        moves the dialogs like Channel Info or Admin Dialog along with the
-        main window, so they always keep the same relative position. You can
-        still move the dialogs by themselves of course.</li>
-    </ul>
-    
-    <h3>Other</h3>
-    <ul>
-        <li><strong>Open URL Prompt</strong>: Enable this to be asked
-            when opening a URL. Even if this is disabled, you may still asked on
-            some occasions, but not for URLs in chat.</li>
-        <li><strong>Always show chat scrollbar</strong>: Always show the vertical
-        scrollbar in the chat window (there should never be a horizontal one),
-        even if no scrolling is necessary. This can be useful for using window
-        capture for streaming, because you can always keep the same subregion.</li>
-        <li><strong>Minimize to tray</strong>: When minimizing the main Chatty
-        window, it will be minimized to tray.</li>
-        <li><strong>Close to tray</strong>: Closing the main Chatty window will
-        not actually exit the program, but instead minimize it to tray. You can
-        actually close the program via <code>Main - Exit</code> or the tray icon
-        context menu.</li>
-        <li><strong>Default Userlist Width</strong>: The default width of the
-            userlist in pixels.</li>
-        <li><strong>Min. Width</strong>: The minimum width of the userlist in
-            pixels.</li>
-        <li><strong>Enable userlist by default</strong>: Show the userlist by
-            default. When you disable this the userlist will be entirely hidden
-            from the start. You can always use a shortcut (<kbd>Shift+F10</kbd>
-            by default) to toggle the userlist per channel.</li>
-    </ul>
-    
-    <h3>Popout</h3>
-    <ul>
-        <li><strong>Restore location/size</strong>: When you close a popout
-        window then it's location/size is saved and used for the next popout
-        window that is opened. Each saved location/size is only used once, if
-        there is none left then the default attributes are used. This is also
-        saved between sessions (attributes of popouts that are open when you
-        close Chatty are saved as well).</li>
-        <li><strong>Close popout when only channel</strong>: When you have a
-        channel popout window open and close the last channel in the main window,
-        then the popout window will automatically be closed and the channel
-        moved to the main window. Disable this if the popout shouldn't be closed
-        automatically.</li>
-    </ul>
-    
-    <h2>
-        <a name="Tabs">Tabs</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <dl class="dl-settings">
-        <dt>Tab Order</dt>
-        <dd>Whether to show tabs in the order they were opened or alphabetically.</dd>
-        
-        <dt>Tab Placement</dt>
-        <dd>Where to put the tabs bar.</dd>
-        
-        <dt>Tab Layout</dt>
-        <dd>If the amount of tabs doesn't fit, choose whether tabs should wrap
-            into multiple rows (or columns) or keep in one row, while having to
-            scroll through them.</dd>
-        
-        <dt>Scroll through tabs with mousewheel</dt>
-        <dd>Hover mouse over tabs and scroll to change tabs.
-            <dl class="dl-settings-sub">
-                <dt>Scroll through tabs anywhere</dt>
-                <dd>Don't restrict scrolling through tabs to the tab bar,
-                    although this mostly only applies to the inputbox. So you
-                    can hover your mouse over the inputbox and scroll to switch
-                    between tabs.</dd>
-            </dl>
-        </dd>
-    </dl>
-    
-    <h2>
-        <a name="Commands">Commands</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    
-    <div class="moreInfo">This help is on a separate page: <a href="help-custom_commands.html">Custom Commands &amp; Context Menus</a></div>
-
     <h2>
         <a name="Other">Other</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -1394,6 +1410,15 @@
     If the stream is offline it writes "Stream offline" to <code>title.txt</code> and empties
     <code>game.txt</code>.</p>
     
+    
+    <h2>
+        <a name="Commands">Commands</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    
+    <div class="moreInfo">This help is on a separate page: <a href="help-custom_commands.html">Custom Commands &amp; Context Menus</a></div>
+    
+    
     <h2>
         <a name="Advanced">Advanced</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -1447,78 +1472,7 @@
     switched over to IRCv3 tags and commands (receiving of joins/parts is now
     controlled by the <a href="#Advanced-Userlist">Correct Userlist</a> setting).</p>
     
-    <h2>
-        <a name="Hotkeys">Hotkeys</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-                
-                <p>You can add hotkeys for certain actions. In general, there
-                are the following types of hotkeys:</p>
-                <ul>
-                    <li><strong>Regular hotkeys</strong>, which will only trigger if the main Chatty
-                    window has focus (or a popout window).</li>
-                    <li><strong>Application-wide hotkeys</strong>, which will trigger anywhere in
-                    Chatty.</li>
-                    <li><strong>Global hotkeys</strong>, which are supposed to trigger everywhere
-                    on your computer (Windows only, Hotkey version required). However some hotkeys may
-                    not work, so just try it out.</li>
-                </ul>
-                
-                <p>With the <strong>Enable global hotkeys</strong> setting you
-                can enable/disable the currently defined global hotkeys if your
-                Chatty version supports global hotkeys. It does <em>not</em> do
-                anything on it's own, it just toggles global hotkeys you defined
-                on and off, in case you only need them sometimes and they
-                interfer with other programs you use. You can also toggle that
-                setting in the main menu under <code>Extra - Options</code> or
-                use setting commands to change the <code>globalHotkeysEnabled</code>
-                setting directly.</p>
-                
-                <p>If a dialog pops up that tells you that <strong>global hotkeys
-                    have not been properly initialized</strong>, check out the
-                    <a href="help-troubleshooting.html#jintellitype">Troubleshooting</a> page.</p>
-                
-                <h3>Adding/Editing hotkeys</h3>
-                <p>When adding or changing a hotkey you have the following options:</p>
-                <ul>
-                    <li><strong>Action:</strong> The action to perform when the
-                        hotkey is pressed. If you select <code>Custom Command</code>,
-                        you have to enter the command to perform in the field below
-                        (just the name of the command, see <a href="#Commands">Commands</a>).</li>
-                    <li><strong>Hotkey:</strong> The key or key combination that
-                    has to be pressed to perform the action, click into the field
-                    and press the key or key combination you want to use.
-                    <ul>
-                        <li>If the hotkey shows as being already used you may
-                        still add it, but having more than one action defined
-                        for the same hotkey will not trigger all the actions
-                        when the hotkey is pressed, but a random one,
-                        so it doesn't really make a lot of sense.
-                        Adding it anyway can be sensible if you're currently
-                        changing several hotkeys and will change the other
-                        hotkey afterwards, so each key combination is only used
-                        once.</li>
-                    </ul>
-                    </li>
-                    <li>Type:<ul><li><strong>Regular:</strong> Regular hotkey, which will only
-                        trigger if the main window or a popout is focused.</li>
-                    <li><strong>Application:</strong> Application-wide hotkey,
-                        which will trigger if any Chatty component is focused.</li>
-                    <li><strong>Global:</strong> Global hotkey, which will
-                    trigger anywhere on your computer (only works with the hotkey
-                    version of Chatty and if it loaded properly, Windows only).</li></ul></li>
-                    
-                    <li><strong>Delay:</strong> The delay between performed actions,
-                        in 1/10th of a second,
-                    if this is 0 then there will be no delay required, otherwise
-                    specifying a delay of e.g. <code>50</code> will execute the
-                    action only once per 5 seconds, even if you keep the hotkey
-                    pressed. This can be useful for actions you normally would
-                    only want to execute once (e.g. running a commercial,
-                    sending a message to chat) and
-                    that you don't want to spam by accident.</li>
-                </ul>
-                
+    
     <h2>
         <a name="TAB_Completion">TAB Completion</a><a name="Completion"></a>
         <a href="#top" class="top">[back to menu]</a>
@@ -1657,6 +1611,85 @@
     </ul>
     
     <p>Remember that you can also use TAB Completion for command names. Kappab</p>
+    
+    
+    <h2>
+        <a name="History">History</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    
+    
+    <h2>
+        <a name="Hotkeys">Hotkeys</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+                
+    <p>You can add hotkeys for certain actions. In general, there
+        are the following types of hotkeys:</p>
+    <ul>
+        <li><strong>Regular hotkeys</strong>, which will only trigger if the main Chatty
+            window has focus (or a popout window).</li>
+        <li><strong>Application-wide hotkeys</strong>, which will trigger anywhere in
+            Chatty.</li>
+        <li><strong>Global hotkeys</strong>, which are supposed to trigger everywhere
+            on your computer (Windows only, Hotkey version required). However some hotkeys may
+            not work, so just try it out.</li>
+    </ul>
+
+    <p>With the <strong>Enable global hotkeys</strong> setting you
+        can enable/disable the currently defined global hotkeys if your
+        Chatty version supports global hotkeys. It does <em>not</em> do
+        anything on it's own, it just toggles global hotkeys you defined
+        on and off, in case you only need them sometimes and they
+        interfer with other programs you use. You can also toggle that
+        setting in the main menu under <code>Extra - Options</code> or
+        use setting commands to change the <code>globalHotkeysEnabled</code>
+        setting directly.</p>
+
+    <p>If a dialog pops up that tells you that <strong>global hotkeys
+            have not been properly initialized</strong>, check out the
+        <a href="help-troubleshooting.html#jintellitype">Troubleshooting</a> page.</p>
+
+    <h3>Adding/Editing hotkeys</h3>
+    <p>When adding or changing a hotkey you have the following options:</p>
+    <ul>
+        <li><strong>Action:</strong> The action to perform when the
+            hotkey is pressed. If you select <code>Custom Command</code>,
+            you have to enter the command to perform in the field below
+            (just the name of the command, see <a href="#Commands">Commands</a>).</li>
+        <li><strong>Hotkey:</strong> The key or key combination that
+            has to be pressed to perform the action, click into the field
+            and press the key or key combination you want to use.
+            <ul>
+                <li>If the hotkey shows as being already used you may
+                    still add it, but having more than one action defined
+                    for the same hotkey will not trigger all the actions
+                    when the hotkey is pressed, but a random one,
+                    so it doesn't really make a lot of sense.
+                    Adding it anyway can be sensible if you're currently
+                    changing several hotkeys and will change the other
+                    hotkey afterwards, so each key combination is only used
+                    once.</li>
+            </ul>
+        </li>
+        <li>Type:<ul><li><strong>Regular:</strong> Regular hotkey, which will only
+                    trigger if the main window or a popout is focused.</li>
+                <li><strong>Application:</strong> Application-wide hotkey,
+                    which will trigger if any Chatty component is focused.</li>
+                <li><strong>Global:</strong> Global hotkey, which will
+                    trigger anywhere on your computer (only works with the hotkey
+                    version of Chatty and if it loaded properly, Windows only).</li></ul></li>
+
+        <li><strong>Delay:</strong> The delay between performed actions,
+            in 1/10th of a second,
+            if this is 0 then there will be no delay required, otherwise
+            specifying a delay of e.g. <code>50</code> will execute the
+            action only once per 5 seconds, even if you keep the hotkey
+            pressed. This can be useful for actions you normally would
+            only want to execute once (e.g. running a commercial,
+            sending a message to chat) and
+            that you don't want to spam by accident.</li>
+    </ul>
 </body>
 </html>
 

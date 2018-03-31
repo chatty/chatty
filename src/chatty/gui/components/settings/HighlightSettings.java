@@ -152,20 +152,20 @@ public class HighlightSettings extends SettingsPanel {
             
             GridBagConstraints gbc;
 
-            gbc = d.makeGbc(0, 1, 2, 1);
+            gbc = d.makeGbc(0, 0, 1, 1);
+            add(new JLabel("<html><body style='width:260px;padding:4px;'>Users on this list "
+                    + "will never trigger a highlight. This can be useful e.g. "
+                    + "for bots in your channel that repeatedly post messages "
+                    + "containing your name."), gbc);
+            
+            gbc = d.makeGbc(0, 1, 1, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 0.5;
             gbc.weighty = 1;
             ListSelector noHighlightUsers = d.addListSetting("noHighlightUsers", "No Highlight User", 180, 250, false, true);
             noHighlightUsers.setDataFormatter(FORMATTER);
             add(noHighlightUsers, gbc);
-            
-            gbc = d.makeGbc(0, 2, 2, 1);
-            add(new JLabel("<html><body style='width:260px;padding:4px;'>Users on this list "
-                    + "will never trigger a highlight. This can be useful e.g. "
-                    + "for bots in your channel that repeatedly post messages "
-                    + "containing your name."), gbc);
-            
+
             JButton closeButton = new JButton(Language.getString("dialog.button.close"));
             closeButton.addActionListener(new ActionListener() {
 
@@ -174,7 +174,7 @@ public class HighlightSettings extends SettingsPanel {
                     setVisible(false);
                 }
             });
-            gbc = d.makeGbc(0, 5, 2, 1);
+            gbc = d.makeGbc(0, 2, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             gbc.insets = new Insets(5, 5, 5, 5);

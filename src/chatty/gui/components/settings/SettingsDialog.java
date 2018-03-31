@@ -101,7 +101,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         NOTIFICATIONS("Notifications", Language.getString("settings.page.notifications")),
         SOUNDS("Sounds", Language.getString("settings.page.sound")),
         USERCOLORS("Usercolors", Language.getString("settings.page.usercolors")),
-        LOGGING("Logging", Language.getString("settings.page.logging")),
+        LOGGING("Log to file", Language.getString("settings.page.logging")),
         WINDOW("Window", Language.getString("settings.page.window")),
         TABS("Tabs", Language.getString("settings.page.tabs")),
         COMMANDS("Commands", Language.getString("settings.page.commands")),
