@@ -189,7 +189,7 @@ public class AutoModDialog extends JDialog {
             @Override
             public void componentResized(ComponentEvent e) {
 // Trick from kleopatra:
-// http://stackoverflow.com/questions/7306295/swing-jlist-with-multiline-text-and-dynamic-height
+// https://stackoverflow.com/questions/7306295/swing-jlist-with-multiline-text-and-dynamic-height
                 // next line possible if list is of type JXList
                 // list.invalidateCellSizeCache();
                 // for core: force cache invalidation by temporarily setting fixed height

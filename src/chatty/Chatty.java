@@ -38,9 +38,6 @@ public class Chatty {
     
     /**
      * The Twitch client id of this program.
-     * 
-     * If you compile this program yourself, you should create your own client
-     * id on http://www.twitch.tv/kraken/oauth2/clients/new
      */
     public static final String CLIENT_ID = "spyiu9jqdnfjtwv6l1xjk5zgt8qb91l";
     

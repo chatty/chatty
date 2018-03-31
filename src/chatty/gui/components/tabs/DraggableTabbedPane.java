@@ -23,7 +23,7 @@ import javax.swing.event.ChangeListener;
  * and ok in most cases but not quite perfectly if they are placed in more than
  * one row.
  *
- * Based on: http://stackoverflow.com/a/60306/2375667 (but extended quite a bit)
+ * Based on: https://stackoverflow.com/a/60306/2375667 (but extended quite a bit)
  * 
  * @author tduva
  */

@@ -171,7 +171,7 @@ public class FrankerFaceZ {
         
         // Create request and run it in a seperate thread
         UrlRequest request = new UrlRequest();
-        request.setLabel("[FFZ]");
+        request.setLabel("FFZ");
         request.setUrl(url);
         request.async((result, responseCode) -> {
             requestPending.remove(url);
@@ -188,10 +188,10 @@ public class FrankerFaceZ {
      */
     private String getUrl(Type type, String stream) {
         if (type == Type.GLOBAL) {
-            return "http://api.frankerfacez.com/v1/set/global";
+            return "https://api.frankerfacez.com/v1/set/global";
         } else if (type == Type.FEATURE_FRIDAY) {
             if (stream == null) {
-                return "http://cdn.frankerfacez.com/script/event.json";
+                return "https://cdn.frankerfacez.com/script/event.json";
 //                return "http://127.0.0.1/twitch/ffz_feature";
             } else {
                 // The stream is a set id in this case
@@ -199,7 +199,7 @@ public class FrankerFaceZ {
 //                return "http://127.0.0.1/twitch/ffz_v1_set_"+stream;
             }
         } else {
-            return "http://api.frankerfacez.com/v1/room/"+stream;
+            return "https://api.frankerfacez.com/v1/room/"+stream;
         }
     }
     

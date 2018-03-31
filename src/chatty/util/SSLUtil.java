@@ -21,7 +21,7 @@ import javax.net.ssl.TrustManagerFactory;
 
 
 /**
- * Based on http://stackoverflow.com/a/34111150/2375667
+ * Based on https://stackoverflow.com/a/34111150/2375667
  * 
  * @author tduva
  */

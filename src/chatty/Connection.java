@@ -79,7 +79,7 @@ public class Connection implements Runnable {
                 
                 /**
                  * Workaround for "Could not generate DH keypair" exception
-                 * http://stackoverflow.com/a/6862383
+                 * https://stackoverflow.com/a/6862383
                  * 
                  * Maybe not be necessary anymore for now
                  */

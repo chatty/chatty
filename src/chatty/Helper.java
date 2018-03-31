@@ -267,7 +267,7 @@ public class Helper {
     
 
     /**
-     * http://stackoverflow.com/questions/5609500/remove-jargon-but-keep-real-characters/5609532#5609532
+     * https://stackoverflow.com/questions/5609500/remove-jargon-but-keep-real-characters/5609532#5609532
      * 
      * Combining characters seem to affect performance sometimes. Opening the
      * User Info Dialog can take a noticeable amount of time to open if the

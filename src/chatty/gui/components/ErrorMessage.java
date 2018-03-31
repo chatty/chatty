@@ -45,12 +45,12 @@ public class ErrorMessage extends JDialog {
             + "the error by [url:https://docs.google.com/forms/d/1pCc1xcWHOK1JPetQNc_N3boijnm3srcPH8PcfyVYG_U/viewform reporting it]."
             + " Please include a copy of the report message below and a short description of what you were "
             + "doing when the error occured.<br /><br />"
-            + "Alternatively to the report page, you can also send a report "
-            + "via [url:http://www.twitch.tv/message/compose?to=tduva Twitch], "
-            + "[url:https://twitter.com/ChattyClient Twitter] or "
+            + "Alternatively to the report page you can also send the report via "
             + "[url:mailto:chattyclient@gmail.com E-Mail]. "
-            + "You can use something like [url:http://pastebin.com Pastebin.com] "
-            + "to send the text as a link.";
+            + "You can use something like [url:https://pastebin.com Pastebin.com] "
+            + "to send the text as a link.<br /><br />"
+            + "Please also check if there already is an update available for "
+            + "Chatty, since often bugs are fixed in newer versions.";
     
     private static final String MINIMIZED_MESSAGE = "<html><body width='300px'>"
             + "An unexpected error has occured. ([local:maximize Show more..])";

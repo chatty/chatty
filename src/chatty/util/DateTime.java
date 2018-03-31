@@ -280,7 +280,7 @@ public class DateTime {
     /**
      * Parses the time returned from the Twitch API.
      * 
-     * http://stackoverflow.com/a/2202300/2375667
+     * https://stackoverflow.com/a/2202300/2375667
      * 
      * Switched to java.time now because DatatypeConverter isn't visible by
      * default in Java 9 anymore.

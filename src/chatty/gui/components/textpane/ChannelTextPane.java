@@ -1830,7 +1830,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * of two UTF-16 characters. Twitch Chat sees these as only one character
          * so that has to be corrected.
          * 
-         * http://discuss.dev.twitch.tv/t/jtv-2-receiving-messages/1635/10
+         * https://discuss.dev.twitch.tv/t/jtv-2-receiving-messages/1635/10
          * 
          * Example message: "Kappa 𠜎 Kappa"
          */

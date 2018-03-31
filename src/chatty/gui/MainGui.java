@@ -1875,7 +1875,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (e.getActionCommand().equals("codeEmoji")) {
                 channels.getActiveChannel().insertText(emote.stringId, true);
             } else if (e.getActionCommand().equals("cheer")) {
-                url = "http://help.twitch.tv/customer/portal/articles/2449458";
+                url = "https://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {
                 url = emoteImage.getLoadedFrom();
             } else if (e.getActionCommand().equals("ffzlink")) {

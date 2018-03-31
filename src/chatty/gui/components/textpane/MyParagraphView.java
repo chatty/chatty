@@ -16,7 +16,7 @@ import javax.swing.text.ViewFactory;
  * performance if all instances have to use a i18n stragety when one character
  * that requires it is inserted.)
  * 
- * Contains parts of http://stackoverflow.com/a/14230668/2375667 to fix a line
+ * Contains parts of https://stackoverflow.com/a/14230668/2375667 to fix a line
  * breaking bug in JTextPane.
  *
  * @author tduva

@@ -11,7 +11,7 @@ import javax.swing.text.ViewFactory;
 /**
  * Always wrap long words.
  * 
- * Contains parts of http://stackoverflow.com/a/14230668/2375667 to fix a line
+ * Contains parts of https://stackoverflow.com/a/14230668/2375667 to fix a line
  * breaking bug in JTextPane.
  * 
  * @author tduva

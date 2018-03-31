@@ -215,7 +215,7 @@ public class GuiUtil {
     /**
      * Detect retina display.
      * 
-     * http://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
+     * https://stackoverflow.com/questions/20767708/how-do-you-detect-a-retina-display-in-java
      * 
      * @return 
      */
@@ -329,7 +329,7 @@ public class GuiUtil {
     }
     
     /**
-     * Based on: http://stackoverflow.com/a/7253059/2375667
+     * Based on: https://stackoverflow.com/a/7253059/2375667
      */
     private static void addMacKeyboardActionsTo(String key) {
         InputMap im = (InputMap) UIManager.get(key);

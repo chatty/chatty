@@ -269,7 +269,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
              * element is nearer.
              *
              * See also:
-             * http://stackoverflow.com/questions/24036650/detecting-image-on-current-mouse-position-only-works-on-part-of-image
+             * https://stackoverflow.com/questions/24036650/detecting-image-on-current-mouse-position-only-works-on-part-of-image
              */
             try {
                 Rectangle rect = text.modelToView(pos);

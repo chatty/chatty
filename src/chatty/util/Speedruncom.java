@@ -24,11 +24,11 @@ public class Speedruncom {
             StreamInfo info = twitchApi.getStreamInfo(chan.getStreamName(), null);
             if (info.isValid() && !info.getGame().isEmpty()) {
                 String game = info.getGame();
-                UrlOpener.openUrlPrompt(chan, "http://speedrun.com/" + replaceForUrl(game));
+                UrlOpener.openUrlPrompt(chan, "https://speedrun.com/" + replaceForUrl(game));
                 return;
             }
         }
-        UrlOpener.openUrlPrompt(chan, "http://speedrun.com");
+        UrlOpener.openUrlPrompt(chan, "https://speedrun.com");
     }
     
     private static String replaceForUrl(String game) {
