@@ -981,8 +981,18 @@ public class TwitchConnection {
                 listener.onInfo(text);
             } else if (onChannel(channel)) {
                 infoMessage(channel, text);
+            } else if (isChannelOpen(channel)) {
+                infoMessage(channel, text);
+                
+                Room room = rooms.getRoom(channel);
+                if (room.isChatroom()) {
+                    if (tags.isValue("msg-id", "no_permission")) {
+                        listener.onInfo(room, "Cancelled trying to join channel.");
+                        joinChecker.cancel(channel);
+                    }
+                }
             } else {
-                listener.onInfo(String.format("[Info/%s] %s", channel, text));
+                listener.onInfo(String.format("[Info/%s] %s", rooms.getRoom(channel), text));
             }
         }
         

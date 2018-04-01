@@ -325,7 +325,7 @@ public class FrankerFaceZ {
      */
     public void requestBotNames() {
         UrlRequest request = new UrlRequest("https://api.frankerfacez.com/v1/badge/bot");
-        request.setLabel("[FFZ Bots]");
+        request.setLabel("FFZ Bots");
         request.async((result, responseCode) -> {
             if (result != null && responseCode == 200) {
                 Set<String> botNames = FrankerFaceZParsing.getBotNames(result);

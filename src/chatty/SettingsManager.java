@@ -527,7 +527,7 @@ public class SettingsManager {
         settings.addBoolean("completionAllNameTypes", true);
         settings.addBoolean("completionPreferUsernames", true);
         settings.addBoolean("completionAllNameTypesRestriction", true);
-        settings.addString("completionTab", "names");
+        settings.addString("completionTab", "both");
         settings.addString("completionTab2", "emotes");
 
         // Stream Chat
