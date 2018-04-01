@@ -251,7 +251,7 @@ public class Helper {
                 result = Language.getString("chat.error.connectionTimeout");
                 break;
             case Irc.SSL_ERROR:
-                result = "Could not established secure connection ("+reasonMessage+")";
+                result = "Could not establish secure connection ("+reasonMessage+")";
                 break;
             case Irc.ERROR_SOCKET_ERROR:
                 result = reasonMessage;

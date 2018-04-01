@@ -69,7 +69,8 @@ public class MainSettings extends SettingsPanel {
     public static Map<String, String> getLanguageOptions() {
         Map<String, String> languageOptions = new LinkedHashMap<>();
         languageOptions.put("", Language.getString("settings.language.option.defaultLanguage"));
-        languageOptions.put("en", "English");
+        languageOptions.put("en_US", "English (US)");
+        languageOptions.put("en_GB", "English (UK)");
         languageOptions.put("de", "German / Deutsch");
         languageOptions.put("es", "Spanish / Español");
         languageOptions.put("ja", "Japanese / 日本語");

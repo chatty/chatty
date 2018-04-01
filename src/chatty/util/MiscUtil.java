@@ -103,6 +103,9 @@ public class MiscUtil {
         try {
             Files.move(from, to, ATOMIC_MOVE);
         } catch (IOException ex) {
+            // Based on the Files.move() docs it may throw an IOException when
+            // the target file already exists (implementation specific), so try
+            // alternate move on that instead of AtomicMoveNotSupportedException
             LOGGER.info("ATOMIC_MOVE failed: "+ex);
             Files.move(from, to, REPLACE_EXISTING);
         }

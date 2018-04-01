@@ -211,7 +211,7 @@ public class StringUtil {
     public static final String UTF8_BOM = "\uFEFF";
     
     /**
-     * Remove the UTF-8 BOM frmo the beginning of the input.
+     * Remove the UTF-8 BOM from the beginning of the input.
      * 
      * @param input
      * @return 
