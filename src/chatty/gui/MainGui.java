@@ -2357,6 +2357,8 @@ public class MainGui extends JFrame implements Runnable {
     private void openEmotesDialog(String channel) {
         windowStateManager.setWindowPosition(emotesDialog, getActiveWindow());
         emotesDialog.showDialog(client.getSpecialUser().getEmoteSet(), channel);
+        // Focus inputbox to be able to keep writing
+        channels.setInitialFocus();
     }
     
     private void openEmotesDialogChannelEmotes(String channel) {
