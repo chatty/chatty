@@ -60,6 +60,8 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     
     private ContextMenu defaultContextMenu;
     
+    private boolean alreadyHandled;
+    
     /**
      * Set the object that should receive the User object once a User is clicked
      * 
@@ -116,34 +118,37 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
      */
     @Override
     public void mousePressed(MouseEvent e) {
+        alreadyHandled = false;
         
         if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
-            String url = getUrl(e);
-            if (url != null && !isUrlDeleted(e)) {
+            String url;
+            User user;
+            EmoticonImage emote;
+            Usericon usericon;
+            
+            if ((url = getUrl(e)) != null && !isUrlDeleted(e)) {
                 if (linkListener != null) {
                     linkListener.linkClicked(url);
                 }
-                return;
+                alreadyHandled = true;
             }
-            User user = getUser(e);
-            if (user != null) {
+            else if ((user = getUser(e)) != null) {
                 for (UserListener listener : userListener) {
                     listener.userClicked(user, getMsgId(e), getAutoModMsgId(e), e);
                 }
-                return;
+                alreadyHandled = true;
             }
-            EmoticonImage emote = getEmoticon(e);
-            if (emote != null) {
+            else if ((emote = getEmoticon(e)) != null) {
                 for (UserListener listener : userListener) {
                     listener.emoteClicked(emote.getEmoticon(), e);
                 }
-                return;
+                alreadyHandled = true;
             }
-            Usericon usericon = getUsericon(e);
-            if (usericon != null) {
+            else if ((usericon = getUsericon(e)) != null) {
                 for (UserListener listener : userListener) {
                     listener.usericonClicked(usericon, e);
                 }
+                alreadyHandled = true;
             }
         }
         else if (e.isPopupTrigger()) {
@@ -165,9 +170,12 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (mouseClickedListener != null && e.getClickCount() == 1
-                && !e.isAltDown() && !e.isAltGraphDown()) {
-            // Doing this on mousePressed will prevent selection of text,
+        if (!alreadyHandled
+                && mouseClickedListener != null
+                && e.getClickCount() == 1
+                && !e.isAltDown()
+                && !e.isAltGraphDown()) {
+            // Doing this on mousePressed would prevent selection of text,
             // because this is used to change the focus to the input
             mouseClickedListener.mouseClicked();
         }
