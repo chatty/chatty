@@ -154,7 +154,7 @@ public class HighlightSettings extends SettingsPanel {
 
             gbc = d.makeGbc(0, 0, 1, 1);
             add(new JLabel("<html><body style='width:260px;padding:4px;'>Users on this list "
-                    + "will never trigger a highlight. This can be useful e.g. "
+                    + "will never trigger a Highlight. This can be useful e.g. "
                     + "for bots in your channel that repeatedly post messages "
                     + "containing your name."), gbc);
             
@@ -202,12 +202,12 @@ public class HighlightSettings extends SettingsPanel {
             gbc = d.makeGbc(0, 0, 1, 1);
             add(new JLabel("<html><body style='width:260px;padding:4px;'>"
                     + "Any text regions matched by items in this list will "
-                    + "never trigger a highlight.<br /><br />"
-                    + "For example if the "
-                    + "Highlight list contains <code>kerbo</code>, it would "
-                    + "trigger on the message \"<code>Welcome :) kerboHowdy</code>\", "
-                    + "but it would not trigger if <code>kerboHowdy</code> was "
-                    + "blacklisted."), gbc);
+                    + "never trigger a Highlight.<br /><br />"
+                    + "For example if the Highlight list contains "
+                    + "<code>kerbo</code>, it would highlight the message "
+                    + "\"<code>Welcome :) kerboHowdy</code>\", however if "
+                    + "<code>kerboHowdy</code> was blacklisted it would "
+                    + "prevent that Highlight."), gbc);
             
             gbc = d.makeGbc(0, 1, 1, 1);
             gbc.fill = GridBagConstraints.BOTH;

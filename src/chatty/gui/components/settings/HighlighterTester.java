@@ -54,10 +54,9 @@ public class HighlighterTester extends JDialog implements StringEditor {
             + "Test the entered 'Item' pattern with the 'Test' text. Disregards non-text related prefixes.";
     
     private final static String INFO_BLACKLIST = "<br /><br />"
-            + "Anything matched by the <code>Blacklist</code> pattern "
-            + "(indicated by strike-through) cannot cause a match. This can "
-            + "be used to test how an entry on the Highlight Blacklist would "
-            + "affect Highlighting.";
+            + "Test a single <code>Blacklist</code> pattern (showing as "
+            + "strike-through), that if added to the Highlight Blacklist "
+            + "will prevent whatever it matches from triggering Highlights.";
     
     private final static String TOOLTIP_PREFIX = "<html><body style='font-family:Monospaced'>Full pattern: ";
     
