@@ -51,7 +51,7 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.9.1">Version 0.9.1</a> <a name="latest">(This one!)</a> (2018-02-??)
+        <a name="0.9.1">Version 0.9.1</a> <a name="latest">(This one!)</a> (2018-04-02)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>This version has a lot of under-the-hood changes to allow for the new
@@ -67,7 +67,7 @@
     
     <pre>
 ### Main Features
-- Added basic support for Rooms (join through Channels-menu, favorite)
+- Added basic support for Rooms (join via Channels-menu and Favorites/History)
 - Added initial support for translating the Chatty GUI to other languages,
   added some partial translations (thanks to volunteers translating)
 
@@ -82,14 +82,16 @@
 
 ### Settings
 - Setting files `favoritesAndHistory` and `statusPresets` now both merged into
-  `settings` file, remove unused files
+  `settings` file, unused files are removed
+- Possibly made saving settings more reliable in some circumstances
 - Reorganized Settings Dialog, added new menu for navgiation
 - Added setting for vertical zoom in Channel Info Dialog, improved context menu
 - Added setting for logging regular chat messages (and thus a way to disable it)
-- Added setting whether to enable chat inputbox by default (and thus a way to
-  hide it by default)
+- Added setting whether to show chat inputbox by default (and thus a way to hide
+  it by default)
 - Added "Off" option for notification type setting
-- Added format to specify display names for Livestreamer/Streamlink context menu
+- Updated Livestreamer context menu qualities setting format to allow specifying
+  display names for groups of qualities
 - Changed TAB Completion default to complete both usernames and emotes with TAB
 
 ### Other Changes

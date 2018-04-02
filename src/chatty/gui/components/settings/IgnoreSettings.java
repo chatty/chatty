@@ -27,7 +27,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 public class IgnoreSettings extends SettingsPanel {
     
     private static final String INFO_IGNORE = HighlightSettings.INFO
-            +"Example: <code>chan:joshimuz re:!bet.*</code>";
+            +"Example: <code>chan:joshimuz start:!bet</code>";
     
     private final IgnoredUsers ignoredUsers;
     
