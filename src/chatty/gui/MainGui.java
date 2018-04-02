@@ -1459,13 +1459,23 @@ public class MainGui extends JFrame implements Runnable {
     
     }
     
+    /**
+     * Output "no rooms" message when forcing refresh. This isn't perfect, if
+     * another request causes setRooms() to be called it might only output that
+     * one, but shouldn't be too bad. Also it's kind of weird having it like
+     * this, but it seems more straightforward than the alternatives.
+     */
+    private boolean forcedRoomsRefresh = false;
+    
     public void setRooms(RoomsInfo info) {
         SwingUtilities.invokeLater(() -> {
             //System.out.println(channels.getActiveChannel().getStreamName());
             if (Objects.equals(channels.getActiveChannel().getStreamName(), info.stream)) {
                 menu.setRooms(info.rooms);
             }
-            printLineByOwnerChannel(Helper.toChannel(info.stream), info.makeInfo());
+            if (info.hasRooms() || forcedRoomsRefresh) {
+                printLineByOwnerChannel(Helper.toChannel(info.stream), info.makeInfo());
+            }
             if (info.rooms != null) {
                 for (Room room : info.rooms) {
                     if (room.hasTopic() && channels.isChannel(room.getChannel())) {
@@ -1473,10 +1483,14 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
             }
+            forcedRoomsRefresh = false;
         });
     }
-    
+
     private void loadRooms(boolean forceRefresh) {
+        if (forceRefresh) {
+            forcedRoomsRefresh = true;
+        }
         String channel = channels.getActiveChannel().getOwnerChannel();
         if (!Helper.isRegularChannel(channel) && forceRefresh) {
             printSystem("[ChatRooms] Invalid channel");
@@ -2971,7 +2985,7 @@ public class MainGui extends JFrame implements Runnable {
     public void printLineByOwnerChannel(final String channel, final String text) {
         SwingUtilities.invokeLater(() -> {
             for (Channel chan : channels.getExistingChannelsByOwner(channel)) {
-                chan.printLine(text);
+                printLine(chan.getRoom(), text);
                 client.chatLog.info(chan.getFilename(), text);
             }
         });

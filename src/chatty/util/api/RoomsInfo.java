@@ -19,6 +19,10 @@ public class RoomsInfo {
         this.rooms = rooms;
     }
     
+    public boolean hasRooms() {
+        return rooms != null && !rooms.isEmpty();
+    }
+    
     @Override
     public String toString() {
         return stream+":"+rooms;
