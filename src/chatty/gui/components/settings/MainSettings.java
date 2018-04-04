@@ -77,6 +77,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("zh_TW", "Chinese (traditional)");
         //languageOptions.put("fr", "French / Français");
         languageOptions.put("tr", "Turkish / Türk");
+        languageOptions.put("pl", "Polish / Polski");
         return languageOptions;
     }
   
