@@ -134,7 +134,9 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             }
             else if ((user = getUser(e)) != null) {
                 for (UserListener listener : userListener) {
-                    listener.userClicked(user, getMsgId(e), getAutoModMsgId(e), e);
+                    SwingUtilities.invokeLater(() -> {
+                        listener.userClicked(user, getMsgId(e), getAutoModMsgId(e), e);
+                    });
                 }
                 alreadyHandled = true;
             }
@@ -170,8 +172,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
      */
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (!alreadyHandled
-                && mouseClickedListener != null
+        if (mouseClickedListener != null
                 && e.getClickCount() == 1
                 && !e.isAltDown()
                 && !e.isAltGraphDown()) {

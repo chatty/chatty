@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.Helper;
+import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
 import chatty.util.commands.CustomCommand;
@@ -419,6 +420,25 @@ public class GuiUtil {
                 String oldV = evt.getOldValue() != null ? evt.getOldValue().getClass().toString() : null;
                 String newV = evt.getNewValue() != null ? evt.getNewValue().getClass().toString() : null;
                 //System.out.println(evt.getPropertyName()+": "+oldV+" -> "+newV);
+            }
+        });
+    }
+    
+    public static void focusTest() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addVetoableChangeListener(new VetoableChangeListener() {
+
+            @Override
+            public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+                if (evt.getOldValue() != null) {
+                    System.out.println("from: "+evt.getOldValue().getClass().getName()+" ("+evt.getPropertyName()+")");
+                }
+                if (evt.getNewValue() != null) {
+                    System.out.println("to: "+evt.getNewValue().getClass().getName()+" ("+evt.getPropertyName()+")");
+                }
+                if (evt.getNewValue() instanceof ChannelTextPane) {
+                    //System.out.println("prevent");
+                    //throw new PropertyVetoException("abc", evt);
+                }
             }
         });
     }

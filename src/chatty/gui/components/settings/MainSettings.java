@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
 import java.util.LinkedHashMap;
@@ -61,8 +62,12 @@ public class MainSettings extends SettingsPanel {
         languagePanel.add(languageSetting,
                 d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
         
-        languagePanel.add(new JLabel(SettingConstants.HTML_PREFIX
-                +Language.getString("settings.language.info")),
+        languagePanel.add(new LinkLabel(SettingConstants.HTML_PREFIX
+                +Language.getString("settings.language.info")
+                + "<br /><br />"
+                + "If you would like to help with translations, check "
+                + "[url:http://chatty.github.io/localization.html the website].",
+                d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
     }
     
@@ -77,6 +82,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("zh_TW", "Chinese (traditional)");
         //languageOptions.put("fr", "French / Français");
         languageOptions.put("tr", "Turkish / Türk");
+        languageOptions.put("pl", "Polish / Polski");
         return languageOptions;
     }
   

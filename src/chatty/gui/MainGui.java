@@ -779,6 +779,7 @@ public class MainGui extends JFrame implements Runnable {
                 if (!guiCreated) {
                     return;
                 }
+                channels.setInitialFocus();
                 setVisible(true);
                 
                 // Should be done when the main window is already visible, so
