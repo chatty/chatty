@@ -96,9 +96,9 @@ public class Channel extends JPanel {
         
         // PageUp/Down hotkeys / Scrolling
         InputMap westScrollInputMap = west.getInputMap(WHEN_IN_FOCUSED_WINDOW);
-        westScrollInputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "pageUp");
+        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "pageUp");
         west.getActionMap().put("pageUp", new ScrollAction("pageUp", west.getVerticalScrollBar()));
-        westScrollInputMap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "pageDown");
+        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
         west.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         west.getVerticalScrollBar().setUnitIncrement(40);
 
@@ -118,7 +118,9 @@ public class Channel extends JPanel {
         input = new ChannelEditBox(40);
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new InputCompletionServer());
-        
+        // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
+        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
+        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
 
         // Add components
         add(mainPane, BorderLayout.CENTER);

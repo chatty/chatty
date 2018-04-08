@@ -293,8 +293,9 @@ public class TwitchClient {
         
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,33,42,19194");
-//            g.addUser("", new User("josh", ""));
-//            g.addUser("", new User("joshua", ""));
+            Room testRoom =  Room.createRegular("");
+            g.addUser(new User("josh", testRoom));
+            g.addUser(new User("joshua", testRoom));
 //            User j = new User("joshimuz", "Joshimuz", "");
 //            j.addMessage("abc", false, null);
 //            j.setDisplayNick("Joshimoose");
