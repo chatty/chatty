@@ -83,6 +83,7 @@ public class MainSettings extends SettingsPanel {
         //languageOptions.put("fr", "French / Français");
         languageOptions.put("tr", "Turkish / Türk");
         languageOptions.put("pl", "Polish / Polski");
+        languageOptions.put("ko", "Korean / 한국어");
         return languageOptions;
     }
   
