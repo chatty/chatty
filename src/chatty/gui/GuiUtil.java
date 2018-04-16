@@ -149,8 +149,8 @@ public class GuiUtil {
      * @param xOffset The horizontal offset in pixels
      * @return {@code true} if the point is on screen, {@code false} otherwise
      */
-    public static boolean isPointOnScreen(Point p, int xOffset) {
-        Point moved = new Point(p.x + xOffset, p.y);
+    public static boolean isPointOnScreen(Point p, int xOffset, int yOffset) {
+        Point moved = new Point(p.x + xOffset, p.y + yOffset);
         return isPointOnScreen(moved);
     }
     

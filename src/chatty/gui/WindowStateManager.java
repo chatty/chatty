@@ -5,11 +5,12 @@ import chatty.Helper;
 import chatty.Helper.IntegerPair;
 import chatty.util.settings.Settings;
 import java.awt.Dimension;
+import java.awt.Frame;
+import static java.awt.Frame.MAXIMIZED_BOTH;
 import java.awt.Point;
 import java.awt.Window;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -50,24 +51,22 @@ public class WindowStateManager {
     private final Settings settings;
     
     /**
-     * The default parent is the one that the windows are centered on, if they
-     * are opened and their position hasn't been set yet or their position
-     * should not be restored.
-     */
-    private final Window defaultParent;
-    
-    /**
      * The primary window is special, because it can be set to be restored even
      * if the others aren't ({@code RESTORE_MAIN}).
+     * 
+     * Other windows are centered on it as their default position, as well as
+     * attached to it (if enabled).
      */
-    private Window primaryWindow;
+    private final Window primaryWindow;
+    
+    private Point primaryMovedBy;
     
     private final AttachedWindowManager attachedWindowManager;
 
-    public WindowStateManager(Window defaultParent, Settings settings) {
+    public WindowStateManager(Window primaryWindow, Settings settings) {
         this.settings = settings;
-        this.defaultParent = defaultParent;
-        attachedWindowManager = new AttachedWindowManager(defaultParent);
+        this.primaryWindow = primaryWindow;
+        attachedWindowManager = new AttachedWindowManager(primaryWindow);
     }
     
     /**
@@ -87,16 +86,6 @@ public class WindowStateManager {
         return new HashSet<>(windows.keySet());
     }
     
-    /**
-     * Sets the primary window, which can be restored even if the other windows
-     * are set to not restore.
-     * 
-     * @param window 
-     */
-    public void setPrimaryWindow(Window window) {
-        this.primaryWindow = window;
-    }
-    
     public void setAttachedWindowsEnabled(boolean enabled) {
         attachedWindowManager.setEnabled(enabled);
     }
@@ -114,8 +103,12 @@ public class WindowStateManager {
      * Loads the window attributes for all managed windows.
      */
     public void loadWindowStates() {
+        // Primary first, so dialogs can be moved the same if off-screen
+        loadWindowState(primaryWindow);
         for (Window window : windows.keySet()) {
-            loadWindowState(window);
+            if (window != primaryWindow) {
+                loadWindowState(window);
+            }
         }
     }
     
@@ -181,13 +174,51 @@ public class WindowStateManager {
                         || isOnScreen(location, window.getWidth())) {
                     // If this is the window the others are attached to, ignore
                     // this movement.
-                    if (window == defaultParent) {
+                    if (window == primaryWindow) {
                         attachedWindowManager.ignoreLocationOnce(location);
                     }
                     window.setLocation(location);
                     locationSet.add(window);
                 } else {
-                    LOGGER.info("Location for "+item.id+" ["+location+"] not restored (not on screen)");
+                    // Failed to restore normally due to not being on screen
+                    if (window == primaryWindow) {
+                        /**
+                         * Store how far the primary window has moved from it's
+                         * intended location to the new default location.
+                         */
+                        if (!(window instanceof Frame) || (((Frame) window).getExtendedState() & MAXIMIZED_BOTH) != MAXIMIZED_BOTH) {
+                            /**
+                             * Center as default location, but only if not
+                             * maximized. If maximized, the location should
+                             * already have been set automatically.
+                             */
+                            window.setLocationRelativeTo(null);
+                            attachedWindowManager.ignoreLocationOnce(window.getLocation());
+                        }
+                        locationSet.add(window);
+                        primaryMovedBy = new Point(
+                                window.getLocation().x - location.x,
+                                window.getLocation().y - location.y);
+                        LOGGER.info("Location for "+item.id+" ["+location+"] moved (not on screen)");
+                    } else if (primaryMovedBy != null) {
+                        /**
+                         * If there is information on how far the primary window
+                         * has moved, use that to hopefully get to an on-screen
+                         * location for this.
+                         */
+                        Point newLocation = new Point(
+                                location.x+primaryMovedBy.x,
+                                location.y+primaryMovedBy.y);
+                        if (isOnScreen(newLocation, window.getWidth())) {
+                            window.setLocation(newLocation);
+                            locationSet.add(window);
+                            LOGGER.info("Location for "+item.id+" ["+location+"] moved same as primary (not on screen)");
+                        } else {
+                            LOGGER.info("Location for "+item.id+" ["+location+"] not restored (moved location not on screen)");
+                        }
+                    } else {
+                        LOGGER.info("Location for "+item.id+" ["+location+"] not restored (not on screen)");
+                    }
                 }
             }
         }
@@ -196,8 +227,8 @@ public class WindowStateManager {
     }
     
     private boolean isOnScreen(Point location, int width) {
-        return GuiUtil.isPointOnScreen(location, 100)
-            || GuiUtil.isPointOnScreen(location, width - 100);
+        return GuiUtil.isPointOnScreen(location, 100, 8)
+            || GuiUtil.isPointOnScreen(location, width - 100, 8);
     }
     
     /**
@@ -212,12 +243,18 @@ public class WindowStateManager {
      */
     public void setWindowPosition(Window window, Window parent) {
         boolean setLocationBefore = locationSet.contains(window);
-        if (mode() < RESTORE_ALL || !setLocationBefore) {
-            if (parent == null) {
-                parent = defaultParent;
+        if (window == primaryWindow) {
+            if (!setLocationBefore) {
+                window.setLocationRelativeTo(null);
             }
-            window.setLocationRelativeTo(parent);
-            locationSet.add(window);
+        } else {
+            if (mode() < RESTORE_ALL || !setLocationBefore) {
+                if (parent == null) {
+                    parent = primaryWindow;
+                }
+                window.setLocationRelativeTo(parent);
+                locationSet.add(window);
+            }
         }
     }
     

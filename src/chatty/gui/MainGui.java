@@ -91,6 +91,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -315,7 +316,6 @@ public class MainGui extends JFrame implements Runnable {
         state.update();
         addListeners();
         pack();
-        setLocationByPlatform(true);
         
         // Load some stuff
         client.api.setUserId(client.settings.getString("username"), client.settings.getString("userid"));
@@ -332,7 +332,6 @@ public class MainGui extends JFrame implements Runnable {
         // Window states
         windowStateManager = new WindowStateManager(this, client.settings);
         windowStateManager.addWindow(this, "main", true, true);
-        windowStateManager.setPrimaryWindow(this);
         windowStateManager.addWindow(highlightedMessages, "highlights", true, true);
         windowStateManager.addWindow(ignoredMessages, "ignoredMessages", true, true);
         windowStateManager.addWindow(channelInfoDialog, "channelInfo", true, true);
@@ -351,6 +350,9 @@ public class MainGui extends JFrame implements Runnable {
                 || System.getProperty("java.version").equals("1.8.0_162")) {
             GuiUtil.installTextComponentFocusWorkaround();
         }
+        
+        ToolTipManager.sharedInstance().setInitialDelay(300);
+        ToolTipManager.sharedInstance().setDismissDelay(20*1000);
         
         guiCreated = true;
     }
@@ -780,8 +782,17 @@ public class MainGui extends JFrame implements Runnable {
                     return;
                 }
                 channels.setInitialFocus();
+                
+                windowStateManager.loadWindowStates();
+                windowStateManager.setWindowPosition(MainGui.this);
                 setVisible(true);
                 
+                // If not invokeLater() seemed to move dialogs on start when
+                // maximized and not restoring location due to off-screen
+                SwingUtilities.invokeLater(() -> {
+                    windowStateManager.setAttachedWindowsEnabled(client.settings.getBoolean("attachedWindows"));
+                });
+
                 // Should be done when the main window is already visible, so
                 // it can be centered on it correctly, if that is necessary
                 reopenWindows();
@@ -871,10 +882,7 @@ public class MainGui extends JFrame implements Runnable {
         updateConnectionDialog(null);
         userInfoDialog.setUserDefinedButtonsDef(client.settings.getString("timeoutButtons"));
         debugWindow.getLogIrcCheckBox().setSelected(client.settings.getBoolean("debugLogIrc"));
-        updateLiveStreamsDialog();
-        
-        windowStateManager.loadWindowStates();
-        windowStateManager.setAttachedWindowsEnabled(client.settings.getBoolean("attachedWindows"));
+        updateLiveStreamsDialog(); 
         
         // Set window maximized state
         if (client.settings.getBoolean("maximized")) {

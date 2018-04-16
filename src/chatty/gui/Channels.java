@@ -390,7 +390,7 @@ public class Channels {
         // Restore attributes if available
         if (!dialogsAttributes.isEmpty()) {
             LocationAndSize attr = dialogsAttributes.remove(0);
-            if (GuiUtil.isPointOnScreen(attr.location, 5)) {
+            if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
                 newDialog.setLocation(attr.location);
             }
             newDialog.setSize(attr.size);
