@@ -32,7 +32,7 @@ public class TestTimer implements Runnable {
             
 //            user.setUsercolorManager(client.usercolorManager);
             String line = "Line: "+i+" Kappa FrankerZ abc mah a b c d ef gh ij klm nop qrstu vw";
-//            client.g.printMessage("test", user, line, false, "", 0);
+            client.g.printMessage(user, line, false, "", 0);
             //client.userJoined("#test","user"+ new BigInteger(20,random).toString());
 //            for (int y=0;y<10;y++) {
 //                client.g.printMessage("test"+y, user, line, false);

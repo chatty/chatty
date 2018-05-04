@@ -195,7 +195,7 @@ public class TwitchClient {
         // Create after Logging is created, since that resets some stuff
         ircLogger = new IrcLogger();
         
-        createTestUser("tduva", "#m_tt");
+        createTestUser("tduva", "");
         
         settings = new Settings(Chatty.getUserDataDirectory()+"settings");
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
@@ -1252,6 +1252,16 @@ public class TwitchClient {
                 parameter = "bits "+g.emoticons.getCheerEmotesString(Helper.toStream(channel));
             } else if (parameter.startsWith("bits ")) {
                 parameter = "bits "+parameter.substring("bits ".length());
+            } else if (parameter.startsWith("emoji ")) {
+                int num = Integer.parseInt(parameter.substring("emoji ".length()));
+                StringBuilder b = new StringBuilder();
+                for (Emoticon emote : g.emoticons.getEmoji()) {
+                    b.append(emote.code);
+                    if (--num == 0) {
+                        break;
+                    }
+                }
+                parameter = "message "+b.toString();
             }
             String raw = RawMessageTest.simulateIRC(channel, parameter, c.getUsername());
             if (raw != null) {

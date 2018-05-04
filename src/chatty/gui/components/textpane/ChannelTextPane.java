@@ -221,7 +221,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         ((MyDocument)doc).refresh();
         scrollDownIfNecessary();
     }
- 
+    
     /**
      * Outputs some type of message.
      * 
@@ -1254,6 +1254,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     //this.setCaretPosition(startOffset);
                     //this.moveCaretPosition(endOffset);
                     doc.setCharacterAttributes(startOffset, length, styles.searchResult(false), false);
+                    scrollManager.cancelScrollDownRequest();
                     scrollManager.scrollToOffset(startOffset);
                     //System.out.println(text);
 //                    if (i == 0) {
@@ -1489,17 +1490,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (scrollManager.fixedChat) {
             return;
         }
-        if (!scrollManager.isScrollpositionAtTheEnd() && scrollManager.pauseKeyPressed) {
+        if (!scrollManager.isScrollPositionNearEnd()) {
             return;
         }
         int count = doc.getDefaultRootElement().getElementCount();
         int max = styles.bufferSize();
-        if (count > max || ( count > max*0.75 && scrollManager.isScrollpositionAtTheEnd() )) {
+        if (count > max) {
             removeFirstLines(2);
         }
-        //if (doc.getDefaultRootElement().getElementCount() > 500) {
-        //    removeFirstLine();
-        //}
     }
 
     /**
@@ -2055,17 +2053,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
 
     private void scrollDownIfNecessary() {
-        if ((scrollManager.isScrollpositionAtTheEnd() || scrollManager.scrolledUpTimeout())
-                && lastSearchPos == null) {
-            //if (false) {
-            scrollManager.scrollDown();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    scrollManager.scrollDown();
-                }
-            });
-
+        if (lastSearchPos == null) {
+            if (scrollManager.isScrollPositionNearEnd()) {
+                scrollManager.requestScrollDown();
+            } else if (scrollManager.scrolledUpTimeout()) {
+                scrollManager.scrollDown();
+            }
         }
     }
     
@@ -2141,15 +2134,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         /**
          * When the scroll position was last changed.
          */
-        private long lastChanged = 0;
+        private long lastManualScrollChange = 0;
         
-        /**
-         * The last scroll position.
-         * 
-         * TODO: This may not be necessariy anymore, since changes are recorded
-         * using an AdjustmentListener.
-         */
-        private int lastScrollPosition = 0;
+        private boolean scrollingDownInProgress = false;
+
+        private boolean scrollDownRequest = false;
         
         /**
          * The most recent width/height of the scrollpane, used to determine
@@ -2226,21 +2215,62 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             // Listener to detect when the scroll position was last changed
             scrollpane.getVerticalScrollBar().addAdjustmentListener(
                     new AdjustmentListener() {
+                        
+                        private int lastValue = 0;
+                        private int lastMax = 0;
+                        private int lastExtent = 0;
 
                         @Override
                         public void adjustmentValueChanged(AdjustmentEvent e) {
-                            if (!e.getValueIsAdjusting()
-                                    && e.getValue() != lastScrollPosition) {
-                                lastChanged = System.currentTimeMillis();
-                                lastScrollPosition = e.getValue();
+                            boolean valueChanged = e.getValue() != lastValue;
+                            boolean maxChanged = e.getAdjustable().getMaximum() != lastMax;
+                            boolean extentChanged = e.getAdjustable().getVisibleAmount() != lastExtent;
+                            
+                            lastValue = e.getValue();
+                            lastMax = e.getAdjustable().getMaximum();
+                            lastExtent = e.getAdjustable().getVisibleAmount();
+
+                            /**
+                             * The difficulty here is to decide between manual
+                             * scrolling (the user pressed a button/clicked on
+                             * the scrollbar) and when an event means scrolling
+                             * should occur (e.g. when a line was added).
+                             * 
+                             * Indications for manual scrolling (or at least
+                             * something similiar that isn't the normal "keep
+                             * scrolling down"), should be:
+                             *
+                             * - Scroll position has changed (obviously)
+                             * - Maximum and Extent have NOT changed, since
+                             *   normal scrolling wouldn't change that, but more
+                             *   likely something that would prompt automatic
+                             *   scrolling (like adding lines)
+                             * - Scrolling wasn't initiated by scrollDown(),
+                             *   which would look the same otherwise
+                             */
+                            boolean manualScrolled = valueChanged
+                                            && !maxChanged
+                                            && !extentChanged
+                                            && !scrollingDownInProgress;
+                            if (manualScrolled) {
+                                // For scroll timeout, when scrolled up without
+                                // changing position for a while
+                                lastManualScrollChange = System.currentTimeMillis();
                                 
-                                /**
-                                 * When changing scroll position, chat should
-                                 * not be fixed anymore (but don't scroll down).
-                                 */
+                                // When changing scroll position, chat should
+                                // not be fixed anymore (but don't scroll down)
                                 fixedChat = false;
                                 hideFixedChatInfo();
+
+                                // Any manual scrolling should stop auto scroll
+                                scrollDownRequest = false;
                             }
+                            if (scrollDownRequest && !scrollingDownInProgress) {
+                                scrollDown();
+                            }
+                            // After scrollDown() execution of the original
+                            // event will continue here, so preferably don't
+                            // do anything here
                         }
                     });
 
@@ -2254,7 +2284,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          *
          * @return true if scroll position is at the end, false otherwise
          */
-        private boolean isScrollpositionAtTheEnd() {
+        private boolean isScrollPositionNearEnd() {
             JScrollBar vbar = scrollpane.getVerticalScrollBar();
             return vbar.getMaximum() - 20 <= vbar.getValue() + vbar.getVisibleAmount();
         }
@@ -2273,14 +2303,35 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (!styles.autoScroll()) {
                 return false;
             }
-            long timePassed = System.currentTimeMillis() - lastChanged;
+            long timePassed = System.currentTimeMillis() - lastManualScrollChange;
             if (timePassed > 1000 * styles.autoScrollTimeout()) {
                 LOGGER.info("ScrolledUp Timeout (" + timePassed + ")");
                 return true;
             }
             return false;
         }
-
+        
+        /**
+         * Request scrolling down when the vertical scrollbar changes values
+         * (e.g. the maximum changes due to lines being added), until manual
+         * scrolling occurs or the request is cancelled.
+         * 
+         * This allows scrolling to occur when it is required, instead of just
+         * trying to scroll down immediately after changing the document.
+         */
+        private void requestScrollDown() {
+            scrollDownRequest = true;
+        }
+        
+        /**
+         * Cancel the scrolling down request. If already scrolled down, this
+         * will prevent any additional scrolling via with method (until
+         * requested again).
+         */
+        private void cancelScrollDownRequest() {
+            scrollDownRequest = false;
+        }
+        
         /**
          * Scrolls to the very end of the document.
          */
@@ -2288,27 +2339,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (fixedChat) {
                 return;
             }
-            try {
-                int endPosition = doc.getLength();
-                Rectangle bottom = modelToView(endPosition);
-                // Apparently bottom can be null if the component isn't yet
-                // established correctly yet, which happens if you open a
-                // channel from a popout dialog
-                /**
-[15:03] You have joined #tirean[15:03] , , , , 
-[15:03] ~Stream offline~
-                 */
-                if (bottom != null) {
-                    bottom.height = bottom.height + 100;
-                    scrollRectToVisible(bottom);
-                }
-            } catch (BadLocationException ex) {
-                LOGGER.warning("Bad Location");
-            }
+            scrollingDownInProgress = true;
+            scrollpane.getVerticalScrollBar().setValue(Integer.MAX_VALUE);
+            scrollingDownInProgress = false;
         }
 
         /**
-         * Scrolls to the given offset in the document.
+         * Scrolls to the given offset in the document. Counts as manual
+         * scrolling as far as requestScrollDown() is concerned.
          * 
          * @param offset 
          */
@@ -2356,7 +2394,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         @Override
         public void mouseMoved(MouseEvent e) {
             mouseLastMoved = System.currentTimeMillis();
-            if (isPauseEnabled() && isScrollpositionAtTheEnd()) {
+            if (isPauseEnabled() && isScrollPositionNearEnd()) {
                 setFixedChat(true);
             }
         }
