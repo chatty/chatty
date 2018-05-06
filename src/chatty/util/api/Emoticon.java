@@ -49,7 +49,14 @@ public class Emoticon {
     public static final int ID_UNDEFINED = -1;
     
     public static enum Type {
-        TWITCH, FFZ, BTTV, CUSTOM, EMOJI, NOT_FOUND_FAVORITE
+        TWITCH("Twitch"), FFZ("FFZ"), BTTV("BTTV"), CUSTOM("Custom"),
+        EMOJI("Emoji"), NOT_FOUND_FAVORITE("NotFoundFavorite");
+        
+        public String label;
+        
+        Type(String label) {
+            this.label = label;
+        }
     }
     
     public static enum SubType {

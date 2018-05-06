@@ -10,6 +10,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -57,6 +59,7 @@ public class Usericon implements Comparable {
         TWITCH(9, "Twitch Badge", "TWB", null, null, null),
         PRIME(10, "Prime", "TPR", "+", "premium", null),
         BITS(11, "Bits", "BIT", "$", "bits", null),
+        OTHER(12, "Other", "OTH", "'", null, null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -104,6 +107,7 @@ public class Usericon implements Comparable {
     public static final int SOURCE_TWITCH = 5;
     public static final int SOURCE_TWITCH2 = 6;
     public static final int SOURCE_FFZ = 10;
+    public static final int SOURCE_OTHER = 11;
     public static final int SOURCE_CUSTOM = 20;
     
     /**
@@ -199,6 +203,8 @@ public class Usericon implements Comparable {
     
     public final String restrictionValue;
     
+    public final Set<String> usernames;
+    
     public final boolean stop;
     public final boolean first;
     
@@ -222,9 +228,9 @@ public class Usericon implements Comparable {
         this.metaDescription = builder.metaDescription;
         this.metaUrl = builder.metaUrl;
 
-        //--------------------
+        //---------------------
         // Channel Restriction
-        //--------------------
+        //---------------------
         String chan = builder.channel;
         if (chan != null) {
             chan = chan.trim();
@@ -244,10 +250,15 @@ public class Usericon implements Comparable {
             chan = "";
         }
         this.channel = chan;
+        
+        //-----------------------
+        // Usernames Restriction
+        //-----------------------
+        this.usernames = builder.usernames;
 
-        //---------------------
+        //----------------------
         // Image/Image Location
-        //---------------------
+        //----------------------
         this.url = builder.url;
         
         // If no url is set, assume that no image is supposed to be used
@@ -262,9 +273,9 @@ public class Usericon implements Comparable {
             image = addColor(getIcon(url), builder.color);
         }
         
-        //------------
+        //-------------
         // Restriction
-        //------------
+        //-------------
         String restrict = builder.restriction;
         if (restrict != null) {
             restrict = restrict.trim();
@@ -472,6 +483,7 @@ public class Usericon implements Comparable {
         private String metaTitle = "";
         private String metaDescription = "";
         private String metaUrl = "";
+        private Set<String> usernames;
 
         public Builder(Usericon.Type type, int source) {
             this.type = type;
@@ -569,6 +581,11 @@ public class Usericon implements Comparable {
                 url = "";
             }
             this.metaUrl = url.trim();
+            return this;
+        }
+        
+        public Builder setUsernames(Collection<String> usernames) {
+            this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
             return this;
         }
 

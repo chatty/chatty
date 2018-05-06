@@ -3,8 +3,10 @@ package chatty.util.api.usericons;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.gui.HtmlColors;
 import static chatty.util.api.usericons.Usericon.SOURCE_CUSTOM;
 import static chatty.util.api.usericons.Usericon.SOURCE_FALLBACK;
+import static chatty.util.api.usericons.Usericon.SOURCE_OTHER;
 import static chatty.util.api.usericons.Usericon.SOURCE_TWITCH;
 import static chatty.util.api.usericons.Usericon.SOURCE_TWITCH2;
 import static chatty.util.api.usericons.Usericon.getColorFromType;
@@ -14,6 +16,7 @@ import java.net.URL;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -84,6 +87,27 @@ public class UsericonFactory {
             b.setMetaTitle(title);
             b.setMetaDescription(description);
             b.setMetaUrl(clickUrl);
+            return b.build();
+        } catch (MalformedURLException ex) {
+            LOGGER.warning("Invalid icon url: " + urlString);
+        }
+        return null;
+    }
+    
+    public static Usericon createThirdParty(String id, String version,
+            String urlString, String title, String clickUrl, String color,
+            Set<String> usernames) {
+        try {
+            URL url = new URL(Helper.checkHttpUrl(urlString));
+            Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
+            b.setBadgeType(id, version);
+            b.setUrl(url);
+            b.setMetaTitle(title);
+            b.setMetaUrl(clickUrl);
+            b.setUsernames(usernames);
+            if (color != null) {
+                b.setColor(HtmlColors.decode(color));
+            }
             return b.build();
         } catch (MalformedURLException ex) {
             LOGGER.warning("Invalid icon url: " + urlString);

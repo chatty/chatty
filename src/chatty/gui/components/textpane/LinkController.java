@@ -12,9 +12,12 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.menus.UsericonContextMenu;
+import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.Emoticons;
 import chatty.util.api.usericons.Usericon;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
@@ -22,8 +25,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -61,6 +69,8 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     private ContextMenu defaultContextMenu;
     
     private boolean alreadyHandled;
+    
+    private Object prevHoverObject;
     
     /**
      * Set the object that should receive the User object once a User is clicked
@@ -119,11 +129,11 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     @Override
     public void mousePressed(MouseEvent e) {
         alreadyHandled = false;
-        
+
         if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
             String url;
             User user;
-            EmoticonImage emote;
+            EmoticonImage emoteImage;
             Usericon usericon;
             
             if ((url = getUrl(e)) != null && !isUrlDeleted(e)) {
@@ -140,9 +150,9 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
                 }
                 alreadyHandled = true;
             }
-            else if ((emote = getEmoticon(e)) != null) {
+            else if ((emoteImage = getEmoticonImage(e)) != null) {
                 for (UserListener listener : userListener) {
-                    listener.emoteClicked(emote.getEmoticon(), e);
+                    listener.emoteClicked(emoteImage.getEmoticon(), e);
                 }
                 alreadyHandled = true;
             }
@@ -185,14 +195,28 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     @Override
     public void mouseMoved(MouseEvent e) {
 
-        JTextPane text = (JTextPane)e.getSource();
-        
-        String url = getUrl(e);
-        if ((url != null && !isUrlDeleted(e)) || getUser(e) != null ||
-                getEmoticon(e) != null || getUsericon(e) != null) {
-            text.setCursor(HAND_CURSOR);
+        JTextPane textPane = (JTextPane)e.getSource();
+        EmoticonImage emoteImage = getEmoticonImage(e);
+        Usericon usericon = getUsericon(e);
+        if (emoteImage != null) {
+            checkPrevHoverObject(emoteImage);
+            showPopup(e, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
+        } else if (usericon != null) {
+            checkPrevHoverObject(usericon);
+            showPopup(e, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
         } else {
-            text.setCursor(NORMAL_CURSOR);
+            hidePopup();
+        }
+
+        boolean isClickableElement = (getUrl(e) != null && !isUrlDeleted(e))
+                || getUser(e) != null
+                || emoteImage != null
+                || usericon != null;
+        
+        if (isClickableElement) {
+            textPane.setCursor(HAND_CURSOR);
+        } else {
+            textPane.setCursor(NORMAL_CURSOR);
         }
     }
 
@@ -244,7 +268,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         return (String) getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID_AUTOMOD);
     }
     
-    private EmoticonImage getEmoticon(MouseEvent e) {
+    private EmoticonImage getEmoticonImage(MouseEvent e) {
         AttributeSet attributes = getAttributes(e);
         if (attributes != null) {
             return (EmoticonImage)(attributes.getAttribute(ChannelTextPane.Attribute.EMOTICON));
@@ -321,7 +345,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         }
         User user = getUser(e);
         String url = getUrl(e);
-        EmoticonImage emote = getEmoticon(e);
+        EmoticonImage emoteImage = getEmoticonImage(e);
         Usericon usericon = getUsericon(e);
         JPopupMenu m;
         if (user != null) {
@@ -330,8 +354,8 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         else if (url != null) {
             m = new UrlContextMenu(url, isUrlDeleted(e), contextMenuListener);
         }
-        else if (emote != null) {
-            m = new EmoteContextMenu(emote, contextMenuListener);
+        else if (emoteImage != null) {
+            m = new EmoteContextMenu(emoteImage, contextMenuListener);
         }
         else if (usericon != null) {
             m = new UsericonContextMenu(usericon, contextMenuListener);
@@ -344,6 +368,89 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             }
         }
         m.show(e.getComponent(), e.getX(), e.getY());
+        hidePopup();
+    }
+    
+    private final JLabel popupLabel = new JLabel();
+    private Popup popup;
+    
+    private void showPopup(MouseEvent e, String text, int width) {
+        if (popup == null) {
+            try {
+                popupLabel.setText(text);
+                Dimension labelSize = popupLabel.getPreferredSize();
+                Element element = getElement(e);
+                JTextPane textPane = (JTextPane) e.getSource();
+                Rectangle r = textPane.modelToView(element.getStartOffset());
+                r.translate(textPane.getLocationOnScreen().x, textPane.getLocationOnScreen().y);
+                r.translate(0, - labelSize.height - 3);
+                r.translate(width / 2 - labelSize.width / 2, 0);
+                popup = PopupFactory.getSharedInstance().getPopup(e.getComponent(), popupLabel, r.x, r.y);
+                popup.show();
+            } catch (BadLocationException ex) {
+                Logger.getLogger(LinkController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private void hidePopup() {
+        if (popup != null) {
+            popup.hide();
+            popup = null;
+        }
+    }
+    
+    private void checkPrevHoverObject(Object obj) {
+        if (prevHoverObject != obj) {
+            hidePopup();
+        }
+        prevHoverObject = obj;
+    }
+    
+    private static final String POPUP_HTML_PREFIX = "<html><body style='text-align:center;border:1px solid #000;padding:3px 5px 3px 5px;'>";
+    
+    private static String makeEmoticonPopupText(EmoticonImage emoticonImage) {
+        Emoticon emote = emoticonImage.getEmoticon();
+        String emoteInfo = "";
+        if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
+            emoteInfo = emote.getEmotesetInfo() + " Emoticon";
+        } else if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
+            emoteInfo = "Turbo/Prime";
+        } else if (emote.hasStreamSet()) {
+            emoteInfo = "Subemote ("+emote.getStream()+")";
+        } else if (!emote.hasGlobalEmoteset()) {
+            emoteInfo = "Unknown Emote";
+        } else {
+            emoteInfo = emote.type.label;
+            if (emote.type != Emoticon.Type.EMOJI) {
+                if (emote.hasStreamRestrictions()) {
+                    emoteInfo += " Local";
+                } else {
+                    emoteInfo += " Global";
+                }
+            }
+        }
+        return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
+                POPUP_HTML_PREFIX,
+                emote.type == Emoticon.Type.EMOJI ? emote.stringId : emote.code,
+                emoteInfo);
+    }
+    
+    private static String makeUsericonPopupText(Usericon usericon) {
+        String info;
+        if (!usericon.metaTitle.isEmpty()) {
+            info = POPUP_HTML_PREFIX+"Badge: "+usericon.metaTitle;
+        } else {
+            info = POPUP_HTML_PREFIX+"Badge: "+usericon.type.label;
+        }
+        if (usericon.source == Usericon.SOURCE_CUSTOM) {
+            info += " (Custom)";
+        }
+        return info;
+    }
+    
+    public void cleanUp() {
+        hidePopup();
     }
     
 }

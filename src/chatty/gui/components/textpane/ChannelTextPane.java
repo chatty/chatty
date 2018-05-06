@@ -197,6 +197,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             updateTimer.stop();
         }
         scrollManager.cleanUp();
+        linkController.cleanUp();
     }
     
     public void setMessageTimeout(int seconds) {

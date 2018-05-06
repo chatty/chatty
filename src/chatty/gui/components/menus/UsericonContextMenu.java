@@ -41,12 +41,13 @@ public class UsericonContextMenu extends ContextMenu {
         }
         if (!usericon.badgeType.isEmpty()) {
             addItem("copyBadgeType", "ID/Version: "+usericon.badgeType.toString(), -1, infoMenu, ContextMenuHelper.ICON_COPY);
-            if (usericon.source == Usericon.SOURCE_TWITCH2) {
+            if (usericon.source == Usericon.SOURCE_TWITCH2
+                    || usericon.source == Usericon.SOURCE_OTHER) {
                 // Only show add options if original Twitch emote (custom emote
                 // would already be added)
                 addSeparator(infoMenu);
-                addItem("addUsericonOfBadgeType", "Change/Hide ("+usericon.badgeType+")", infoMenu);
-                addItem("addUsericonOfBadgeTypeId", "Change/Hide (all "+usericon.badgeType.id+" variants)", infoMenu);
+                addItem("addUsericonOfBadgeType", "Override/Hide ("+usericon.badgeType+")", infoMenu);
+                addItem("addUsericonOfBadgeTypeAllVariants", "Override/Hide (all "+usericon.badgeType.id+" variants)", infoMenu);
             }
         }
         if (usericon.restriction != null) {

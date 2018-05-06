@@ -328,6 +328,7 @@ public class MainGui extends JFrame implements Runnable {
         if (client.settings.getBoolean("bttvEmotes")) {
             client.bttvEmotes.requestEmotes("$global$", false);
         }
+        OtherBadges.requestBadges(r -> client.usericonManager.setThirdPartyIcons(r), false);
         
         // Window states
         windowStateManager = new WindowStateManager(this, client.settings);
@@ -1965,11 +1966,8 @@ public class MainGui extends JFrame implements Runnable {
             else if (e.getActionCommand().equals("copyBadgeType")) {
                 MiscUtil.copyToClipboard(usericon.badgeType.toString());
             }
-            else if (e.getActionCommand().equals("addUsericonOfBadgeType")) {
-                getSettingsDialog().showSettings("addUsericonOfBadgeType", usericon.badgeType.toString());
-            }
-            else if (e.getActionCommand().equals("addUsericonOfBadgeTypeId")) {
-                getSettingsDialog().showSettings("addUsericonOfBadgeType", usericon.badgeType.id);
+            else if (e.getActionCommand().startsWith("addUsericonOfBadgeType")) {
+                getSettingsDialog().showSettings(e.getActionCommand(), usericon);
             }
             else if (e.getActionCommand().equals("badgeImage")) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
@@ -2084,7 +2082,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public java.util.List<Usericon> getUsericonData() {
-        return client.usericonManager.getData();
+        return client.usericonManager.getCustomData();
     }
     
     public Set<String> getTwitchBadgeTypes() {
@@ -2092,7 +2090,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void setUsericonData(java.util.List<Usericon> data) {
-        client.usericonManager.setData(data);
+        client.usericonManager.setCustomData(data);
     }
     
     public java.util.List<Notification> getNotificationData() {

@@ -78,8 +78,8 @@ public class ImageSettings extends SettingsPanel {
         return usericonsData.getData();
     }
     
-    public void addUsericonOfBadgeType(String idVersion) {
-        usericonsData.addUsericonOfBadgeType(idVersion);
+    public void addUsericonOfBadgeType(Usericon.Type type, String idVersion) {
+        usericonsData.addUsericonOfBadgeType(type, idVersion);
     }
     
 }

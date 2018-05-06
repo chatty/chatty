@@ -40,6 +40,10 @@ public abstract class CachedManager {
      */
     public abstract boolean handleData(String data);
     
+    public boolean load() {
+        return load(false);
+    }
+    
     /**
      * Load the data from the cache. If the data is cached and valid, then this
      * will return true.

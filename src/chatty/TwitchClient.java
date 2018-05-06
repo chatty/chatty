@@ -30,6 +30,7 @@ import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
+import chatty.util.OtherBadges;
 import chatty.util.ProcessManager;
 import chatty.util.RawMessageTest;
 import chatty.util.Speedruncom;
@@ -1660,6 +1661,7 @@ public class TwitchClient {
                 refreshRequests.add("badges");
                 api.getGlobalBadges(true);
                 api.getRoomBadges(Helper.toStream(channel), true);
+                OtherBadges.requestBadges(r -> usericonManager.setThirdPartyIcons(r), true);
             }
         } else if (parameter.equals("ffz")) {
             if (channel == null || channel.isEmpty()) {

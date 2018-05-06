@@ -209,13 +209,13 @@
             custom icon for all Turbo badges shown in chat. Accordingly, if you
             selected <code>Bits</code> it would target all variations of the
             Bits badge.</dd>
-        <dd>The Type <code>Other Twitch</code> allows you to directly select a
-            default icon via Twitch's own Badge ID/Version, which allows you to
-            target badges that are not a supported Type.</dd>
+        <dd>The Type <code>Other (Twitch)</code> allows you to directly target a
+            Twitch Badge by it's Badge ID/Version, which allows you to replace
+            badges that are not an originally supported Type.</dd>
         
         <dt>ID/Version</dt>
-        <dd>You can only use this when you have the <code>Other Twitch</code>
-            Type selected. This specifies the Badge ID/Version that Twitch uses
+        <dd>You can only use this when you have one of the <code>Other</code>
+            types selected. This specifies the Badge ID/Version that Twitch uses
             to identify Badges, which allows you to target any Twitch Badge you
             want, including a specific variation.</dd>
         <dd>For example if you wanted to replace the 100-Bits Badge, you'd want
@@ -252,7 +252,8 @@
                 <li><code>$badge:&lt;ID/Version&gt;</code> matches a Twitch
                     Badge a user has. For example <code>$badge:bits/100</code>
                     will only target users that currently have the 100-Bits
-                    Badge</li>
+                    Badge. This it not to be confused with replacing the Bits
+                    Badge, this merely checks if the user has it.</li>
             </ul>
         </dd>
         <dd><em>Example:</em> <code>$cat:streamer $first</code> - Matches users

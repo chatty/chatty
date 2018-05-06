@@ -75,15 +75,16 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames.put(Usericon.Type.BROADCASTER, "Broadcaster");
         typeNames.put(Usericon.Type.GLOBAL_MOD, "Global Moderator");
         typeNames.put(Usericon.Type.BOT, "Bot");
-        typeNames.put(Usericon.Type.TWITCH, "Other Twitch");
+        typeNames.put(Usericon.Type.TWITCH, "Other (Twitch)");
+        typeNames.put(Usericon.Type.OTHER, "Other (Third-Party)");
     }
     
     public void setTwitchBadgeTypes(Set<String> types) {
         editor.setTwitchBadgeTypes(types);
     }
     
-    public void addUsericonOfBadgeType(String idVersion) {
-        Usericon usericon = UsericonFactory.createCustomIcon(Type.TWITCH, idVersion, "", "", "");
+    public void addUsericonOfBadgeType(Usericon.Type type, String idVersion) {
+        Usericon usericon = UsericonFactory.createCustomIcon(type, idVersion, "", "", "");
         addItem(usericon);
     }
     
@@ -295,7 +296,8 @@ class UsericonEditor extends TableEditor<Usericon> {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (type.getSettingValue() == Usericon.Type.TWITCH) {
+                    if (type.getSettingValue() == Usericon.Type.TWITCH
+                            || type.getSettingValue() == Usericon.Type.OTHER) {
                         idVersion.setEnabled(true);
                     } else {
                         idVersion.setEnabled(false);

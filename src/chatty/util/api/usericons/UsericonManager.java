@@ -36,6 +36,8 @@ public class UsericonManager {
      * by the user and are also loaded/saved from/to the settings.
      */
     private final List<Usericon> customIcons = new ArrayList<>();
+    
+    private final List<Usericon> thirdParty = new ArrayList<>();
 
     private final Settings settings;
     
@@ -57,6 +59,12 @@ public class UsericonManager {
             }
         }
 //        debug();
+    }
+    
+    public synchronized void setThirdPartyIcons(List<Usericon> icons) {
+        LOGGER.info(String.format("Added %d third-party badges", icons.size()));
+        this.thirdParty.clear();
+        this.thirdParty.addAll(icons);
     }
     
     /**
@@ -106,11 +114,11 @@ public class UsericonManager {
                 MainGui.class.getResource(fileName)));
     }
     
-    public synchronized List<Usericon> getData() {
+    public synchronized List<Usericon> getCustomData() {
         return new ArrayList<>(customIcons);
     }
     
-    public synchronized void setData(List<Usericon> data) {
+    public synchronized void setCustomData(List<Usericon> data) {
         customIcons.clear();
         customIcons.addAll(data);
         saveToSettings();
@@ -172,7 +180,9 @@ public class UsericonManager {
             for (Usericon icon : customIcons) {
                 //System.out.println("A:"+" "+type+" "+icon.type+" "+iconsMatchesAdvancedType(icon, type, id, version)+" "+icon);
                 if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)) {
-                    if (icon.image != null || icon.removeBadge) {
+                    if (icon.removeBadge) {
+                        return null;
+                    } else if (icon.image != null) {
                         return icon;
                     } else if (icon.fileName.equalsIgnoreCase("$ffz")) {
                         // If fileName is a reference, then check if an icon
@@ -213,14 +223,28 @@ public class UsericonManager {
      */
     private Usericon getDefaultIcon(Usericon.Type type, String id, String version, User user, int source) {
         for (Usericon icon : defaultIcons) {
-            if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)
-                    && (source == Usericon.SOURCE_ANY || icon.source == source)) {
-                // Skip FFZ if disabled
-                if (icon.source == Usericon.SOURCE_FFZ && !settings.getBoolean("ffzModIcon")) {
-                    continue;
-                }
-                return icon;
+            Usericon checked = checkIcon(icon, type, id, version, user, source);
+            if (checked != null) {
+                return checked;
             }
+        }
+        for (Usericon icon : thirdParty) {
+            Usericon checked = checkIcon(icon, type, id, version, user, source);
+            if (checked != null) {
+                return checked;
+            }
+        }
+        return null;
+    }
+    
+    private Usericon checkIcon(Usericon icon, Usericon.Type type, String id, String version, User user, int source) {
+        if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)
+                && (source == Usericon.SOURCE_ANY || icon.source == source)) {
+            // Skip FFZ if disabled
+            if (icon.source == Usericon.SOURCE_FFZ && !settings.getBoolean("ffzModIcon")) {
+                return null;
+            }
+            return icon;
         }
         return null;
     }
@@ -238,7 +262,7 @@ public class UsericonManager {
      * icon matched or custom icons are disabled
      */
     public synchronized List<Usericon> getAddonIcons(User user, boolean first) {
-        List<Usericon> result = new ArrayList<>();
+        List<Usericon> result = first ? new ArrayList<>() : getThirdPartyIcons(user);
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
                 if (icon.type == Type.ADDON && iconMatchesUser(icon, user)
@@ -248,6 +272,19 @@ public class UsericonManager {
                         break;
                     }
                 }
+            }
+        }
+        return result;
+    }
+    
+    private List<Usericon> getThirdPartyIcons(User user) {
+        List<Usericon> result = new ArrayList<>();
+        for (Usericon icon : thirdParty) {
+            // This may or may not return the same icon, depending on whether
+            // Custom Usericons replace it
+            Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user);
+            if (transformed != null) {
+                result.add(transformed);
             }
         }
         return result;
@@ -289,6 +326,12 @@ public class UsericonManager {
                 if (!icon.channelInverse) {
                     return false;
                 }
+            }
+        }
+        // Only check if restriction to usernames is set
+        if (icon.usernames != null) {
+            if (!icon.usernames.contains(user.getName())) {
+                return false;
             }
         }
         // Now check for the other restriction

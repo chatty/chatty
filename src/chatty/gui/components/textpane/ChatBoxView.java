@@ -18,6 +18,20 @@ class ChatBoxView extends BoxView {
         this.enabled = enabled;
     }
     
+    // For testing
+//    private int layouts = 0;
+//    
+//    @Override
+//    protected void layout(int width, int height) {
+//        long start=System.currentTimeMillis();
+//        super.layout(width, height);
+//        long duration =System.currentTimeMillis() - start;
+//        if (duration > 1) {
+//            layouts++;
+//            System.out.println(duration+" "+layouts);
+//        }
+//    }
+    
     @Override
     protected void layoutMajorAxis(int targetSpan, int axis, int[] offsets, int[] spans) {
         super.layoutMajorAxis(targetSpan,axis,offsets,spans);

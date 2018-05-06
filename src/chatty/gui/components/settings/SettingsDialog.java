@@ -9,6 +9,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.Sound;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.awt.CardLayout;
@@ -309,7 +310,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         showSettings(null, null);
     }
     
-    public void showSettings(String action, String parameter) {
+    public void showSettings(String action, Object parameter) {
         loadSettings();
         notificationSettings.setUserReadPermission(settings.getBoolean("token_user"));
         setLocationRelativeTo(owner);
@@ -329,20 +330,25 @@ public class SettingsDialog extends JDialog implements ActionListener {
         }
     }
     
-    private void editDirectly(final String action, final String parameter) {
+    private void editDirectly(final String action, final Object parameter) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 if (action.equals("editUsercolorItem")) {
                     showPanel(Page.USERCOLORS);
-                    usercolorSettings.editItem(parameter);
+                    usercolorSettings.editItem((String)parameter);
                 } else if (action.equals("editCustomNameItem")) {
                     showPanel(Page.NAMES);
-                    nameSettings.editCustomName(parameter);
+                    nameSettings.editCustomName((String)parameter);
                 } else if (action.equals("addUsericonOfBadgeType")) {
                     showPanel(Page.USERICONS);
-                    imageSettings.addUsericonOfBadgeType(parameter);
+                    Usericon icon = (Usericon)parameter;
+                    imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.toString());
+                } else if (action.equals("addUsericonOfBadgeTypeAllVariants")) {
+                    showPanel(Page.USERICONS);
+                    Usericon icon = (Usericon)parameter;
+                    imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.id);
                 }
             }
         });
