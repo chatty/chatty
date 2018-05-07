@@ -68,8 +68,6 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     
     private ContextMenu defaultContextMenu;
     
-    private boolean alreadyHandled;
-    
     private Object prevHoverObject;
     
     /**
@@ -128,43 +126,41 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        alreadyHandled = false;
-
         if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
-            String url;
-            User user;
-            EmoticonImage emoteImage;
-            Usericon usericon;
-            
-            if ((url = getUrl(e)) != null && !isUrlDeleted(e)) {
-                if (linkListener != null) {
-                    linkListener.linkClicked(url);
-                }
-                alreadyHandled = true;
-            }
-            else if ((user = getUser(e)) != null) {
-                for (UserListener listener : userListener) {
-                    SwingUtilities.invokeLater(() -> {
-                        listener.userClicked(user, getMsgId(e), getAutoModMsgId(e), e);
-                    });
-                }
-                alreadyHandled = true;
-            }
-            else if ((emoteImage = getEmoticonImage(e)) != null) {
-                for (UserListener listener : userListener) {
-                    listener.emoteClicked(emoteImage.getEmoticon(), e);
-                }
-                alreadyHandled = true;
-            }
-            else if ((usericon = getUsericon(e)) != null) {
-                for (UserListener listener : userListener) {
-                    listener.usericonClicked(usericon, e);
-                }
-                alreadyHandled = true;
+            Element element = getElement(e);
+            if (element != null) {
+                handleSingleLeftClick(e, element);
             }
         }
         else if (e.isPopupTrigger()) {
             openContextMenu(e);
+        }
+    }
+    
+    private void handleSingleLeftClick(MouseEvent e, Element element) {
+        String url;
+        User user;
+        EmoticonImage emoteImage;
+        Usericon usericon;
+
+        if ((url = getUrl(element)) != null && !isUrlDeleted(element)) {
+            if (linkListener != null) {
+                linkListener.linkClicked(url);
+            }
+        } else if ((user = getUser(element)) != null) {
+            for (UserListener listener : userListener) {
+                SwingUtilities.invokeLater(() -> {
+                    listener.userClicked(user, getMsgId(element), getAutoModMsgId(element), e);
+                });
+            }
+        } else if ((emoteImage = getEmoticonImage(element)) != null) {
+            for (UserListener listener : userListener) {
+                listener.emoteClicked(emoteImage.getEmoticon(), e);
+            }
+        } else if ((usericon = getUsericon(element)) != null) {
+            for (UserListener listener : userListener) {
+                listener.usericonClicked(usericon, e);
+            }
         }
     }
     
@@ -194,22 +190,27 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     
     @Override
     public void mouseMoved(MouseEvent e) {
-
+        Element element = getElement(e);
+        if (element == null) {
+            return;
+        }
+        // Check for Element instead of e.g. EmoticonImage because the same one
+        // can occur in several Element objects
+        hidePopupIfDifferentElement(element);
+        
         JTextPane textPane = (JTextPane)e.getSource();
-        EmoticonImage emoteImage = getEmoticonImage(e);
-        Usericon usericon = getUsericon(e);
+        EmoticonImage emoteImage = getEmoticonImage(element);
+        Usericon usericon = getUsericon(element);
         if (emoteImage != null) {
-            checkPrevHoverObject(emoteImage);
             showPopup(e, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
-            checkPrevHoverObject(usericon);
             showPopup(e, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
         } else {
             hidePopup();
         }
 
-        boolean isClickableElement = (getUrl(e) != null && !isUrlDeleted(e))
-                || getUser(e) != null
+        boolean isClickableElement = (getUrl(element) != null && !isUrlDeleted(element))
+                || getUser(element) != null
                 || emoteImage != null
                 || usericon != null;
         
@@ -220,68 +221,36 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         }
     }
 
-    /**
-     * Gets the URL from the MouseEvent (if there is any).
-     * 
-     * @param e
-     * @return The URL or null if none was found.
-     */
-    private String getUrl(MouseEvent e) {
-        AttributeSet attributes = getAttributes(e);
-        if (attributes != null) {
-            return (String)(attributes.getAttribute(HTML.Attribute.HREF));
+    private String getUrl(Element e) {
+        return (String)(e.getAttributes().getAttribute(HTML.Attribute.HREF));
+    }
+    
+    private boolean isUrlDeleted(Element e) {
+        Boolean deleted = (Boolean) e.getAttributes().getAttribute(ChannelTextPane.Attribute.URL_DELETED);
+        if (deleted == null) {
+            return false;
         }
-        return null;
+        return deleted;
+    }
+
+    private User getUser(Element e) {
+        return (User) e.getAttributes().getAttribute(ChannelTextPane.Attribute.USER);
     }
     
-    private boolean isUrlDeleted(MouseEvent e) {
-        AttributeSet attributes = getAttributes(e);
-        if (attributes != null) {
-            Boolean deleted = (Boolean)attributes.getAttribute(ChannelTextPane.Attribute.URL_DELETED);
-            if (deleted == null) {
-                return false;
-            }
-            return deleted;
-        }
-        return false;
+    private String getMsgId(Element e) {
+        return (String) e.getAttributes().getAttribute(ChannelTextPane.Attribute.ID);
     }
     
-    /**
-     * Gets the User object from the MouseEvent (if there is any).
-     * 
-     * @param e
-     * @return The User object or null if none was found.
-     */
-    private User getUser(MouseEvent e) {
-        AttributeSet attributes = getAttributes(e);
-        if (attributes != null) {
-            return (User)(attributes.getAttribute(ChannelTextPane.Attribute.USER));
-        }
-        return null;
+    private String getAutoModMsgId(Element e) {
+        return (String) e.getAttributes().getAttribute(ChannelTextPane.Attribute.ID_AUTOMOD);
     }
     
-    private String getMsgId(MouseEvent e) {
-        return (String) getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID);
+    private EmoticonImage getEmoticonImage(Element e) {
+        return (EmoticonImage)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.EMOTICON));
     }
     
-    private String getAutoModMsgId(MouseEvent e) {
-        return (String) getAttributes(e).getAttribute(ChannelTextPane.Attribute.ID_AUTOMOD);
-    }
-    
-    private EmoticonImage getEmoticonImage(MouseEvent e) {
-        AttributeSet attributes = getAttributes(e);
-        if (attributes != null) {
-            return (EmoticonImage)(attributes.getAttribute(ChannelTextPane.Attribute.EMOTICON));
-        }
-        return null;
-    }
-    
-    private Usericon getUsericon(MouseEvent e) {
-        AttributeSet attributes = getAttributes(e);
-        if (attributes != null) {
-            return (Usericon)(attributes.getAttribute(ChannelTextPane.Attribute.USERICON));
-        }
-        return null;
+    private Usericon getUsericon(Element e) {
+        return (Usericon)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON));
     }
     
     public static Element getElement(MouseEvent e) {
@@ -320,22 +289,6 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         return null;
     }
     
-    /**
-     * Gets the attributes from the element in the document the mouse is
-     * pointing at.
-     * 
-     * @param e
-     * @return The attributes of this element or null if the mouse wasn't
-     *          pointing at an element
-     */
-    public static AttributeSet getAttributes(MouseEvent e) {
-        Element element = getElement(e);
-        if (element != null) {
-            return element.getAttributes();
-        }
-        return null;
-    }
-    
     private void openContextMenu(MouseEvent e) {
         // Component to show the context menu on has to be showing to determine
         // it's location (it might not be showing if the channel changed after
@@ -343,16 +296,20 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         if (!e.getComponent().isShowing()) {
             return;
         }
-        User user = getUser(e);
-        String url = getUrl(e);
-        EmoticonImage emoteImage = getEmoticonImage(e);
-        Usericon usericon = getUsericon(e);
+        Element element = getElement(e);
+        if (element == null) {
+            return;
+        }
+        User user = getUser(element);
+        String url = getUrl(element);
+        EmoticonImage emoteImage = getEmoticonImage(element);
+        Usericon usericon = getUsericon(element);
         JPopupMenu m;
         if (user != null) {
-            m = new UserContextMenu(user, getAutoModMsgId(e), contextMenuListener);
+            m = new UserContextMenu(user, getAutoModMsgId(element), contextMenuListener);
         }
         else if (url != null) {
-            m = new UrlContextMenu(url, isUrlDeleted(e), contextMenuListener);
+            m = new UrlContextMenu(url, isUrlDeleted(element), contextMenuListener);
         }
         else if (emoteImage != null) {
             m = new EmoteContextMenu(emoteImage, contextMenuListener);
@@ -400,7 +357,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         }
     }
     
-    private void checkPrevHoverObject(Object obj) {
+    private void hidePopupIfDifferentElement(Object obj) {
         if (prevHoverObject != obj) {
             hidePopup();
         }
