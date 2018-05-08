@@ -2072,6 +2072,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     public void setScrollPane(JScrollPane scroll) {
         scrollManager.setScrollPane(scroll);
+        scroll.getVerticalScrollBar().addAdjustmentListener(e -> {
+            linkController.updatePopup();
+        });
     }
     
     /**

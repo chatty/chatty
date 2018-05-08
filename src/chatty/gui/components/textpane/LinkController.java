@@ -16,24 +16,23 @@ import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
 import chatty.util.api.usericons.Usericon;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AttributeSet;
+import javax.swing.Timer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
@@ -48,7 +47,7 @@ import javax.swing.text.html.HTML;
  * 
  * @author tduva
  */
-public class LinkController extends MouseAdapter implements MouseMotionListener {
+public class LinkController extends MouseAdapter {
     
     private static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     private static final Cursor NORMAL_CURSOR = Cursor.getDefaultCursor();
@@ -68,7 +67,9 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     
     private ContextMenu defaultContextMenu;
     
-    private Object prevHoverObject;
+    private MyPopup popup = new MyPopup();
+    
+    private Element prevHoverElement;
     
     /**
      * Set the object that should receive the User object once a User is clicked
@@ -202,11 +203,11 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
         if (emoteImage != null) {
-            showPopup(e, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
-            showPopup(e, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
+            popup.show(textPane, element, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
         } else {
-            hidePopup();
+            popup.hide();
         }
 
         boolean isClickableElement = (getUrl(element) != null && !isUrlDeleted(element))
@@ -219,6 +220,11 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         } else {
             textPane.setCursor(NORMAL_CURSOR);
         }
+    }
+    
+    @Override
+    public void mouseExited(MouseEvent e) {
+        popup.hide();
     }
 
     private String getUrl(Element e) {
@@ -325,46 +331,153 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             }
         }
         m.show(e.getComponent(), e.getX(), e.getY());
-        hidePopup();
+        popup.hide();
     }
     
-    private final JLabel popupLabel = new JLabel();
-    private Popup popup;
-    
-    private void showPopup(MouseEvent e, String text, int width) {
-        if (popup == null) {
-            try {
-                popupLabel.setText(text);
-                Dimension labelSize = popupLabel.getPreferredSize();
-                Element element = getElement(e);
-                JTextPane textPane = (JTextPane) e.getSource();
-                Rectangle r = textPane.modelToView(element.getStartOffset());
-                r.translate(textPane.getLocationOnScreen().x, textPane.getLocationOnScreen().y);
-                r.translate(0, - labelSize.height - 3);
-                r.translate(width / 2 - labelSize.width / 2, 0);
-                popup = PopupFactory.getSharedInstance().getPopup(e.getComponent(), popupLabel, r.x, r.y);
-                popup.show();
-            } catch (BadLocationException ex) {
-                Logger.getLogger(LinkController.class.getName()).log(Level.SEVERE, null, ex);
+    private static class MyPopup {
+        
+        private static final int SHOW_DELAY = 300;
+        private static final int NO_DELAY_WINDOW = 800;
+        
+        private final JLabel label = new JLabel();
+        private final Timer showTimer;
+
+        /**
+         * Current popup. If not null, it means it is currently showing.
+         */
+        private Popup popup;
+        private long lastShown;
+        
+        /**
+         * Popup not showing yet, but it has already been decided to try to show
+         * it (timer running or showing, if position is fine).
+         */
+        private boolean preparingToShow;
+        private JTextPane textPane;
+        private int sourceWidth;
+        private String text;
+        private Element element;
+        private Point position;
+
+        public MyPopup() {
+            showTimer = new Timer(SHOW_DELAY, e -> {
+                showNow();
+            });
+            showTimer.setRepeats(false);
+        }
+        
+        public void show(JTextPane textPane, Element element, String text, int sourceWidth) {
+            if (popup != null) {
+                return;
+            }
+            if (preparingToShow) {
+                return;
+            }
+
+            this.textPane = textPane;
+            this.text = text;
+            this.sourceWidth = sourceWidth;
+            this.element = element;
+            
+            preparingToShow = true;
+            if (System.currentTimeMillis() - lastShown < NO_DELAY_WINDOW) {
+                showNow();
+            } else {
+                showTimer.restart();
             }
         }
+        
+        public void hide() {
+            if (popup != null) {
+                popup.hide();
+                popup = null;
+                lastShown = System.currentTimeMillis();
+            }
+            preparingToShow = false;
+            showTimer.stop();
+        }
+        
+        public void update() {
+            if (popup != null) {
+                Point newPos = determinePosition();
+                if (newPos == null) {
+                    hide();
+                } else if (!newPos.equals(position)) {
+                    hide();
+                    showNow();
+                }
+            }
+        }
+        
+        private void showNow() {
+            if (popup != null) {
+                return;
+            }
+            label.setText(text);
+
+            Point p = determinePosition();
+            if (p != null) {
+                position = p;
+                popup = PopupFactory.getSharedInstance().getPopup(textPane, label, p.x, p.y);
+                popup.show();
+            }
+        }
+        
+        public void cleanUp() {
+            hide();
+        }
+        
+        private Point determinePosition() {
+            try {
+                Dimension labelSize = label.getPreferredSize();
+                Rectangle r = textPane.modelToView(element.getStartOffset());
+                r.translate(0, - labelSize.height - 3);
+                r.translate(sourceWidth / 2 - labelSize.width / 2, 0);
+                r.translate(textPane.getLocationOnScreen().x, textPane.getLocationOnScreen().y);
+                Component viewPort = textPane.getParent();
+                if (viewPort instanceof JViewport) {
+                    // Only check bounds if parent is as expected
+                    Point bounds = viewPort.getLocationOnScreen();
+                    if (bounds.y - 20 > r.y) {
+                        return null;
+                    }
+                    if (bounds.y + viewPort.getHeight() < r.y) {
+                        return null;
+                    }
+                    int overLeftEdge = (bounds.x - 5) - r.x;
+                    if (overLeftEdge > 0) {
+                        r.x = r.x + overLeftEdge;
+                    }
+                    int overRightEdge = (r.x + labelSize.width) - (bounds.x + textPane.getWidth() + 10);
+                    if (overRightEdge > 0) {
+                        r.x = r.x - overRightEdge;
+                    }
+                }
+                return new Point(r.x, r.y);
+            } catch (BadLocationException ex) {
+                // Just return null
+            }
+            return null;
+        }
+        
     }
-    
-    private void hidePopup() {
-        if (popup != null) {
+
+    private void hidePopupIfDifferentElement(Element element) {
+        if (prevHoverElement != element) {
             popup.hide();
-            popup = null;
         }
+        prevHoverElement = element;
     }
     
-    private void hidePopupIfDifferentElement(Object obj) {
-        if (prevHoverObject != obj) {
-            hidePopup();
-        }
-        prevHoverObject = obj;
+    /**
+     * This ultimalte calls modelToView(), so it probably shouldn't be called
+     * during printing a line with many elements.
+     */
+    public void updatePopup() {
+        popup.update();
     }
     
-    private static final String POPUP_HTML_PREFIX = "<html><body style='text-align:center;border:1px solid #000;padding:3px 5px 3px 5px;'>";
+    private static final String POPUP_HTML_PREFIX = "<html><body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
     
     private static String makeEmoticonPopupText(EmoticonImage emoticonImage) {
         Emoticon emote = emoticonImage.getEmoticon();
@@ -373,7 +486,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
             emoteInfo = emote.getEmotesetInfo() + " Emoticon";
         } else if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
             emoteInfo = "Turbo/Prime";
-        } else if (emote.hasStreamSet()) {
+        } else if (!emote.hasGlobalEmoteset() && emote.hasStreamSet()) {
             emoteInfo = "Subemote ("+emote.getStream()+")";
         } else if (!emote.hasGlobalEmoteset()) {
             emoteInfo = "Unknown Emote";
@@ -389,7 +502,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
         }
         return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
                 POPUP_HTML_PREFIX,
-                emote.type == Emoticon.Type.EMOJI ? emote.stringId : emote.code,
+                emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code),
                 emoteInfo);
     }
     
@@ -407,7 +520,7 @@ public class LinkController extends MouseAdapter implements MouseMotionListener 
     }
     
     public void cleanUp() {
-        hidePopup();
+        popup.cleanUp();
     }
     
 }
