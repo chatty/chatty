@@ -41,7 +41,7 @@ public class FrankerFaceZParsing {
                 return null;
             }
             return UsericonFactory.createTwitchLikeIcon(Usericon.Type.MOD,
-                            roomId, modBadgeUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ Icon)");
+                            roomId, modBadgeUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)");
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             
         }

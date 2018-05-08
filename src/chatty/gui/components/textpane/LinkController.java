@@ -1,6 +1,7 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.Helper;
 import chatty.User;
 import chatty.gui.LinkListener;
 import chatty.gui.MouseClickedListener;
@@ -470,20 +471,28 @@ public class LinkController extends MouseAdapter {
     }
     
     /**
-     * This ultimalte calls modelToView(), so it probably shouldn't be called
+     * This ultimately calls modelToView(), so it probably shouldn't be called
      * during printing a line with many elements.
      */
     public void updatePopup() {
         popup.update();
     }
     
-    private static final String POPUP_HTML_PREFIX = "<html><body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
+    private static final String POPUP_HTML_PREFIX = "<html>"
+            + "<body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
     
     private static String makeEmoticonPopupText(EmoticonImage emoticonImage) {
         Emoticon emote = emoticonImage.getEmoticon();
         String emoteInfo = "";
         if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
             emoteInfo = emote.getEmotesetInfo() + " Emoticon";
+        } else if (emote.subType == Emoticon.SubType.CHEER) {
+            emoteInfo = "Cheering Emote";
+            if (emote.hasStreamRestrictions()) {
+                emoteInfo += " Local";
+            } else {
+                emoteInfo += " Global";
+            }
         } else if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
             emoteInfo = "Turbo/Prime";
         } else if (!emote.hasGlobalEmoteset() && emote.hasStreamSet()) {
@@ -500,9 +509,10 @@ public class LinkController extends MouseAdapter {
                 }
             }
         }
+        String code = emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code);
         return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
                 POPUP_HTML_PREFIX,
-                emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code),
+                Helper.htmlspecialchars_encode(code),
                 emoteInfo);
     }
     
@@ -512,6 +522,9 @@ public class LinkController extends MouseAdapter {
             info = POPUP_HTML_PREFIX+"Badge: "+usericon.metaTitle;
         } else {
             info = POPUP_HTML_PREFIX+"Badge: "+usericon.type.label;
+        }
+        if (!usericon.channel.isEmpty() && !usericon.channelInverse) {
+            info += " (Local)";
         }
         if (usericon.source == Usericon.SOURCE_CUSTOM) {
             info += " (Custom)";
