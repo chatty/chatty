@@ -373,6 +373,10 @@ public class TwitchClient {
         
         // Shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
+        
+        if (Chatty.DEBUG) {
+            //textInput(Room.EMPTY, "/test3");
+        }
     }
     
 

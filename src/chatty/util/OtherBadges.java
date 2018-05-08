@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -74,24 +72,24 @@ public class OtherBadges {
     
     private static Usericon parseUsericon(JSONObject data) {
         try {
-        String title = (String)data.get("meta_title");
-        String id = (String)data.get("id");
-        String version = (String)data.get("version");
-        String url = (String)data.get("image_url");
-        String color = (String)data.get("color");
-        String metaUrl = (String)data.get("meta_url");
-        Set<String> usernames = new HashSet<>();
-        for (Object obj : (JSONArray)data.get("usernames")) {
-            usernames.add((String)obj);
-        }
-        if (Chatty.DEBUG) {
-            usernames.add("tduva");
-        }
-        
-        Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames);
-        return icon;
+            String title = (String) data.get("meta_title");
+            String id = (String) data.get("id");
+            String version = (String) data.get("version");
+            String url = (String) data.get("image_url");
+            String color = (String) data.get("color");
+            String metaUrl = (String) data.get("meta_url");
+            Set<String> usernames = new HashSet<>();
+            for (Object obj : (JSONArray) data.get("usernames")) {
+                usernames.add((String) obj);
+            }
+            if (Chatty.DEBUG) {
+                usernames.add("tduva");
+            }
+
+            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames);
+            return icon;
         } catch (Exception ex) {
-            LOGGER.warning("Error parsing third-party badge: "+ex);
+            LOGGER.warning("Error parsing third-party badge: " + ex);
         }
         return null;
     }
