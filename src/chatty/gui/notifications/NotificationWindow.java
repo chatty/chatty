@@ -141,6 +141,7 @@ public class NotificationWindow {
         panel.add(timeLabel, gbc);
         
         // Content Label
+        title = Helper.htmlspecialchars_encode(title);
         message = Helper.htmlspecialchars_encode(message);
         if (message.length() > MAX_MESSAGE_LENGTH) {
             message = message.substring(0, MAX_MESSAGE_LENGTH)+"[..]";

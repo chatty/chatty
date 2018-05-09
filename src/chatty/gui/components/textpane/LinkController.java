@@ -430,6 +430,11 @@ public class LinkController extends MouseAdapter {
         
         private Point determinePosition() {
             try {
+                // Component has to be showing to determine it's location (and
+                // showing the popup only makes sense if it's showing anyway)
+                if (!textPane.isShowing()) {
+                    return null;
+                }
                 Dimension labelSize = label.getPreferredSize();
                 Rectangle r = textPane.modelToView(element.getStartOffset());
                 r.translate(0, - labelSize.height - 3);

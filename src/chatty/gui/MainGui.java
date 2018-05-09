@@ -2629,7 +2629,7 @@ public class MainGui extends JFrame implements Runnable {
                     showNotification("[Status] "+Helper.toValidChannel(channel),
                             "Test Notification (this would pop up when a stream status changes)",
                             Color.BLACK, Color.WHITE, channel);
-            }
+                }
             }
         });
     }

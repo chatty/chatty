@@ -67,8 +67,9 @@ public interface AutoCompletionServer {
          * will thus be removed. Only the length of the prefixToRemove may
          * actually matter. It must not be longer than the actual prefix was.
          *
-         * @param items
-         * @param info
+         * @param items Some HTML characters will be escaped
+         * @param info May contain HTML, make sure that unwanted HTML characters
+         * are escaped
          * @param prefixToRemove 
          */
         public CompletionItems(List<String> items, Map<String, String> info, String prefixToRemove) {
