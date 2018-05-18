@@ -36,6 +36,7 @@ public class StyleManager implements StyleServer {
             "colorCorrection", "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
+            "showImageTooltips",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -134,6 +135,7 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.BAN_DURATION_MESSAGE, "banDurationMessage");
         addBooleanSetting(Setting.BAN_REASON_MESSAGE, "banReasonMessage");
         addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
+        addBooleanSetting(Setting.SHOW_TOOLTIPS, "showImageTooltips");
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");

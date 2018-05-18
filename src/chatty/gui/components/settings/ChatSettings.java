@@ -5,8 +5,6 @@ import chatty.gui.GuiUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
@@ -16,8 +14,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -67,9 +63,14 @@ public class ChatSettings extends SettingsPanel {
         main.add(bufferSizesButton,
                 gbc);
         
-        gbc = d.makeGbc(0, 5, 3, 1);
+        gbc = d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST);
         main.add(d.addSimpleBooleanSetting("inputHistoryMultirowRequireCtrl",
                 "On a multirow inputbox require Ctrl to navigate input history",
+                null), gbc);
+        
+        gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
+        main.add(d.addSimpleBooleanSetting("showImageTooltips",
+                "Show Emoticon/Badge tooltips",
                 null), gbc);
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
