@@ -1451,35 +1451,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user 
      */
     private void printUserIcons(User user) {
-        addAddonIcons(user, true);
-
-        addTwitchBadges(user);
-        if (user.isBot() && styles.botBadgeEnabled()) {
-            Usericon icon = user.getIcon(Usericon.Type.BOT);
-            if (icon != null && !icon.removeBadge) {
-                print(icon.getSymbol(), styles.makeIconStyle(icon));
-            }
-        }
-
-        addAddonIcons(user, false);
-    }
-    
-    private void addTwitchBadges(User user) {
-        java.util.List<Usericon> badges = user.getTwitchBadgeUsericons();
+        java.util.List<Usericon> badges = user.getBadges(styles.botBadgeEnabled());
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (badge.image != null && !badge.removeBadge) {
                     print(badge.getSymbol(), styles.makeIconStyle(badge));
                 }
             }
-        }
-    }
-    
-    private void addAddonIcons(User user, boolean first) {
-        // Output addon usericons (if there are any)
-        java.util.List<Usericon> icons = user.getAddonIcons(first);
-        for (Usericon icon : icons) {
-            print(icon.getSymbol(), styles.makeIconStyle(icon));
         }
     }
     

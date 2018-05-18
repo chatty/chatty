@@ -110,6 +110,10 @@ public class BadgeType {
         }
         return false;
     }
+    
+    public boolean matchesLenient(BadgeType badgeType) {
+        return matchesLenient(badgeType.id, badgeType.version);
+    }
 
     @Override
     public int hashCode() {

@@ -96,7 +96,7 @@ public class UsericonFactory {
     
     public static Usericon createThirdParty(String id, String version,
             String urlString, String title, String clickUrl, String color,
-            Set<String> usernames) {
+            Set<String> usernames, String position) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
@@ -105,6 +105,7 @@ public class UsericonFactory {
             b.setMetaTitle(title);
             b.setMetaUrl(clickUrl);
             b.setUsernames(usernames);
+            b.setPosition(position);
             if (color != null) {
                 b.setColor(HtmlColors.decode(color));
             }
@@ -128,7 +129,7 @@ public class UsericonFactory {
      * @return 
      */
     public static Usericon createCustomIcon(Usericon.Type type, String idVersion,
-            String restriction, String fileName, String channel) {
+            String restriction, String fileName, String channel, String position) {
         try {
             URL url = null;
             if (fileName != null) {
@@ -146,6 +147,7 @@ public class UsericonFactory {
             b.setRestriction(restriction);
             b.setFileName(fileName);
             b.setBadgeType(BadgeType.parse(idVersion));
+            b.setPosition(position);
             return b.build();
         } catch (MalformedURLException | InvalidPathException ex) {
             LOGGER.warning("Invalid icon file: " + fileName);

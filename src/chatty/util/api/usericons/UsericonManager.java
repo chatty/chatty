@@ -135,16 +135,22 @@ public class UsericonManager {
         return result;
     }
     
-    /**
-     * Get Twitch Badges.
-     * 
-     * @param badgesDef
-     * @param user
-     * @return 
-     */
-    public synchronized List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user) {
+    public synchronized List<Usericon> getBadges(Map<String, String> badgesDef, User user, boolean botBadgeEnabled) {
+        List<Usericon> icons = getTwitchBadges(badgesDef, user);
+        if (user.isBot() && botBadgeEnabled) {
+            Usericon icon = user.getIcon(Usericon.Type.BOT);
+            if (icon != null) {
+                icons.add(icon);
+            }
+        }
+        addThirdPartyIcons(icons, user);
+        addAddonIcons(icons, user);
+        return icons;
+    }
+
+    private List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user) {
         if (badgesDef == null || badgesDef.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         List<Usericon> result = new ArrayList<>();
         for (String id : badgesDef.keySet()) {
@@ -253,41 +259,55 @@ public class UsericonManager {
         return settings.getBoolean("customUsericonsEnabled");
     }
     
-    /**
-     * Gets all icons with the given type that match the given {@code User}.
-     * 
-     * @param user The user the returned icons have to match
-     * @param first
-     * @return A {@code List} of {@code Usericon} objects, can be empty if no
-     * icon matched or custom icons are disabled
-     */
-    public synchronized List<Usericon> getAddonIcons(User user, boolean first) {
-        List<Usericon> result = first ? new ArrayList<>() : getThirdPartyIcons(user);
+    private void addAddonIcons(List<Usericon> icons, User user) {
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
                 if (icon.type == Type.ADDON && iconMatchesUser(icon, user)
-                        && first == icon.first && icon.image != null) {
-                    result.add(icon);
+                        && icon.image != null) {
+                    insert(icons, icon);
                     if (icon.stop) {
                         break;
                     }
                 }
             }
         }
-        return result;
     }
     
-    private List<Usericon> getThirdPartyIcons(User user) {
-        List<Usericon> result = new ArrayList<>();
+    private void addThirdPartyIcons(List<Usericon> icons, User user) {
         for (Usericon icon : thirdParty) {
             // This may or may not return the same icon, depending on whether
             // Custom Usericons replace it
             Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user);
             if (transformed != null) {
-                result.add(transformed);
+                insert(icons, transformed);
             }
         }
-        return result;
+    }
+    
+    /**
+     * Insert icon according to it's position value, if present, otherwise
+     * simply at the end.
+     * 
+     * @param icons
+     * @param icon 
+     */
+    private void insert(List<Usericon> icons, Usericon icon) {
+        if (icon.position == null) {
+            icons.add(icon);
+        } else {
+            int insertIndex = -1;
+            for (int i=0;i<icons.size();i++) {
+                if (icon.position.insertHere(icons.get(i))) {
+                    insertIndex = i;
+                    break;
+                }
+            }
+            if (insertIndex != -1) {
+                icons.add(insertIndex, icon);
+            } else {
+                icons.add(icon);
+            }
+        }
     }
     
     /**
@@ -414,6 +434,7 @@ public class UsericonManager {
         list.add(icon.fileName);
         list.add(icon.channelRestriction);
         list.add(icon.getIdAndVersion());
+        list.add(icon.positionValue);
         return list;
     }
     
@@ -427,7 +448,11 @@ public class UsericonManager {
             if (list.size() > 4) {
                 idVersion = (String)list.get(4);
             }
-            return UsericonFactory.createCustomIcon(type, idVersion, restriction, fileName, channel);
+            String position = null;
+            if (list.size() > 5) {
+                position = (String)list.get(5);
+            }
+            return UsericonFactory.createCustomIcon(type, idVersion, restriction, fileName, channel, position);
         } catch (ClassCastException | IndexOutOfBoundsException ex) {
             return null;
         }

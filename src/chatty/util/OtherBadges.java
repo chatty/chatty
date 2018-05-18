@@ -78,6 +78,7 @@ public class OtherBadges {
             String url = (String) data.get("image_url");
             String color = (String) data.get("color");
             String metaUrl = (String) data.get("meta_url");
+            String position = (String) data.get("position");
             Set<String> usernames = new HashSet<>();
             for (Object obj : (JSONArray) data.get("usernames")) {
                 usernames.add((String) obj);
@@ -86,7 +87,7 @@ public class OtherBadges {
                 usernames.add("tduva");
             }
 
-            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames);
+            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames, position);
             return icon;
         } catch (Exception ex) {
             LOGGER.warning("Error parsing third-party badge: " + ex);

@@ -207,6 +207,8 @@ public class Usericon implements Comparable {
     
     public final boolean stop;
     public final boolean first;
+    public final String positionValue;
+    public final UsericonPosition position;
     
     public final String metaTitle;
     public final String metaDescription;
@@ -343,6 +345,11 @@ public class Usericon implements Comparable {
             first = false;
             badgeTypeRestriction = BadgeType.EMPTY;
         }
+        
+        // Position (at the end so "first" is already set, for backwards
+        // compatibility)
+        this.positionValue = builder.position;
+        this.position = UsericonPosition.parse(builder.position, first);
     }
     
     /**
@@ -484,6 +491,7 @@ public class Usericon implements Comparable {
         private String metaDescription = "";
         private String metaUrl = "";
         private Set<String> usernames;
+        private String position;
 
         public Builder(Usericon.Type type, int source) {
             this.type = type;
@@ -586,6 +594,11 @@ public class Usericon implements Comparable {
         
         public Builder setUsernames(Collection<String> usernames) {
             this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
+            return this;
+        }
+        
+        public Builder setPosition(String position) {
+            this.position = position;
             return this;
         }
 

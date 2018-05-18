@@ -134,13 +134,6 @@ public class User implements Comparable {
         return iconManager;
     }
     
-    public List<Usericon> getAddonIcons(boolean first) {
-        if (iconManager != null) {
-            return iconManager.getAddonIcons(this, first);
-        }
-        return new ArrayList<>();
-    }
-    
     public Usericon getIcon(Usericon.Type type) {
         if (iconManager != null) {
             return iconManager.getIcon(type, null, null, this);
@@ -178,14 +171,9 @@ public class User implements Comparable {
         return twitchBadges != null && twitchBadges.containsKey(id);
     }
     
-    /**
-     * Get list of Usericon objects for the Twitch Badges this user has.
-     * 
-     * @return List of Usericon objects in order, or null
-     */
-    public List<Usericon> getTwitchBadgeUsericons() {
-        if (iconManager != null && twitchBadges != null) {
-            return iconManager.getTwitchBadges(twitchBadges, this);
+    public List<Usericon> getBadges(boolean botBadgeEnabled) {
+        if (iconManager != null) {
+            return iconManager.getBadges(twitchBadges, this, botBadgeEnabled);
         }
         return null;
     }
