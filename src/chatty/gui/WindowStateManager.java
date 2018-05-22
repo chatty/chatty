@@ -82,6 +82,14 @@ public class WindowStateManager {
         attachedWindowManager.attach(window);
     }
     
+    public void setWindowAttached(Window window, boolean attached) {
+        if (attached) {
+            attachedWindowManager.attach(window);
+        } else {
+            attachedWindowManager.detach(window);
+        }
+    }
+    
     public Set<Window> getWindows() {
         return new HashSet<>(windows.keySet());
     }

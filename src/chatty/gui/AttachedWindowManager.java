@@ -77,9 +77,13 @@ public class AttachedWindowManager {
      * the owner itself
      */
     public void attach(Component comp) {
-        if (comp != owner) {
+        if (comp != owner && !components.contains(comp)) {
             components.add(comp);
         }
+    }
+    
+    public void detach(Component comp) {
+        components.remove(comp);
     }
     
     /**

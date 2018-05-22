@@ -7,8 +7,10 @@ import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
 import static chatty.gui.components.userinfo.Util.makeGbc;
+import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -33,7 +35,8 @@ public class UserInfo extends JDialog {
     private final InfoPanel infoPanel = new InfoPanel(this);
     private final PastMessages pastMessages = new PastMessages();
 
-    private final JButton closeButton = new JButton("Close");
+    private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
+    private final JCheckBox pinnedDialog = new JCheckBox("Pin Dialog");
     private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
     private final BanReasons banReasons;
     private final Buttons buttons;
@@ -62,6 +65,7 @@ public class UserInfo extends JDialog {
     public UserInfo(final MainGui owner, Settings settings,
             final ContextMenuListener contextMenuListener) {
         super(owner);
+        GuiUtil.installEscapeCloseOperation(this);
         this.owner = owner;
         banReasons = new BanReasons(this, settings);
         
@@ -72,6 +76,21 @@ public class UserInfo extends JDialog {
                 if (settings.getBoolean("closeUserDialogOnAction")) {
                     setVisible(false);
                 }
+                CustomCommand command = getCommand(e.getSource());
+                if (command == null) {
+                    return;
+                }
+                User user = getUser();
+                String nick = user.getName();
+                String reason = getBanReason();
+                if (!reason.isEmpty()) {
+                    reason = " "+reason;
+                }
+                Parameters parameters = Parameters.create(nick+reason);
+                parameters.put("msg-id", getMsgId());
+                parameters.put("target-msg-id", getTargetMsgId());
+                parameters.put("automod-msg-id", getAutoModMsgId());
+                owner.anonCustomCommand(user.getRoom(), command, parameters);
                 owner.getActionListener().actionPerformed(e);
             }
         });
@@ -88,25 +107,38 @@ public class UserInfo extends JDialog {
         setLayout(new GridBagLayout());
         
         GridBagConstraints gbc;
+        
+        JPanel topPanel = new JPanel(new GridBagLayout());
 
         gbc = makeGbc(0,0,3,1);
         gbc.insets = new Insets(2, 2, 0, 2);
-        add(buttons.getPrimary(), gbc);
+        topPanel.add(buttons.getPrimary(), gbc);
         
         gbc = makeGbc(0,3,3,1);
         gbc.insets = new Insets(0, 6, 2, 2);
         gbc.anchor = GridBagConstraints.CENTER;
         singleMessage.setToolTipText("When doing a ban/timeout only remove a single message of that user [S to toggle]");
         //add(singleMessage, gbc);
+
+        gbc = makeGbc(2,1,1,1);
+        gbc.insets = new Insets(2, 8, 2, 8);
+        gbc.anchor = GridBagConstraints.EAST;
+        pinnedDialog.setToolTipText("Pinned dialogs stay open on the same user until closed");
+        topPanel.add(pinnedDialog, gbc);
         
         JComboBox<String> reasons = new JComboBox<>();
         reasons.addItem("-- Select Ban/Timeout Reason --");
         reasons.addItem("No CatBag posted");
         reasons.addItem("Custom Ban/Timeout Reason:");
-        gbc = makeGbc(0,1,3,1);
-        gbc.insets = new Insets(2, 10, 5, 10);
-        //gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(banReasons, gbc);
+        gbc = makeGbc(0, 1, 1, 1);
+        // left = 2 (buttons gbc insets) + 5 (buttons layout hgap) + 1 indent
+        gbc.insets = new Insets(2, 8, 5, 7);
+        gbc.anchor = GridBagConstraints.WEST;
+        topPanel.add(banReasons, gbc);
+        
+        gbc = makeGbc(0, 0, 3, 1);
+        gbc.insets = new Insets(0, 0, 0, 0);
+        add(topPanel, gbc);
         
         JScrollPane scrollPane = new JScrollPane(pastMessages);
         scrollPane.setPreferredSize(new Dimension(300,200));
@@ -123,7 +155,7 @@ public class UserInfo extends JDialog {
         gbc = makeGbc(0,6,3,1);
         gbc.insets = new Insets(0, 0, 0, 0);
         add(infoPanel,gbc);
-
+        
         gbc = makeGbc(0,8,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(10,5,3,5);
@@ -253,6 +285,9 @@ public class UserInfo extends JDialog {
     }
 
     public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
+        if (user == currentUser && isVisible()) {
+            GuiUtil.shake(this);
+        }
         banReasons.updateReasonsFromSettings();
         banReasons.reset();
         singleMessage.setSelected(false);
@@ -300,6 +335,14 @@ public class UserInfo extends JDialog {
     
     public String getBanReason() {
         return banReasons.getSelectedReason();
+    }
+    
+    public boolean isPinned() {
+        return pinnedDialog.isSelected();
+    }
+    
+    public void setPinned(boolean isPinned) {
+        pinnedDialog.setSelected(isPinned);
     }
 
     public void setChannelInfo(ChannelInfo info) {

@@ -157,6 +157,8 @@ public class Buttons {
         if (!rows.containsKey(row)) {
             JPanel newRow = new JPanel();
             ((FlowLayout)(newRow.getLayout())).setVgap(4);
+            // This should be default, but just to be clear
+            ((FlowLayout)(newRow.getLayout())).setHgap(5);
             if (row.startsWith("a")) {
                 primary.add(newRow);
                 

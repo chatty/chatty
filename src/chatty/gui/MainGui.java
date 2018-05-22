@@ -57,6 +57,7 @@ import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.AutoModMessage;
 import chatty.gui.components.textpane.SubscriberMessage;
+import chatty.gui.components.userinfo.UserInfoManager;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
@@ -125,7 +126,7 @@ public class MainGui extends JFrame implements Runnable {
     private TokenDialog tokenDialog;
     private TokenGetDialog tokenGetDialog;
     private DebugWindow debugWindow;
-    private UserInfo userInfoDialog;
+    private UserInfoManager userInfoDialog;
     private About aboutDialog;
     private ChannelInfoDialog channelInfoDialog;
     private SettingsDialog settingsDialog;
@@ -241,8 +242,7 @@ public class MainGui extends JFrame implements Runnable {
         GuiUtil.installEscapeCloseOperation(connectionDialog);
         tokenDialog = new TokenDialog(this);
         tokenGetDialog = new TokenGetDialog(this);
-        userInfoDialog = new UserInfo(this, client.settings, contextMenuListener);
-        GuiUtil.installEscapeCloseOperation(userInfoDialog);
+        userInfoDialog = new UserInfoManager(this, client.settings, contextMenuListener);
         aboutDialog = new About();
         setHelpWindowIcons();
         channelInfoDialog = new ChannelInfoDialog(this);
@@ -344,7 +344,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(subscribersDialog, "subscribers", true, true);
         windowStateManager.addWindow(moderationLog, "moderationLog", true, true);
         windowStateManager.addWindow(streamChat, "streamChat", true, true);
-        windowStateManager.addWindow(userInfoDialog, "userInfo", true, false);
+        windowStateManager.addWindow(userInfoDialog.getDummyWindow(), "userInfo", true, false);
         windowStateManager.addWindow(autoModDialog, "autoMod", true, true);
         
         if (System.getProperty("java.version").equals("1.8.0_161")
@@ -356,6 +356,10 @@ public class MainGui extends JFrame implements Runnable {
         ToolTipManager.sharedInstance().setDismissDelay(20*1000);
         
         guiCreated = true;
+    }
+    
+    public void setWindowAttached(Window window, boolean attached) {
+        windowStateManager.setWindowAttached(window, attached);
     }
     
     protected void popoutCreated(JDialog popout) {
@@ -1037,6 +1041,7 @@ public class MainGui extends JFrame implements Runnable {
      * Puts the updated state of the windows/dialogs/popouts into the settings.
      */
     public void saveWindowStates() {
+        userInfoDialog.aboutToSaveSettings();
         windowStateManager.saveWindowStates();
         client.settings.putList("popoutAttributes", channels.getPopoutAttributes());
     }
@@ -1276,25 +1281,13 @@ public class MainGui extends JFrame implements Runnable {
             } // Get token Dialog
             else if (event.getSource() == tokenGetDialog.getCloseButton()) {
                 tokenGetDialogClosed();
-            } //-----------------
-            // Userinfo Dialog
-            //-----------------
-            else if (userInfoDialog.getCommand(source) != null) {
-                CustomCommand command = userInfoDialog.getCommand(source);
-                User user = userInfoDialog.getUser();
-                String nick = user.getName();
-                String reason = userInfoDialog.getBanReason();
-                if (!reason.isEmpty()) {
-                    reason = " "+reason;
-                }
-                Parameters parameters = Parameters.create(nick+reason);
-                parameters.put("msg-id", userInfoDialog.getMsgId());
-                parameters.put("target-msg-id", userInfoDialog.getTargetMsgId());
-                parameters.put("automod-msg-id", userInfoDialog.getAutoModMsgId());
-                client.anonCustomCommand(user.getRoom(), command, parameters);
             }
         }
         
+    }
+    
+    public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
+        client.anonCustomCommand(room, command, parameters);
     }
 
     private class DebugCheckboxListener implements ItemListener {
@@ -2252,7 +2245,7 @@ public class MainGui extends JFrame implements Runnable {
      * @param msgId 
      */
     public void openUserInfoDialog(User user, String msgId, String autoModMsgId) {
-        windowStateManager.setWindowPosition(userInfoDialog, getActiveWindow());
+        windowStateManager.setWindowPosition(userInfoDialog.getDummyWindow(), getActiveWindow());
         userInfoDialog.show(getActiveWindow(), user, msgId, autoModMsgId, client.getUsername());
     }
     

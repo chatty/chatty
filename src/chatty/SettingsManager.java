@@ -284,6 +284,7 @@ public class SettingsManager {
         settings.addString("streamsContextMenu", "");
         
         settings.addBoolean("closeUserDialogOnAction", true);
+        settings.addBoolean("openUserDialogByMouse", true);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);

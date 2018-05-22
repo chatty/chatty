@@ -17,7 +17,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -29,12 +31,15 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -44,6 +49,7 @@ import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
@@ -69,7 +75,7 @@ public class GuiUtil {
     
     
     public static void installEscapeCloseOperation(final JDialog dialog) {
-    Action closingAction = new AbstractAction() {
+        Action closingAction = new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -78,7 +84,7 @@ public class GuiUtil {
                         ));
             }
         };
-        
+
         JRootPane root = dialog.getRootPane();
         root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
                 ESCAPE_STROKE,
@@ -169,6 +175,75 @@ public class GuiUtil {
             }
         }
         return false;
+    }
+    
+    private static final int MOUSE_LOCATION_HGAP = 60;
+    
+    public static void setLocationToMouse(Component c) {
+        if (c.getGraphicsConfiguration() == null) {
+            return;
+        }
+        Rectangle screen = c.getGraphicsConfiguration().getBounds();
+        Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
+        int width = c.getWidth();
+        int height = c.getHeight();
+        
+        // Move to left side by default
+        mouseLocation.translate(- width - MOUSE_LOCATION_HGAP, - height/2);
+        
+        // Top boundary
+        if (mouseLocation.y < screen.y) {
+            mouseLocation.y = screen.y;
+        }
+        // Bottom boundary
+        if (mouseLocation.y + height > screen.y + screen.height) {
+            mouseLocation.y = screen.y + screen.height - height;
+        }
+        // Left boundary
+        if (mouseLocation.x < screen.x) {
+            mouseLocation.x += width + MOUSE_LOCATION_HGAP*2;
+        }
+        // Right boundary
+        if (mouseLocation.x + width > screen.x + screen.width) {
+            mouseLocation.x -= width + MOUSE_LOCATION_HGAP*2;
+        }
+        
+        c.setLocation(mouseLocation);
+    }
+    
+    private static final int SHAKE_INTENSITY = 2;
+    
+    public static void shake(Window window) {
+        Point original = window.getLocation();
+        for (int i=0;i<2;i++) {
+            try {
+                // Using Thread.sleep() is not ideal because it freezes the GUI,
+                // but it's really short
+                Thread.sleep(50);
+                window.setLocation(original.x+SHAKE_INTENSITY, original.y);
+                Thread.sleep(10);
+                window.setLocation(original.x, original.y-SHAKE_INTENSITY);
+                Thread.sleep(10);
+                window.setLocation(original.x-SHAKE_INTENSITY, original.y+SHAKE_INTENSITY);
+                Thread.sleep(10);
+                window.setLocation(original);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame dialog = new JFrame();
+            dialog.setSize(100, 100);
+            dialog.setLocationRelativeTo(null);
+            dialog.setVisible(true);
+            JButton button = new JButton("Shake");
+            button.addActionListener(e -> shake(dialog));
+            dialog.add(button);
+            dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        });
     }
     
     public static GridBagConstraints makeGbc(int x, int y, int w, int h) {
