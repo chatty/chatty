@@ -36,7 +36,7 @@ public class UserInfo extends JDialog {
     private final PastMessages pastMessages = new PastMessages();
 
     private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
-    private final JCheckBox pinnedDialog = new JCheckBox("Pin Dialog");
+    private final JCheckBox pinnedDialog = new JCheckBox(Language.getString("userDialog.setting.pin"));
     private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
     private final BanReasons banReasons;
     private final Buttons buttons;
@@ -261,7 +261,7 @@ public class UserInfo extends JDialog {
             categoriesString = categories.toString();
         }
         String displayNickInfo = user.hasDisplayNickSet() ? "" : "*";
-        this.setTitle("User: "+user.toString()
+        this.setTitle(Language.getString("userDialog.title")+" "+user.toString()
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
                 +(!user.hasRegularDisplayNick() ? " ("+user.getName()+")" : "")
                 +displayNickInfo

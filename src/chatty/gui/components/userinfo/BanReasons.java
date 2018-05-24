@@ -4,6 +4,7 @@ package chatty.gui.components.userinfo;
 import chatty.gui.components.settings.Editor;
 import chatty.gui.components.settings.GenericComboSetting;
 import chatty.gui.components.settings.SettingsDialog;
+import chatty.lang.Language;
 import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -182,7 +183,7 @@ public class BanReasons extends JPanel {
         private void editReasons() {
             String currentReasons = settings.getString("banReasons");
             String editedReasons = settingEditor.showDialog(
-                    "Edit Preset Ban Reasons (one per line):",
+                    Language.getString("userDialog.editBanReasons"),
                     currentReasons,
                     null);
             if (editedReasons != null) {
@@ -199,7 +200,7 @@ public class BanReasons extends JPanel {
             String[] split = reasons.split("\n");
             combo.removeAllItems();
 //            combo.add("", "Select a Ban Reason (optional) [R]");
-            combo.add("", "Select a Ban Reason (optional)");
+            combo.add("", Language.getString("userDialog.selectBanReason"));
             for (int i=0;i<split.length;i++) {
                 if (!split[i].trim().isEmpty()) {
                     String shortcut = "-";
@@ -209,7 +210,7 @@ public class BanReasons extends JPanel {
                     combo.add(split[i], "["+shortcut+"] "+split[i]);
                 }
             }
-            combo.add("[C] Non-preset reason:");
+            combo.add("[C] "+Language.getString("userDialog.customReason"));
             currentReasons = reasons;
         }
         

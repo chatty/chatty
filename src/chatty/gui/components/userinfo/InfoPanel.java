@@ -7,6 +7,7 @@ import chatty.gui.HtmlColors;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import static chatty.gui.components.userinfo.Util.makeGbc;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.api.ChannelInfo;
 import java.awt.Color;
@@ -137,7 +138,7 @@ public class InfoPanel extends JPanel {
         ChannelInfo requestedInfo = owner.getChannelInfo();
         if (requestedInfo == null) {
             addInfo();
-            createdAt.setText("Loading..");
+            createdAt.setText(Language.getString("userDialog.loading"));
             createdAt.setToolTipText(null);
             followers.setText(null);
         } else {
@@ -148,9 +149,9 @@ public class InfoPanel extends JPanel {
     
     public void setChannelInfo(ChannelInfo info) {
         if (infoAdded) {
-            createdAt.setText("Registered: "+DateTime.formatAccountAge(info.createdAt, DateTime.Formatting.VERBOSE)+" ago");
-            createdAt.setToolTipText("Account created: "+DateTime.formatFullDatetime(info.createdAt));
-            followers.setText(" Followers: "+Helper.formatViewerCount(info.followers));
+            createdAt.setText(Language.getString("userDialog.registered", DateTime.formatAccountAge(info.createdAt, DateTime.Formatting.VERBOSE)));
+            createdAt.setToolTipText(Language.getString("userDialog.registered.tip", DateTime.formatFullDatetime(info.createdAt)));
+            followers.setText(" "+Language.getString("userDialog.followers", Helper.formatViewerCount(info.followers)));
         }
     }
     
