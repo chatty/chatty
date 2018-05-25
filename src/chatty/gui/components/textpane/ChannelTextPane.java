@@ -2322,7 +2322,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 return;
             }
             scrollingDownInProgress = true;
-            scrollpane.getVerticalScrollBar().setValue(Integer.MAX_VALUE);
+            scrollpane.getVerticalScrollBar().setValue(scrollpane.getVerticalScrollBar().getMaximum());
             scrollingDownInProgress = false;
         }
 
