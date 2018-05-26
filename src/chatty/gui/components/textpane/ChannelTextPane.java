@@ -2033,10 +2033,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
 
     private void scrollDownIfNecessary() {
         if (lastSearchPos == null) {
-            if (scrollManager.isScrollPositionNearEnd()) {
+            if (scrollManager.isScrollPositionNearEnd()
+                    || scrollManager.scrolledUpTimeout()) {
+                /**
+                 * This should work fine, however using scrollDown() instead
+                 * might not, because it would try to scroll down before the
+                 * layout is finished (invokeLater would be necessary).
+                 *
+                 * Plus this should be better performance for lines that contain
+                 * many parts (causing many scroll down requests), for example
+                 * many Emotes.
+                 */
                 scrollManager.requestScrollDown();
-            } else if (scrollManager.scrolledUpTimeout()) {
-                scrollManager.scrollDown();
             }
         }
     }
@@ -2279,6 +2287,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * otherwise
          */
         private boolean scrolledUpTimeout() {
+            if (scrollDownRequest) {
+                return false;
+            }
             if (fixedChat || pauseKeyPressed) {
                 return false;
             }
@@ -2316,6 +2327,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         /**
          * Scrolls to the very end of the document.
+         * 
+         * This is using setValue() on the scrollbar because it doesn't seem to
+         * cause a layout (like modelToView() for getting the position for
+         * scrollRectToVisible() would), so it's faster. However most of the
+         * time requestScrollDown() would be used anyway (so it doesn't scroll
+         * down as often), so if setValue() turns out to not work perfectly
+         * further usage of scrollRectToVisible() may be viable as well.
+         * 
+         * There has been a rare instance of setValue(Integer.MAX_VALUE)
+         * scrolling up somehow instead of down, but maybe using getMaximum()
+         * works better.
          */
         private void scrollDown() {
             if (fixedChat) {
@@ -2325,12 +2347,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             scrollpane.getVerticalScrollBar().setValue(scrollpane.getVerticalScrollBar().getMaximum());
             scrollingDownInProgress = false;
         }
-
+        
         /**
          * Scrolls to the given offset in the document. Counts as manual
          * scrolling as far as requestScrollDown() is concerned.
-         * 
-         * @param offset 
+         *
+         * @param offset
          */
         private void scrollToOffset(int offset) {
             try {
