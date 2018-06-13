@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -346,13 +347,20 @@ public class ImageCache {
     }
     
     private static boolean saveFile(URL url, Path file) {
-        try (InputStream is = url.openStream()) {
-            long written = Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
-            if (written > 0) {
-                return true;
+        try {
+            URLConnection c = url.openConnection();
+            try (InputStream is = c.getInputStream()) {
+                if (c.getContentLengthLong() <= 0) {
+                    LOGGER.warning("Error saving " + url + " (empty): " + c.getHeaderField(null));
+                } else {
+                    long written = Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+                    if (written > 0) {
+                        return true;
+                    }
+                }
             }
         } catch (IOException ex) {
-            LOGGER.warning("Error saving "+url+" to "+file+": "+ex);
+            LOGGER.warning("Error saving " + url + " to " + file + ": " + ex);
         }
         return false;
     }

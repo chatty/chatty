@@ -252,7 +252,7 @@ public class Emoticon {
     }
     
     public static String getTwitchEmoteUrlById(int id, int factor) {
-        return "http://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
+        return "https://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
     }
     
     public String getBttvEmoteUrl(String id, int factor) {
