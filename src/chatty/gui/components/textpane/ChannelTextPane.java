@@ -231,8 +231,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public void printMessage(Message message) {
         if (message instanceof UserMessage) {
             printUserMessage((UserMessage)message);
-        } else if (message instanceof SubscriberMessage) {
-            printSubscriberMessage((SubscriberMessage)message);
+        } else if (message instanceof UserNotice) {
+            printUsernotice((UserNotice)message);
         } else if (message instanceof AutoModMessage) {
             printAutoModMessage((AutoModMessage)message);
         }
@@ -244,7 +244,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param message 
      */
-    private void printSubscriberMessage(SubscriberMessage message) {
+    private void printUsernotice(UserNotice message) {
         closeCompactMode();
         print(getTimePrefix(), styles.info());
         
@@ -265,10 +265,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         
         String text = message.text;
-        if (DateTime.isAprilFirst()) {
-            text = text.replace("months in a row", "years in a row");
-        }
-        print("[Notification] "+text+" ", style);
+        print("["+message.type+"] "+text+" ", style);
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print("[", styles.info());
             // Output with emotes, but don't turn URLs into clickable links

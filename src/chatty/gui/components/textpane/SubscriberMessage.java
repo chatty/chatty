@@ -8,19 +8,13 @@ import chatty.util.api.Emoticons;
  *
  * @author tduva
  */
-public class SubscriberMessage extends Message {
+public class SubscriberMessage extends UserNotice {
     
-    public final User user;
-    public final String attachedMessage;
     public final int months;
-    public final Emoticons.TagEmotes emotes;
     
     public SubscriberMessage(User user, String text, String message, int months,
             Emoticons.TagEmotes emotes, String id) {
-        super(id, text);
-        this.user = user;
-        this.attachedMessage = message;
+        super("Notification", user, text, message, emotes, id);
         this.months = months;
-        this.emotes = emotes;
     }
 }

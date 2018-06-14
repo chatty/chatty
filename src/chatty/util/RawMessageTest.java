@@ -59,6 +59,9 @@ public class RawMessageTest {
         if (type.equals("message")) {
             return "@badges=;color=#008000;display-name=Abc;emote-only=1;emotes=33:0-7;id=fwaef;mod=0;subscriber=0;tmi-sent-ts=1508516209239;turbo=0;user-type= :abc!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }
+        if (type.equals("hello")) {
+            return "@badges=premium/1;color=#000000;display-name=USER;emotes=30259:0-6;id=ID;login=user;mod=0;msg-id=ritual;msg-param-ritual-name=new_chatter;room-id=1234;subscriber=0;system-msg=@USER\\sis\\snew\\shere.\\sSay\\shello!;tmi-sent-ts=12345;turbo=0;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :HeyGuys";
+        }
         return null;
     }
     

@@ -2697,6 +2697,11 @@ public class TwitchClient {
                         name, cat));
             }
         }
+        
+        @Override
+        public void onUsernotice(String type, User user, String text, String message, String emotes) {
+            g.printUsernotice(type, user, text, message, emotes);
+        }
 
         @Override
         public void onSpecialMessage(String name, String message) {

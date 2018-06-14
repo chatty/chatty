@@ -1017,17 +1017,13 @@ public class TwitchConnection {
                     || tags.isValue("msg-id", "subgift")) {
                 listener.onSubscriberNotification(user, text, message, months, emotes);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
-                info(channel, "[Charity] "+text);
+                listener.onUsernotice("Charity", user, text, message, emotes);
             } else if (tags.isValue("msg-id", "raid")) {
-                String m = text;
-                if (!message.isEmpty()) {
-                    m += " ["+message+"]";
-                }
-                info(channel, "[Raid] "+m);
+                listener.onUsernotice("Raid", user, text, message, emotes);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this
-                info(channel, "[Usernotice] "+text);
+                listener.onUsernotice("Usernotice", user, text, message, emotes);
             }
         }
 
@@ -1422,6 +1418,8 @@ public class TwitchConnection {
          * @param emotes The emotes tag, yet to be parsed (may be null)
          */
         void onSubscriberNotification(User user, String text, String message, int months, String emotes);
+        
+        void onUsernotice(String type, User user, String text, String message, String emotes);
         
         void onSpecialMessage(String name, String message);
         

@@ -57,6 +57,7 @@ import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.AutoModMessage;
 import chatty.gui.components.textpane.SubscriberMessage;
+import chatty.gui.components.textpane.UserNotice;
 import chatty.gui.components.userinfo.UserInfoManager;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
@@ -2790,36 +2791,49 @@ public class MainGui extends JFrame implements Runnable {
     public void printSubscriberMessage(final User user,
             final String text, final String message, final int months,
             final String emotes) {
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(() -> {
+            Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
+            SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
 
-            @Override
-            public void run() {
-                // Prepare, check ignore
-                String fullMessage;
-                if (StringUtil.isNullOrEmpty(message)) {
-                    fullMessage = "[Notification] "+text;
-                } else {
-                    fullMessage = String.format("[Notification] %s [%s]", text, message);
-                }
-                
-                // Chat window
-                if (!checkInfoIgnore(fullMessage)) {
-                    Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-                    SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
-                    channels.getChannel(user.getRoom()).printMessage(m);
-                    notificationManager.newSubscriber(user, text, message);
-                } else {
-                    ignoredMessages.addInfoMessage(user.getRoom().getDisplayName(), fullMessage);
-                }
-
-                // Chatlog/User Info
-                client.chatLog.info(user.getRoom().getFilename(), fullMessage);
-                if (!user.getName().isEmpty()) {
-                    user.addSub(message != null ? processMessage(message) : "", text);
-                    updateUserInfoDialog(user);
-                }
+            boolean printed = printUsernotice(m);
+            if (printed) {
+                notificationManager.newSubscriber(user, text, message);
             }
         });
+    }
+    
+    public void printUsernotice(final String type, final User user, final String text,
+            final String message, final String emotes) {
+        SwingUtilities.invokeLater(() -> {
+            Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
+            UserNotice m = new UserNotice(type, user, text, message, tagEmotes, null);
+            printUsernotice(m);
+        });
+    }
+    
+    private boolean printUsernotice(UserNotice m) {
+        boolean ignored = checkInfoIgnore(m.fullMessage);
+        if (!ignored) {
+            channels.getChannel(m.user.getRoom()).printMessage(m);
+        } else {
+            ignoredMessages.addInfoMessage(m.user.getRoom().getDisplayName(), m.fullMessage);
+        }
+        
+        // Chatlog / User Dialog
+        client.chatLog.info(m.user.getRoom().getFilename(), m.fullMessage);
+        
+        // Only add if not dummy user (dummy user possibly not used anymore)
+        if (!m.user.getName().isEmpty()) {
+            String message = m.attachedMessage != null ? processMessage(m.attachedMessage) : "";
+            String text = m.text;
+            if (m instanceof SubscriberMessage) {
+                m.user.addSub(message, text);
+            } else {
+                m.user.addInfo(message, text);
+            }
+            updateUserInfoDialog(m.user);
+        }
+        return !ignored;
     }
     
     /**

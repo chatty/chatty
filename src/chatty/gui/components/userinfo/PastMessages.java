@@ -85,6 +85,15 @@ public class PastMessages extends JTextArea {
                 }
                 b.append("\n");
             }
+            else if (m.getType() == User.Message.INFO) {
+                User.InfoMessage sm = (User.InfoMessage)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append("I ");
+                b.append(sm.system_msg);
+                if (!sm.attached_message.isEmpty()) {
+                    b.append(" [").append(sm.attached_message).append("]");
+                }
+                b.append("\n");
+            }
             else if (m.getType() == User.Message.MOD_ACTION) {
                 User.ModAction ma = (User.ModAction)m;
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
