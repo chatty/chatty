@@ -19,12 +19,24 @@
     commandline paramter, which changes the settings directory to the current
     working directory, meaning the settings are loaded and saved in the same
     location you specified as working directory.</p>
+    
     <p>This means you can easily run more than one instance on the same computer
     with completely different settings, just by using that commandline parameter
     and specifying different working directories (e.g. in Windows in the shortcut
     settings).</p>
+    
     <p>You can also use the <code>-d &lt;dir&gt;</code> parameter to specify the
-        directory directly.</p>
+        directory directly. For example if you create two different shortcuts
+        like this:</p>
+    
+    <ul>
+        <li><code>javaw -jar "D:\Chatty\Chatty.jar" -d "D:\Chatty\settings1"</code></li>
+        <li><code>javaw -jar "D:\Chatty\Chatty.jar" -d "D:\Chatty\settings2"</code></li>
+    </ul>
+    
+    <p>Of course you have to change <code>D:\Chatty\Chatty.jar</code> to where 
+        your <code>Chatty.jar</code> is actually located. You also need to first
+        create the settings folders you specify.</p>
     
     <p>See also: <a href="help-guide_create_shortcut.html">Create Shortcut</a>.</p>
     
