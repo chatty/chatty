@@ -1483,7 +1483,7 @@ public class TwitchClient {
             g.printLine("A channel to join needs to be specified.");
         } else {
             String[] channelList = channelString.split(" ");
-            for( String channel: channelList)
+            for (String channel: channelList)
             {
                 channel = StringUtil.toLowerCase(channel.trim());
                 c.joinChannel(channel);
