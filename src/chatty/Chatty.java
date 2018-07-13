@@ -6,7 +6,9 @@ import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -90,12 +92,16 @@ public class Chatty {
      */
     private static String settingsDir = null;
     
+    private static String[] args;
+    
     /**
      * Parse the commandline arguments and start the actual chat client.
      * 
      * @param args The commandline arguments.
      */
     public static void main(String[] args) {
+        Chatty.args = args;
+        
         Map<String, String> parsedArgs = MiscUtil.parseArgs(args);
         
         /**
@@ -246,5 +252,9 @@ public class Chatty {
     
     public static String uptime() {
         return DateTime.ago(STARTED_TIME);
+    }
+    
+    public static String[] getArgs() {
+        return args;
     }
 }

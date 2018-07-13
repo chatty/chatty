@@ -1,13 +1,13 @@
 
-package chatty;
+package chatty.gui.components.updating;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import chatty.Chatty;
+import static chatty.Logging.USERINFO;
+import chatty.gui.components.updating.Stuff;
+import chatty.util.GitHub;
+import chatty.util.GitHub.Release;
+import chatty.util.GitHub.Releases;
+import chatty.util.settings.Settings;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,21 +21,61 @@ public class Version {
 
     private static final Logger LOGGER = Logger.getLogger(Version.class.getName());
     
+    /**
+     * The interval to check version in (seconds)
+     */
+    private static final int CHECK_VERSION_INTERVAL = 60*60*24*2;
+    
     private static final String VERSION = Chatty.VERSION;
-    private static final String VERSION_URL = Chatty.VERSION_URL;
-    private static final String VERSION_TEST_URL = Chatty.VERSION_TEST_URL;
     
     private final VersionListener listener;
+    private final Settings settings;
     
-    public Version(VersionListener listener) {
+    private Version(VersionListener listener, Settings settings) {
         this.listener = listener;
-        checkForNewVersion();
+        this.settings = settings;
         //versionReceived("0.3.1 Auto updater, Bugfixes");
     }
     
+    public static void check(Settings settings, VersionListener listener) {
+        Version v = new Version(listener, settings);
+        v.checkForNewVersion();
+    }
+    
+    public static void request(Settings settings, VersionListener listener) {
+        Version v = new Version(listener, settings);
+        v.checkForNewVersionForced();
+    }
+    
     private void checkForNewVersion() {
-        LOGGER.info("Checking for new version..");
-        new Thread(new VersionChecker()).start();
+        if (!settings.getBoolean("checkNewVersion")) {
+            return;
+        }
+        /**
+         * Check if enough time has passed since the last check.
+         */
+        long ago = System.currentTimeMillis() - settings.getLong("versionLastChecked");
+        if (ago/1000 < CHECK_VERSION_INTERVAL) {
+            /**
+             * If not checking, check if update was detected last time.
+             */
+            String updateAvailable = settings.getString("updateAvailable");
+            if (!updateAvailable.isEmpty()) {
+                listener.versionChecked(updateAvailable, null);
+            }
+        } else {
+            checkForNewVersionForced();
+        }
+    }
+    
+    public void checkForNewVersionForced() {
+        settings.setLong("versionLastChecked", System.currentTimeMillis());
+        LOGGER.log(USERINFO, "Checking for new version..");
+        new Thread(() -> {
+            Stuff.init();
+            Stuff.clearOldSetups();
+            versionReceived(GitHub.getReleases());
+        }).start();
     }
     
     /**
@@ -45,23 +85,21 @@ public class Version {
      * 
      * @param versionChecked The version String as received from the server
      */
-    private void versionReceived(String newVersion) {
-        LOGGER.info("Version checked: current:"+VERSION+"/new:"+newVersion);
-        if (newVersion == null) {
+    private void versionReceived(Releases releases) {
+        if (releases == null) {
             return;
         }
-        // Split version number and version info text
-        String[] split = newVersion.split(" ", 2);
-        newVersion = split[0];
-        String newVersionInfo = "";
-        if (split.length > 1) {
-            newVersionInfo = split[1];
+        Release release = releases.getLatest();
+        if (releases.getLatestBeta() != null && settings.getBoolean("checkNewBeta")) {
+            release = releases.getLatestBeta();
         }
-        
-        // Compare versions
-        String currentVersion = VERSION;
-        boolean isNewVersion = compareVersions(currentVersion, newVersion) == 1;
-        listener.versionChecked(newVersion, newVersionInfo, isNewVersion);
+        boolean isNewVersion = compareVersions(VERSION, release.getVersion()) == 1;
+        if (isNewVersion) {
+            settings.setString("updateAvailable", release.getVersion());
+        }
+        LOGGER.info(String.format("[UpdateCheck] Current: %s Latest: %s",
+                VERSION, release.getVersion()));
+        listener.versionChecked(isNewVersion ? release.getVersion() : null, releases);
     }
     
     /**
@@ -147,39 +185,7 @@ public class Version {
     }
     
     public static interface VersionListener {
-        public void versionChecked(String version, String info, boolean isNew);
-    }
-    
-    /**
-     * Requests the version file from the internet in a new Thread.
-     */
-    private class VersionChecker implements Runnable {
-
-        @Override
-        public void run() {
-            URL url;
-            HttpURLConnection connection;
-            try {
-                String versionUrl = VERSION_URL;
-                if (Chatty.DEBUG) {
-                    versionUrl = VERSION_TEST_URL;
-                }
-                url = new URL(versionUrl);
-                connection = (HttpURLConnection)url.openConnection();
-
-                InputStream input = connection.getInputStream();
-                String line;
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-                    line = reader.readLine();
-                }
-                versionReceived(line);
-            } catch (MalformedURLException ex) {
-                LOGGER.warning("Invalid version URL.");
-            } catch (IOException ex) {
-                LOGGER.warning("Error checking for new version: "+ex.getLocalizedMessage());
-            }
-        }
-        
+        public void versionChecked(String newVersion, GitHub.Releases releases);
     }
     
 }

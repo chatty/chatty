@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.components.updating.Version;
 import chatty.ChannelFavorites.Favorite;
 import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
@@ -16,11 +17,11 @@ import chatty.util.api.TokenInfo;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
-import chatty.Version.VersionListener;
 import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
+import chatty.gui.components.updating.Stuff;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
@@ -94,11 +95,6 @@ public class TwitchClient {
             + "&redirect_uri="+Chatty.REDIRECT_URI
             + "&force_verify=true"
             + "&scope=chat_login";
-    
-    /**
-     * The interval to check version in (seconds)
-     */
-    private static final int CHECK_VERSION_INTERVAL = 60*60*24*2;
 
     /**
      * Holds the Settings object, which is used to store and retrieve renametings
@@ -184,7 +180,7 @@ public class TwitchClient {
         // Logging
         new Logging(this);
         Thread.setDefaultUncaughtExceptionHandler(new ErrorHandler());
-
+        
         LOGGER.info("### Log start ("+DateTime.fullDateTime()+")");
         LOGGER.info(Chatty.chattyVersion());
         LOGGER.info(Helper.systemInfo());
@@ -419,42 +415,11 @@ public class TwitchClient {
      * Checks for a new version if the last check was long enough ago.
      */
     private void checkNewVersion() {
-        if (!settings.getBoolean("checkNewVersion")) {
-            return;
-        }
-        /**
-         * Check if enough time has passed since the last check.
-         */
-        long ago = System.currentTimeMillis() - settings.getLong("versionLastChecked");
-        if (ago/1000 < CHECK_VERSION_INTERVAL) {
-            /**
-             * If not checking, check if update was detected last time.
-             */
-            String updateAvailable = settings.getString("updateAvailable");
-            if (!updateAvailable.isEmpty()) {
-                g.setUpdateAvailable(updateAvailable);
-            }
-            return;
-        }
-        settings.setLong("versionLastChecked", System.currentTimeMillis());
-        g.printSystem("Checking for new version..");
-        
-        new Version(new VersionListener() {
-
-            @Override
-            public void versionChecked(String version, String info, boolean isNewVersion) {
-                if (isNewVersion) {
-                    String infoText = "";
-                    if (!info.isEmpty()) {
-                        infoText = "[" + info + "] ";
-                    }
-                    g.printSystem("New version available: "+version+" "+infoText
-                            +"(Go to <Help-Website> to download)");
-                    g.setUpdateAvailable(version);
-                    settings.setString("updateAvailable", version);
-                } else {
-                    g.printSystem("You already have the newest version.");
-                }
+        Version.check(settings, (newVersion,releases) -> {
+            if (newVersion != null) {
+                g.setUpdateAvailable(newVersion, releases);
+            } else {
+                g.printSystem("You already have the newest version.");
             }
         });
     }
@@ -1154,7 +1119,7 @@ public class TwitchClient {
         } else if (command.equals("testcolor")) {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
-            g.setUpdateAvailable("[test]");
+            g.setUpdateAvailable("[test]", null);
         } else if (command.equals("testannouncement")) {
             g.setAnnouncementAvailable(Boolean.parseBoolean(parameter));
         } else if (command.equals("removechan")) {
@@ -1343,6 +1308,9 @@ public class TwitchClient {
             api.getUserIDsTest2(parameter);
         } else if (command.equals("getuserids3")) {
             api.getUserIDsTest3(parameter);
+        } else if (command.equals("clearoldsetups")) {
+            Stuff.init();
+            Stuff.clearOldSetups();
         }
     }
     

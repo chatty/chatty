@@ -204,6 +204,8 @@ public class MainMenu extends JMenuBar {
         helpItem.setAccelerator(KeyStroke.getKeyStroke("F1"));
         setIcon(helpItem, "help-browser.png");
         help.addSeparator();
+        addItem(help,"dialog.updates");
+        help.addSeparator();
         addItem(help,"news","Announcements");
         
         

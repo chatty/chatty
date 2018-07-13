@@ -1,0 +1,71 @@
+[Run]
+Filename: "{code:RunParam|runChattyPath}"; Parameters: "{code:RunParam|runChattyParam}"; WorkingDir: "{code:RunParam|runChattyWdir|}"; Description: "Restart Chatty"; Flags: postinstall nowait; Check: LaunchCheck
+
+[Code]
+// Skip "Select Directory" Page when updating
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := (PageID = wpSelectDir) and (CompareText(ExpandConstant('{param:TYPE}'), 'update') = 0);
+end;
+
+// Replace ` by " in parameters
+function RunParam(const Param: string): String;
+Begin
+	Result := ExpandConstant('{param:'+Param+'}')
+	StringChangeEx(Result, '`', '"', true)
+End;
+
+// Check if a parameter exists
+function CmdLineParamExists(const Value: string): Boolean;
+var
+  I: Integer;  
+begin
+  Result := False;
+  for I := 1 to ParamCount do
+    if CompareText(Copy(ParamStr(I), 0, Length(Value)), Value) = 0 then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+// Test if parameters for restarting Chatty are set
+function LaunchCheck: Boolean;
+begin
+  Result := CmdLineParamExists('/runChattyPath=') AND CmdLineParamExists('/runChattyParam=') AND CmdLineParamExists('/runChattyWdir=');
+end;
+
+function IsAppRunning(const FileName : string): Boolean;
+var
+    FSWbemLocator: Variant;
+    FWMIService   : Variant;
+    FWbemObjectSet: Variant;
+begin
+    Result := false;
+    FSWbemLocator := CreateOleObject('WBEMScripting.SWBEMLocator');
+    FWMIService := FSWbemLocator.ConnectServer('', 'root\\CIMV2', '', '');
+    FWbemObjectSet := FWMIService.ExecQuery(Format('SELECT Name FROM Win32_Process Where CommandLine LIKE "%%%s%%"',[FileName]));
+    Result := (FWbemObjectSet.Count > 0);
+    FWbemObjectSet := Unassigned;
+    FWMIService := Unassigned;
+    FSWbemLocator := Unassigned;
+end;
+
+// Mostly debugging
+procedure InitializeWizard;
+var
+  I: Integer;  
+  Parame: string;
+begin
+  for I := 1 to ParamCount do
+    Begin
+    	Parame := ParamStr(I);
+        StringChangeEx(Parame, '`', '"', true);
+    	Log('The Value is: ' + ParamStr(I) + ' -> '+ Parame);
+    End;
+  Log('Abc '+ExpandConstant('{param:runPath|DefaultMode}'))
+  Log('Abcd '+GetCmdTail)
+  Log(IntToStr(FindWindowByWindowName('Chatty')))
+  //if IsAppRunning('Chatty.jar') then
+  //    MsgBox('Please close any remaining Chatty instances.', mbError, MB_OK)
+end;

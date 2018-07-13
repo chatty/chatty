@@ -1,5 +1,6 @@
 
-package chatty;
+package chatty.gui.components.updating;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 

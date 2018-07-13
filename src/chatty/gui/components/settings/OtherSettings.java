@@ -40,7 +40,8 @@ public class OtherSettings extends SettingsPanel {
     public OtherSettings(SettingsDialog d) {
         
         JPanel graphics = addTitledPanel("Graphic Settings", 0);
-        JPanel other = addTitledPanel("Other", 1);
+        JPanel updates = addTitledPanel("Updates", 1);
+        JPanel other = addTitledPanel("Other", 2);
 
         //------------------
         // Graphics settings
@@ -59,53 +60,73 @@ public class OtherSettings extends SettingsPanel {
                 ""),
                 d.makeGbc(1, 1, 1, 1));
         
-        //---------------
-        // Other settings
-        //---------------
+        //--------
+        // Updates
+        //--------
+        JLabel info = new JLabel(SettingConstants.HTML_PREFIX+"<em>Note:</em> You can manually check for updates via the "
+                + "'Help' menu even if you have automatic checks disabled.");
+        updates.add(info,
+                d.makeGbc(0, 0, 1, 1));
+        
         JCheckBox versionCheck = d.addSimpleBooleanSetting(
                 "checkNewVersion",
-                "Inform me about new versions",
+                "Automatically check for new version",
                 "Automatically check for a new version every few days and output a message if a new one is available.");
-        other.add(versionCheck,
-                d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
+        updates.add(versionCheck,
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+        
+        JCheckBox versionCheckBeta = d.addSimpleBooleanSetting(
+                "checkNewBeta",
+                "Inform me about new betas as well",
+                "In addition to full releases, also inform about new betas.");
+        updates.add(versionCheckBeta,
+                d.makeGbcSub(0, 2, 1, 1, GridBagConstraints.WEST));
+        
+        versionCheckBeta.setEnabled(false);
+        versionCheck.addItemListener(e -> {
+            versionCheckBeta.setEnabled(versionCheck.isEnabled() && versionCheck.isSelected());
+        });
         if (!Chatty.VERSION_CHECK_ENABLED) {
             versionCheck.setEnabled(false);
             versionCheck.setToolTipText("Feature disabled in this distributed version.");
         }
         
+        //---------------
+        // Other settings
+        //---------------
         other.add(d.addSimpleBooleanSetting(
                 "newsAutoRequest",
                 "Check for important announcements",
                 "Automatically checks for announcements about Chatty"),
-                d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting(
                 "enableStatusWriter",
                 "Write Stream Status:", ""),
-                d.makeGbc(0, 5, 2, 1));
+                d.makeGbc(0, 6, 2, 1));
         
         other.add(d.addEditorStringSetting(
                 "statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER),
-                d.makeGbc(2, 5, 1, 1));
+                d.makeGbc(2, 6, 1, 1));
         
         other.add(d.addSimpleBooleanSetting(
                 "autoUnhost",
                 "Auto-Unhost when your stream goes live",
                 "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"),
-                d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST));
         
         other.add(new JLabel("Prepend to window title:"),
-                d.makeGbc(0, 7, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 8, 1, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleStringSetting(
                 "titleAddition", 10, true),
-                d.makeGbc(1, 7, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 8, 2, 1, GridBagConstraints.WEST));
 
         other.add(d.addSimpleBooleanSetting(
                 "abSaveOnChange",
                 "Save Addressbook immediately after changing entries",
                 "Save immediately after updating addressbook (including changes via commands)"),
-                d.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 9, 3, 1, GridBagConstraints.WEST));
     }
     
 }

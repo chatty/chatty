@@ -1,0 +1,39 @@
+
+[Setup]
+AppName=Chatty
+AppVersion=${applicationVersion}
+DefaultDirName={pf}\\Chatty
+DefaultGroupName=Chatty
+OutputBaseFilename=Chatty_${applicationVersion}_win_standalone_setup
+${setup}
+
+[Files]
+Source: "*"; DestDir: "{app}"; Excludes: "\\app\\sounds,\\app\\img,\\runtime,\\app\\Chatty.cfg"; Flags: recursesubdirs; Components: main
+Source: "app/sounds/*"; DestDir: "{app}/app/sounds"; Components: examples
+Source: "app/img/*"; DestDir: "{app}/app/img"; Components: examples
+Source: "runtime/*"; DestDir: "{app}/runtime"; Flags: recursesubdirs; Components: runtime
+Source: "app/Chatty.cfg"; DestDir: "{app}/app"; Components: config
+
+[Types]
+Name: "install"; Description: "Install"
+Name: "update"; Description: "Update"
+Name: "custom"; Description: "Custom"; Flags: iscustom
+
+[Components]
+Name: main; Description: "Program files and Readme"; Types: install update custom; Flags: fixed
+Name: runtime; Description: "Java Runtime"; Types: install update
+Name: config; Description: "Startup Config"; Types: install
+Name: examples; Description: "Example sound/image files"; Types: install
+Name: shortcut; Description: "Create Shortcut";
+Name: shortcut\\desktop; Description: "Desktop"; Types: install
+Name: shortcut\\startmenu; Description: "Startmenu"; Types: install
+
+[Icons]
+Name: "{commondesktop}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\desktop
+Name: "{commonprograms}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\startmenu
+
+[Messages]
+BeveledLabel=Install or Update Chatty
+FinishedLabelNoIcons=Success! [name] may now be launched by double-clicking the installed Chatty.exe.
+
+${code}

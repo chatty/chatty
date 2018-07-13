@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.components.updating.Version;
 import chatty.gui.HtmlColors;
 import chatty.gui.WindowStateManager;
 import chatty.gui.components.settings.NotificationSettings;
@@ -97,6 +98,7 @@ public class SettingsManager {
         settings.addLong("versionLastChecked", 0);
         settings.addString("updateAvailable", "");
         settings.addBoolean("checkNewVersion", true);
+        settings.addBoolean("checkNewBeta", false);
         settings.addBoolean("newsAutoRequest", true);
         settings.addLong("newsLastRead", 0);
         settings.addString("currentVersion", "");

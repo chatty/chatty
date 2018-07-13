@@ -47,6 +47,7 @@ import chatty.gui.components.NewsDialog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
+import chatty.gui.components.updating.UpdateDialog;
 import chatty.gui.components.UpdateMessage;
 import chatty.gui.components.menus.CommandActionEvent;
 import chatty.gui.components.menus.CommandMenuItems;
@@ -144,7 +145,7 @@ public class MainGui extends JFrame implements Runnable {
     private AddressbookDialog addressbookDialog;
     private SRL srl;
     private LivestreamerDialog livestreamerDialog;
-    private UpdateMessage updateMessage;
+    private UpdateDialog updateDialog;
     private NewsDialog newsDialog;
     private EmotesDialog emotesDialog;
     private FollowersDialog followerDialog;
@@ -290,7 +291,7 @@ public class MainGui extends JFrame implements Runnable {
         addressbookDialog = new AddressbookDialog(this, client.addressbook);
         srl = new SRL(this, client.speedrunsLive, contextMenuListener);
         livestreamerDialog = new LivestreamerDialog(this, linkLabelListener, client.settings);
-        updateMessage = new UpdateMessage(this);
+        updateDialog = new UpdateDialog(this, linkLabelListener, client.settings,() -> exit());
         newsDialog = new NewsDialog(this, client.settings);
         
         client.settings.addSettingChangeListener(new MySettingChangeListener());
@@ -583,6 +584,15 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 openJoinDialog();
+            }
+        });
+        
+        addMenuAction("dialog.updates", "Dialog: Updates",
+                KeyEvent.VK_U, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openUpdateDialog();
             }
         });
         
@@ -2447,8 +2457,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void openUpdateDialog() {
-        updateMessage.setLocationRelativeTo(this);
-        updateMessage.showDialog();
+        System.out.println("open");
+        updateDialog.setLocationRelativeTo(this);
+        updateDialog.showDialog();
     }
     
     private void openFavoritesDialogFromConnectionDialog(String channel) {
@@ -3280,13 +3291,14 @@ public class MainGui extends JFrame implements Runnable {
         client.commandReconnect();
     }
     
-    public void setUpdateAvailable(final String newVersion) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                menu.setUpdateNotification(true);
-                updateMessage.setNewVersion(newVersion);
+    public void setUpdateAvailable(final String newVersion, final GitHub.Releases releases) {
+        SwingUtilities.invokeLater(() -> {
+            menu.setUpdateNotification(true);
+            //updateMessage.setNewVersion(newVersion);
+            updateDialog.setInfo(releases);
+            if (releases != null) {
+                // From actual request
+                updateDialog.showDialog();
             }
         });
     }
