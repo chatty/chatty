@@ -44,11 +44,10 @@ public class StreamChat extends JDialog {
         JScrollPane scroll = new JScrollPane(textPane);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         textPane.setScrollPane(scroll);
-        textPane.setPreferredSize(new Dimension(200,100));
         
         add(scroll, BorderLayout.CENTER);
         
-        pack();
+        setSize(400, 200);
     }
     
     public void printMessage(Message message) {
