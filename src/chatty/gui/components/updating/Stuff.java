@@ -130,8 +130,8 @@ public class Stuff {
         } catch (Exception ex) {
             LOGGER.warning("Error initializing stuff: " + ex);
         }
-        LOGGER.info(String.format("Updating Stuff: javawExe: %s / jarPath: %s / chattyExe: %s / tempDir: %s",
-                javawExe, jarPath, chattyExe, tempDir));
+        LOGGER.info(String.format("Updating Stuff: javaHome: %s / javawExe: %s / jarPath: %s / chattyExe: %s / tempDir: %s",
+                javaHome, javawExe != null ? "yes" : "no", jarPath, chattyExe, tempDir));
         initialized = true;
     }
     
