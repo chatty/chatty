@@ -7,6 +7,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.GitHub;
 import chatty.util.GitHub.Asset;
 import chatty.util.GitHub.Release;
@@ -184,7 +185,8 @@ public class UpdateDialog extends JDialog {
             runningRelease = releases.getByVersion(VERSION);
             
             // Actually update dialog
-            if (Version.compareVersions(VERSION, latest.getVersion()) == 1) {
+            if (Version.compareVersions(VERSION, latest.getVersion()) == 1
+                    || Debugging.isEnabled("update")) {
                 setNewVersion(latest, runningRelease);
             } else {
                 setVersion(latest, betaUpdateAvailable);
@@ -295,14 +297,15 @@ public class UpdateDialog extends JDialog {
             }
         } catch (IOException ex) {
             LOGGER.warning("Error downloading asset: "+ex);
-            // The downloader dialog should display errors
+            // The downloader dialog should display the error
         }
     }
     
     private void install(Path installerPath) {
         try {
             RunUpdater.run(installerPath, installDir, Stuff.getJarPath(),
-                Stuff.getChattyExe(), Stuff.getJavawExe(), Chatty.getArgs(), true);
+                Stuff.getChattyExe(), Stuff.getJavawExe(), Chatty.getArgs(),
+                Debugging.isEnabled("update"));
             installListener.installing();
         } catch (IOException ex) {
             LOGGER.warning("Error running installer: "+ex);
@@ -317,6 +320,7 @@ public class UpdateDialog extends JDialog {
     }
     
     public static final void main(String[] args) {
+        Debugging.command("+update");
         Stuff.init(Paths.get("H:\\chatty_install\\Param Test.jar"));
         
         Settings settings = new Settings("");

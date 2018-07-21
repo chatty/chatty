@@ -2,6 +2,7 @@
 package chatty.gui.components.updating;
 
 import chatty.Chatty;
+import chatty.util.Debugging;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -42,7 +43,7 @@ public class RunUpdater {
         command.add(makeParam("DIR", installDir.toAbsolutePath().toString()));
         command.add(makeParam("TYPE", "update"));
         if (debug) {
-            command.add("/LOG");
+            command.add(makeParam("LOG", installerExe+".log"));
         }
         
         // Decide parameters for restarting Chatty
@@ -70,7 +71,7 @@ public class RunUpdater {
         
         // Let's do it!
         ProcessBuilder pb = new ProcessBuilder(command);
-        LOGGER.info("Starting: "+command);
+        LOGGER.info("Starting: "+Debugging.filterToken(command.toString()));
         pb.start();
     }
 
@@ -164,12 +165,13 @@ public class RunUpdater {
     
     
     public static void main(String[] args) {
-        Path installerPath = Paths.get("H:\\chatty_test\\Chatty_0.9b3_installer.exe");
+        String[] args2 = new String[]{"-token", "abc"};
+        Path installerPath = Paths.get("H:\\chatty_test\\Chatty_0.9.1_installer.exe");
         Path jarPath = Paths.get("H:\\chatty_install\\Param Test.jar");
         Path chattyExe = null;
         Path javawExe = Paths.get("C:\\Program Files (x86)\\Java\\jdk1.8.0_161\\jre\\bin\\javaw.exe");
         try {
-            run(installerPath, jarPath.getParent(), jarPath, chattyExe, javawExe, args, true);
+            run(installerPath, jarPath.getParent(), jarPath, chattyExe, javawExe, args2, true);
         } catch (IOException ex) {
             Logger.getLogger(RunUpdater.class.getName()).log(Level.SEVERE, null, ex);
         }

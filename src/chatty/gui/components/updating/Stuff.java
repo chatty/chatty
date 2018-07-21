@@ -1,6 +1,7 @@
 
 package chatty.gui.components.updating;
 
+import chatty.util.DateTime;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
@@ -146,7 +147,7 @@ public class Stuff {
             return;
         }
         Instant oldIfBefore = Instant.now().minus(Duration.ofDays(7));
-        Pattern fileNameCheck = Pattern.compile("Chatty_.*installer.*[0-9]+\\.exe");
+        Pattern fileNameCheck = Pattern.compile("Chatty_.*setup.*[0-9]+\\.exe(\\.log)?");
         LOGGER.info("Checking if old setup files should be deleted..");
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(
                 getTempDir(),
@@ -159,8 +160,9 @@ public class Stuff {
                             })) {
             for (Path file : stream) {
                 try {
+                    String age = DateTime.ago(Files.getLastModifiedTime(file).toMillis(), 0, 0, DateTime.H);
                     Files.delete(file);
-                    LOGGER.info("Deleted old setup file: "+file);
+                    LOGGER.info("Deleted old setup file ("+age+"): "+file);
                 } catch (IOException ex) {
                     LOGGER.warning("Failed to delete old setup file: "+ex);
                 }

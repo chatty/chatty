@@ -53,19 +53,20 @@ end;
 
 // Mostly debugging
 procedure InitializeWizard;
-var
-  I: Integer;  
-  Parame: string;
+//var
+//  I: Integer;  
+//  Parame: string;
 begin
-  for I := 1 to ParamCount do
-    Begin
-    	Parame := ParamStr(I);
-        StringChangeEx(Parame, '`', '"', true);
-    	Log('The Value is: ' + ParamStr(I) + ' -> '+ Parame);
-    End;
-  Log('Abc '+ExpandConstant('{param:runPath|DefaultMode}'))
-  Log('Abcd '+GetCmdTail)
-  Log(IntToStr(FindWindowByWindowName('Chatty')))
+//  for I := 1 to ParamCount do
+//    Begin
+//    	Parame := ParamStr(I);
+//        StringChangeEx(Parame, '`', '"', true);
+//    	Log('The Value is: ' + ParamStr(I) + ' -> '+ Parame);
+//    End;
+  Log('runChattyPath: ['+RunParam('runChattyPath')+']');
+  Log('runChattyParam: ['+RunParam('runChattyParam')+']');
+  Log('runChattyWdir: ['+RunParam('runChattyWdir')+']');
+  //Log(IntToStr(FindWindowByWindowName('Chatty')))
   //if IsAppRunning('Chatty.jar') then
   //    MsgBox('Please close any remaining Chatty instances.', mbError, MB_OK)
 end;

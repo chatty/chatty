@@ -25,6 +25,7 @@ import chatty.gui.components.updating.Stuff;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.EmoticonListener;
 import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
@@ -873,6 +874,12 @@ public class TwitchClient {
         else if (command.equals("openbackupdir")) {
             MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
         }
+        else if (command.equals("opentempdir")) {
+            MiscUtil.openFolder(new File(Chatty.getTempDirectory()), g);
+        }
+        else if (command.equals("opendebugdir")) {
+            MiscUtil.openFolder(new File(Chatty.getDebugLogDirectory()), g);
+        }
         else if (command.equals("copy")) {
             MiscUtil.copyToClipboard(parameter);
         }
@@ -1311,6 +1318,8 @@ public class TwitchClient {
         } else if (command.equals("clearoldsetups")) {
             Stuff.init();
             Stuff.clearOldSetups();
+        } else if (command.equals("debugging")) {
+            g.printSystem(Debugging.command(parameter));
         }
     }
     

@@ -128,7 +128,7 @@ public class Chatty {
                 settingsDir = file.toString();
             }
         }
-
+        
         final TwitchClient client = new TwitchClient(parsedArgs);
         
         // Adding listener just in case, will do nothing if not used
@@ -236,6 +236,10 @@ public class Chatty {
     
     public static String getBackupDirectory() {
         return getUserDataDirectory()+"backup"+File.separator;
+    }
+    
+    public static String getTempDirectory() {
+        return System.getProperty("java.io.tmpdir")+File.separator;
     }
     
     public static String getDebugLogDirectory() {
