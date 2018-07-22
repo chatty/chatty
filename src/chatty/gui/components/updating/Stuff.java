@@ -41,6 +41,12 @@ public class Stuff {
         return chattyExe != null && javawExe == null;
     }
     
+    /**
+     * Check if the bare minimum of variables has been successfully set for an
+     * install and Chatty restart to be possible.
+     * 
+     * @return true if install can be attempted
+     */
     public static synchronized boolean installPossible() {
         checkInitialized();
         return jarDir != null && tempDir != null;
@@ -80,6 +86,9 @@ public class Stuff {
         }
     }
     
+    /**
+     * Initialize variables used for updating.
+     */
     public static synchronized void init() {
         Path jarPathTemp = null;
         try {
@@ -95,6 +104,12 @@ public class Stuff {
         init(jarPathTemp);
     }
     
+    /**
+     * Initialize variables used for updating, with the jar directory set
+     * manually (for testing).
+     * 
+     * @param jarPathTemp 
+     */
     public static synchronized void init(Path jarPathTemp) {
         try {
             javaHome = Paths.get(System.getProperty("java.home"));
@@ -136,10 +151,21 @@ public class Stuff {
         initialized = true;
     }
     
+    /**
+     * Get the full path to the executable with the given name in the system
+     * temp dir, with a timestamp added to ensure it's unique.
+     *
+     * @param name
+     * @return 
+     */
     public static Path getTempFilePath(String name) {
         return Stuff.getTempDir().resolve(name+"_"+System.currentTimeMillis()+".exe");
     }
     
+    /**
+     * Delete all files from the temp dir matching the naming scheme of the
+     * setup/log files, that are older than 7 days.
+     */
     public static void clearOldSetups() {
         checkInitialized();
         if (getTempDir() == null) {

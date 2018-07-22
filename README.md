@@ -108,6 +108,13 @@ External Libraries
   * License: "CDDL 1.1" and "GPL 2 with CPE"
 	(see <https://tyrus.java.net/license.html>)
 
+* Txtmark
+  * Files under `assets/lib/`: `txtmark-0.13.jar`, `txtmark-txtmark-0.13.zip`
+  * Website: <https://github.com/rjeschke/txtmark>
+  * License: "Apache License 2.0"
+	(for the license text see the APACHE_LICENSE file
+	or <http://www.apache.org/licenses/LICENSE-2.0>).
+
 Images / Other
 --------------
 

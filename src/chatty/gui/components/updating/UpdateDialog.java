@@ -23,16 +23,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import javafx.util.Duration;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -161,6 +157,9 @@ public class UpdateDialog extends JDialog {
         updateDisplay();
     }
     
+    /**
+     * Update the contents of the update dialog, based on current data.
+     */
     private void updateDisplay() {
         downloadButton.setVisible(false);
         downloadButtonInfo.setText(null);
@@ -219,7 +218,7 @@ public class UpdateDialog extends JDialog {
     }
     
     /**
-     * 
+     * Update dialog contents for a new version being available.
      * 
      * @param latest
      * @param current May be null if not in received release history
