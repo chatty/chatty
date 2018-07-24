@@ -1,4 +1,5 @@
 build/
+build_netbeans/
 dist/
 nbproject/
 working_directory/

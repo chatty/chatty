@@ -1,7 +1,7 @@
 import java.util.regex.Matcher
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "1.2.3"
+    id "com.github.johnrengelman.shadow" version "2.0.4"
 }
 
 apply plugin: 'java'
@@ -272,6 +272,6 @@ task innosetupStandalone(type: Exec, group: 'build') {
     }
 }
 
-task releaseSetup(group: 'build') {
-    dependsOn releaseWindows, innosetup, innosetupStandalone
+task releaseWinSetups(group: 'build') {
+    dependsOn releaseWindows, innosetup, innosetupStandalone, build
 }
