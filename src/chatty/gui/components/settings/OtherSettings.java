@@ -77,7 +77,7 @@ public class OtherSettings extends SettingsPanel {
         
         JCheckBox versionCheckBeta = d.addSimpleBooleanSetting(
                 "checkNewBeta",
-                "Inform me about new betas as well",
+                "Include beta versions",
                 "In addition to full releases, also inform about new betas.");
         updates.add(versionCheckBeta,
                 d.makeGbcSub(0, 2, 1, 1, GridBagConstraints.WEST));

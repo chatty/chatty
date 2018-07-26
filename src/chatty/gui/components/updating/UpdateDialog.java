@@ -139,11 +139,13 @@ public class UpdateDialog extends JDialog {
     
     public void showDialog() {
         if (releases == null) {
-            updateDisplay();
             Version.request(settings, (v, r) -> {
-                setInfo(r);
+                SwingUtilities.invokeLater(() -> {
+                    setInfo(r);
+                });
             });
         }
+        updateDisplay();
         setVisible(true);
     }
     
