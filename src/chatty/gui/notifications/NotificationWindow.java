@@ -167,12 +167,12 @@ public class NotificationWindow {
         window.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                close();
                 if (SwingUtilities.isRightMouseButton(e)) {
                     if (listener != null) {
                         listener.notificationAction(NotificationWindow.this);
                     }
                 }
+                close();
             }
             @Override
             public void mouseEntered(MouseEvent e) {

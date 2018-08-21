@@ -109,6 +109,11 @@ public class NotificationWindowManager<T> {
      */
     public void showMessage(String title, String message, Color foreground,
             Color background, T data) {
+        if (queue.size() > maxQueueSize*10) {
+            // If queue is too large already, simply give up, nobody is gonna
+            // click/wait through that many notifications anyway
+            return;
+        }
         NotificationWindow n = new NotificationWindow(title, message, foreground, background, listener);
         n.setHideMethod(hideMethod);
         //n.setTimeout(displayTime);
@@ -277,6 +282,7 @@ public class NotificationWindowManager<T> {
             itQueue.remove();
             showNotification(next);
         }
+        notificationData.remove(removed);
     }
 
     /**
