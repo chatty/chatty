@@ -433,7 +433,7 @@ public class TwitchClient {
      * @param channel 
      */
     private void createTestUser(String name, String channel) {
-        testUser = new User(name, "abc" , Room.createRegular(channel));
+        testUser = new User(name, name, Room.createRegular(channel));
         testUser.setColor("blue");
         testUser.setGlobalMod(true);
         testUser.setBot(true);
@@ -445,10 +445,10 @@ public class TwitchClient {
         //testUser.setStaff(true);
         //testUser.setBroadcaster(true);
         LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
-        badgesTest.put("global_mod", "1");
-        badgesTest.put("moderator", "1");
-        badgesTest.put("premium", "1");
-        badgesTest.put("bits", "1000000");
+//        badgesTest.put("global_mod", "1");
+//        badgesTest.put("moderator", "1");
+//        badgesTest.put("premium", "1");
+//        badgesTest.put("bits", "1000000");
         testUser.setTwitchBadges(badgesTest);
     }
     
@@ -716,11 +716,12 @@ public class TwitchClient {
                 c.sendCommandMessage(channel, text, "> "+text);
             }
             else {
-                g.printLine("Not in a channel");
                 // For testing:
                 // (Also creates a channel with an empty string)
                 if (Chatty.DEBUG) {
                     g.printMessage(testUser,text,false,null,1);
+                } else {
+                    g.printLine("Not in a channel");
                 }
             }
         }     
@@ -1240,6 +1241,13 @@ public class TwitchClient {
                     }
                 }
                 parameter = "message "+b.toString();
+            } else if (parameter.startsWith("subbomb")) {
+                String gifter = parameter.equals("subbomb") ? "Gifter" : "Gifter2";
+                for (int i=0;i<10;i++) {
+                    String raw = RawMessageTest.simulateIRC(channel, parameter+" recipient"+i, gifter);
+                    c.simulate(raw);
+                }
+                return;
             }
             String raw = RawMessageTest.simulateIRC(channel, parameter, c.getUsername());
             if (raw != null) {

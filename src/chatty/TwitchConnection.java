@@ -996,6 +996,80 @@ public class TwitchConnection {
             }
         }
         
+        private class GiftedSubCombiner {
+            
+            private final int COMBINE_INTERVAL = 1200;
+            
+            private final List<String> recipients = new ArrayList<>();
+            private User gifter;
+            private String subPlan;
+            private String text;
+            private Timer timer;
+            
+            public synchronized void add(User user, String text, String message, int months, String emotes, MsgTags tags) {
+                String recipient = tags.get("msg-param-recipient-display-name");
+                String plan = tags.get("msg-param-sub-plan");
+                boolean outputDirectly = false;
+                if (message != null && !message.isEmpty()) {
+                    outputDirectly = true;
+                }
+                if (recipient == null || plan == null) {
+                    outputDirectly = true;
+                }
+                if (outputDirectly) {
+                    flush();
+                    listener.onSubscriberNotification(user, text, message, months, emotes);
+                    return;
+                }
+                if (gifter != user || !subPlan.equals(plan)) {
+                    flush();
+                }
+                this.gifter = user;
+                this.subPlan = plan;
+                recipients.add(recipient);
+                if (recipients.size() == 1) {
+                    // First sub of this group
+                    this.text = text;
+                    timer = new Timer(true);
+                    timer.schedule(new TimerTask() {
+
+                        @Override
+                        public void run() {
+                            flush();
+                        }
+                    }, COMBINE_INTERVAL);
+                }
+            }
+            
+            private synchronized void flush() {
+                if (recipients.isEmpty()) {
+                    return;
+                }
+                StringBuilder b = new StringBuilder(text);
+                if (recipients.size() > 1) {
+                    b.append(" And also to: ");
+                    for (int i = 1; i < recipients.size(); i++) {
+                        String displayName = recipients.get(i);
+                        if (i > 1) {
+                            b.append(", ");
+                        }
+                        b.append(displayName);
+                    }
+                    b.append(" (").append(recipients.size()).append(" total)");
+                }
+                listener.onSubscriberNotification(gifter, b.toString(), null, -1, null);
+                this.gifter = null;
+                this.text = null;
+                this.subPlan = null;
+                recipients.clear();
+                timer.cancel();
+                timer = null;
+            }
+            
+        }
+        
+        private final GiftedSubCombiner giftedSubCombiner = new GiftedSubCombiner();
+        
         @Override
         void onUsernotice(String channel, String message, MsgTags tags) {
             if (tags.isEmpty()) {
@@ -1015,7 +1089,11 @@ public class TwitchConnection {
             updateUserFromTags(user, tags);
             if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")
                     || tags.isValue("msg-id", "subgift")) {
-                listener.onSubscriberNotification(user, text, message, months, emotes);
+                if (tags.isValue("msg-id", "subgift")) {
+                    giftedSubCombiner.add(user, text, message, months, emotes, tags);
+                } else {
+                    listener.onSubscriberNotification(user, text, message, months, emotes);
+                }
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
                 listener.onUsernotice("Charity", user, text, message, emotes);
             } else if (tags.isValue("msg-id", "raid")) {
