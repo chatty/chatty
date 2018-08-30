@@ -40,7 +40,6 @@ class ChatBoxView extends BoxView {
             int offset = 0;
 
             for (int i = 0; i < spans.length; i++) {
-
                 textBlockHeight += spans[i];
             }
             offset = (targetSpan - textBlockHeight);
@@ -50,4 +49,4 @@ class ChatBoxView extends BoxView {
             }
         }
     }
-}   
+}

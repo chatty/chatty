@@ -592,13 +592,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
      * @param name The setting name
      * @return 
      */
-    protected JCheckBox addSimpleBooleanSetting(String name) {
+    protected SimpleBooleanSetting addSimpleBooleanSetting(String name) {
         return addSimpleBooleanSetting(name,
                 Language.getString("settings.boolean."+name),
                 Language.getString("settings.boolean."+name+".tip", false));
     }
     
-    protected JCheckBox addSimpleBooleanSetting(String name, String description, String tooltipText) {
+    protected SimpleBooleanSetting addSimpleBooleanSetting(String name, String description, String tooltipText) {
         SimpleBooleanSetting result = new SimpleBooleanSetting(description, tooltipText);
         booleanSettings.put(name,result);
         return result;

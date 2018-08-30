@@ -240,11 +240,17 @@ public class SettingsManager {
         // Colors
         settings.addString("foregroundColor","#111111");
         settings.addString("backgroundColor","#FAFAFA");
+        settings.addBoolean("alternateBackground", false);
+        settings.addString("backgroundColor2","#EAEAEA");
+        settings.addBoolean("messageSeparator", false);
+        settings.addString("separatorColor", "#DFDFDF");
         settings.addString("infoColor","#001480");
         settings.addString("compactColor","#A0A0A0");
         settings.addString("inputBackgroundColor","White");
         settings.addString("inputForegroundColor","Black");
         settings.addString("highlightColor","Red");
+        settings.addBoolean("highlightBackground", true);
+        settings.addString("highlightBackgroundColor", "#FFFFEA");
         settings.addString("searchResultColor", "LightYellow");
         settings.addString("searchResultColor2", "#FFFF80");
         settings.addBoolean("colorCorrection", true);

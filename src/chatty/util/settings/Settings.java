@@ -275,6 +275,10 @@ public class Settings {
         return (Boolean)get(settingName, Setting.BOOLEAN);
     }
     
+    public boolean getBooleanDefault(String settingName) {
+        return (Boolean)get(settingName, Setting.BOOLEAN, true);
+    }
+    
     /**
      * Gets a String setting.
      * 

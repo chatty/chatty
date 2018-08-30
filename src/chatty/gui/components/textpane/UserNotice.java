@@ -2,8 +2,10 @@
 package chatty.gui.components.textpane;
 
 import chatty.User;
+import chatty.gui.Highlighter.Match;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticons;
+import java.util.List;
 
 /**
  *
@@ -18,8 +20,8 @@ public class UserNotice extends Message {
     public final String fullMessage;
     
     public UserNotice(String type, User user, String text, String message,
-            Emoticons.TagEmotes emotes, String id) {
-        super(id, text);
+            Emoticons.TagEmotes emotes, String id, List<Match> highlightMatches) {
+        super(id, text, highlightMatches);
         this.type = type;
         this.user = user;
         this.attachedMessage = message;

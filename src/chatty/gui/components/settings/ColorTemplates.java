@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 public class ColorTemplates extends JPanel {
     
     private final List<ColorSetting> colorSettings = new ArrayList<>();
+    private final List<BooleanSetting> booleanSettings = new ArrayList<>();
     private final List<Preset> hardcodedPresets = new ArrayList<>();
     private final List<Preset> userPresets = new ArrayList<>();
     
@@ -41,8 +42,13 @@ public class ColorTemplates extends JPanel {
     private final Settings settings;
     private final String settingName;
     
-    public ColorTemplates(Settings settings, String settingName, ColorSetting... values) {
+    public ColorTemplates(Settings settings, String settingName, ColorSetting[] values) {
+        this(settings, settingName, values, new BooleanSetting[0]);
+    }
+    
+    public ColorTemplates(Settings settings, String settingName, ColorSetting[] values, BooleanSetting[] booleanValues) {
         colorSettings.addAll(Arrays.asList(values));
+        booleanSettings.addAll(Arrays.asList(booleanValues));
         
         for (ColorSetting c : colorSettings) {
             c.addListener(() -> {
@@ -83,7 +89,7 @@ public class ColorTemplates extends JPanel {
         
         gbc = GuiUtil.makeGbc(0, 2, 3, 1);
         JLabel saveNote = new JLabel(Language.getString("settings.colorPresets.info"));
-        add(saveNote, gbc);
+        //add(saveNote, gbc);
         
         selection.addItemListener(e -> {
             boolean hardcoded = hardcodedPresets.contains(selection.getSettingValue());
@@ -167,6 +173,15 @@ public class ColorTemplates extends JPanel {
                 return false;
             }
         }
+        for (int i = 0; i < booleanSettings.size(); i++) {
+            BooleanSetting s = booleanSettings.get(i);
+            if (p.booleans.size() <= i) {
+                return false;
+            }
+            if (p.booleans.get(i) != s.getSettingValue().booleanValue()) {
+                return false;
+            }
+        }
         return true;
     }
     
@@ -179,6 +194,11 @@ public class ColorTemplates extends JPanel {
                     colorSettings.get(i).setSettingValue(p.colors.get(i));
                 }
             }
+            for (int i = 0; i < booleanSettings.size(); i++) {
+                if (p.booleans.size() > i) {
+                    booleanSettings.get(i).setSettingValue(p.booleans.get(i));
+                }
+            }
         }
     }
     
@@ -186,7 +206,7 @@ public class ColorTemplates extends JPanel {
         String name = JOptionPane.showInputDialog(this,
                 "Enter name to save current colors:");
         if (name != null) {
-            Preset p = new Preset(name, getCurrentColors());
+            Preset p = new Preset(name, getCurrentColors(), getCurrentBooleans());
             userPresets.add(p);
             int insertPos = userPresets.size();
             selection.insert(p, p.name, insertPos);
@@ -205,7 +225,7 @@ public class ColorTemplates extends JPanel {
      */
     private void overwriteCurrent() {
         Preset current = selection.getSettingValue();
-        Preset p = new Preset(current.name, getCurrentColors());
+        Preset p = new Preset(current.name, getCurrentColors(), getCurrentBooleans());
         int pos = userPresets.indexOf(current);
         userPresets.set(pos, p);
         selection.replace(current, p);
@@ -226,6 +246,14 @@ public class ColorTemplates extends JPanel {
         return colors;
     }
     
+    private List<Boolean> getCurrentBooleans() {
+        List<Boolean> booleans = new ArrayList<>();
+        for (BooleanSetting s : booleanSettings) {
+            booleans.add(s.getSettingValue());
+        }
+        return booleans;
+    }
+    
     private void removeSelectedPreset() {
         Preset p = selection.getSettingValue();
         userPresets.remove(p);
@@ -233,11 +261,26 @@ public class ColorTemplates extends JPanel {
         saveToSettings();
     }
     
-    public void addPreset(String name, String... values) {
+    public void addPreset(String name, String[] values) {
+        addPreset(name, values, new Boolean[0]);
+    }
+    
+    /**
+     * Adds a preset with the given name. The order and length of specified
+     * values must match the color settings this template object was created
+     * with.
+     * 
+     * @param name
+     * @param values 
+     */
+    public void addPreset(String name, String[] values, Boolean[] booleanValues) {
         if (values.length < colorSettings.size()) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        Preset p = new Preset(name, Arrays.asList(values));
+        if (booleanValues.length < booleanSettings.size()) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        Preset p = new Preset(name, Arrays.asList(values), Arrays.asList(booleanValues));
         hardcodedPresets.add(p);
     }
     
@@ -267,16 +310,19 @@ public class ColorTemplates extends JPanel {
         
         private final String name;
         private final List<String> colors;
+        private final List<Boolean> booleans;
         
-        public Preset(String name, List<String> colors) {
+        public Preset(String name, List<String> colors, List<Boolean> booleans) {
             this.name = name;
             this.colors = colors;
+            this.booleans = booleans;
         }
         
-        public List<String> toList() {
-            List<String> result = new ArrayList<>();
+        public List toList() {
+            List result = new ArrayList<>();
             result.add(name);
             result.addAll(colors);
+            result.addAll(booleans);
             return result;
         }
         
@@ -285,11 +331,19 @@ public class ColorTemplates extends JPanel {
             return name;
         }
         
-        public static Preset fromList(List<String> list) {
-            if (list.size() > 1) {
-                String name = list.get(0);
-                List<String> colors = new ArrayList<>(list.subList(1, list.size()));
-                return new Preset(name, colors);
+        public static Preset fromList(List list) {
+            if (list.size() > 1 && list.get(0) instanceof String) {
+                String name = (String)list.get(0);
+                List<String> colors = new ArrayList<>();
+                List<Boolean> booleans = new ArrayList<>();
+                for (Object o : list.subList(1, list.size())) {
+                    if (o instanceof String) {
+                        colors.add((String)o);
+                    } else if (o instanceof Boolean) {
+                        booleans.add((Boolean)o);
+                    }
+                }
+                return new Preset(name, colors, booleans);
             }
             return null;
         }

@@ -33,7 +33,7 @@ public class Debugging {
     }
     
     public static boolean isEnabled(String id) {
-        return enabled.contains(id);
+        return !enabled.isEmpty() && enabled.contains(id);
     }
     
     /**

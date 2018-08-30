@@ -39,6 +39,7 @@ public class Highlighter {
     private Color lastMatchColor;
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
+    private List<Match> lastTextMatches;
     
     // Settings
     private boolean highlightUsername;
@@ -130,6 +131,10 @@ public class Highlighter {
         return lastMatchNoSound;
     }
     
+    public List<Match> getLastTextMatches() {
+        return lastTextMatches;
+    }
+    
     /**
      * Checks whether the given message consisting of username and text should
      * be highlighted.
@@ -145,10 +150,12 @@ public class Highlighter {
         lastMatchColor = null;
         lastMatchNoNotification = false;
         lastMatchNoSound = false;
+        lastTextMatches = null;
         
         // Try to match own name first (if enabled)
         if (highlightUsername && usernameItem != null &&
                 usernameItem.matches(user, text, true, blacklist)) {
+            lastTextMatches = usernameItem.getTextMatches(text);
             return true;
         }
         
@@ -158,6 +165,7 @@ public class Highlighter {
                 lastMatchColor = item.getColor();
                 lastMatchNoNotification = item.noNotification();
                 lastMatchNoSound = item.noSound();
+                lastTextMatches = item.getTextMatches(text);
                 return true;
             }
         }

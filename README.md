@@ -137,7 +137,7 @@ Images / Other
 
 * Misc Icons from NUVOLA ICON THEME for KDE 3.x
 		by David Vignoni:
-  * Files (in various folders): `edit.png, ok.png, no.png`
+  * Files (in various folders): `edit.png, ok.png, no.png, colorpicker.png`
   * Source: <http://www.icon-king.com/projects/nuvola/>
   * License: LGPL
 	(for the license text see the LGPL file or

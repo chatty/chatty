@@ -1,11 +1,19 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.gui.components.textpane.ChannelTextPane.Attribute;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.util.Enumeration;
+import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.FlowView;
 import javax.swing.text.ParagraphView;
+import static javax.swing.text.StyleConstants.LineSpacing;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
@@ -24,7 +32,7 @@ import javax.swing.text.ViewFactory;
 class MyParagraphView extends ParagraphView {
 
     public static int MAX_VIEW_SIZE = 50;
-
+    
     public MyParagraphView(Element elem) {
         super(elem);
         strategy = new MyParagraphView.MyFlowStrategy();
@@ -62,6 +70,73 @@ class MyParagraphView extends ParagraphView {
                 ((WrapLabelView) v).resetBreakSpots();
             }
         }
+    }
+    
+    @Override
+    public void paint(Graphics g, Shape a) {
+//        Object temp = getAttributes().getAttribute(LineSpacing);
+//        float sp = -1;
+//        if (temp != null) {
+//            sp = (Float)temp;
+//        }
+//        System.out.println(a.getBounds()+" "+getTopInset()+" "+temp+" "+g.getClipBounds());
+//        if (g.getClipBounds().height < 100) {
+//            //return;
+//        }
+        //System.out.println(getAttributes().containsAttribute(Attribute.EVEN, true));
+        boolean isEmpty = getDocument().getLength() < 2;
+        Color bgColor = null;
+        if (getAttributes().containsAttribute(Attribute.HIGHLIGHT_LINE, true)) {
+            bgColor = MyStyleConstants.getHighlightBackground(getAttributes());
+        }
+        if (bgColor == null && getAttributes().containsAttribute(Attribute.EVEN, true)) {
+            bgColor = MyStyleConstants.getBackground2(getAttributes());
+        }
+        if (bgColor != null) {
+            g.setColor(bgColor);
+            Rectangle r = a.getBounds();
+            g.fillRect(0, r.y, getContainer().getWidth(), r.height);
+        }
+
+        Color separatorColor = MyStyleConstants.getSeparatorColor(getAttributes());
+        if (separatorColor != null && !isEmpty && !getAttributes().containsAttribute("cheese", true)) {
+            g.setColor(separatorColor);
+            Rectangle r = a.getBounds();
+            g.drawLine(0, r.y, getContainer().getWidth(), r.y);
+            if (bgColor != null) {
+                g.drawLine(0, r.y+r.height, getContainer().getWidth(), r.y+r.height);
+            }
+        }
+        
+//        if (getAttributes().containsAttribute("even", true) || hl) {
+//            Rectangle r = a.getBounds();
+//            if (hl) {
+//                g.setColor(new Color(255, 120, 91));
+//                g.setColor(new Color(240, 240, 240));
+//            } else {
+//                g.setColor(new Color(235, 235, 235));
+//            }
+//            g.setColor(new Color(155, 155, 155));
+//            int y = r.y;
+////            if (sp != -1) {
+////                y -= (15 * sp) / 2;
+////            }
+////            if (hl)
+//            g.fillRect(0, y, c.getWidth(), r.height);
+////            Enumeration e = getAttributes().getAttributeNames();
+////            while (e.hasMoreElements()) {
+////                System.out.println(e.nextElement());
+////            }
+//        }
+        
+            
+        super.paint(g, a);
+    }
+    
+    @Override
+    public float getAlignment(int axis) {
+        System.out.println("ALIGNMENT"+super.getAlignment(Y_AXIS));
+        return super.getAlignment(axis);
     }
     
 }

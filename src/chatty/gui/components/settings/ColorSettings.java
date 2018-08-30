@@ -1,16 +1,21 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.SettingConstants.HTML_PREFIX;
 import chatty.lang.Language;
 import chatty.util.settings.Settings;
+import java.awt.Color;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,78 +29,272 @@ public class ColorSettings extends SettingsPanel {
     private final SettingsDialog d;
     private final Map<String, ColorSetting> colorSettings = new HashMap<>();
     private final ColorChooser colorChooser;
-    private final JPanel main;
+    private final JPanel mainPanel;
+    private final JPanel colorsPanel;
     private final ColorTemplates presets;
     
     public ColorSettings(SettingsDialog d, Settings settings) {
         this.d = d;
         colorChooser = new ColorChooser(d);
 
-        main = addTitledPanel(Language.getString("settings.section.colors"), 0);
+        mainPanel = addTitledPanel(Language.getString("settings.section.colors"), 0);
+        colorsPanel = new JPanel(new GridBagLayout());
         
         GridBagConstraints gbc;
+        
+        //----------------------------------------------
+        // Color settings that require special handling
+        //----------------------------------------------
+        ColorSetting backgroundColor = addColorSetting(
+                "backgroundColor",
+                ColorSetting.BACKGROUND,
+                "foregroundColor",
+                Language.getString("settings.colors.background"),
+                0, 0);
+        
+        ColorSetting backgroundColor2 = addColorSetting(
+                "backgroundColor2",
+                ColorSetting.BACKGROUND,
+                "foregroundColor",
+                Language.getString("settings.colors.background2"),
+                1, 0);
+        backgroundColor2.setEnabled(false);
+        
+        ColorSetting separatorColor = addColorSetting(
+                "separatorColor",
+                ColorSetting.FOREGROUND,
+                "backgroundColor",
+                "Message Separator",
+                3, 0);
+        separatorColor.setEnabled(false);
 
+        ColorSetting highlightBackgroundColor = addColorSetting(
+                "highlightBackgroundColor",
+                ColorSetting.BACKGROUND,
+                "highlightColor",
+                Language.getString("settings.colors.highlightBackground"),
+                9, 0);
+        highlightBackgroundColor.setEnabled(false);
+        
+        ColorSetting highlightColor = addColorSetting(
+                "highlightColor",
+                ColorSetting.FOREGROUND,
+                "backgroundColor",
+                Language.getString("settings.colors.highlight"),
+                9, 1);
+        
+        //------------------------------------------------
+        // Boolean settings that require special handling
+        //------------------------------------------------
+        SimpleBooleanSetting alternateBackground = d.addSimpleBooleanSetting("alternateBackground");
+        SimpleBooleanSetting messageSeparator = d.addSimpleBooleanSetting("messageSeparator");
+        SimpleBooleanSetting highlightBackground = d.addSimpleBooleanSetting("highlightBackground");
+
+        //=====================
+        // Template definition
+        //=====================
+        // The order the settings are added in matters for presets
         presets = new ColorTemplates(settings, "colorPresets",
-                addColorSetting("backgroundColor", ColorSetting.BACKGROUND, "foregroundColor",
-                        Language.getString("settings.colors.background"), 1),
-                addColorSetting("foregroundColor", ColorSetting.FOREGROUND, "backgroundColor",
-                        Language.getString("settings.colors.foreground"), 2),
-                addColorSetting("infoColor", ColorSetting.FOREGROUND, "backgroundColor",
-                        Language.getString("settings.colors.info"), 3),
-                addColorSetting("compactColor", ColorSetting.FOREGROUND, "backgroundColor",
-                        Language.getString("settings.colors.compact"), 4),
-                addColorSetting("highlightColor", ColorSetting.FOREGROUND, "backgroundColor",
-                        Language.getString("settings.colors.highlight"), 5),
-                addColorSetting("inputBackgroundColor", ColorSetting.BACKGROUND, "inputForegroundColor",
-                        Language.getString("settings.colors.inputBackground"), 6),
-                addColorSetting("inputForegroundColor", ColorSetting.FOREGROUND, "inputBackgroundColor",
-                        Language.getString("settings.colors.inputForeground"), 7),
-                addColorSetting("searchResultColor", ColorSetting.BACKGROUND, "foregroundColor",
-                        Language.getString("settings.colors.searchResult"), 8),
-                addColorSetting("searchResultColor2", ColorSetting.BACKGROUND, "foregroundColor",
-                        Language.getString("settings.colors.searchResult2"), 9)
+                new ColorSetting[]{
+                    backgroundColor,
+                    addColorSetting(
+                            "foregroundColor",
+                            ColorSetting.FOREGROUND,
+                            "backgroundColor",
+                            Language.getString("settings.colors.foreground"),
+                            0, 1),
+                    addColorSetting(
+                            "infoColor",
+                            ColorSetting.FOREGROUND,
+                            "backgroundColor",
+                            Language.getString("settings.colors.info"),
+                            6, 0),
+                    addColorSetting(
+                            "compactColor",
+                            ColorSetting.FOREGROUND,
+                            "backgroundColor",
+                            Language.getString("settings.colors.compact"),
+                            6, 1),
+                    highlightColor,
+                    addColorSetting(
+                            "inputBackgroundColor",
+                            ColorSetting.BACKGROUND,
+                            "inputForegroundColor",
+                            Language.getString("settings.colors.inputBackground"),
+                            7, 0),
+                    addColorSetting(
+                            "inputForegroundColor",
+                            ColorSetting.FOREGROUND,
+                            "inputBackgroundColor",
+                            Language.getString("settings.colors.inputForeground"),
+                            7, 1),
+                    addColorSetting(
+                            "searchResultColor",
+                            ColorSetting.BACKGROUND,
+                            "foregroundColor",
+                            Language.getString("settings.colors.searchResult"),
+                            12, 0),
+                    addColorSetting(
+                            "searchResultColor2",
+                            ColorSetting.BACKGROUND,
+                            "foregroundColor",
+                            Language.getString("settings.colors.searchResult2"),
+                            12, 1),
+                    backgroundColor2,
+                    highlightBackgroundColor,
+                    separatorColor
+                },
+                new BooleanSetting[]{
+                    alternateBackground, messageSeparator, highlightBackground
+                }
         );
         
+        //-------------------
+        // Hardcoded Presets
+        //-------------------
         presets.addPreset(Language.getString("settings.colorPresets.option.default"),
-                settings.getStringDefault("backgroundColor"),
-                settings.getStringDefault("foregroundColor"),
-                settings.getStringDefault("infoColor"),
-                settings.getStringDefault("compactColor"),
-                settings.getStringDefault("highlightColor"),
-                settings.getStringDefault("inputBackgroundColor"),
-                settings.getStringDefault("inputForegroundColor"),
-                settings.getStringDefault("searchResultColor"),
-                settings.getStringDefault("searchResultColor2"));
+                new String[]{
+                    settings.getStringDefault("backgroundColor"),
+                    settings.getStringDefault("foregroundColor"),
+                    settings.getStringDefault("infoColor"),
+                    settings.getStringDefault("compactColor"),
+                    settings.getStringDefault("highlightColor"),
+                    settings.getStringDefault("inputBackgroundColor"),
+                    settings.getStringDefault("inputForegroundColor"),
+                    settings.getStringDefault("searchResultColor"),
+                    settings.getStringDefault("searchResultColor2"),
+                    settings.getStringDefault("backgroundColor2"),
+                    settings.getStringDefault("highlightBackgroundColor"),
+                    settings.getStringDefault("separatorColor")},
+                new Boolean[]{
+                    settings.getBooleanDefault("alternateBackground"),
+                    settings.getBooleanDefault("messageSeparator"),
+                    settings.getBooleanDefault("highlightBackground")
+                });
             
         presets.addPreset(Language.getString("settings.colorPresets.option.dark"),
-                "#111111", "LightGrey", "DeepSkyBlue", "#A0A0A0", "Red",
-                "#222222", "White", "DarkSlateBlue", "SlateBlue");
+                new String[]{
+                    "#111111", "LightGrey", "DeepSkyBlue", "#A0A0A0", "#DDDDDD",
+                    "#222222", "White", "DarkSlateBlue", "SlateBlue", "#2D2D2D",
+                    "#7A0000", "#383838"},
+                new Boolean[]{
+                    false, false, true
+                });
         
         presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
-                "Black", "White", "#FF9900", "#FFCC00", "#66FF66",
-                "#FFFFFF", "#000000", "#333333", "#555555");
+                new String[]{
+                    "Black", "White", "#FF9900", "#FFCC00", "#66FF66",
+                    "#FFFFFF", "#000000", "#333333", "#555555", "#1E1E1E",
+                    "#660000", "#7A4B00"},
+                new Boolean[]{
+                    false, false, false
+                });
         
         presets.init();
         
-        gbc = d.makeGbc(0, 0, 1, 1);
-        main.add(presets, gbc);
+        //========
+        // Layout
+        //========
+        
+        //------------------
+        // Boolean Settings
+        //------------------
+        // Alternating Backgrounds boolean setting
+        gbc = d.makeGbc(0, 2, 2, 1);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(-1,10,0,0);
+        alternateBackground.addItemListener(e -> {
+            backgroundColor2.setEnabled(alternateBackground.isSelected());
+        });
+        colorsPanel.add(alternateBackground, gbc);
+        
+        // Message Separator boolean setting
+        gbc = d.makeGbc(0, 4, 2, 1);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(-1,10,0,0);
+        messageSeparator.addItemListener(e -> {
+            separatorColor.setEnabled(messageSeparator.isSelected());
+        });
+        colorsPanel.add(messageSeparator, gbc);
+        
+        // Highlight Background boolean setting
+        gbc = d.makeGbc(0, 10, 2, 1);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(-1,10,0,0);
+        highlightBackground.addItemListener(e -> {
+            if (highlightBackground.isSelected()) {
+                highlightColor.setBaseColorSetting("highlightBackgroundColor");
+                updated("highlightBackgroundColor");
+            } else {
+                highlightColor.setBaseColorSetting("backgroundColor");
+                updated("backgroundColor");
+            }
+            highlightBackgroundColor.setEnabled(highlightBackground.isSelected());
+        });
+        colorsPanel.add(highlightBackground, gbc);
+        
+        //--------------------------
+        // Background Switch Button
+        //--------------------------
+        gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
+        JButton switchButton = new JButton(Language.getString("settings.colors.button.switchBackgrounds"));
+        switchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        switchButton.addActionListener(e -> {
+            String bg = backgroundColor.getSettingValue();
+            backgroundColor.setSettingValue(backgroundColor2.getSettingValue());
+            backgroundColor2.setSettingValue(bg);
+        });
+        colorsPanel.add(switchButton, gbc);
 
-        gbc = d.makeGbc(0, 10, 1, 1);
+        //----------------------
+        // Color Panel Headings
+        //----------------------
+        gbc = d.makeGbc(0, 5, 2, 1);
+        gbc.insets = new Insets(10, 0, 2, 0);
+        colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.misc")), gbc);
+        
+        gbc = d.makeGbc(0, 8, 2, 1);
+        gbc.insets = new Insets(10, 0, 2, 0);
+        colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.highlights")), gbc);
+        
+        gbc = d.makeGbc(0, 11, 2, 1);
+        gbc.insets = new Insets(10, 0, 2, 0);
+        colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.searchResult")), gbc);
+
+        //------------
+        // Main Panel
+        //------------
+        gbc = d.makeGbc(0, 0, 1, 1);
+        mainPanel.add(presets, gbc);
+        
+        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        mainPanel.add(colorsPanel, gbc);
+
+        gbc = d.makeGbc(0, 20, 1, 1);
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.insets = new Insets(15, 5, 5, 5);
-        main.add(new JLabel(HTML_PREFIX+Language.getString("settings.colors.lookandfeel")), gbc);
+        mainPanel.add(new JLabel(HTML_PREFIX+Language.getString("settings.colors.lookandfeel")), gbc);
     }
     
     
     private ColorSetting addColorSetting(String setting, int type,
-            String baseSetting, String colorDescription, int row) {
-        ColorSetting colorSetting = new ColorSetting(type, baseSetting, colorDescription, colorDescription, colorChooser);
+            String baseSetting, String colorDescription, int row, int column) {
+        String colorType = type == ColorSetting.FOREGROUND
+                ? Language.getString("settings.colors.general.foregroundColor")
+                : Language.getString("settings.colors.general.backgroundColor");
+        String extendedName = colorDescription+" ["+colorType+"]";
+        ColorSetting colorSetting = new ColorSetting(type, baseSetting, extendedName, colorDescription, colorChooser);
         colorSetting.addListener(new MyColorSettingListener(setting));
         d.addStringSetting(setting, colorSetting);
         colorSettings.put(setting, colorSetting);
-        GridBagConstraints gbc = d.makeGbc(0, row, 1, 1);
-        gbc.insets = new Insets(0,0,0,0);
-        main.add(colorSetting, gbc);
+        GridBagConstraints gbc = d.makeGbc(column, row, 1, 1, GridBagConstraints.WEST);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(3,4,2,4);
+        colorsPanel.add(colorSetting, gbc);
         return colorSetting;
     }
     

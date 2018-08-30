@@ -32,6 +32,7 @@ import chatty.gui.components.admin.StatusHistory;
 import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
+import chatty.gui.Highlighter.Match;
 import chatty.gui.colors.MsgColorItem;
 import chatty.gui.colors.MsgColorManager;
 import chatty.gui.components.AddressbookDialog;
@@ -2174,7 +2175,7 @@ public class MainGui extends JFrame implements Runnable {
             if (parameter != null && !parameter.isEmpty()) {
                 message = parameter;
             }
-            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null);
             streamChat.printMessage(m);
         } else if (command.equals("livestreamer")) {
             String stream = null;
@@ -2711,14 +2712,16 @@ public class MainGui extends JFrame implements Runnable {
                 channel = chan.getChannel();
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
+                boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
                 boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
-                        || (userIgnored(user, whisper) && !isOwnMessage);
+                        || ignoredUser;
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
                     client.chatLog.message(chan.getFilename(), user, text, action);
                 }
                 
                 boolean highlighted = false;
+                List<Match> highlightMatches = null;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
                     highlighted = checkHighlight(user, text, highlighter, "highlight", isOwnMessage);
@@ -2728,8 +2731,9 @@ public class MainGui extends JFrame implements Runnable {
                 
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
+                    highlightMatches = highlighter.getLastTextMatches();
                     highlightedMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bits, whisper);
+                            tagEmotes, bits, whisper, highlightMatches);
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(chan);
                     } else {
@@ -2753,8 +2757,14 @@ public class MainGui extends JFrame implements Runnable {
                 
                 // Do stuff if ignored, without printing message
                 if (ignored) {
+                    List<Match> ignoreMatches = null;
+                    if (!ignoredUser) {
+                        // Text matches might not be valid if ignore was through
+                        // ignored users list
+                        ignoreMatches = ignoreChecker.getLastTextMatches();
+                    }
                     ignoredMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bits, whisper);
+                            tagEmotes, bits, whisper, ignoreMatches);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -2769,7 +2779,7 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 } else {
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits);
+                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits, highlightMatches);
                     message.color = highlighter.getLastMatchColor();
                     if (!highlighted) {
                         message.color = msgColorManager.getColor(user, text);
@@ -2804,7 +2814,7 @@ public class MainGui extends JFrame implements Runnable {
             final String emotes) {
         SwingUtilities.invokeLater(() -> {
             Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-            SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null);
+            SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes, null, null);
 
             boolean printed = printUsernotice(m);
             if (printed) {
@@ -2817,7 +2827,7 @@ public class MainGui extends JFrame implements Runnable {
             final String message, final String emotes) {
         SwingUtilities.invokeLater(() -> {
             Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-            UserNotice m = new UserNotice(type, user, text, message, tagEmotes, null);
+            UserNotice m = new UserNotice(type, user, text, message, tagEmotes, null, null);
             printUsernotice(m);
         });
     }
@@ -3144,7 +3154,7 @@ public class MainGui extends JFrame implements Runnable {
                         String message = data.args.get(1);
                         if (client.settings.getBoolean("showAutoMod")) {
                             User user = client.getUser(channel, username);
-                            chan.printMessage(new AutoModMessage(user, message, data.msgId));
+                            chan.printMessage(new AutoModMessage(user, message, data.msgId, null));
                         }
                         notificationManager.autoModMessage(channel, username, message);
                     }
