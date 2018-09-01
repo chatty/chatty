@@ -294,8 +294,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         finishLine();
     }
 
-    User lastUser = null;
-    boolean userChanged = false;
     /**
      * Output a regular message from a user.
      * 
@@ -303,10 +301,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     private void printUserMessage(UserMessage message) {
         User user = message.user;
-        userChanged = lastUser != user;
-        if (userChanged) {
-            lastUser = user;
-        }
         boolean ignored = message.ignored_compact;
         if (ignored) {
             printCompact("IGNORED", user);
@@ -1628,14 +1622,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
     }
     
-    /*
-     * ########################
-     * # General purpose print
-     * ########################
-     */
-    
-//    private static Highlighter.HighlightPainter painter = new TestPainter();
-    
     /**
      * Start the next print with a newline. This must be called when the current
      * line is finished.
@@ -1645,22 +1631,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         lineSelection.onLineAdded(getLastLine(doc));
         even = !even;
         setLineEven(doc.getLength() - 1, even);
-        if (!userChanged) {
-            SimpleAttributeSet blah = new SimpleAttributeSet();
-            blah.addAttribute("cheese", true);
-            //doc.setParagraphAttributes(doc.getLength() - 1, 1, blah, false);
-        }
-//        LinePainter p = new LinePainter(this, new Color(235, 235, 235));
-//        if (even) {
-//            Element paragraph = doc.getDefaultRootElement().getElement(doc.getDefaultRootElement().getElementCount() - 1);
-//            System.out.println(paragraph+" "+doc.getLength());
-//            try {
-//                getHighlighter().addHighlight(paragraph.getStartOffset(), doc.getLength() - 1, p);
-//                DefaultHighlighter hl = new DefaultHighlighter();
-//            } catch (BadLocationException ex) {
-//                Logger.getLogger(ChannelTextPane.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
     }
     
     boolean even = false;
@@ -1745,6 +1715,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
     }
     
+    /**
+     * Prints the given range of text from start to end, adding the attribute
+     * for drawing Highlight/Ignore matches.
+     * 
+     * @param user
+     * @param text
+     * @param start
+     * @param end
+     * @param style
+     * @param highlightMatches 
+     */
     private void specialPrint(User user, String text, int start, int end, MutableAttributeSet style, java.util.List<Match> highlightMatches) {
         if (highlightMatches != null) {
             for (Match m : highlightMatches) {

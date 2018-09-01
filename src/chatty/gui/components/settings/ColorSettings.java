@@ -174,20 +174,102 @@ public class ColorSettings extends SettingsPanel {
             
         presets.addPreset(Language.getString("settings.colorPresets.option.dark"),
                 new String[]{
-                    "#111111", "LightGrey", "DeepSkyBlue", "#A0A0A0", "#DDDDDD",
-                    "#222222", "White", "DarkSlateBlue", "SlateBlue", "#2D2D2D",
-                    "#7A0000", "#383838"},
+                    "#111111",          // backgroundColor
+                    "LightGrey",        // foregroundColor
+                    "DeepSkyBlue",      // infoColor
+                    "#A0A0A0",          // compactColor
+                    "#DDDDDD",          // highlightColor
+                    "#222222",          // inputBackgroundColor
+                    "White",            // inputForegroundColor
+                    "DarkSlateBlue",    // searchResultColor
+                    "SlateBlue",        // searchResultColor2
+                    "#2D2D2D",          // backgroundColor2
+                    "#7A0000",          // highlightBackgroundColor
+                    "#383838"},         // separatorColor
                 new Boolean[]{
-                    false, false, true
+                    false, // alternateBackground
+                    false, // messageSeparator
+                    true   // highlightBackground
                 });
         
         presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
                 new String[]{
-                    "Black", "White", "#FF9900", "#FFCC00", "#66FF66",
-                    "#FFFFFF", "#000000", "#333333", "#555555", "#1E1E1E",
-                    "#660000", "#7A4B00"},
+                    "Black", // backgroundColor
+                    "White", // foregroundColor
+                    "#FF9900", // infoColor
+                    "#FFCC00", // compactColor
+                    "#66FF66", // highlightColor
+                    "#FFFFFF", // inputBackgroundColor
+                    "#000000", // inputForegroundColor
+                    "#333333", // searchResultColor
+                    "#555555", // searchResultColor2
+                    "#1E1E1E", // backgroundColor2
+                    "#660000", // highlightBackgroundColor
+                    "#7A4B00"}, // separatorColor
                 new Boolean[]{
-                    false, false, false
+                    false, // alternateBackground
+                    false, // messageSeparator
+                    false  // highlightBackground
+                });
+        
+        presets.addPreset("Twitch",
+                new String[]{
+                    "#EFEEF1", // backgroundColor
+                    "#111111", // foregroundColor
+                    "#001480", // infoColor
+                    "#A0A0A0", // compactColor
+                    "#111111", // highlightColor
+                    "White", // inputBackgroundColor
+                    "#111111", // inputForegroundColor
+                    "LightYellow", // searchResultColor
+                    "#FFFF80", // searchResultColor2
+                    "#DBDBDB", // backgroundColor2
+                    "#F0A5B0", // highlightBackgroundColor
+                    "#C6C6C6"}, // separatorColor
+                new Boolean[]{
+                    false, // alternateBackground
+                    false, // messageSeparator
+                    true  // highlightBackground
+                });
+        
+        presets.addPreset("Twitch Dark",
+                new String[]{
+                    "#17141A", // backgroundColor
+                    "#CFC8CD", // foregroundColor
+                    "White", // infoColor
+                    "#A0A0A0", // compactColor
+                    "#D6D0D4", // highlightColor
+                    "#17141A", // inputBackgroundColor
+                    "#CFC8CD", // inputForegroundColor
+                    "#333333", // searchResultColor
+                    "#555555", // searchResultColor2
+                    "#241F29", // backgroundColor2
+                    "#590E1A", // highlightBackgroundColor
+                    "#7A4B00"}, // separatorColor
+                new Boolean[]{
+                    true, // alternateBackground
+                    false, // messageSeparator
+                    true  // highlightBackground
+                });
+        
+        presets.addPreset("Theater",
+                new String[]{
+                    "#0E0C13", // backgroundColor
+                    "#DAD8DE", // foregroundColor
+                    "#A0A0A0", // infoColor
+                    "#6A7559", // compactColor
+                    "#D88A35", // highlightColor
+                    "#0E0C13", // inputBackgroundColor
+                    "#DAD8DE", // inputForegroundColor
+                    "#31362F", // searchResultColor
+                    "#444B42", // searchResultColor2
+                    "#191522", // backgroundColor2
+                    "#660000", // highlightBackgroundColor
+                    "#2D2D2D"}, // separatorColor
+                new Boolean[]{
+                    false, // alternateBackground
+                    false, // messageSeparator
+                    false  // highlightBackground
                 });
         
         presets.init();

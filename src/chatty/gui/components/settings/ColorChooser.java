@@ -179,6 +179,7 @@ public class ColorChooser extends JDialog {
         // Update preview and chooser
         preview.setText(text);
         chooser.setColor(presetColor);
+        updatePreview();
         
         setVisible(true);
         

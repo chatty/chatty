@@ -18,7 +18,7 @@ public class MsgColorSettings extends SettingsPanel {
     
     private static final String INFO_TEXT = "<html><body>"
             + "Customize message colors based on Highlighting rules. "
-            + "[help:Msg_Colors More information..]";
+            + "[help:Message_Colors More information..]";
     
     private final ItemColorEditor<MsgColorItem> data;
     

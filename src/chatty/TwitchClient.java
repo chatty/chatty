@@ -1243,8 +1243,13 @@ public class TwitchClient {
                 parameter = "message "+b.toString();
             } else if (parameter.startsWith("subbomb")) {
                 String gifter = parameter.equals("subbomb") ? "Gifter" : "Gifter2";
-                for (int i=0;i<10;i++) {
-                    String raw = RawMessageTest.simulateIRC(channel, parameter+" recipient"+i, gifter);
+                String secondParam = parameter.substring("subbomb".length());
+                int amount = 10;
+                try {
+                    amount = Integer.parseInt(secondParam.trim());
+                } catch (NumberFormatException ex) { }
+                for (int i=0;i<amount;i++) {
+                    String raw = RawMessageTest.simulateIRC(channel, "subbomb recipient"+i, gifter);
                     c.simulate(raw);
                 }
                 return;

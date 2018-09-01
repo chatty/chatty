@@ -193,7 +193,7 @@ public class SettingsManager {
         settings.addString("inputFont", "Dialog 14");
         settings.addString("userlistFont", "Dialog Bold 12");
         settings.addLong("lineSpacing", 2);
-        settings.addLong("paragraphSpacing", 6);
+        settings.addLong("paragraphSpacing", 8);
         settings.addString("timestamp","[HH:mm]");
         settings.addString("timestampTimezone", "");
         settings.addBoolean("capitalizedNames", true);

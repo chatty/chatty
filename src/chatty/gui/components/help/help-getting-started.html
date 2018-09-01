@@ -5,41 +5,43 @@
 <body>
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
     <h1><a name="top">Getting Started</a></h1>
-    <p>This is a short guide to help you with installing Chatty and getting familiar with some of it's features.</p>
+    <p>This guide will help you with installing Chatty and getting familiar with
+        some of it's features.</p>
     
-    <h2>Download & Installation</h2>
-    <p>You can download Chatty from it's <a href="http://chatty.github.io/#download">Website</a>.
-        The download simply consists of a <code>.zip</code>-file which you should
-    extract wherever you want to have Chatty. The extracted files include a
-    <code>Chatty.jar</code> which you should usually be able to double-click to
-    start the program (if Java is installed properly). (See <a href="help-troubleshooting.html#start">the help</a>
-    if Chatty won't start.)</p>
+    <h2>Download &amp; Installation</h2>
+    <p>From the <a href="https://chatty.github.io/#download">Chatty Website</a>
+        you can download either a .zip-Archive which you need to extract or an
+        Installer which will guide you through the installation.</p>
+    
+    <p>How you start Chatty depends on the version you downloaded and your OS,
+        but usually you'd double-click on either the <code>Chatty.jar</code> or
+        <code>Chatty.exe</code>. (See <a href="help-troubleshooting.html#start">the help</a>
+        if Chatty won't start.)</p>
     
     <h3>Update Chatty</h3>
-    <p>If you already have an older version of Chatty and want to update, then
-        just replace all the files with the new ones in the <code>.zip</code>.
-        Basicially just unzip the <code>.zip</code> into the same folder and overwrite
-        all files if asked (unless you have some custom icons or sounds that have the same name).
-        You can also unzip it into a new folder (just make sure you don't use the old version anymore).</p>
+    <p>If you want to update from an already installed older version of Chatty
+        then you may be able to simply use the built-in update function which
+        downloads the most recent installer and guides you through the update
+        process. If you update manually, then simply extract the .zip or install
+        the Installer into the same folder Chatty is already in and overwrite
+        the old files.</p>
     
-        <p>Your settings are saved seperately in the <a href="help-guide_folders.html">settings directory</a>
-        and are not lost when you upgrade to a new version. The new version should normally
-        automatically use the same settings without you needing to change anything.
-        If you are interested in what your settings directory is,
-        enter <code>/openDir</code> in Chatty. There is also a <code>backup</code>
-        folder in there with <a href="help-guide_folders.html#backup">backups</a> of the settings.</p>
+    <p>Whether you install Chatty into the same folder or not, your settings
+        are by default <a href="help-guide_folders.html">stored separately</a>
+        and should stay the same when you upgrade to a new version.</p>
+    
+    <p>When you start a new version for the first time it will open the
+        <a href="help-releases.html">Release Information</a>, which may contain
+        information about changes that could require your attention.</p>
         
-        <p>Please check out the <a href="help-releases.html">Release Information</a> for any changes in a new version that
-        may require your attention.</p>
-        
-    <p><em>Note:</em> If you downgrade to an older version of Chatty, some settings (that the older
-        version didn't have yet) may be lost. So make sure you don't run old versions of Chatty
-        without knowing what you are doing, if you have changed settings unique to newer versions.</p>
+    <p><em>Note:</em> If you downgrade to an <em>older</em> version of Chatty,
+        some settings (that the older version didn't have yet) may be lost.</p>
     
     <h2>Creating a login</h2>
     <p>If you are starting Chatty for the first time, you will have to request
-    login data from Twitch so Chatty can connect to chat for you and do other
-    stuff like show live streams you follow.</p>
+        login data from Twitch so Chatty can connect to chat on your behalf
+        (among other things).</p>
+    
     <p>In the <code>Connect</code>-dialog, click on <code>Create login..</code>
         and then <code>Request login data</code> and simply follow the instructions.
     Once you successfully created the login, close the dialog until you get back
@@ -64,17 +66,25 @@
     selecting <code>Close</code> from the context menu.</p>
     
     <h2>Chatting and Moderating</h2>
-    <p>Chatting is pretty straightfoward as you would expect from any chat program,
-    however the inputbox has a few useful features. Enter the beginning of a name
-    in chat and press <kbd>TAB</kbd> to <a href="help.html#nickCompletion">auto-complete</a> the name.
-    Press <kbd>Up-Arrow</kbd> key to go back to <a href="help.html#inputHistory">previous stuff you entered</a>.</p>
+    <h3>Inputbox Features</h3>
+    <ul>
+        <li><a href="help.html#nickCompletion">TAB-Completion</a>: Enter the
+            beginning of a name in chat and press <kbd>TAB</kbd> to auto-complete
+            the name. Also works for things like commands or Emoji (although
+            Twitch Emotes require <kbd>Shift-TAB</kbd> by default).</li>
+        <li>Press the <kbd>Up-Arrow</kbd> key to go back to
+            <a href="help.html#inputHistory">previous messages you sent</a>.</li>
+    </ul>
     
-    <p>To moderate a chat, you can of course use the regular moderations commands
-        like <code>/ban</code>, <code>/timeout</code> and so on, but a much more
-    convenient method is to click on the name of a user you want to ban/timeout,
-    which opens the <code>User</code>-dialog, containing several moderation
-    buttons as well as the recent messages of that user, so you can quickly check
-    if you are actually timing out the correct user.</p>
+    <h3>Moderating</h3>
+    <ul>
+        <li>Use Twitch <a href="help.html#commands">chat commands</a> like
+            <code>/ban</code>, <code>/timeout</code>, <code>/subscribers</code>
+            (<em>Hint:</em> Use TAB-Completion).</li>
+        <li>Click on a name in chat to open User Dialog, to view recent messages
+            and use moderation buttons (customizable via
+            <a href="help-custom_commands.html">Custom Commands</a>).</li>
+    </ul>
     
     <p>Also check out the options to <a href="help.html#pausechat">pause chat</a>
         and timing out users via <a href="help.html#userselection">shortcuts only</a>.</p>

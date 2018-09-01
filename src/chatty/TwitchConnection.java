@@ -998,7 +998,8 @@ public class TwitchConnection {
         
         private class GiftedSubCombiner {
             
-            private final int COMBINE_INTERVAL = 1200;
+            private final int MAX_RECIPIENTS_PER_MESSAGE = 20;
+            private final int COMBINE_INTERVAL = 800;
             
             private final List<String> recipients = new ArrayList<>();
             private User gifter;
@@ -1022,6 +1023,9 @@ public class TwitchConnection {
                     return;
                 }
                 if (gifter != user || !subPlan.equals(plan)) {
+                    flush();
+                }
+                if (recipients.size() == MAX_RECIPIENTS_PER_MESSAGE) {
                     flush();
                 }
                 this.gifter = user;
