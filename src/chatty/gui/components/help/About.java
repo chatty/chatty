@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
@@ -44,7 +45,9 @@ public class About extends JFrame implements ActionListener {
     private final JButton historyForwardButton;
     private final JTextField currentLocation;
     private final JTextPane textPane = new JTextPane();
-    private String reference;
+    private final JScrollBar scrollbar;
+    private String referenceAfterLoad;
+    private int scrollPositionAfterLoad;
     private String currentPage = "";
     private String currentReference = "";
     private final WrapHistory<HistoryItem> history = new WrapHistory<>(20);
@@ -55,6 +58,7 @@ public class About extends JFrame implements ActionListener {
         // Text pane
         JScrollPane scroll = new JScrollPane(textPane);
         scroll.getVerticalScrollBar().setUnitIncrement(40);
+        scrollbar = scroll.getVerticalScrollBar();
         textPane.setEditable(false);
         // Explicitly set to white, as long as the HTML pages themselves are
         textPane.setBackground(Color.WHITE);
@@ -93,6 +97,7 @@ public class About extends JFrame implements ActionListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                HistoryItem cameFrom = history.current();
                 HistoryItem item = null;
                 if (e.getActionCommand().equals("historyBack")) {
                     item = history.backward();
@@ -109,7 +114,7 @@ public class About extends JFrame implements ActionListener {
                 
                 // Change to valid history item
                 if (item != null) {
-                    open(item.page, item.ref);
+                    open(item.page, item.ref, item.scrollPosition, cameFrom);
                 }
             }
         };
@@ -202,6 +207,10 @@ public class About extends JFrame implements ActionListener {
         
     }
     
+    public final void open(String page, String ref) {
+        open(page, ref, -1, null);
+    }
+    
     /**
      * Open a page and go to a position (ref, which is an anchor in the HTML
      * document) on that page.
@@ -209,8 +218,13 @@ public class About extends JFrame implements ActionListener {
      * @param page The filename of the page to load, loads the default page if
      * this is {@code null}
      * @param ref The position to jump to, sets to empty String if {@code null}
+     * @param scrollPosition What scroll position to jump to, if not -1
+     * @param cameFrom The HistoryItem that was current before this was called
+     * (when navigating through the history, history.current() won't be the
+     * still current page, but the one that will be opened)
      */
-    public final void open(String page, String ref) {
+    private void open(String page, String ref, int scrollPosition,
+            HistoryItem cameFrom) {
         if (ref == null) {
             ref = "";
         }
@@ -218,12 +232,27 @@ public class About extends JFrame implements ActionListener {
         if (page == null) {
             page = DEFAULT_PAGE;
         }
+        
+        // Set scroll position to current page, which is either cameFrom, if
+        // available (e.g. when navigating through history), or just
+        // history.current() (which should be correct when not navigating
+        // through history)
+        if (cameFrom != null) {
+            cameFrom.setScrollPosition(scrollbar.getValue());
+        } else if (history.current() != null) {
+            history.current().setScrollPosition(scrollbar.getValue());
+        }
+        
         if (currentPage != null && currentPage.equals(page)) {
             // If already on this page, just jump to the position
             jumpTo(ref);
+            if (scrollPosition != -1) {
+                scrollbar.setValue(scrollPosition);
+            }
         } else {
             // Else save position for later, so it can jump there after loading
-            reference = ref;
+            referenceAfterLoad = ref;
+            scrollPositionAfterLoad = scrollPosition;
         }
         loadPage(page);
         
@@ -266,9 +295,13 @@ public class About extends JFrame implements ActionListener {
      * page.
      */
     private void pageLoaded() {
-        if (reference != null) {
-            jumpTo(reference);
-            reference = null;
+        if (referenceAfterLoad != null) {
+            jumpTo(referenceAfterLoad);
+            referenceAfterLoad = null;
+        }
+        if (scrollPositionAfterLoad != -1) {
+            scrollbar.setValue(scrollPositionAfterLoad);
+            scrollPositionAfterLoad = -1;
         }
     }
     
@@ -280,7 +313,8 @@ public class About extends JFrame implements ActionListener {
     private void reload() {
         Document doc = textPane.getDocument();
         doc.putProperty(Document.StreamDescriptionProperty, null);
-        reference = currentReference;
+        referenceAfterLoad = currentReference;
+        scrollPositionAfterLoad = scrollbar.getValue();
         loadPage(currentPage);
     }
     
@@ -292,10 +326,15 @@ public class About extends JFrame implements ActionListener {
         
         private final String page;
         private final String ref;
+        private int scrollPosition = -1;
         
         HistoryItem(String page, String ref) {
             this.page = page;
             this.ref = ref;
+        }
+        
+        public void setScrollPosition(int position) {
+            this.scrollPosition = position;
         }
         
         @Override
