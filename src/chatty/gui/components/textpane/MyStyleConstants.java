@@ -20,11 +20,7 @@ public class MyStyleConstants {
     }
     
     public static int getFontHeight(AttributeSet attr) {
-        Object value = attr.getAttribute(Attribute.FONT_HEIGHT);
-        if (value instanceof Integer) {
-            return (Integer)value;
-        }
-        return -1;
+        return getInteger(attr, Attribute.FONT_HEIGHT);
     }
     
     public static void setBackground2(MutableAttributeSet attr, Color color) {
@@ -61,5 +57,13 @@ public class MyStyleConstants {
             return (Color)value;
         }
         return null;
+    }
+    
+    private static int getInteger(AttributeSet attr, Attribute key) {
+        Object value = attr.getAttribute(key);
+        if (value instanceof Integer) {
+            return (Integer)value;
+        }
+        return -1;
     }
 }

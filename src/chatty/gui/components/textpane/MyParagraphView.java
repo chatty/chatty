@@ -74,16 +74,6 @@ class MyParagraphView extends ParagraphView {
     
     @Override
     public void paint(Graphics g, Shape a) {
-//        Object temp = getAttributes().getAttribute(LineSpacing);
-//        float sp = -1;
-//        if (temp != null) {
-//            sp = (Float)temp;
-//        }
-//        System.out.println(a.getBounds()+" "+getTopInset()+" "+temp+" "+g.getClipBounds());
-//        if (g.getClipBounds().height < 100) {
-//            //return;
-//        }
-        //System.out.println(getAttributes().containsAttribute(Attribute.EVEN, true));
         boolean isEmpty = getDocument().getLength() < 2;
         Color bgColor = null;
         if (getAttributes().containsAttribute(Attribute.HIGHLIGHT_LINE, true)) {
@@ -107,29 +97,7 @@ class MyParagraphView extends ParagraphView {
                 g.drawLine(0, r.y+r.height, getContainer().getWidth(), r.y+r.height);
             }
         }
-        
-//        if (getAttributes().containsAttribute("even", true) || hl) {
-//            Rectangle r = a.getBounds();
-//            if (hl) {
-//                g.setColor(new Color(255, 120, 91));
-//                g.setColor(new Color(240, 240, 240));
-//            } else {
-//                g.setColor(new Color(235, 235, 235));
-//            }
-//            g.setColor(new Color(155, 155, 155));
-//            int y = r.y;
-////            if (sp != -1) {
-////                y -= (15 * sp) / 2;
-////            }
-////            if (hl)
-//            g.fillRect(0, y, c.getWidth(), r.height);
-////            Enumeration e = getAttributes().getAttributeNames();
-////            while (e.hasMoreElements()) {
-////                System.out.println(e.nextElement());
-////            }
-//        }
-        
-            
+
         super.paint(g, a);
     }
     

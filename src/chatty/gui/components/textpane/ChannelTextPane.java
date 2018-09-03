@@ -37,7 +37,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.net.URI;
@@ -51,8 +50,6 @@ import java.util.regex.Matcher;
 import javax.swing.*;
 import static javax.swing.JComponent.WHEN_FOCUSED;
 import javax.swing.border.Border;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 
@@ -137,7 +134,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED,
-        COLOR_CORRECTION, SHOW_TOOLTIPS,
+        COLOR_CORRECTION, SHOW_TOOLTIPS, BOTTOM_MARGIN,
         
         DISPLAY_NAMES_MODE
     }
@@ -2678,27 +2675,38 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             styles.put("paragraph", paragraph);
             
             //editorKit.setBottomMargin(Math.max((preferredSpaceAbove + availableSpace) / 4, 1));
-            /**
-             * When there's nothing visually separating lines, then the bottom
-             * line should (roughly) have as much space below as the space to
-             * the previous line (so that the text seems vertically centered),
-             * so add an additional bottom margin. When the lines are separated,
-             * then only the paragraph's own spacing visually belongs to it, so
-             * no additional margin is required.
-             */
-            boolean alternatingBackgrounds = MyStyleConstants.getBackground2(paragraph) != null;
-            boolean separators = MyStyleConstants.getSeparatorColor(paragraph) != null;
-            if (!alternatingBackgrounds && !separators) {
-                int bottomMargin = Math.max((preferredSpaceAbove + availableSpace) / 3, 1);
-                System.out.println(bottomMargin);
-                setMargin(new Insets(3, 3, bottomMargin, 3));
-            } else if (!alternatingBackgrounds) {
-                setMargin(new Insets(3, 3, 1, 3));
-            } else {
-                setMargin(new Insets(3, 3, 0, 3));
+            int prevBottomMargin = getMargin().bottom;
+            int bottomMarginSetting = numericSettings.get(Setting.BOTTOM_MARGIN);
+            int bottomMargin = bottomMarginSetting;
+            if (bottomMarginSetting < 0) {
+                /**
+                 * Determine bottom margin automatically.
+                 * 
+                 * When there's nothing visually separating lines, then the
+                 * bottom line should (roughly) have as much space below as the
+                 * space to the previous line (so that the text seems vertically
+                 * centered), so add an additional bottom margin. When the lines
+                 * are separated, then only the paragraph's own spacing visually
+                 * belongs to it, so no additional margin is required.
+                 */
+                boolean alternatingBackgrounds = MyStyleConstants.getBackground2(paragraph) != null;
+                boolean separators = MyStyleConstants.getSeparatorColor(paragraph) != null;
+                int fullSpacing = preferredSpaceAbove + availableSpace;
+                if (!alternatingBackgrounds && !separators) {
+                    bottomMargin = (int)Math.max(fullSpacing / 2.5, 1);
+                } else if (!alternatingBackgrounds) {
+                    bottomMargin = 2;
+                } else {
+                    bottomMargin = 0;
+                }
             }
             if (Debugging.isEnabled("oldspacings")) {
-                setMargin(new Insets(3, 3, 3, 3));
+                bottomMargin = 3;
+            }
+            if (bottomMargin != prevBottomMargin) {
+                System.out.println("Bottom Margin: "+bottomMargin);
+                setMargin(new Insets(3, 3, bottomMargin, 3));
+                repaint();
             }
             
             //--------------
@@ -2771,6 +2779,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addNumericSetting(Setting.EMOTICON_MAX_HEIGHT, 200, 0, 300);
             addNumericSetting(Setting.EMOTICON_SCALE_FACTOR, 100, 1, 200);
             addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 10);
+            addNumericSetting(Setting.BOTTOM_MARGIN, -1, -1, 100);
             timestampFormat = styleServer.getTimestampFormat();
             linkController.setPopupEnabled(settings.get(Setting.SHOW_TOOLTIPS));
         }

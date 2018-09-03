@@ -33,7 +33,7 @@ public class StyleManager implements StyleServer {
             "font", "fontSize", "timestampEnabled", "emoticonsEnabled",
             "foregroundColor","infoColor","compactColor","backgroundColor",
             "backgroundColor2", "alternateBackground", "messageSeparator",
-            "separatorColor",
+            "separatorColor", "bottomMargin",
             "inputBackgroundColor","inputForegroundColor","usericonsEnabled",
             "timestamp","highlightColor","highlightBackgroundColor",
             "highlightBackground", "showBanMessages","autoScroll",
@@ -158,6 +158,7 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");
         addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
         addBooleanSetting(Setting.COLOR_CORRECTION, "colorCorrection");
+        addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
         long deletedMessagesModeNumeric = 0;
