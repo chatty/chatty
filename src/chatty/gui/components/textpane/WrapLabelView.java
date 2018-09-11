@@ -34,7 +34,9 @@ public class WrapLabelView extends LabelView {
     
     @Override
     public float getPreferredSpan(int axis) {
+        boolean highlightMatchesEnabled = MyStyleConstants.getHighlightMatchesEnabled(getAttributes());
         if (axis == View.X_AXIS
+                && highlightMatchesEnabled
                 && getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true)) {
             // Make a bit wider for marking the highlighted word
             return super.getPreferredSpan(axis)+3;
@@ -45,7 +47,9 @@ public class WrapLabelView extends LabelView {
     @Override
     public void paint(Graphics g, Shape a) {
         Rectangle r = a instanceof Rectangle ? (Rectangle)a : a.getBounds();
-        if (getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true)) {
+        boolean highlightMatchesEnabled = MyStyleConstants.getHighlightMatchesEnabled(getAttributes());
+        if (highlightMatchesEnabled
+                && getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true)) {
             Color c = StyleConstants.getForeground(getAttributes());
             Color c2;
             Color c3;

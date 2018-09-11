@@ -51,48 +51,40 @@ public class HighlightSettings extends SettingsPanel {
         noHighlightUsers = new NoHighlightUsers(d);
         highlightBlacklist = new HighlightBlacklist(d);
         
-        JPanel base = addTitledPanel("Highlight Messages", 0, true);
+        JPanel base = addTitledPanel(Language.getString("settings.section.highlightMessages"), 0, true);
         
         GridBagConstraints gbc;
         
         gbc = d.makeGbc(0,0,1,1);
         gbc.insets.bottom -= 3;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightEnabled", "Enable Highlight",
-                "If enabled, shows messages that match the highlight criteria "
-                + "in another color"), gbc);
+        base.add(d.addSimpleBooleanSetting("highlightEnabled"), gbc);
         
         Insets settingInsets = new Insets(1,14,1,4);
         
         gbc = d.makeGbc(0,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = settingInsets;
-        base.add(d.addSimpleBooleanSetting("highlightUsername", "Highlight "
-                + "own name",
-                "If enabled, highlights messages containing your current "
-                + "username, even if you didn't add it to the list."), gbc);
+        base.add(d.addSimpleBooleanSetting("highlightUsername"), gbc);
 
         gbc = d.makeGbc(1,1,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightNextMessages", "Highlight follow-up",
-                "If enabled, highlights messages from the same user that are written"
-                        + "shortly after the last highlighted one."), gbc);
+        base.add(d.addSimpleBooleanSetting("highlightNextMessages"), gbc);
         
         gbc = d.makeGbc(0,2,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightOwnText", "Check own text for highlights",
-                "If enabled, allows own messages to be highlighted, otherwise "
-                + "your own messages are NEVER highlighted. Good for testing."),
-                gbc);
+        base.add(d.addSimpleBooleanSetting("highlightOwnText"), gbc);
         
         gbc = d.makeGbc(1,2,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightIgnored", "Check ignored messages",
-                "If enabled, checks ignored messages as well, otherwise they are"
-                        + " just ignored for highlighting."), gbc);
+        base.add(d.addSimpleBooleanSetting("highlightIgnored"), gbc);
+        
+        gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
+        gbc.insets = settingInsets;
+        base.add(d.addSimpleBooleanSetting("highlightMatches"), gbc);
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);

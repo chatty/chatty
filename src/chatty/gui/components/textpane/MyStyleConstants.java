@@ -12,7 +12,16 @@ import javax.swing.text.MutableAttributeSet;
 public class MyStyleConstants {
     
     enum Attribute {
-        BACKGROUND2, HIGHLIGHT_BACKGROUND, SEPARATOR_COLOR, FONT_HEIGHT
+        BACKGROUND2, HIGHLIGHT_BACKGROUND, SEPARATOR_COLOR, FONT_HEIGHT,
+        HIGHLIGHT_MATCHES
+    }
+    
+    public static void setHighlightMatchesEnabled(MutableAttributeSet attr, boolean state) {
+        attr.addAttribute(Attribute.HIGHLIGHT_MATCHES, state);
+    }
+    
+    public static boolean getHighlightMatchesEnabled(AttributeSet attr) {
+        return getBoolean(attr, Attribute.HIGHLIGHT_MATCHES);
     }
     
     public static void setFontHeight(MutableAttributeSet attr, int height) {
@@ -65,5 +74,13 @@ public class MyStyleConstants {
             return (Integer)value;
         }
         return -1;
+    }
+    
+    private static boolean getBoolean(AttributeSet attr, Attribute key) {
+        Object value = attr.getAttribute(key);
+        if (value instanceof Boolean) {
+            return (Boolean)value;
+        }
+        return false;
     }
 }

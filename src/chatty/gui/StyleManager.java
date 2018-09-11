@@ -46,7 +46,7 @@ public class StyleManager implements StyleServer {
             "colorCorrection", "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
-            "showImageTooltips",
+            "showImageTooltips", "highlightMatches",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -134,7 +134,7 @@ public class StyleManager implements StyleServer {
         MyStyleConstants.setSeparatorColor(paragraphStyle,
                 settings.getBoolean("messageSeparator") ? makeColor("separatorColor", null) : null);
         MyStyleConstants.setFontHeight(paragraphStyle, dummyComponent.getFontMetrics(new Font(fontFamily, Font.PLAIN, fontSize)).getHeight());
-        
+        MyStyleConstants.setHighlightMatchesEnabled(paragraphStyle, settings.getBoolean("highlightMatches"));
         
         other = new SimpleAttributeSet();
         addBooleanSetting(Setting.EMOTICONS_ENABLED, "emoticonsEnabled");
