@@ -9,6 +9,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.Sound;
+import chatty.util.StringUtil;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
@@ -599,6 +600,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected SimpleBooleanSetting addSimpleBooleanSetting(String name, String description, String tooltipText) {
+        if (tooltipText != null && !tooltipText.isEmpty()) {
+            tooltipText = "<html><body>"+StringUtil.addLinebreaks(tooltipText, 70, true);
+        }
         SimpleBooleanSetting result = new SimpleBooleanSetting(description, tooltipText);
         booleanSettings.put(name,result);
         return result;

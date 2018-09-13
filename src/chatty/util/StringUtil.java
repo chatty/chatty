@@ -227,6 +227,44 @@ public class StringUtil {
         return input;
     }
     
+    /**
+     * Adds linebreaks to the input, in place of existing space characters, so
+     * that each resulting line has the given maximum length. If there is no
+     * space character where needed a line may be longer. The added linebreaks
+     * don't count into the maximum line length.
+     *
+     * @param input The intput to modify
+     * @param maxLineLength The maximum line length in number of characters
+     * @param html If true, a "&lt;br /&gt;" will be added in addition to a
+     * linebreak character
+     * @return 
+     */
+    public static String addLinebreaks(String input, int maxLineLength, boolean html) {
+        if (input == null || input.length() <= maxLineLength) {
+            return input;
+        }
+        String[] words = input.split(" ");
+        StringBuilder b = new StringBuilder();
+        int lineLength = 0;
+        for (int i=0;i<words.length;i++) {
+            String word = words[i];
+            if (b.length() > 0
+                    && lineLength + word.length() > maxLineLength) {
+                if (html) {
+                    b.append("<br />");
+                }
+                b.append("\n");
+                lineLength = 0;
+            } else if (b.length() > 0) {
+                b.append(" ");
+                lineLength++;
+            }
+            b.append(word);
+            lineLength += word.length();
+        }
+        return b.toString();
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
     }
