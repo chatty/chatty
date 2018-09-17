@@ -999,7 +999,7 @@ public class TwitchConnection {
         private class GiftedSubCombiner {
             
             private final int MAX_RECIPIENTS_PER_MESSAGE = 20;
-            private final int COMBINE_INTERVAL = 800;
+            private final int COMBINE_INTERVAL = 1000;
             
             private final List<String> recipients = new ArrayList<>();
             private User gifter;

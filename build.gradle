@@ -45,7 +45,7 @@ def extractVersion = { ->
     File chattyClassFile = new File((File) sourceSets.main.java.srcDirs.first(), 'chatty/Chatty.java');
 
     // Use this regex to extract the version from the file
-    Matcher matcher = chattyClassFile.text =~ /(?m)^\s*public static final String VERSION = "(.*)";\s*$/
+    Matcher matcher = chattyClassFile.text =~ /(?m)^\s*public static final String VERSION = "(.*?)";/
 
     // From the first matching line, return the first capture (the version)
     return matcher[0][1]
