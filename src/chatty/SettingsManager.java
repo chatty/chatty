@@ -782,6 +782,9 @@ public class SettingsManager {
     }
     
     public void debugSettings() {
+        if (Chatty.getInvalidSettingsDirectory() != null) {
+            LOGGER.warning("Invalid -d dir: "+Chatty.getInvalidSettingsDirectory());
+        }
         StringBuilder result = new StringBuilder("Settings: ");
         boolean first = true;
         for (String setting : debugSettings) {

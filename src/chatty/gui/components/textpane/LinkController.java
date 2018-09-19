@@ -13,6 +13,7 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.menus.UsericonContextMenu;
+import chatty.util.Debugging;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
@@ -24,8 +25,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
@@ -34,6 +38,7 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
@@ -201,6 +206,11 @@ public class LinkController extends MouseAdapter {
         hidePopupIfDifferentElement(element);
         
         JTextPane textPane = (JTextPane)e.getSource();
+        if (Debugging.isEnabled("attr")) {
+            popup.show(textPane, element, debugElement(element), -1);
+            return;
+        }
+        
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
         if (emoteImage != null) {
@@ -554,6 +564,31 @@ public class LinkController extends MouseAdapter {
     
     public void cleanUp() {
         popup.cleanUp();
+    }
+    
+    private static String debugElement(Element e) {
+        StringBuilder result = new StringBuilder();
+        result.append("<html><body style='font-weight:normal;border:1px solid #000;padding:3px 5px 3px 5px;'>");
+        try {
+            result.append("'").append(e.getDocument().getText(e.getStartOffset(), e.getEndOffset() - e.getStartOffset())).append("'");
+            result.append("<br />");
+        } catch (BadLocationException ex) {
+            Logger.getLogger(LinkController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        AttributeSet attrs = e.getAttributes();
+        while (attrs != null) {
+            result.append("<b>").append(attrs.toString()).append("</b>");
+            result.append("<br />");
+            Enumeration en = attrs.getAttributeNames();
+            while (en.hasMoreElements()) {
+                Object key = en.nextElement();
+                Object value = attrs.getAttribute(key);
+                result.append(key).append(" => ").append(value);
+                result.append("<br />");
+            }
+            attrs = attrs.getResolveParent();
+        }
+        return result.toString();
     }
     
 }

@@ -82,14 +82,14 @@ class MyParagraphView extends ParagraphView {
         if (bgColor == null && getAttributes().containsAttribute(Attribute.EVEN, true)) {
             bgColor = MyStyleConstants.getBackground2(getAttributes());
         }
-        if (bgColor != null) {
+        if (bgColor != null && !isEmpty) {
             g.setColor(bgColor);
             Rectangle r = a.getBounds();
             g.fillRect(0, r.y, getContainer().getWidth(), r.height);
         }
 
         Color separatorColor = MyStyleConstants.getSeparatorColor(getAttributes());
-        if (separatorColor != null && !isEmpty && !getAttributes().containsAttribute("cheese", true)) {
+        if (separatorColor != null && !isEmpty) {
             g.setColor(separatorColor);
             Rectangle r = a.getBounds();
             g.drawLine(0, r.y, getContainer().getWidth(), r.y);

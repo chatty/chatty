@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-	<title>Chatty Help - Create Shortcut and add Icon</title>
+	<title>Chatty Help - Create Shortcut (add Launch Options/Icon)</title>
         <link rel="stylesheet" type="text/css" href="style.css" />
 <body>
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
-    <h1><a name="top">Create Shortcut and add Icon</a></h1>
+    <h1><a name="top">Create Shortcut (add Launch Options/Icon)</a></h1>
 
     <p>This applies to Windows 7, and probably other Windows versions. The info
         can probably also be applied to other OS with some adjustments.</p>
@@ -22,7 +22,11 @@
             without changing it for all Java programs.</li>
             
     </ul>
-    <h2>Create shortcut</h2>
+    
+        <p><em>Note:</em> If you used the installer a shortcut may already have been
+        created for you.</p>
+    
+    <h2>Create shortcut (JAR-Version)</h2>
     <p>Create a shortcut to Java to start Chatty (for this example the
         <code>Chatty.jar</code> is located in <code>D:\Chatty\</code>):</p>
     <h3>First way</h3>
@@ -56,6 +60,12 @@
 <p>The <code>javaw</code> part might automatically be changed into the full path
     to the <code>javaw.exe</code> when you save the shortcut.</p>
 
+<h2>Create shortcut (Standalone Version)</h2>
+<p>For the Standalone Version you can use the same methods as detailed above
+    (for example drag and release with the right mousebutton and choose the option to create shortcut),
+    except that it simply starts the <code>Chatty.exe</code> (without <code>javaw</code>), for example:
+    <code>"D:\Chatty\Chatty.exe"</code></p>
+
 <h2>Editing shortcut</h2>
 <p>Add launch options or icon:</p>
 <ul>
@@ -64,7 +74,13 @@
             <code>Shortcut</code> tab.</li>
 	<li>Add any <a href="help.html#launch">launch options</a> you want to
             use with Chatty after the path to Chatty. For example:
-            <code>javaw -jar "D:\Chatty\Chatty.jar" -cd</code></li>
+            <ul>
+                <li><code>javaw -jar "D:\Chatty\Chatty.jar" -cd</code> (JAR-Version)</li>
+                <li><code>"D:\Chatty\Chatty.exe" -cd</code> (Standalone)</li>
+            </ul>
+            For the Standalone Version you can alternatively specify launch
+            options in the <a href="help-standalone.html#cfg-launch">Chatty.cfg</a>.
+            </li>
 	<li>Click <code>Change Icon..</code> and then <code>Browse..</code> to
             select an item to use for the Shortcut from your harddrive.
             (<a href="http://chatty.github.io/Chatty.ico">Download Chatty icon

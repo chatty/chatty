@@ -1,6 +1,7 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.Chatty;
 import chatty.util.Debugging;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -32,7 +33,7 @@ class MyIconView extends IconView {
         }
         if (axis == View.Y_AXIS) {
             int fontHeight = MyStyleConstants.getFontHeight(getAttributes());
-            float lineHeight = fontHeight * 0.7f;
+            float lineHeight = fontHeight * 0.6f;
             float actualHeight = super.getPreferredSpan(View.Y_AXIS);
             float fakedHeight = getPreferredSpan(View.Y_AXIS);
             float height = fakedHeight - (actualHeight - fakedHeight);
@@ -63,7 +64,7 @@ class MyIconView extends IconView {
             }
             float toFontHeight = Math.max(height - fontHeight - MARGIN, 0);
             float availableSpace = Math.max(spacing - MARGIN, 0);
-            System.out.println(toFontHeight+" "+availableSpace);
+//            Chatty.println(toFontHeight+" "+availableSpace);
             return height - Math.min(toFontHeight, availableSpace);
         }
         return super.getPreferredSpan(axis);

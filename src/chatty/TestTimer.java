@@ -31,21 +31,29 @@ public class TestTimer implements Runnable {
         for (int i=0;i<max;i++) {
             
 //            user.setUsercolorManager(client.usercolorManager);
-            String line = "Line: "+i+" Kappa FrankerZ abc mah a b c d ef gh ij klm nop qrstu vw";
-            client.g.printMessage(user, line, false, "", 0);
+            String[] lines = new String[]{":)", "Kappa", "Longer line and whatnot",
+                "Longer line with emotes FrankerZ Kappa :) 😉 😊 😋 😎 😍",
+                "SSSsss",
+                ":D",
+                "lol :D",
+                "well..",
+                "Kappa FrankerZ abc mah a b c d ef gh ij klm nop qrstu vw"};
+            
+            String line = lines[random.nextInt(lines.length)];
+            client.g.printMessage(user, line, false, null, 0);
             //client.userJoined("#test","user"+ new BigInteger(20,random).toString());
 //            for (int y=0;y<10;y++) {
 //                client.g.printMessage("test"+y, user, line, false);
 //            }
             //client.g.printDebug(line);
             //client.api.requestFollowers("whatever");
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(TestTimer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+//            try {
+//                Thread.sleep(10);
+//            } catch (InterruptedException ex) {
+//                Logger.getLogger(TestTimer.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         }
-        System.out.println("Total: "+((System.currentTimeMillis() - start) / 1000));
+        System.out.println("Total: "+((System.currentTimeMillis() - start)));
         
     }
     

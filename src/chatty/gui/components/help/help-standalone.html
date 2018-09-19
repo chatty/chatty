@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chatty - Standalone Version</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body>
+    <div id="backlink"><a href="help.html">Back to main help page</a></div>
+    <h1><a name="top">Standalone Version</a></h1>
+    <p>The only difference between the regular JAR version and the Standalone
+        lies in how it is started. The Standalone contains the <code>Chatty.exe</code>
+        which executes the <code>Chatty.jar</code> in the <code>app</code>
+        directory using the bundled JRE in the <code>runtime</code> directory,
+        which removes the need for Java to be installed and ensures that Chatty
+        is started with the same Java version it was compiled and tested with.</p>
+    
+    <h2>Chatty.cfg</h2>
+    <p>The <code>Chatty.cfg</code> is located in the <code>app</code> subdirectory
+        (where also the <code>Chatty.jar</code> and other Chatty related files
+        are).</p>
+    
+    <h3><a name="cfg-launch">Add Launch Options</a></h3>
+    <p>You can add <a href="help.html#launch">launch options</a> to the <code>Chatty.cfg</code> under the
+        <code>[ArgOptions]</code> section. What you would normally separate by
+        space goes on it's own line. For example:</p>
+    
+    <pre>
+[ArgOptions]
+-channel
+joshimuz
+-d
+H:\\Chatty\\settings1</pre>
+    
+    <p>Note that for this file, backslashes need to be escaped. For this option
+        you can alternatively also use forward slashes, which Java should
+        understand.</p>
+    
+    <p>When you specify any launch options on the commandline/in the shortcut,
+        then the launch options in the <code>Chatty.cfg</code> are ignored.</p>
+</body>
+</html>
+

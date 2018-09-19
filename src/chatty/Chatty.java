@@ -5,6 +5,7 @@ import chatty.util.DateTime;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
+import chatty.util.StringUtil;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -92,6 +93,8 @@ public class Chatty {
      */
     private static String settingsDir = null;
     
+    private static String invalidSettingsDir = null;
+    
     private static String[] args;
     
     /**
@@ -126,6 +129,8 @@ public class Chatty {
             File file = new File(dir);
             if (file.isDirectory()) {
                 settingsDir = file.toString();
+            } else {
+                invalidSettingsDir = file.toString();
             }
         }
         
@@ -210,6 +215,16 @@ public class Chatty {
         return dir;
     }
     
+    /**
+     * If non-null, a settings directory that didn't exist was given with the
+     * -d commandline option.
+     * 
+     * @return 
+     */
+    public static String getInvalidSettingsDirectory() {
+        return invalidSettingsDir;
+    }
+    
     public static String getExportDirectory() {
         String dir = getUserDataDirectory()+"exported"+File.separator;
         new File(dir).mkdirs();
@@ -261,4 +276,16 @@ public class Chatty {
     public static String[] getArgs() {
         return args;
     }
+    
+    /**
+     * Only println when the DEBUG flag is enabled.
+     * 
+     * @param output 
+     */
+    public static void println(String output) {
+        if (Chatty.DEBUG) {
+            System.out.println(output);
+        }
+    }
+    
 }

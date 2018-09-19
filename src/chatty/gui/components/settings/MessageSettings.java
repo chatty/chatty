@@ -97,6 +97,7 @@ public class MessageSettings extends SettingsPanel {
             "MMM d ", "d MMM ", "dd.MM. "});
         for (String dateFormat : dateFormats) {
             timestampOptions.put("off", "Off");
+            timestampOptions.put("", "Empty (Space)");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm:ss]");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "HH:mm]");
             addTimestampFormat(timestampOptions, "[" + dateFormat + "hh:mm:ss a]");
