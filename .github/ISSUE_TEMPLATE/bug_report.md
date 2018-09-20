@@ -30,4 +30,4 @@ about: Create a report to help us improve
 (*Tip:* Use `/appinfo` in Chatty to get some of this information.)
 
 **Additional context**
-Add any other context about the problem here.
+[Add any other context about the problem here.]
