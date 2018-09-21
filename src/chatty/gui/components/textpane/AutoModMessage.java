@@ -14,7 +14,7 @@ public class AutoModMessage extends Message {
     public final User user;
     
     public AutoModMessage(User user, String text, String id, List<Match> highlightMatches) {
-        super(id, text, highlightMatches);
+        super(id, text, highlightMatches, null, null);
         this.user = user;
     }
     

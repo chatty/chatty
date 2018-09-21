@@ -112,7 +112,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, USERICON,
         
-        HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING
+        HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
+        
+        IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH
     }
     
     public enum MessageType {
@@ -275,7 +277,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print("[", styles.info());
             // Output with emotes, but don't turn URLs into clickable links
-            printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true, false, null);
+            printSpecials(message.attachedMessage, message.user, styles.info(), message.emotes, true, false, null, null, null);
             print("]", styles.info());
         }
         finishLine();
@@ -330,7 +332,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!highlighted && color == null && action && styles.actionColored()) {
             style = styles.standard(user.getDisplayColor());
         }
-        printSpecials(text, user, style, emotes, false, message.bits > 0, message.highlightMatches);
+        printSpecials(text, user, style, emotes, false, message.bits > 0,
+                message.highlightMatches,
+                message.replaceMatches, message.replacement);
         
         if (message.highlighted) {
             setLineHighlighted(doc.getLength());
@@ -1679,11 +1683,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     protected void printSpecials(String text, User user, MutableAttributeSet style,
             TagEmotes emotes, boolean ignoreLinks, boolean containsBits,
-            java.util.List<Match> highlightMatches) {
+            java.util.List<Match> highlightMatches,
+            java.util.List<Match> replacements, String replacement) {
         // Where stuff was found
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         // The style of the stuff (basicially metadata)
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
+        
+        applyReplacements(text, replacements, replacement, ranges, rangesStyle);
         
         if (!ignoreLinks) {
             findLinks(text, ranges, rangesStyle);
@@ -1710,7 +1717,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
 //                print(processed, style);
                 specialPrint(user, text, lastPrintedPos, start, style, highlightMatches);
             }
-            print(text.substring(start, end + 1),rangesStyle.get(start));
+            AttributeSet rangeStyle = rangesStyle.get(start);
+            String rangeText;
+            if (rangeStyle.containsAttribute(Attribute.IS_REPLACEMENT, true)) {
+                rangeText = (String)rangeStyle.getAttribute(Attribute.REPLACED_WITH);
+            } else {
+                rangeText = text.substring(start, end + 1);
+            }
+            print(rangeText, rangeStyle);
             lastPrintedPos = end + 1;
         }
         // If anything is left, print that as well as regular text
@@ -1785,6 +1799,23 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         return result;
     }
     
+    private void applyReplacements(String text, java.util.List<Match> matches,
+            String replacement,
+            Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle) {
+        if (matches != null) {
+            if (StringUtil.isNullOrEmpty(replacement)) {
+                replacement = "..";
+            }
+            for (Match m : matches) {
+                if (!inRanges(m.start, ranges) && !inRanges(m.end, ranges)) {
+                    ranges.put(m.start, m.end - 1);
+                    String replacedText = text.substring(m.start, m.end);
+                    rangesStyle.put(m.start, styles.replacement(replacedText, replacement));
+                }
+            }
+        }
+    }
+    
     private void findLinks(String text, Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle) {
         // Find links
@@ -1792,7 +1823,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         while (urlMatcher.find()) {
             int start = urlMatcher.start();
             int end = urlMatcher.end() - 1;
-            if (!inRanges(start, ranges) && !inRanges(end,ranges)) {
+            if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
                 String foundUrl = urlMatcher.group();
                 
                 // Check if URL contains ( ) like http://example.com/test(abc)
@@ -2071,7 +2102,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param text
      * @param style 
      */
-    private void print(final String text, final MutableAttributeSet style) {
+    private void print(final String text, final AttributeSet style) {
         try {
             String newline = "";
             if (newlineRequired) {
@@ -3110,6 +3141,15 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             StyleConstants.setUnderline(urlStyle, true);
             urlStyle.addAttribute(HTML.Attribute.HREF, url);
             return urlStyle;
+        }
+        
+        public MutableAttributeSet replacement(String text, String replacement) {
+            SimpleAttributeSet style = new SimpleAttributeSet(standard());
+            StyleConstants.setUnderline(style, true);
+            style.addAttribute(Attribute.IS_REPLACEMENT, true);
+            style.addAttribute(Attribute.REPLACEMENT_FOR, text);
+            style.addAttribute(Attribute.REPLACED_WITH, replacement);
+            return style;
         }
         
         /**

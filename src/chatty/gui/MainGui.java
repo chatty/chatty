@@ -159,6 +159,7 @@ public class MainGui extends JFrame implements Runnable {
     // Helpers
     private final Highlighter highlighter = new Highlighter();
     private final Highlighter ignoreChecker = new Highlighter();
+    private final Highlighter filter = new Highlighter();
     private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
@@ -907,6 +908,7 @@ public class MainGui extends JFrame implements Runnable {
         }
         updateHighlight();
         updateIgnore();
+        updateFilter();
         updateHistoryRange();
         updateHistoryVerticalZoom();
         updateNotificationSettings();
@@ -986,6 +988,10 @@ public class MainGui extends JFrame implements Runnable {
     
     private void updateIgnore() {
         ignoreChecker.update(StringUtil.getStringList(client.settings.getList("ignore")));
+    }
+    
+    private void updateFilter() {
+        filter.update(StringUtil.getStringList(client.settings.getList("filter")));
     }
     
     private void updateCustomContextMenuEntries() {
@@ -2175,7 +2181,7 @@ public class MainGui extends JFrame implements Runnable {
             if (parameter != null && !parameter.isEmpty()) {
                 message = parameter;
             }
-            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null, null, null);
             streamChat.printMessage(m);
         } else if (command.equals("livestreamer")) {
             String stream = null;
@@ -2778,8 +2784,13 @@ public class MainGui extends JFrame implements Runnable {
                         chan.printLine("Own message ignored.");
                     }
                 } else {
+                    boolean hasReplacements = checkHighlight(user, text, filter, "filter", isOwnMessage);
+
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits, highlightMatches);
+                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits,
+                            highlightMatches,
+                            hasReplacements ? filter.getLastTextMatches() : null,
+                            hasReplacements ? filter.getLastReplacement() : null);
                     message.color = highlighter.getLastMatchColor();
                     if (!highlighted) {
                         message.color = msgColorManager.getColor(user, text);
@@ -4210,6 +4221,8 @@ public class MainGui extends JFrame implements Runnable {
                     updateHighlight();
                 } else if (setting.equals("ignore")) {
                     updateIgnore();
+                } else if (setting.equals("filter")) {
+                    updateFilter();
                 } else if (setting.equals("hotkeys")) {
                     hotkeyManager.loadFromSettings(client.settings);
                 }

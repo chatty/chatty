@@ -213,10 +213,13 @@ public class LinkController extends MouseAdapter {
         
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
+        String replacedText = getReplacedText(element);
         if (emoteImage != null) {
             popup.show(textPane, element, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
             popup.show(textPane, element, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
+        } else if (replacedText != null) {
+            popup.show(textPane, element, makeReplacementPopupText(replacedText), 1);
         } else {
             popup.hide();
         }
@@ -268,6 +271,10 @@ public class LinkController extends MouseAdapter {
     
     private Usericon getUsericon(Element e) {
         return (Usericon)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON));
+    }
+    
+    private String getReplacedText(Element e) {
+        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLACEMENT_FOR));
     }
     
     public static Element getElement(MouseEvent e) {
@@ -560,6 +567,12 @@ public class LinkController extends MouseAdapter {
             info += " (Custom)";
         }
         return info;
+    }
+    
+    private static String makeReplacementPopupText(String replacedText) {
+        return String.format("%sReplaced Text:<br /><span style='font-weight:normal'>%s</span>",
+                POPUP_HTML_PREFIX,
+                replacedText);
     }
     
     public void cleanUp() {

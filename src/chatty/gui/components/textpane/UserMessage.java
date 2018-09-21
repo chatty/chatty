@@ -24,8 +24,9 @@ public class UserMessage extends Message {
     public boolean action;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
-            String id, int bits, List<Match> highlightMatches) {
-        super(id, text, highlightMatches);
+            String id, int bits, List<Match> highlightMatches,
+            List<Match> replaceMatches, String replacement) {
+        super(id, text, highlightMatches, replaceMatches, replacement);
         this.user = user;
         this.emotes = emotes;
         this.bits = bits;

@@ -509,6 +509,11 @@ public class SettingsManager {
         settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
         settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
         settings.addBoolean("ignoredUsersHideInGUI", true);
+        
+        // Filter
+        settings.addList("filter", new ArrayList(), Setting.STRING);
+        settings.addBoolean("filterEnabled", true);
+        settings.addBoolean("filterOwnText", true);
 
         // Chat Logging
         settings.addString("logMode", "always");

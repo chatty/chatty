@@ -13,10 +13,15 @@ public class Message {
     public final String id;
     public final String text;
     public final List<Match> highlightMatches;
+    public final List<Match> replaceMatches;
+    public final String replacement;
     
-    public Message(String id, String text, List<Match> highlightMatches) {
+    public Message(String id, String text, List<Match> highlightMatches,
+            List<Match> replaceMatches, String replacement) {
         this.id = id;
         this.text = text;
         this.highlightMatches = highlightMatches;
+        this.replaceMatches = replaceMatches;
+        this.replacement = replacement;
     }
 }

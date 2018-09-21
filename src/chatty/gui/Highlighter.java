@@ -40,6 +40,7 @@ public class Highlighter {
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
     private List<Match> lastTextMatches;
+    private String lastReplacement;
     
     // Settings
     private boolean highlightUsername;
@@ -135,6 +136,10 @@ public class Highlighter {
         return lastTextMatches;
     }
     
+    public String getLastReplacement() {
+        return lastReplacement;
+    }
+    
     /**
      * Checks whether the given message consisting of username and text should
      * be highlighted.
@@ -155,17 +160,14 @@ public class Highlighter {
         // Try to match own name first (if enabled)
         if (highlightUsername && usernameItem != null &&
                 usernameItem.matches(user, text, true, blacklist)) {
-            lastTextMatches = usernameItem.getTextMatches(text);
+            fillLastMatchVariables(usernameItem, text);
             return true;
         }
         
         // Then try to match against the items
         for (HighlightItem item : items) {
             if (item.matches(user, text, false, blacklist)) {
-                lastMatchColor = item.getColor();
-                lastMatchNoNotification = item.noNotification();
-                lastMatchNoSound = item.noSound();
-                lastTextMatches = item.getTextMatches(text);
+                fillLastMatchVariables(item, text);
                 return true;
             }
         }
@@ -175,6 +177,14 @@ public class Highlighter {
             return true;
         }
         return false;
+    }
+    
+    private void fillLastMatchVariables(HighlightItem item, String text) {
+        lastMatchColor = item.getColor();
+        lastMatchNoNotification = item.noNotification();
+        lastMatchNoSound = item.noSound();
+        lastTextMatches = item.getTextMatches(text);
+        lastReplacement = item.getReplacement();
     }
     
     private void addMatch(String fromUsername) {
@@ -221,6 +231,8 @@ public class Highlighter {
         private boolean noNotification;
         private boolean noSound;
         private boolean appliesToInfo;
+        // Replacement string for filtering parts of a message
+        private String replacement;
         
         private String error;
         private String textWithoutPrefix = "";
@@ -303,6 +315,8 @@ public class Highlighter {
                     parseStatus(status, false);
                 } else if (item.startsWith("config:")) {
                     parseListPrefix(item, "config:");
+                } else if (item.startsWith("replacement:")) {
+                    replacement = parsePrefix(item, "replacement:");
                 } else {
                     textWithoutPrefix = item;
                     compilePattern("(?iu)" + Pattern.quote(item));
@@ -655,6 +669,10 @@ public class Highlighter {
         
         public String getError() {
             return error;
+        }
+        
+        public String getReplacement() {
+            return replacement;
         }
         
     }

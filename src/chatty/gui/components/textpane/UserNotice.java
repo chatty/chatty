@@ -21,7 +21,7 @@ public class UserNotice extends Message {
     
     public UserNotice(String type, User user, String text, String message,
             Emoticons.TagEmotes emotes, String id, List<Match> highlightMatches) {
-        super(id, text, highlightMatches);
+        super(id, text, highlightMatches, null, null);
         this.type = type;
         this.user = user;
         this.attachedMessage = message;
