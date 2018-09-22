@@ -14,6 +14,7 @@ import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.menus.UsericonContextMenu;
 import chatty.util.Debugging;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
@@ -570,9 +571,9 @@ public class LinkController extends MouseAdapter {
     }
     
     private static String makeReplacementPopupText(String replacedText) {
-        return String.format("%sReplaced Text:<br /><span style='font-weight:normal'>%s</span>",
+        return String.format("%sFiltered Text<div style='text-align:left;font-weight:normal'>%s</div>",
                 POPUP_HTML_PREFIX,
-                replacedText);
+                StringUtil.addLinebreaks(replacedText, 70, true));
     }
     
     public void cleanUp() {
