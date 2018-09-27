@@ -719,6 +719,11 @@ public class Highlighter {
         public boolean spans(int start, int end) {
             return this.start <= start && this.end >= end;
         }
+        
+        @Override
+        public String toString() {
+            return start+"-"+end;
+        }
 
     }
     

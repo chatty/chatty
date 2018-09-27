@@ -573,7 +573,7 @@ public class LinkController extends MouseAdapter {
     private static String makeReplacementPopupText(String replacedText) {
         return String.format("%sFiltered Text<div style='text-align:left;font-weight:normal'>%s</div>",
                 POPUP_HTML_PREFIX,
-                StringUtil.addLinebreaks(replacedText, 70, true));
+                StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replacedText), 70, true));
     }
     
     public void cleanUp() {
