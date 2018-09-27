@@ -1,7 +1,6 @@
 
 package chatty.gui.components.textpane;
 
-import chatty.Chatty;
 import chatty.util.Debugging;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -72,6 +71,12 @@ class MyIconView extends IconView {
     
     private final Rectangle tempRect = new Rectangle();
     
+    public void getRectangle(Rectangle r) {
+        synchronized(tempRect) {
+            r.setBounds(tempRect);
+        }
+    }
+    
     @Override
     public void paint(Graphics g, Shape s) {
         int moveUpBy = moveUpBy();
@@ -82,11 +87,13 @@ class MyIconView extends IconView {
             } else {
                 r = s.getBounds();
             }
-            tempRect.x = r.x;
-            tempRect.y = r.y;
-            tempRect.width = r.width;
-            tempRect.height = r.height;
-            tempRect.translate(0, -moveUpBy);
+            synchronized(tempRect) {
+                tempRect.x = r.x;
+                tempRect.y = r.y;
+                tempRect.width = (int)super.getPreferredSpan(X_AXIS);
+                tempRect.height = (int)super.getPreferredSpan(Y_AXIS);
+                tempRect.translate(0, -moveUpBy);
+            }
             s = tempRect;
         }
         super.paint(g, s);
@@ -123,4 +130,10 @@ class MyIconView extends IconView {
                 throw new IllegalArgumentException("Invalid axis: " + axis);
         }
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+    }
+    
 }

@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -29,6 +30,7 @@ public class DebugWindow extends JFrame {
     private final JTextArea textIrcLog;
     private final JTextArea textFFZLog;
     private final JTextArea textPubSubLog;
+    private final JTextArea otherLog;
     
     public DebugWindow(ItemListener listener) {
         setTitle("Debug");
@@ -44,6 +46,10 @@ public class DebugWindow extends JFrame {
         
         // PubSub WS log
         textPubSubLog = createLogArea();
+        
+        // Other Debug Stuff (Debugging class)
+        otherLog = createLogArea();
+        Debugging.registerForOutput(line -> printLine(otherLog, line));
 
         // Tabs
         JTabbedPane tabs = new JTabbedPane();
@@ -51,6 +57,7 @@ public class DebugWindow extends JFrame {
         tabs.addTab("Irc log", new JScrollPane(textIrcLog));
         tabs.addTab("FFZ-WS", new JScrollPane(textFFZLog));
         tabs.addTab("PubSub", new JScrollPane(textPubSubLog));
+        tabs.addTab("Other", new JScrollPane(otherLog));
         
         // Settings (Checkboxes)
         logIrc.setToolTipText("Logging IRC traffic can reduce performance");

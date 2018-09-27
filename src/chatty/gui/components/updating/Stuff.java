@@ -2,6 +2,7 @@
 package chatty.gui.components.updating;
 
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
@@ -178,8 +179,9 @@ public class Stuff {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(
                 getTempDir(),
                 file -> {
-                    if (fileNameCheck.matcher(file.getFileName().toString()).matches()) {
-                        System.out.println(file.getFileName());
+                    if (Debugging.isEnabled("updater")
+                            && fileNameCheck.matcher(file.getFileName().toString()).matches()) {
+                        Debugging.println(file.getFileName().toString());
                     }
                     return fileNameCheck.matcher(file.getFileName().toString()).matches()
                         && Files.getLastModifiedTime(file).toInstant().isBefore(oldIfBefore);

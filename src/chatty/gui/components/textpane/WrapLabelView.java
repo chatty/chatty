@@ -8,7 +8,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.LabelView;
 import javax.swing.text.StyleConstants;
@@ -46,6 +49,15 @@ public class WrapLabelView extends LabelView {
     
     @Override
     public void paint(Graphics g, Shape a) {
+        if (Debugging.isEnabled("gifd")) {
+            try {
+                Debugging.println(String.format("%d %s",
+                        Debugging.millisecondsElapsed("WrapLabelView.print"),
+                        getDocument().getText(getStartOffset(), getEndOffset() - getStartOffset())));
+            } catch (BadLocationException ex) {
+            }
+        }
+        
         Rectangle r = a instanceof Rectangle ? (Rectangle)a : a.getBounds();
         boolean highlightMatchesEnabled = MyStyleConstants.getHighlightMatchesEnabled(getAttributes());
         if (highlightMatchesEnabled
@@ -62,11 +74,6 @@ public class WrapLabelView extends LabelView {
                 c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 100);
                 c3 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 160);
             }
-
-//            g.setColor(new Color(230, 230, 230));
-//            g.fillRect(r.x, r.y, r.width, r.height);
-//            g.drawRect(r.x, r.y, r.width, r.height);
-            //g.drawRoundRect(r.x, r.y, r.width, r.height, 5, 5);
             
             g.setColor(c2);
             

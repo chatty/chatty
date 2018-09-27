@@ -266,28 +266,7 @@ public class GuiUtil {
         container.add(panel, BorderLayout.NORTH);
         return container;
     }
-    
-    /**
-     * Output the text of the subelements of the given element.
-     *
-     * @param line
-     */
-    public static void debugLineContents(Element line) {
-        Document doc = line.getDocument();
-        System.out.print("[");
-        for (int i = 0; i < line.getElementCount(); i++) {
-            Element l = line.getElement(i);
-            //System.out.println(l);
-            try {
-                System.out.print("'" + doc.getText(l.getStartOffset(), l.getEndOffset() - l.getStartOffset()) + "'");
 
-            } catch (BadLocationException ex) {
-                System.out.println("Bad location");
-            }
-        }
-        System.out.println("]");
-    }
-    
     /**
      * Detect retina display.
      * 

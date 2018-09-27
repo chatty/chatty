@@ -162,7 +162,6 @@ public class GitHub {
         }
         
         public int monthsOld() {
-            System.out.println(System.currentTimeMillis() - publishedAt);
             return (int)((System.currentTimeMillis() - publishedAt) / (DAY*30));
         }
         

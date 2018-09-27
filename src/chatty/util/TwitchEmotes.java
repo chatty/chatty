@@ -80,7 +80,7 @@ public class TwitchEmotes {
         int errors = 0;
         for (String line : lines) {
             if (line.startsWith("//")) {
-                System.out.println("Comment: "+line);
+                Debugging.println("TwitchEmotes Comment: "+line);
             }
             else if (plans == null) {
                 plans = line.trim().split(" ");

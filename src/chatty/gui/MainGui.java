@@ -2464,7 +2464,6 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void openUpdateDialog() {
-        System.out.println("open");
         updateDialog.setLocationRelativeTo(this);
         updateDialog.showDialog();
     }

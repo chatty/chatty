@@ -25,6 +25,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -130,7 +131,7 @@ public class EmotesDialog extends JDialog {
         emoteUser = new Emoticon.EmoticonUser() {
 
             @Override
-            public void iconLoaded() {
+            public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
 //                repaint = true;
                 repaint();
             }

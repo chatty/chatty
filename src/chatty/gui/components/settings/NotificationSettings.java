@@ -6,6 +6,7 @@ import chatty.gui.GuiUtil;
 import static chatty.gui.GuiUtil.SMALL_BUTTON_INSETS;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.notifications.Notification;
+import chatty.util.Debugging;
 import chatty.util.Sound;
 import chatty.util.settings.Settings;
 import java.awt.Component;
@@ -327,7 +328,7 @@ public class NotificationSettings extends SettingsPanel {
     protected void scanFiles(boolean showMessage) {
         
         Path path = soundsPath.getCurrentPath();
-        System.out.println("scan Files "+path);
+        Debugging.println("scan Files "+path);
         File file = path.toFile();
         File[] files = file.listFiles(new WavFilenameFilter());
         String resultText = "";
