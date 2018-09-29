@@ -249,7 +249,7 @@ public class SettingsManager {
         settings.addString("compactColor","#A0A0A0");
         settings.addString("inputBackgroundColor","White");
         settings.addString("inputForegroundColor","Black");
-        settings.addString("highlightColor","Red");
+        settings.addString("highlightColor","#D10000");
         settings.addBoolean("highlightBackground", true);
         settings.addString("highlightBackgroundColor", "#FFFFEA");
         settings.addString("searchResultColor", "LightYellow");
@@ -766,6 +766,14 @@ public class SettingsManager {
             }
             settings.putMap("roomFavorites", data);
         }
+        
+        // Turn off Highlight Background if using dark background (if not loaded
+        // from the settings yet)
+        Color bgColor = HtmlColors.decode(settings.getString("backgroundColor"));
+        if (HtmlColors.getBrightness(bgColor) < 128 && !settings.isValueSet("highlightBackground")) {
+            settings.setBoolean("highlightBackground", false);
+        }
+        
         overrideHotkeySettings();
     }
     

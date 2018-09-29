@@ -37,6 +37,7 @@ public class Setting {
     private Object value;
     private boolean save = true;
     private String file;
+    private boolean valueSet;
     
     /**
      * Creates a new Setting object with some initial values.
@@ -105,6 +106,7 @@ public class Setting {
      * @return true when a new value was set, false otherwise
      */
     public boolean setValue(Object value) {
+        valueSet = true;
         if (this.value.equals(value)) {
             return false;
         }
@@ -129,6 +131,14 @@ public class Setting {
     
     public Object getDefault() {
         return defaultValue;
+    }
+    
+    public boolean hasDefaultValue() {
+        return value.equals(defaultValue);
+    }
+    
+    public boolean isValueSet() {
+        return valueSet;
     }
     
     /**

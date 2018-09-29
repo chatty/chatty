@@ -932,7 +932,31 @@
         <dd>Users who are already on the userlist when you ignore them stay on
             it until they leave, you rejoin the channel or restart Chatty.</dd>
     </dl>
+    
+    <h2>
+        <a name="Filter">Filter</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>As opposed to the <a href="#Ignore">Ignore</a> list, which blocks entire
+        messages from being shown, the Filter only removes parts of a message.
+        For example if you add <code>regw:a\w*</code> to the list, it will
+        remove all words starting with <code>a</code> from messages in chat and
+        replace it with <code><u>..</u></code>, which can be hovered over to
+        show the original text. If you prepend <code>replacement:Wordwitha</code>,
+        then instead of replacing it with the default <code><u>..</u></code>,
+        the removed text gets replaced with <code><u>Wordwitha</u></code>. If
+        you don't just want to use this as a fun word guessing game, then a more
+        useful application might be to e.g. filter out parts of bot messages
+        that are always the same.</p>
 
+    <p>The text matching syntax is the same as for the <a href="#Highlight">Highlight</a> list,
+        although you have to remember that only the the parts of a message that
+        match the pattern are removed, so you may have to use it a bit
+        differently than for Highlighting and Ignoring.</p>
+    
+    <p>It currently only works for regular chat messages (no info messages). It
+        also only uses the matches from the first item in the list that matches
+        any part of the message. This may be changed in the future.</p>
     
     <h2>
         <a name="Log_to_file">Log to file</a>

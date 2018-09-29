@@ -271,6 +271,26 @@ public class Settings {
         }
     }
     
+    private Setting getSetting(String settingName) {
+        Setting setting = settings.get(settingName);
+        if (setting == null) {
+            throw new SettingNotFoundException("Could not find setting: " + settingName);
+        }
+        return setting;
+    }
+    
+    public boolean hasDefaultValue(String settingName) {
+        synchronized(LOCK) {
+            return getSetting(settingName).hasDefaultValue();
+        }
+    }
+    
+    public boolean isValueSet(String settingName) {
+        synchronized(LOCK) {
+            return getSetting(settingName).isValueSet();
+        }
+    }
+    
     public boolean getBoolean(String settingName) {
         return (Boolean)get(settingName, Setting.BOOLEAN);
     }
@@ -292,7 +312,7 @@ public class Settings {
     public String getStringDefault(String setting) {
         return (String)get(setting, Setting.STRING, true);
     }
-    
+
     public long getLong(String setting) {
         return ((Number)(get(setting, Setting.LONG))).longValue();
     }
