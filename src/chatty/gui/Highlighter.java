@@ -152,9 +152,8 @@ public class Highlighter {
         
         Blacklist blacklist = new Blacklist(user, text, blacklistItems, false);
         
-        lastMatchColor = null;
-        lastMatchNoNotification = false;
-        lastMatchNoSound = false;
+        // Only reset matches, since the other variables are filled anyway,
+        // except for "follow-up", where they should stay the same
         lastTextMatches = null;
         
         // Try to match own name first (if enabled)
@@ -172,7 +171,7 @@ public class Highlighter {
             }
         }
         
-        // Then see if there is a recent match
+        // Then see if there is a recent match ("Highlight follow-up")
         if (highlightNextMessages && user != null && hasRecentMatch(user.getName())) {
             return true;
         }
