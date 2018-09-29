@@ -80,22 +80,22 @@ class MyIconView extends IconView {
     @Override
     public void paint(Graphics g, Shape s) {
         int moveUpBy = moveUpBy();
-        if (moveUpBy > 0) {
-            Rectangle r;
-            if (s instanceof Rectangle) {
-                r = (Rectangle) s;
-            } else {
-                r = s.getBounds();
-            }
-            synchronized(tempRect) {
-                tempRect.x = r.x;
-                tempRect.y = r.y;
-                tempRect.width = (int)super.getPreferredSpan(X_AXIS);
-                tempRect.height = (int)super.getPreferredSpan(Y_AXIS);
+        Rectangle r;
+        if (s instanceof Rectangle) {
+            r = (Rectangle) s;
+        } else {
+            r = s.getBounds();
+        }
+        synchronized (tempRect) {
+            tempRect.x = r.x;
+            tempRect.y = r.y;
+            tempRect.width = (int) super.getPreferredSpan(X_AXIS);
+            tempRect.height = (int) super.getPreferredSpan(Y_AXIS);
+            if (moveUpBy > 0) {
                 tempRect.translate(0, -moveUpBy);
             }
-            s = tempRect;
         }
+        s = tempRect;
         super.paint(g, s);
     }
     
