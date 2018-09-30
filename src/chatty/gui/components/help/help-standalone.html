@@ -19,9 +19,10 @@
         (where also the <code>Chatty.jar</code> and other Chatty related files
         are).</p>
     
-    <h3><a name="cfg-launch">Add Launch Options</a></h3>
+    <h3><a name="cfg-launch">Launch Options</a></h3>
     <p>You can add <a href="help.html#launch">launch options</a> to the <code>Chatty.cfg</code> under the
-        <code>[ArgOptions]</code> section. What you would normally separate by
+        <code>[ArgOptions]</code> section. These are given to Chatty when it is
+        started. What you would normally separate by
         space goes on it's own line. For example:</p>
     
     <pre>
@@ -37,6 +38,19 @@ H:\\Chatty\\settings1</pre>
     
     <p>When you specify any launch options on the commandline/in the shortcut,
         then the launch options in the <code>Chatty.cfg</code> are ignored.</p>
+    
+    <h3><a name="cfg-jvm">JVM Options</a></h3>
+    <p>The <code>[JVMOptions]</code> section contains parameters that are given
+        to the JVM (Java Virtual Machine) when Chatty is started. There should
+        already be a few options there by default, for example:</p>
+    
+    <pre>
+[JVMOptions]
+-Xmx400M
+-Dsun.java2d.d3d=false</pre>
+    
+    <p>These restrict the maximum heap (memory usage) to 400MB and disable
+        Hardware Acceleration to reduce GUI issues.</p>
 </body>
 </html>
 

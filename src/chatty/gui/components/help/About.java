@@ -70,7 +70,8 @@ public class About extends JFrame implements ActionListener {
                     // Jump to another place in the document
                     String url = e.getURL().toString();
                     String protocol = e.getURL().getProtocol();
-                    if (protocol.equals("http") || protocol.equals("https")) {
+                    if (protocol.equals("http") || protocol.equals("https")
+                            || protocol.equals("mailto")) {
                         UrlOpener.openUrlPrompt(About.this, url, true);
                     } else if (protocol.equals("file") || protocol.equals("jar")) {
                         String path = e.getURL().getFile();

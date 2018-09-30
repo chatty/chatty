@@ -32,12 +32,10 @@
                 <li><a href="#log">Debug log</a></li>
             </ul>
         </li>
-        <li>Report Issues
-            <ul>
-                <li><a href="#report">How to report issues</a></li>
-            </ul>
-        </li>
     </ul>
+    
+    <p>If you can't find a solution here or require additional help, read the
+        page on <a href="help-report_issue.html">Reporting Issues</a>.</p>
     
     <h2>
         <a name="known">Known Issues</a>
@@ -320,73 +318,7 @@
         <a name="log">Debug log</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>If you experience any problems or errors, then there may be helpful
-    information for debugging in the debug log, which is located in the settings
-    directory:</p>
-    <p style="margin-left:10px"><code>&lt;user_dir&gt;/.chatty/debuglogs/</code>
-        (Example: <code>C:\Users\&lt;username&gt;\.chatty\debuglogs\</code>)</p>
-    
-    <p>If you have Chatty running you can enter <code>/openDir</code> to open it
-        or <code>/dir</code> to output the path, then simply navigate to the
-        <code>debuglogs</code> subfolder.</p>
-    
-    <p>In that folder, there are two kinds of debug files:</p>
-    <ul>
-        <li>The <code>debug.log</code> which is overwritten everytime you start
-            Chatty. It may also have a number at the end (like <code>debug.log.1</code>)
-            if Java couldn't open the usual <code>debug.log</code>.</li>
-        <li>Several files (<code>debug0.log, debug1.log, ..</code>), whereas
-        one of them is written to at a time, and then switched to the next when
-        a certain filesize is reached, rotating between a certain number of files.
-        Those files are not overwritten when Chatty is started, but instead new data is appended.</li>
-    </ul>
-    <p>So to find possibly relevant data:</p>
-    <ol>
-        <li>If you haven't started Chatty again after the error occured, check
-            the <code>debug.log</code> first.</li>
-        <li>Otherwise check if one of the <code>debug0.log, debug1.log, ..</code>
-            files could contain the necessary information, based on the last
-        modification dates.
-        <ul>
-            <li>Even if the error is already some time back, it <em>may</em> still
-            be in there, depending on how much data has been added in the meantime.</li>
-        </ul></li>
-    </ol>
-
-    <h2>
-        <a name="report">How to report issues</a>
-        <a href="#top" class="top">[back to menu]</a>
-    </h2>
-    <p>First of all make sure that you're running the latest version. Updating
-        may already fix your issue. If not, then include as much information as
-        possible in your report, such as:</p>
-    
-    <ul>
-        <li>Chatty version, Java version, OS (can be found in the output of the
-            command <code>/appinfo</code>)</li>
-        <li>What is the issue? Describe is thoroughly, include screenshots if
-            possible.</li>
-        <li>When did the issue first occur, has it occured more than once?</li>
-        <li>Can you reproduce the issue, and if so how exactly? Be as clear as
-            possible. Reproducing an issue is often elemental in fixing it.</li>
-        <li>The complete error message (if an error message was shown).</li>
-        <li>If possible, include the <a href="#log">Debug Log</a> of when the
-            issue occured.</li>
-    </ul>
-    
-    <p>The best way to report an issue is usually in <a href="https://discord.gg/WTuqGeJ">the Chatty Discord</a>,
-        because you're not as limited in message length as on Twitter, there are
-        other people there that may be able to help and you can easily upload
-        screenshots or short videos. But if you prefer,
-        <a href="https://twitter.com/chattyclient">Twitter</a> and
-        <a href="mailto:chattyclient@gmail.com">E-Mail</a> are also available.</p>
-    
-    <p>You can also open a <a href="https://github.com/chatty/chatty/issues">GitHub Issue</a>
-        (after checking existing issues).</p>
-    
-    <p>Please only contact me via one of the mentioned ways, not several at the
-        same time, since that is just confusing and will probably hinder the
-        solving of your issue.</p>
+    <div class="moreInfo">Moved: <a href="help-report_issue.html#log">Report Issue</a></div>
 </body>
 </html>
     
