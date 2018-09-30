@@ -233,7 +233,7 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "testi"));
         assertEquals(highlighter.getLastMatchColor(), Color.RED);
         assertFalse(highlighter.check(user2, "abc"));
-        assertEquals(highlighter.getLastMatchColor(), null);
+        assertEquals(highlighter.getLastMatchColor(), Color.RED); // Not reset because not matched again
         assertTrue(highlighter.check(user2, "test"));
         assertEquals(highlighter.getLastMatchColor(), null);
         
@@ -242,7 +242,26 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "test"));
         assertFalse(highlighter.check(user, "mäh"));
         highlighter.setHighlightNextMessages(true);
+        assertTrue(highlighter.check(user, "test"));
         assertTrue(highlighter.check(user, "mäh"));
+        highlighter.setHighlightNextMessages(false);
+        
+        update("color:red testi", "test");
+        highlighter.setHighlightNextMessages(true);
+        assertTrue(highlighter.check(user, "testi"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
+        assertTrue(highlighter.check(user, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
+        assertTrue(highlighter.check(user2, "test"));
+        assertEquals(highlighter.getLastMatchColor(), null);
+        assertTrue(highlighter.check(user, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
+        assertTrue(highlighter.check(user2, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), null);
+        assertTrue(highlighter.check(user2, "testi"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
+        assertTrue(highlighter.check(user2, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
         highlighter.setHighlightNextMessages(false);
         
         // Highlight username
@@ -258,6 +277,18 @@ public class HighlighterTest {
         assertFalse(highlighter.check(user, "username"));
         highlighter.setHighlightUsername(true);
         assertTrue(highlighter.check(user, "username"));
+        
+        update("color:red testi", "test");
+        highlighter.setHighlightNextMessages(true);
+        assertTrue(highlighter.check(user, "username"));
+        assertEquals(highlighter.getLastMatchColor(), null);
+        assertTrue(highlighter.check(user, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), null);
+        assertTrue(highlighter.check(user2, "testi"));
+        assertEquals(highlighter.getLastMatchColor(), Color.RED);
+        assertTrue(highlighter.check(user, "asdas"));
+        assertEquals(highlighter.getLastMatchColor(), null);
+        highlighter.setHighlightNextMessages(false);
     }
     
     @Test
