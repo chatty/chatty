@@ -17,6 +17,9 @@ about: Create a report to help us improve
 **Expected behavior**
 [A clear and concise description of what you expected to happen.]
 
+**Debug Log**
+[Include a Chatty debug log: https://chatty.github.io/help/help-report_issue.html#log ]
+
 **Screenshots/Videos**
 [If applicable, add screenshots or videos to help explain your problem.]
 
