@@ -70,7 +70,7 @@ public class TwitchApi {
         userIDs = new UserIDs(this);
         communitiesManager = new CommunitiesManager(this);
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
-        getCommunityTop(r -> {});
+        //getCommunityTop(r -> {});
     }
     
     

@@ -493,7 +493,7 @@ public class StreamInfoManager {
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewers");
-            community_ids = JSONUtil.getStringList(stream, "community_ids");
+            //community_ids = JSONUtil.getStringList(stream, "community_ids");
             
             // Stream Type
             switch (JSONUtil.getString(stream, "stream_type")) {
@@ -578,7 +578,7 @@ public class StreamInfoManager {
         streamInfo.setCommunities(null);
         //api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
         //System.out.println("requesting: "+community_ids);
-        api.getCommunities(community_ids, (r,e) -> { streamInfo.setCommunities(r); });
+        //api.getCommunities(community_ids, (r,e) -> { streamInfo.setCommunities(r); });
         
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted, streamType);

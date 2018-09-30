@@ -186,19 +186,21 @@ public class StatusPanel extends JPanel {
         community.setWrapStyleWord(true);
         gbc = makeGbc(0,4,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(community, gbc);
+        //add(community, gbc);
+        gbc = makeGbc(0,4,3,1);
+        add(new JLabel("Twitch removed Communities (Tags not implemented yet)"), gbc);
         
         selectCommunity.setMargin(SMALL_BUTTON_INSETS);
         gbc = makeGbc(1,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(selectCommunity, gbc);
+        //add(selectCommunity, gbc);
         
         removeCommunity.setMargin(SMALL_BUTTON_INSETS);
         gbc = makeGbc(2,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(removeCommunity, gbc);
+        //add(removeCommunity, gbc);
         
         gbc = makeGbc(0,5,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -219,7 +221,7 @@ public class StatusPanel extends JPanel {
                         setLoading(true);
                         ChannelInfo info = new ChannelInfo(currentChannel, status.getText(), game.getText());
                         main.putChannelInfo(info);
-                        putCommunity();
+                        //putCommunity();
                         addCurrentToHistory();
                     }
                 } else if (e.getSource() == reloadButton) {
@@ -387,30 +389,30 @@ public class StatusPanel extends JPanel {
         setLoading(true);
         main.getChannelInfo(currentChannel);
         final String channel = currentChannel;
-        api.getCommunitiesForChannel(currentChannel, (r, e) -> {
-            if (currentChannel.equals(channel)) {
-                if (r == null) {
-                    communityLoadError = e == null ? "" : e;
-                } else {
-                    setCommunities(r);
-                }
-                loadingCommunity = false;
-                checkLoadingDone();
-            }
-            if (r != null) {
-                for (Community c : r) {
-                    updateCommunityName(c);
-                }
-            }
-        });
+//        api.getCommunitiesForChannel(currentChannel, (r, e) -> {
+//            if (currentChannel.equals(channel)) {
+//                if (r == null) {
+//                    communityLoadError = e == null ? "" : e;
+//                } else {
+//                    setCommunities(r);
+//                }
+//                loadingCommunity = false;
+//                checkLoadingDone();
+//            }
+//            if (r != null) {
+//                for (Community c : r) {
+//                    updateCommunityName(c);
+//                }
+//            }
+//        });
     }
     
     private void checkLoadingDone() {
-        if (!loadingStatus && !loadingCommunity) {
+        if (!loadingStatus) {
             statusEdited = false;
             updated.setText(Language.getString("admin.infoLoaded.now"));
             if (statusPutResult != null || communityPutResult != null) {
-                setPutResult(statusPutResult+" / "+communityPutResult);
+                setPutResult(statusPutResult);
                 statusPutResult = null;
                 communityPutResult = null;
             }
