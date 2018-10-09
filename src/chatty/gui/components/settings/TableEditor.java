@@ -158,8 +158,8 @@ public class TableEditor<T> extends JPanel {
         searchTimer.setRepeats(true);
 
         // Buttons Configuration
-        configureButton(add, "list-add.png", "Add selected item");
-        configureButton(edit, "edit.png", "Edit selected item");
+        configureButton(add, "list-add.png", "Add new item (after selected)");
+        configureButton(edit, "edit.png", "Edit selected item (double-click)");
         configureButton(remove, "list-remove.png", "Remove selected item");
         configureButton(moveUp, "go-up.png", "Move selected item up");
         configureButton(moveDown, "go-down.png", "Move selected item down");

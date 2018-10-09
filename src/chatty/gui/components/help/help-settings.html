@@ -272,6 +272,35 @@
             displayed in all channels <em>except</em> the one you specified.</dd>
         <dd>If you keep this empty, then it will be displayed in all channels.</dd>
         
+        <dt>Position</dt>
+        <dd>This allows you to position the icon relative to the default badges.
+            It will go through the already present badges, from the left, searching
+            for an insertion position until it encounters a badge <em>not</em> in this
+            list. It will then add the badge after that position.</dd>
+        <dd>You can use one or several of the following badge identifiers,
+            separated by comma.</dd>
+        <dd>Presets containing several badge types or a special position:
+            <ul>
+                <li><code>$start</code> - Add before all other badges</li>
+                <li><code>$mod</code> - Add after mod badge (including broadcaster etc.)</li>
+                <li><code>$sub</code> - Add after sub badge</li>
+                <li><code>$bot</code> - Add after bot badge</li>
+                <li><code>$end</code> - Add after all other badges (same as leaving this field empty)</li>
+            </ul>
+            Specific badges (you may have to add presets or several of these to position it correctly):
+            <ul>
+                <li><code>$other</code> - Add after 'Other' badges (e.g. FFZ Supporter badge)</li>
+                <li><code>$other:&lt;id&gt;</code> - Add after 'Other' badge with the specified badge id/version</li>
+                <li><code>&lt;id&gt;</code> - Add after Twitch badge with the specified badge id/version</li>
+            </ul>
+        </dd>
+        <dd><em>Note:</em> These presets may not work anymore if Twitch adds
+            badges in those locations that aren't known to Chatty, in which case
+            you can specify the new badge id/version yourself.</dd>
+        
+        <dd><em>Note:</em> The order of Addon-badges relative to eachother is
+            determined by the order they are added to the Custom Usericon table.</dd>
+        
         <dt>Image File</dt>
         <dd>The image to use. Must be a <code>.png</code> and is recommended to
             be about 18x18 pixels (because that is the default size). If you

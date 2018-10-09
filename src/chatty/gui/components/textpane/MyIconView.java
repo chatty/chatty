@@ -40,6 +40,10 @@ class MyIconView extends IconView {
             moveDownBy += moveUpBy();
             float result = (fakedHeight - moveDownBy) / fakedHeight;
 //            System.out.println(height + " " + moveDownBy + " " + lineHeight + " " + result);
+            if (Debugging.isEnabled("icond")) {
+                Debugging.println(String.format("Height: %f Faked: %f Font: %d Movedown: %f",
+                        actualHeight, fakedHeight, fontHeight, moveDownBy));
+            }
             return result;
         }
         return super.getAlignment(axis);

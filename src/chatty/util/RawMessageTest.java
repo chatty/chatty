@@ -65,6 +65,9 @@ public class RawMessageTest {
         if (type.startsWith("subbomb")) {
             return "@badges=moderator/1,subscriber/36,bits/100;color=#590094;display-name="+localUsername+";emotes=;id=123;login="+localUsername+";mod=1;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name="+options+";msg-param-recipient-id=1234;msg-param-recipient-user-name="+options+";msg-param-sender-count=0;msg-param-sub-plan-name=Channel\\sSubscription\\s("+channel+");msg-param-sub-plan=1000;room-id=12345;subscriber=1;system-msg="+localUsername+"\\sgifted\\sa\\sTier\\s1\\ssub\\sto\\s"+options+"!;tmi-sent-ts=1535312941402;turbo=0;user-id=123456;user-type=mod :tmi.twitch.tv USERNOTICE "+channel;
         }
+        if (type.equals("badges")) {
+            return "@badges="+options+";color=#008000;display-name=Abc;emote-only=1;emotes=33:0-7;id=fwaef;mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :abc!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :DansGame ";
+        }
         return null;
     }
     
