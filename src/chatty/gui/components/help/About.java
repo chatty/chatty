@@ -49,7 +49,6 @@ public class About extends JFrame implements ActionListener {
     private String referenceAfterLoad;
     private int scrollPositionAfterLoad;
     private String currentPage = "";
-    private String currentReference = "";
     private final WrapHistory<HistoryItem> history = new WrapHistory<>(20);
     
     public About() {
@@ -288,7 +287,6 @@ public class About extends JFrame implements ActionListener {
         } else {
             textPane.scrollToReference(ref);
         }
-        currentReference = ref;
     }
     
     /**
@@ -296,13 +294,12 @@ public class About extends JFrame implements ActionListener {
      * page.
      */
     private void pageLoaded() {
-        if (referenceAfterLoad != null) {
-            jumpTo(referenceAfterLoad);
-            referenceAfterLoad = null;
-        }
         if (scrollPositionAfterLoad != -1) {
             scrollbar.setValue(scrollPositionAfterLoad);
             scrollPositionAfterLoad = -1;
+        } else if (referenceAfterLoad != null) {
+            jumpTo(referenceAfterLoad);
+            referenceAfterLoad = null;
         }
     }
     
@@ -314,7 +311,6 @@ public class About extends JFrame implements ActionListener {
     private void reload() {
         Document doc = textPane.getDocument();
         doc.putProperty(Document.StreamDescriptionProperty, null);
-        referenceAfterLoad = currentReference;
         scrollPositionAfterLoad = scrollbar.getValue();
         loadPage(currentPage);
     }
