@@ -315,8 +315,8 @@ public class StatusHistoryTable extends JTable {
                 return entry.title;
             } else if (columnIndex == 2) {
                 return entry.game;
-            } else if (columnIndex == 3) {
-                //return StringUtil.join(entry.communities, ", ");
+//            } else if (columnIndex == 3) {
+//                return StringUtil.join(entry.communities, ", ");
             } else if (columnIndex == 3) {
                 return entry.lastActivity;
             } else if (columnIndex == 4) {
@@ -333,13 +333,13 @@ public class StatusHistoryTable extends JTable {
          */
         @Override
         public Class getColumnClass(int columnIndex) {
-            if (columnIndex == 0) {
+            if (columnIndex == 0) { // Fav
                 return Boolean.class;
             }
-            if (columnIndex == 4) {
+            if (columnIndex == 3) { // Last Activity
                 return Long.class;
             }
-            if (columnIndex == 5) {
+            if (columnIndex == 4) { // Usage
                 return Integer.class;
             }
             return String.class;
