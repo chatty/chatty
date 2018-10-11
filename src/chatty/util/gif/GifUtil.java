@@ -1,8 +1,14 @@
 
 package chatty.util.gif;
 
+import chatty.util.Debugging;
 import chatty.util.gif.GifDecoder.GifImage;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,9 +59,22 @@ public class GifUtil {
                      * image normally.
                      */
                     image = new ImageIcon(imageData);
+                    if (image.getIconWidth() == -1) {
+                        // new ImageIcon() breaks with some images (rare)
+                        // Checking for MediaTracker.ERRORED seems to sometimes
+                        // not work.
+                        LOGGER.info("Using ImageIO for "+url);
+                        Image loadedImage = ImageIO.read(new ByteArrayInputStream(imageData));
+                        if (loadedImage != null) {
+                            image.setImage(loadedImage);
+                            image.setDescription("ImageIO");
+                        }
+                    }
                 }
 
-                if (image.getImageLoadStatus() == MediaTracker.ERRORED) {
+                //System.out.println(url+" "+image.getImageLoadStatus()+" "+image.getIconHeight());
+                if (image.getImageLoadStatus() == MediaTracker.ERRORED
+                        || image.getIconWidth() == -1) {
                     return null;
                 }
             }

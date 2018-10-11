@@ -1100,8 +1100,7 @@ public class TwitchClient {
         //----------------------
         
         else {
-            g.printLine("Unknown command: "+command+" (Remember you can also "
-                    + "enter Twitch Chat Commands with a point in front: \".mods\")");
+            g.printLine(Language.getString("chat.unknownCommand", command));
             return false;
         }
         return true;
