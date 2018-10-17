@@ -872,14 +872,29 @@ public class TwitchClient {
         else if (command.equals("openwdir")) {
             MiscUtil.openFolder(new File(Chatty.getWorkingDirectory()), g);
         }
+        else if (command.equals("showbackupdir")) {
+            g.printSystem("Backup directory: "+Chatty.getBackupDirectory());
+        }
         else if (command.equals("openbackupdir")) {
             MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
+        }
+        else if (command.equals("showtempdir")) {
+            g.printSystem("System Temp directory: "+Chatty.getTempDirectory());
         }
         else if (command.equals("opentempdir")) {
             MiscUtil.openFolder(new File(Chatty.getTempDirectory()), g);
         }
+        else if (command.equals("showdebugdir")) {
+            g.printSystem("Debug Log Directory: "+Chatty.getDebugLogDirectory());
+        }
         else if (command.equals("opendebugdir")) {
             MiscUtil.openFolder(new File(Chatty.getDebugLogDirectory()), g);
+        }
+        else if (command.equals("showjavadir")) {
+            g.printSystem("JRE directory: "+System.getProperty("java.home"));
+        }
+        else if (command.equals("openjavadir")) {
+            MiscUtil.openFolder(new File(System.getProperty("java.home")), g);
         }
         else if (command.equals("copy")) {
             MiscUtil.copyToClipboard(parameter);

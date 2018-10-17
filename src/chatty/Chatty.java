@@ -254,7 +254,7 @@ public class Chatty {
     }
     
     public static String getTempDirectory() {
-        return System.getProperty("java.io.tmpdir")+File.separator;
+        return System.getProperty("java.io.tmpdir");
     }
     
     public static String getDebugLogDirectory() {

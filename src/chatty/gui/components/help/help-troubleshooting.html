@@ -7,7 +7,7 @@
     <h1><a name="top">Troubleshooting</a></h1>
     
     <ul>
-        <li>Startup/Folders/Settings
+        <li>Startup / Folders / Settings
             <ul>
                 <li><a href="#start">Chatty won't start</a></li>
                 <li><a href="#jintellitype">Could not load JIntellitype.dll</a></li>
@@ -22,13 +22,17 @@
                 <li><a href="#logindata">Can't get login data</a></li>
             </ul>
         </li>
+        <li>Display
+            <ul>
+                <li><a href="#font">Broken characters / Fallback fonts</a></li>
+                <li><a href="#visual-glitches">Visual Artifacts/Glitches</a></li>
+            </ul>
+        </li>
         <li>Other
             <ul>
                 <li><a href="#known">Known Issues</a></li>
                 <li><a href="#performance">Bad performance / OutOfMemoryError</a></li>
                 <li><a href="#livestreamer">Livestreamer won't run properly</a></li>
-                <li><a href="#font">Some characters in chat only show up as boxes / Fallback fonts</a></li>
-                <li><a href="#visual-glitches">Visual Artifacts/Glitches</a></li>
                 <li><a href="#log">Debug log</a></li>
             </ul>
         </li>
@@ -185,24 +189,28 @@
     <p>If you get an error getting login data, see <a href="help-guide2.html">What to do when getting login fails</a>.</p>
     
     <h2>
-        <a name="font">Some characters in chat only show up as boxes / Fallback fonts</a>
+        <a name="font">Broken characters / Fallback fonts</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>If Java encounters a character that is not contained in the chat font
         you currently have configured, it will try to find it in the fallback
-        fonts. While still not all characters will be displayed this way, it
-        should work a lot better. If you want to be able to display even more
-        characters, you can add your own fallback fonts into the Java fallback
-        font directory: <code>&lt;JRE_INSTALL_DIR&gt;/jre/lib/fonts/fallback</code></p>
+        fonts. You can add your own fallback fonts if you need to be able to
+        display more characters than by default.</p>
     
-    <p>On Windows, the JRE would usually be located in
-        <code>C:\Program Files\Java\</code> or
-        <code>C:\Program Files (x86)\Java\</code>.</p>
+    <p>The Java fallback font directory is located in the Java Runtime Environment
+        (you may have to create the <code>/fallback</code> directory yourself):
+        <code>&lt;JRE_DIR&gt;/lib/fonts/fallback</code></p>
+    
+    <p>To find the <code>&lt;JRE_DIR&gt;</code> location you can either enter
+        the command <code>/openJavaDir</code> to open the directory in your file
+        browser or enter the command <code>/showJavaDir</code> to output the
+        path. The commands have to be entered in the Chatty chat inputbox.</p>
     
     <p><em>Note:</em> If you set the <code>inputFont</code>
-        <a href="help-setting_commands.html#font">setting</a> to something else
-        besides a Java logical font, then the font fallback mechanism may break.
-        This was the case before version 0.7.3.</p>
+        <a href="help-setting_commands.html#font">setting</a> to something other
+        than a Java logical font (which is currently only possible through
+        setting commands, changing through the Settings Dialog is fine), then
+        the font fallback mechanism may break.</p>
     
     <h2>
         <a name="start">Chatty won't start</a>
