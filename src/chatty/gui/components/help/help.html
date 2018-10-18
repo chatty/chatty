@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.9.2b10)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.9.2b11)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -235,10 +235,12 @@
     <ul>
         <li><code>/uptime</code> - Shows how long Chatty has been running</li>
         <li><code>/appinfo</code> - Shows Chatty version, uptime, current memory usage, system info and connection status</li>
-	<li><code>/dir</code> - Show the directory the settings (and other stuff) are saved in</li>
-        <li><code>/wdir</code> - Show the current working directory</li>
-        <li><code>/openDir</code> - Opens the settings directory in your file browser</li>
-        <li><code>/openWdir</code> - Opens the current working directory in your file browser</li>
+        <li><code>/dir</code> / <code>/openDir</code> - Show/open the settings directory</li>
+        <li><code>/wdir</code> / <code>/openWdir</code> - Show/open the current working directory</li>
+        <li><code>/showBackupDir</code> / <code>/openBackupDir</code> - Show/open the <a href="help-guide_folders.html#backup">backup directory</a></li>
+        <li><code>/showDebugDir</code> / <code>/openDebugDir</code> - Show/open the debug log directory</li>
+        <li><code>/showJavaDir</code> / <code>/openJavaDir</code> - Show/open the directory of the JRE used by Chatty</li>
+        <li><code>/showTempDir</code> / <code>/openTempDir</code> - Show/open the system's temp directory</li>
         <li><code>/refresh &lt;emoticons/badges/ffz/ffzglobal/bttvemotes/emotesets&gt;</code>
             - Refresh the given data from it's respective API:
             <ul>
