@@ -42,7 +42,7 @@ License Information
 Chatty, as a whole, is released under the GPLv3 or later (see included
 `LICENSE` file).
 
-    Copyright (C) 2017  tduva and contributors
+    Copyright (C) 2018  tduva and contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ Chatty, as a whole, is released under the GPLv3 or later (see included
 Partly based on source code (most files located in the `src/chatty/` directory
 and subdirectories) licensed under the MIT license.
 
-    Copyright (c) 2014-2017  tduva and contributors
+    Copyright (c) 2014-2018  tduva and contributors
 
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the "Software"),
