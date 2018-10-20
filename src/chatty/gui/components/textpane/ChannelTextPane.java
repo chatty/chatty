@@ -212,6 +212,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         scrollManager.cleanUp();
         linkController.cleanUp();
+        // Clearing the images returns false on imageUpdate() to stop animator
+        // threads
+        kit.clearImages();
     }
     
     public void setMessageTimeout(int seconds) {

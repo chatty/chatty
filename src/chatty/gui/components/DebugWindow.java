@@ -49,7 +49,9 @@ public class DebugWindow extends JFrame {
         
         // Other Debug Stuff (Debugging class)
         otherLog = createLogArea();
-        Debugging.registerForOutput(line -> printLine(otherLog, line));
+        Debugging.registerForOutput(line -> {
+            SwingUtilities.invokeLater(() -> printLine(otherLog, line));
+        });
 
         // Tabs
         JTabbedPane tabs = new JTabbedPane();

@@ -1127,7 +1127,7 @@ public class TwitchClient {
             String[] splitSpace = parameter.split(" ");
             String[] split2 = splitSpace[0].split(",");
             for (String chan : split2) {
-                //g.printLine(chan, "test");
+                g.printLine(c.getUser(chan, "test").getRoom(), "test");
             }
         } else if (command.equals("settestuser")) {
             String[] split = parameter.split(" ");
