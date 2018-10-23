@@ -342,11 +342,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private void checkViewVisibility(MyIconView v) {
         try {
             Rectangle rect = modelToView(v.getStartOffset());
-            boolean northOfVisibleRect = rect.y + v.getAdjustedHeight() < getVisibleRect().y;
+            boolean northOfVisibleRect = rect != null
+                    && rect.y + v.getAdjustedHeight() < getVisibleRect().y;
             
             // Testing
             if (Debugging.isEnabled("gifd4")) {
-                Debugging.println((rect.y + v.getAdjustedHeight()) + " " + getVisibleRect().y);
+                Debugging.println("Check "+(rect.y + v.getAdjustedHeight()) + " < " + getVisibleRect().y);
                 if (northOfVisibleRect) {
                     Debugging.println("Stop "+v);
                 }

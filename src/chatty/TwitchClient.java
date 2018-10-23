@@ -719,7 +719,11 @@ public class TwitchClient {
                 // For testing:
                 // (Also creates a channel with an empty string)
                 if (Chatty.DEBUG) {
-                    g.printMessage(testUser,text,false,null,1);
+                    User user = c.getUser(room.getChannel(), "test");
+                    if (testUser.getRoom().equals(room)) {
+                        user = testUser;
+                    }
+                    g.printMessage(user,text,false,null,1);
                 } else {
                     g.printLine("Not in a channel");
                 }

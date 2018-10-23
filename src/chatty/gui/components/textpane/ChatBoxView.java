@@ -34,7 +34,7 @@ class ChatBoxView extends BoxView {
             long duration = System.currentTimeMillis() - start;
             if (duration > 1) {
                 layouts++;
-                Debugging.println(duration + " " + layouts);
+                Debugging.println("layout "+duration + " " + layouts);
             }
         } else {
             super.layout(width, height);
