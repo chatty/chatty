@@ -1,19 +1,18 @@
 
 package chatty.gui.components.textpane;
 
-import chatty.Chatty;
 import chatty.util.Debugging;
 import java.awt.Image;
-import java.awt.Rectangle;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.ComponentView;
 import javax.swing.text.Element;
@@ -30,6 +29,8 @@ import javax.swing.text.ViewFactory;
  */
 class MyEditorKit extends StyledEditorKit {
 
+    private static final Logger LOGGER = Logger.getLogger(MyEditorKit.class.getName());
+    
     private final StyledViewFactory factory;
     
     public MyEditorKit(boolean startAtBottom) {
@@ -57,9 +58,13 @@ class MyEditorKit extends StyledEditorKit {
     public void changeImage(Image oldImage, Image newImage) {
         factory.changeImage(oldImage, newImage);
     }
+    
+    public void debug() {
+        factory.updateDebugInfo();
+    }
  
     static class StyledViewFactory implements ViewFactory {
-
+        
         private final boolean startAtBottom;
         
         /**
@@ -68,7 +73,7 @@ class MyEditorKit extends StyledEditorKit {
          * ImageObserver don't have to come on the EDT, so synchronizing access
          * to this is probably necessary.
          */
-        private final Map<Image, Map<Long, MyIconView>> imageViews = new HashMap<>();
+        private final Map<Image, Map<Long, WeakReference<MyIconView>>> imageViews = new HashMap<>();
         
         StyledViewFactory(boolean startAtBottom) {
             this.startAtBottom = startAtBottom;
@@ -76,26 +81,31 @@ class MyEditorKit extends StyledEditorKit {
         
         public void changeImage(Image oldImage, Image newImage) {
             synchronized(imageViews) {
-                Map<Long, MyIconView> data = imageViews.get(oldImage);
+                Map<Long, WeakReference<MyIconView>> data = imageViews.get(oldImage);
                 if (data != null) {
-    //                Chatty.println("changeImage to "+newImage);
                     imageViews.put(newImage, data);
                     imageViews.remove(oldImage);
                 }
             }
         }
         
-//        public Set<StoredImageView> getByImage(Image image) {
-//            synchronized(imageViews) {
-//                return imageViews.get(image);
-//            }
-//        }
-        
         public Collection<MyIconView> getByImage(Image image) {
             synchronized(imageViews) {
-                Map<Long, MyIconView> data = imageViews.get(image);
+                Map<Long, WeakReference<MyIconView>> data = imageViews.get(image);
                 if (data != null) {
-                    return new ArrayList<>(data.values());
+                    List<MyIconView> result = new ArrayList<>();
+                    Iterator<Entry<Long,WeakReference<MyIconView>>> it = data.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Entry<Long, WeakReference<MyIconView>> entry = it.next();
+                        MyIconView v = entry.getValue().get();
+                        if (v == null) {
+                            it.remove();
+                            LOGGER.warning("Removed reference for image "+entry.getKey());
+                        } else {
+                            result.add(v);
+                        }
+                    }
+                    return result;
                 }
                 return null;
             }
@@ -104,44 +114,34 @@ class MyEditorKit extends StyledEditorKit {
         public void clearImages() {
             synchronized(imageViews) {
                 imageViews.clear();
+                updateDebugInfo();
             }
         }
         
         public void clearImage(long imageId) {
             synchronized(imageViews) {
-//                Iterator<Set<StoredImageView>> imagesIt = imageViews.values().iterator();
-//                while (imagesIt.hasNext()) {
-//                    Set<StoredImageView> d = imagesIt.next();
-//                    Iterator<StoredImageView> it = d.iterator();
-//                    while (it.hasNext()) {
-//                        if (it.next().id == imageId) {
-//                            it.remove();
-//                            if (Debugging.isEnabled("gifd")) {
-//                                Debugging.println(String.format(
-//                                        "Removed image %d (remaining: %s)",
-//                                        imageId, d.toString()));
-//                            }
-//                            
-//                        }
-//                    }
-//                    if (d.isEmpty()) {
-//                        imagesIt.remove();
-//                    }
-//                }
-                Iterator<Map<Long, MyIconView>> it = imageViews.values().iterator();
+                Iterator<Map<Long, WeakReference<MyIconView>>> it = imageViews.values().iterator();
                 while (it.hasNext()) {
-                    Map<Long, MyIconView> d = it.next();
+                    Map<Long, WeakReference<MyIconView>> d = it.next();
                     if (d.remove(imageId) != null) {
                         if (Debugging.isEnabled("gifd", "gifd2")) {
                             Debugging.println(String.format(
                                     "Removed image %d (remaining: %s)",
                                     imageId, d.toString()));
                         }
-                        if (d.isEmpty()) {
-                            it.remove();
+                    }
+                    Iterator<WeakReference<MyIconView>> it2 = d.values().iterator();
+                    while (it2.hasNext()) {
+                        if (it2.next().get() == null) {
+                            it2.remove();
+                            LOGGER.warning("Removed reference for image");
                         }
                     }
+                    if (d.isEmpty()) {
+                        it.remove();
+                    }
                 }
+                updateDebugInfo();
             }
         }
         
@@ -150,10 +150,35 @@ class MyEditorKit extends StyledEditorKit {
                 if (!imageViews.containsKey(image)) {
                     imageViews.put(image, new HashMap<>());
                 }
-//                StoredImageView t = new StoredImageView(view, id);
-//                imageViews.get(image).remove(t);
-//                imageViews.get(image).add(t);
-                imageViews.get(image).put(id, view);
+                imageViews.get(image).put(id, new WeakReference<>(view));
+            }
+        }
+        
+        private void updateDebugInfo() {
+            if (!Debugging.isEnabled("gifd0")) {
+                return;
+            }
+            synchronized(imageViews) {
+                int totalViews = 0;
+                int hiddenViews = 0;
+                int animated = 0;
+                for (Map<Long, WeakReference<MyIconView>> e : imageViews.values()) {
+                    for (WeakReference<MyIconView> ref : e.values()) {
+                        MyIconView view = ref.get();
+                        totalViews++;
+                        if (view != null) {
+                            if (!view.getShouldRepaint()) {
+                                hiddenViews++;
+                            }
+                            if (view.getAttributes().containsAttribute(ChannelTextPane.Attribute.ANIMATED, true)) {
+                                animated++;
+                            }
+                        }
+                    }
+                }
+                Debugging.println("imageViews",
+                        String.format("images: %d views: %d animated: %d hidden: %d",
+                        imageViews.size(), totalViews, animated, hiddenViews));
             }
         }
 
@@ -182,6 +207,7 @@ class MyEditorKit extends StyledEditorKit {
                                     "Added image %d (now %d)",
                                     id, imageViews.size()));
                         }
+                        updateDebugInfo();
                     }
                     return view;
                 }

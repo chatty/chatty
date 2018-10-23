@@ -47,18 +47,37 @@ public class WrapLabelView extends LabelView {
         return super.getPreferredSpan(axis);
     }
     
+    long lastPaint = 0;
+    long shortPaintCount = 0;
+    
     @Override
     public void paint(Graphics g, Shape a) {
+        Rectangle r = a instanceof Rectangle ? (Rectangle)a : a.getBounds();
+        
+        // Testing
         if (Debugging.isEnabled("gifd")) {
-            try {
-                Debugging.println(String.format("%d %s",
-                        Debugging.millisecondsElapsed("WrapLabelView.print"),
-                        getDocument().getText(getStartOffset(), getEndOffset() - getStartOffset())));
-            } catch (BadLocationException ex) {
+            long ms = Debugging.millisecondsElapsed("WrapLabelView.print");
+            Debugging.println(String.format("%d %d-%d %s",
+                    ms,
+                    getStartOffset(), getEndOffset(),
+                    Util.getText(getDocument(), getStartOffset(), getEndOffset())
+            ));
+        }
+        if (Debugging.isEnabled("gifdd")) {
+            long passed = System.currentTimeMillis() - lastPaint;
+            lastPaint = System.currentTimeMillis();
+            if (passed < 300) {
+                shortPaintCount++;
+            } else {
+                shortPaintCount = 0;
+            }
+            if (shortPaintCount > 10) {
+                g.setColor(Color.blue);
+                g.drawRect(r.x, r.y, r.width, r.height);
+                shortPaintCount = 10;
             }
         }
         
-        Rectangle r = a instanceof Rectangle ? (Rectangle)a : a.getBounds();
         boolean highlightMatchesEnabled = MyStyleConstants.getHighlightMatchesEnabled(getAttributes());
         if (highlightMatchesEnabled
                 && getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true)) {

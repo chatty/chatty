@@ -3,6 +3,8 @@ package chatty.gui.components.textpane;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -64,6 +66,14 @@ public class Util {
             }
         }
         b.append("]");
+    }
+    
+    public static String getText(Document doc, int start, int end) {
+        try {
+            return doc.getText(start, end - start);
+        } catch (BadLocationException ex) {
+            return "-";
+        }
     }
     
 }

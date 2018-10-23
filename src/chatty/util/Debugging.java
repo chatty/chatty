@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.SwingUtilities;
 
 /**
@@ -14,11 +16,36 @@ import javax.swing.SwingUtilities;
  */
 public class Debugging {
     
+    private static final long TIMED_OUTPUT_DELAY = 5000;
+    
     private static final Set<String> enabled = new HashSet<>();
     private static final Map<String, Long> stopwatchData = new HashMap<>();
     private static final Set<OutputListener> outputListeners = new HashSet<>();
+    private static final Map<String, String> timedOutput = new HashMap<>();
+    private static final Map<String, Long> timedOutputTimes = new HashMap<>();
+    private static final Timer timer;
     
-    public static String command(String parameter) {
+    static {
+        timer = new Timer("Debugging", true);
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                if (!isEnabled("rt")) {
+                    for (Map.Entry<String, String> entry : timedOutput.entrySet()) {
+                        String type = entry.getKey();
+                        String value = entry.getValue();
+                        long lastValueAgo = System.currentTimeMillis() - timedOutputTimes.get(type);
+                        if (lastValueAgo < TIMED_OUTPUT_DELAY) {
+                            println(String.format("[%s] %s", type, value));
+                        }
+                    }
+                }
+            }
+        }, TIMED_OUTPUT_DELAY, TIMED_OUTPUT_DELAY);
+    }
+    
+    public synchronized static String command(String parameter) {
         if (parameter == null) {
             return "Invalid parameter";
         }
@@ -38,7 +65,7 @@ public class Debugging {
         return "Now: "+enabled;
     }
     
-    public static boolean isEnabled(String... ids) {
+    public synchronized static boolean isEnabled(String... ids) {
         if (enabled.isEmpty()) {
             return false;
         }
@@ -50,23 +77,25 @@ public class Debugging {
         return false;
     }
     
-    public static void registerForOutput(OutputListener listener) {
+    public synchronized static void registerForOutput(OutputListener listener) {
         if (listener != null) {
             outputListeners.add(listener);
         }
     }
     
-    public static void println(String line) {
+    public synchronized static void println(String line) {
         for (OutputListener o : outputListeners) {
             o.debug(line);
         }
         Chatty.println(line);
     }
     
-    public static void println(String type, String line) {
-        if (isEnabled(type)) {
+    public synchronized static void println(String type, String line) {
+        if (isEnabled("rt")) {
             println(line);
         }
+        timedOutput.put(type, line);
+        timedOutputTimes.put(type, System.currentTimeMillis());
     }
     
     public static void edt() {
@@ -76,7 +105,7 @@ public class Debugging {
         }
     }
     
-    public static long millisecondsElapsed(String id) {
+    public synchronized static long millisecondsElapsed(String id) {
         Long previous = stopwatchData.get(id);
         stopwatchData.put(id, System.currentTimeMillis());
         if (previous == null) {

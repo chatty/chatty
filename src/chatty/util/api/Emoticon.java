@@ -102,11 +102,11 @@ public class Emoticon {
     public final String stringId;
     public final String urlX2;
     public final String creator;
-    public final boolean isAnimated;
     
     private String stream;
     private Set<String> infos;
     private String emotesetInfo;
+    private boolean isAnimated;
     
     private volatile int width;
     private volatile int height;
@@ -436,6 +436,14 @@ public class Emoticon {
         return new TreeSet<>(infos);
     }
     
+    public synchronized boolean isAnimated() {
+        return isAnimated;
+    }
+    
+    protected synchronized void setAnimated(boolean isAnimated) {
+        this.isAnimated = isAnimated;
+    }
+    
     public boolean hasGlobalEmoteset() {
         return this.emoteSet == SET_GLOBAL || this.emoteSet == SET_UNDEFINED;
     }
@@ -682,7 +690,7 @@ public class Emoticon {
             if (type == Type.TWITCH || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
                 if (scaledSize.width > defaultSize.width) {
                     urlFactor = 2;
-                    if (isAnimated && (float)scaledSize.width / defaultSize.width < 1.6) {
+                    if (isAnimated() && (float)scaledSize.width / defaultSize.width < 1.6) {
                         // For animated emotes, which currently are not resized,
                         // only load the 2x version if scale is high enough,
                         // otherwise it just looks ridiculous

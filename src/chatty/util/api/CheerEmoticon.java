@@ -76,6 +76,7 @@ public class CheerEmoticon extends Emoticon {
         if (!background.equals(currentBackground) || !state.equals(currentState)) {
             this.currentBackground = background;
             this.currentState = state;
+            setAnimated(state.equals("animated"));
             clearImages();
         }
     }

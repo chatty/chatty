@@ -33,6 +33,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -113,7 +114,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public enum Attribute {
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
-        BAN_MESSAGE, ID, ID_AUTOMOD, USERICON, IMAGE_ID,
+        BAN_MESSAGE, ID, ID_AUTOMOD, USERICON, IMAGE_ID, ANIMATED,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
         
@@ -298,15 +299,66 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     private boolean repaintImage(Image image) {
         Collection<MyIconView> set = kit.getByImage(image);
+        boolean anyVisible = false;
         if (set != null && !set.isEmpty()) {
             Rectangle r = new Rectangle();
-            for (MyIconView v : set) {
-                v.getRectangle(r);
-                repaint(r);
+            for (final MyIconView v : set) {
+                if (!Debugging.isEnabled("gift") && v.shouldCheckVisibility()) {
+                    SwingUtilities.invokeLater(() -> {
+                        checkViewVisibility(v);
+                    });
+                }
+                if (v.getShouldRepaint()) {
+                    v.getRectangle(r);
+                    repaint(r);
+                    anyVisible = true;
+                }
             }
-            return true;
         }
-        return false;
+        return anyVisible;
+    }
+    
+    /**
+     * Check if the given MyIconView has scrolled out of the visible area on the
+     * top. This is necessary because when the view moves out of screen it will
+     * not be painted anymore, so it won't receive it's coordinates anymore, and
+     * if old lines get removed from the top the coordinates shift, moving the
+     * view upwards, while it still has the old further down coordinates, so it
+     * would trigger a repaint request further downwards than it actually is.
+     * When the chat buffer is full (so that old lines do get removed) the
+     * visible area will sort of hover around the same coordinates (depending on
+     * line heights), so the the invisible view could actually trigger repaints
+     * in the visible area. Aside from causing repaints when it's not actually
+     * necessary, it might also cause other issues.
+     * 
+     * Methods like modelToView() depend on layout stuff, so this should be run
+     * in the EDT. In some cases modelToView() can actually be quite costly, but
+     * it might be fine in this case since it's not always called at a time
+     * where the layout is invalid (like scrolling down automatically), so it
+     * probably doesn't have to calculate too much stuff.
+     *
+     * @param v 
+     */
+    private void checkViewVisibility(MyIconView v) {
+        try {
+            Rectangle rect = modelToView(v.getStartOffset());
+            boolean northOfVisibleRect = rect.y + v.getAdjustedHeight() < getVisibleRect().y;
+            
+            // Testing
+            if (Debugging.isEnabled("gifd4")) {
+                Debugging.println((rect.y + v.getAdjustedHeight()) + " " + getVisibleRect().y);
+                if (northOfVisibleRect) {
+                    Debugging.println("Stop "+v);
+                }
+            }
+            
+            if (northOfVisibleRect) {
+                v.setDontRepaint();
+                kit.debug();
+            }
+        } catch (BadLocationException ex) {
+            // Give up in case of error
+        }
     }
     
     /**
@@ -2096,7 +2148,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (main.emoticons.isEmoteIgnored(emoticon)) {
                 continue;
             }
-            if (emoticon.isAnimated
+            if (emoticon.isAnimated()
                     && !styles.isEnabled(Setting.EMOTICONS_SHOW_ANIMATED)) {
                 continue;
             }
@@ -3287,6 +3339,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);
             emoteStyle.addAttribute(Attribute.IMAGE_ID, idCounter.getAndIncrement());
+            emoteStyle.addAttribute(Attribute.ANIMATED, emoticon.isAnimated());
             Emoticons.addInfo(main.emoticons.getEmotesetInfo(), emoticon);
             return emoteStyle;
         }
