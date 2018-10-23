@@ -224,7 +224,7 @@ public class SettingsManager {
         settings.addBoolean("emojiReplace", true);
         settings.addString("cheersType", "static");
 
-        settings.addBoolean("usericonsEnabled",true);
+        settings.addBoolean("usericonsEnabled", true);
         
         settings.addList("customUsericons", new ArrayList(), Setting.LIST);
         settings.addBoolean("customUsericonsEnabled", false);
