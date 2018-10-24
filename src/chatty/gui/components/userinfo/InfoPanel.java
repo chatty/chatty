@@ -10,6 +10,9 @@ import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.api.ChannelInfo;
+import chatty.util.api.Follower;
+import chatty.util.api.TwitchApi;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,14 +30,17 @@ public class InfoPanel extends JPanel {
 
     private final JPanel panel1 = new JPanel();
     private final JPanel panel2 = new JPanel();
-    
+    private final JPanel panel3 = new JPanel();
+
     private final JLabel firstSeen = new JLabel("");
     private final JLabel numberOfLines = new JLabel("");
     private final JLabel colorInfo = new JLabel("Color: #123456");
     
     private final JLabel createdAt = new JLabel("Loading..");
     private final JLabel followers = new JLabel();
-    
+    private final JLabel userID = new JLabel();
+    private final JLabel followedAt = new JLabel();
+
     private User currentUser;
     private boolean infoAdded;
     
@@ -56,7 +62,9 @@ public class InfoPanel extends JPanel {
         
         panel2.add(createdAt);
         panel2.add(followers);
-        
+        panel3.add(userID);
+        panel3.add(followedAt);
+
         setLayout(new GridBagLayout());
         
         add(panel1, Util.makeGbc(0, 0, 1, 1));
@@ -114,6 +122,9 @@ public class InfoPanel extends JPanel {
         GridBagConstraints gbc = makeGbc(0, 7, 3, 1);
         gbc.insets = new Insets(-8, 5, 0, 5);
         add(panel2, gbc);
+        gbc.gridy = 16;
+        gbc.insets = new Insets(-4, 5, 0, 5);
+        add(panel3, gbc);
         revalidate();
         owner.finishDialog();
         infoAdded = true;
@@ -121,6 +132,7 @@ public class InfoPanel extends JPanel {
     
     private void removeInfo() {
         remove(panel2);
+        remove(panel3);
         revalidate();
         owner.finishDialog();
         infoAdded = false;
@@ -136,14 +148,20 @@ public class InfoPanel extends JPanel {
     
     private void showInfo() {
         ChannelInfo requestedInfo = owner.getChannelInfo();
+        Follower follow = owner.getFollow();
+        addInfo();
         if (requestedInfo == null) {
-            addInfo();
             createdAt.setText(Language.getString("userDialog.loading"));
             createdAt.setToolTipText(null);
             followers.setText(null);
         } else {
-            addInfo();
             setChannelInfo(requestedInfo);
+        }
+        if (follow == null) {
+            followedAt.setText(Language.getString("userDialog.loading"));
+            followedAt.setToolTipText(null);
+        } else {
+            setFollowInfo(follow, TwitchApi.RequestResultCode.SUCCESS);
         }
     }
     
@@ -152,7 +170,22 @@ public class InfoPanel extends JPanel {
             createdAt.setText(Language.getString("userDialog.registered", DateTime.formatAccountAge(info.createdAt, DateTime.Formatting.VERBOSE)));
             createdAt.setToolTipText(Language.getString("userDialog.registered.tip", DateTime.formatFullDatetime(info.createdAt)));
             followers.setText(" "+Language.getString("userDialog.followers", Helper.formatViewerCount(info.followers)));
+            userID.setText(" "+Language.getString("userDialog.id", info.id));
         }
     }
-    
+
+    public void setFollowInfo(Follower follow, TwitchApi.RequestResultCode result) {
+        if (infoAdded) {
+            if (result == TwitchApi.RequestResultCode.SUCCESS) {
+                followedAt.setText(" "+Language.getString("userDialog.followed", DateTime.formatAccountAge(follow.time, DateTime.Formatting.VERBOSE)));
+                followedAt.setToolTipText(Language.getString("userDialog.followed.tip", DateTime.formatFullDatetime(follow.time)));
+            } else if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
+                followedAt.setText(Language.getString("userDialog.notFollowing"));
+                followedAt.setToolTipText(null);
+            } else {
+                followedAt.setText(Language.getString("userDialog.error"));
+                followedAt.setToolTipText(null);
+            }
+        }
+    }
 }

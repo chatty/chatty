@@ -1941,7 +1941,12 @@ public class TwitchClient {
             followerInfoNames(info);
             receivedFollowerOrSubscriberCount(info);
         }
-        
+
+        @Override
+        public void getUserFollowFailed(String stream, String name, RequestResultCode result) {
+            g.setFollowerInfoAsFailed(stream, name, result);
+        }
+
         private void followerInfoNames(FollowerInfo info) {
             
         }
