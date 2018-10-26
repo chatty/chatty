@@ -1,10 +1,10 @@
 Chatty is a Twitch Chat Client, supporting many Twitch-specific features such as emotes,
 nick colors, displaying stream information and much more.
 
-Website: http://chatty.github.io
+Website: https://chatty.github.io
 E-Mail: chattyclient@gmail.com
 Twitter: @ChattyClient (https://twitter.com/ChattyClient)
-YouTube: http://www.youtube.com/user/chattyclient
+YouTube: https://www.youtube.com/user/chattyclient
 Discord: https://discord.gg/WTuqGeJ
 
 Requirements
