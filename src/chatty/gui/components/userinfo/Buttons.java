@@ -252,7 +252,8 @@ public class Buttons {
         for (Map.Entry<JButton, CustomCommand> entry : commands.entrySet()) {
             JButton button = entry.getKey();
             CustomCommand command = entry.getValue();
-            boolean allParams = parameters.getIdentifiers().containsAll(command.getRequiredIdentifiers());
+            boolean allParams = !command.hasError() &&
+                    parameters.getIdentifiers().containsAll(command.getRequiredIdentifiers());
             button.setEnabled(allParams);
         }
     }

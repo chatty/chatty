@@ -65,16 +65,6 @@ public class CommandMenuItems {
                 result.addAll(addCustomCommands(line, submenuName));
             }
         }
-        
-        // Remove entries that have a command with an error
-        Iterator<CommandMenuItem> it = result.iterator();
-        while (it.hasNext()) {
-            CommandMenuItem item = it.next();
-            if (item.getCommand() != null && item.getCommand().hasError()) {
-                LOGGER.warning("Error parsing command: "+item.getCommand().getError());
-                it.remove();
-            }
-        }
         return result;
     }
     

@@ -1355,7 +1355,7 @@ public class TwitchClient {
     }
     
     public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
-        if (command.getError() != null) {
+        if (command.hasError()) {
             g.printLine("Custom command invalid: "+command.getError());
             return;
         }
