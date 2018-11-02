@@ -2932,6 +2932,17 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
     }
+    
+    public void msgDeleted(final User user, String targetMsgId, String msg) {
+        SwingUtilities.invokeLater(() -> {
+            channels.getChannel(user.getRoom()).userBanned(user, -2, null, targetMsgId);
+            user.addMsgDeleted(targetMsgId, msg);
+            updateUserInfoDialog(user);
+            if (client.settings.listContains("streamChatChannels", user.getChannel())) {
+                streamChat.userBanned(user, -2, null, targetMsgId);
+            }
+        });
+    }
 
     public void clearChat() {
         clearChat(null);

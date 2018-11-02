@@ -80,17 +80,8 @@ public class UserInfo extends JDialog {
                 if (command == null) {
                     return;
                 }
-                User user = getUser();
-                String nick = user.getName();
-                String reason = getBanReason();
-                if (!reason.isEmpty()) {
-                    reason = " "+reason;
-                }
-                Parameters parameters = Parameters.create(nick+reason);
-                parameters.put("msg-id", getMsgId());
-                parameters.put("target-msg-id", getTargetMsgId());
-                parameters.put("automod-msg-id", getAutoModMsgId());
-                owner.anonCustomCommand(user.getRoom(), command, parameters);
+                
+                owner.anonCustomCommand(getUser().getRoom(), command, makeParameters());
                 owner.getActionListener().actionPerformed(e);
             }
         });
@@ -211,6 +202,24 @@ public class UserInfo extends JDialog {
         return null;
     }
     
+    private Parameters makeParameters() {
+        User user = getUser();
+        String nick = user.getName();
+        String reason = getBanReason();
+        if (!reason.isEmpty()) {
+            reason = " " + reason;
+        }
+        Parameters parameters = Parameters.create(nick + reason);
+        parameters.put("msg-id", getMsgId());
+        parameters.put("target-msg-id", getTargetMsgId());
+        parameters.put("automod-msg-id", getAutoModMsgId());
+        return parameters;
+    }
+    
+    private void updateButtons() {
+        buttons.updateButtonForParameters(makeParameters());
+    }
+    
     public void setFontSize(float size) {
         if (size != fontSize) {
             GuiUtil.setFontSize(size, this);
@@ -271,6 +280,7 @@ public class UserInfo extends JDialog {
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
         updateModButtons();
+        updateButtons();
         buttons.updateAutoModButtons(autoModMsgId);
         finishDialog();
     }

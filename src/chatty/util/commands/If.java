@@ -46,6 +46,11 @@ class If implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, identifier, output1, output2);
     }
+    
+    @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getRequiredIdentifiers(isRequired, identifier, output1, output2);
+    }
 
     @Override
     public boolean equals(Object obj) {

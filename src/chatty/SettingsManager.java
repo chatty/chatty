@@ -521,6 +521,7 @@ public class SettingsManager {
         settings.addBoolean("logMod", true);
         settings.addBoolean("logJoinPart", false);
         settings.addBoolean("logBan", true);
+        settings.addBoolean("logDeleted", true);
         settings.addBoolean("logSystem", false);
         settings.addBoolean("logInfo", true);
         settings.addBoolean("logViewerstats", true);
@@ -730,6 +731,13 @@ public class SettingsManager {
                         + "@AutoMod\n"
                         + ".Approve=/Automod_approve\n"
                         + ".Deny=/Automod_deny");
+            }
+        }
+        if (switchedFromVersionBefore("0.9.3")) {
+            String currentValue = settings.getString("timeoutButtons");
+            if (!StringUtil.toLowerCase(currentValue).contains("/delete")) {
+                settings.setString("timeoutButtons", currentValue + "\n\n"
+                        + "Delete=/delete $$(msg-id)");
             }
         }
         if (switchedFromVersionBefore("0.9.1b3")) {

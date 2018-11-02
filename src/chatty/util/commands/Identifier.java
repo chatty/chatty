@@ -32,6 +32,11 @@ class Identifier implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, name);
     }
+    
+    @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getIdentifiersWithPrefix("", name);
+    }
 
     @Override
     public boolean equals(Object obj) {

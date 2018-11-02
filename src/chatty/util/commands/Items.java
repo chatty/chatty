@@ -78,6 +78,11 @@ class Items implements Item {
     }
     
     @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getIdentifiersWithPrefix("", true, collection.toArray());
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;

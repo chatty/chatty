@@ -68,6 +68,9 @@ public class RawMessageTest {
         if (type.equals("badges")) {
             return "@badges="+options+";color=#008000;display-name=Abc;emote-only=1;emotes=33:0-7;id=fwaef;mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :abc!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :DansGame ";
         }
+        if (type.equals("del")) {
+            return "@login=tduva;target-msg-id=1234 :tmi.twitch.tv CLEARMSG "+channel+" :"+options;
+        }
         return null;
     }
     

@@ -285,6 +285,10 @@ public class User implements Comparable {
         addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id));
     }
     
+    public synchronized void addMsgDeleted(String targetMsgId, String msg) {
+        addLine(new MsgDeleted(System.currentTimeMillis(), targetMsgId, msg));
+    }
+    
     public synchronized void addSub(String message, String text) {
         addLine(new SubMessage(System.currentTimeMillis(), message, text));
     }
@@ -861,6 +865,7 @@ public class User implements Comparable {
         public static final int MOD_ACTION = 3;
         public static final int AUTO_MOD_MESSAGE = 4;
         public static final int INFO = 5;
+        public static final int MSG_DELETED = 6;
         
         private final Long time;
         private final int type;
@@ -913,6 +918,18 @@ public class User implements Comparable {
             this.id = id;
         }
         
+    }
+    
+    public static class MsgDeleted extends Message {
+        
+        public final String targetMsgId;
+        public final String msg;
+        
+        public MsgDeleted(Long time, String targetMsgId, String msg) {
+            super(MSG_DELETED, time);
+            this.targetMsgId = targetMsgId;
+            this.msg = msg;
+        }
     }
     
     public static class SubMessage extends Message {

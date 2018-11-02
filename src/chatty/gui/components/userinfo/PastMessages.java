@@ -76,6 +76,12 @@ public class PastMessages extends JTextArea {
                 
                 b.append("\n");
             }
+            else if (m.getType() == User.Message.MSG_DELETED) {
+                User.MsgDeleted md = (User.MsgDeleted)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
+                b.append("Message deleted: ").append(md.msg);
+                b.append("\n");
+            }
             else if (m.getType() == User.Message.SUB) {
                 User.SubMessage sm = (User.SubMessage)m;
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append("$ ");

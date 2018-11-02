@@ -656,6 +656,8 @@ public class Helper {
         if (durationEnabled) {
             if (duration > 0) {
                 banInfo = String.format("(%s)", makeBanInfoDuration(duration));
+            } else if (duration == -2) {
+                banInfo = "(deleted)";
             } else if (includeBan) {
                 banInfo = "(banned)";
             }

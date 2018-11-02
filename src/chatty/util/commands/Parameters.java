@@ -3,8 +3,10 @@ package chatty.util.commands;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -29,7 +31,9 @@ public class Parameters {
     }
     
     public void put(String key, String value) {
-        parameters.put(key, value);
+        if (value != null && !value.isEmpty()) {
+            parameters.put(key, value);
+        }
     }
 
     public Collection<String> getRange(int startIndex, boolean toEnd) {
@@ -45,6 +49,10 @@ public class Parameters {
             }
         }
         return result;
+    }
+    
+    public Set<String> getIdentifiers() {
+        return new HashSet<>(parameters.keySet());
     }
     
     public static Parameters create(String args) {

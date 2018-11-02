@@ -2539,20 +2539,10 @@ public class TwitchClient {
         public void onUserRemoved(User user) {
             g.removeUser(user);
         }
-        
-        private final Pattern findId = Pattern.compile(
-                        "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
-                        Pattern.CASE_INSENSITIVE);
 
         @Override
         public void onBan(User user, long duration, String reason, String targetMsgId) {
             User localUser = c.getLocalUser(user.getChannel());
-//            Matcher m = findId.matcher(reason);
-//            String id = null;
-//            if (m.find()) {
-//                id = m.group();
-//                reason = reason.replace(id, "").trim();
-//            }
             if (localUser != user && !localUser.hasModeratorRights()) {
                 // Remove reason if not the affected user and not a mod, to be
                 // consistent with other applications
@@ -2562,6 +2552,17 @@ public class TwitchClient {
             ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.getName());
             chatLog.userBanned(user.getRoom().getFilename(), user.getRegularDisplayNick(),
                     duration, reason, channelInfo);
+        }
+        
+        @Override
+        public void onMsgDeleted(User user, String targetMsgId, String msg) {
+            User localUser = c.getLocalUser(user.getChannel());
+            if (localUser == user) {
+                g.printLine(user.getRoom(), "Your message was deleted: "+msg);
+            } else {
+                g.msgDeleted(user, targetMsgId, msg);
+            }
+            chatLog.msgDeleted(user, msg);
         }
         
         @Override

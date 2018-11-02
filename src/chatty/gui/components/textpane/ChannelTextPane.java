@@ -692,6 +692,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     public void userBanned(User user, long duration, String reason, String id) {
         if (styles.showBanMessages()) {
+            //-----------------------
+            // For extra ban message
+            //-----------------------
             String banInfo = Helper.makeBanInfo(duration, reason,
                     styles.isEnabled(Setting.BAN_DURATION_MESSAGE),
                     styles.isEnabled(Setting.BAN_REASON_MESSAGE),
@@ -700,6 +703,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             String message = "has been banned";
             if (duration > 0) {
                 message = "has been timed out";
+            }
+            if (duration == -2) {
+                message = "had a message deleted";
             }
             if (!StringUtil.isNullOrEmpty(id)) {
                 message += " (single message)";
@@ -723,6 +729,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
+        //--------------------------------------
+        // For indicator behind deleted message
+        //--------------------------------------
         String banInfo = Helper.makeBanInfo(duration, reason,
                 styles.isEnabled(Setting.BAN_DURATION_APPENDED),
                 styles.isEnabled(Setting.BAN_REASON_APPENDED),

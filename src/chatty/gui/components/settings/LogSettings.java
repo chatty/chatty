@@ -109,18 +109,20 @@ public class LogSettings extends SettingsPanel {
                 d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
         typesPanel.add(d.addSimpleBooleanSetting("logBan"),
                 d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
+        typesPanel.add(d.addSimpleBooleanSetting("logDeleted"),
                 d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
+        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
                 d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
+        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
                 d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
+        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
                 d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
                 d.makeGbcCloser(0, 8, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
                 d.makeGbcCloser(0, 9, 1, 1, GridBagConstraints.WEST));
+        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
+                d.makeGbcCloser(0, 10, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         

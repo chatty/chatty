@@ -36,8 +36,21 @@ interface Item {
      * @return A set of identifiers, empty if none are found
      */
     public Set<String> getIdentifiersWithPrefix(String prefix);
+    
+    public Set<String> getRequiredIdentifiers();
+    
+    public static Set<String> getRequiredIdentifiers(boolean isRequired, Object... input) {
+        if (isRequired) {
+            return getIdentifiersWithPrefix("", input);
+        }
+        return null;
+    }
 
     public static Set<String> getIdentifiersWithPrefix(String prefix, Object... input) {
+        return getIdentifiersWithPrefix(prefix, false, input);
+    }
+    
+    public static Set<String> getIdentifiersWithPrefix(String prefix, boolean required, Object... input) {
         Set<String> output = new HashSet<>();
         for (Object value : input) {
             if (value != null) {
@@ -46,7 +59,13 @@ interface Item {
                         output.add((String) value);
                     }
                 } else if (value instanceof Item) {
-                    Set<String> value2 = ((Item) value).getIdentifiersWithPrefix(prefix);
+                    Set<String> value2;
+                    if (required) {
+                        value2 = ((Item) value).getRequiredIdentifiers();
+                    } else {
+                        value2 = ((Item) value).getIdentifiersWithPrefix(prefix);
+                    }
+                    
                     if (value2 != null) {
                         output.addAll(value2);
                     }

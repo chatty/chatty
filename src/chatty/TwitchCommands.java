@@ -48,8 +48,11 @@ public class TwitchCommands {
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {
-       if (command.equals("to") || command.equals("timeout")) {
+        if (command.equals("to") || command.equals("timeout")) {
             commandTimeout(channel, msgId, parameter);
+        }
+        else if (command.equals("delete")) {
+            delete(channel, parameter);
         }
         else if (command.equals("unban")) {
             commandUnban(channel, parameter);
@@ -447,6 +450,12 @@ public class TwitchCommands {
                 }
             }
             
+        }
+    }
+    
+    public void delete(String channel, String msgId) {
+        if (onChannel(channel, true)) {
+            sendMessage(channel, ".delete "+msgId, "Trying to delete message");
         }
     }
     

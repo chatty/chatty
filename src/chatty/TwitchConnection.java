@@ -1298,6 +1298,19 @@ public class TwitchConnection {
         }
         
         @Override
+        public void onClearMsg(MsgTags tags, String channel, String msg) {
+            channel = StringUtil.toLowerCase(channel);
+            String login = tags.get("login");
+            String targetMsgId = tags.get("target-msg-id");
+            if (!StringUtil.isNullOrEmpty(login, targetMsgId)) {
+                User user = users.getUserIfExists(channel, login);
+                if (user != null) {
+                    listener.onMsgDeleted(user, targetMsgId, msg);
+                }
+            }
+        }
+        
+        @Override
         public void onChannelCommand(MsgTags tags, String nick,
                 String channel, String command, String trailing) {
             channel = StringUtil.toLowerCase(channel);
@@ -1463,6 +1476,8 @@ public class TwitchConnection {
         void onGlobalInfo(String message);
 
         void onBan(User user, long length, String reason, String targetMsgId);
+        
+        void onMsgDeleted(User user, String targetMsgId, String msg);
 
         void onRegistered();
         

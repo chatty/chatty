@@ -52,6 +52,11 @@ class IfEq implements Item {
     }
     
     @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getRequiredIdentifiers(isRequired, identifier, compare, output1, output2);
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
