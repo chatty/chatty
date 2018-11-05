@@ -159,20 +159,8 @@ public class SettingsManager {
         settings.addBoolean("foreignToken", false);
         // Don't save setting, login with password isn't possible anymore
         settings.addBoolean("usePassword", false, false);
-
-        // Token
-        settings.addBoolean("token_editor", false);
-        settings.setFile("token_editor", loginFile);
-        settings.addBoolean("token_commercials", false);
-        settings.setFile("token_commercials", loginFile);
-        settings.addBoolean("token_user", false);
-        settings.setFile("token_user", loginFile);
-        settings.addBoolean("token_subs", false);
-        settings.setFile("token_subs", loginFile);
-        settings.addBoolean("token_chat", false);
-        settings.setFile("token_chat", loginFile);
-        settings.addBoolean("token_follow", false);
-        settings.setFile("token_follow", loginFile);
+        settings.addList("scopes", new HashSet<>(), Setting.STRING);
+        settings.setFile("scopes", loginFile);
 
         //=================
         // Appearance / GUI
@@ -586,6 +574,7 @@ public class SettingsManager {
         settings.addString("streamHighlightCommand", "!highlight");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
+        settings.addBoolean("streamHighlightMarker", true);
 
         // Stream Status Writer
         settings.addBoolean("enableStatusWriter", false);

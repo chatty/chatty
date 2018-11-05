@@ -10,6 +10,7 @@ import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
+import chatty.util.api.TokenInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
@@ -316,7 +317,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     public void showSettings(String action, Object parameter) {
         loadSettings();
-        notificationSettings.setUserReadPermission(settings.getBoolean("token_user"));
+        notificationSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.USERINFO.scope));
         setLocationRelativeTo(owner);
         if (action != null) {
             editDirectly(action, parameter);

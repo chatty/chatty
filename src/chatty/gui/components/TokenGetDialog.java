@@ -6,6 +6,8 @@ import chatty.TwitchClient;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.util.MiscUtil;
+import chatty.util.api.TokenInfo;
+import chatty.util.api.TokenInfo.Scope;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +15,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.*;
 
 /**
@@ -39,11 +43,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     private final JButton openUrl = new JButton("Open (default browser)");
     private final JButton close = new JButton("Close");
 
-    private final JCheckBox includeReadUserAccess = new JCheckBox("Read user info (followed streams)");
-    private final JCheckBox includeEditorAccess = new JCheckBox("Editor access (edit stream title/game)");
-    private final JCheckBox includeCommercialAccess = new JCheckBox("Allow running ads");
-    private final JCheckBox includeShowSubsAccess = new JCheckBox("View your subscribers");
-    private final JCheckBox includeFollowAccess = new JCheckBox("Follow channels");
+    private final Map<Scope, JCheckBox> checkboxes = new HashMap<>();
     
     private String currentUrl = TwitchClient.REQUEST_TOKEN_URL;
     
@@ -58,68 +58,47 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         setLayout(new GridBagLayout());
         
         GridBagConstraints gbc;
-        add(info,makeGridBagConstraints(0,0,2,1,GridBagConstraints.CENTER));
+        gbc = makeGridBagConstraints(0,0,2,1,GridBagConstraints.CENTER);
+        gbc.insets = new Insets(5,5,10,5);
+        add(info, gbc);
         
-        // Default selected options
-        includeReadUserAccess.setSelected(true);
-        includeEditorAccess.setSelected(true);
-        includeCommercialAccess.setSelected(true);
-        includeShowSubsAccess.setSelected(true);
-        includeFollowAccess.setSelected(true);
-        
-        // Options
-        gbc = makeGridBagConstraints(0, 1, 2, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(5,5,0,5);
-        includeReadUserAccess.setToolTipText("To get notified when streams you "
-                + "follow go online.");
-        add(includeReadUserAccess, gbc);
-        
-        gbc = makeGridBagConstraints(0, 2, 2, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(0,5,0,5);
-        includeEditorAccess.setToolTipText("To be able to edit your channel's title and game.");
-        add(includeEditorAccess,gbc);
-        
-        gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.WEST);
-        gbc.insets = new Insets(0,5,0,5);
-        includeCommercialAccess.setToolTipText("To be able to run commercials on your stream.");
-        add(includeCommercialAccess,gbc);
-        
-        gbc = makeGridBagConstraints(0,4,2,1,GridBagConstraints.WEST);
-        gbc.insets = new Insets(0,5,0,5);
-        includeShowSubsAccess.setToolTipText("To be able to show the list of your subscribers.");
-        add(includeShowSubsAccess,gbc);
-        
-        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
-        gbc.insets = new Insets(0,5,5,5);
-        includeFollowAccess.setToolTipText("To be able to follow channels.");
-        add(includeFollowAccess,gbc);
-        
+        int y = 1;
+        for (Scope scope : TokenInfo.Scope.values()) {
+            JCheckBox checkbox = new JCheckBox(scope.label);
+            checkbox.setToolTipText(scope.description);
+            checkbox.setSelected(true);
+            checkbox.addItemListener(e -> updateUrl());
+            if (scope == Scope.CHAT) {
+                checkbox.setEnabled(false);
+            }
+            gbc = makeGridBagConstraints(0, y, 2, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(0,5,0,5);
+            checkboxes.put(scope, checkbox);
+            add(checkbox, gbc);
+            y++;
+        }
+
         // URL Display and Buttons
-        gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.CENTER);
+        gbc = makeGridBagConstraints(0,y+1,2,1,GridBagConstraints.CENTER);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
+        gbc.insets = new Insets(10,5,10,5);
         urlField.setEditable(false);
         add(urlField, gbc);
-        gbc = makeGridBagConstraints(0,7,1,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(0,y+2,1,1,GridBagConstraints.EAST);
         gbc.insets = new Insets(0,5,10,5);
         add(copyUrl,gbc);
-        gbc = makeGridBagConstraints(1,7,1,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(1,y+2,1,1,GridBagConstraints.EAST);
         gbc.insets = new Insets(0,0,10,5);
         add(openUrl,gbc);
         
         // Status and Close Button
-        add(status,makeGridBagConstraints(0,8,2,1,GridBagConstraints.CENTER));
-        add(close,makeGridBagConstraints(1,9,1,1,GridBagConstraints.EAST));
+        add(status,makeGridBagConstraints(0,y+3,2,1,GridBagConstraints.CENTER));
+        add(close,makeGridBagConstraints(1,y+4,1,1,GridBagConstraints.EAST));
         
         openUrl.addActionListener(this);
         copyUrl.addActionListener(this);
         close.addActionListener(owner.getActionListener());
-        
-        includeEditorAccess.addItemListener(this);
-        includeCommercialAccess.addItemListener(this);
-        includeReadUserAccess.addItemListener(this);
-        includeShowSubsAccess.addItemListener(this);
-        includeFollowAccess.addItemListener(this);
         
         reset();
         updateUrl();
@@ -170,22 +149,17 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     }
     
     private void updateUrl() {
-        String url = TwitchClient.REQUEST_TOKEN_URL;
-        if (includeEditorAccess.isSelected()) {
-            url += "+channel_editor";
+        String scopes = "";
+        for (Map.Entry<Scope, JCheckBox> entry : checkboxes.entrySet()) {
+            JCheckBox checkbox = entry.getValue();
+            if (checkbox.isSelected()) {
+                scopes += "+"+entry.getKey().scope;
+            }
         }
-        if (includeCommercialAccess.isSelected()) {
-            url += "+channel_commercial";
+        if (!scopes.isEmpty()) {
+            scopes = scopes.substring(1);
         }
-        if (includeReadUserAccess.isSelected()) {
-            url += "+user_read";
-        }
-        if (includeShowSubsAccess.isSelected()) {
-            url += "+channel_subscriptions";
-        }
-        if (includeFollowAccess.isSelected()) {
-            url += "+user_follows_edit";
-        }
+        String url = TwitchClient.REQUEST_TOKEN_URL+scopes;
         currentUrl = url;
         urlField.setText(url);
         urlField.setToolTipText(url);
@@ -199,7 +173,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == openUrl) {
-            UrlOpener.openUrl(currentUrl);
+            UrlOpener.openUrlPrompt(this, currentUrl);
         }
         else if (e.getSource() == copyUrl) {
             MiscUtil.copyToClipboard(currentUrl);

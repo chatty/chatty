@@ -95,7 +95,7 @@ public class TwitchClient {
             + "&client_id="+Chatty.CLIENT_ID
             + "&redirect_uri="+Chatty.REDIRECT_URI
             + "&force_verify=true"
-            + "&scope=chat_login";
+            + "&scope=";
 
     /**
      * Holds the Settings object, which is used to store and retrieve renametings
@@ -1068,6 +1068,9 @@ public class TwitchClient {
         else if (command.equals("automod_deny")) {
             autoModCommandHelper.deny(channel, parameter);
         }
+        else if (command.equals("marker")) {
+            commandAddStreamMarker(room, parameter);
+        }
         else if (command.equals("addstreamhighlight")) {
             commandAddStreamHighlight(room, parameter);
         }
@@ -1647,6 +1650,17 @@ public class TwitchClient {
                 g.printLine(user.getRoom(), result);
             }
         }
+    }
+    
+    public void commandAddStreamMarker(Room room, String description) {
+        api.createStreamMarker(room.getStream(), description, error -> {
+            String info = StringUtil.aEmptyb(description, "no description", "'%s'");
+            if (error == null) {
+                g.printLine("Stream marker created ("+info+")");
+            } else {
+                g.printLine("Failed to create stream marker ("+info+"): "+error);
+            }
+        });
     }
     
     private void commandRefresh(String channel, String parameter) {

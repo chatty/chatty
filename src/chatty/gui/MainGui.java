@@ -708,11 +708,19 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
-        hotkeyManager.registerAction("stream.addhighlight", "Add Stream Highlight", new AbstractAction() {
+        hotkeyManager.registerAction("stream.addhighlight", "Stream: Add Stream Highlight", new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 hotkeyCommand("addstreamhighlight", null, false);
+            }
+        });
+        
+        hotkeyManager.registerAction("stream.addmarker", "Stream: Add Stream Marker", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hotkeyCommand("marker", null, false);
             }
         });
         
@@ -1281,7 +1289,7 @@ public class MainGui extends JFrame implements Runnable {
                     client.settings.setBoolean("foreignToken", false);
                     client.settings.setString("username", "");
                     client.settings.setString("userid", "");
-                    resetTokenScopes();
+                    client.settings.listClear("scopes");
                     updateConnectionDialog(null);
                     tokenDialog.update("", "");
                     updateTokenScopes();
@@ -3841,7 +3849,7 @@ public class MainGui extends JFrame implements Runnable {
                 showTokenWarning();
             }
         }
-        else if (!tokenInfo.chat_access) {
+        else if (!tokenInfo.hasScope(TokenInfo.Scope.CHAT)) {
             result = "No chat access (required) with token.";
         }
         else {
@@ -3882,15 +3890,9 @@ public class MainGui extends JFrame implements Runnable {
             return;
         }
         if (info.valid) {
-            client.settings.setBoolean("token_chat", info.chat_access);
-            client.settings.setBoolean("token_editor", info.channel_editor);
-            client.settings.setBoolean("token_commercials", info.channel_commercials);
-            client.settings.setBoolean("token_user", info.user_read);
-            client.settings.setBoolean("token_subs", info.channel_subscriptions);
-            client.settings.setBoolean("token_follow", info.user_follows_edit);
-        }
-        else {
-            resetTokenScopes();
+            client.settings.putList("scopes", info.scopes);
+        } else {
+            client.settings.listClear("scopes");
         }
         updateTokenScopes();
     }
@@ -3899,23 +3901,11 @@ public class MainGui extends JFrame implements Runnable {
      * Updates the token scopes in the GUI based on the settings.
      */
     private void updateTokenScopes() {
-        boolean chat = client.settings.getBoolean("token_chat");
-        boolean commercials = client.settings.getBoolean("token_commercials");
-        boolean editor = client.settings.getBoolean("token_editor");
-        boolean user = client.settings.getBoolean("token_user");
-        boolean subscriptions = client.settings.getBoolean("token_subs");
-        boolean follow = client.settings.getBoolean("token_follow");
-        tokenDialog.updateAccess(chat, editor, commercials, user, subscriptions, follow);
-        adminDialog.updateAccess(editor, commercials);
-    }
-    
-    private void resetTokenScopes() {
-        client.settings.setBoolean("token_chat", false);
-        client.settings.setBoolean("token_commercials", false);
-        client.settings.setBoolean("token_editor", false);
-        client.settings.setBoolean("token_user", false);
-        client.settings.setBoolean("token_subs", false);
-        client.settings.setBoolean("token_follow", false);
+        Collection<String> scopes = client.settings.getList("scopes");
+        tokenDialog.updateAccess(scopes);
+        adminDialog.updateAccess(
+                scopes.contains(TokenInfo.Scope.EDITOR.scope),
+                scopes.contains(TokenInfo.Scope.COMMERICALS.scope));
     }
     
     public void showTokenWarning() {
@@ -4131,7 +4121,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void requestFollowedStreams() {
         if (client.settings.getBoolean("requestFollowedStreams") &&
-                client.settings.getBoolean("token_user")) {
+                client.settings.getList("scopes").contains(TokenInfo.Scope.USERINFO.scope)) {
             client.api.getFollowedStreams(client.settings.getString("token"));
         }
     }

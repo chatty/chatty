@@ -105,15 +105,7 @@ public class Parsing {
             String id = (String)token.get("user_id");
             JSONObject authorization = (JSONObject)token.get("authorization");
             JSONArray scopes = (JSONArray)authorization.get("scopes");
-            
-            boolean allowCommercials = scopes.contains("channel_commercial");
-            boolean allowEditor = scopes.contains("channel_editor");
-            boolean chatAccess = scopes.contains("chat_login");
-            boolean userAccess = scopes.contains("user_read");
-            boolean readSubscriptions = scopes.contains("channel_subscriptions");
-            boolean userEditFollows = scopes.contains("user_follows_edit");
-            
-            return new TokenInfo(username, id, chatAccess, allowEditor, allowCommercials, userAccess, readSubscriptions, userEditFollows);
+            return new TokenInfo(username, id, scopes);
         }
         catch (Exception e) {
             return null;

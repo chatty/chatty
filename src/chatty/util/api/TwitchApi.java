@@ -516,4 +516,18 @@ public class TwitchApi {
         requests.autoMod("deny", msgId, defaultToken);
     }
 
+    public void createStreamMarker(String stream, String description, StreamMarkerResult listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.streamMarkerResult("Failed to resolve channel id");
+            } else {
+                requests.createStreamMarker(r.getId(stream), description, defaultToken, listener);
+            }
+        }, stream);
+    }
+    
+    public interface StreamMarkerResult {
+        public void streamMarkerResult(String error);
+    }
+    
 }

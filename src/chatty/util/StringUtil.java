@@ -265,6 +265,13 @@ public class StringUtil {
         return b.toString();
     }
     
+    public static String aEmptyb(String value, String a, String b) {
+        if (value == null || value.isEmpty()) {
+            return a;
+        }
+        return String.format(b, value);
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
     }

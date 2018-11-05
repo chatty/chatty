@@ -3,10 +3,12 @@ package chatty.gui.components;
 
 import chatty.gui.MainGui;
 import chatty.lang.Language;
+import chatty.util.api.TokenInfo;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -130,27 +132,16 @@ public class TokenDialog extends JDialog {
     
     /**
      * Update the text showing what scopes are available.
-     * 
-     * @param chat
-     * @param editor
-     * @param commercial
-     * @param user
-     * @param subs 
      */
-    public void updateAccess(boolean chat, boolean editor, boolean commercial,
-            boolean user, boolean subs, boolean follow) {
+    public void updateAccess(Collection<String> scopes) {
         boolean empty = currentUsername.isEmpty() || currentToken.isEmpty();
         access.setVisible(!empty);
         accessLabel.setVisible(!empty);
 
         StringBuilder b = new StringBuilder("<html><body style='line-height:28px;'>");
-        b.append(accessStatusImage(chat)).append("&nbsp;").append(Language.getString("login.access.chat")).append("<br />");
-        b.append(accessStatusImage(user)).append("&nbsp;").append(Language.getString("login.access.user")).append("<br />");
-        b.append(accessStatusImage(editor)).append("&nbsp;").append(Language.getString("login.access.editor")).append("<br />");
-        b.append(accessStatusImage(commercial)).append("&nbsp;").append(Language.getString("login.access.commercials")).append("<br />");
-        b.append(accessStatusImage(subs)).append("&nbsp;").append(Language.getString("login.access.subscribers")).append("<br />");
-        b.append(accessStatusImage(follow)).append("&nbsp;").append(Language.getString("login.access.follow"));
-
+        for (TokenInfo.Scope s : TokenInfo.Scope.values()) {
+            b.append(accessStatusImage(scopes.contains(s.scope))).append("&nbsp;").append(s.label).append("<br />");
+        }
         access.setText(b.toString());
         update();
     }

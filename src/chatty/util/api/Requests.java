@@ -12,12 +12,16 @@ import chatty.util.api.CommunitiesManager.CommunityListener;
 import chatty.util.api.CommunitiesManager.CommunityPutListener;
 import chatty.util.api.TwitchApi.GameSearchListener;
 import chatty.util.api.TwitchApi.RequestResultCode;
+import chatty.util.api.TwitchApi.StreamMarkerResult;
 import chatty.util.api.TwitchApiRequest.TwitchApiRequestResult;
+import chatty.util.api.queue.QueuedApi;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,12 +39,14 @@ public class Requests {
     
     private final ExecutorService executor;
     private final TwitchApi api;
+    private final QueuedApi newApi;
     private final TwitchApiResultListener listener;
     
     public Requests(TwitchApi api, TwitchApiResultListener listener) {
         executor = Executors.newCachedThreadPool();
         this.api = api;
         this.listener = listener;
+        this.newApi = new QueuedApi();
     }
     
     
@@ -418,6 +424,26 @@ public class Requests {
         });
     }
     
+    public void createStreamMarker(String userId, String description, String token, StreamMarkerResult listener) {
+        Map<String, String> data = new HashMap<>();
+        data.put("user_id", userId);
+        if (description != null && !description.isEmpty()) {
+            data.put("description", description);
+        }
+        newApi.add("https://api.twitch.tv/helix/streams/markers", "POST", data, token, (result, responseCode) -> {
+            if (responseCode == 200) {
+                listener.streamMarkerResult(null);
+            } else if (responseCode == 401) {
+                listener.streamMarkerResult("Required access not available");
+            } else if (responseCode == 404) {
+                listener.streamMarkerResult("No stream");
+            } else if (responseCode == 403) {
+                listener.streamMarkerResult("Access denied");
+            } else {
+                listener.streamMarkerResult("Unknown error ("+responseCode+")");
+            }
+        });
+    }
     
     //=================
     // Chat / Emoticons
