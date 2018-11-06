@@ -18,9 +18,18 @@ class Identifier implements Item {
         this.name = StringUtil.toLowerCase(name);
     }
 
+    /**
+     * Return the parameter or an empty value if the parameter doesn't exist
+     * (returning null would indicate a required parameter, which can't be
+     * determined here).
+     * 
+     * @param parameters
+     * @return 
+     */
     @Override
     public String replace(Parameters parameters) {
-        return parameters.get(name);
+        String value = parameters.get(name);
+        return value != null ? value : "";
     }
 
     @Override

@@ -49,11 +49,6 @@ class Items implements Item {
         return collection.isEmpty();
     }
 
-    public String replace(Parameters parameters, boolean isRequired) {
-        String result = replace(parameters);
-        return result != null || isRequired ? result : "";
-    }
-
     @Override
     public String replace(Parameters parameters) {
         StringBuilder b = new StringBuilder();

@@ -32,13 +32,20 @@ class IfEq implements Item {
     public String replace(Parameters parameters) {
         String value = identifier.replace(parameters);
         String compareTo = compare.replace(parameters);
+        if (value == null || compareTo == null) {
+            return null;
+        }
+        String output = "";
         if (Objects.equals(value, compareTo)) {
-            return output1.replace(parameters, isRequired);
+            output = output1.replace(parameters);
         }
-        if (output2 != null) {
-            return output2.replace(parameters, isRequired);
+        else if (output2 != null) {
+            output = output2.replace(parameters);
         }
-        return isRequired ? null : "";
+        if (!Item.checkReq(isRequired, output)) {
+            return null;
+        }
+        return output;
     }
 
     @Override

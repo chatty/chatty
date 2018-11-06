@@ -20,11 +20,19 @@ class RangeIdentifier implements Item {
         this.toEnd = toEnd;
     }
 
+    /**
+     * Return the requested argument range. If the range doesn't exist, return
+     * an empty string (returning null would indicate a required parameter,
+     * which can't be determined here).
+     * 
+     * @param parameters
+     * @return The requested argument range or an empty String
+     */
     @Override
     public String replace(Parameters parameters) {
         Collection<String> range = parameters.getRange(index - 1, toEnd);
         if (range == null) {
-            return null;
+            return "";
         }
         return StringUtil.join(range, " ");
     }
