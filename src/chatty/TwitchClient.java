@@ -1901,6 +1901,11 @@ public class TwitchClient {
         }
         
         @Override
+        public void tokenRevoked(String error) {
+            // TODO
+        }
+        
+        @Override
         public void runCommercialResult(String stream, String text, RequestResultCode result) {
             commercialResult(stream, text, result);
         }
@@ -1917,7 +1922,7 @@ public class TwitchClient {
 
         @Override
         public void accessDenied() {
-            checkToken();
+            api.checkToken();
         }
 
         @Override
@@ -2041,10 +2046,6 @@ public class TwitchClient {
             }
         }
         
-    }
-    
-    private void checkToken() {
-        api.checkToken(settings.getString("token"));
     }
     
     // Webserver
@@ -2607,7 +2608,7 @@ public class TwitchClient {
         public void onDisconnect(int reason, String reasonMessage) {
             //g.clearUsers();
             if (reason == Irc.ERROR_REGISTRATION_FAILED) {
-                checkToken();
+                api.checkToken();
             }
             if (reason == Irc.ERROR_CONNECTION_CLOSED) {
                 pubsub.checkConnection();

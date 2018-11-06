@@ -14,22 +14,22 @@ import java.util.Set;
 public class TokenInfo {
     
     public enum Scope {
-        CHAT("chat_login", Language.getString("login.access.chat"), ""),
-        USERINFO("user_read", Language.getString("login.access.user"), ""),
-        EDITOR("channel_editor", Language.getString("login.access.editor"), ""),
-        EDIT_BROADCAST("user:edit:broadcast", Language.getString("login.access.broadcast"), ""),
-        COMMERICALS("channel_commercial", Language.getString("login.access.commercials"), ""),
-        SUBSCRIBERS("channel_subscriptions", Language.getString("login.access.subscribers"), ""),
-        FOLLOW("user_follows_edit", Language.getString("login.access.follow"), "");
+        CHAT("chat_login", "chat"),
+        USERINFO("user_read", "user"),
+        EDITOR("channel_editor", "editor"),
+        EDIT_BROADCAST("user:edit:broadcast", "broadcast"),
+        COMMERICALS("channel_commercial", "commercials"),
+        SUBSCRIBERS("channel_subscriptions", "subscribers"),
+        FOLLOW("user_follows_edit", "follow");
         
         public String scope;
         public String label;
         public String description;
         
-        Scope(String scope, String label, String description) {
+        Scope(String scope, String langKey) {
             this.scope = scope;
-            this.label = label;
-            this.description = description;
+            this.label = Language.getString("login.access."+langKey);
+            this.description = Language.getString("login.access."+langKey+".tip", false);
         }
         
     }

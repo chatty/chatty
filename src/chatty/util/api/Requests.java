@@ -172,6 +172,21 @@ public class Requests {
         });
     }
     
+    public void revokeToken(String token) {
+        String url = "https://id.twitch.tv/oauth2/revoke?client_id="+Chatty.CLIENT_ID+"&token="+token;
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setRequestType("POST");
+        // Set so the token can be filtered from debug output
+        request.setToken(token);
+        execute(request, r -> {
+            if (r.responseCode != 200) {
+                listener.tokenRevoked("Failed to revoke token ("+r.responseCode+")");
+            } else {
+                listener.tokenRevoked(null);
+            }
+        });
+    }
+    
     public void requestUserIDs(Set<String> usernames) {
         String url = "https://api.twitch.tv/kraken/users?login="+StringUtil.join(usernames, ",");
         if (attemptRequest(url)) {
@@ -434,7 +449,7 @@ public class Requests {
             if (responseCode == 200) {
                 listener.streamMarkerResult(null);
             } else if (responseCode == 401) {
-                listener.streamMarkerResult("Required access not available");
+                listener.streamMarkerResult("Required access not available (please check <Main - Login..> for 'Edit broadcast')");
             } else if (responseCode == 404) {
                 listener.streamMarkerResult("No stream");
             } else if (responseCode == 403) {
@@ -569,7 +584,7 @@ public class Requests {
                 }
                 String encodingText = encoding == null ? "" : ", " + encoding;
                 LOGGER.info("GOT (" + responseCode + ", " + length + encodingText
-                        + "): " + url
+                        + "): " + filterToken(url, token)
                         + (token != null ? " (using authorization)" : "")
                         + (error != null ? " [" + error + "]" : ""));
                 
@@ -632,6 +647,13 @@ public class Requests {
         synchronized(pendingRequest) {
             pendingRequest.remove(url);
         }
+    }
+    
+    public static String filterToken(String input, String token) {
+        if (input != null && token != null) {
+            return input.replace(token, "<token>");
+        }
+        return input;
     }
     
 }

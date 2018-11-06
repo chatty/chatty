@@ -35,6 +35,7 @@ public class TokenDialog extends JDialog {
     JButton verifyToken = new JButton(Language.getString("login.button.verifyLogin"));
     private final LinkLabel tokenInfo;
     private final LinkLabel foreignTokenInfo;
+    private final LinkLabel otherInfo;
     JButton done = new JButton(Language.getString("dialog.button.close"));
     
     String currentUsername = "";
@@ -52,6 +53,8 @@ public class TokenDialog extends JDialog {
         foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
                     + "Login data set externally with -token parameter.", owner.getLinkLabelListener());
         foreignTokenInfo.setVisible(false);
+        otherInfo = new LinkLabel("<html><body style='width:170px'>To add or "
+                + "reduce access remove login and request again.", owner.getLinkLabelListener());
         
         GridBagConstraints gbc;
         
@@ -63,24 +66,27 @@ public class TokenDialog extends JDialog {
         gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.CENTER,new Insets(0,5,5,5));
         add(access, gbc);
         
-        gbc = makeGridBagConstraints(0,4,2,1,GridBagConstraints.WEST);
-        add(tokenInfo, gbc);
+        gbc = makeGridBagConstraints(0, 4, 2, 1, GridBagConstraints.WEST);
+        add(otherInfo, gbc);
         
         gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
+        add(tokenInfo, gbc);
+        
+        gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.WEST);
         add(foreignTokenInfo, gbc);
         
-        gbc = makeGridBagConstraints(0,6,1,1,GridBagConstraints.WEST);
+        gbc = makeGridBagConstraints(0,7,1,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(deleteToken, gbc);
         
-        gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.CENTER);
+        gbc = makeGridBagConstraints(0,7,2,1,GridBagConstraints.CENTER);
         add(requestToken, gbc);
         
-        gbc = makeGridBagConstraints(1,6,1,1,GridBagConstraints.WEST);
+        gbc = makeGridBagConstraints(1,7,1,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(verifyToken, gbc);
         
-        gbc = makeGridBagConstraints(0,7,2,1,GridBagConstraints.EAST);
+        gbc = makeGridBagConstraints(0,8,2,1,GridBagConstraints.EAST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(done, gbc);
         
@@ -114,6 +120,7 @@ public class TokenDialog extends JDialog {
         deleteToken.setVisible(!empty);
         requestToken.setVisible(empty);
         verifyToken.setVisible(!empty);
+        otherInfo.setVisible(!empty);
         pack();
     }
     
@@ -132,6 +139,8 @@ public class TokenDialog extends JDialog {
     
     /**
      * Update the text showing what scopes are available.
+     * 
+     * @param scopes
      */
     public void updateAccess(Collection<String> scopes) {
         boolean empty = currentUsername.isEmpty() || currentToken.isEmpty();

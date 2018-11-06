@@ -119,7 +119,7 @@ public class TwitchApiRequest implements Runnable {
     private String getUrl(String targetUrl) {
         // Debug output
         if (token != null) {
-            LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl + " "
+            LOGGER.info(requestMethod + " (" + apiVersion + "): " + Requests.filterToken(targetUrl, token) + " "
                     + "(using authorization)");
         } else {
             LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl);

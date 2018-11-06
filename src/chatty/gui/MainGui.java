@@ -945,7 +945,11 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.addEmoji(client.settings.getString("emoji"));
         emoticons.setCheerState(client.settings.getString("cheersType"));
         emoticons.setCheerBackground(HtmlColors.decode(client.settings.getString("backgroundColor")));
+        
         client.api.setToken(client.settings.getString("token"));
+        if (client.settings.getList("scopes").isEmpty()) {
+            client.api.checkToken();
+        }
         
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
         
@@ -1273,18 +1277,26 @@ public class MainGui extends JFrame implements Runnable {
             // Token Dialog actions
             //---------------------------
             else if (event.getSource() == tokenDialog.getDeleteTokenButton()) {
-                int result = JOptionPane.showConfirmDialog(tokenDialog,
+                int result = JOptionPane.showOptionDialog(tokenDialog,
                         "<html><body style='width:400px'>"
-                        + "This removes the login token from Chatty.<br><br>"
-                        + "It does not revoke access for the token, which "
-                        + "usually is no problem if the token isn't saved "
-                        + "anywhere else. If you suspect it may still be stored "
-                        + "in other places (or even compromised) you have to go "
-                        + "to <code>twitch.tv/settings/connections</code> and "
-                        + "click 'Disconnect' next to Chatty to revoke access.",
-                        "Save Settings to file",
-                        JOptionPane.OK_CANCEL_OPTION);
+                                + Language.getString("login.removeLogin")
+                                + "<ul>"
+                                + "<li>"+Language.getString("login.removeLogin.revoke")
+                                + "<li>"+Language.getString("login.removeLogin.remove")
+                                + "</ul>"
+                                + Language.getString("login.removeLogin.note"),
+                        Language.getString("login.removeLogin.title"),
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        new String[]{Language.getString("login.removeLogin.button.revoke"),
+                            Language.getString("login.removeLogin.button.remove"),
+                            Language.getString("dialog.button.cancel")},
+                        Language.getString("login.removeLogin.button.revoke"));
                 if (result == 0) {
+                    client.api.revokeToken(client.settings.getString("token"));
+                }
+                if (result == 0 || result == 1) {
                     client.settings.setString("token", "");
                     client.settings.setBoolean("foreignToken", false);
                     client.settings.setString("username", "");

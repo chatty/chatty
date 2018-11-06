@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.CommunitiesManager.CommunitiesListener;
 import chatty.util.api.CommunitiesManager.Community;
@@ -248,15 +249,13 @@ public class TwitchApi {
     /**
      * Verifies token, but only once the delay has passed. For automatic checks
      * instead of manual ones.
-     * 
-     * @param token 
      */
-    public void checkToken(String token) {
-        if (token != null && !token.isEmpty() &&
+    public void checkToken() {
+        if (!StringUtil.isNullOrEmpty(defaultToken) &&
                 (System.currentTimeMillis() - tokenLastChecked) / 1000 > TOKEN_CHECK_DELAY) {
             LOGGER.info("Checking token..");
             tokenLastChecked = Long.valueOf(System.currentTimeMillis());
-            requests.verifyToken(token);
+            requests.verifyToken(defaultToken);
         }
     }
     
@@ -268,6 +267,9 @@ public class TwitchApi {
         return defaultToken;
     }
     
+    public void revokeToken(String token) {
+        requests.revokeToken(token);
+    }
     
     //=========
     // User IDs
