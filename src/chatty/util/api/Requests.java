@@ -30,24 +30,26 @@ import org.json.simple.JSONObject;
  * @author tduva
  */
 public class Requests {
-    
+
     private static final Logger LOGGER = Logger.getLogger(Requests.class.getName());
-    
+    private static final byte MAX_RESULTS = 100;
+    private static final short MAX_FOLLOWS = 2000;
+
     private final ExecutorService executor;
     private final TwitchApi api;
     private final TwitchApiResultListener listener;
-    
+
     public Requests(TwitchApi api, TwitchApiResultListener listener) {
         executor = Executors.newCachedThreadPool();
         this.api = api;
         this.listener = listener;
     }
-    
-    
+
+
     //====================
     // Channel Information
     //====================
-    
+
     protected void requestFollowers(String streamId, String stream) {
         String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/follows?direction=desc&limit=100&offset=0";
         //url = "http://127.0.0.1/twitch/followers";
@@ -58,7 +60,7 @@ public class Requests {
             });
         }
     }
-    
+
     protected void requestSubscribers(String streamId, String stream, String token) {
         String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/subscriptions?direction=desc&limit=100&offset=0";
         if (Chatty.DEBUG) {
@@ -72,7 +74,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void getChannelInfo(String streamId, String stream) {
         if (stream == null || stream.isEmpty()) {
             return;
@@ -86,30 +88,36 @@ public class Requests {
         }
     }
 
-    
+
     //===================
     // Stream Information
     //===================
-    
+
     protected void requestFollowedStreams(String token, String nextUrl) {
+        int inc;
         String url;
+        TwitchApiRequest request;
         if (nextUrl != null) {
             url = nextUrl;
         } else {
             url = "https://api.twitch.tv/kraken/streams/followed?limit="
-                    + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=0";
+                    + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=";
         }
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setToken(token);
-        execute(request, r -> {
-            api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
-        });
+        try {
+            for (inc = 0; inc < MAX_FOLLOWS; inc = inc + MAX_RESULTS) {
+                request = new TwitchApiRequest(url+inc, "v5");
+                request.setToken(token);
+                execute(request, r -> {
+                    api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
+                });
+            }
+        } finally {}
     }
-    
+
     /**
      * Sends a request to get streaminfo of the given stream.
-     * 
-     * @param stream 
+     *
+     * @param stream
      */
     protected void requestStreamInfo(String stream) {
         api.userIDs.getUserIDs(r -> {
@@ -120,7 +128,7 @@ public class Requests {
             }
         }, stream);
     }
-    
+
     private void requestStreamInfoById(String stream, String userId) {
         String url = "https://api.twitch.tv/kraken/streams/"+userId;
         if (attemptRequest(url)) {
@@ -130,7 +138,7 @@ public class Requests {
             });
         }
     }
-    
+
     protected void requestStreamsInfo(Set<String> streams, Set<StreamInfo> streamInfosForRequest) {
         api.userIDs.getUserIDs(r -> {
             if (r.getValidIDs().isEmpty()) {
@@ -140,7 +148,7 @@ public class Requests {
             }
         }, streams);
     }
-    
+
     private void requestStreamsInfoById(Collection<String> ids, Set<StreamInfo> expected) {
         String streamsString = StringUtil.join(ids, ",");
         String url = "https://api.twitch.tv/kraken/streams?offset=0&limit=100&channel=" + streamsString;
@@ -154,7 +162,7 @@ public class Requests {
     //=======
     // System
     //=======
-    
+
     public void verifyToken(String token) {
         String url = "https://api.twitch.tv/kraken/";
         //url = "http://127.0.0.1/twitch/token";
@@ -165,7 +173,7 @@ public class Requests {
             listener.tokenVerified(token, tokenInfo);
         });
     }
-    
+
     public void requestUserIDs(Set<String> usernames) {
         String url = "https://api.twitch.tv/kraken/users?login="+StringUtil.join(usernames, ",");
         if (attemptRequest(url)) {
@@ -179,7 +187,7 @@ public class Requests {
     //================
     // User Management
     //================
-    
+
     public void followChannel(String userId, String targetId, String targetName, String token) {
         String url = String.format(
                 "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
@@ -209,7 +217,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void unfollowChannel(String userId, String targetId, String targetName, String token) {
         String url = String.format(
                 "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
@@ -232,16 +240,16 @@ public class Requests {
             });
         }
     }
-    
-    
+
+
     //=================
     // Admin/Moderation
     //=================
-    
+
     /**
-     * 
+     *
      * @param info
-     * @param token 
+     * @param token
      */
     public void putChannelInfo(String userId, ChannelInfo info, String token) {
         if (info == null || info.name == null) {
@@ -257,7 +265,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void getCommunitiesTop(CommunitiesManager.CommunityTopListener listener) {
         String url = "https://api.twitch.tv/kraken/communities/top?limit=100";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
@@ -267,7 +275,7 @@ public class Requests {
             result.forEach(c -> { api.communitiesManager.addCommunity(c); });
         });
     }
-    
+
     public void getCommunityByName(String name, CommunityListener listener) {
         try {
             String url = "https://api.twitch.tv/kraken/communities?name="+URLEncoder.encode(name, "UTF-8");
@@ -285,7 +293,7 @@ public class Requests {
             Logger.getLogger(Requests.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public void getCommunityById(String id, CommunityListener listener) {
         String url = "https://api.twitch.tv/kraken/communities/"+id;
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
@@ -299,7 +307,7 @@ public class Requests {
             }
         });
     }
-    
+
     public void setCommunities(String userId, List<String> communityIds,
             String token, CommunityPutListener listener) {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
@@ -317,7 +325,7 @@ public class Requests {
             }
         });
     }
-    
+
     public void getCommunities(String userId, CommunitiesListener listener) {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
@@ -337,7 +345,7 @@ public class Requests {
             }
         });
     }
-    
+
     public void getGameSearch(String game, GameSearchListener listener) {
         if (game == null || game.isEmpty()) {
             return;
@@ -359,7 +367,7 @@ public class Requests {
             }
         });
     }
-    
+
     public void runCommercial(String userId, String stream, String token, int length) {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/commercial";
         if (attemptRequest(url)) {
@@ -390,7 +398,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void autoMod(String action, String msgId, String token) {
         if (!action.equals("approve") && !action.equals("deny")) {
             return;
@@ -417,12 +425,12 @@ public class Requests {
             }
         });
     }
-    
-    
+
+
     //=================
     // Chat / Emoticons
     //=================
-    
+
     public void requestChatInfo(String stream) {
         if (!Helper.isValidStream(stream)) {
             return;
@@ -435,7 +443,7 @@ public class Requests {
             });
         }
     }
-    
+
     protected void requestGlobalBadges() {
         String url = "https://badges.twitch.tv/v1/badges/global/display?language=en";
         if (attemptRequest(url)) {
@@ -445,7 +453,7 @@ public class Requests {
             });
         }
     }
-    
+
     protected void requestRoomBadges(String roomId, String stream) {
         String url = "https://badges.twitch.tv/v1/badges/channels/"+roomId+"/display?language=en";
         if (attemptRequest(url)) {
@@ -455,7 +463,7 @@ public class Requests {
             });
         }
     }
-    
+
     /**
      * Request to get the emoticons list from the API. If the list is already
      * available in a local file and is recent, that one is used. Otherwise
@@ -475,7 +483,7 @@ public class Requests {
             }
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
     }
-    
+
     public void requestEmotesets(Set<Integer> emotesets) {
         if (emotesets != null && !emotesets.isEmpty()) {
             String emotesetsParam = StringUtil.join(emotesets, ",");
@@ -492,7 +500,7 @@ public class Requests {
                 });
             }
         }
-        
+
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
     }
 
@@ -505,7 +513,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void requestCheerEmoticons(String channelId, String stream) {
         String url = "https://api.twitch.tv/kraken/bits/actions?channel_id="+channelId;
         if (attemptRequest(url)) {
@@ -515,7 +523,7 @@ public class Requests {
             });
         }
     }
-    
+
     public void requestRooms(String channelId, String stream) {
         String url = "https://api.twitch.tv/kraken/chat/"+channelId+"/rooms";
         if (attemptRequest(url)) {
@@ -527,11 +535,11 @@ public class Requests {
             });
         }
     }
-    
+
     //===================
     // Management Methods
     //===================
-    
+
     public void execute(TwitchApiRequest request, RequestResultListener listener) {
         request.setOrigin(new TwitchApiRequestResult() {
 
@@ -546,33 +554,33 @@ public class Requests {
                         + "): " + url
                         + (token != null ? " (using authorization)" : "")
                         + (error != null ? " [" + error + "]" : ""));
-                
+
                 removeRequest(url);
-                
+
                 listener.result(new RequestResult(result, responseCode));
             }
         });
         executor.execute(request);
     }
-    
+
     public interface RequestResultListener {
         public void result(RequestResult result);
     }
-    
+
     public static class RequestResult {
-        
+
         public final String text;
         public final int responseCode;
-        
+
         public RequestResult(String result, int responseCode) {
             this.text = result;
             this.responseCode = responseCode;
         }
-        
+
     }
-    
+
     private final Set<String> pendingRequest = new HashSet<>();
-    
+
     /**
      * Checks if a request with the given url can be made. Returns true if no
      * request with that url is currently waiting for a response, false
@@ -580,7 +588,7 @@ public class Requests {
      *
      * This also saves the stream this request url is associated with, so it
      * can more easily be retrieved when the reponse comes in.
-     * 
+     *
      * @param url The URL of the request
      * @return true if request can be made, false if it shouldn't
      */
@@ -593,11 +601,11 @@ public class Requests {
             return false;
         }
     }
-    
+
     /**
      * Removes the given url from the requests that are waiting for a response
      * and retrieves the name of the stream this url is associated with.
-     * 
+     *
      * @param url The URL of the request.
      * @return The name of the stream associated with this request (or null if
      *  no stream was set for this url or the url wasn't found).
@@ -607,5 +615,5 @@ public class Requests {
             pendingRequest.remove(url);
         }
     }
-    
+
 }
