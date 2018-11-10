@@ -22,6 +22,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.updating.Stuff;
+import chatty.splash.Splash;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
@@ -64,6 +65,7 @@ import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
+import java.awt.SplashScreen;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
@@ -336,6 +338,7 @@ public class TwitchClient {
     
     public void init() {
         LOGGER.info("GUI shown");
+        Splash.closeSplashScreen();
         
         // Output any cached warning messages
         warning(null);

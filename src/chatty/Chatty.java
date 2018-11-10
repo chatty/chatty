@@ -102,7 +102,7 @@ public class Chatty {
      * @param args The commandline arguments.
      */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> Splash.drawOnSplashscreen());
+        Splash.initSplashScreen();
         
         Chatty.args = args;
         

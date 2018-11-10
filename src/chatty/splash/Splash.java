@@ -4,14 +4,14 @@ package chatty.splash;
 import static chatty.Chatty.VERSION;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
 import java.util.Calendar;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
 /**
@@ -34,7 +34,7 @@ public class Splash {
             "Color or Colour?",
             "The hypnotic tick-tack of stilettos on virtual cobble",
             "Do you get to the cloud district often?",
-            "Getting into the swing of things..",
+            "Getting into the Swing of things..",
             "I've heard if both ways",
             "🐣",
             "Igniting the midnight petroleum!",
@@ -56,6 +56,8 @@ public class Splash {
         };
     }
     
+    private final static String thing = getThing();
+    
     private static String getThing() {
         if (Calendar.getInstance().get(Calendar.DAY_OF_YEAR) == 1) {
             return "Happy new year!";
@@ -64,42 +66,75 @@ public class Splash {
         return things[ThreadLocalRandom.current().nextInt(things.length)];
     }
 
-    public static void drawOnSplashscreen() {
-        final SplashScreen splash = SplashScreen.getSplashScreen();
-        if (splash != null) {
-            Graphics2D g = splash.createGraphics();
-            if (g != null) {
-                Rectangle r = splash.getBounds();
-                
-                g.setRenderingHint(
-                        RenderingHints.KEY_TEXT_ANTIALIASING,
-                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-                Font boldFont = new Font(Font.DIALOG, Font.BOLD, 12);
-                Font regularFont = new Font(Font.DIALOG, Font.PLAIN, 12);
-                
-                // Extra text
-                g.setColor(Color.BLACK);
-                g.setFont(boldFont);
-                String text = getThing();
-                int width = g.getFontMetrics().stringWidth(text);
-                g.drawString(text, r.width / 2 - width / 2, 160);
-                
-                // Version String
-                g.setColor(Color.DARK_GRAY);
-                g.setFont(regularFont);
-                g.drawString(VERSION, 10, 16);
-                
-                splash.update();
-            }
+    public static void initSplashScreen() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            drawOnSplashscreen();
+        } else {
+            SwingUtilities.invokeLater(() -> {
+                drawOnSplashscreen();
+            });
         }
     }
     
+    public static void closeSplashScreen() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            SplashWindow.closeSplashWindow();
+        } else {
+            SwingUtilities.invokeLater(() -> {
+                SplashWindow.closeSplashWindow();
+            });
+        }
+    }
+    
+    private static void drawOnSplashscreen() {
+        final SplashScreen splash = SplashScreen.getSplashScreen();
+        if (splash != null) {
+            // Native
+            Graphics2D g = splash.createGraphics();
+            if (g != null) {
+                Rectangle bounds = splash.getBounds();
+                draw(g, bounds.width, bounds.height);
+                splash.update();
+            }
+        } else {
+            // Backup
+            SplashWindow.createSplashWindow(new JComponent() {
+
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    draw((Graphics2D)g, getWidth(), getHeight());
+                }
+            
+            });
+        }
+    }
+
+    private static void draw(Graphics2D g, int w, int h) {
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Font boldFont = new Font(Font.DIALOG, Font.BOLD, 12);
+        Font regularFont = new Font(Font.DIALOG, Font.PLAIN, 12);
+
+        // Extra text
+        g.setColor(Color.BLACK);
+        g.setFont(boldFont);
+        
+        int width = g.getFontMetrics().stringWidth(thing);
+        g.drawString(thing, w / 2 - width / 2, 160);
+
+        // Version String
+        g.setColor(Color.DARK_GRAY);
+        g.setFont(regularFont);
+        g.drawString(VERSION, 10, 16);
+    }
+    
     public static void main(String[] args) throws InterruptedException {
-        SwingUtilities.invokeLater(() -> {
-            drawOnSplashscreen();
-        });
-        Thread.sleep(2000);
+        initSplashScreen();
+        Thread.sleep(10*1000);
+        closeSplashScreen();
     }
     
 }
