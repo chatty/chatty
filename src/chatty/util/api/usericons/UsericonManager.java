@@ -42,9 +42,8 @@ public class UsericonManager {
     private final Settings settings;
     
     public UsericonManager(Settings settings) {
-        init();
         this.settings = settings;
-        loadFromSettings();
+        init();
     }
     
     public synchronized void addDefaultIcons(List<Usericon> icons) {
@@ -81,6 +80,7 @@ public class UsericonManager {
             @Override
             public void run() {
                 addFallbackIcons();
+                loadFromSettings();
             }
         });
     }

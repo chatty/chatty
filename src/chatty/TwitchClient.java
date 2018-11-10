@@ -209,6 +209,8 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        initDxSettings();
+        
         Language.setLanguage(settings.getString("language"));
         
         pubsub = new chatty.util.api.pubsub.Manager(
@@ -275,8 +277,6 @@ public class TwitchClient {
         streamStatusWriter.setEnabled(settings.getBoolean("enableStatusWriter"));
         settings.addSettingChangeListener(streamStatusWriter);
         
-        initDxSettings();
-        
         LaF.setSettings(settings);
         LaF.setLookAndFeel(settings.getString("laf"), settings.getString("lafTheme"));
         GuiUtil.addMacKeyboardActions();
@@ -335,6 +335,8 @@ public class TwitchClient {
     }
     
     public void init() {
+        LOGGER.info("GUI shown");
+        
         // Output any cached warning messages
         warning(null);
         

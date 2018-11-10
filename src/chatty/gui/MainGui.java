@@ -2,7 +2,6 @@
 package chatty.gui;
 
 import chatty.gui.components.textpane.UserMessage;
-import chatty.gui.components.userinfo.UserInfo;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
 import chatty.gui.components.LinkLabelListener;
@@ -49,7 +48,6 @@ import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
 import chatty.gui.components.updating.UpdateDialog;
-import chatty.gui.components.UpdateMessage;
 import chatty.gui.components.menus.CommandActionEvent;
 import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenuHelper;
@@ -807,6 +805,7 @@ public class MainGui extends JFrame implements Runnable {
                 if (!guiCreated) {
                     return;
                 }
+                
                 channels.setInitialFocus();
                 
                 windowStateManager.loadWindowStates();
