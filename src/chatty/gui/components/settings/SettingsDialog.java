@@ -115,7 +115,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         COMPLETION("TAB Completion", Language.getString("settings.page.completion")),
         CHAT("Chat", Language.getString("settings.page.chat")),
         NAMES("Names", Language.getString("settings.page.names")),
-        MODERATION("Moderation", Language.getString("settings.page.moderation"));
+        MODERATION("Moderation", Language.getString("settings.page.moderation")),
+        STREAM("Stream", Language.getString("settings.page.stream"));
         
         public final String name;
         public final String displayName;
@@ -171,6 +172,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             Page.ADVANCED,
             Page.COMPLETION,
             Page.HISTORY,
+            Page.STREAM,
             Page.HOTKEYS,
         }));
     }
@@ -252,6 +254,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new ChatSettings(this), Page.CHAT.name);
         nameSettings = new NameSettings(this);
         cards.add(nameSettings, Page.NAMES.name);
+        cards.add(new StreamSettings(this), Page.STREAM.name);
 
         // Track current settings page
         currentlyShown = Page.MAIN;

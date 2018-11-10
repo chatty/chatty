@@ -53,7 +53,7 @@
                     <li><a href="help-livestreamer.html">Livestreamer / Streamlink</a>
                     <li><a href="help-srl.html">SpeedrunsLive (SRL)</a></li>
                     <li><a href="#followers">Followers/Subscribers List</a></li>
-                    <li><a href="#streamhighlights">Stream Highlights</a></li>
+                    <li><a href="#streamhighlights">Stream Highlights / Markers</a></li>
                     <li><a href="#streamchat">Stream Chat</a></li>
                 </ul>
             </td>
@@ -1339,7 +1339,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         show refollows on the top of the list.</p>
 
     <h2>
-        <a name="streamhighlights">Stream Highlights</a>
+        <a name="streamhighlights">Stream Highlights / Markers</a>
         <a href="#top" class="top">[back to menu]</a>
      </h2>
     <p>Chatty can help you with creating Highlights of your stream by recording
@@ -1365,29 +1365,20 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <code>/dir</code> command).</p>
     
     <h3>Allow your moderators to add highlights</h3>
-    <p>You can also let your moderators add stream highlights
-        (<code>!highlight [comment]</code>), but you first have to set the channel with a
-        <a href="help-setting_commands.html#streamhighlights">setting command</a>:</p>
+    <p>You can also let your moderators add Stream Highlights
+        (<code>!highlight [comment]</code>), which you can configure under
+        <code>Main - Settings - Stream Highlights</code>.</p>
     
-    <dl class="defList">
-        <dt><code>/set streamHighlightChannel #&lt;yourchannelname&gt;</code></dt>
-        <dd>Allows moderators in the given channel to run the command.</dd>
-        <dd>For example if your channel/stream is called <code>zoton2</code> the
-            command you have to enter would be: <code>/set&nbsp;streamHighlightChannel&nbsp;#zoton2</code></dd>
-    </dl>
+    <h3>Stream Markers</h3>
+    <p>Twitch offers a way to add
+        <a href="https://help.twitch.tv/customer/portal/articles/2955281-creating-highlights-and-stream-markers">Stream Markers</a>
+        which show up when creating Highlights on the website. You can use the
+        <code>/marker</code> command or add a Stream Marker automatically when
+        adding a Stream Highlight (changeable in the Stream Highlights settings).</p>
     
-    <p>Optionally you can also set the following settings:</p>
-    <dl class="defList">
-        <dt><code>/set streamHighlightChannelRespond 1</code></dt>
-        <dd>Send a response to chat when the mod command is used (otherwise the
-            message is just shown locally).</dd>
-        <dt><code>/set streamHighlightCommand !highlight</code></dt>
-        <dd>Change the mod command (in this example to <code>!highlight</code>,
-            which is the default)</dd>
-    </dl>
-    
-    <p><em>Tip:</em> <a href="help-setting_commands.html">Setting commands</a>
-        are entered into the chat input box, just like Twitch Chat commands.</p>
+    <p>For creating Stream Markers you need the <code>Edit broadcast</code>
+        <a href="#login">scope</a>, so if you don't have that yet, you have to
+        request a new login token.</p>
 
     <h2>
         <a name="ignoreJoinsParts">Ignore joins/parts</a>
