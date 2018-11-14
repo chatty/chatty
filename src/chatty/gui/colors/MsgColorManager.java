@@ -58,7 +58,7 @@ public class MsgColorManager {
                 boolean backgroundEnabled;
                 if (colors.length == 4) {
                     // New format with background color
-                    background = HtmlColors.decode(colors[2]);
+                    background = HtmlColors.decode(colors[2], null);
                     foregroundEnabled = colors[1].equals("1");
                     backgroundEnabled = colors[3].equals("1");
                 } else {

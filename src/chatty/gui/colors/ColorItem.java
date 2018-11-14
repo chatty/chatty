@@ -59,6 +59,15 @@ public class ColorItem {
         return getId();
     }
     
+    public String toStringAll() {
+        return String.format("%s,%s/%s/%s/%s",
+                getId(),
+                getForeground(),
+                getForegroundEnabled(),
+                getBackground(),
+                getBackgroundEnabled());
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o instanceof ColorItem) {
@@ -72,6 +81,32 @@ public class ColorItem {
         int hash = 7;
         hash = 73 * hash + Objects.hashCode(getId());
         return hash;
+    }
+
+    public boolean equalsAll(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ColorItem other = (ColorItem) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.foreground, other.foreground)) {
+            return false;
+        }
+        if (!Objects.equals(this.background, other.background)) {
+            return false;
+        }
+        if (this.foregroundEnabled != other.foregroundEnabled) {
+            return false;
+        }
+        if (this.backgroundEnabled != other.backgroundEnabled) {
+            return false;
+        }
+        return true;
     }
     
 }
