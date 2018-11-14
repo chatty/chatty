@@ -32,10 +32,16 @@ public class MsgColorSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        main.add(d.addSimpleBooleanSetting("msgColorsEnabled", "Enable custom message colors", "Changes colors and stuff.."), gbc);
+        main.add(d.addSimpleBooleanSetting("msgColorsEnabled"), gbc);
         
         data = new ItemColorEditor<>(d,
-                (id, color) -> { return new MsgColorItem(id, color); });
+                (id,
+                        foreground, foregroundEnabled,
+                        background, backgroundEnabled) -> {
+                    return new MsgColorItem(id,
+                            foreground, foregroundEnabled,
+                            background, backgroundEnabled);
+                }, true);
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -59,11 +65,16 @@ public class MsgColorSettings extends SettingsPanel {
         return data.getData();
     }
     
-    public void setBackgroundColor(Color color) {
-        data.setBackgroundColor(color);
+    public void setDefaultForeground(Color color) {
+        data.setDefaultForeground(color);
+    }
+    
+    public void setDefaultBackground(Color color) {
+        data.setDefaultBackground(color);
     }
     
     public void editItem(String item) {
         data.edit(item);
     }
+    
 }

@@ -8,10 +8,51 @@ import java.util.Objects;
  *
  * @author tduva
  */
-public abstract class ColorItem {
+public class ColorItem {
     
-    abstract public String getId();
-    abstract public Color getColor();
+    private final String id;
+    private final Color foreground;
+    private final Color background;
+    private final boolean foregroundEnabled;
+    private final boolean backgroundEnabled;
+    
+    public ColorItem(String id,
+            Color foreground, boolean foregroundEnabled,
+            Color background, boolean backgroundEnabled) {
+        this.id = id;
+        this.foreground = foreground;
+        this.foregroundEnabled = foregroundEnabled;
+        this.background = background;
+        this.backgroundEnabled = backgroundEnabled;
+    }
+    
+    public String getId() {
+        return id;
+    }
+    
+    public Color getForeground() {
+        return foreground;
+    }
+    
+    public Color getBackground() {
+        return background;
+    }
+    
+    public Color getForegroundIfEnabled() {
+        return foregroundEnabled ? foreground : null;
+    }
+    
+    public Color getBackgroundIfEnabled() {
+        return backgroundEnabled ? background : null;
+    }
+    
+    public boolean getForegroundEnabled() {
+        return foregroundEnabled;
+    }
+    
+    public boolean getBackgroundEnabled() {
+        return backgroundEnabled;
+    }
     
     @Override
     public String toString() {

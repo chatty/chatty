@@ -55,7 +55,9 @@ public class UsercolorSettings extends SettingsPanel {
                 "Enable custom usercolors", ""), gbc);
 
         data = new ItemColorEditor<>(d,
-                (id, color) -> { return new UsercolorItem(id, color); });
+                (id, color, enabled, bg, bgEnabled) -> {
+                    return new UsercolorItem(id, color);
+                }, false);
         data.setRendererForColumn(0, new ItemIdRenderer());
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
@@ -82,8 +84,8 @@ public class UsercolorSettings extends SettingsPanel {
         return data.getData();
     }
     
-    public void setBackgroundColor(Color color) {
-        data.setBackgroundColor(color);
+    public void setDefaultBackground(Color color) {
+        data.setDefaultBackground(color);
     }
     
     public void editItem(String item) {

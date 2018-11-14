@@ -165,9 +165,13 @@ public class ColorSetting extends JPanel implements StringSetting {
      * 
      * @param baseColor 
      */
-    public void update(String baseColor) {
+    public void setBaseColor(String baseColor) {
         this.baseColor = baseColor;
         updated();
+    }
+    
+    public void setBaseColor(Color color) {
+        setBaseColor(HtmlColors.getColorString(color));
     }
     
     public void setBaseColorSetting(String setting) {

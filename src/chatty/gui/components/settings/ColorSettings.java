@@ -392,7 +392,7 @@ public class ColorSettings extends SettingsPanel {
         //updatedSetting.updated();
         for (ColorSetting colorSetting : colorSettings.values()) {
             if (colorSetting.hasBase(setting)) {
-                colorSetting.update(newColor);
+                colorSetting.setBaseColor(newColor);
             }
         }
         d.updateBackgroundColor();

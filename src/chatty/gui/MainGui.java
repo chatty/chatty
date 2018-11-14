@@ -32,6 +32,7 @@ import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
 import chatty.gui.Highlighter.Match;
+import chatty.gui.colors.ColorItem;
 import chatty.gui.colors.MsgColorItem;
 import chatty.gui.colors.MsgColorManager;
 import chatty.gui.components.AddressbookDialog;
@@ -2809,9 +2810,13 @@ public class MainGui extends JFrame implements Runnable {
                             highlightMatches,
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null);
-                    message.color = highlighter.getLastMatchColor();
-                    if (!highlighted) {
-                        message.color = msgColorManager.getColor(user, text);
+                    if (highlighted) {
+                        message.color = highlighter.getLastMatchColor();
+                        message.backgroundColor = highlighter.getLastMatchBackgroundColor();
+                    } else {
+                        ColorItem colorItem = msgColorManager.getColor(user, text);
+                        message.color = colorItem.getForegroundIfEnabled();
+                        message.backgroundColor = colorItem.getBackgroundIfEnabled();
                     }
                     message.whisper = whisper;
                     message.action = action;

@@ -75,8 +75,8 @@ class MyParagraphView extends ParagraphView {
     @Override
     public void paint(Graphics g, Shape a) {
         boolean isEmpty = getDocument().getLength() < 2;
-        Color bgColor = null;
-        if (getAttributes().containsAttribute(Attribute.HIGHLIGHT_LINE, true)) {
+        Color bgColor = (Color)getAttributes().getAttribute(Attribute.CUSTOM_BACKGROUND);
+        if (bgColor == null && getAttributes().containsAttribute(Attribute.HIGHLIGHT_LINE, true)) {
             bgColor = MyStyleConstants.getHighlightBackground(getAttributes());
         }
         if (bgColor == null && getAttributes().containsAttribute(Attribute.EVEN, true)) {

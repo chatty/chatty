@@ -319,8 +319,8 @@ class NotificationEditor extends TableEditor<Notification> {
 
                 @Override
                 public void colorUpdated() {
-                    foregroundColor.update(backgroundColor.getSettingValue());
-                    backgroundColor.update(foregroundColor.getSettingValue());
+                    foregroundColor.setBaseColor(backgroundColor.getSettingValue());
+                    backgroundColor.setBaseColor(foregroundColor.getSettingValue());
                     updateTestNotification();
                 }
             };

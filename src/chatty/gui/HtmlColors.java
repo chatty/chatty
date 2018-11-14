@@ -365,6 +365,9 @@ public class HtmlColors {
     
     
     public static String getColorString(Color color) {
+        if (color == null) {
+            return null;
+        }
         return String.format("#%02x%02x%02x",
                 color.getRed(), color.getGreen(), color.getBlue()).toUpperCase();
     }

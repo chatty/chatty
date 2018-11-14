@@ -38,6 +38,7 @@ public class Highlighter {
     private final List<HighlightItem> blacklistItems = new ArrayList<>();
     private HighlightItem usernameItem;
     private Color lastMatchColor;
+    private Color lastMatchBackgroundColor;
     private boolean lastMatchNoNotification;
     private boolean lastMatchNoSound;
     private List<Match> lastTextMatches;
@@ -119,6 +120,10 @@ public class Highlighter {
         return lastMatchColor;
     }
     
+    public Color getLastMatchBackgroundColor() {
+        return lastMatchBackgroundColor;
+    }
+    
     public boolean getLastMatchNoNotification() {
         return lastMatchNoNotification;
     }
@@ -178,6 +183,7 @@ public class Highlighter {
     
     private void fillLastMatchVariables(HighlightItem item, String text) {
         lastMatchColor = item.getColor();
+        lastMatchBackgroundColor = item.getBackgroundColor();
         lastMatchNoNotification = item.noNotification();
         lastMatchNoSound = item.noSound();
         lastReplacement = item.getReplacement();
@@ -233,6 +239,7 @@ public class Highlighter {
         private String channelCategoryNot;
         private String categoryNot;
         private Color color;
+        private Color backgroundColor;
         private boolean noNotification;
         private boolean noSound;
         private boolean appliesToInfo;
@@ -312,6 +319,8 @@ public class Highlighter {
                     channelCategoryNot = parsePrefix(item, "!chanCat:");
                 } else if (item.startsWith("color:")) {
                     color = HtmlColors.decode(parsePrefix(item, "color:"));
+                } else if (item.startsWith("bgcolor:")) {
+                    backgroundColor = HtmlColors.decode(parsePrefix(item, "bgcolor:"));
                 } else if (item.startsWith("status:")) {
                     String status = parsePrefix(item, "status:");
                     parseStatus(status, true);
@@ -658,6 +667,10 @@ public class Highlighter {
          */
         public Color getColor() {
             return color;
+        }
+        
+        public Color getBackgroundColor() {
+            return backgroundColor;
         }
         
         public boolean noNotification() {

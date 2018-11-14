@@ -389,9 +389,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     public void updateBackgroundColor() {
-        Color color = HtmlColors.decode(getStringSetting("backgroundColor"));
-        usercolorSettings.setBackgroundColor(color);
-        msgColorSettings.setBackgroundColor(color);
+        Color foreground = HtmlColors.decode(getStringSetting("foregroundColor"));
+        msgColorSettings.setDefaultForeground(foreground);
+        Color background = HtmlColors.decode(getStringSetting("backgroundColor"));
+        usercolorSettings.setDefaultBackground(background);
+        msgColorSettings.setDefaultBackground(background);
     }
     
     /**
