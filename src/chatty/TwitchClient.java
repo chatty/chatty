@@ -65,6 +65,7 @@ import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
+import java.awt.Point;
 import java.awt.SplashScreen;
 import java.io.File;
 import java.nio.file.Paths;
@@ -179,7 +180,6 @@ public class TwitchClient {
     private boolean fixServer = false;
     
     public TwitchClient(Map<String, String> args) {
-
         // Logging
         new Logging(this);
         Thread.setDefaultUncaughtExceptionHandler(new ErrorHandler());
@@ -192,16 +192,7 @@ public class TwitchClient {
                 +" [Classpath] "+System.getProperty("java.class.path"));
         LOGGER.info("Retina Display: "+GuiUtil.hasRetinaDisplay());
         
-        // Create after Logging is created, since that resets some stuff
-        ircLogger = new IrcLogger();
-        
-        createTestUser("tduva", "");
-        
         settings = new Settings(Chatty.getUserDataDirectory()+"settings");
-        api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
-        twitchemotes = new TwitchEmotes(new TwitchemotesListener());
-        bttvEmotes = new BTTVEmotes(new EmoteListener());
-        
         // Settings
         settingsManager = new SettingsManager(settings);
         settingsManager.defineSettings();
@@ -211,6 +202,19 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        if (settings.getBoolean("splash")) {
+            Splash.initSplashScreen(Splash.getLocation((String)settings.mapGet("windows", "main")));
+        }
+
+        // Create after Logging is created, since that resets some stuff
+        ircLogger = new IrcLogger();
+
+        createTestUser("tduva", "");
+        
+        api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
+        twitchemotes = new TwitchEmotes(new TwitchemotesListener());
+        bttvEmotes = new BTTVEmotes(new EmoteListener());
+
         initDxSettings();
         
         Language.setLanguage(settings.getString("language"));

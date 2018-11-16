@@ -337,6 +337,7 @@ public class SettingsManager {
         settings.addBoolean("noddraw", false);
         settings.addBoolean("bufferStrategy1", false);
         settings.addBoolean("mainResizable", true);
+        settings.addBoolean("splash", true);
         
         // Tray
         settings.addBoolean("closeToTray", false);
@@ -795,19 +796,19 @@ public class SettingsManager {
         if (Chatty.getInvalidSettingsDirectory() != null) {
             LOGGER.warning("Invalid -d dir: "+Chatty.getInvalidSettingsDirectory());
         }
-        StringBuilder result = new StringBuilder("Settings: ");
-        boolean first = true;
-        for (String setting : debugSettings) {
-            if (!first) {
-                result.append(", ");
-            } else {
-                first = false;
-            }
-            result.append(setting);
-            result.append(":");
-            result.append(settings.settingValueToString(setting));
-        }
-        LOGGER.info(result.toString());
+//        StringBuilder result = new StringBuilder("Settings: ");
+//        boolean first = true;
+//        for (String setting : debugSettings) {
+//            if (!first) {
+//                result.append(", ");
+//            } else {
+//                first = false;
+//            }
+//            result.append(setting);
+//            result.append(":");
+//            result.append(settings.settingValueToString(setting));
+//        }
+//        LOGGER.info(result.toString());
     }
     
     private void addDefaultHotkey(String version, String id, String hotkey) {

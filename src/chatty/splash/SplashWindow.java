@@ -6,8 +6,10 @@ import java.awt.Color;
 import java.awt.GraphicsDevice;
 import static java.awt.GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSLUCENT;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JWindow;
 
@@ -18,7 +20,7 @@ import javax.swing.JWindow;
  * 
  * @author tduva
  */
-public class SplashWindow extends JWindow {
+public class SplashWindow extends JFrame {
     
     private static SplashWindow window = null;
     
@@ -33,6 +35,9 @@ public class SplashWindow extends JWindow {
         setGlassPane(custom);
         getGlassPane().setVisible(true);
         setLocationRelativeTo(null);
+        setUndecorated(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Chatty starting..");
         
         if (translucency) {
             setBackground(new Color(0,0,0,0));
@@ -46,10 +51,14 @@ public class SplashWindow extends JWindow {
      * 
      * @param custom Override paintComponent() for this component to draw on
      * the splash screen
+     * @param location
      */
-    public static void createSplashWindow(JComponent custom) {
+    public static void createSplashWindow(JComponent custom, Point location) {
         closeSplashWindow();
         window = new SplashWindow(custom);
+        if (location != null) {
+            window.setLocation(location);
+        }
         window.setVisible(true);
     }
     
@@ -74,7 +83,7 @@ public class SplashWindow extends JWindow {
         try {
             createSplashWindow(new JComponent() {
                 
-            });
+            }, null);
             Thread.sleep(3000);
             System.exit(0);
         } catch (InterruptedException ex) {

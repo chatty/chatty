@@ -1,11 +1,15 @@
 
 package chatty.splash;
 
+import chatty.Chatty;
 import static chatty.Chatty.VERSION;
+import chatty.Helper;
+import chatty.Helper.IntegerPair;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
@@ -19,6 +23,9 @@ import javax.swing.SwingUtilities;
  * @author tduva
  */
 public class Splash {
+    
+    private static final int SPLASH_WIDTH = 300;
+    private static final int SPLASH_HEIGHT = 176;
     
     private static String[] getThings() {
         return new String[]{
@@ -66,12 +73,12 @@ public class Splash {
         return things[ThreadLocalRandom.current().nextInt(things.length)];
     }
 
-    public static void initSplashScreen() {
+    public static void initSplashScreen(final Point location) {
         if (SwingUtilities.isEventDispatchThread()) {
-            drawOnSplashscreen();
+            drawOnSplashscreen(location);
         } else {
             SwingUtilities.invokeLater(() -> {
-                drawOnSplashscreen();
+                drawOnSplashscreen(location);
             });
         }
     }
@@ -86,7 +93,8 @@ public class Splash {
         }
     }
     
-    private static void drawOnSplashscreen() {
+    private static void drawOnSplashscreen(final Point location) {
+        System.out.println(System.currentTimeMillis()-Chatty.STARTED_TIME);
         final SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash != null) {
             // Native
@@ -106,7 +114,7 @@ public class Splash {
                     draw((Graphics2D)g, getWidth(), getHeight());
                 }
             
-            });
+            }, location);
         }
     }
 
@@ -131,8 +139,22 @@ public class Splash {
         g.drawString(VERSION, 10, 16);
     }
     
+    public static Point getLocation(String setting) {
+        if (setting == null) {
+            return null;
+        }
+        String[] split = setting.split(";");
+        if (split.length < 2) {
+            return null;
+        }
+        IntegerPair coords = Helper.getNumbersFromString(split[0]);
+        IntegerPair size = Helper.getNumbersFromString(split[1]);
+        Rectangle r = new Rectangle(coords.a, coords.b, size.a, size.b);
+        return new Point((int)r.getCenterX() - SPLASH_WIDTH/2, (int)r.getCenterY() - SPLASH_HEIGHT/2);
+    }
+    
     public static void main(String[] args) throws InterruptedException {
-        initSplashScreen();
+        initSplashScreen(null);
         Thread.sleep(10*1000);
         closeSplashScreen();
     }
