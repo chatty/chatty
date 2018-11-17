@@ -1091,9 +1091,8 @@ public class TwitchConnection {
             }
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
-            if (tags.isValue("msg-id", "resub") || tags.isValue("msg-id", "sub")
-                    || tags.isValue("msg-id", "subgift")) {
-                if (tags.isValue("msg-id", "subgift")) {
+            if (tags.isValueOf("msg-id", "resub", "sub", "subgift", "anonsubgift")) {
+                if (tags.isValueOf("msg-id", "subgift", "anonsubgift")) {
                     giftedSubCombiner.add(user, text, message, months, emotes, tags);
                 } else {
                     listener.onSubscriberNotification(user, text, message, months, emotes);

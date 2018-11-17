@@ -35,6 +35,9 @@ public class RawMessageTest {
         if (type.equals("subgift")) {
             return "@badges=;color=;display-name=user1;emotes=;id=123;login=user1;mod=0;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name=user2;msg-param-recipient-id=44452165;msg-param-recipient-user-name=user2;msg-param-sub-plan-name=Channel\\sSubscription\\s(LIRIK);msg-param-sub-plan=1000;room-id=123;subscriber=0;system-msg=user1\\sgifted\\sa\\s$4.99\\ssub\\sto\\suser2!;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
         }
+        if (type.equals("anonsubgift")) {
+            return "@badges=;color=;emotes=;id=123;login=channame;mod=0;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name=user2;msg-param-recipient-id=44452165;msg-param-recipient-user-name=user2;msg-param-sub-plan-name=Channel\\sSubscription\\s(LIRIK);msg-param-sub-plan=1000;room-id=123;subscriber=0;system-msg=An\\sanonymous\\suser\\sgifted\\sa\\sTier\\s1\\ssub\\sto\\sabc!\\s;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
+        }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }
