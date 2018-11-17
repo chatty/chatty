@@ -124,6 +124,13 @@ public class CompletionSettings extends SettingsPanel {
         appearance.add(
             d.addComboStringSetting("completionSorting", 4, false, choices),
             d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+        
+        appearance.add(new JLabel(Language.getString("settings.string.completionSearch")),
+            d.makeGbc(0, 3, 1, 1));
+        
+        appearance.add(
+            d.addComboStringSetting("completionSearch", 4, false, new String[]{"start", "words", "anywhere"}),
+            d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
 
         //==================
         // Custom Completion

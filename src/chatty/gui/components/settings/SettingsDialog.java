@@ -631,7 +631,16 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected ComboStringSetting addComboStringSetting(String name, int size, boolean editable, String[] choices) {
-        ComboStringSetting result = new ComboStringSetting(choices);
+        Map<String, String> localizedChoices = new LinkedHashMap<>();
+        for (String choice : choices) {
+            String label = Language.getString("settings.string."+name+".option."+choice, false);
+            if (label != null) {
+                localizedChoices.put(choice, label);
+            } else {
+                localizedChoices.put(choice, choice);
+            }
+        }
+        ComboStringSetting result = new ComboStringSetting(localizedChoices);
         result.setEditable(editable);
         stringSettings.put(name, result);
         return result;

@@ -197,6 +197,10 @@ public class AutoCompletion {
     public void setCompleteToCommonPrefix(boolean common) {
         this.completeToCommonPrefix = common;
     }
+    
+    public boolean getCompleteToCommonPrefix() {
+        return completeToCommonPrefix;
+    }
 
     /**
      * Sets the {@link AudoCompletionServer}, which provides the actual

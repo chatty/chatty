@@ -93,6 +93,10 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
         autoCompletion.setCompleteToCommonPrefix(value);
     }
     
+    public boolean getCompleteToCommonPrefix() {
+        return autoCompletion.getCompleteToCommonPrefix();
+    }
+    
     public void setHistoryRequireCtrlMultirow(boolean require) {
         this.historyRequireCtrlMultirow = require;
     }
