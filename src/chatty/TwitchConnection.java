@@ -1134,6 +1134,10 @@ public class TwitchConnection {
             } else {
                 info(channel, "[Info] " + text);
             }
+            if (text.startsWith("The VIPs of this channel are")) {
+                List<String> vipsList = TwitchCommands.parseModsList(text);
+                info(channel, "There are "+vipsList.size()+" VIPs on this channel.");
+            }
         }
 
         /**

@@ -69,12 +69,19 @@ public class Language {
     }
 
     /**
-     * Gets the String with the given key for the current language. If the key
-     * wasn't found, either null or a String consisting of a single questionmark
-     * is returned, depending on the nonNull parameter.
+     * Gets the String with the given key for the current language.
+     * 
+     * <p>
+     * Optionally either null or "?" is returned if the given key wasn't found.
+     * Getting only non-null values can be useful where a key is expected to
+     * exist, but should not cause an error if it's not there (however "?"
+     * displayed in the GUI would still indicate an issue). On the other hand,
+     * getting a null value can e.g. be useful when checking for the existence
+     * of a (probably dynamically built) key, and then falling back on another
+     * string if it doesn't exist.
      *
      * @param key The key as defined in the properties files
-     * @param nonNull If true, expect a non-null result ("?" is returned for
+     * @param nonNull If true, only non-null values are returned ("?" for
      * missing keys)
      * @return The language specific String, or null or "?" if none could be
      * found
@@ -102,10 +109,36 @@ public class Language {
      * @return The language specific String, or "?" if none could be found
      */
     public synchronized static String getString(String key, Object... arguments) {
+        return getString(key, true, arguments);
+    }
+    
+    /**
+     * Gets the String with the given key for the current language. Provide
+     * arguments for any replacements present in the String.
+     * 
+     * <p>
+     * Optionally either null or "?" is returned if the given key wasn't found.
+     * Getting only non-null values can be useful where a key is expected to
+     * exist, but should not cause an error if it's not there (however "?"
+     * displayed in the GUI would still indicate an issue). On the other hand,
+     * getting a null value can e.g. be useful when checking for the existence
+     * of a (probably dynamically built) key, and then falling back on another
+     * string if it doesn't exist.
+     * 
+     * @param key The key as defined in the properties files
+     * @param nonNull If true, only non-null values are returned ("?" for
+     * missing keys)
+     * @param arguments One or more arguments, depending on the String value
+     * @return The language specific String, or "?" if none could be found
+     */
+    public synchronized static String getString(String key, boolean nonNull, Object... arguments) {
         loadIfNecessary();
         if (!strings.containsKey(key)) {
-            LOGGER.warning("Missing string key: "+key);
-            return "?";
+            if (nonNull) {
+                LOGGER.warning("Missing string key: "+key);
+                return "?";
+            }
+            return null;
         }
         return MessageFormat.format(strings.getString(key), arguments);
     }

@@ -1,9 +1,12 @@
 
 package chatty;
 
+import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.StringUtil;
 import chatty.util.irc.MsgTags;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +44,15 @@ public class TwitchCommands {
     private final Set<String> modsAlreadyRequested
             = Collections.synchronizedSet(new HashSet<String>());
     
+    private static final Set<String> SIMPLE_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
+        "unban", "untimeout", "delete", "clear",
+        "followers", "followersoff", "subscribers", "subscribersoff", "slow", "slowoff",
+        "emoteonly", "emoteonlyoff", "r9kbeta", "r9kbetaoff",
+        "vip", "unvip", "vips", "mod", "unmod", "mods",
+        "host", "unhost",
+        "color"
+    }));
+    
     private TwitchConnection c;
     
     public TwitchCommands(TwitchConnection c) {
@@ -48,77 +60,42 @@ public class TwitchCommands {
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {
-        if (command.equals("to") || command.equals("timeout")) {
-            commandTimeout(channel, msgId, parameter);
+        if (command.equals("to")) {
+            command = "timeout";
         }
-        else if (command.equals("delete")) {
-            delete(channel, parameter);
+        if (command.equals("r9k")) {
+            command = "r9kbeta";
         }
-        else if (command.equals("unban")) {
-            commandUnban(channel, parameter);
+        if (command.equals("r9koff")) {
+            command = "r9kbetaoff";
         }
-        else if (command.equals("untimeout")) {
-            commandUntimeout(channel, parameter);
+        if (SIMPLE_COMMANDS.contains(command)) {
+            // Simple commands that don't require any special handling for
+            // decent output
+            if (onChannel(channel, true)) {
+                String message = Language.getString("chat.twitchcommands."+command, false);
+                if (parameter == null || parameter.trim().isEmpty()) {
+                    // No parameter
+                    String output = message != null ? message : "Trying to "+command+"..";
+                    sendMessage(channel, "/"+command, output);
+                } else {
+                    // Parameters
+                    String output = message != null ? message : "Trying to "+command+" "+parameter+"..";
+                    sendMessage(channel, "/"+command+" "+parameter, output);
+                }
+            }
         }
         else if (command.equals("ban")) {
-            commandBan(channel, msgId, parameter);
+            commandBan(channel, parameter);
         }
-        else if (command.equals("slow")) {
-            commandSlowmodeOn(channel, parameter);
-        }
-        else if (command.equals("followers")) {
-            followersOn(channel, parameter);
-        }
-        else if (command.equals("followersoff")) {
-            followersOff(channel);
-        }
-        else if (command.equals("slowoff")) {
-            slowmodeOff(channel);
-        }
-        else if (command.equals("subscribers")) {
-            subscribersOn(channel);
-        }
-        else if (command.equals("subscribersoff")) {
-            subscribersOff(channel);
-        }
-        else if (command.equals("emoteonly")) {
-            emoteonlyOn(channel);
-        }
-        else if (command.equals("emoteonlyoff")) {
-            emoteonlyOff(channel);
-        }
-        else if (command.equals("r9k")) {
-            r9kOn(channel);
-        }
-        else if (command.equals("r9koff")) {
-            r9kOff(channel);
-        }
-        else if (command.equals("mod")) {
-            commandMod(channel, parameter);
-        }
-        else if (command.equals("unmod")) {
-            commandUnmod(channel, parameter);
-        }
-        else if (command.equals("clear")) {
-            clearChannel(channel);
-        }
-        else if (command.equals("mods")) {
-            mods(channel);
+        else if (command.equals("timeout")) {
+            commandTimeout(channel, msgId, parameter);
         }
         else if (command.equals("fixmods")) {
             modsSilent(channel);
         }
-        else if (command.equals("host")) {
-            commandHostmode(channel, parameter);
-        }
         else if (command.equals("host2")) {
             commandHostmode2(Helper.toChannel(c.getUsername()), parameter);
-        }
-        else if (command.equals("unhost")) {
-            hostmodeOff(channel);
-        }
-        else if (command.equals("color")) {
-            commandColor(channel, parameter);
         }
         else if (command.equals("raid")) {
             commandRaid(channel, parameter);
@@ -131,6 +108,10 @@ public class TwitchCommands {
         }
        return true;
     }
+    
+    //==================
+    // Helper Functions
+    //==================
     
     private boolean onChannel(String channel, boolean message) {
         return c.onChannel(channel, message);
@@ -152,103 +133,96 @@ public class TwitchCommands {
         c.info(message);
     }
     
+    private MsgTags createTags(String msgId) {
+        if (msgId != null) {
+            return MsgTags.create("target-msg-id", msgId);
+        }
+        return MsgTags.EMPTY;
+    }
+    
+    //===========================
+    // Special Command Functions
+    //===========================
+    
+    private void commandBan(String channel, String parameter) {
+        if (StringUtil.isNullOrEmpty(parameter)) {
+            sendMessage(channel, "/ban", "Trying to ban..");
+            return;
+        }
+        String[] parts = parameter.split(" ", 2);
+        String nick = parts[0];
+        String reason = null;
+        if (parts.length == 2) {
+            reason = parts[1].trim();
+        }
+        ban(channel, nick, reason);
+    }
+    
+    public void ban(String channel, String name, String reason) {
+        if (onChannel(channel, true)) {
+            if (reason == null || reason.isEmpty()) {
+                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..");
+            } else {
+                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")");
+            }
+        }
+    }
+    
     protected void commandTimeout(String channel, String msgId, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( [0-9]+( .+)?)?", parameter);
         if (parameter == null) {
-            printLine("Usage: /to <nick> [time] [reason]");
+            sendMessage(channel, "/timeout", "Trying to timeout..");
             return;
         }
         String[] parts = parameter.split(" ", 3);
         String nick = parts[0];
-        long duration = 0;
+        String time = null;
+        String timeLabel = null;
         String reason = null;
         if (parts.length > 1) {
+            time = parts[1];
             try {
-                duration = Long.parseLong(parts[1]);
+                long seconds = Long.parseLong(parts[1]);
+                String formatted = DateTime.duration(seconds*1000, 0, 2, 0);
+                String onlySeconds = seconds+"s";
+                timeLabel = formatted.equals(onlySeconds)
+                        ? onlySeconds : onlySeconds+"/"+formatted;
             } catch (NumberFormatException ex) {
-                // If the regex is correct, this may never happen
-                printLine("Usage: /to <nick> [time] [reason] (no valid time specified)");
-                return;
+                timeLabel = parts[1];
             }
         }
         if (parts.length > 2) {
             reason = parts[2];
         }
-        timeout(channel, msgId, nick, duration, reason);
+        timeout(channel, msgId, nick, time, timeLabel, reason);
     }
-    
-    protected void commandSlowmodeOn(String channel, String parameter) {
-        if (parameter == null || parameter.isEmpty()) {
-            slowmodeOn(channel, 0);
-        }
-        else {
-            try {
-                int time = Integer.parseInt(parameter);
-                slowmodeOn(channel, time);
-            } catch (NumberFormatException ex) {
-                printLine("Usage: /slow [time] (invalid time specified)");
-            }
-        }
-    }
-    
-    protected void commandUnban(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
-        if (parameter == null) {
-            printLine("Usage: /unban <nick>");
-            return;
-        }
-        unban(channel, parameter);
-    }
-    
-    protected void commandUntimeout(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX, parameter);
-        if (parameter == null) {
-            printLine("Usage: /untimeout <nick>");
-            return;
-        }
+
+    /**
+     * Sends a timeout command to the server.
+     * 
+     * @param channel
+     * @param msgId
+     * @param name
+     * @param time The raw timeout time, can be null
+     * @param timeLabel For outputting the timeout time (formatted), can be null
+     * if time is null
+     * @param reason The timeout reason, can be null
+     */
+    public void timeout(String channel, String msgId, String name, String time, String timeLabel, String reason) {
         if (onChannel(channel, true)) {
-            sendMessage(channel,".untimeout "+parameter, "Trying to untimeout "+parameter+"..");
-        }
-    }
-    
-    protected void commandBan(String channel, String msgId, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
-        if (parameter == null) {
-            printLine("Usage: /ban <nick> [reason]");
-        } else {
-            String[] split = parameter.split(" ", 2);
-            if (split.length == 2) {
-                ban(channel, msgId, split[0], split[1]);
-            } else {
-                ban(channel, msgId, split[0], null);
+            MsgTags tags = createTags(msgId);
+            if (time == null) {
+                sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..", tags);
             }
-        }
-    }
-    
-    protected void commandMod(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
-        if (parameter == null) {
-            printLine("Usage: /mod <nick>");
-        } else {
-            mod(channel, parameter);
-        }
-    }
-    
-    protected void commandUnmod(String channel, String parameter) {
-        parameter = prepareAndCheckParameters(Helper.USERNAME_REGEX+"( .+)?", parameter);
-        if (parameter == null) {
-            printLine("Usage: /unmod <nick>");
-        }
-        else {
-            unmod(channel, parameter);
-        }
-    }
-    
-    protected void commandColor(String channel, String parameter) {
-        if (parameter == null) {
-            printLine("Usage: /color <newcolor>");
-        } else {
-            color(channel, parameter);
+            else {
+                if (reason == null || reason.isEmpty()) {
+                    sendMessage(channel,".timeout "+name+" "+time,
+                        "Trying to timeout "+name+" ("+timeLabel+")", tags);
+                } else {
+                    sendMessage(channel,".timeout "+name+" "+time+" "+reason,
+                        "Trying to timeout "+name+" ("+timeLabel+", "+reason+")", tags);
+                }
+            }
+            
         }
     }
     
@@ -268,25 +242,11 @@ public class TwitchCommands {
         }
     }
     
-    protected void commandHostmode(String channel, String parameter) {
-        if (parameter == null) {
-            printLine("Usage: /host <stream>");
-        } else {
-            hostmode(channel, parameter);
-        }
-    }
-    
     protected void commandHostmode2(String channel, String parameter) {
         if (parameter == null) {
             printLine("Usage: /host2 <stream>");
         } else {
             hostmode2(channel, parameter);
-        }
-    }
-    
-    public void hostmode(String channel, String target) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".host "+target, "Trying to host "+target+"..");
         }
     }
     
@@ -298,178 +258,11 @@ public class TwitchCommands {
             printLine("Must be connected to chat to start hosting.");
         }
     }
-    
-    public void hostmodeOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".unhost", "Trying to turn off host mode..");
-        }
-    }
-    
-    public void color(String channel, String color) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".color "+color, "Trying to change color to "+color);
-        }
-    }
-    
-    /**
-     * Turn on slowmode with the given amount of seconds or the default time
-     * (without specifying a time).
-     * 
-     * @param channel The name of the channel
-     * @param time The time in seconds, 0 or negative numbers will make it give
-     *  not time at all
-     */
-    public void slowmodeOn(String channel, int time) {
-        if (onChannel(channel, true)) {
-            if (time <= 0) {
-                sendMessage(channel,".slow", "Trying to turn on slowmode..");
-            }
-            else {
-                sendMessage(channel,".slow "+time, "Trying to turn on slowmode ("+time+"s)");
-            }
-        }
-    }
-    
-    /**
-     * Turns off slowmode in the given channel.
-     * 
-     * @param channel The name of the channel.
-     */
-    public void slowmodeOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".slowoff", "Trying to turn off slowmode..");
-        }
-    }
-    
-    public void followersOn(String channel, String time) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".followers "+(time != null ? time : ""), "Trying to turn on followers-only mode..");
-        }
-    }
-    
-    public void followersOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".followersoff", "Trying to turn off followers-only mode..");
-        }
-    }
-    
-    /**
-     * Turns on subscriber only mode in the given channel.
-     * 
-     * @param channel The name of the channel.
-     */
-    public void subscribersOn(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".subscribers", "Trying to turn on subscribers mode..");
-        }
-    }
-    
-    public void subscribersOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".subscribersoff", "Trying to turn off subscribers mode..");
-        }
-    }
-    
-    public void emoteonlyOn(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".emoteonly", "Trying to turn on emote-only mode..");
-        }
-    }
-    
-    public void emoteonlyOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".emoteonlyoff", "Trying to turn off emote-only mode..");
-        }
-    }
-    
-    public void r9kOn(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".r9kbeta", "Trying to turn on r9k mode..");
-        }
-    }
-    
-    public void r9kOff(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".r9kbetaoff", "Trying to turn r9k mode off..");
-        }
-    }
-    
-    public void clearChannel(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".clear", "Trying to clear channel..");
-        }
-    }
 
-    public void ban(String channel, String msgId, String name, String reason) {
-        if (onChannel(channel, true)) {
-            MsgTags tags = createTags(msgId);
-            if (reason == null || reason.isEmpty()) {
-                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..", tags);
-            } else {
-                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")", tags);
-            }
-        }
-    }
-    
-    public void mod(String channel, String name) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".mod "+name, "Trying to mod "+name+"..");
-        }
-    }
-    
-    public void unmod(String channel, String name) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".unmod "+name, "Trying to unmod "+name+"..");
-        }
-    }
-    
-    /**
-     * Sends a timeout command to the server.
-     * 
-     * @param channel
-     * @param name
-     * @param time 
-     */
-    public void timeout(String channel, String msgId, String name, long time, String reason) {
-        if (onChannel(channel, true)) {
-            MsgTags tags = createTags(msgId);
-            if (time <= 0) {
-                sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..", tags);
-            }
-            else {
-                String formatted = DateTime.duration(time*1000, 0, 2, 0);
-                String onlySeconds = time+"s";
-                String timeString = formatted.equals(onlySeconds)
-                        ? onlySeconds : onlySeconds+"/"+formatted;
-                if (reason == null || reason.isEmpty()) {
-                    sendMessage(channel,".timeout "+name+" "+time,
-                        "Trying to timeout "+name+" ("+timeString+")", tags);
-                } else {
-                    sendMessage(channel,".timeout "+name+" "+time+" "+reason,
-                        "Trying to timeout "+name+" ("+timeString+", "+reason+")", tags);
-                }
-            }
-            
-        }
-    }
-    
-    public void delete(String channel, String msgId) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".delete "+msgId, "Trying to delete message");
-        }
-    }
-    
-    public void unban(String channel, String name) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".unban "+name, "Trying to unban "+name+"..");
-        }
-    }
-    
-    public void mods(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel,".mods", "Requesting moderator list..");
-        }
-    }
+    //==================
+    // Silent Mods List
+    //==================
+    // For updating who is mod, probably mostly obsolete
     
     public void modsSilent(String channel) {
         if (onChannel(channel, true)) {
@@ -564,20 +357,5 @@ public class TwitchCommands {
             modsAlreadyRequested.remove(channel);
         }
     }
-    
-    private String prepareAndCheckParameters(String regex, String parameters) {
-        if (parameters == null) {
-            return null;
-        }
-        parameters = parameters.trim();
-        return parameters.matches(regex) ? parameters : null;
-    }
-    
-    private MsgTags createTags(String msgId) {
-        if (msgId != null) {
-            return MsgTags.create("target-msg-id", msgId);
-        }
-        return MsgTags.EMPTY;
-    }
-    
+
 }
