@@ -96,7 +96,7 @@ public class NamedColor extends Color {
     }
     
     /**
-     * Returns a comma-seperated String of the RGB components of this color.
+     * Returns a comma-separated String of the RGB components of this color.
      * 
      * @return 
      */

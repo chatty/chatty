@@ -79,7 +79,7 @@ public class SelectCommunityDialog extends JDialog {
     
     private static final int MAX_COMMUNITIES = 3;
     
-    // Current games data seperate from GUI
+    // Current games data separate from GUI
     private final Set<Community> favorites = new TreeSet<>();
     private final Set<Community> searchResult = new TreeSet<>();
     

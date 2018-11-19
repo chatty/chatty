@@ -773,7 +773,7 @@
         <li><code>!cat:</code> to specify a category the user who send the message
         can NOT be in.</li>
         <li><code>chan:</code> to specify one or more channels the message has
-        to be send in to match (several channels are specified as comma-seperated
+        to be send in to match (several channels are specified as comma-separated
         list, without spaces).</li>
         <li><code>!chan:</code> to specify one or more channels the message must
         NOT be send in to match.</li>
@@ -803,8 +803,16 @@
             the given status codes (see <code>status:</code> for codes). For example:
             <code>!status:stM</code> matches all 'normal' users that have no
             badge by default (NOT a Subscriber, Turbo User or any kind of Moderator).</li>
-        <li><code>config:info</code>: See next section for <code>config:</code>
-            prefix.</li>
+        <li><code>config:</code> to specify on or more options (separated by comma, no spaces):
+            <ul>
+                <li><code>config:firstmsg</code> - Restrict matching to the
+                    first message of this user in this channel during the
+                    current session (first message in User Dialog)</li>
+                <li><code>config:info</code> - This item applies to info
+                    messages instead of regular user messages <em>(works only
+                        for Ignore List at the moment)</em></li>
+            </ul>
+        </li>
     </ul>
     
     <h3>Meta Prefixes (Behaviour)</h3>
@@ -819,14 +827,11 @@
             well as some Named Colors such as "blue").</li>
         <li><code>bgcolor:</code> to specify a background color other than the
             default Highlight background color for displaying this Highlight.</li>
-        <li><code>config:</code> to specify one or more options (seperated
-            by comma) that changes the behaviour):
+        <li><code>config:</code> to specify one or more options (separated
+            by comma, no spaces):
             <ul>
-                <li><code>silent</code> - Disable sounds for this item</li>
-                <li><code>!notify</code> - Disable notifications for this item</li>
-                <li><code>info</code> - This item applies to info messages instead
-                of regular user messages (works only for Ignoring messages at the
-                moment)</li>
+                <li><code>config:silent</code> - Disable sounds for this item</li>
+                <li><code>config:!notify</code> - Disable notifications for this item</li>
             </ul></li>
     </ul>
     
@@ -1028,7 +1033,7 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>If you enable logging, chat messages (and more if enabled) will be written
-    into a seperate textfile for each channel.</p>
+    into a separate textfile for each channel.</p>
     <h3>Channels</h3>
     <p>You can specify which channels should be logged:</p>
     <ul>

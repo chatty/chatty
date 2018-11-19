@@ -326,7 +326,7 @@ public class TwitchConnection {
      * for reconnecting.
      * 
      * @param server The server address to connect to
-     * @param serverPorts The server ports to connect to (comma-seperated list)
+     * @param serverPorts The server ports to connect to (comma-separated list)
      * @param username The username to use for connecting
      * @param password The password
      * @param autojoin The channels to join after connecting
@@ -1143,7 +1143,7 @@ public class TwitchConnection {
         /**
          * Counts the moderators in the /mods response and outputs the count.
          *
-         * @param text The mesasge from jtv containing the comma-seperated
+         * @param text The mesasge from jtv containing the comma-separated
          * moderator list.
          * @param channel The channel the moderators list was received on, or
          * {@literal null} if the channel is unknown

@@ -2833,7 +2833,7 @@ public class MainGui extends JFrame implements Runnable {
                 
                 CopyMessages.copyMessage(client.settings, user, text, highlighted);
                 
-                // Stuff independent of highlight/ignore
+                // Update User
                 user.addMessage(processMessage(text), action, id);
                 if (highlighted) {
                     user.setHighlighted();

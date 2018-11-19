@@ -445,7 +445,7 @@ public class TwitchClient {
         testUser = new User(name, name, Room.createRegular(channel));
         testUser.setColor("blue");
         testUser.setGlobalMod(true);
-        testUser.setBot(true);
+        //testUser.setBot(true);
         //testUser.setTurbo(true);
         //testUser.setModerator(true);
         //testUser.setSubscriber(true);

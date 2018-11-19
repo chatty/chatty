@@ -84,7 +84,7 @@ public class OtherBadges {
                 usernames.add((String) obj);
             }
             if (Chatty.DEBUG) {
-                usernames.add("tduva");
+                //usernames.add("tduva");
             }
 
             Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames, position);

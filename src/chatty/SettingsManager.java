@@ -130,7 +130,7 @@ public class SettingsManager {
         settings.addString("serverDefault", "irc.chat.twitch.tv");
         settings.addString("portDefault", "6697,6667,443,80");
 
-        // Seperate settings for commandline/temp so others can be saved
+        // Separate settings for commandline/temp so others can be saved
         settings.addString("server", "", false);
         settings.addString("port", "", false);
         

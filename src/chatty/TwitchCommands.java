@@ -288,7 +288,7 @@ public class TwitchCommands {
     
     /**
      * Prase the list of mods as returned from the Twitch Chat. The
-     * comma-seperated list should start after the first colon ("The moderators
+     * comma-separated list should start after the first colon ("The moderators
      * of this room are: ..").
      *
      * @param text The text as received from the Twitch Chat

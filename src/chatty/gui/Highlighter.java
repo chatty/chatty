@@ -243,6 +243,7 @@ public class Highlighter {
         private boolean noNotification;
         private boolean noSound;
         private boolean appliesToInfo;
+        private boolean firstMsg;
         // Replacement string for filtering parts of a message
         private String replacement;
         
@@ -383,7 +384,7 @@ public class Highlighter {
         }
         
         /**
-         * Parses a comma-seperated list of a prefix.
+         * Parses a comma-separated list of a prefix.
          * 
          * @param list The String containing the list
          * @param prefix The prefix for this list, used to determine what to do
@@ -404,6 +405,8 @@ public class Highlighter {
                             noNotification = true;
                         } else if (part.equals("info")) {
                             appliesToInfo = true;
+                        } else if (part.equals("firstmsg")) {
+                            firstMsg = true;
                         }
                     }
                 }
@@ -597,6 +600,9 @@ public class Highlighter {
                 return false;
             }
             if (!checkStatus(user, statusReqNot)) {
+                return false;
+            }
+            if (firstMsg && user.getNumberOfMessages() > 0) { // Amount of messages is updated after printing message
                 return false;
             }
             return true;

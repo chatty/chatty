@@ -275,11 +275,20 @@ public class UsericonManager {
     
     private void addThirdPartyIcons(List<Usericon> icons, User user) {
         for (Usericon icon : thirdParty) {
-            // This may or may not return the same icon, depending on whether
-            // Custom Usericons replace it
-            Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user);
-            if (transformed != null) {
-                insert(icons, transformed);
+            /**
+             * Need to check eligibility here first, since a Custom Icon
+             * matching this icon's type wouldn't have the same restrictions
+             * (normal Twitch badges are requested via getIcon() based on which
+             * types the user actually has access to, so that's already a
+             * different starting position).
+             */
+            if (iconMatchesUser(icon, user)) {
+                // This may or may not return the same icon, depending on
+                // whether Custom Usericons replace it
+                Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user);
+                if (transformed != null) {
+                    insert(icons, transformed);
+                }
             }
         }
     }

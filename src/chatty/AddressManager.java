@@ -32,7 +32,7 @@ public class AddressManager {
     
     /**
      * Gets an {@code InetSocketAddress} based on the given host (a single host)
-     * and the list of ports (one or several comma-seperated ports). It uses the
+     * and the list of ports (one or several comma-separated ports). It uses the
      * first host/port that hasn't been added to the errors list via
      * {@code addError()}, or start from the beginning again if all possible
      * addresses are in the errors list.
@@ -95,8 +95,8 @@ public class AddressManager {
     
     /**
      * Parses a String containing one or more ports and returns a {@code List}
-     * of them. Port numbers can be seperated by any non-numeric character
-     * (although it is recommended to seperate by comma).
+     * of them. Port numbers can be separated by any non-numeric character
+     * (although it is recommended to separate by comma).
      * 
      * @param ports
      * @return A {@code List} or {@code Integer} objects representing the ports,

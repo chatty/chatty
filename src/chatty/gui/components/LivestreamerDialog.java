@@ -59,7 +59,7 @@ public class LivestreamerDialog extends JDialog {
     private final JButton openStreamButton = new JButton("Open Stream");
     
     private static final String INFO = "Livestreamer (or the compatible fork Streamlink) is an external program "
-            + "you have to install seperately that allows you to watch "
+            + "you have to install separately that allows you to watch "
             + "streams of many websites in a player like VLC. "
             + "[help-livestreamer:top More information..]";
     

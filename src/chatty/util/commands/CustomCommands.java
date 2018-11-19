@@ -43,7 +43,7 @@ public class CustomCommands {
      * parameters as defined.
      * 
      * @param commandName The command
-     * @param parameters The parameters, each seperated by a space from eachother
+     * @param parameters The parameters, each separated by a space from eachother
      * @param channel
      * @return A {@code String} as result of the command, or {@code null} if the
      * command doesn't exist or the number of parameters were invalid

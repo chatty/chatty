@@ -58,7 +58,7 @@ public class SelectGameDialog extends JDialog {
     private final JList<String> list = new JList<>();
     private final DefaultListModel<String> listData = new DefaultListModel<>();
     
-    // Current games data seperate from GUI
+    // Current games data separate from GUI
     private final Set<String> favorites = new TreeSet<>();
     private final Set<String> searchResult = new TreeSet<>();
     

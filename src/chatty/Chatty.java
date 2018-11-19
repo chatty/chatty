@@ -49,7 +49,7 @@ public class Chatty {
     public static final String REDIRECT_URI = "http://127.0.0.1:61324/token/";
     
     /**
-     * Version number of this version of Chatty, consisting of numbers seperated
+     * Version number of this version of Chatty, consisting of numbers separated
      * by points. May contain a single "b" for beta versions, which are counted
      * as older (so 0.8.7b4 is older than 0.8.7).
      */
@@ -126,7 +126,7 @@ public class Chatty {
         }
         if (parsedArgs.containsKey("d")) {
             String dir = parsedArgs.get("d");
-            File file = new File(dir);
+            File file = new File(dir).getAbsoluteFile();
             if (file.isDirectory()) {
                 settingsDir = file.toString();
             } else {
