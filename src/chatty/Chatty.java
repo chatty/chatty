@@ -53,7 +53,7 @@ public class Chatty {
      * by points. May contain a single "b" for beta versions, which are counted
      * as older (so 0.8.7b4 is older than 0.8.7).
      */
-    public static final String VERSION = "0.9.3-b2"; // Remember changing the version in the help
+    public static final String VERSION = "0.9.3-ba2"; // Remember changing the version in the help
     
     /**
      * Enable Version Checker (if you compile and distribute this yourself, you
@@ -70,8 +70,6 @@ public class Chatty {
      * For testing purposes.
      */
     public static final String VERSION_TEST_URL = "http://127.0.0.1/twitch/version.txt";
-    
-    public static final String COMPILE_INFO = "JDK8";
     
     /**
      * For use with the -single commandline argument, if no port is specified.
@@ -262,11 +260,10 @@ public class Chatty {
     }
     
     public static String chattyVersion() {
-        return String.format("Chatty Version %s%s%s / %s",
+        return String.format("Chatty Version %s%s%s",
                 Chatty.VERSION,
                 (Chatty.HOTKEY ? " Hotkey": ""),
-                (Chatty.DEBUG ? " (Debug)" : ""),
-                COMPILE_INFO);
+                (Chatty.DEBUG ? " (Debug)" : ""));
     }
     
     public static String uptime() {
