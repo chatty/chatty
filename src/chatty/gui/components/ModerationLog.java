@@ -37,6 +37,7 @@ public class ModerationLog extends JDialog {
     private final Map<String, List<String>> cache = new HashMap<>();
     
     private String currentChannel;
+    private String currentLoadedChannel;
 
     public ModerationLog(MainGui owner) {
         super(owner);
@@ -69,7 +70,16 @@ public class ModerationLog extends JDialog {
             currentChannel = channel;
             setTitle("Moderation Actions ("+channel+")");
             
-            List<String> cached = cache.get(channel);
+            if (isVisible()) {
+                setDataToCurrent();
+            }
+        }
+    }
+        
+    private void setDataToCurrent() {
+        if (!currentChannel.equals(currentLoadedChannel)) {
+            currentLoadedChannel = currentChannel;
+            List<String> cached = cache.get(currentChannel);
             if (cached != null) {
                 StringBuilder b = new StringBuilder();
                 String linebreak = "";
@@ -98,7 +108,7 @@ public class ModerationLog extends JDialog {
                 data.moderation_action,
                 StringUtil.join(data.args," "));
         
-        if (channel.equals(currentChannel)) {
+        if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);
         }
         
@@ -175,5 +185,6 @@ public class ModerationLog extends JDialog {
     
     public void showDialog() {
         setVisible(true);
+        setDataToCurrent();
     }
 }

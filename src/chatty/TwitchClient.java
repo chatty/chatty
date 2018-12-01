@@ -1316,7 +1316,7 @@ public class TwitchClient {
             args.add("tirean");
             args.add("300");
             args.add("still not using LiveSplit Autosplitter D:");
-            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "timeout", args, "tduva", ""), false);
+            g.printModerationAction(new ModeratorActionData("", "", room.getStream(), "timeout", args, "tduva", ""), false);
         } else if (command.equals("modactiontest2")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
