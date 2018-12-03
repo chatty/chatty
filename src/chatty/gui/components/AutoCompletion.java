@@ -366,7 +366,7 @@ public class AutoCompletion {
         }
 
         // Get the replacement value for this completion step
-        String nick = items.get(index);
+        String nick = items.get(index) + " ";
 
         //---------------
         // Common prefix
