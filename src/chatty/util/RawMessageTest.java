@@ -27,7 +27,7 @@ public class RawMessageTest {
             return "@badges=subscriber/1;color=;display-name=USERNAME;emotes=;id=123;login=username;mod=0;msg-id=resub;msg-param-months=4;subscriber=1;system-msg=USERNAME\\ssubscribed\\sfor\\s4\\smonths\\sin\\sa\\srow!;tmi-sent-ts=1475037717295;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
         }
         if (type.equals("sub2")) {
-            return "@badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;msg-id=sub;msg-param-months=6;room-id=1337;subscriber=1;msg-param-sub-plan=Prime;msg-param-sub-plan-name=Channel\\sSubscription\\s(display_name);system-msg=TWITCH_UserName\\shas\\ssubscribed\\sfor\\s6\\smonths!;login=twitch_username;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE "+channel+" :Great stream -- keep it up!";
+            return "@badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=Tduvatest;emotes=;mod=0;msg-id=sub;msg-param-months=6;room-id=1337;subscriber=1;msg-param-sub-plan=Prime;msg-param-sub-plan-name=Channel\\sSubscription\\s(display_name);system-msg=TWITCH_UserName\\shas\\ssubscribed\\sfor\\s6\\smonths!;login=tduvatest;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE "+channel+" :Great stream -- keep it up!";
         }
         if (type.equals("sub3")) {
             return "@badges=subscriber/0,bits/100;color=#B22222;display-name=TWITCH_UserName;emotes=;id=123;login=twitch_username;mod=0;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name=USER2;msg-param-recipient-id=123;msg-param-recipient-user-name=user2;msg-param-sub-plan-name=Abc;msg-param-sub-plan=1000;room-id=123;subscriber=1;system-msg=TWITCH_UserName\\sgifted\\sa\\sTier\\s1\\ssub\\sto\\sUSER2!;tmi-sent-ts=1520532381349;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
@@ -76,6 +76,9 @@ public class RawMessageTest {
         }
         if (type.equals("del")) {
             return "@login=abc;target-msg-id=1234 :tmi.twitch.tv CLEARMSG "+channel+" :"+options;
+        }
+        if (type.equals("subonly")) {
+            return "@msg-id=subs_on :tmi.twitch.tv NOTICE "+channel+" :This room is now in subscribers-only mode.";
         }
         return null;
     }

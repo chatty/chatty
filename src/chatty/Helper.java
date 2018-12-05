@@ -648,8 +648,6 @@ public class Helper {
         return String.format("%sh", nf.format(Math.round(duration/30.0)*30/60.0));
     }
     
-    
-    
     public static String makeBanInfo(long duration, String reason,
             boolean durationEnabled, boolean reasonEnabled, boolean includeBan) {
         String banInfo = "";
@@ -668,6 +666,16 @@ public class Helper {
             }
         }
         return banInfo;
+    }
+    
+    public static String makeBanCommand(User user, long duration, String reason, String id) {
+        if (duration > 0) {
+            return StringUtil.concats("timeout", user.getName(), duration, reason).trim();
+        }
+        if (duration == -2) {
+            return StringUtil.concats("delete", id).trim();
+        }
+        return StringUtil.concats("ban", user.getName(), reason).trim();
     }
     
     public static Dimension getDimensionFromParameter(String parameter) {

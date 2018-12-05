@@ -3,6 +3,7 @@ package chatty.gui.notifications;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Room;
 import chatty.User;
 import chatty.gui.MainGui;
 import chatty.gui.notifications.Notification.State;
@@ -21,7 +22,9 @@ import chatty.util.settings.Settings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -35,6 +38,8 @@ public class NotificationManager {
     private final List<Notification> properties = new ArrayList<>();
     private static final String SETTING_NAME = "notifications";
     public static final String COLOR_PRESETS_SETTING_NAME = "nColorPresets";
+    
+    private static final Map<Room, User> INFO_DUMMY_USERS = new HashMap<>();
     
     public NotificationManager(MainGui main,
             Settings settings) {
@@ -77,6 +82,13 @@ public class NotificationManager {
         }
     }
     
+    private User getDummyUser(Room room) {
+        if (!INFO_DUMMY_USERS.containsKey(room)) {
+            INFO_DUMMY_USERS.put(room, new User("<Info>", room));
+        }
+        return INFO_DUMMY_USERS.get(room);
+    }
+    
     public void streamInfoChanged(String channel, StreamInfo info) {
         check(Type.STREAM_STATUS, "#"+info.getStream(), null, info.getFullStatus(), n -> {
             if (info.getOnline() || !n.hasOption("noOffline")) {
@@ -110,6 +122,19 @@ public class NotificationManager {
                 return new NotificationData(title, message);
             }
             return null;
+        });
+    }
+    
+    public void infoHighlight(Room room, String message, boolean noNotify,
+            boolean noSound) {
+        check(Type.HIGHLIGHT, room.getChannel(), getDummyUser(room), message, noNotify, noSound,  n -> {
+            String title;
+            if (!room.getChannel().isEmpty()) {
+                title = String.format("[Highlight] Info Message in %s", room.getChannel());
+            } else {
+                title = "[Highlight] Info Message";
+            }
+            return new NotificationData(title, message);
         });
     }
     

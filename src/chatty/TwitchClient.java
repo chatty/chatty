@@ -62,6 +62,7 @@ import chatty.util.api.pubsub.PubSubListener;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
@@ -1311,27 +1312,42 @@ public class TwitchClient {
             pubsub.connect();
         } else if (command.equals("psdisconnect")) {
             pubsub.disconnect();
-        } else if (command.equals("modactiontest")) {
+        } else if (command.equals("modaction")) {
+            String action = "timeout";
             List<String> args = new ArrayList<>();
-            args.add("tirean");
-            args.add("300");
-            args.add("still not using LiveSplit Autosplitter D:");
-            g.printModerationAction(new ModeratorActionData("", "", room.getStream(), "timeout", args, "tduva", ""), false);
-        } else if (command.equals("modactiontest2")) {
+            if (parameter != null && !parameter.isEmpty()) {
+                String[] split = parameter.split(" ");
+                action = split[0];
+                for (int i=1;i<split.length;i++) {
+                    args.add(split[i]);
+                }
+            } else {
+                args.add("tduvatest");
+                args.add("5");
+            }
+            //args.add("still not using LiveSplit Autosplitter D:");
+            g.printModerationAction(new ModeratorActionData("", "", "", room.getStream(), action, args, "Blahfasel", ""), false);
+        } else if (command.equals("automod")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
             args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+new Random().nextInt(100));
-            g.printModerationAction(new ModeratorActionData("", "", parameter == null ? "tduvatest" : parameter, "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
+            g.printModerationAction(new ModeratorActionData("", "", "", room.getStream(), "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
             for (int i=0;i<count;i++) {
                 commandInput(room, "/"+split[1]);
             }
+        } else if (command.equals("chain")) {
+            String[] split = parameter.split("\\|");
+            for (String part : split) {
+                System.out.println("Command: "+part.trim());
+                commandInput(room, "/"+part.trim());
+            }
         } else if (command.equals("modactiontest3")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
-            g.printModerationAction(new ModeratorActionData("", "", "tduvatest", "approved_twitchbot_message", args, "tduvatest", "TEST"+Math.random()), false);
+            g.printModerationAction(new ModeratorActionData("", "", "", "tduvatest", "approved_twitchbot_message", args, "tduvatest", "TEST"+Math.random()), false);
         } else if (command.equals("loadsoferrors")) {
             for (int i=0;i<10000;i++) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -2519,8 +2535,8 @@ public class TwitchClient {
         }
 
         @Override
-        public void onInfo(Room room, String infoMessage) {
-            g.printLine(room, infoMessage);
+        public void onInfo(Room room, String infoMessage, MsgTags tags) {
+            g.printInfo(room, infoMessage, tags);
         }
 
         @Override

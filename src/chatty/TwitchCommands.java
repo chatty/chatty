@@ -126,7 +126,7 @@ public class TwitchCommands {
     }
     
     private void printLine(String channel, String message) {
-        c.info(channel, message);
+        c.info(channel, message, null);
     }
     
     private void printLine(String message) {

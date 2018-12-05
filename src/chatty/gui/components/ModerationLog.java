@@ -69,13 +69,13 @@ public class ModerationLog extends JDialog {
         if (channel != null && !channel.equals(currentChannel)) {
             currentChannel = channel;
             setTitle("Moderation Actions ("+channel+")");
-            
+
             if (isVisible()) {
                 setDataToCurrent();
             }
         }
     }
-        
+    
     private void setDataToCurrent() {
         if (!currentChannel.equals(currentLoadedChannel)) {
             currentLoadedChannel = currentChannel;

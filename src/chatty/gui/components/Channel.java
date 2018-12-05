@@ -9,6 +9,7 @@ import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
@@ -620,6 +621,10 @@ public class Channel extends JPanel {
     
     public void printLine(String line) {
         text.printLine(line);
+    }
+    
+    public void printInfoMessage(InfoMessage message) {
+        text.printInfoMessage(message);
     }
     
     public void userBanned(User user, long duration, String reason, String id) {

@@ -15,8 +15,8 @@ public class SubscriberMessage extends UserNotice {
     public final int months;
     
     public SubscriberMessage(User user, String text, String message, int months,
-            Emoticons.TagEmotes emotes, String id, List<Match> highlightMatches) {
-        super("Notification", user, text, message, emotes, id, highlightMatches);
+            Emoticons.TagEmotes emotes) {
+        super("Notification", user, text, message, emotes);
         this.months = months;
     }
 }

@@ -455,7 +455,9 @@ public class SettingsManager {
         settings.addBoolean("showModMessages", false);
         settings.addBoolean("twitchnotifyAsInfo", true);
         settings.addBoolean("printStreamStatus", true);
-        settings.addBoolean("showModActions", false);
+        settings.addBoolean("showModActions", true);
+        settings.addBoolean("showModActionsRestrict", true);
+        settings.addBoolean("showActionBy", true);
         settings.addBoolean("showAutoMod", false);
 
         // Timeouts/Bans

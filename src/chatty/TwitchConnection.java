@@ -1,3 +1,4 @@
+
 package chatty;
 
 import chatty.lang.Language;
@@ -7,7 +8,6 @@ import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.BotNameManager;
 import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
-import chatty.util.api.RoomsInfo;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +22,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  *
@@ -447,9 +443,9 @@ public class TwitchConnection {
     public void sendCommandMessage(String channel, String message, String echo,
             MsgTags tags) {
         if (sendSpamProtectedMessage(channel, message, false, tags)) {
-            info(channel, echo);
+            info(channel, echo, null);
         } else {
-            info(channel, "# Command not sent to prevent ban: " + message);
+            info(channel, "# Command not sent to prevent ban: " + message, null);
         }
     }
     
@@ -946,7 +942,7 @@ public class TwitchConnection {
                 if (settings.getBoolean("twitchnotifyAsInfo") && nick.equals("twitchnotify")) {
                     // Just output as Notification, subs shouldn't come over this anymore (soon),
                     // but just in case
-                    info(channel, "[Notification] "+text);
+                    info(channel, "[Notification] "+text, tags);
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
@@ -980,14 +976,14 @@ public class TwitchConnection {
             if (tags.isValue("msg-id", "whisper_invalid_login")) {
                 listener.onInfo(text);
             } else if (onChannel(channel)) {
-                infoMessage(channel, text);
+                infoMessage(channel, text, tags);
             } else if (isChannelOpen(channel)) {
-                infoMessage(channel, text);
+                infoMessage(channel, text, tags);
                 
                 Room room = rooms.getRoom(channel);
                 if (room.isChatroom()) {
                     if (tags.isValue("msg-id", "no_permission")) {
-                        listener.onInfo(room, "Cancelled trying to join channel.");
+                        info(room, "Cancelled trying to join channel.", null);
                         joinChecker.cancel(channel);
                     }
                 }
@@ -1128,15 +1124,15 @@ public class TwitchConnection {
          * @param channel
          * @param text 
          */
-        private void infoMessage(String channel, String text) {
+        private void infoMessage(String channel, String text, MsgTags tags) {
             if (text.startsWith("The moderators of")) {
                 parseModeratorsList(text, channel);
             } else {
-                info(channel, "[Info] " + text);
+                info(channel, "[Info] " + text, tags);
             }
             if (text.startsWith("The VIPs of this channel are")) {
                 List<String> vipsList = TwitchCommands.parseModsList(text);
-                info(channel, "There are "+vipsList.size()+" VIPs on this channel.");
+                info(channel, "There are "+vipsList.size()+" VIPs on this channel.", null);
             }
         }
 
@@ -1166,13 +1162,13 @@ public class TwitchConnection {
              */
             if (!twitchCommands.waitingForModsSilent()
                     || (channel != null && !twitchCommands.removeModsSilent(channel))) {
-                info(channel, "[Info] " + text);
+                info(channel, "[Info] " + text, null);
 
                 // Output appropriate message
                 if (modsList.size() > 0) {
-                    info(channel, "There are " + modsList.size() + " mods for this channel.");
+                    info(channel, "There are " + modsList.size() + " mods for this channel.", null);
                 } else {
-                    info(channel, "There are no mods for this channel.");
+                    info(channel, "There are no mods for this channel.", null);
                 }
             } else {
                 debug("Silent mods list (" + channel + ")");
@@ -1359,11 +1355,11 @@ public class TwitchConnection {
                     }
                 }
             } else if (command.equals("SERVERCHANGE")) {
-                listener.onInfo(rooms.getRoom(channel), "*** You may be on the wrong server "
+                info(rooms.getRoom(channel), "*** You may be on the wrong server "
                         + "for this channel. Enter /fixserver to connect to the "
                         + "correct server (which may cause other channels to not "
                         + "work anymore, because Chatty only supports one main "
-                        + "connection to a single server). ***");
+                        + "connection to a single server). ***", null);
             }
         }
         
@@ -1420,8 +1416,12 @@ public class TwitchConnection {
         return user;
     }
     
-    public void info(String channel, String message) {
-        listener.onInfo(rooms.getRoom(channel), message);
+    public void info(String channel, String message, MsgTags tags) {
+        listener.onInfo(rooms.getRoom(channel), message, tags);
+    }
+    
+    public void info(Room room, String message, MsgTags tags) {
+        listener.onInfo(room, message, tags);
     }
     
     public void info(String message) {
@@ -1464,7 +1464,7 @@ public class TwitchConnection {
          * @param channel The channel the info message belongs to
          * @param infoMessage The info message
          */
-        void onInfo(Room room, String infoMessage);
+        void onInfo(Room room, String infoMessage, MsgTags tags);
 
         /**
          * An info message, usually intended to be directly output to the user.
