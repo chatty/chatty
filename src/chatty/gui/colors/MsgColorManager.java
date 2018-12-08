@@ -1,7 +1,9 @@
 
 package chatty.gui.colors;
 
+import chatty.Addressbook;
 import chatty.User;
+import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.HtmlColors;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -119,16 +121,25 @@ public class MsgColorManager {
      * @param text
      * @return 
      */
-    public synchronized ColorItem getColor(User user, String text) {
+    public synchronized ColorItem getColor(HighlightItem.Type type, User user,
+            String text, String channel, Addressbook ab) {
         if (data == null || !settings.getBoolean(ENABLED_SETTING)) {
             return EMPTY;
         }
         for (MsgColorItem item : data) {
-            if (item.matches(user, text)) {
+            if (item.matches(type, text, channel, ab, user)) {
                 return item;
             }
         }
         return EMPTY;
+    }
+    
+    public synchronized ColorItem getMsgColor(User user, String text) {
+        return getColor(HighlightItem.Type.REGULAR, user, text, user.getChannel(), user.getAddressbook());
+    }
+    
+    public synchronized ColorItem getInfoColor(String text, String channel, Addressbook ab) {
+        return getColor(HighlightItem.Type.INFO, null, text, channel, ab);
     }
     
 }

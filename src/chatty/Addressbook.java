@@ -597,6 +597,22 @@ public class Addressbook {
     }
     
     /**
+     * Check whether the given name contains the given category.
+     * 
+     * @param name
+     * @param category
+     * @return true if an entry with the given name exists and has the given
+     * category
+     */
+    public synchronized boolean hasCategory(String name, String category) {
+        AddressbookEntry entry = get(name);
+        if (entry != null) {
+            return entry.hasCategory(category);
+        }
+        return false;
+    }
+    
+    /**
      * Returns all entries.
      * 
      * @return A list of all entries.

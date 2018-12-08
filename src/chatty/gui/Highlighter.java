@@ -1,9 +1,9 @@
 
 package chatty.gui;
 
+import chatty.Addressbook;
 import chatty.Helper;
 import chatty.User;
-import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -22,7 +21,9 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Checks if a given String matches the saved highlight items.
+ * Used for checking messages against stored items, including additional
+ * settings such as a blacklist. Not only used for Highlighting, but that is
+ * where the name originates.
  * 
  * @author tduva
  */
@@ -106,10 +107,6 @@ public class Highlighter {
         this.highlightNextMessages = highlight;
     }
     
-    public boolean check(User user, String text) {
-        return checkMatch(user, text);
-    }
-    
     /**
      * Returns the color for the last match, which can be used to make the
      * highlight appear in the appropriate custom color.
@@ -132,6 +129,12 @@ public class Highlighter {
         return lastMatchNoSound;
     }
     
+    /**
+     * Get all text matches from the last match (only from the item that caused
+     * the match).
+     * 
+     * @return 
+     */
     public List<Match> getLastTextMatches() {
         return lastTextMatches;
     }
@@ -141,16 +144,44 @@ public class Highlighter {
     }
     
     /**
-     * Checks whether the given message consisting of username and text should
-     * be highlighted.
+     * Check if this matches as a REGULAR message, getting all additional data
+     * from the User. See  for more.
      * 
-     * @param userName The name of the user who send the message
-     * @param text The text of the message
-     * @return true if the message should be highlighted, false otherwise
+     * @param user The User associated with this message
+     * @param text The message text
+     * @return true if the message matches, false otherwise
+     * @see #check(HighlightItem.Type, String, String, Addressbook, User)
      */
-    private boolean checkMatch(User user, String text) {
-        
-        Blacklist blacklist = new Blacklist(user, text, blacklistItems, false);
+    public boolean check(User user, String text) {
+        return Highlighter.this.check(HighlightItem.Type.REGULAR, text, null, null, user);
+    }
+    
+    /**
+     * Check if the message with the given data matches the stored items and a
+     * match is not prevented by the blacklist.
+     * <p>
+     * The channel, Addressbook and User can be null, in which case any
+     * associated requirements are ignored. If User is not null, then channel
+     * and Addressbook, if null, will be retrieved from User.
+     * <p>
+     * Use {@link #update(List)} and {@link #updateBlacklist(List)} and other
+     * setting methods to define what is being matched by this Highlighter.
+     * 
+     * @param type What kind of message this is, REGULAR, INFO or ANY (which
+     * means the type is ignored)
+     * @param text The text of the message to check
+     * @param channel The channel of this message
+     * @param ab The Addressbook for checking channel category
+     * @param user The User associated with this message, for checking username
+     * and user Addressbook category
+     * @return true if the message matches, false otherwise
+     */
+    public boolean check(HighlightItem.Type type, String text, String channel,
+            Addressbook ab, User user) {
+        Blacklist blacklist = null;
+        if (!blacklistItems.isEmpty()) {
+            blacklist = new Blacklist(type, text, channel, ab, user, blacklistItems);
+        }
         
         // Only reset matches, since the other variables are filled anyway,
         // except for "follow-up", where they should stay the same
@@ -158,7 +189,8 @@ public class Highlighter {
         
         // Try to match own name first (if enabled)
         if (highlightUsername && usernameItem != null &&
-                usernameItem.matches(user, text, true, blacklist)) {
+                usernameItem.matches(HighlightItem.Type.REGULAR, text, blacklist,
+                        channel, ab, user)) {
             fillLastMatchVariables(usernameItem, text);
             addMatch(user, usernameItem);
             return true;
@@ -166,7 +198,7 @@ public class Highlighter {
         
         // Then try to match against the items
         for (HighlightItem item : items) {
-            if (item.matches(user, text, false, blacklist)) {
+            if (item.matches(type, text, blacklist, channel, ab, user)) {
                 fillLastMatchVariables(item, text);
                 addMatch(user, item);
                 return true;
@@ -224,6 +256,10 @@ public class Highlighter {
      */
     public static class HighlightItem {
         
+        public enum Type {
+            REGULAR, INFO, ANY
+        }
+        
         /**
          * A regex that will never match.
          */
@@ -242,7 +278,7 @@ public class Highlighter {
         private Color backgroundColor;
         private boolean noNotification;
         private boolean noSound;
-        private boolean appliesToInfo;
+        private Type appliesToType = Type.REGULAR;
         private boolean firstMsg;
         // Replacement string for filtering parts of a message
         private String replacement;
@@ -404,7 +440,9 @@ public class Highlighter {
                         } else if (part.equals("!notify")) {
                             noNotification = true;
                         } else if (part.equals("info")) {
-                            appliesToInfo = true;
+                            appliesToType = Type.INFO;
+                        } else if (part.equals("any")) {
+                            appliesToType = Type.ANY;
                         } else if (part.equals("firstmsg")) {
                             firstMsg = true;
                         }
@@ -527,73 +565,107 @@ public class Highlighter {
             return null;
         }
         
-        public boolean matches(String text) {
-            return matches(null, text, true, null);
+        public boolean matchesAny(String text, Blacklist blacklist) {
+            return matches(Type.ANY, text, blacklist, null);
         }
         
-        public boolean matches(User user, String text) {
-            return matches(user, text, false, null);
+        public boolean matches(Type type, String text, User user) {
+            return matches(type, text, null, null, null, user);
+        }
+        
+        public boolean matches(Type type, String text, Blacklist blacklist,
+                User user) {
+            return matches(type, text, blacklist, null, null, user);
+        }
+        
+        public boolean matches(Type type, String text, String channel, Addressbook ab) {
+            return matches(type, text, null, channel, ab, null);
         }
         
         /**
          * Check whether a message matches this item.
          * 
-         * @param user The User object, or null if this message has none
+         * The type of the message can be ANY to disregard what type this item
+         * applies to, otherwise the type has to be equal, unless the item
+         * itself applies to ANY.
+         * 
+         * The channel, Addressbook and User can be null, in which case any
+         * associated requirements are ignored. If User is not null, then
+         * channel and Addressbook, if null, will be retrieved from User.
+         * 
+         * @param type The type of this message
          * @param text The text as received
-         * @param noUserRequired Will continue matching when no User object is
-         * given, even without config:info
-         * @param blacklist
+         * @param blacklist The blacklist, can be null
+         * @param channel The channel, can be null
+         * @param ab The Addressbook, can be null
+         * @param user The User object, can be null
          * @return true if it matches, false otherwise
          */
-        public boolean matches(User user, String text, boolean noUserRequired,
-                Blacklist blacklist) {
-            /**
-             * Check text matching, if present.
-             */
+        public boolean matches(Type type, String text, Blacklist blacklist,
+                String channel, Addressbook ab, User user) {
+            //------
+            // Type
+            //------
+            if (type != appliesToType && appliesToType != Type.ANY
+                    && type != Type.ANY) {
+                return false;
+            }
+            
+            //------
+            // Text
+            //------
             if (pattern != null && !matchesPattern(text, blacklist)) {
                 return false;
             }
-            /**
-             * This was called without User object, so only match if either
-             * "config:info" was present or wanted by the caller (e.g. if only
-             * applied to one message type).
-             */
-            if (user == null) {
-                return appliesToInfo || noUserRequired;
+            
+            //---------
+            // Channel
+            //---------
+            if (channel == null && user != null) {
+                channel = user.getChannel();
             }
-            /**
-             * If a User object was supplied and "config:info" was present, then
-             * this shouldn't be matched, because it can't be an info message.
-             * 
-             * TODO: If message types should be matched more reliably, there
-             * should probably be an extra message type parameter instead of
-             * reyling on whether an User object was supplied.
-             */
-            if (user != null && appliesToInfo) {
+            if (user != null) {
+                if (channel == null) {
+                    channel = user.getChannel();
+                }
+                if (ab == null) {
+                    ab = user.getAddressbook();
+                }
+            }
+            if (!channels.isEmpty() && channel != null
+                    && !channels.contains(channel)) {
                 return false;
             }
-            if (username != null && !username.equals(user.getName())) {
+            if (!notChannels.isEmpty() && channel != null
+                    && notChannels.contains(channel)) {
                 return false;
             }
-            if (usernamePattern != null && !usernamePattern.matcher(user.getName()).matches()) {
+            if (channelCategory != null && ab != null && channel != null
+                    && !ab.hasCategory(channel, channelCategory)) {
                 return false;
             }
-            if (category != null && !user.hasCategory(category)) {
+            if (channelCategoryNot != null && ab != null && channel != null
+                    && ab.hasCategory(channel, channelCategoryNot)) {
                 return false;
             }
-            if (categoryNot != null && user.hasCategory(categoryNot)) {
+
+            //------
+            // User
+            //------
+            if (username != null && user != null
+                    && !username.equals(user.getName())) {
                 return false;
             }
-            if (!channels.isEmpty() && !channels.contains(user.getChannel())) {
+            if (usernamePattern != null && user != null
+                    && !usernamePattern.matcher(user.getName()).matches()) {
                 return false;
             }
-            if (!notChannels.isEmpty() && notChannels.contains(user.getChannel())) {
+            if (category != null && user != null
+                    && !user.hasCategory(category)) {
                 return false;
             }
-            if (channelCategory != null && !user.hasCategory(channelCategory, user.getChannel())) {
-                return false;
-            }
-            if (channelCategoryNot != null && user.hasCategory(channelCategoryNot, user.getChannel())) {
+            if (categoryNot != null && user != null
+                    && user.hasCategory(categoryNot)) {
                 return false;
             }
             if (!checkStatus(user, statusReq)) {
@@ -602,9 +674,12 @@ public class Highlighter {
             if (!checkStatus(user, statusReqNot)) {
                 return false;
             }
-            if (firstMsg && user.getNumberOfMessages() > 0) { // Amount of messages is updated after printing message
+            // Message count is updated after printing message, so it checks 0
+            if (firstMsg && user != null
+                    && user.getNumberOfMessages() > 0) {
                 return false;
             }
+            // If all the requirements didn't make it fail, this matches
             return true;
         }
         
@@ -623,6 +698,9 @@ public class Highlighter {
         private boolean checkStatus(User user, Set<Status> req) {
             // No requirement, so always matching
             if (req.isEmpty()) {
+                return true;
+            }
+            if (user == null) {
                 return true;
             }
             /**
@@ -705,10 +783,22 @@ public class Highlighter {
         
         private final Collection<Match> blacklisted;
         
-        public Blacklist(User user, String text, Collection<HighlightItem> items, boolean noUserReq) {
+        /**
+         * Creates the blacklist for a specific message, using the stored
+         * blacklist items and the message data to get all relevant matches.
+         * 
+         * @param type The type of the message to create the Blacklist for
+         * @param text
+         * @param channel
+         * @param ab
+         * @param user
+         * @param items The HighlightItem objects that the Blacklist is based on
+         */
+        public Blacklist(HighlightItem.Type type, String text, String channel,
+                Addressbook ab, User user, Collection<HighlightItem> items) {
             blacklisted = new ArrayList<>();
             for (HighlightItem item : items) {
-                if (item.matches(user, text, noUserReq, null)) {
+                if (item.matches(type, text, null, channel, ab, user)) {
                     List<Match> matches = item.getTextMatches(text);
                     if (matches != null) {
                         blacklisted.addAll(matches);
@@ -726,6 +816,11 @@ public class Highlighter {
                 }
             }
             return false;
+        }
+        
+        @Override
+        public String toString() {
+            return blacklisted.toString();
         }
 
     }

@@ -1,6 +1,7 @@
 
 package chatty.gui.notifications;
 
+import chatty.Addressbook;
 import chatty.Helper;
 import chatty.User;
 import chatty.gui.Highlighter;
@@ -265,11 +266,11 @@ public class Notification {
         return channel.equalsIgnoreCase(this.channel);
     }
     
-    public boolean matches(User user, String text) {
+    public boolean matches(String text, String channel, Addressbook ab, User user) {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(user, text, true, null);
+        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user);
     }
     
     public boolean hasChannel() {

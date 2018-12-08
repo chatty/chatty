@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.Addressbook;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
@@ -31,6 +32,7 @@ import chatty.gui.components.admin.StatusHistory;
 import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
+import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.colors.ColorItem;
 import chatty.gui.colors.MsgColorItem;
@@ -160,7 +162,7 @@ public class MainGui extends JFrame implements Runnable {
     
     // Helpers
     private final Highlighter highlighter = new Highlighter();
-    private final Highlighter ignoreChecker = new Highlighter();
+    private final Highlighter ignoreList = new Highlighter();
     private final Highlighter filter = new Highlighter();
     private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
@@ -274,7 +276,7 @@ public class MainGui extends JFrame implements Runnable {
         trayIcon.addActionListener(new TrayMenuListener());
         notificationWindowManager = new NotificationWindowManager<>(this);
         notificationWindowManager.setNotificationActionListener(new MyNotificationActionListener());
-        notificationManager = new NotificationManager(this, client.settings);
+        notificationManager = new NotificationManager(this, client.settings, client.addressbook);
 
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
@@ -1002,7 +1004,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateIgnore() {
-        ignoreChecker.update(StringUtil.getStringList(client.settings.getList("ignore")));
+        ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
     }
     
     private void updateFilter() {
@@ -2741,8 +2743,7 @@ public class MainGui extends JFrame implements Runnable {
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
-                boolean ignored = checkHighlight(user, text, ignoreChecker, "ignore", isOwnMessage)
-                        || ignoredUser;
+                boolean ignored = checkMsg(ignoreList, "ignore", text, user, isOwnMessage) || ignoredUser;
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
                     client.chatLog.message(chan.getFilename(), user, text, action);
@@ -2752,7 +2753,7 @@ public class MainGui extends JFrame implements Runnable {
                 List<Match> highlightMatches = null;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
-                    highlighted = checkHighlight(user, text, highlighter, "highlight", isOwnMessage);
+                    highlighted = checkMsg(highlighter, "highlight", text, user, isOwnMessage);
                 }
                 
                 TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
@@ -2789,7 +2790,7 @@ public class MainGui extends JFrame implements Runnable {
                     if (!ignoredUser) {
                         // Text matches might not be valid if ignore was through
                         // ignored users list
-                        ignoreMatches = ignoreChecker.getLastTextMatches();
+                        ignoreMatches = ignoreList.getLastTextMatches();
                     }
                     ignoredMessages.addMessage(channel, user, text, action,
                             tagEmotes, bits, whisper, ignoreMatches);
@@ -2806,7 +2807,7 @@ public class MainGui extends JFrame implements Runnable {
                         printInfo(chan, InfoMessage.createInfo("Own message ignored."));
                     }
                 } else {
-                    boolean hasReplacements = checkHighlight(user, text, filter, "filter", isOwnMessage);
+                    boolean hasReplacements = checkMsg(filter, "filter", text, user, isOwnMessage);
 
                     // Print message, but determine how exactly
                     UserMessage message = new UserMessage(user, text, tagEmotes, id, bits,
@@ -2817,7 +2818,7 @@ public class MainGui extends JFrame implements Runnable {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
                     } else {
-                        ColorItem colorItem = msgColorManager.getColor(user, text);
+                        ColorItem colorItem = msgColorManager.getMsgColor(user, text);
                         message.color = colorItem.getForegroundIfEnabled();
                         message.backgroundColor = colorItem.getBackgroundIfEnabled();
                     }
@@ -2904,18 +2905,28 @@ public class MainGui extends JFrame implements Runnable {
         return Helper.filterCombiningCharacters(text, "****", mode);
     }
     
-    private boolean checkHighlight(User user, String text, Highlighter hl, String setting, boolean isOwnMessage) {
+    private boolean checkHighlight(HighlightItem.Type type, String text,
+            String channel, Addressbook ab, User user, Highlighter hl,
+            String setting, boolean isOwnMessage) {
         if (client.settings.getBoolean(setting + "Enabled")) {
             if (client.settings.getBoolean(setting + "OwnText") ||
                     !isOwnMessage) {
-                return hl.check(user, text);
+                return hl.check(type, text, channel, ab, user);
             }
         }
         return false;
     }
     
-    private boolean checkInfoIgnore(String text) {
-        return checkHighlight(null, text, ignoreChecker, "ignore", false);
+    private boolean checkMsg(Highlighter hl, String setting, String text,
+            User user, boolean isOwnMessage) {
+        return checkHighlight(HighlightItem.Type.REGULAR, text, null, null,
+                user, hl, setting, isOwnMessage);
+    }
+    
+    private boolean checkInfoMsg(Highlighter hl, String setting, String text,
+            String channel, Addressbook ab) {
+        return checkHighlight(HighlightItem.Type.INFO, text, channel, ab, null,
+                hl, setting, false);
     }
     
     protected void ignoredMessagesCount(String channel, String message) {
@@ -3063,13 +3074,13 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private boolean printInfo(Channel channel, InfoMessage message) {
-        boolean ignored = checkInfoIgnore(message.text);
+        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, channel.getChannel(), client.addressbook);
         if (!ignored) {
             //----------------
             // Output Message
             //----------------
             if (!message.isHidden()) {
-                boolean highlighted = checkHighlight(null, message.text, highlighter, "highlight", false);
+                boolean highlighted = checkInfoMsg(highlighter, "highlight", message.text, channel.getChannel(), client.addressbook);
                 if (highlighted) {
                     message.highlighted = true;
                     message.highlightMatches = highlighter.getLastTextMatches();
@@ -3086,7 +3097,8 @@ public class MainGui extends JFrame implements Runnable {
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound());
                 } else {
-                    ColorItem colorItem = msgColorManager.getColor(null, message.text);
+                    ColorItem colorItem = msgColorManager.getInfoColor(
+                            message.text, channel.getChannel(), client.addressbook);
                     message.color = colorItem.getForegroundIfEnabled();
                     message.bgColor = colorItem.getBackgroundIfEnabled();
                 }

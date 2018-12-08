@@ -1,8 +1,10 @@
 
 package chatty.gui.colors;
 
+import chatty.Addressbook;
 import chatty.User;
 import chatty.gui.Highlighter;
+import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.StringUtil;
 import java.awt.Color;
 
@@ -21,8 +23,9 @@ public class MsgColorItem extends ColorItem {
         this.search = new Highlighter.HighlightItem(item);
     }
     
-    public boolean matches(User user, String text) {
-        return search.matches(user, text);
+    public boolean matches(HighlightItem.Type type, String text, String channel,
+            Addressbook ab, User user) {
+        return search.matches(type, text, null, channel, ab, user);
     }
     
 }
