@@ -40,7 +40,15 @@ public class HighlightSettings extends SettingsPanel {
             + "<li><code>config:info</code> - Match info messages</li>"
             + "</ul>";
     
-    private static final String INFO_HIGHLIGHTS = INFO+"Example: <code>user:botimuz cs:Bets open</code>";
+    private static final String INFO_HIGHLIGHTS = INFO
+            +"Examples: "
+            + "<dl>"
+            + "<dt><code>user:botimuz cs:Bets open</code></dt>"
+            + "<dd>Matches the user Botimuz saying 'Bets open' (case sensitive)</dd>"
+            + "<dt><code>config:info [Notification]</code></dt>"
+            + "<dd>Matches info messages containing '[Notification]', so all "
+            + "sub notifications</dd>"
+            + "</dl>";
     
     private final NoHighlightUsers noHighlightUsers;
     private final HighlightBlacklist highlightBlacklist;

@@ -57,7 +57,7 @@ public class UsercolorSettings extends SettingsPanel {
         data = new ItemColorEditor<>(d,
                 (id, color, enabled, bg, bgEnabled) -> {
                     return new UsercolorItem(id, color);
-                }, false);
+                }, false, null);
         data.setRendererForColumn(0, new ItemIdRenderer());
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);

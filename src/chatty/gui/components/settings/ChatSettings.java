@@ -122,9 +122,10 @@ public class ChatSettings extends SettingsPanel {
         commandChoices.put("", "Off");
         commandChoices.put("/timeout", "Timeout");
         commandChoices.put("/ban", "Ban");
-        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 30, false, commandChoices);
-        commandPanel.add(commandOnCtrlClick,
-                d.makeGbc(1, 0, 1, 1));
+        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 100, true, commandChoices);
+        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        commandPanel.add(commandOnCtrlClick, gbc);
         
         gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(0, 0, 0, 0);

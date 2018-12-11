@@ -4,6 +4,7 @@ package chatty.gui.components.menus;
 import chatty.User;
 import chatty.lang.Language;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Set;
@@ -18,14 +19,16 @@ public class UserContextMenu extends ContextMenu {
     
     private final ContextMenuListener listener;
     private final User user;
+    private final String msgId;
     private final String autoModMsgId;
     
     private static final String MISC_MENU = Language.getString("userCm.menu.misc");
     
-    public UserContextMenu(User user, String autoModMsgId,
+    public UserContextMenu(User user, String msgId, String autoModMsgId,
             ContextMenuListener listener) {
         this.listener = listener;
         this.user = user;
+        this.msgId = msgId;
         this.autoModMsgId = autoModMsgId;
         
         addItem("userinfo", Language.getString("userCm.user", user.getDisplayNick()));
@@ -92,7 +95,7 @@ public class UserContextMenu extends ContextMenu {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (listener != null) {
-            listener.userMenuItemClicked(e, user, autoModMsgId);
+            listener.userMenuItemClicked(e, user, msgId, autoModMsgId);
         }
     }
 }

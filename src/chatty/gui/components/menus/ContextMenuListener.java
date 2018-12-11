@@ -14,7 +14,7 @@ import java.util.Collection;
  * @author tduva
  */
 public interface ContextMenuListener {
-    public void userMenuItemClicked(ActionEvent e, User user, String msgId);
+    public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId);
     public void urlMenuItemClicked(ActionEvent e, String url);
     public void menuItemClicked(ActionEvent e);
     public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms);

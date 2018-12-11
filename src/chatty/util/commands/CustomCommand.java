@@ -78,6 +78,10 @@ public class CustomCommand {
         }
     }
     
+    public static CustomCommand createDefault(String commandName) {
+        return parse(commandName+" $1-");
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

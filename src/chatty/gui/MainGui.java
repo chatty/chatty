@@ -1249,9 +1249,9 @@ public class MainGui extends JFrame implements Runnable {
             Channel chan = channels.getChannelFromInput(event.getSource());
             if (chan != null) {
                 if (client.settings.getBoolean("emojiReplace")) {
-                    client.textInput(chan.getRoom(), emoticons.emojiReplace(chan.getInputText()));
+                    client.textInput(chan.getRoom(), emoticons.emojiReplace(chan.getInputText()), null);
                 } else {
-                    client.textInput(chan.getRoom(), chan.getInputText());
+                    client.textInput(chan.getRoom(), chan.getInputText(), null);
                 }
             }
 
@@ -1567,7 +1567,7 @@ public class MainGui extends JFrame implements Runnable {
          * @param user 
          */
         @Override
-        public void userMenuItemClicked(ActionEvent e, User user, String autoModMsgId) {
+        public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
             String cmd = e.getActionCommand();
             if (cmd.equals("userinfo")) {
                 openUserInfoDialog(user, null, autoModMsgId);
@@ -1598,7 +1598,9 @@ public class MainGui extends JFrame implements Runnable {
                 setCustomName(user.getName());
             }
             else if (cmd.startsWith("command")) {
-                customCommand(user.getRoom(), e, user.getRegularDisplayNick());
+                Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+                parameters.put("msg-id", msgId);
+                customCommand(user.getRoom(), e, parameters);
             } else if (cmd.equals("copyNick")) {
                 MiscUtil.copyToClipboard(user.getName());
             } else if (cmd.equals("copyDisplayNick")) {
@@ -1680,7 +1682,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             else if (cmd.equals("joinHostedChannel")) {
-                client.command(channels.getActiveChannel().getRoom(), "joinhosted", null);
+                client.command(channels.getActiveChannel().getRoom(), "joinhosted");
             }
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channels.getActiveChannel());
@@ -1690,7 +1692,8 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.startsWith("command")) {
                 // TODO: Check getStreamName()
-                customCommand(channels.getActiveChannel().getRoom(), e, channels.getActiveChannel().getStreamName());
+                customCommand(channels.getActiveChannel().getRoom(), e,
+                        Parameters.create(channels.getActiveChannel().getStreamName()));
             }
             else if (cmd.startsWith("historyRange")) {
                 int range = Integer.parseInt(cmd.substring("historyRange".length()));
@@ -1922,7 +1925,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             } else if (cmd.startsWith("command")) {
-                customCommand(channels.getLastActiveChannel().getRoom(), e, StringUtil.join(streams, " "));
+                customCommand(channels.getLastActiveChannel().getRoom(), e, Parameters.create(StringUtil.join(streams, " ")));
             }
         }
 
@@ -2010,10 +2013,10 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         
-        private void customCommand(Room room, ActionEvent e, String args) {
+        private void customCommand(Room room, ActionEvent e, Parameters parameters) {
             CommandActionEvent ce = (CommandActionEvent)e;
             CustomCommand command = ce.getCommand();
-            client.anonCustomCommand(room, command, Parameters.create(args));
+            client.anonCustomCommand(room, command, parameters);
         }
         
     }
@@ -2057,12 +2060,25 @@ public class MainGui extends JFrame implements Runnable {
                 openUserInfoDialog(user, msgId, autoModMsgId);
                 return;
             }
-            String command = client.settings.getString("commandOnCtrlClick");
-            if (command.startsWith("/")) {
-                command = command.substring(1);
-            }
-            if (e.isControlDown() && !command.isEmpty()) {
-                client.command(user.getRoom(), command, user.getRegularDisplayNick());
+            String command = client.settings.getString("commandOnCtrlClick").trim();
+            if (e.isControlDown() && command.length() > 1) {
+                CustomCommand customCommand;
+                Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+                parameters.put("msg-id", msgId);
+                if (command.contains(" ")) {
+                    // Assume that something containing a space is direct Custom Command
+                    customCommand = CustomCommand.parse(command);
+                } else {
+                    // Just a command name (old format)
+                    if (!command.startsWith("/")) {
+                        // Need to add since not calling client.command(), so
+                        // it would just be output to chat (but could just be
+                        // a command name)
+                        command = "/"+command;
+                    }
+                    customCommand = CustomCommand.createDefault(command);
+                }
+                client.anonCustomCommand(user.getRoom(), customCommand, parameters);
             } else if (!e.isAltDown()) {
                 openUserInfoDialog(user, msgId, autoModMsgId);
             }

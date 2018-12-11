@@ -26,8 +26,14 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
      */
     public void setComparator(Comparator<? super E> c) {
         comparator = c;
-        Collections.sort(data, c);
-        super.fireContentsChanged(this, 0, data.size());
+        resort();
+    }
+    
+    public void resort() {
+        if (comparator != null) {
+            Collections.sort(data, comparator);
+            super.fireContentsChanged(this, 0, data.size());
+        }
     }
 
     @Override
@@ -65,14 +71,6 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
             insertionPoint = -(insertionPoint + 1);
         }
         return insertionPoint;
-    }
-
-    public void updated(E item) {
-        int index = data.indexOf(item);
-        if (index == -1) {
-            return;
-        }
-        super.fireContentsChanged(this, index, index);
     }
 
     public void clear() {

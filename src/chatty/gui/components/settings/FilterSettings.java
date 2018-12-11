@@ -34,7 +34,8 @@ public class FilterSettings extends SettingsPanel {
             + "<dd>Same as previous, but replace with 'Schedule'.</dd>"
             + "</dl>"
             + "<em>Note:</em> This only filters the parts of the message that "
-            + "are matched. To ignore a message entirely use the Ignore feature.";
+            + "are matched. To ignore a message entirely use the Ignore feature."
+            + "<br /><em>Note:</em> This only works for regular chat messages.";
     
     public FilterSettings(SettingsDialog d) {
         super(true);

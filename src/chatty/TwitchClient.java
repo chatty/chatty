@@ -707,13 +707,13 @@ public class TwitchClient {
      * @param channel
      * @param text 
      */
-    public void textInput(Room room, String text) {
+    public void textInput(Room room, String text, Parameters commandParameters) {
         if (text.isEmpty()) {
             return;
         }
         String channel = room.getChannel();
         if (text.startsWith("/")) {
-            commandInput(room, text);
+            commandInput(room, text, commandParameters);
         }
         else {
             if (c.onChannel(channel)) {
@@ -784,44 +784,84 @@ public class TwitchClient {
     }
     
     /**
-     * Text has to start with a /.
+     * Execute a command from input, which means the text starts with a '/',
+     * followed by the command name and comma-separated arguments.
      * 
-     * This must be safe input (i.e. input directly by the local user) because
-     * this can execute all kind of commands.
+     * Use {@link #commandInput(Room, String, Parameters)} to carry over extra
+     * parameters.
      * 
-     * @param channel
-     * @param text
+     * @param room The room context
+     * @param text The raw text
      * @return 
      */
     public boolean commandInput(Room room, String text) {
-        String[] split = text.split(" ", 2);
-        String command = split[0].substring(1);
-        String parameter = null;
-        if (split.length == 2) {
-            parameter = split[1];
-        }
-        return command(room, command, parameter);
+        return commandInput(room, text, null);
     }
     
     /**
-     * Reacts on all of the commands entered in the channel input box.
+     * Execute a command from input, which means the text starts with a '/',
+     * followed by the command name and comma-separated arguments.
      * 
-     * This must be safe input (i.e. input directly by the local user) because
-     * this can execute all kind of commands.
+     * @param room The room context
+     * @param text The raw text
+     * @param parameters The parameters to carry over (args will be overwritten)
+     * @return 
+     */
+    public boolean commandInput(Room room, String text, Parameters parameters) {
+        String[] split = text.split(" ", 2);
+        String command = split[0].substring(1);
+        String args = null;
+        if (split.length == 2) {
+            args = split[1];
+        }
+        
+        // Overwrite args in Parameters with current
+        if (parameters == null) {
+            parameters = Parameters.create(args);
+        } else {
+            parameters.putArgs(args);
+        }
+        return command(room, command, parameters);
+    }
+    
+    /**
+     * Executes the command with the given name, which can be a built-in or
+     * Custom command, with no parameters.
      * 
-     * @param channel
-     * @param command
-     * @param parameter
+     * @param room The room context
+     * @param command The command name (no leading /)
+     * @return 
+     */
+    public boolean command(Room room, String command) {
+        return command(room, command, Parameters.create(null));
+    }
+    
+    /**
+     * Executes the command with the given name, which can be a built-in or
+     * Custom Command.
+     * 
+     * @param room The room context
+     * @param command The command name (no leading /)
+     * @param parameter The parameter, can be null
      * @return 
      */
     public boolean command(Room room, String command, String parameter) {
-        return command(room, command, parameter, null);
+        return command(room, command, Parameters.create(parameter));
     }
     
-    public boolean command(Room room, String command, String parameter,
-            String msgId) {
+    /**
+     * Executes the command with the given name, which can be a built-in or
+     * Custom Command.
+     * 
+     * @param room The room context
+     * @param command The command name (no leading /)
+     * @param parameters The parameters, can not be null
+     * @return 
+     */
+    public boolean command(Room room, String command, Parameters parameters) {
         String channel = room.getChannel();
-        //System.out.println(channel+" "+command+" "+parameter);
+        // Args could be null
+        String parameter = parameters.getArgs();
         command = StringUtil.toLowerCase(command);
         
         //---------------
@@ -1100,7 +1140,7 @@ public class TwitchClient {
             g.printSystem("[Proc] "+ProcessManager.command(parameter));
         }
         
-        else if (c.command(channel, command, parameter, msgId)) {
+        else if (c.command(channel, command, parameter, null)) {
             // Already done if true
         }
         
@@ -1111,7 +1151,7 @@ public class TwitchClient {
         // Has to be tested last, so regular commands with the same name take
         // precedence
         else if (customCommands.containsCommand(command, room)) {
-            customCommand(room, command, parameter);
+            customCommand(room, command, parameters);
         }
         
         else if (command.equals("debug")) {
@@ -1223,8 +1263,14 @@ public class TwitchClient {
             StreamInfo info = api.getStreamInfo(g.getActiveStream(), null);
             info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("tston")) {
+            int viewers = 12;
+            try {
+                viewers = Integer.parseInt(parameter);
+            } catch (NumberFormatException ex) { }
             StreamInfo info = api.getStreamInfo("tduva", null);
-            info.set("Test 2", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
+            info.set("Test 2", "Game", viewers, System.currentTimeMillis() - 1000, StreamType.LIVE);
+        } else if (command.equals("refreshstreams")) {
+            api.manualRefreshStreams();
         } else if (command.equals("usericonsinfo")) {
             usericonManager.debug();
         } else if (command.equals("userlisttest")) {
@@ -1397,11 +1443,11 @@ public class TwitchClient {
         } else if (result.isEmpty()) {
             g.printLine("Custom command: No action specified");
         } else {
-            textInput(room, result);
+            textInput(room, result, parameters);
         }
     }
     
-    public void customCommand(Room room, String command, String parameter) {
+    public void customCommand(Room room, String command, Parameters parameters) {
         if (room == null) {
             g.printLine("Custom command: Not on a channel");
             return;
@@ -1410,7 +1456,7 @@ public class TwitchClient {
             g.printLine("Custom command not found: "+command);
             return;
         }
-        String result = customCommands.command(command, Parameters.create(parameter), room);
+        String result = customCommands.command(command, parameters, room);
         if (result == null) {
             g.printLine("Custom command '"+command+"': Insufficient parameters/data");
         } else if (result.isEmpty()) {
@@ -1429,7 +1475,7 @@ public class TwitchClient {
                 g.printLine("Custom command '"+command+"': Calling another custom "
                         + "command ('"+resultCommand.substring(1)+"') is not allowed");
             } else {
-                textInput(room, result);
+                textInput(room, result, parameters);
             }
         }
     }

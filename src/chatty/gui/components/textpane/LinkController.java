@@ -331,7 +331,8 @@ public class LinkController extends MouseAdapter {
         Usericon usericon = getUsericon(element);
         JPopupMenu m;
         if (user != null) {
-            m = new UserContextMenu(user, getAutoModMsgId(element), contextMenuListener);
+            m = new UserContextMenu(user, getMsgId(element),
+                    getAutoModMsgId(element), contextMenuListener);
         }
         else if (url != null) {
             m = new UrlContextMenu(url, isUrlDeleted(element), contextMenuListener);

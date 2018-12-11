@@ -2082,7 +2082,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             } else {
                 rangeText = text.substring(start, end + 1);
             }
-            print(rangeText, rangeStyle);
+            if (!rangeText.isEmpty()) {
+                print(rangeText, rangeStyle);
+            }
             lastPrintedPos = end + 1;
         }
         // If anything is left, print that as well as regular text
@@ -2162,6 +2164,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (matches != null) {
             if (StringUtil.isNullOrEmpty(replacement)) {
                 replacement = "..";
+            } else if (replacement.equals("none")) {
+                replacement = "";
             }
             for (Match m : matches) {
                 if (!inRanges(m.start, ranges) && !inRanges(m.end, ranges)) {

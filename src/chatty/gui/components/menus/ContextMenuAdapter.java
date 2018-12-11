@@ -18,7 +18,7 @@ import java.util.List;
 public class ContextMenuAdapter implements ContextMenuListener {
 
     @Override
-    public void userMenuItemClicked(ActionEvent e, User user, String msgId) {
+    public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
 
     }
 

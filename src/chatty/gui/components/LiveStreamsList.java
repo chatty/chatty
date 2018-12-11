@@ -6,6 +6,7 @@ import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamInfosContextMenu;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
@@ -88,14 +89,23 @@ public class LiveStreamsList extends JList<StreamInfo> {
      */
     public void addStream(StreamInfo info) {
         if (info.isValidEnough() && info.getOnline()) {
-            if (data.contains(info)) {
-                data.remove(info);
+            if (Debugging.isEnabled("slold")) {
+                if (data.contains(info)) {
+                    data.remove(info);
+                }
+                data.add(info);
+            } else {
+                if (!data.contains(info)) {
+                    data.add(info);
+                }
             }
-            data.add(info);
             itemAdded(info);
         } else if (data.contains(info)) {
             data.remove(info);
             itemRemoved(info);
+        }
+        if (!Debugging.isEnabled("slold")) {
+            data.resort();
         }
         listDataChanged();
     }

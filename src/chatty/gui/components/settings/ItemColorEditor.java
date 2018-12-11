@@ -33,11 +33,11 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
     private final MyItemEditor<T> editor;
     
     public ItemColorEditor(JDialog owner,
-            ItemCreator<T> itemCreator, boolean editBackground) {
+            ItemCreator<T> itemCreator, boolean editBackground, Component info) {
         super(SORTING_MODE_MANUAL, false);
         this.itemCreator = itemCreator;
         this.data = new MyTableModel(editBackground);
-        this.editor = new MyItemEditor<>(owner, itemCreator, editBackground);
+        this.editor = new MyItemEditor<>(owner, itemCreator, editBackground, info);
         
         setModel(data);
         setItemEditor(editor);
@@ -187,7 +187,7 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
         boolean save;
         
         public MyItemEditor(JDialog owner, ItemCreator itemCreator,
-                boolean editBackground) {
+                boolean editBackground, Component info) {
             this.itemCreator = itemCreator;
             this.editBackground = editBackground;
             this.colorChooser = new ColorChooser(owner);
@@ -249,11 +249,15 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
             foregroundEnabled.addItemListener(e -> updateColors());
             backgroundEnabled.addItemListener(e -> updateColors());
             
+            gbc = GuiUtil.makeGbc(1, 1, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
             dialog.add(foreground,
-                    GuiUtil.makeGbc(1, 1, 2, 1));
+                    gbc);
             if (editBackground) {
+                gbc = GuiUtil.makeGbc(1, 2, 2, 1);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
                 dialog.add(background,
-                        GuiUtil.makeGbc(1, 2, 2, 1));
+                        gbc);
                 dialog.add(foregroundEnabled,
                         GuiUtil.makeGbc(0, 1, 1, 1));
                 dialog.add(backgroundEnabled,
@@ -262,11 +266,18 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
                 backgroundEnabled.setSelected(false);
             }
             
-            gbc = GuiUtil.makeGbc(1, 3, 1, 1);
+            if (info != null) {
+                gbc = GuiUtil.makeGbc(0, 3, 3, 1, GridBagConstraints.CENTER);
+                gbc.weightx = 1;
+                dialog.add(info, gbc);
+            }
+            
+            gbc = GuiUtil.makeGbc(1, 4, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1;
+            gbc.weightx = 0.5;
             dialog.add(ok, gbc);
-            dialog.add(cancel, GuiUtil.makeGbc(2, 3, 1, 1));
+            gbc = GuiUtil.makeGbc(2, 4, 1, 1);
+            dialog.add(cancel, gbc);
             
             dialog.pack();
             dialog.setResizable(false);
