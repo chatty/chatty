@@ -188,19 +188,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         setCaret(caret);
         styles.setStyles();
         
-        if (special) {
-            updateTimer = new javax.swing.Timer(2000, new ActionListener() {
+        updateTimer = new javax.swing.Timer(500, new ActionListener() {
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (special) {
                     removeOldLines();
                 }
-            });
-            updateTimer.setRepeats(true);
-            updateTimer.start();
-        } else {
-            updateTimer = null;
-        }
+                removeAbandonedModLogInfo();
+            }
+        });
+        updateTimer.setRepeats(true);
+        updateTimer.start();
         
         FixSelection.install(this);
     }
@@ -527,7 +526,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
             if (!message.isHidden()) {
                 // Show separate ModAction message
-                printLine(message.text);
+                printInfoMessage2(message, style);
             }
         } else if (message instanceof UserNotice) {
             printUsernotice((UserNotice) message, style);
@@ -537,15 +536,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             //--------------------
             // Other Info Message
             //--------------------
-            closeCompactMode();
-            print(getTimePrefix(), style);
-            printSpecialsInfo(message.text, style, message.highlightMatches);
+            printInfoMessage2(message, style);
             
             String command = message.makeCommand();
             if (command != null) {
                 setLineCommand(doc.getLength(), command);
             }
-            finishLine();
             
             replayModLogInfo();
         }
@@ -562,6 +558,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
     }
     
+    private void printInfoMessage2(InfoMessage message, AttributeSet style) {
+        closeCompactMode();
+        print(getTimePrefix(), style);
+        printSpecialsInfo(message.text, style, message.highlightMatches);
+        finishLine();
+    }
+    
     private final java.util.List<ModLogInfo> cachedModLogInfo = new ArrayList<>();
     
     // Wait for an action to occur after the ModLog has come in (ms)
@@ -573,20 +576,43 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * ModLog message (info from different connections).
      */
     private void replayModLogInfo() {
+        removeAbandonedModLogInfo();
+        if (cachedModLogInfo.isEmpty()) {
+            return;
+        }
         Debugging.println("modlog", "ModLog Replay %s", cachedModLogInfo);
         Iterator<ModLogInfo> it = cachedModLogInfo.iterator();
         while (it.hasNext()) {
             ModLogInfo info = it.next();
-            if (info.age() > MOD_ACTION_WAIT) {
+            boolean success = printModLogInfo(info);
+            if (success) {
                 it.remove();
-            } else {
-                boolean success = printModLogInfo(info);
-                if (success) {
-                    it.remove();
-                }
             }
         }
         Debugging.println("modlog", "ModLog Replay After %s", cachedModLogInfo);
+    }
+    
+    /**
+     * Remove ModLogInfo objects cached for replay that are too old, and send
+     * them back for ModAction output if applicable.
+     */
+    private void removeAbandonedModLogInfo() {
+        if (cachedModLogInfo.isEmpty()) {
+            return;
+        }
+        Iterator<ModLogInfo> it = cachedModLogInfo.iterator();
+        while (it.hasNext()) {
+            ModLogInfo info = it.next();
+            if (info.age() > MOD_ACTION_WAIT) {
+                Debugging.println("modlog", "ModLogAction Abandoned: %s", info);
+                it.remove();
+                if (info.isHidden()) {
+                    // Only output if originally was hidden, so it's not already
+                    // (sent back so highlighting etc. can be applied properly)
+                    main.printAbandonedModLogInfo(info);
+                }
+            }
+        }
     }
     
     private boolean printModLogInfo(ModLogInfo info) {
@@ -2006,7 +2032,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         finishLine();
     }
 
-    private void printSpecialsInfo(String text, MutableAttributeSet style,
+    private void printSpecialsInfo(String text, AttributeSet style,
             java.util.List<Match> highlightMatches) {
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
@@ -2057,7 +2083,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private void printSpecials(User user, String text,
-            MutableAttributeSet style,
+            AttributeSet style,
             Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle,
             java.util.List<Match> highlightMatches) {
@@ -2105,7 +2131,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param style
      * @param highlightMatches 
      */
-    private void specialPrint(User user, String text, int start, int end, MutableAttributeSet style, java.util.List<Match> highlightMatches) {
+    private void specialPrint(User user, String text, int start, int end, AttributeSet style, java.util.List<Match> highlightMatches) {
         if (highlightMatches != null) {
             for (Match m : highlightMatches) {
                 if (m.start < end && m.end > start) {

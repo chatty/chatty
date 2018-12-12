@@ -3123,7 +3123,7 @@ public class MainGui extends JFrame implements Runnable {
             if (channel.getType() == Channel.Type.SPECIAL) {
                 channels.setChannelNewMessage(channel);
             }
-        } else {
+        } else if (!message.isHidden()) {
             ignoredMessages.addInfoMessage(channel.getRoom().getDisplayName(), message.text);
         }
         
@@ -3132,7 +3132,10 @@ public class MainGui extends JFrame implements Runnable {
         //----------
         if (message.isSystemMsg()) {
             client.chatLog.system(channel.getFilename(), message.text);
-        } else {
+        } else if (!message.text.startsWith("[ModAction]")) {
+            // ModLog message could be ModLogInfo or generic ModInfo (e.g. for
+            // abandoned messages), so just checking the text instead of type or
+            // something (ModActions are logged separately)
             client.chatLog.info(channel.getFilename(), message.text);
         }
         return !ignored;
@@ -3268,14 +3271,29 @@ public class MainGui extends JFrame implements Runnable {
                     boolean showMessage = showActions && !ownAction
                             && !(showActionsRestrict && ModLogInfo.isBanOrInfoAssociated(data));
                     boolean showActionby = client.settings.getBoolean("showActionBy");
-                    ModLogInfo infoMessage = new ModLogInfo(data, showActionby);
-                    infoMessage.setHidden(!showMessage);
                     for (Channel chan : chans) {
+                        // Create for each channel, just in case (since they get
+                        // modified)
+                        ModLogInfo infoMessage = new ModLogInfo(chan, data, showActionby, ownAction);
+                        infoMessage.setHidden(!showMessage);
                         printInfo(chan, infoMessage);
                     }
                 }
             }
         });
+    }
+    
+    /**
+     * If not matching message was found for the ModAction to append the @mod,
+     * then output anyway.
+     * 
+     * @param info 
+     */
+    public void printAbandonedModLogInfo(ModLogInfo info) {
+        boolean showActions = client.settings.getBoolean("showModActions");
+        if (showActions && !info.ownAction) {
+            printInfo(info.chan, InfoMessage.createInfo(info.text));
+        }
     }
     
     public void autoModRequestResult(final String result, final String msgId) {

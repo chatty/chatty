@@ -1,6 +1,7 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.gui.components.Channel;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.util.Arrays;
@@ -18,11 +19,16 @@ public class ModLogInfo extends InfoMessage {
     
     public final ModeratorActionData data;
     public final boolean showActionBy;
+    public final boolean ownAction;
+    public final Channel chan;
     
-    public ModLogInfo(ModeratorActionData data, boolean showActionBy) {
+    public ModLogInfo(Channel chan, ModeratorActionData data,
+            boolean showActionBy, boolean ownAction) {
         super(Type.INFO, makeText(data));
+        this.chan = chan;
         this.data = data;
         this.showActionBy = showActionBy;
+        this.ownAction = ownAction;
     }
     
     private static String makeText(ModeratorActionData data) {

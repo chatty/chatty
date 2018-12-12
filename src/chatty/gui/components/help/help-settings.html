@@ -634,10 +634,32 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <dl class="dl-settings">
-        <dt>Show moderator actions in chat</dt>
+        <dt>Show Moderator Actions in chat</dt>
         <dd>Show commands that moderators execute directly in chat. You can also
             view the same messages under <code>Extra - Moderation Log</code>.
-            Only works if you are a moderator yourself.</dd>
+            Only works if you are a moderator yourself.
+            <dl class="dl-settings dl-settings-sub">
+                <dt>Hide if associated action already visible in chat (e.g. ban)</dt>
+                <dd>Example: If a mod turns on Subscriber-Only mode, everyone
+                    will get an info message about it, which means (if enabled,
+                    for mods) @Mod will be appended to that info message. Due to
+                    this, no separate Mod Action message will be shown.</dd>
+                <dd>On the other hand, if a mod unbans someone, there is no
+                    associated message in chat, so (if enabled) a separate Mod
+                    Action message will always be shown.</dd>
+                <dd>In addition, if a mod bans someone, but no message of that
+                    user is currently visible in chat, then a separate Mod
+                    Action message might be shown.</dd>
+            </dl>
+        </dd>
+        
+        <dt>Append which @Mod caused an Action (e.g. ban)</dt>
+        <dd>Append the name of the moderator to actions in chat, for example
+            behind a deleted message or an info message such as
+            <code>[Info] This room is now in subscribers-only mode. (@tduva)</code>.</dd>
+        <dd>Note that the association of Mod Action and existing message in chat
+            may not always be perfect, especially if different mods perform the
+            same or similiar action at the same time.</dd>
         
         <dt>Show messages rejected by AutoMod</dt>
         <dd>Show messages that have to be approved directly in chat. To approve
