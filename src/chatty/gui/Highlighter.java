@@ -189,7 +189,7 @@ public class Highlighter {
         
         // Try to match own name first (if enabled)
         if (highlightUsername && usernameItem != null &&
-                usernameItem.matches(HighlightItem.Type.REGULAR, text, blacklist,
+                usernameItem.matches(type, text, blacklist,
                         channel, ab, user)) {
             fillLastMatchVariables(usernameItem, text);
             addMatch(user, usernameItem);
