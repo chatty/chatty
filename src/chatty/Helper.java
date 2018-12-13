@@ -660,22 +660,23 @@ public class Helper {
                 banInfo = "(banned)";
             }
         }
-        if (reasonEnabled) {
-            if (reason != null && !reason.isEmpty()) {
-                banInfo = StringUtil.append(banInfo, " ", "[" + reason + "]");
-            }
-        }
+        // Reason not via IRC anymore
+//        if (reasonEnabled) {
+//            if (reason != null && !reason.isEmpty()) {
+//                banInfo = StringUtil.append(banInfo, " ", "[" + reason + "]");
+//            }
+//        }
         return banInfo;
     }
     
     public static String makeBanCommand(User user, long duration, String reason, String id) {
         if (duration > 0) {
-            return StringUtil.concats("timeout", user.getName(), duration, reason).trim();
+            return StringUtil.concats("timeout", user.getName(), duration).trim();
         }
         if (duration == -2) {
             return StringUtil.concats("delete", id).trim();
         }
-        return StringUtil.concats("ban", user.getName(), reason).trim();
+        return StringUtil.concats("ban", user.getName()).trim();
     }
     
     public static Dimension getDimensionFromParameter(String parameter) {

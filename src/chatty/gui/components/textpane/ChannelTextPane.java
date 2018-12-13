@@ -120,7 +120,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND,
         
-        IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY
+        IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
+        ACTION_REASON
     }
     
     public enum MessageType {
@@ -601,6 +602,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return;
         }
         Iterator<ModLogInfo> it = cachedModLogInfo.iterator();
+        java.util.List<ModLogInfo> print = new ArrayList<>();
         while (it.hasNext()) {
             ModLogInfo info = it.next();
             if (info.age() > MOD_ACTION_WAIT) {
@@ -609,9 +611,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 if (info.isHidden()) {
                     // Only output if originally was hidden, so it's not already
                     // (sent back so highlighting etc. can be applied properly)
-                    main.printAbandonedModLogInfo(info);
+                    print.add(info);
                 }
             }
+        }
+        // Don't output while in loop
+        for (ModLogInfo info : print) {
+            main.printAbandonedModLogInfo(info);
         }
     }
     
@@ -640,6 +646,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     }
                     changeInfo(line, attributes -> {
                         attributes.addAttribute(Attribute.ACTION_BY, info.data.created_by);
+                        attributes.addAttribute(Attribute.ACTION_REASON, info.getReason());
                     });
                     return true;
                 }
@@ -695,21 +702,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param line 
      */
     private void increasePreviousBanMessage(Element line, final long duration, final String reason) {
-        changeInfo(line, new InfoChanger() {
-
-            @Override
-            public void changeInfo(MutableAttributeSet attributes) {
-                Integer count = (Integer)attributes.getAttribute(Attribute.BAN_MESSAGE_COUNT);
-                if (count == null) {
-                    // If it doesn't exist set to 2, because this will be the second
-                    // timeout this message represents
-                    count = 2;
-                } else {
-                    // Otherwise increase number and removet text of previous number
-                    count++;
-                }
-                attributes.addAttribute(Attribute.BAN_MESSAGE_COUNT, count);
+        changeInfo(line, attributes -> {
+            Integer count = (Integer) attributes.getAttribute(Attribute.BAN_MESSAGE_COUNT);
+            if (count == null) {
+                // If it doesn't exist set to 2, because this will be the second
+                // timeout this message represents
+                count = 2;
+            } else {
+                // Otherwise increase number and removet text of previous number
+                count++;
             }
+            attributes.addAttribute(Attribute.BAN_MESSAGE_COUNT, count);
         });
     }
     
@@ -764,6 +767,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             String infoText = (String)attributes.getAttribute(Attribute.INFO_TEXT);
             if (infoText != null && !infoText.isEmpty()) {
                 text = StringUtil.append(text, " ", infoText);
+            }
+            
+            String actionReason = (String)attributes.getAttribute(Attribute.ACTION_REASON);
+            if (!StringUtil.isNullOrEmpty(actionReason)
+                    && styles.isEnabled(Setting.BAN_REASON_MESSAGE)) {
+                text = StringUtil.append(text, " ", "["+actionReason+"]");
             }
             
             String actionBy = (String)attributes.getAttribute(Attribute.ACTION_BY);
@@ -945,12 +954,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             info += "*";
         }
         final String info2 = info;
-        changeInfo(line, new InfoChanger() {
-
-            @Override
-            public void changeInfo(MutableAttributeSet attributes) {
-                attributes.addAttribute(Attribute.INFO_TEXT, info2);
-            }
+        changeInfo(line, attributes -> {
+            attributes.addAttribute(Attribute.INFO_TEXT, info2);
         });
     }
     

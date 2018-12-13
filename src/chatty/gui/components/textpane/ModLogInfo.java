@@ -41,8 +41,8 @@ public class ModLogInfo extends InfoMessage {
     @Override
     public String makeCommand() {
         switch (data.moderation_action) {
-            case "timeout":
-            case "ban": return data.getCommandAndParameters();
+            case "timeout": return makeTimeoutCommand();
+            case "ban": return makeBanCommand();
             case "delete": return makeDeleteCommand();
             default: return data.moderation_action;
         }
@@ -57,8 +57,37 @@ public class ModLogInfo extends InfoMessage {
     }
     
     private String makeDeleteCommand() {
-        if (data.args.size() == 3) {
+        if (data.args.size() > 2) {
             return data.moderation_action+" "+data.args.get(2);
+        }
+        return "";
+    }
+    
+    private String makeBanCommand() {
+        if (data.args.size() > 0) {
+            return data.moderation_action+" "+data.args.get(0);
+        }
+        return "";
+    }
+    
+    private String makeTimeoutCommand() {
+        if (data.args.size() > 1) {
+            return data.moderation_action+" "+data.args.get(0)+" "+data.args.get(1);
+        }
+        return "";
+    }
+    
+    public String getReason() {
+        switch (data.moderation_action) {
+            case "timeout": return getReason(2);
+            case "ban": return getReason(1);
+            default: return null;
+        }
+    }
+    
+    private String getReason(int index) {
+        if (data.args.size() > index && !data.args.get(index).isEmpty()) {
+            return data.args.get(index);
         }
         return null;
     }
