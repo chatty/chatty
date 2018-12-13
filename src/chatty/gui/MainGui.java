@@ -3274,6 +3274,7 @@ public class MainGui extends JFrame implements Runnable {
                     for (Channel chan : chans) {
                         // Create for each channel, just in case (since they get
                         // modified)
+                        // TODO: Output that output of reason or by isn't affected by ignore etc.
                         ModLogInfo infoMessage = new ModLogInfo(chan, data, showActionby, ownAction);
                         infoMessage.setHidden(!showMessage);
                         printInfo(chan, infoMessage);
