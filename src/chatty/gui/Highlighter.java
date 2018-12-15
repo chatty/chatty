@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.Helper;
 import chatty.User;

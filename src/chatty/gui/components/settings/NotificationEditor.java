@@ -2,7 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.LinkLabelListener;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.Notification.State;

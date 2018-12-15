@@ -3,7 +3,7 @@ package chatty.util.api.usericons;
 
 import chatty.Chatty;
 import chatty.Helper;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import static chatty.util.api.usericons.Usericon.SOURCE_CUSTOM;
 import static chatty.util.api.usericons.Usericon.SOURCE_FALLBACK;
 import static chatty.util.api.usericons.Usericon.SOURCE_OTHER;

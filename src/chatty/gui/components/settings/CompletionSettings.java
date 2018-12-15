@@ -129,7 +129,7 @@ public class CompletionSettings extends SettingsPanel {
             d.makeGbc(0, 3, 1, 1));
         
         appearance.add(
-            d.addComboStringSetting("completionSearch", 4, false, new String[]{"start", "words", "anywhere"}),
+            d.addComboStringSetting("completionSearch", false, new String[]{"start", "words", "anywhere"}),
             d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
 
         //==================

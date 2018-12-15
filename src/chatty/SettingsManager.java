@@ -2,13 +2,14 @@
 package chatty;
 
 import chatty.gui.components.updating.Version;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.WindowStateManager;
 import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.notifications.Notification;
 import chatty.util.BackupManager;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.colors.ColorCorrection;
 import chatty.util.hotkeys.Hotkey;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
@@ -243,6 +244,7 @@ public class SettingsManager {
         settings.addString("searchResultColor", "LightYellow");
         settings.addString("searchResultColor2", "#FFFF80");
         settings.addBoolean("colorCorrection", true);
+        settings.addString("nickColorCorrection", "normal");
         settings.addList("colorPresets", new ArrayList<>(), Setting.LIST);
         
         // Message Colors
@@ -771,7 +773,7 @@ public class SettingsManager {
         // Turn off Highlight Background if using dark background (if not loaded
         // from the settings yet)
         Color bgColor = HtmlColors.decode(settings.getString("backgroundColor"));
-        if (HtmlColors.getBrightness(bgColor) < 128 && !settings.isValueSet("highlightBackground")) {
+        if (ColorCorrection.isDarkColor(bgColor) && !settings.isValueSet("highlightBackground")) {
             settings.setBoolean("highlightBackground", false);
         }
         

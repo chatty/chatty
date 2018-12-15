@@ -4,7 +4,7 @@ package chatty;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.NamedColor;
 import chatty.util.StringUtil;
 import java.awt.Color;

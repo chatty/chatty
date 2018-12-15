@@ -2,7 +2,7 @@
 package chatty.util.api;
 
 import chatty.Chatty;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.api.CheerEmoticon.CheerEmoticonUrl;
 import java.awt.Color;
 import java.util.HashSet;

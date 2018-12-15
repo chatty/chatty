@@ -2,7 +2,7 @@
 package chatty.gui.colors;
 
 import chatty.Helper;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashSet;

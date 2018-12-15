@@ -4,7 +4,7 @@ package chatty.gui.colors;
 import chatty.Addressbook;
 import chatty.User;
 import chatty.gui.Highlighter.HighlightItem;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ import chatty.Addressbook;
 import chatty.Helper;
 import chatty.User;
 import chatty.gui.Highlighter;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.util.ArrayList;

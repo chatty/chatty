@@ -3,7 +3,7 @@ package chatty.gui.components.userinfo;
 
 import chatty.Helper;
 import chatty.User;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import static chatty.gui.components.userinfo.Util.makeGbc;

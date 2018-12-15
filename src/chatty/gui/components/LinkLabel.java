@@ -1,7 +1,7 @@
 
 package chatty.gui.components;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
 import java.awt.Color;
 import java.awt.Font;

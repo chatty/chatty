@@ -2,7 +2,7 @@
 package chatty.util.api.usericons;
 
 import chatty.Helper;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.ImageCache;
 import chatty.util.StringUtil;
 import java.awt.Color;

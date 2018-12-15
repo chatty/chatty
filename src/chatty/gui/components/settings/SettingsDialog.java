@@ -2,7 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
@@ -630,7 +630,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return null;
     }
     
-    protected ComboStringSetting addComboStringSetting(String name, int size, boolean editable, String[] choices) {
+    protected ComboStringSetting addComboStringSetting(String name, boolean editable, String[] choices) {
         Map<String, String> localizedChoices = new LinkedHashMap<>();
         for (String choice : choices) {
             String label = Language.getString("settings.string."+name+".option."+choice, false);
@@ -715,6 +715,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
     protected JTextField addSimpleLongSetting(String name, int size, boolean editable) {
         SimpleLongSetting result = new SimpleLongSetting(size, editable);
         addLongSetting(name, result);
+        return result;
+    }
+    
+    protected ComboLongSetting addComboLongSetting(String name, int[] choices) {
+        Map<Long, String> localizedChoices = new LinkedHashMap<>();
+        for (Integer choice : choices) {
+            String label = Language.getString("settings.long."+name+".option."+choice);
+            localizedChoices.put((long)choice, label);
+        }
+        ComboLongSetting result = new ComboLongSetting(localizedChoices);
+        longSettings.put(name, result);
         return result;
     }
     

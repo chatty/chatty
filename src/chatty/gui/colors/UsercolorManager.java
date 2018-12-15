@@ -3,7 +3,7 @@ package chatty.gui.colors;
 
 import chatty.Helper;
 import chatty.User;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;

@@ -7,7 +7,7 @@ import chatty.Helper;
 import chatty.SettingsManager;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.UserListener;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LinkListener;
 import chatty.gui.StyleServer;
 import chatty.gui.UrlOpener;
@@ -26,6 +26,7 @@ import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticon.EmoticonUser;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Emoticons.TagEmotes;
+import chatty.util.colors.ColorCorrector;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -3020,6 +3021,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         private SimpleDateFormat timestampFormat;
         
         private int bufferSize = -1;
+        
+        private ColorCorrector colorCorrector;
 
         /**
          * Icons that have been modified for use and saved into a style. Should
@@ -3174,6 +3177,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             styles.put("clearSearchResult", clearSearchResult);
             
             setBackground(styleServer.getColor("background"));
+            
+            colorCorrector = styleServer.getColorCorrector();
 
             return somethingChanged;
         }
@@ -3435,7 +3440,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 Color userColor = user.getColor();
                 // Only correct color if no custom color is defined
                 if (!user.hasCustomColor() && isEnabled(Setting.COLOR_CORRECTION)) {
-                    userColor = HtmlColors.correctReadability(userColor, getBackground());
+                    userColor = colorCorrector.correctColor(userColor, getBackground());
                     user.setCorrectedColor(userColor);
                 }
                 StyleConstants.setForeground(userStyle, userColor);

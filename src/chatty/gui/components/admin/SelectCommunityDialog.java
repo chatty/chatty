@@ -3,7 +3,7 @@ package chatty.gui.components.admin;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;
