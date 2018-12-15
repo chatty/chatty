@@ -66,6 +66,7 @@ import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.SplashScreen;
 import java.io.File;
@@ -232,7 +233,7 @@ public class TwitchClient {
 
         usercolorManager = new UsercolorManager(settings);
         usericonManager = new UsericonManager(settings);
-        customCommands = new CustomCommands(settings, api);
+        customCommands = new CustomCommands(settings, api, this);
         customCommands.loadFromSettings();
         botNameManager = new BotNameManager(settings);
         settings.addSettingsListener(new SettingSaveListener());
@@ -444,7 +445,7 @@ public class TwitchClient {
      */
     private void createTestUser(String name, String channel) {
         testUser = new User(name, name, Room.createRegular(channel));
-        testUser.setColor("blue");
+        testUser.setColor(new Color(94, 0, 211));
         testUser.setGlobalMod(true);
         //testUser.setBot(true);
         //testUser.setTurbo(true);
@@ -712,7 +713,10 @@ public class TwitchClient {
             return;
         }
         String channel = room.getChannel();
-        if (text.startsWith("/")) {
+        if (text.startsWith("//")) {
+            anonCustomCommand(room, text.substring(1), commandParameters);
+        }
+        else if (text.startsWith("/")) {
             commandInput(room, text, commandParameters);
         }
         else {
@@ -1147,6 +1151,16 @@ public class TwitchClient {
         else if (g.commandGui(channel, command, parameter)) {
             // Already done if true :P
         }
+        
+        else if (command.equals("chain")) {
+            List<String> commands = Helper.getChainedCommands(parameter);
+            if (commands.isEmpty()) {
+                g.printSystem("No valid commands");
+            }
+            for (String chainedCommand : commands) {
+                textInput(room, chainedCommand, parameters);
+            }
+        }
 
         // Has to be tested last, so regular commands with the same name take
         // precedence
@@ -1426,6 +1440,14 @@ public class TwitchClient {
         } else if (command.equals("-")) {
             g.printSystem(Debugging.command(parameter));
         }
+    }
+    
+    private void anonCustomCommand(Room room, String text, Parameters parameters) {
+        CustomCommand command = CustomCommand.parse(text);
+        if (parameters == null) {
+            parameters = Parameters.create(null);
+        }
+        anonCustomCommand(room, command, parameters);
     }
     
     public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
@@ -2843,6 +2865,10 @@ public class TwitchClient {
     
     public ChannelState getChannelState(String channel) {
         return c.getChannelState(channel);
+    }
+    
+    public Collection<String> getOpenChannels() {
+        return c.getOpenChannels();
     }
     
     private class ChannelStateUpdater implements ChannelStateListener {

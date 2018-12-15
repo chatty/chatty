@@ -753,4 +753,33 @@ public class Helper {
         return input.replaceAll("[%\\.\"\\*/:<>\\?\\\\\\|\\+,\\.;=\\[\\]]", "_");
     }
     
+    /**
+     * Returns commands split up by '|' and trimmed for leading and trailing
+     * whitespace. Only non-empty commands are included.
+     * 
+     * Use '||' to use the '|' character literally.
+     * 
+     * Example: '/chain /echo first | /echo second || third'
+     * Returns: '/echo first' and '/echo second | third'
+     * 
+     * @param input
+     * @return 
+     */
+    public static List<String> getChainedCommands(String input) {
+        if (StringUtil.isNullOrEmpty(input)) {
+            return new ArrayList<>();
+        }
+        List<String> result = new ArrayList<>();
+        // A '|' not preceeded or followed by '|'
+        String[] split = input.split("(?<!\\|)\\|(?!\\|)");
+        for (String part : split) {
+            // Remove first '|' from two or more '|' in a row
+            part = part.trim().replaceAll("\\|(\\|+)", "$1");
+            if (!part.isEmpty()) {
+                result.add(part);
+            }
+        }
+        return result;
+    }
+    
 }
