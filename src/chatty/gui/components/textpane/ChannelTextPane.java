@@ -2042,7 +2042,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             java.util.List<Match> highlightMatches) {
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
-        findLinks(text, ranges, rangesStyle);
+        findLinks(text, ranges, rangesStyle, style);
         
         printSpecials(null, text, style, ranges, rangesStyle, highlightMatches);
     }
@@ -2075,7 +2075,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         applyReplacements(text, replacements, replacement, ranges, rangesStyle);
         
         if (!ignoreLinks) {
-            findLinks(text, ranges, rangesStyle);
+            findLinks(text, ranges, rangesStyle, styles.standard());
         }
         
         if (styles.showEmoticons()) {
@@ -2210,7 +2210,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private void findLinks(String text, Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle) {
+            Map<Integer, MutableAttributeSet> rangesStyle, AttributeSet baseStyle) {
         // Find links
         urlMatcher.reset(text);
         while (urlMatcher.find()) {
@@ -2231,7 +2231,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     if (!foundUrl.startsWith("http")) {
                         foundUrl = "http://"+foundUrl;
                     }
-                    rangesStyle.put(start, styles.url(foundUrl));
+                    rangesStyle.put(start, styles.url(foundUrl, baseStyle));
                 }
             }
         }
@@ -3203,7 +3203,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
             addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
-            addSetting(Setting.COLOR_CORRECTION, true);
             addSetting(Setting.SHOW_TOOLTIPS, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
@@ -3439,7 +3438,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
                 Color userColor = user.getColor();
                 // Only correct color if no custom color is defined
-                if (!user.hasCustomColor() && isEnabled(Setting.COLOR_CORRECTION)) {
+                if (!user.hasCustomColor()) {
+                    // If turned off, it will just return the same color
                     userColor = colorCorrector.correctColor(userColor, getBackground());
                     user.setCorrectedColor(userColor);
                 }
@@ -3539,10 +3539,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * Make a link style for the given URL.
          * 
          * @param url
+         * @param baseStyle
          * @return 
          */
-        public MutableAttributeSet url(String url) {
-            SimpleAttributeSet urlStyle = new SimpleAttributeSet(standard());
+        public MutableAttributeSet url(String url, AttributeSet baseStyle) {
+            SimpleAttributeSet urlStyle = new SimpleAttributeSet(baseStyle);
             StyleConstants.setUnderline(urlStyle, true);
             urlStyle.addAttribute(HTML.Attribute.HREF, url);
             return urlStyle;

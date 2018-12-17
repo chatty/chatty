@@ -41,7 +41,7 @@ public class UsercolorCorrectionPreview extends JDialog {
         // Setting Names
         //===============
         int column = 1;
-        for (String type : ColorCorrector.TYPES.keySet()) {
+        for (String type : ColorCorrector.ACTIVE_TYPES) {
             String label = Language.getString("settings.string.nickColorCorrection.option."+type);
             main.add(createLabel(label, darkBg ? Color.WHITE : Color.BLACK),
                     GuiUtil.makeGbc(column, 0, 1, 1));
@@ -68,7 +68,7 @@ public class UsercolorCorrectionPreview extends JDialog {
             // Corrected Colors
             //------------------
             column = 1;
-            for (String type : ColorCorrector.TYPES.keySet()) {
+            for (String type : ColorCorrector.ACTIVE_TYPES) {
                 Color correctedColor = ColorCorrector.get(type).correctColor(color, background);
                 String label = HtmlColors.getColorString(correctedColor);
                 if (correctedColor.equals(color)) {

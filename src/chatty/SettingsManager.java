@@ -777,6 +777,12 @@ public class SettingsManager {
             settings.setBoolean("highlightBackground", false);
         }
         
+        if (switchedFromVersionBefore("0.9.3-b5")) {
+            if (!settings.getBoolean("colorCorrection")) {
+                settings.setString("nickColorCorrection", "off");
+            }
+        }
+        
         overrideHotkeySettings();
     }
     

@@ -481,7 +481,8 @@ public class User implements Comparable {
     /**
      * Returns the corrected color for this nick. This is the original Twitch
      * Chat color (either received from chat or default), which was corrected
-     * for better readability against the current background.
+     * for better readability against the current background. It may be the same
+     * as the original color.
      * 
      * @return The corrected color or null if none was set
      */
@@ -489,6 +490,12 @@ public class User implements Comparable {
         return correctedColor;
     }
     
+    /**
+     * This merely means that the color has gone through color correction, it
+     * may not be different from the original color.
+     * 
+     * @return 
+     */
     public synchronized boolean hasCorrectedColor() {
         return hasCorrectedColor;
     }
