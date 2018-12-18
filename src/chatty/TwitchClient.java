@@ -1582,12 +1582,17 @@ public class TwitchClient {
      * 
      * @param channel 
      */
-    public void commandJoinChannel(String channel) {
-        if (channel == null) {
+    public void commandJoinChannel(String channelString) {
+        if (channelString == null) {
             g.printLine("A channel to join needs to be specified.");
         } else {
-            channel = StringUtil.toLowerCase(channel.trim());
-            c.joinChannel(channel);
+            String[] channelList = channelString.split(" ");
+            for (String channel: channelList)
+            {
+                channel = StringUtil.toLowerCase(channel.trim());
+                c.joinChannel(channel);
+            }
+            
         }
     }
     
