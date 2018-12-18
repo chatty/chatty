@@ -65,7 +65,7 @@ public class SettingsManager {
     /**
      * Defines what settings there are and their default values.
      */
-    void defineSettings() {
+    public void defineSettings() {
         
         // Additional files (in addition to the default file)
         String loginFile = Chatty.getUserDataDirectory()+"login";
@@ -594,7 +594,7 @@ public class SettingsManager {
     /**
      * Tries to load the settings from file.
      */
-    void loadSettingsFromFile() {
+    public void loadSettingsFromFile() {
         settings.loadSettingsFromJson();
     }
     
@@ -603,7 +603,7 @@ public class SettingsManager {
      * performed in (seconds). The backup manager will decide whether to
      * actually make a backup.
      */
-    void backupFiles() {
+    public void backupFiles() {
         long backupDelay = DateTime.DAY * settings.getLong("backupDelay");
         backup.performBackup((int)backupDelay, (int)settings.getLong("backupCount"));
     }
@@ -616,7 +616,7 @@ public class SettingsManager {
      * 
      * @param args Map with commandline settings, key=value pairs
      */
-    void loadCommandLineSettings(Map<String, String> args) {
+    public void loadCommandLineSettings(Map<String, String> args) {
         for (String key : args.keySet()) {
             // Go through all commandline options
             String value = args.get(key);
@@ -670,7 +670,7 @@ public class SettingsManager {
     /**
      * Override some now unused settings or change settings on version change.
      */
-    void overrideSettings() {
+    public void overrideSettings() {
         settings.setBoolean("ignoreJoinsParts", false);
         if (switchedFromVersionBefore("0.7.2")) {
             String value = settings.getString("timeoutButtons");
