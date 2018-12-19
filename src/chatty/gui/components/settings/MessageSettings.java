@@ -25,8 +25,6 @@ import javax.swing.JPanel;
 public class MessageSettings extends SettingsPanel {
     
     
-    private final Set<JCheckBox> timeoutMessageSettings = new HashSet<>();
-    
     public MessageSettings(final SettingsDialog d) {
 
         JPanel timeoutSettingsPanel = addTitledPanel(Language.getString("settings.section.deletedMessages"), 0);
@@ -46,33 +44,21 @@ public class MessageSettings extends SettingsPanel {
                 d.makeGbcSub(1, 1, 1, 1, GridBagConstraints.WEST));
 
         final JCheckBox timeoutMessages = d.addSimpleBooleanSetting("showBanMessages");
-        timeoutMessages.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                for (JCheckBox cb : timeoutMessageSettings) {
-                    cb.setEnabled(timeoutMessages.isSelected());
-                }
-            }
-        });
         timeoutSettingsPanel.add(timeoutMessages,
                 d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
         
         JCheckBox banDuration = d.addSimpleBooleanSetting(
                 "banDurationMessage");
-        timeoutMessageSettings.add(banDuration);
         timeoutSettingsPanel.add(banDuration,
                 d.makeGbcSub(0, 4, 1, 1, GridBagConstraints.WEST));
         
         JCheckBox banReason = d.addSimpleBooleanSetting(
                 "banReasonMessage");
-        timeoutMessageSettings.add(banReason);
         timeoutSettingsPanel.add(banReason,
                 d.makeGbcSub(1, 4, 1, 1, GridBagConstraints.WEST));
         
         JCheckBox timeoutsCombine = d.addSimpleBooleanSetting(
                 "combineBanMessages");
-        timeoutMessageSettings.add(timeoutsCombine);
         timeoutSettingsPanel.add(timeoutsCombine,
                 d.makeGbcSub(0, 5, 1, 1, GridBagConstraints.WEST));
 
@@ -80,10 +66,7 @@ public class MessageSettings extends SettingsPanel {
                 "clearChatOnChannelCleared"),
                 d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
         
-        
-        for (JCheckBox cb : timeoutMessageSettings) {
-            cb.setEnabled(false);
-        }
+        SettingsUtil.addSubsettings(timeoutMessages, banDuration, banReason, timeoutsCombine);
         
         //========================
         // Other Settings (Panel)

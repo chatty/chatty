@@ -330,12 +330,15 @@ public class ListSelector extends JPanel implements ListSetting<String> {
      * edit buttons accordingly.
      */
     private void updateEditButtons() {
-        boolean somethingIsSelected = list.getSelectedIndex() != -1;
-        boolean exactlyOneIsSelected = list.getSelectedIndices().length == 1;
+        boolean somethingIsSelected = list.getSelectedIndex() != -1 && isEnabled();
+        boolean exactlyOneIsSelected = list.getSelectedIndices().length == 1 && isEnabled();
         remove.setEnabled(somethingIsSelected);
         change.setEnabled(exactlyOneIsSelected);
         moveUp.setEnabled(exactlyOneIsSelected);
         moveDown.setEnabled(exactlyOneIsSelected);
+        add.setEnabled(isEnabled());
+        sort.setEnabled(isEnabled());
+        editAll.setEnabled(isEnabled());
     }
     
     /**
@@ -376,8 +379,10 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     @Override
     public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
         input.setEnabled(enabled);
         list.setEnabled(enabled);
+        updateEditButtons();
     }
     
     public void setDataFormatter(DataFormatter<String> formatter) {

@@ -123,14 +123,7 @@ public class EmoteSettings extends SettingsPanel {
         other.add(ffzEvent,
                 d.makeGbcCloser(1, 2, 1, 1, GridBagConstraints.WEST));
         
-        // FFZ checkbox status
-        ffzMod.setEnabled(false);
-        ffzEvent.setEnabled(false);
-        ffz.addItemListener(e -> {
-                ffzMod.setEnabled(ffz.isSelected());
-                ffzEvent.setEnabled(ffz.isSelected());
-            }
-        );
+        SettingsUtil.addSubsettings(ffz, ffzMod, ffzEvent);
 
         //=======
         // Emoji

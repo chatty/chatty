@@ -54,8 +54,9 @@ public class UsercolorSettings extends SettingsPanel {
         //===================
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        customPanel.add(d.addSimpleBooleanSetting("customUsercolors",
-                "Enable custom usercolors", ""), gbc);
+        JCheckBox usercolorsEnabled = d.addSimpleBooleanSetting("customUsercolors",
+                "Enable custom usercolors", "");
+        customPanel.add(usercolorsEnabled, gbc);
 
         data = new ItemColorEditor<>(d,
                 (id, color, enabled, bg, bgEnabled) -> {
@@ -68,6 +69,8 @@ public class UsercolorSettings extends SettingsPanel {
         gbc.weightx = 1;
         gbc.weighty = 1;
         customPanel.add(data, gbc);
+        
+        SettingsUtil.addSubsettings(usercolorsEnabled, data);
         
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         customPanel.add(info, d.makeGbc(1, 1, 1, 1));

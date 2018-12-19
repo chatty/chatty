@@ -71,11 +71,15 @@ public class CompletionSettings extends SettingsPanel {
         localized.add(d.addSimpleBooleanSetting("completionPreferUsernames"),
                 d.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST));
         
-        localized.add(d.addSimpleBooleanSetting("completionAllNameTypes"),
+        JCheckBox completionAllNameTypes = d.addSimpleBooleanSetting("completionAllNameTypes");
+        localized.add(completionAllNameTypes,
                 d.makeGbcCloser(0, 3, 4, 1, GridBagConstraints.WEST));
         
-        localized.add(d.addSimpleBooleanSetting("completionAllNameTypesRestriction"),
+        JCheckBox completionAllNameTypesRestriction = d.addSimpleBooleanSetting("completionAllNameTypesRestriction");
+        localized.add(completionAllNameTypesRestriction,
                 d.makeGbcSub(0, 4, 4, 1, GridBagConstraints.WEST));
+        
+        SettingsUtil.addSubsettings(completionAllNameTypes, completionAllNameTypesRestriction);
         
         //===========
         // Appearance
@@ -98,14 +102,7 @@ public class CompletionSettings extends SettingsPanel {
         popupSettings.add(common,
                 d.makeGbcCloser(0, 1, 2, 1, GridBagConstraints.WEST));
         
-        // Popup checkbox state
-        common.setEnabled(false);
-        max.setEnabled(false);
-        popup.addItemListener(e -> {
-                common.setEnabled(popup.isSelected());
-                max.setEnabled(popup.isSelected());
-            }
-        );
+        SettingsUtil.addSubsettings(popup, max, common);
         
         appearance.add(popupSettings,
                 d.makeGbcSub(0, 1, 2, 1, GridBagConstraints.WEST));

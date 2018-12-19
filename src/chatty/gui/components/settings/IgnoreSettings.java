@@ -42,9 +42,8 @@ public class IgnoreSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0,0,1,1);
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("ignoreEnabled", "Enable Ignore",
-                "If enabled, shows messages that match the highlight criteria "
-                + "in another color"), gbc);
+        JCheckBox ignoredEnabled = d.addSimpleBooleanSetting("ignoreEnabled");
+        base.add(ignoredEnabled, gbc);
         
         //---------
         // Settings
@@ -90,11 +89,11 @@ public class IgnoreSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.EAST);
         gbc.insets = new Insets(0,12,2,5);
-        base.add(d.addSimpleBooleanSetting(
+        JCheckBox ignoreOwnText = d.addSimpleBooleanSetting(
                 "ignoreOwnText",
                 "Check own text for ignoring",
-                "If enabled, allows messages you wrote yourself to be ignored as well. Good for testing."),
-                gbc);
+                "If enabled, allows messages you wrote yourself to be ignored as well. Good for testing.");
+        base.add(ignoreOwnText, gbc);
         
         //----------
         // Main List
@@ -112,6 +111,8 @@ public class IgnoreSettings extends SettingsPanel {
         items.setEditor(tester);
         items.setDataFormatter(input -> input.trim());
         base.add(items, gbc);
+        
+        SettingsUtil.addSubsettings(ignoredEnabled, ignoreOwnText, items);
         
         //-------
         // Footer

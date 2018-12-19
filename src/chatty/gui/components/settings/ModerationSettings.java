@@ -20,8 +20,7 @@ public class ModerationSettings extends SettingsPanel {
         JCheckBox showModActions = d.addSimpleBooleanSetting("showModActions");
         JCheckBox showModActionsRestrict = d.addSimpleBooleanSetting("showModActionsRestrict");
         
-        showModActions.addItemListener(e -> showModActionsRestrict.setEnabled(showModActions.isSelected()));
-        showModActionsRestrict.setEnabled(false);
+        SettingsUtil.addSubsettings(showModActions, showModActionsRestrict);
         
         blah.add(showModActions,
                 d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST));

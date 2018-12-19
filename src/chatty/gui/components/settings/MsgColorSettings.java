@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 /**
@@ -44,9 +45,10 @@ public class MsgColorSettings extends SettingsPanel {
         
         GridBagConstraints gbc;
         
+        JCheckBox msgColorsEnabled = d.addSimpleBooleanSetting("msgColorsEnabled");
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        main.add(d.addSimpleBooleanSetting("msgColorsEnabled"), gbc);
+        main.add(msgColorsEnabled, gbc);
         
         data = new ItemColorEditor<>(d,
                 (id,
@@ -62,6 +64,8 @@ public class MsgColorSettings extends SettingsPanel {
         gbc.weightx = 1;
         gbc.weighty = 1;
         main.add(data, gbc);
+        
+        SettingsUtil.addSubsettings(msgColorsEnabled, data);
         
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         main.add(info, d.makeGbc(0, 2, 1, 1));
