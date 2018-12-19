@@ -1352,6 +1352,10 @@ public class TwitchConnection {
                     }
                     if (!tags.isEmpty("room-id")) {
                         listener.onRoomId(channel, tags.get("room-id"));
+                        // Set id for room (this should not run too often to
+                        // worry about object creation and stuff)
+                        Room roomWithId = Room.createRegularWithId(channel, tags.get("room-id"));
+                        rooms.addRoom(roomWithId);
                     }
                 }
             } else if (command.equals("SERVERCHANGE")) {

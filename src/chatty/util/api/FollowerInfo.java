@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -57,7 +58,7 @@ public class FollowerInfo {
      */
     public FollowerInfo(Follower.Type type, String stream, List<Follower> followers, int total) {
         this.type = type;
-        this.followers = followers;
+        this.followers = Collections.unmodifiableList(followers);
         this.total = total;
         this.time = System.currentTimeMillis();
         this.stream = stream;
