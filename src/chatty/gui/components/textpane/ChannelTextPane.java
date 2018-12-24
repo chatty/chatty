@@ -646,8 +646,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         return false;
                     }
                     changeInfo(line, attributes -> {
-                        attributes.addAttribute(Attribute.ACTION_BY, info.data.created_by);
-                        attributes.addAttribute(Attribute.ACTION_REASON, info.getReason());
+                        addBy(attributes, info.data.created_by);
+                        if (info.getReason() != null) {
+                            // Shouldn't add null value since it sometimes seems
+                            // to cause error when printing with these attrs
+                            attributes.addAttribute(Attribute.ACTION_REASON, info.getReason());
+                        }
                     });
                     return true;
                 }
@@ -661,7 +665,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 }
                 if (line.getAttributes().containsAttribute(Attribute.COMMAND, command)) {
                     changeInfo(line, attributes -> {
-                        attributes.addAttribute(Attribute.ACTION_BY, info.data.created_by);
+                        addBy(attributes, info.data.created_by);
                     });
                     return true;
                 }
@@ -669,6 +673,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         Debugging.println("modlog", "ModLog: Gave up");
         return false;
+    }
+    
+    private void addBy(MutableAttributeSet attributes, String byName) {
+        java.util.List<String> old = (java.util.List)attributes.getAttribute(Attribute.ACTION_BY);
+        java.util.List<String> changed;
+        if (old != null) {
+            changed = new ArrayList<>(old);
+        } else {
+            changed = new ArrayList<>();
+        }
+        // If already present, append to end
+        changed.remove(byName);
+        changed.add(byName);
+        attributes.addAttribute(Attribute.ACTION_BY, changed);
     }
     
     private long getTimeAgo(Element element) {
@@ -772,13 +790,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             
             String actionReason = (String)attributes.getAttribute(Attribute.ACTION_REASON);
             if (!StringUtil.isNullOrEmpty(actionReason)
-                    && styles.isEnabled(Setting.BAN_REASON_MESSAGE)) {
+                    && styles.isEnabled(Setting.BAN_REASON_APPENDED)) {
                 text = StringUtil.append(text, " ", "["+actionReason+"]");
             }
             
-            String actionBy = (String)attributes.getAttribute(Attribute.ACTION_BY);
-            if (!StringUtil.isNullOrEmpty(actionBy)) {
-                text = StringUtil.append(text, " ", "(@"+actionBy+")");
+            java.util.List<String> actionBy = (java.util.List)attributes.getAttribute(Attribute.ACTION_BY);
+            if (actionBy != null) {
+                text = StringUtil.append(text, " ", "(@"+StringUtil.join(actionBy, ", ")+")");
             }
             
             /**
@@ -936,7 +954,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             // Set info on newest deleted line
             if (i == lines.size() - 1) {
                 setBanInfo(line, banInfo);
-                setLineCommand(line.getStartOffset(), Helper.makeBanCommand(user, duration, reason, id));
+                setLineCommand(line.getStartOffset(), Helper.makeBanCommand(user, duration, id));
                 replayModLogInfo();
             }
             i++;

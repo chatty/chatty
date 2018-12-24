@@ -669,7 +669,7 @@ public class Helper {
         return banInfo;
     }
     
-    public static String makeBanCommand(User user, long duration, String reason, String id) {
+    public static String makeBanCommand(User user, long duration, String id) {
         if (duration > 0) {
             return StringUtil.concats("timeout", user.getName(), duration).trim();
         }
