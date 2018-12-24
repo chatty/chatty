@@ -7,6 +7,7 @@ import chatty.util.api.usericons.UsericonManager;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.NamedColor;
 import chatty.gui.components.textpane.ModLogInfo;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
@@ -315,6 +316,8 @@ public class User implements Comparable {
      */
     public synchronized void addBanInfo(ModeratorActionData data) {
         if (!addBanInfoNow(data)) {
+            // Adding failed, cache and wait to see if it works later
+            Debugging.println("modlog", "[UserModLogInfo] Caching: %s", data.getCommandAndParameters());
             cachedBanInfo.add(data);
         }
     }
@@ -322,14 +325,17 @@ public class User implements Comparable {
     private static final int BAN_INFO_WAIT = 500;
     
     private synchronized void replayCachedBanInfo() {
+        Debugging.println("modlog", "[UserModLogInfo] Replaying: %s", cachedBanInfo);
         Iterator<ModeratorActionData> it = cachedBanInfo.iterator();
         while (it.hasNext()) {
             ModeratorActionData data = it.next();
             if (System.currentTimeMillis() - data.created_at > BAN_INFO_WAIT) {
                 it.remove();
+                Debugging.println("modlog", "[UserModLogInfo] Abandoned: %s", data);
             } else {
                 if (addBanInfoNow(data)) {
                     it.remove();
+                    Debugging.println("modlog", "[UserModLogInfo] Added: %s", data);
                 }
             }
         }
@@ -339,7 +345,7 @@ public class User implements Comparable {
         String command = ModLogInfo.makeCommand(data);
         for (int i=messages.size() - 1; i>=0; i--) {
             Message m = messages.get(i);
-            // Too old, abort
+            // Too old, abort (associated message might not be here yet)
             if (System.currentTimeMillis() - m.getTime() > BAN_INFO_WAIT) {
                 return false;
             }

@@ -166,4 +166,9 @@ public class ModeratorActionData extends MessageData {
         return hash;
     }
     
+    @Override
+    public String toString() {
+        return String.format("'%s'@%s", getCommandAndParameters(), created_by);
+    }
+    
 }
