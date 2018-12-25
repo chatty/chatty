@@ -53,6 +53,17 @@ public class TwitchCommands {
         "color"
     }));
     
+    /**
+     * Commands that don't have a parameter, and probably never will have, so
+     * don't include one. This can be necessary when triggering the command e.g.
+     * through the Channel Context Menu using the Command Name format, where it
+     * automatically adds a parameter.
+     */
+    private static final Set<String> NO_PARAMETER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
+        "followersoff", "subscribers", "subscribersoff", "slowoff", "emoteonly",
+        "emoteonlyoff", "r9kbeta", "r9kbetaoff"
+    }));
+    
     private TwitchConnection c;
     
     public TwitchCommands(TwitchConnection c) {
@@ -74,7 +85,8 @@ public class TwitchCommands {
             // decent output
             if (onChannel(channel, true)) {
                 String message = Language.getString("chat.twitchcommands."+command, false);
-                if (parameter == null || parameter.trim().isEmpty()) {
+                if (parameter == null || parameter.trim().isEmpty()
+                        || NO_PARAMETER_COMMANDS.contains(command)) {
                     // No parameter
                     String output = message != null ? message : "Trying to "+command+"..";
                     sendMessage(channel, "/"+command, output);
