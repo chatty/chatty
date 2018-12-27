@@ -90,6 +90,10 @@ public class Debugging {
         Chatty.println(line);
     }
     
+    public synchronized static void printlnf(String line, Object... args) {
+        println(String.format(line, args));
+    }
+    
     public synchronized static void printlnTimed(String type, String line) {
         if (isEnabled("rt")) {
             println(line);

@@ -115,7 +115,7 @@ public class Channels {
         Channel channel = channels.get(room.getChannel());
         if (channel != null) {
             if (channel.setRoom(room)) {
-                Debugging.println("Update Room");
+                Debugging.printlnf("Update Room: %s", room);
                 updateChannelTabName(channel);
             }
         }

@@ -194,6 +194,9 @@ public class Channel extends JPanel {
     
     @Override
     public String getToolTipText() {
+        if (room.getStreamId() != null) {
+            return room.getChannel()+" ("+room.getStreamId()+")";
+        }
         return room.getChannel();
     }
     
