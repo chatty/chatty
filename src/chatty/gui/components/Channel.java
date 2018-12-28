@@ -450,8 +450,8 @@ public class Channel extends JPanel {
             List<String> containing = new ArrayList<>();
             List<String> matched = new ArrayList<>();
             Pattern cSearch = Pattern.compile(
-                    search.substring(0, 1).toUpperCase(Locale.ENGLISH)
-                    + "(?i)" + search.substring(1)
+                    Pattern.quote(search.substring(0, 1).toUpperCase(Locale.ENGLISH))
+                    + "(?i)" + Pattern.quote(search.substring(1))
             );
             String searchMode = main.getSettings().getString("completionSearch");
             for (String item : data) {
