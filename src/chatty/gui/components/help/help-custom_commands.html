@@ -10,7 +10,12 @@
         customize some Context Menus (and the User Info Dialog) with your own entries.</p>
     
     <ul>
-        <li><a href="#custom-commands">Custom Commands</a></li>
+        <li>
+            <a href="#custom-commands">Custom Commands</a>
+            <ul>
+                <li><a href="#anonymous-custom-commands">Anonymous Custom Commands</a></li>
+            </ul>
+        </li>
         <li>
             <a href="#replacements">Replacements</a>
             <ul>
@@ -65,6 +70,26 @@
         however if you still have the version without a channel in the Custom
         Commands list as well, it will fallback to that in other channels. This
         way to can add variations of commands for specific channels.</p>
+    
+    <h3><a name="anonymous-custom-commands">Anonymous Custom Commands</a></h3>
+    <p>Custom Commands that aren't defined in the Custom Commands list do not
+        have a name and can thus only be executed from the context they are
+        defined, for example when adding <a href="#inline-commands">Inline-Commands</a>
+        to the User Dialog or Context Menus.</p>
+    
+    <p>You can also execute Anynomous Custom Commands directly from the
+        inputbox, by prepending <code>//</code>, which allows you to use
+        Replacements:</p>
+    
+    <dl class="defList">
+        <dt><code>/echo Open Channels: $(chans)</code></dt>
+        <dd>Executes as a normal command (nothing replaced)</dd>
+        <dd>Outputs <code>Open Channels: $(chans)</code></dd>
+        
+        <dt><code>//echo Open Channels: $(chans)</code></dt>
+        <dd>Executes as an Anonymous Custom Command</dd>
+        <dd>Outputs <code>Open Channels: joshimuz lotsofs cirno_tv</code></dd>
+    </dl>
     
     <h2><a name="replacements">Replacements</a></h2>
     <ul>
