@@ -24,7 +24,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 public class HighlightSettings extends SettingsPanel {
     
     public static final String INFO = "<html><body style='width:300px;font-weight:normal;'>"
-            + "Quick reference (see [help-settings:Highlight_Matching help] for more):"
+            + "Message matching examples (see [help-settings:Highlight_Matching help] for more):"
             + "<ul style='margin-left:30px'>"
             + "<li><code>Bets open</code> - 'Bets open' anywhere in the message"
             + "<li><code>cs:Bets open</code> - Same, but case-sensitive</li>"

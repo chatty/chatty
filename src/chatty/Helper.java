@@ -554,7 +554,7 @@ public class Helper {
     /**
      * Top Level Domains (only relevant for URLs not starting with http or www).
      */
-    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io|gg)";
+    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io|gg|be)";
     
     private static final String MID = "[-A-Z0-9+&@#/%=~_|$?!:,;.()]";
     

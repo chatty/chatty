@@ -178,9 +178,19 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td rowspan="7"><em>All</em></td>
+            <td rowspan="9"><em>All</em></td>
             <td><code>chan</code></td>
             <td>The current channel context (without leading #)</td>
+        </tr>
+        <tr>
+            <td><code>stream</code></td>
+            <td>The stream name of the current channel context (different from
+                <code>chan</code> for Chatrooms)</td>
+        </tr>
+        <tr>
+            <td><code>chans</code></td>
+            <td>All currently open regular channels (separated by spaces,
+                without leading #)</td>
         </tr>
         <tr>
             <td><code>streamstatus</code></td>
@@ -205,13 +215,26 @@
         <tr>
             <td colspan="2">The stream info is of the current channel context</td>
         </tr>
+        <!-- User Context Menu -->
         <tr>
-            <td>User Context Menu</td>
+            <td rowspan="3">User Context Menu</td>
             <td><code>1</code></td>
             <td>Name of the user</td>
         </tr>
         <tr>
-            <td rowspan="2">User Dialog</td>
+            <td><code>msg-id</code></td>
+            <td>Message id of the selected message (depending on the line in
+                chat you opened the User Contex Menu from)</td>
+        </tr>
+        <tr>
+            <td><code>automod-msg-id</code></td>
+            <td>Message id of the selected message filtered by AutoMod, for
+                approving or denying the message (when opened by clicking on
+                an appropriate message in chat)</td>
+        </tr>
+        <!-- User Dialog -->
+        <tr>
+            <td rowspan="4">User Dialog</td>
             <td><code>1</code></td>
             <td>Name of the user</td>
         </tr>
@@ -220,10 +243,23 @@
             <td>Ban reason (if selected)</td>
         </tr>
         <tr>
+            <td><code>msg-id</code></td>
+            <td>Message id of the selected message (<code>&gt;</code> in front
+                of message, depending on the line in chat you opened it from)</td>
+        </tr>
+        <tr>
+            <td><code>automod-msg-id</code></td>
+            <td>Message id of the selected message filtered by AutoMod, for
+                approving or denying the message (when opened by clicking on
+                an appropriate message in chat)</td>
+        </tr>
+        <!-- Channel Context Menu -->
+        <tr>
             <td>Channel Context menu</td>
             <td><code>1</code></td>
             <td>Name of the currently active channel (without leading #)</td>
         </tr>
+        <!-- Streams Context Menu -->
         <tr>
             <td>Streams Context menu</td>
             <td><code>1-</code></td>

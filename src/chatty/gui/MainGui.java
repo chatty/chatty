@@ -1571,7 +1571,7 @@ public class MainGui extends JFrame implements Runnable {
         public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
             String cmd = e.getActionCommand();
             if (cmd.equals("userinfo")) {
-                openUserInfoDialog(user, null, autoModMsgId);
+                openUserInfoDialog(user, msgId, autoModMsgId);
             }
             else if (cmd.equals("addressbookEdit")) {
                 openAddressbook(user.getName());
@@ -1601,6 +1601,7 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.startsWith("command")) {
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());
                 parameters.put("msg-id", msgId);
+                parameters.put("automod-msg-id", autoModMsgId);
                 customCommand(user.getRoom(), e, parameters);
             } else if (cmd.equals("copyNick")) {
                 MiscUtil.copyToClipboard(user.getName());

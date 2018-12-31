@@ -24,16 +24,14 @@ public class MsgColorSettings extends SettingsPanel {
     private static final String INFO = HighlightSettings.INFO
             + "Examples:"
             + "<dl>"
-            + "<dt>user:botimuz</dt>"
+            + "<dt><code>user:botimuz</code></dt>"
             + "<dd>Match all regular messages by user 'Botimuz'</dd>"
-            + "<dt>config:info [Notification]<dt>"
+            + "<dt><code>config:info [Notification]</code></dt>"
             + "<dd>Match all info messages containing '[Notification]', so "
             + "basicially all subscriber notifications</dd>"
             + "</dl>"
-            + "<p><em>Note:</em> This is using Highlight list syntax to match "
-            + "messages to change the colors on.</p>"
-            + "<p>Unticking the 'Enabled'-checkbox means that the default color "
-            + "will be used.</p>";
+            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the"
+            + "default color will be used.</p>";
     
     private final ItemColorEditor<MsgColorItem> data;
     

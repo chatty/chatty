@@ -196,9 +196,12 @@ public class Connection implements Runnable {
     private void checkConnection() {
         connectionCheckedCount++;
         if (connectionCheckedCount == PING_AFTER_CHECKS) {
-            //LOGGER.info("Pinging server to check connection..");
             send("PING");
-            connectionCheckedCount = 0;
+        } else if (connectionCheckedCount > PING_AFTER_CHECKS) {
+            LOGGER.log(Logging.USERINFO, "Warning: Server not responding");
+            warning("No message received from server after PING for "+SOCKET_BLOCK_TIMEOUT+"ms");
+            // Wait a bit longer until next Ping
+            connectionCheckedCount -= PING_AFTER_CHECKS*2;
         }
     }
     
@@ -236,6 +239,5 @@ public class Connection implements Runnable {
         irc.sent(data);
         out.print(data+"\r\n");
         out.flush();
-        activity();
     }
 }

@@ -53,11 +53,70 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.9.3">Version 0.9.3</a> <a name="latest">(This one!)</a> (2018-12-??)
+        <a name="0.9.3">Version 0.9.3</a> <a name="latest">(This one!)</a> (2018-12-31)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>Custom Message Colors and Highlights can now also apply to Info Messages
+        and allow you to set the background color, so it's possible to customize
+        the foreground/background of almost any message in the chat window.</p>
+    
+    <p>Moderators can now delete individual messages and get who performed a
+        moderation action directly appended to the associated message.</p>
+    
     <pre>
-TBD
+### Chat
+- Added ability to customize message background color (through Message Colors
+  settings and the "bgcolor:" prefix for Highlights)
+- Added prefix "config:info" to Message Colors settings and Highlights as well,
+  allowing you to customize the foreground/background color for more messages
+  (e.g. `config:info [Notification]` in Msg. Colors to customize the color of
+  subscriber notifications)
+- Added prefix "config:any" to match both Regular Messages and Info Messages
+- Added prefix "config:firstmsg" to only match the first message of a user in
+  a channel during the current session
+- Added "replacement:none" prefix to Filter list to have no replacement at all
+
+### Moderation
+- Added support for deletion of single messages (Delete button automatically
+  added to the User Dialog)
+- Append which mod performed an action (e.g. ban/timeout), and only show
+  separate ModAction message if no associated message is present in chat
+- Output ban/timeout reason from Modlogs, since Twitch removed it from chat
+
+### Custom Commands
+- Added "/chain" command to perform several commands at once
+- Added $(chans) parameter containing all open regular channels
+- Added $(msg-id) and $(automod-msg-id) parameters to User Context Menu
+- Added $rand() function, to choose one random entry from the parameter list
+- Extended Click-On-User-Holding-Ctrl command to allow anonymous commands
+- Added "//" prefix to inputbox to directly run anonymous command
+  (e.g. `//echo $(chans)`)
+
+### TAB Completion
+- Changed TAB Completion for Emoji to search within codes without min. character
+  limit, but only search at the beginning of words (separated by underscores)
+  and only at the very beginning if already too many matches
+- Changed TAB Completion for Emotes/Commands to search at the beginning of words
+  as well (capitalized), so e.g. "chair"+TAB will find both "joshChair" and
+  "broughyChair" (setting options for previous behaviour or to search anywhere)
+
+### Misc
+- Added Splash Screen that shows while Chatty is starting
+- Added /marker support to add Stream Markers (also extended Stream Highlights
+  feature to add Stream Marker at the same time, added to Settings Dialog)
+- Added ability to revoke (not just remove) Login token directly out of Chatty
+- Improved debug output
+- Improved performance
+- Improved Settings Dialog
+- Made links in info messages clickable
+- Improved Username Color Correction, added several modes to choose from
+- Changed "/join" command to allow joining several space-seperated channels
+- Updated help
+
+### Bugfixes
+- Fixed Custom Usericons matching a 3rd Party badge type inadvertently applying
+  to every user
+- Fixed colors in Viewer History graph for dark Look&amp;Feel
     </pre>
     
     <h2>

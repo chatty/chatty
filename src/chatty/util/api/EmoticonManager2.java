@@ -181,7 +181,6 @@ public class EmoticonManager2 {
         //System.out.println("checkStreams:"+pendingStreams+" "+backlogStreams);
         for (String stream : pendingStreams) {
             Set<Emoteset> sets = emotesetInfo.getEmotesetsByStream(stream);
-            System.out.println(sets);
             if (sets != null) {
                 for (Emoteset set : sets) {
                     addEmoteset(set.emoteset_id);
