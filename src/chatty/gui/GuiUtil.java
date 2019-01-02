@@ -180,10 +180,12 @@ public class GuiUtil {
     private static final int MOUSE_LOCATION_HGAP = 60;
     
     public static void setLocationToMouse(Component c) {
+        // Check might still be useful, even if this config is not used
         if (c.getGraphicsConfiguration() == null) {
             return;
         }
-        Rectangle screen = c.getGraphicsConfiguration().getBounds();
+        // Use screen the mouse is on
+        Rectangle screen = MouseInfo.getPointerInfo().getDevice().getDefaultConfiguration().getBounds();
         Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
         int width = c.getWidth();
         int height = c.getHeight();
