@@ -206,6 +206,8 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        initDxSettings();
+        
         if (settings.getBoolean("splash")) {
             Splash.initSplashScreen(Splash.getLocation((String)settings.mapGet("windows", "main")));
         }
@@ -218,8 +220,6 @@ public class TwitchClient {
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
         twitchemotes = new TwitchEmotes(new TwitchemotesListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener());
-
-        initDxSettings();
         
         Language.setLanguage(settings.getString("language"));
         

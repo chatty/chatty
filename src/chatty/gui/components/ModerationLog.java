@@ -77,7 +77,7 @@ public class ModerationLog extends JDialog {
     }
     
     private void setDataToCurrent() {
-        if (!currentChannel.equals(currentLoadedChannel)) {
+        if (currentChannel != null && !currentChannel.equals(currentLoadedChannel)) {
             currentLoadedChannel = currentChannel;
             List<String> cached = cache.get(currentChannel);
             if (cached != null) {
