@@ -101,6 +101,7 @@ public class User implements Comparable {
     private boolean hasTurbo;
     private boolean isSubscriber;
     private boolean isBot;
+    private boolean isVip;
     
     private volatile Map<String, String> twitchBadges;
 
@@ -741,6 +742,10 @@ public class User implements Comparable {
         return isBot;
     }
     
+    public synchronized boolean isVip() {
+        return isVip;
+    }
+    
     public synchronized boolean setModerator(boolean mod) {
         if (isModerator != mod) {
             isModerator = mod;
@@ -809,6 +814,15 @@ public class User implements Comparable {
         return false;
     }
     
+    public synchronized boolean setVip(boolean vip) {
+        if (isVip != vip) {
+            isVip = vip;
+            updateFullNick();
+            return true;
+        }
+        return false;
+    }
+    
     private void updateFullNick() {
         fullNick = getModeSymbol()+getCustomNick();
     }
@@ -817,6 +831,9 @@ public class User implements Comparable {
         String result = "";
         if (isSubscriber()) {
             result += "%";
+        }
+        if (isVip()) {
+            result += "!";
         }
         if (hasTwitchBadge("bits")) {
             result += "$";
@@ -830,10 +847,7 @@ public class User implements Comparable {
         if (isBroadcaster()) {
             return "~"+result;
         }
-        if (isAdmin()) {
-            return "!"+result;
-        }
-        if (isStaff()) {
+        if (isStaff() || isAdmin()) {
             return "&"+result;
         }
         if (isGlobalMod()) {

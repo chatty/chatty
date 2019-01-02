@@ -904,6 +904,10 @@ public class TwitchConnection {
             if (user.setSubscriber(tags.isTrue("subscriber"))) {
                 changed = true;
             }
+            boolean vip = badges.containsKey("vip");
+            if (user.setVip(vip)) {
+                changed = true;
+            }
             
             // Temporarily check both for containing a value as Twitch is
             // changing it

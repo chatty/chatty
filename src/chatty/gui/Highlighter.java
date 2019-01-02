@@ -292,7 +292,7 @@ public class Highlighter {
         
         private enum Status {
             MOD("m"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
-            TURBO("t"), ANY_MOD("M"), GLOBAL_MOD("g"), BOT("r");
+            TURBO("t"), ANY_MOD("M"), GLOBAL_MOD("g"), BOT("r"), VIP("v");
             
             private final String id;
             
@@ -740,6 +740,9 @@ public class Highlighter {
                 return or;
             }
             if (req.contains(Status.ANY_MOD) && user.hasModeratorRights()) {
+                return or;
+            }
+            if (req.contains(Status.VIP) && user.isVip()) {
                 return or;
             }
             return !or;

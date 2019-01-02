@@ -308,6 +308,7 @@ public class TwitchClient {
             j.addMessage("abc", false, null);
             j.setDisplayNick("Joshimoose");
             j.setTurbo(true);
+            j.setVip(true);
             g.addUser(j);
             g.addUser(new User("jolzi", testRoom));
             g.addUser(new User("john", testRoom));
