@@ -136,7 +136,7 @@ public class Splash {
         // Version String
         g.setColor(Color.DARK_GRAY);
         g.setFont(regularFont);
-        g.drawString(VERSION, 10, 16);
+        g.drawString("v"+VERSION, 10, 16);
     }
     
     public static Point getLocation(String setting) {

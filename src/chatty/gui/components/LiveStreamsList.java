@@ -52,6 +52,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private ListDataChangedListener listDataChangedListener;
     
     private JPopupMenu lastContextMenu;
+    private LiveStreamsDialog.Sorting currentSorting;
     
     private long lastChecked = 0;
     private long lastRepainted = 0;
@@ -78,8 +79,9 @@ public class LiveStreamsList extends JList<StreamInfo> {
         }
     }
     
-    public void setComparator(Comparator<StreamInfo> comparator) {
-        data.setComparator(comparator);
+    public void setComparator(LiveStreamsDialog.Sorting s) {
+        data.setComparator(s.comparator);
+        currentSorting = s;
     }
     
     /**
@@ -216,6 +218,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
         JListActionHelper.install(this, (a, l, s) -> {
             if (a == Action.CONTEXT_MENU) {
                 StreamInfosContextMenu m = new StreamInfosContextMenu(s, true);
+                m.setSorting(currentSorting.key);
                 for (ContextMenuListener cml : contextMenuListeners) {
                     m.addContextMenuListener(cml);
                 }

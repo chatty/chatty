@@ -1741,14 +1741,8 @@ public class MainGui extends JFrame implements Runnable {
         public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos) {
             String cmd = e.getActionCommand();
             String sorting = null;
-            if (cmd.equals("sortName")) {
-                sorting = "name";
-            } else if (cmd.equals("sortGame")) {
-                sorting = "game";
-            } else if (cmd.equals("sortRecent")) {
-                sorting = "recent";
-            } else if (cmd.equals("sortViewers")) {
-                sorting = "viewers";
+            if (cmd.startsWith("sort_")) {
+                sorting = cmd.substring("sort_".length());
             }
             if (sorting != null) {
                 client.settings.setString("liveStreamsSorting", sorting);
