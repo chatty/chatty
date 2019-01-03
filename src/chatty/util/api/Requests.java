@@ -253,7 +253,23 @@ public class Requests {
             });
         }
     }
-    
+
+    public void getFollowInfo(String stream, String streamID, String user, String userID) {
+        if (stream == null || stream.isEmpty() || user == null || user.isEmpty() ||
+            streamID == null || streamID.isEmpty() || userID == null || userID.isEmpty()) {
+            return;
+        }
+        String url = String.format(
+                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
+                userID,
+                streamID);
+        if (attemptRequest(url)) {
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            execute(request, r -> {
+                api.followerManager.receivedSingle(r.responseCode, stream, r.text, user);
+            });
+        }
+    }
     
     //=================
     // Admin/Moderation

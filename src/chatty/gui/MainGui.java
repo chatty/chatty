@@ -17,11 +17,8 @@ import chatty.gui.components.TokenGetDialog;
 import chatty.gui.components.FavoritesDialog;
 import chatty.gui.components.JoinDialog;
 import chatty.util.*;
-import chatty.util.api.Emoticon;
-import chatty.util.api.StreamInfo;
-import chatty.util.api.TokenInfo;
-import chatty.util.api.Emoticons;
-import chatty.util.api.ChannelInfo;
+import chatty.util.api.*;
+
 import java.util.List;
 import chatty.Chatty;
 import chatty.TwitchClient;
@@ -71,13 +68,8 @@ import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationWindowManager;
 import chatty.lang.Language;
 import chatty.util.TwitchEmotes.EmotesetInfo;
-import chatty.util.api.ChatInfo;
-import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
-import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons.TagEmotes;
-import chatty.util.api.FollowerInfo;
-import chatty.util.api.RoomsInfo;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
@@ -4029,10 +4021,17 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 followerDialog.setFollowerInfo(info);
+                for (Follower follow : info.followers) {
+                    userInfoDialog.setFollowInfo(info.stream, follow.name, follow, RequestResultCode.SUCCESS);
+                }
             }
         });
     }
-    
+
+    public void setFollowerInfoAsFailed(final String stream, final String user, RequestResultCode result) {
+        SwingUtilities.invokeLater(() -> userInfoDialog.setFollowInfo(stream, user, null, result));
+    }
+
     public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResultCode result) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -4055,7 +4054,11 @@ public class MainGui extends JFrame implements Runnable {
     public ChannelInfo getCachedChannelInfo(String channel, String id) {
         return client.api.getCachedChannelInfo(channel, id);
     }
-    
+
+    public Follower getCachedFollow(String stream, String streamID, String user, String userID) {
+        return client.api.getCachedFollow(stream, streamID, user, userID);
+    }
+
     public void getChatInfo(String stream) {
         client.api.getChatInfo(stream);
     }

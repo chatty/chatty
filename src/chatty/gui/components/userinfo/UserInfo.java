@@ -9,6 +9,8 @@ import chatty.gui.components.menus.UserContextMenu;
 import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
+import chatty.util.api.Follower;
+import chatty.util.api.TwitchApi;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
@@ -366,4 +368,14 @@ public class UserInfo extends JDialog {
         return owner.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
     }
 
+    public void setFollowInfo(String stream, String user, Follower follow, TwitchApi.RequestResultCode result) {
+        if (currentUser == null || !currentUser.getName().equals(user) || !currentUser.getStream().equals(stream)) {
+            return;
+        }
+        infoPanel.setFollowInfo(follow, result);
+    }
+
+    protected Follower getFollow() {
+        return owner.getCachedFollow(currentUser.getStream(), currentUser.getRoom().getStreamId(), currentUser.getName(), currentUser.getId());
+    }
 }
