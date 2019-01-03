@@ -254,9 +254,8 @@ public class Requests {
         }
     }
 
-    public void getFollowInfo(String stream, String streamID, String user, String userID) {
-        if (stream == null || stream.isEmpty() || user == null || user.isEmpty() ||
-            streamID == null || streamID.isEmpty() || userID == null || userID.isEmpty()) {
+    public void getSingleFollower(String stream, String streamID, String user, String userID) {
+        if (StringUtil.isNullOrEmpty(stream, user, streamID, userID)) {
             return;
         }
         String url = String.format(

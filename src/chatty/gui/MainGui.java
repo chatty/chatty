@@ -4021,15 +4021,12 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 followerDialog.setFollowerInfo(info);
-                for (Follower follow : info.followers) {
-                    userInfoDialog.setFollowInfo(info.stream, follow.name, follow, RequestResultCode.SUCCESS);
-                }
             }
         });
     }
 
-    public void setFollowerInfoAsFailed(final String stream, final String user, RequestResultCode result) {
-        SwingUtilities.invokeLater(() -> userInfoDialog.setFollowInfo(stream, user, null, result));
+    public void setFollowInfo(final String stream, final String user, RequestResultCode result, Follower follower) {
+        SwingUtilities.invokeLater(() -> userInfoDialog.setFollowInfo(stream, user, result, follower));
     }
 
     public void setChannelInfo(final String channel, final ChannelInfo info, final RequestResultCode result) {
@@ -4055,8 +4052,8 @@ public class MainGui extends JFrame implements Runnable {
         return client.api.getCachedChannelInfo(channel, id);
     }
 
-    public Follower getCachedFollow(String stream, String streamID, String user, String userID) {
-        return client.api.getCachedFollow(stream, streamID, user, userID);
+    public Follower getSingleFollower(String stream, String streamID, String user, String userID) {
+        return client.api.getSingeFollower(stream, streamID, user, userID);
     }
 
     public void getChatInfo(String stream) {

@@ -86,7 +86,7 @@ public class UserInfoManager {
         }
     }
 
-    public void setFollowInfo(String stream, String user, Follower follow, TwitchApi.RequestResultCode result) {
+    public void setFollowInfo(String stream, String user, TwitchApi.RequestResultCode result, Follower follow) {
         for (UserInfo dialog : dialogs) {
             dialog.setFollowInfo(stream, user, follow, result);
         }

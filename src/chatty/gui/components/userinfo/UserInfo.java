@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.*;
 
@@ -215,10 +216,12 @@ public class UserInfo extends JDialog {
         parameters.put("msg-id", getMsgId());
         parameters.put("target-msg-id", getTargetMsgId());
         parameters.put("automod-msg-id", getAutoModMsgId());
+        parameters.put("followage", infoPanel.getFollowAge());
+        parameters.put("user-id", user.getId());
         return parameters;
     }
     
-    private void updateButtons() {
+    protected void updateButtons() {
         buttons.updateButtonForParameters(makeParameters());
     }
     
@@ -369,13 +372,14 @@ public class UserInfo extends JDialog {
     }
 
     public void setFollowInfo(String stream, String user, Follower follow, TwitchApi.RequestResultCode result) {
-        if (currentUser == null || !currentUser.getName().equals(user) || !currentUser.getStream().equals(stream)) {
+        if (currentUser == null || !currentUser.getName().equals(user)
+                || !Objects.equals(currentUser.getStream(), stream)) {
             return;
         }
         infoPanel.setFollowInfo(follow, result);
     }
 
-    protected Follower getFollow() {
-        return owner.getCachedFollow(currentUser.getStream(), currentUser.getRoom().getStreamId(), currentUser.getName(), currentUser.getId());
+    protected Follower getFollowInfo() {
+        return owner.getSingleFollower(currentUser.getStream(), currentUser.getRoom().getStreamId(), currentUser.getName(), currentUser.getId());
     }
 }

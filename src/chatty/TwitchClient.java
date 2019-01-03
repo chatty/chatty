@@ -301,7 +301,7 @@ public class TwitchClient {
         
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,33,42,19194");
-            Room testRoom =  Room.createRegular("");
+            Room testRoom =  Room.createRegular("#tduva");
             g.addUser(new User("josh", testRoom));
             g.addUser(new User("joshua", testRoom));
             User j = new User("joshimuz", "Joshimuz", testRoom);
@@ -2093,13 +2093,13 @@ public class TwitchClient {
             receivedFollowerOrSubscriberCount(info);
         }
 
-        @Override
-        public void getUserFollowFailed(String stream, String name, RequestResultCode result) {
-            g.setFollowerInfoAsFailed(stream, name, result);
-        }
-
         private void followerInfoNames(FollowerInfo info) {
             
+        }
+        
+        @Override
+        public void receivedFollower(String stream, String username, RequestResultCode result, Follower follower) {
+            g.setFollowInfo(stream, username, result, follower);
         }
 
         @Override
@@ -2151,6 +2151,8 @@ public class TwitchClient {
             g.setRooms(info);
             roomManager.addRoomsInfo(info);
         }
+
+        
     }
 
     private class MyRoomUpdatedListener implements RoomManager.RoomUpdatedListener {

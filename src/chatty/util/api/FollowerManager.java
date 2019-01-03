@@ -46,6 +46,10 @@ public class FollowerManager {
     /**
      * Saves followers by name. Used to check if the same follower was already
      * seen as following before and whether it was with the same time.
+     * 
+     * Also used to store and retrieve followers for single follower requests.
+     * May contain Follower objects with time=-1 for users who are not
+     * following.
      */
     private final Map<String, Map<String, Follower>> alreadyFollowed = new HashMap<>();
     
@@ -193,24 +197,19 @@ public class FollowerManager {
      */
     protected synchronized void receivedSingle(int responseCode, String stream, String json, String user) {
         if (responseCode == 404) {
-            listener.getUserFollowFailed(stream, user, TwitchApi.RequestResultCode.NOT_FOUND);
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.NOT_FOUND, null);
+            if (!alreadyFollowed.containsKey(stream)) {
+                alreadyFollowed.put(stream, new HashMap<>());
+            }
+            alreadyFollowed.get(stream).put(user, new Follower(type, user, null, -1, false, false));
             return;
         }
+        // Parsing adds to alreadyFollowed automatically
         Follower result = parseFollowerSingle(stream, user, json);
         if (result != null) {
-            noError(stream);
-            FollowerInfo followerInfo = cached.get(stream);
-            if (followerInfo == null || followerInfo.followers == null) {
-                List<Follower> followers = new ArrayList<>();
-                followers.add(result);
-                followerInfo = new FollowerInfo(type, stream, followers, 1);
-                cached.put(stream, followerInfo);
-                sendResult(type, followerInfo);
-            } else {
-                followerInfo.followers.add(result);
-            }
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.SUCCESS, result);
         } else {
-            parseRequestError(responseCode, stream);
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.FAILED, null);
         }
     }
 
@@ -315,6 +314,9 @@ public class FollowerManager {
         // Check if this follower is already present
         Map<String,Follower> entries = alreadyFollowed.get(stream);
         Follower existingEntry = entries.get(name);
+        if (existingEntry != null && existingEntry.time == -1) {
+            existingEntry = null;
+        }
         boolean refollow = false;
         boolean newFollow = true;
         if (existingEntry != null) {
@@ -367,15 +369,37 @@ public class FollowerManager {
         sendResult(type, errorResult);
     }
 
-    public Follower getCachedFollow(String stream, String streamID, String user, String userID) {
-        FollowerInfo streamFollower = cached.get(stream);
-        if (streamFollower != null && streamFollower.followers != null) {
-            Optional<Follower> follower = streamFollower.followers.stream().filter(f -> f.name.equals(user)).findFirst();
-            if (follower.isPresent()) {
-                return follower.get();
+    public Follower getSingleFollower(String stream, String streamId, String username, String userId) {
+        Follower follower = null;
+        synchronized(this) {
+            if (alreadyFollowed.containsKey(stream)) {
+                follower = alreadyFollowed.get(stream).get(username);
             }
         }
-        api.getFollow(stream, streamID, user, userID);
+        if (follower != null) {
+            if (follower.time == -1) {
+                listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
+            } else {
+                return follower;
+            }
+        } else {
+            requestSingleFollower(stream, streamId, username, userId);
+        }
         return null;
     }
+    
+    private void requestSingleFollower(String stream, String streamId, String username, String userId) {
+        if (streamId != null && userId != null) {
+            api.requests.getSingleFollower(stream, streamId, username, userId);
+        } else {
+            api.userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.FAILED, null);
+                } else {
+                    api.requests.getSingleFollower(stream, r.getId(stream), username, r.getId(username));
+                }
+            }, stream, username);
+        }
+    }
+    
 }
