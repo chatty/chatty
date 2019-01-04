@@ -87,6 +87,7 @@ public class Buttons {
         if (denyButton != null) {
             denyButton.setVisible(show);
         }
+        updateRows();
     }
     
     private void remove() {
@@ -162,7 +163,6 @@ public class Buttons {
             ((FlowLayout)(newRow.getLayout())).setHgap(5);
             if (row.startsWith("a")) {
                 primary.add(newRow);
-                
             } else {
                 secondary.add(newRow);
             }
@@ -255,6 +255,24 @@ public class Buttons {
             boolean allParams = !command.hasError() &&
                     parameters.getIdentifiers().containsAll(command.getRequiredIdentifiers());
             button.setEnabled(allParams);
+        }
+    }
+    
+    /**
+     * Hide rows that don't have any visible elements.
+     */
+    private void updateRows() {
+        for (JPanel row : rows.values()) {
+            boolean hasVisibleElements = false;
+            synchronized(row.getTreeLock()) {
+                for (int i=0;i<row.getComponentCount();i++) {
+                    if (row.getComponent(i).isVisible()) {
+                        hasVisibleElements = true;
+                        break;
+                    }
+                }
+            }
+            row.setVisible(hasVisibleElements);
         }
     }
     

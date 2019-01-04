@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
 import chatty.util.commands.CustomCommand;
@@ -11,6 +12,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
@@ -185,7 +187,7 @@ public class GuiUtil {
             return;
         }
         // Use screen the mouse is on
-        Rectangle screen = MouseInfo.getPointerInfo().getDevice().getDefaultConfiguration().getBounds();
+        Rectangle screen = getEffectiveScreenBounds(MouseInfo.getPointerInfo().getDevice().getDefaultConfiguration());
         Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
         int width = c.getWidth();
         int height = c.getHeight();
@@ -211,6 +213,17 @@ public class GuiUtil {
         }
         
         c.setLocation(mouseLocation);
+    }
+    
+    public static Rectangle getEffectiveScreenBounds(GraphicsConfiguration config) {
+        Rectangle bounds = config.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
+        Debugging.println("screenbounds", "%s %s", bounds, insets);
+        bounds.x += insets.left;
+        bounds.y += insets.top;
+        bounds.width -= insets.right;
+        bounds.height -= insets.bottom;
+        return bounds;
     }
     
     private static final int SHAKE_INTENSITY = 2;

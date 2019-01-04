@@ -176,12 +176,12 @@ public class UserInfo extends JDialog {
             
         });
         gbc = makeGbc(0,6,3,1);
-        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.insets = new Insets(2, 0, 0, 0);
         add(infoPanel,gbc);
         
         gbc = makeGbc(0,8,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10,5,3,5);
+        gbc.insets = new Insets(8,5,3,5);
         add(closeButton,gbc);
 
         buttons.set("30,120,600,1800");

@@ -47,8 +47,8 @@ public class InfoPanel extends JPanel {
     public InfoPanel(UserInfo owner, ContextMenuListener listener) {
         this.owner = owner;
         
-        panel1.setLayout(new FlowLayout(FlowLayout.CENTER, 8, 2));
-        panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 8, 2));
+        panel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 2));
+        panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 1));
         
         panel1.add(numberOfLines);
         panel1.add(colorInfo);
@@ -193,12 +193,11 @@ public class InfoPanel extends JPanel {
     }
     
     private static String formatAgoTime(long time) {
-        return DateTime.formatAccountAge(time, DateTime.Formatting.VERBOSE,
-                DateTime.Formatting.LAST_ONE_EXACT);
+        return DateTime.formatAccountAgeCompact(time);
     }
     
     private static String formatAgoTimeVerbose(long time) {
-        return DateTime.formatAccountAgeVerbose(time, DateTime.Formatting.VERBOSE);
+        return DateTime.formatAccountAgeVerbose(time);
     }
     
     protected String getFollowAge() {
