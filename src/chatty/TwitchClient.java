@@ -319,6 +319,7 @@ public class TwitchClient {
             g.addUser(new User("lotsofs", "LotsOfS", testRoom));
             g.addUser(new User("anders", testRoom));
             g.addUser(new User("apex1", testRoom));
+            g.addUser(new User("xfwefawf32q4543t5greger", testRoom));
             User af = new User("applefan", testRoom);
 //            Map<String, String> badges = new LinkedHashMap<>();
 //            badges.put("bits", "100");
@@ -2025,8 +2026,8 @@ public class TwitchClient {
         }
         
         @Override
-        public void receivedChannelInfo(String channel, ChannelInfo info, RequestResultCode result) {
-            g.setChannelInfo(channel, info, result);
+        public void receivedChannelInfo(String stream, ChannelInfo info, RequestResultCode result) {
+            g.setChannelInfo(stream, info, result);
         }
     
         @Override

@@ -19,6 +19,8 @@ public class ChannelInfoManager {
     
     private static final Logger LOGGER = Logger.getLogger(ChannelInfoManager.class.getName());
     
+    private static final int CACHED_EXPIRE_TIME = 10*60*1000;
+    
     private final Map<String, ChannelInfo> cachedChannelInfo =
             Collections.synchronizedMap(new HashMap<String, ChannelInfo>());
     
@@ -37,7 +39,7 @@ public class ChannelInfoManager {
     public ChannelInfo getCachedChannelInfo(String stream, String id) {
         ChannelInfo info = cachedChannelInfo.get(stream);
         if (info != null) {
-            if (System.currentTimeMillis() - info.time > 600*1000) {
+            if (System.currentTimeMillis() - info.time > CACHED_EXPIRE_TIME) {
                 api.getChannelInfo(stream, id);
             }
             return info;

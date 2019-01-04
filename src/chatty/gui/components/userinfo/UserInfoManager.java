@@ -80,9 +80,9 @@ public class UserInfoManager {
         }
     }
 
-    public void setChannelInfo(ChannelInfo info) {
+    public void setChannelInfo(String stream, ChannelInfo info) {
         for (UserInfo dialog : dialogs) {
-            dialog.setChannelInfo(info);
+            dialog.setChannelInfo(stream, info);
         }
     }
 

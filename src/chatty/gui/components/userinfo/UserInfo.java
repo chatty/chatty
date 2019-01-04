@@ -4,10 +4,12 @@ package chatty.gui.components.userinfo;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
+import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
 import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
+import chatty.util.MiscUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
@@ -35,7 +37,7 @@ public class UserInfo extends JDialog {
         NONE, TIMEOUT, MOD, UNMOD, COMMAND
     }
     
-    private final InfoPanel infoPanel = new InfoPanel(this);
+    private final InfoPanel infoPanel;
     private final PastMessages pastMessages = new PastMessages();
 
     private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
@@ -146,6 +148,33 @@ public class UserInfo extends JDialog {
         gbc.insets = new Insets(0,0,0,0);
         add(buttons.getSecondary(), gbc);
 
+        infoPanel = new InfoPanel(this, new ContextMenuAdapter() {
+            
+            public void menuItemClicked(ActionEvent e) {
+                switch (e.getActionCommand()) {
+                    case "copyUserId":
+                        MiscUtil.copyToClipboard(currentUser.getId());
+                        break;
+                    case "sendFollowAge":
+                        owner.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_FOLLOW_AGE, makeParameters());
+                        break;
+                    case "copyFollowAge":
+                        MiscUtil.copyToClipboard(InfoPanel.COMMAND_FOLLOW_AGE.replace(makeParameters()));
+                        break;
+                    case "sendAccountAge":
+                        owner.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_ACCOUNT_AGE, makeParameters());
+                        break;
+                    case "copyAccountAge":
+                        MiscUtil.copyToClipboard(InfoPanel.COMMAND_ACCOUNT_AGE.replace(makeParameters()));
+                        break;
+                    case "refresh":
+                        infoPanel.setRefreshingFollowAge();
+                        getFollowInfo(true);
+                        break;
+                }
+            }
+            
+        });
         gbc = makeGbc(0,6,3,1);
         gbc.insets = new Insets(0, 0, 0, 0);
         add(infoPanel,gbc);
@@ -217,6 +246,9 @@ public class UserInfo extends JDialog {
         parameters.put("target-msg-id", getTargetMsgId());
         parameters.put("automod-msg-id", getAutoModMsgId());
         parameters.put("followage", infoPanel.getFollowAge());
+        parameters.put("followdate", infoPanel.getFollowDate());
+        parameters.put("accountage", infoPanel.getAccountAge());
+        parameters.put("accountdate", infoPanel.getAccountDate());
         parameters.put("user-id", user.getId());
         return parameters;
     }
@@ -360,8 +392,8 @@ public class UserInfo extends JDialog {
         pinnedDialog.setSelected(isPinned);
     }
 
-    public void setChannelInfo(ChannelInfo info) {
-        if (info == null || currentUser == null || !currentUser.getName().equals(info.name)) {
+    public void setChannelInfo(String stream, ChannelInfo info) {
+        if (currentUser == null || !currentUser.getName().equals(stream)) {
             return;
         }
         infoPanel.setChannelInfo(info);
@@ -379,7 +411,11 @@ public class UserInfo extends JDialog {
         infoPanel.setFollowInfo(follow, result);
     }
 
-    protected Follower getFollowInfo() {
-        return owner.getSingleFollower(currentUser.getStream(), currentUser.getRoom().getStreamId(), currentUser.getName(), currentUser.getId());
+    protected Follower getFollowInfo(boolean refresh) {
+        return owner.getSingleFollower(currentUser.getStream(),
+                currentUser.getRoom().getStreamId(),
+                currentUser.getName(),
+                currentUser.getId(),
+                refresh);
     }
 }

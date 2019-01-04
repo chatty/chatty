@@ -169,8 +169,8 @@ public class TwitchApi {
         followerManager.request(stream);
     }
 
-    public Follower getSingeFollower(String stream, String streamID, String user, String userID) {
-        return followerManager.getSingleFollower(stream, streamID, user, userID);
+    public Follower getSingeFollower(String stream, String streamId, String user, String userId, boolean refresh) {
+        return followerManager.getSingleFollower(stream, streamId, user, userId, refresh);
     }
     
     public void getSubscribers(String stream) {

@@ -22,7 +22,7 @@ public class Follower {
     /**
      * The time the user followed at.
      */
-    public final long time;
+    public final long follow_time;
     
     /**
      * Whether the user was already followed before with a different follow-time
@@ -37,6 +37,8 @@ public class Follower {
      */
     public final boolean newFollower;
     
+    public final long created_time = System.currentTimeMillis();
+    
     /**
      * Creates a new Follower item.
      * 
@@ -49,7 +51,7 @@ public class Follower {
         this.type = type;
         this.name = name;
         this.display_name = display_name;
-        this.time = time;
+        this.follow_time = time;
         this.refollow = refollow;
         this.newFollower = newFollower;
     }

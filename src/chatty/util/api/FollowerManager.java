@@ -46,11 +46,8 @@ public class FollowerManager {
     /**
      * Saves followers by name. Used to check if the same follower was already
      * seen as following before and whether it was with the same time.
-     * 
-     * Also used to store and retrieve followers for single follower requests.
-     * May contain Follower objects with time=-1 for users who are not
-     * following.
      */
+    // TODO: Clear cache somehow, when too many elements?
     private final Map<String, Map<String, Follower>> alreadyFollowed = new HashMap<>();
     
     /**
@@ -58,6 +55,14 @@ public class FollowerManager {
      * occur (e.g. 404).
      */
     private final Map<String, Integer> errors = new HashMap<>();
+    
+    private static final int CACHED_SINGLE_EXPIRE_TIME = 30*60*1000;
+    
+    /**
+     * Used to store and retrieve followers for single follower requests. May
+     * contain Follower objects with time=-1 for users who are not following.
+     */
+    private final Map<String, Map<String, Follower>> cachedSingle = new HashMap<>();
     
     /**
      * The type of this FollowerManager, which can be either for followers or
@@ -195,21 +200,22 @@ public class FollowerManager {
      * @param stream The name of the stream this data is for
      * @param json The data returned from the API
      */
-    protected synchronized void receivedSingle(int responseCode, String stream, String json, String user) {
-        if (responseCode == 404) {
-            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.NOT_FOUND, null);
-            if (!alreadyFollowed.containsKey(stream)) {
-                alreadyFollowed.put(stream, new HashMap<>());
-            }
-            alreadyFollowed.get(stream).put(user, new Follower(type, user, null, -1, false, false));
-            return;
+    protected synchronized void receivedSingle(int responseCode, String stream, String json, String username) {
+        if (!cachedSingle.containsKey(stream)) {
+            cachedSingle.put(stream, new HashMap<>());
         }
-        // Parsing adds to alreadyFollowed automatically
-        Follower result = parseFollowerSingle(stream, user, json);
-        if (result != null) {
-            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.SUCCESS, result);
+        if (responseCode == 404) {
+            listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
+            cachedSingle.get(stream).put(username, new Follower(type, username, null, -1, false, false));
         } else {
-            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.FAILED, null);
+            // Parsing adds to alreadyFollowed automatically
+            Follower result = parseFollowerSingle(stream, username, json);
+            if (result != null) {
+                cachedSingle.get(stream).put(username, result);
+                listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.SUCCESS, result);
+            } else {
+                listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.FAILED, null);
+            }
         }
     }
 
@@ -314,14 +320,11 @@ public class FollowerManager {
         // Check if this follower is already present
         Map<String,Follower> entries = alreadyFollowed.get(stream);
         Follower existingEntry = entries.get(name);
-        if (existingEntry != null && existingEntry.time == -1) {
-            existingEntry = null;
-        }
         boolean refollow = false;
         boolean newFollow = true;
         if (existingEntry != null) {
             newFollow = false;
-            if (existingEntry.time != time) {
+            if (existingEntry.follow_time != time) {
                 refollow = true;
             }
         }
@@ -369,18 +372,26 @@ public class FollowerManager {
         sendResult(type, errorResult);
     }
 
-    public Follower getSingleFollower(String stream, String streamId, String username, String userId) {
+    public Follower getSingleFollower(String stream, String streamId, String username, String userId, boolean refresh) {
         Follower follower = null;
         synchronized(this) {
-            if (alreadyFollowed.containsKey(stream)) {
-                follower = alreadyFollowed.get(stream).get(username);
+            if (cachedSingle.containsKey(stream)) {
+                follower = cachedSingle.get(stream).get(username);
             }
         }
         if (follower != null) {
-            if (follower.time == -1) {
-                listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
-            } else {
-                return follower;
+            if (System.currentTimeMillis() - follower.created_time > CACHED_SINGLE_EXPIRE_TIME
+                    || refresh) {
+                // Request again if expired, but still return existing
+                requestSingleFollower(stream, streamId, username, userId);
+            }
+            // Don't return stale data when manually refreshing
+            if (!refresh) {
+                if (follower.follow_time == -1) {
+                    listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
+                } else {
+                    return follower;
+                }
             }
         } else {
             requestSingleFollower(stream, streamId, username, userId);

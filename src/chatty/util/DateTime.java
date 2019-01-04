@@ -78,6 +78,13 @@ public class DateTime {
         }
         return ago(time, 0, 1, 0, options);
     }
+    
+    public static String formatAccountAgeVerbose(long time, Formatting... options) {
+        if (System.currentTimeMillis() - time > DAY*1000) {
+            return ago(time, 0, 2, DateTime.H, options);
+        }
+        return ago(time, 0, 1, 0, options);
+    }
 
     public static String agoText(long time) {
         long seconds = (System.currentTimeMillis() - time) / 1000;
