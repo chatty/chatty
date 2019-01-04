@@ -4,6 +4,8 @@ about: Create a report to help us improve
 
 ---
 
+*First of all please check if there's already a newer version of Chatty (including beta versions) that may fix your issue. You can use <Help - Check for update> in Chatty to find out if there's an update for you or go to the Releases tab in this repository to view all the recent versions.*
+
 **Describe the bug**
 [A clear and concise description of what the bug is.]
 

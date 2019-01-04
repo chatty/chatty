@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.RegexDocumentFilter;
 import chatty.gui.components.settings.SimpleTableEditor.StringMapItem;
 import java.awt.Component;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -203,26 +205,25 @@ public abstract class SimpleTableEditor<T> extends TableEditor<StringMapItem> im
             cancel.addActionListener(listener);
             
             dialog.setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
+            GridBagConstraints gbc;
             
-            gbc.gridx = 0;
-            gbc.gridy = 0;
+            gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+            dialog.add(new JLabel("Key:"), gbc);
+            gbc = GuiUtil.makeGbc(1, 0, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 0.5;
-            gbc.insets = new Insets(3, 3, 3, 3);
-            gbc.gridwidth = 2;
             dialog.add(key, gbc);
-            gbc.gridx = 0;
-            gbc.gridy = 1;
+            
+            gbc = GuiUtil.makeGbc(0, 1, 1, 1);
+            dialog.add(new JLabel("Value:"), gbc);
+            gbc = GuiUtil.makeGbc(1, 1, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
             dialog.add(value, gbc);
-            gbc.gridwidth = 1;
-            gbc.gridx = 2;
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.insets = new Insets(7, 2, 4, 2);
+            
+            gbc = GuiUtil.makeGbc(1, 2, 1, 1);
             dialog.add(ok, gbc);
-            gbc.gridx = 1;
+            gbc = GuiUtil.makeGbc(2, 2, 1, 1);
             dialog.add(cancel, gbc);
+            
             dialog.pack();
             dialog.setResizable(false);
         }

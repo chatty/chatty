@@ -1,9 +1,10 @@
 
 package chatty.gui.components.textpane;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import chatty.util.Debugging;
+import chatty.util.colors.ColorCorrection;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -85,7 +86,7 @@ public class WrapLabelView extends LabelView {
             Color c2;
             Color c3;
             
-            boolean darkText = HtmlColors.getBrightness(c) < 128;
+            boolean darkText = ColorCorrection.isDarkColor(c);
             if (darkText) {
                 c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 200);
                 c3 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);

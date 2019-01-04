@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.CommunitiesManager.CommunitiesListener;
 import chatty.util.api.CommunitiesManager.Community;
@@ -167,6 +168,10 @@ public class TwitchApi {
     public void getFollowers(String stream) {
         followerManager.request(stream);
     }
+
+    public Follower getSingeFollower(String stream, String streamID, String user, String userID) {
+        return followerManager.getSingleFollower(stream, streamID, user, userID);
+    }
     
     public void getSubscribers(String stream) {
         subscriberManager.request(stream);
@@ -248,15 +253,13 @@ public class TwitchApi {
     /**
      * Verifies token, but only once the delay has passed. For automatic checks
      * instead of manual ones.
-     * 
-     * @param token 
      */
-    public void checkToken(String token) {
-        if (token != null && !token.isEmpty() &&
+    public void checkToken() {
+        if (!StringUtil.isNullOrEmpty(defaultToken) &&
                 (System.currentTimeMillis() - tokenLastChecked) / 1000 > TOKEN_CHECK_DELAY) {
             LOGGER.info("Checking token..");
             tokenLastChecked = Long.valueOf(System.currentTimeMillis());
-            requests.verifyToken(token);
+            requests.verifyToken(defaultToken);
         }
     }
     
@@ -268,6 +271,9 @@ public class TwitchApi {
         return defaultToken;
     }
     
+    public void revokeToken(String token) {
+        requests.revokeToken(token);
+    }
     
     //=========
     // User IDs
@@ -516,4 +522,18 @@ public class TwitchApi {
         requests.autoMod("deny", msgId, defaultToken);
     }
 
+    public void createStreamMarker(String stream, String description, StreamMarkerResult listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.streamMarkerResult("Failed to resolve channel id");
+            } else {
+                requests.createStreamMarker(r.getId(stream), description, defaultToken, listener);
+            }
+        }, stream);
+    }
+    
+    public interface StreamMarkerResult {
+        public void streamMarkerResult(String error);
+    }
+    
 }

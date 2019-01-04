@@ -26,7 +26,7 @@ public class HotkeySettings extends SettingsPanel {
         
         GridBagConstraints gbc;
         
-        gbc = d.makeGbc(0, 0, 1, 1);
+        gbc = d.makeGbc(0, 1, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
         main.add(d.addSimpleBooleanSetting("globalHotkeysEnabled",
                 "Enable global hotkeys",
@@ -34,7 +34,7 @@ public class HotkeySettings extends SettingsPanel {
         
         data = new HotkeyEditor(d);
         data.setPreferredSize(new Dimension(1,270));
-        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc = d.makeGbc(0, 0, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;

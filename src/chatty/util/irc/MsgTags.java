@@ -72,6 +72,15 @@ public class MsgTags {
         return value.equals(tags.get(key));
     }
     
+    public boolean isValueOf(String key, String... values) {
+        for (String value : values) {
+            if (value.equals(tags.get(key))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public boolean isEmpty(String key) {
         return !tags.containsKey(key) || tags.get(key).isEmpty();
     }

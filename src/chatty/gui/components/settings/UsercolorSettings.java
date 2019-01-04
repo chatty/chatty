@@ -1,15 +1,17 @@
 
 package chatty.gui.components.settings;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.colors.UsercolorItem;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.colors.ColorCorrector;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -37,12 +39,13 @@ public class UsercolorSettings extends SettingsPanel {
             + "[help:Usercolors And more..]";
     
     private final ItemColorEditor<UsercolorItem> data;
+    private Color defaultBackgroundColor;
     
     public UsercolorSettings(SettingsDialog d) {
         super(true);
         
         JPanel customPanel = addTitledPanel("Custom Usercolors", 0, true);
-        JPanel mainPanel = addTitledPanel(Language.getString("settings.section.usercolorsOther"), 1);
+        JPanel otherPanel = addTitledPanel(Language.getString("settings.section.usercolorsOther"), 1);
         
         GridBagConstraints gbc;
         
@@ -51,11 +54,14 @@ public class UsercolorSettings extends SettingsPanel {
         //===================
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        customPanel.add(d.addSimpleBooleanSetting("customUsercolors",
-                "Enable custom usercolors", ""), gbc);
+        JCheckBox usercolorsEnabled = d.addSimpleBooleanSetting("customUsercolors",
+                "Enable custom usercolors", "");
+        customPanel.add(usercolorsEnabled, gbc);
 
         data = new ItemColorEditor<>(d,
-                (id, color) -> { return new UsercolorItem(id, color); });
+                (id, color, enabled, bg, bgEnabled) -> {
+                    return new UsercolorItem(id, color);
+                }, false, null);
         data.setRendererForColumn(0, new ItemIdRenderer());
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
@@ -64,14 +70,28 @@ public class UsercolorSettings extends SettingsPanel {
         gbc.weighty = 1;
         customPanel.add(data, gbc);
         
+        SettingsUtil.addSubsettings(usercolorsEnabled, data);
+        
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         customPanel.add(info, d.makeGbc(1, 1, 1, 1));
         
         //================
         // Other Settings
         //================
-        mainPanel.add(d.addSimpleBooleanSetting("colorCorrection"),
-                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
+        otherPanel.add(new JLabel(Language.getString("settings.string.nickColorCorrection")),
+                d.makeGbc(0, 0, 1, 1));
+        
+        String[] colorCorrectionTypes = new String[ColorCorrector.TYPES.keySet().size()];
+        ColorCorrector.TYPES.keySet().toArray(colorCorrectionTypes);
+        otherPanel.add(d.addComboStringSetting("nickColorCorrection", false, colorCorrectionTypes),
+                d.makeGbc(1, 0, 1, 1));
+        
+        JButton colorCorrectionPreview = new JButton("Preview");
+        colorCorrectionPreview.addActionListener(e -> {
+            new UsercolorCorrectionPreview(d, defaultBackgroundColor);
+        });
+        otherPanel.add(colorCorrectionPreview,
+                d.makeGbc(2, 0, 1, 1));
     }
     
     public void setData(List<UsercolorItem> data) {
@@ -82,8 +102,9 @@ public class UsercolorSettings extends SettingsPanel {
         return data.getData();
     }
     
-    public void setBackgroundColor(Color color) {
-        data.setBackgroundColor(color);
+    public void setDefaultBackground(Color color) {
+        data.setDefaultBackground(color);
+        this.defaultBackgroundColor = color;
     }
     
     public void editItem(String item) {

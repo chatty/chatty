@@ -17,6 +17,7 @@
     <h1><a name="top">Release Information</a></h1>
     
     <p>
+        <a href="#0.9.3">0.9.3</a> |
         <a href="#0.9.2">0.9.2</a> |
         <a href="#0.9.1">0.9.1</a> |
         <a href="#0.9">0.9</a> |
@@ -52,7 +53,74 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.9.2">Version 0.9.2</a> <a name="latest">(This one!)</a> (2018-10-26)
+        <a name="0.9.3">Version 0.9.3</a> <a name="latest">(This one!)</a> (2018-12-31)
+        <a href="#top" class="top">[back to top]</a>
+    </h2>
+    <p>Custom Message Colors and Highlights can now also apply to Info Messages
+        and allow you to set the background color, so it's possible to customize
+        the foreground/background of almost any message in the chat window.</p>
+    
+    <p>Moderators can now delete individual messages and get who performed a
+        moderation action directly appended to the associated message.</p>
+    
+    <pre>
+### Chat
+- Added ability to customize message background color (through Message Colors
+  settings and the "bgcolor:" prefix for Highlights)
+- Added prefix "config:info" to Message Colors settings and Highlights as well,
+  allowing you to customize the foreground/background color for more messages
+  (e.g. `config:info [Notification]` in Msg. Colors to customize the color of
+  subscriber notifications)
+- Added prefix "config:any" to match both Regular Messages and Info Messages
+- Added prefix "config:firstmsg" to only match the first message of a user in
+  a channel during the current session
+- Added "replacement:none" prefix to Filter list to have no replacement at all
+
+### Moderation
+- Added support for deletion of single messages (Delete button automatically
+  added to the User Dialog)
+- Append which mod performed an action (e.g. ban/timeout), and only show
+  separate ModAction message if no associated message is present in chat
+- Output ban/timeout reason from Modlogs, since Twitch removed it from chat
+
+### Custom Commands
+- Added "/chain" command to perform several commands at once
+- Added $(chans) parameter containing all open regular channels
+- Added $(msg-id) and $(automod-msg-id) parameters to User Context Menu
+- Added $rand() function, to choose one random entry from the parameter list
+- Extended Click-On-User-Holding-Ctrl command to allow anonymous commands
+- Added "//" prefix to inputbox to directly run anonymous command
+  (e.g. `//echo $(chans)`)
+
+### TAB Completion
+- Changed TAB Completion for Emoji to search within codes without min. character
+  limit, but only search at the beginning of words (separated by underscores)
+  and only at the very beginning if already too many matches
+- Changed TAB Completion for Emotes/Commands to search at the beginning of words
+  as well (capitalized), so e.g. "chair"+TAB will find both "joshChair" and
+  "broughyChair" (setting options for previous behaviour or to search anywhere)
+
+### Misc
+- Added Splash Screen that shows while Chatty is starting
+- Added /marker support to add Stream Markers (also extended Stream Highlights
+  feature to add Stream Marker at the same time, added to Settings Dialog)
+- Added ability to revoke (not just remove) Login token directly out of Chatty
+- Improved debug output
+- Improved performance
+- Made links in info messages clickable
+- Improved Username Color Correction, added several modes to choose from
+- Changed "/join" command to allow joining several space-seperated channels
+- Some other improvements
+- Updated help
+
+### Bugfixes
+- Fixed Custom Usericons matching a 3rd Party badge type inadvertently applying
+  to every user
+- Fixed colors in Viewer History graph for dark Look&amp;Feel
+    </pre>
+    
+    <h2>
+        <a name="0.9.2">Version 0.9.2</a> (2018-10-26)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>Highlights of this update include the changed Color Settings &amp; Chat
@@ -1191,7 +1259,7 @@ New features:
 Changes:
 - Changed message parsing to support "&lt;name&gt; is now hosting you" notification
   (only works on Twitch Client Version 3 though, see Settings - Advanced)
-- Added setting to specify the timezone of the timestamp seperately from the
+- Added setting to specify the timezone of the timestamp separately from the
   system timezone setting
 - Added kadgar.net to open live streams from the context menu
 - Added optional filter to remove combining characters used in some languages
@@ -1250,7 +1318,7 @@ Changes:
 - Added Ctrl+J shortcut for opening Join Dialog
 - Save Channel Favorites sort order between sessions
 - Increased number of saved lines per user from 20 to 100
-- Reorganized Settings Dialog a bit (Usericons/Emoticons on seperate pages)
+- Reorganized Settings Dialog a bit (Usericons/Emoticons on separate pages)
 - Added context menu to Race Id (blue link) in Race Viewer
 - Possibly improved debugging of emoticon loading errors a bit
 - Updated help
@@ -1273,7 +1341,7 @@ Bugfixes:
             username, addressbook category and channel, then choose whether to
             completely hide them, show how many were ignored every 30s (if any)
             or show which users where ignored. Ignored messages also get added
-            to a seperate window so you can check them if you want to.</li>
+            to a separate window so you can check them if you want to.</li>
         <li>Improved Update Notification.</li>
         <li><a href="help-livestreamer.html">Livestreamer</a> context menu
             quality selection customizable.</li>
@@ -1602,7 +1670,7 @@ Changes:
 <h3>Full Changelog</h3>
 <pre>Changes:
 - FrankerFaceZ: Show custom mod icons (available in some channels)
-- FrankerFaceZ settings, Emoticons/Icon settings seperate
+- FrankerFaceZ settings, Emoticons/Icon settings separate
 - Prevent dialogs that can open automatically (error messages) from
   stealing focus
 - Added chat buffer size setting
@@ -1685,7 +1753,7 @@ New features:
 
 Changes:
 - Nicks in JOIN/PART/MOD/UNMOD lines now clickable
-- Settings now saved in seperate files for general settings, login data and
+- Settings now saved in separate files for general settings, login data and
   history/favorites
 - Fixed tab colors, added indicator for new stream status
 - Added delay for global hotkey so it doesn't repeat as much if kept pressed

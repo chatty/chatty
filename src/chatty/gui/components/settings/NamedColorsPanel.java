@@ -1,6 +1,6 @@
 package chatty.gui.components.settings;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.NamedColor;
 import java.awt.*;
 import java.awt.event.MouseEvent;

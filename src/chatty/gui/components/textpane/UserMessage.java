@@ -18,6 +18,7 @@ public class UserMessage extends Message {
     public final Emoticons.TagEmotes emotes;
     public final int bits;
     public Color color;
+    public Color backgroundColor;
     public boolean whisper;
     public boolean highlighted;
     public boolean ignored_compact;

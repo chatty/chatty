@@ -17,6 +17,7 @@ public interface TwitchApiResultListener {
     void receivedCheerEmoticons(Set<CheerEmoticon> emoticons);
     void receivedUsericons(List<Usericon> icons);
     void tokenVerified(String token, TokenInfo tokenInfo);
+    void tokenRevoked(String error);
     void runCommercialResult(String stream, String text, RequestResultCode result);
     void putChannelInfoResult(RequestResultCode result);
     void receivedChannelInfo(String channel, ChannelInfo info, RequestResultCode result);
@@ -24,7 +25,7 @@ public interface TwitchApiResultListener {
     void receivedFollowers(FollowerInfo followerInfo);
     void newFollowers(FollowerInfo followerInfo);
     void receivedSubscribers(FollowerInfo info);
-    
+    void receivedFollower(String stream, String username, RequestResultCode result, Follower follower);
     /**
      * The correctly capitalized name for a user.
      * 

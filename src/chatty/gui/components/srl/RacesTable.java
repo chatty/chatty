@@ -1,7 +1,7 @@
 
 package chatty.gui.components.srl;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.TwitchUrl;
 import chatty.gui.UrlOpener;
 import chatty.gui.components.menus.ContextMenu;

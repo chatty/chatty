@@ -109,7 +109,7 @@ public class DebugWindow extends JFrame {
     private void printLine(JTextArea text, String line) {
         try {
             Document doc = text.getDocument();
-            doc.insertString(doc.getLength(), "["+DateTime.currentTime()+"] "+line+"\n", null);
+            doc.insertString(doc.getLength(), "["+DateTime.currentTimeExact()+"] "+line+"\n", null);
             if (autoscroll.isSelected()) {
                 text.setCaretPosition(doc.getLength());
             }

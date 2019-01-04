@@ -169,7 +169,7 @@ public class FrankerFaceZ {
         alreadyRequested.add(url);
         requestPending.add(url);
         
-        // Create request and run it in a seperate thread
+        // Create request and run it in a separate thread
         UrlRequest request = new UrlRequest();
         request.setLabel("FFZ");
         request.setUrl(url);

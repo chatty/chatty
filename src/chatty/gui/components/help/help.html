@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.9.2)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.9.3)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -53,7 +53,7 @@
                     <li><a href="help-livestreamer.html">Livestreamer / Streamlink</a>
                     <li><a href="help-srl.html">SpeedrunsLive (SRL)</a></li>
                     <li><a href="#followers">Followers/Subscribers List</a></li>
-                    <li><a href="#streamhighlights">Stream Highlights</a></li>
+                    <li><a href="#streamhighlights">Stream Highlights / Markers</a></li>
                     <li><a href="#streamchat">Stream Chat</a></li>
                 </ul>
             </td>
@@ -100,12 +100,12 @@
             </td>
         </tr>
     </table>
-
+    
     <h2>
         <a name="title">Title and Tabs</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <img src="0_4_overview_top.png" />
+    <img src="0_4_overview_top.png" alt="Top of the main Chatty window, explaining the data in the title and the meaning of TAB colors" />
     <p>When in a channel, Chatty shows some information about that channel
     in the titlebar, e.g.:<br /><cite>[40|59] - GTA:SA Speedruns (Grand Theft Auto: San Andreas)</cite></p>
     <p>The first number is the number of people in the chat, the second is the
@@ -132,16 +132,14 @@
         <a name="shortcuts">Hotkeys</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p><em>You can customize most of these hotkeys in the settings, and also
-            add hotkeys for some functions not listed here.</em></p>
     <p>Default hotkeys which can't be changed:</p>
     <ul>
         <li><kbd>PageUp/PageDown</kbd> - Scroll up or down in chat</li>
         <li><kbd>Arrow Up/Down</kbd> (with <kbd>Ctrl</kbd> for multline) - Go through <a href="#inputHistory">Input History</a></li>
         <li><kbd>TAB</kbd> - For <a href="#TAB_Completion">TAB Completion</a></li>
     </ul>
-    <p>The following are more default hotkeys, however these can be changed
-    in the settings:</p>
+    
+    <p>The following default hotkeys can be changed in the Settings:</p>
     <ul>
         <li><kbd>F1</kbd> - Open help</li>
         <li><kbd>Ctrl-F</kbd> - Find text in chat</li>
@@ -156,6 +154,9 @@
         <li><kbd>Shift-F10</kbd> - Toggle Userlist</li>
         <li><kbd>F11</kbd> - Toggle "Fullscreen"-Mode (actually only removes the menubar and maximizes the window)</li>
     </ul>
+    
+    <p>In the Settings you can configure hotkeys for many more functions than
+        are listed here.</p>
     
     <h2>
         <a name="commands">Commands</a>
@@ -200,16 +201,20 @@
         directly by prepending them with a dot <code>.</code> instead of a slash,
         for example: <code>.mods</code>.</p>
     
-    <h3><a name="commands-settings">Settings/Customization commands:</a></h3>
+    <h3><a name="commands-twitch">Other Twitch Commands</a></h3>
     <ul>
-        <li><a href="#settings">Setting commands</a></li>
+        <li><a href="#streamhighlights">Stream Highlights / Markers commands</a> (including <code>/marker</code>)</li>
+        <li><code>/follow [user]</code>, <code>/unfollow [user]</code> - Follow
+            or unfollow the given user, or the current channel if no user is given</li>
+    </ul>
+    
+    <h3><a name="commands-settings">Settings / Customization commands:</a></h3>
+    <ul>
+        <li><a href="help-setting_commands.html">Setting commands</a></li>
         <li><code>/setcolor &lt;name&gt;</code> - Opens the usercolor settings
         for the given name</li>
         <li><a href="#addressbook">Addressbook commands</a></li>
-        <li><a href="#streamhighlights">Stream Highlights commands</a></li>
         <li><a href="#streamchat">Stream Chat commands</a></li>
-        <li><code>/follow [user]</code>, <code>/unfollow [user]</code> - Follow
-            or unfollow the given user, or the current channel if no user is given</li>
     </ul>
     
     <h3><a name="commands-gui">GUI commands:</a></h3>
@@ -225,7 +230,7 @@
             the current caret position (can be useful for Custom Commands put
             in a menu)</li>
         <li><code>/insertword &lt;text&gt;</code> - Same as <code>/insert</code>,
-            but adds spaces so it's seperated from text before and after (if present)</li>
+            but adds spaces so it's separated from text before and after (if present)</li>
         <li><code>/openUrl &lt;url&gt;</code> - Opens the given url (see <a href="help-setting_commands.html#openurl">Open URL Command settings</a>)</li>
         <li><code>/openUrlPrompt &lt;url&gt;</code> - Opens the given url after
         showing a prompt for confirmation</li>
@@ -284,6 +289,20 @@
             is valid and sets it as new token if it is</li>
     </ul>
     
+    <h3><a name="commands-chain">Execute several commands</a></h3>
+    <p>The <code>/chain</code> command allows you to run several commands at the
+        same time. Each part separated by a <code>|</code> is basicially
+        entered into the inputbox again. Whitespace around each part is trimmed.
+        Escape <code>|</code> with <code>|</code> to use it directly.</p>
+    
+    <dl class="defList">
+        <dt><code>/chain /echo a | /echo b</code></dt>
+        <dd>Outputs <code>a</code> and <code>b</code></dd>
+        
+        <dt><code>/chain /echo a | /echo ||b||</code></dt>
+        <dd>Outputs <code>a</code> and <code>|b|</code></dd>
+    </dl>
+    
     <h2>
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>
@@ -304,6 +323,10 @@
         <dt><code>Editor access</code></dt>
         <dd>Allows you to change the title/game of your stream and streams you
             are an editor in via the <a href="help-admin.html">Admin Dialog</a>.</dd>
+        
+        <dt><code>Edit broadcast</code></dt>
+        <dd>Allows you to create Stream Markers on your streams and streams that
+            you are an editor for.</dd>
         
         <dt><code>Run commercials</code></dt>
         <dd>Allows you to run comercials on your stream 
@@ -457,11 +480,11 @@
         </tr>
         <tr>
             <td class="symbol">!</td>
-            <td>Admin</td>
+            <td>VIP</td>
         </tr>
         <tr>
             <td class="symbol">&amp;</td>
-            <td>Staff</td>
+            <td>Staff, Admin</td>
         </tr>
     </table>
     
@@ -732,7 +755,7 @@
         <a href="#top" class="top">[back to menu]</a>
      </h2>
     <p>The highlight system allows you to add words or phrases that make chat
-    messages appear in another color and appear in a seperate window, which you can
+    messages appear in another color and appear in a separate window, which you can
     open under <code>View - Highlights</code> (you can clear the highlights window
     in it's context menu).</p>
     <div class="moreInfo">More information: <a href="help-settings.html#Highlight">Highlight Settings</a></div>
@@ -743,7 +766,7 @@
     </h2>
     <p>The ignore system works very similiar to the highlight system, just that
         it hides messages instead of highlighting them. They however also get
-        added to a seperated window, which you can open under <code>View - Ignored</code>
+        added to a separated window, which you can open under <code>View - Ignored</code>
         (you can clear the messagess in the window in it's context menu).</p>
     
     <p>Right-click on a user in chat to open the User Context Menu, where you
@@ -969,7 +992,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <a name="streamchat">Stream Chat</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-        <p>Stream Chat is a seperate dialog, opened via the <code>/openStreamChat</code>
+        <p>Stream Chat is a separate dialog, opened via the <code>/openStreamChat</code>
             command or the <code>Extra</code> menu, that can have chat messages from one or several
     channels redirected to it (only regular chat messages, so no JOINS/PARTS, info messages
     and so on). It also can have a message timeout set, so messages will
@@ -978,7 +1001,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <p>The idea is to capture Stream Chat to display chat on stream and
         messages will only be displayed if the chat has been recently active. So
         this doesn't really make a lot of sense for busier channels, unless you
-        simply prefer to only have regular messages or to have a seperate dialog
+        simply prefer to only have regular messages or to have a separate dialog
         for the capture.</p>
         
         <h3>Getting started</h3>
@@ -1335,7 +1358,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         show refollows on the top of the list.</p>
 
     <h2>
-        <a name="streamhighlights">Stream Highlights</a>
+        <a name="streamhighlights">Stream Highlights / Markers</a>
         <a href="#top" class="top">[back to menu]</a>
      </h2>
     <p>Chatty can help you with creating Highlights of your stream by recording
@@ -1361,29 +1384,20 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <code>/dir</code> command).</p>
     
     <h3>Allow your moderators to add highlights</h3>
-    <p>You can also let your moderators add stream highlights
-        (<code>!highlight [comment]</code>), but you first have to set the channel with a
-        <a href="help-setting_commands.html#streamhighlights">setting command</a>:</p>
+    <p>You can also let your moderators add Stream Highlights
+        (<code>!highlight [comment]</code>), which you can configure under
+        <code>Main - Settings - Stream Highlights</code>.</p>
     
-    <dl class="defList">
-        <dt><code>/set streamHighlightChannel #&lt;yourchannelname&gt;</code></dt>
-        <dd>Allows moderators in the given channel to run the command.</dd>
-        <dd>For example if your channel/stream is called <code>zoton2</code> the
-            command you have to enter would be: <code>/set&nbsp;streamHighlightChannel&nbsp;#zoton2</code></dd>
-    </dl>
+    <h3>Stream Markers</h3>
+    <p>Twitch offers a way to add
+        <a href="https://help.twitch.tv/customer/portal/articles/2955281-creating-highlights-and-stream-markers">Stream Markers</a>
+        which show up when creating Highlights on the website. You can use the
+        <code>/marker</code> command or add a Stream Marker automatically when
+        adding a Stream Highlight (changeable in the Stream Highlights settings).</p>
     
-    <p>Optionally you can also set the following settings:</p>
-    <dl class="defList">
-        <dt><code>/set streamHighlightChannelRespond 1</code></dt>
-        <dd>Send a response to chat when the mod command is used (otherwise the
-            message is just shown locally).</dd>
-        <dt><code>/set streamHighlightCommand !highlight</code></dt>
-        <dd>Change the mod command (in this example to <code>!highlight</code>,
-            which is the default)</dd>
-    </dl>
-    
-    <p><em>Tip:</em> <a href="help-setting_commands.html">Setting commands</a>
-        are entered into the chat input box, just like Twitch Chat commands.</p>
+    <p>For creating Stream Markers you need the <code>Edit broadcast</code>
+        <a href="#login">scope</a>, so if you don't have that yet, you have to
+        request a new login token.</p>
 
     <h2>
         <a name="ignoreJoinsParts">Ignore joins/parts</a>

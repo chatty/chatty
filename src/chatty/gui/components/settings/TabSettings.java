@@ -69,11 +69,7 @@ public class TabSettings extends SettingsPanel {
         other.add(scroll2,
                 d.makeGbcSub(0, 6, 4, 1, GridBagConstraints.WEST));
 
-        // Tab scrolling checkbox status
-        scroll2.setEnabled(false);
-        scroll.addItemListener(e -> {
-            scroll2.setEnabled(scroll.isSelected());
-        });
+        SettingsUtil.addSubsettings(scroll, scroll2);
     }
     
 }

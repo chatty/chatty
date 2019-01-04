@@ -73,7 +73,18 @@ public class PastMessages extends JTextArea {
                 if (bm.reason != null && !bm.reason.isEmpty()) {
                     b.append(" [").append(bm.reason).append("]");
                 }
-                
+                if (bm.by != null) {
+                    b.append(" (@").append(bm.by).append(")");
+                }
+                b.append("\n");
+            }
+            else if (m.getType() == User.Message.MSG_DELETED) {
+                User.MsgDeleted md = (User.MsgDeleted)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
+                b.append("Message deleted: ").append(md.msg);
+                if (md.by != null) {
+                    b.append(" (@").append(md.by).append(")");
+                }
                 b.append("\n");
             }
             else if (m.getType() == User.Message.SUB) {

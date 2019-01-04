@@ -3,7 +3,7 @@ package chatty.gui.colors;
 
 import chatty.Helper;
 import chatty.User;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class UsercolorManager {
     private void saveToSettings() {
         List<String> dataToSave = new LinkedList<>();
         for (UsercolorItem item : data) {
-            dataToSave.add(item.getId()+","+HtmlColors.getColorString(item.getColor()));
+            dataToSave.add(item.getId()+","+HtmlColors.getColorString(item.getForeground()));
         }
         settings.putList("usercolors", dataToSave);
     }

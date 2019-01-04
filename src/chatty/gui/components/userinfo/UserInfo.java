@@ -9,6 +9,8 @@ import chatty.gui.components.menus.UserContextMenu;
 import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
+import chatty.util.api.Follower;
+import chatty.util.api.TwitchApi;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
@@ -17,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.*;
 
@@ -80,17 +83,8 @@ public class UserInfo extends JDialog {
                 if (command == null) {
                     return;
                 }
-                User user = getUser();
-                String nick = user.getName();
-                String reason = getBanReason();
-                if (!reason.isEmpty()) {
-                    reason = " "+reason;
-                }
-                Parameters parameters = Parameters.create(nick+reason);
-                parameters.put("msg-id", getMsgId());
-                parameters.put("target-msg-id", getTargetMsgId());
-                parameters.put("automod-msg-id", getAutoModMsgId());
-                owner.anonCustomCommand(user.getRoom(), command, parameters);
+                
+                owner.anonCustomCommand(getUser().getRoom(), command, makeParameters());
                 owner.getActionListener().actionPerformed(e);
             }
         });
@@ -184,7 +178,7 @@ public class UserInfo extends JDialog {
             }
             
             private void showPopupMenu(MouseEvent e) {
-                JPopupMenu menu = new UserContextMenu(currentUser, currentAutoModMsgId, contextMenuListener);
+                JPopupMenu menu = new UserContextMenu(currentUser, currentMsgId, currentAutoModMsgId, contextMenuListener);
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         });
@@ -209,6 +203,26 @@ public class UserInfo extends JDialog {
             return buttons.getCommand((JButton)object);
         }
         return null;
+    }
+    
+    private Parameters makeParameters() {
+        User user = getUser();
+        String nick = user.getName();
+        String reason = getBanReason();
+        if (!reason.isEmpty()) {
+            reason = " " + reason;
+        }
+        Parameters parameters = Parameters.create(nick + reason);
+        parameters.put("msg-id", getMsgId());
+        parameters.put("target-msg-id", getTargetMsgId());
+        parameters.put("automod-msg-id", getAutoModMsgId());
+        parameters.put("followage", infoPanel.getFollowAge());
+        parameters.put("user-id", user.getId());
+        return parameters;
+    }
+    
+    protected void updateButtons() {
+        buttons.updateButtonForParameters(makeParameters());
     }
     
     public void setFontSize(float size) {
@@ -271,6 +285,7 @@ public class UserInfo extends JDialog {
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
         updateModButtons();
+        updateButtons();
         buttons.updateAutoModButtons(autoModMsgId);
         finishDialog();
     }
@@ -356,4 +371,15 @@ public class UserInfo extends JDialog {
         return owner.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
     }
 
+    public void setFollowInfo(String stream, String user, Follower follow, TwitchApi.RequestResultCode result) {
+        if (currentUser == null || !currentUser.getName().equals(user)
+                || !Objects.equals(currentUser.getStream(), stream)) {
+            return;
+        }
+        infoPanel.setFollowInfo(follow, result);
+    }
+
+    protected Follower getFollowInfo() {
+        return owner.getSingleFollower(currentUser.getStream(), currentUser.getRoom().getStreamId(), currentUser.getName(), currentUser.getId());
+    }
 }

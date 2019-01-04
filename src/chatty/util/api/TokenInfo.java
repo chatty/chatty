@@ -1,6 +1,11 @@
 
 package chatty.util.api;
 
+import chatty.lang.Language;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Holds info (username, scopes) about the current access token.
  * 
@@ -8,39 +13,51 @@ package chatty.util.api;
  */
 public class TokenInfo {
     
-    public final boolean channel_commercials;
-    public final boolean channel_editor;
-    public final boolean chat_access;
-    public final boolean user_read;
-    public final boolean channel_subscriptions;
-    public final boolean user_follows_edit;
+    public enum Scope {
+        CHAT("chat_login", "chat"),
+        USERINFO("user_read", "user"),
+        EDITOR("channel_editor", "editor"),
+        EDIT_BROADCAST("user:edit:broadcast", "broadcast"),
+        COMMERICALS("channel_commercial", "commercials"),
+        SUBSCRIBERS("channel_subscriptions", "subscribers"),
+        FOLLOW("user_follows_edit", "follow");
+        
+        public String scope;
+        public String label;
+        public String description;
+        
+        Scope(String scope, String langKey) {
+            this.scope = scope;
+            this.label = Language.getString("login.access."+langKey);
+            this.description = Language.getString("login.access."+langKey+".tip", false);
+        }
+        
+    }
+    
     public final String name;
     public final String userId;
     public final boolean valid;
+    public final Set<String> scopes;
     
     public TokenInfo() {
         valid = false;
-        channel_commercials = false;
-        channel_editor = false;
-        chat_access = false;
-        user_read = false;
         name = null;
         userId = null;
-        channel_subscriptions = false;
-        user_follows_edit = false;
+        scopes = new HashSet<>();
     }
     
-    public TokenInfo(String name, String userId, boolean chat_access, boolean channel_editor,
-            boolean channel_commercials, boolean user_read, boolean channel_subscriptions,
-            boolean user_follows_edit) {
+    public TokenInfo(String name, String userId, Collection<String> scopes) {
         this.name = name;
         this.userId = userId;
-        this.channel_editor = channel_editor;
-        this.channel_commercials = channel_commercials;
-        this.chat_access = chat_access;
-        this.user_read = user_read;
-        this.channel_subscriptions = channel_subscriptions;
-        this.user_follows_edit = user_follows_edit;
         valid = true;
+        this.scopes = new HashSet<>(scopes);
+    }
+    
+    public boolean hasScope(String scope) {
+        return scopes.contains(scope);
+    }
+    
+    public boolean hasScope(Scope scope) {
+        return scopes.contains(scope.scope);
     }
 }

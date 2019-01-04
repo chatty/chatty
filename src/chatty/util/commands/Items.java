@@ -49,11 +49,6 @@ class Items implements Item {
         return collection.isEmpty();
     }
 
-    public String replace(Parameters parameters, boolean isRequired) {
-        String result = replace(parameters);
-        return result != null || isRequired ? result : "";
-    }
-
     @Override
     public String replace(Parameters parameters) {
         StringBuilder b = new StringBuilder();
@@ -75,6 +70,11 @@ class Items implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, collection.toArray());
+    }
+    
+    @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getIdentifiersWithPrefix("", true, collection.toArray());
     }
     
     @Override

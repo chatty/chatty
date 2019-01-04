@@ -272,6 +272,26 @@ public class ColorSettings extends SettingsPanel {
                     false  // highlightBackground
                 });
         
+        presets.addPreset("Dark Smooth",
+                new String[]{
+                    "#323232", // backgroundColor
+                    "LightGrey", // foregroundColor
+                    "Aquamarine", // infoColor
+                    "#A0A0A0", // compactColor
+                    "#FFFFFF", // highlightColor
+                    "#222222", // inputBackgroundColor
+                    "#FFFFFF", // inputForegroundColor
+                    "DarkSlateBlue", // searchResultColor
+                    "SlateBlue", // searchResultColor2
+                    "#3B3B3B", // backgroundColor2
+                    "#5C0000", // highlightBackgroundColor
+                    "#DFDFDF"}, // separatorColor
+                new Boolean[]{
+                    true, // alternateBackground
+                    false, // messageSeparator
+                    true  // highlightBackground
+                });
+        
         presets.init();
         
         //========
@@ -392,7 +412,7 @@ public class ColorSettings extends SettingsPanel {
         //updatedSetting.updated();
         for (ColorSetting colorSetting : colorSettings.values()) {
             if (colorSetting.hasBase(setting)) {
-                colorSetting.update(newColor);
+                colorSetting.setBaseColor(newColor);
             }
         }
         d.updateBackgroundColor();

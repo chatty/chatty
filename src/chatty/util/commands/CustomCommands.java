@@ -3,6 +3,7 @@ package chatty.util.commands;
 
 import chatty.Helper;
 import chatty.Room;
+import chatty.TwitchClient;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
@@ -32,10 +33,12 @@ public class CustomCommands {
     
     private final Settings settings;
     private final TwitchApi api;
+    private final TwitchClient client;
     
-    public CustomCommands(Settings settings, TwitchApi api) {
+    public CustomCommands(Settings settings, TwitchApi api, TwitchClient client) {
         this.settings = settings;
         this.api = api;
+        this.client = client;
     }
     
     /**
@@ -43,7 +46,7 @@ public class CustomCommands {
      * parameters as defined.
      * 
      * @param commandName The command
-     * @param parameters The parameters, each seperated by a space from eachother
+     * @param parameters The parameters, each separated by a space from eachother
      * @param channel
      * @return A {@code String} as result of the command, or {@code null} if the
      * command doesn't exist or the number of parameters were invalid
@@ -60,6 +63,9 @@ public class CustomCommands {
         // Add some more parameters
         parameters.put("chan", Helper.toStream(room.getChannel()));
         parameters.put("stream", room.getStream());
+        Set<String> chans = new HashSet<>();
+        client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
+        parameters.put("chans", StringUtil.join(chans, " "));
         if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {
             System.out.println("request");
             String stream = Helper.toValidStream(room.getStream());

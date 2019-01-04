@@ -10,7 +10,12 @@
         customize some Context Menus (and the User Info Dialog) with your own entries.</p>
     
     <ul>
-        <li><a href="#custom-commands">Custom Commands</a></li>
+        <li>
+            <a href="#custom-commands">Custom Commands</a>
+            <ul>
+                <li><a href="#anonymous-custom-commands">Anonymous Custom Commands</a></li>
+            </ul>
+        </li>
         <li>
             <a href="#replacements">Replacements</a>
             <ul>
@@ -66,6 +71,26 @@
         Commands list as well, it will fallback to that in other channels. This
         way to can add variations of commands for specific channels.</p>
     
+    <h3><a name="anonymous-custom-commands">Anonymous Custom Commands</a></h3>
+    <p>Custom Commands that aren't defined in the Custom Commands list do not
+        have a name and can thus only be executed from the context they are
+        defined, for example when adding <a href="#inline-commands">Inline-Commands</a>
+        to the User Dialog or Context Menus.</p>
+    
+    <p>You can also execute Anynomous Custom Commands directly from the
+        inputbox, by prepending <code>//</code>, which allows you to use
+        Replacements:</p>
+    
+    <dl class="defList">
+        <dt><code>/echo Open Channels: $(chans)</code></dt>
+        <dd>Executes as a normal command (nothing replaced)</dd>
+        <dd>Outputs <code>Open Channels: $(chans)</code></dd>
+        
+        <dt><code>//echo Open Channels: $(chans)</code></dt>
+        <dd>Executes as an Anonymous Custom Command</dd>
+        <dd>Outputs <code>Open Channels: joshimuz lotsofs cirno_tv</code></dd>
+    </dl>
+    
     <h2><a name="replacements">Replacements</a></h2>
     <ul>
         <li><a href="#simple-replacements">Simple Replacements</a></li>
@@ -117,7 +142,7 @@
     <p><code>/me slaps <strong>moobot</strong> around a bit with a large trout</code></p>
     
     <p>This is the syntax for specifying parameters (word in this context means
-    anything seperated by a space):</p>
+    anything separated by a space):</p>
     <dl>
         <dt><code>$1, $2, $3</code></dt>
         <dd>First word, second word, third word etc.</dd>
@@ -153,9 +178,19 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td rowspan="7"><em>All</em></td>
+            <td rowspan="9"><em>All</em></td>
             <td><code>chan</code></td>
             <td>The current channel context (without leading #)</td>
+        </tr>
+        <tr>
+            <td><code>stream</code></td>
+            <td>The stream name of the current channel context (different from
+                <code>chan</code> for Chatrooms)</td>
+        </tr>
+        <tr>
+            <td><code>chans</code></td>
+            <td>All currently open regular channels (separated by spaces,
+                without leading #)</td>
         </tr>
         <tr>
             <td><code>streamstatus</code></td>
@@ -180,13 +215,26 @@
         <tr>
             <td colspan="2">The stream info is of the current channel context</td>
         </tr>
+        <!-- User Context Menu -->
         <tr>
-            <td>User Context Menu</td>
+            <td rowspan="3">User Context Menu</td>
             <td><code>1</code></td>
             <td>Name of the user</td>
         </tr>
         <tr>
-            <td rowspan="2">User Dialog</td>
+            <td><code>msg-id</code></td>
+            <td>Message id of the selected message (depending on the line in
+                chat you opened the User Contex Menu from)</td>
+        </tr>
+        <tr>
+            <td><code>automod-msg-id</code></td>
+            <td>Message id of the selected message filtered by AutoMod, for
+                approving or denying the message (when opened by clicking on
+                an appropriate message in chat)</td>
+        </tr>
+        <!-- User Dialog -->
+        <tr>
+            <td rowspan="4">User Dialog</td>
             <td><code>1</code></td>
             <td>Name of the user</td>
         </tr>
@@ -195,10 +243,23 @@
             <td>Ban reason (if selected)</td>
         </tr>
         <tr>
+            <td><code>msg-id</code></td>
+            <td>Message id of the selected message (<code>&gt;</code> in front
+                of message, depending on the line in chat you opened it from)</td>
+        </tr>
+        <tr>
+            <td><code>automod-msg-id</code></td>
+            <td>Message id of the selected message filtered by AutoMod, for
+                approving or denying the message (when opened by clicking on
+                an appropriate message in chat)</td>
+        </tr>
+        <!-- Channel Context Menu -->
+        <tr>
             <td>Channel Context menu</td>
             <td><code>1</code></td>
             <td>Name of the currently active channel (without leading #)</td>
         </tr>
+        <!-- Streams Context Menu -->
         <tr>
             <td>Streams Context menu</td>
             <td><code>1-</code></td>
@@ -256,6 +317,13 @@
         <dd>Makes the given input lowercase.</dd>
         <dd><em>Example:</em> <code>$lower(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>fremily</code>.</dd>
+        
+        <dt><code>$rand(&lt;output1&gt;,&lt;output2&gt;,&lt;output3&gt,..)</code></dt>
+        <dd>Randomly chooses one of the outputs.</dd>
+        <dd><em>Example:</em> <code>$rand(cheesecake,strawberry cake,$1-)</code>
+            with <code>1-</code> referring to <code>apple pie</code> turns into
+            either <code>cheesecake</code>, <code>strawberry cake</code> or
+            <code>apple pie</code>.</dd>
     </dl>
     
     <p class="note"><em>Note:</em> The <code>&lt;identifier&gt;</code> parameter means <em>only</em>

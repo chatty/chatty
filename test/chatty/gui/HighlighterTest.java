@@ -506,4 +506,60 @@ public class HighlighterTest {
         assertFalse(highlighter.check(user, "usernamee"));
     }
     
+    @Test
+    public void testNew() {
+        update();
+        updateBlacklist();
+        
+        update("config:info abc");
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.INFO, "abc", null, ab, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", null, ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, ab, null));
+        update("abc");
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.INFO, "abc", null, ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, ab, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "", null, ab, null));
+        
+        update("config:info chan:joshimuz");
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "#joshimuz", ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.INFO, "abc", "#joshimuz", ab, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", "#joshimuz", ab, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "joshimuz", ab, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "#somechannel", ab, null));
+        
+        update("chan:testchannel");
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", "#testchannel", ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", "#testchannel", ab, user));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", null, ab, user));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", "#somechannel", ab, user));
+        
+        update("chanCat:subonly");
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "#testchannel", ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, null, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, ab, null));
+        ab.add("#testchannel", "subonly");
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "#testchannel", ab, null));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, null, user));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", "#somechannel", null, user));
+        
+        update("config:firstmsg");
+        assertTrue(highlighter.check(user, "abc"));
+        user.addMessage("abc", true, null);
+        assertFalse(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(user2, "abc"));
+        update("config:info,firstmsg");
+        assertFalse(highlighter.check(user2, "abc"));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, ab, user2));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.INFO, "abc", null, ab, user2));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "abc", null, ab, user2));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, null, null));
+        assertFalse(highlighter.check(Highlighter.HighlightItem.Type.ANY, "abc", null, ab, user));
+        
+        update("config:any");
+        assertTrue(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.ANY, "", null, ab, user2));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.INFO, "", null, ab, user2));
+        assertTrue(highlighter.check(Highlighter.HighlightItem.Type.REGULAR, "", null, ab, user2));
+    }
+    
 }

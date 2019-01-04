@@ -1,7 +1,7 @@
 
 package chatty.gui.components.updating;
 
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;

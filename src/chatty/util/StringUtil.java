@@ -265,8 +265,39 @@ public class StringUtil {
         return b.toString();
     }
     
+    public static String aEmptyb(String value, String a, String b) {
+        if (value == null || value.isEmpty()) {
+            return a;
+        }
+        return String.format(b, value);
+    }
+    
+    public static String concats(Object... args) {
+        return concat(" ", args);
+    }
+    
+    public static String concat(String sep, Object... args) {
+        if (args.length == 0) {
+            return "";
+        }
+        StringBuilder b = new StringBuilder();
+        boolean appended = false;
+        for (Object arg : args) {
+            if (appended) {
+                b.append(sep);
+                appended = false;
+            }
+            if (arg != null) {
+                b.append(arg.toString());
+                appended = true;
+            }
+        }
+        return b.toString();
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
+        System.out.println(concats("a", null, "b", null));
     }
     
 }

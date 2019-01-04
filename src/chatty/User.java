@@ -4,12 +4,16 @@ package chatty;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.NamedColor;
+import chatty.gui.components.textpane.ModLogInfo;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
+import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +101,7 @@ public class User implements Comparable {
     private boolean hasTurbo;
     private boolean isSubscriber;
     private boolean isBot;
+    private boolean isVip;
     
     private volatile Map<String, String> twitchBadges;
 
@@ -282,7 +287,13 @@ public class User implements Comparable {
      * @param id
      */
     public synchronized void addBan(long duration, String reason, String id) {
-        addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id));
+        addLine(new BanMessage(System.currentTimeMillis(), duration, reason, id, null));
+        replayCachedBanInfo();
+    }
+    
+    public synchronized void addMsgDeleted(String targetMsgId, String msg) {
+        addLine(new MsgDeleted(System.currentTimeMillis(), targetMsgId, msg, null));
+        replayCachedBanInfo();
     }
     
     public synchronized void addSub(String message, String text) {
@@ -293,8 +304,67 @@ public class User implements Comparable {
         addLine(new InfoMessage(System.currentTimeMillis(), message, text));
     }
     
-    public synchronized void addModAction(String commandAndParameters) {
-        addLine(new ModAction(System.currentTimeMillis(), commandAndParameters));
+    public synchronized void addModAction(ModeratorActionData data) {
+        addLine(new ModAction(System.currentTimeMillis(), data.getCommandAndParameters()));
+    }
+    
+    private final List<ModeratorActionData> cachedBanInfo = new ArrayList<>();
+    
+    /**
+     * Add ban info (by/reason) for this user. Must be for this user.
+     * 
+     * @param data 
+     */
+    public synchronized void addBanInfo(ModeratorActionData data) {
+        if (!addBanInfoNow(data)) {
+            // Adding failed, cache and wait to see if it works later
+            Debugging.println("modlog", "[UserModLogInfo] Caching: %s", data.getCommandAndParameters());
+            cachedBanInfo.add(data);
+        }
+    }
+    
+    private static final int BAN_INFO_WAIT = 500;
+    
+    private synchronized void replayCachedBanInfo() {
+        Debugging.println("modlog", "[UserModLogInfo] Replaying: %s", cachedBanInfo);
+        Iterator<ModeratorActionData> it = cachedBanInfo.iterator();
+        while (it.hasNext()) {
+            ModeratorActionData data = it.next();
+            if (System.currentTimeMillis() - data.created_at > BAN_INFO_WAIT) {
+                it.remove();
+                Debugging.println("modlog", "[UserModLogInfo] Abandoned: %s", data);
+            } else {
+                if (addBanInfoNow(data)) {
+                    it.remove();
+                    Debugging.println("modlog", "[UserModLogInfo] Added: %s", data);
+                }
+            }
+        }
+    }
+    
+    private synchronized boolean addBanInfoNow(ModeratorActionData data) {
+        String command = ModLogInfo.makeCommand(data);
+        for (int i=messages.size() - 1; i>=0; i--) {
+            Message m = messages.get(i);
+            // Too old, abort (associated message might not be here yet)
+            if (System.currentTimeMillis() - m.getTime() > BAN_INFO_WAIT) {
+                return false;
+            }
+            if (m instanceof BanMessage) {
+                BanMessage bm = (BanMessage)m;
+                if (command.equals(Helper.makeBanCommand(this, bm.duration, bm.id))) {
+                    messages.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data)));
+                    return true;
+                }
+            } else if (m instanceof MsgDeleted) {
+                MsgDeleted dm = (MsgDeleted)m;
+                if (command.equals(Helper.makeBanCommand(this, -2, dm.targetMsgId))) {
+                    messages.set(i, dm.addModLogInfo(data.created_by));
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public synchronized void addAutoModMessage(String line, String id) {
@@ -477,7 +547,8 @@ public class User implements Comparable {
     /**
      * Returns the corrected color for this nick. This is the original Twitch
      * Chat color (either received from chat or default), which was corrected
-     * for better readability against the current background.
+     * for better readability against the current background. It may be the same
+     * as the original color.
      * 
      * @return The corrected color or null if none was set
      */
@@ -485,6 +556,12 @@ public class User implements Comparable {
         return correctedColor;
     }
     
+    /**
+     * This merely means that the color has gone through color correction, it
+     * may not be different from the original color.
+     * 
+     * @return 
+     */
     public synchronized boolean hasCorrectedColor() {
         return hasCorrectedColor;
     }
@@ -665,6 +742,10 @@ public class User implements Comparable {
         return isBot;
     }
     
+    public synchronized boolean isVip() {
+        return isVip;
+    }
+    
     public synchronized boolean setModerator(boolean mod) {
         if (isModerator != mod) {
             isModerator = mod;
@@ -733,6 +814,15 @@ public class User implements Comparable {
         return false;
     }
     
+    public synchronized boolean setVip(boolean vip) {
+        if (isVip != vip) {
+            isVip = vip;
+            updateFullNick();
+            return true;
+        }
+        return false;
+    }
+    
     private void updateFullNick() {
         fullNick = getModeSymbol()+getCustomNick();
     }
@@ -741,6 +831,9 @@ public class User implements Comparable {
         String result = "";
         if (isSubscriber()) {
             result += "%";
+        }
+        if (isVip()) {
+            result += "!";
         }
         if (hasTwitchBadge("bits")) {
             result += "$";
@@ -754,10 +847,7 @@ public class User implements Comparable {
         if (isBroadcaster()) {
             return "~"+result;
         }
-        if (isAdmin()) {
-            return "!"+result;
-        }
-        if (isStaff()) {
+        if (isStaff() || isAdmin()) {
             return "&"+result;
         }
         if (isGlobalMod()) {
@@ -861,6 +951,7 @@ public class User implements Comparable {
         public static final int MOD_ACTION = 3;
         public static final int AUTO_MOD_MESSAGE = 4;
         public static final int INFO = 5;
+        public static final int MSG_DELETED = 6;
         
         private final Long time;
         private final int type;
@@ -905,14 +996,43 @@ public class User implements Comparable {
         public final long duration;
         public final String reason;
         public final String id;
+        public final String by;
         
-        public BanMessage(Long time, long duration, String reason, String id) {
+        public BanMessage(Long time, long duration, String reason, String id,
+                String by) {
             super(BAN, time);
             this.duration = duration;
             this.reason = reason;
             this.id = id;
+            this.by = by;
         }
         
+        public BanMessage addModLogInfo(String by, String reason) {
+            if (reason == null) {
+                // Probably not set anyway, but just in case
+                reason = this.reason;
+            }
+            return new BanMessage(getTime(), duration, reason, id, by);
+        }
+        
+    }
+    
+    public static class MsgDeleted extends Message {
+        
+        public final String targetMsgId;
+        public final String msg;
+        public final String by;
+        
+        public MsgDeleted(Long time, String targetMsgId, String msg, String by) {
+            super(MSG_DELETED, time);
+            this.targetMsgId = targetMsgId;
+            this.msg = msg;
+            this.by = by;
+        }
+        
+        public MsgDeleted addModLogInfo(String by) {
+            return new MsgDeleted(getTime(), targetMsgId, msg, by);
+        }
     }
     
     public static class SubMessage extends Message {

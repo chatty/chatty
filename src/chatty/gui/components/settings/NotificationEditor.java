@@ -2,7 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.LinkLabelListener;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.Notification.State;
@@ -319,8 +319,8 @@ class NotificationEditor extends TableEditor<Notification> {
 
                 @Override
                 public void colorUpdated() {
-                    foregroundColor.update(backgroundColor.getSettingValue());
-                    backgroundColor.update(foregroundColor.getSettingValue());
+                    foregroundColor.setBaseColor(backgroundColor.getSettingValue());
+                    backgroundColor.setBaseColor(foregroundColor.getSettingValue());
                     updateTestNotification();
                 }
             };

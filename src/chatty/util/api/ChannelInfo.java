@@ -21,13 +21,14 @@ public class ChannelInfo {
     public final int views;
     public final String status;
     public final String game;
+    public final long updatedAt;
     
     public ChannelInfo(String name, String status, String game) {
-        this(name, null, status, game, -1, -1, -1);
+        this(name, null, status, game, -1, -1, -1, -1);
     }
     
     public ChannelInfo(String name, String id, String status, String game, long createdAt,
-            int followers, int views) {
+            int followers, int views, long updatedAt) {
         this.status = status;
         this.game = game;
         this.createdAt = createdAt;
@@ -36,6 +37,7 @@ public class ChannelInfo {
         this.name = StringUtil.toLowerCase(name);
         this.id = id;
         this.time = System.currentTimeMillis();
+        this.updatedAt = updatedAt;
     }
     
     public String getStatus() {

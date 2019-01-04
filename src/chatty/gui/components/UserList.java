@@ -131,7 +131,7 @@ public class UserList extends JList<User> {
         if (e.isPopupTrigger()) {
             User user = getUser(e);
             if (user != null) {
-                UserContextMenu m = new UserContextMenu(user, null, contextMenuListener);
+                UserContextMenu m = new UserContextMenu(user, null, null, contextMenuListener);
                 m.show(this, e.getX(), e.getY());
             }
         }

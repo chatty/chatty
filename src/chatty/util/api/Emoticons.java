@@ -728,7 +728,7 @@ public class Emoticons {
     /**
      * Parse a single line of custom emotes. Allows a number of options that are
      * in the form "option-key:option-value" which basicially can be in any
-     * place in the line as long as they are seperated by whitespace. The first
+     * place in the line as long as they are separated by whitespace. The first
      * and second part without recognized option is used as code and url
      * respectively. Unknown parts (non-options) after the code/url have been
      * found are ignored.

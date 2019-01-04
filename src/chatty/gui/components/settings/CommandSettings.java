@@ -3,12 +3,15 @@ package chatty.gui.components.settings;
 
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.components.menus.CommandMenuItem;
+import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.TestContextMenu;
 import chatty.util.commands.CustomCommand;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
+import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -175,12 +178,38 @@ public class CommandSettings extends SettingsPanel {
             }
         };
         
+        Editor.Tester errorTester = new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                StringBuilder errors = new StringBuilder();
+                List<CommandMenuItem> items = CommandMenuItems.parse(value);
+                for (CommandMenuItem item : items) {
+                    if (item.getCommand() != null && item.getCommand().hasError()) {
+                        errors.append("<p style='font-family:monospaced;'>");
+                        errors.append("Error in command '").append(item.getLabel()).append("': ");
+                        errors.append(formatCommandInfo(item.getCommand().getError()));
+                        errors.append("</p>");
+                    }
+                }
+                String output = "No errors found.";
+                if (errors.length() > 0) {
+                    output = errors.toString();
+                }
+                GuiUtil.showNonModalMessage(parent, "Custom Commands", output,
+                JOptionPane.INFORMATION_MESSAGE, true);
+                return null;
+            }
+        };
+        
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
         menus.add(new JLabel("User Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 0, 1, 1);
-        EditorStringSetting userContextMenu = d.addEditorStringSetting("userContextMenu", 20, true, "Edit User Context Menu:", true, getInfo("userMenu"), menuTester);
+        EditorStringSetting userContextMenu = d.addEditorStringSetting(
+                "userContextMenu", 20, true, "Edit User Context Menu:", true,
+                getInfo("userMenu"), menuTester);
         userContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(userContextMenu, gbc);
         
@@ -189,7 +218,9 @@ public class CommandSettings extends SettingsPanel {
         menus.add(new JLabel("Channel Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 1, 1, 1);
-        EditorStringSetting channelContextMenu = d.addEditorStringSetting("channelContextMenu", 20, true, "Edit Channel Context Menu:", true, getInfo("channelMenu"), menuTester);
+        EditorStringSetting channelContextMenu = d.addEditorStringSetting(
+                "channelContextMenu", 20, true, "Edit Channel Context Menu:", true,
+                getInfo("channelMenu"), menuTester);
         channelContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(channelContextMenu, gbc);
         
@@ -198,7 +229,9 @@ public class CommandSettings extends SettingsPanel {
         menus.add(new JLabel("Streams Context Menu:"), gbc);
         
         gbc = d.makeGbc(1, 2, 1, 1);
-        EditorStringSetting streamsContextMenu = d.addEditorStringSetting("streamsContextMenu", 20, true, "Edit Streams Context Menu:", true, getInfo("streamsMenu"), menuTester);
+        EditorStringSetting streamsContextMenu = d.addEditorStringSetting(
+                "streamsContextMenu", 20, true, "Edit Streams Context Menu:", true,
+                getInfo("streamsMenu"), menuTester);
         streamsContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(streamsContextMenu, gbc);
         
@@ -207,7 +240,9 @@ public class CommandSettings extends SettingsPanel {
         menus.add(new JLabel("User Dialog Buttons:"), gbc);
         
         gbc = d.makeGbc(1, 3, 1, 1);
-        EditorStringSetting userDialogButtons = d.addEditorStringSetting("timeoutButtons", 20, true, "Edit User Dialog Buttons:", true, getInfo("userDialog"));
+        EditorStringSetting userDialogButtons = d.addEditorStringSetting(
+                "timeoutButtons", 20, true, "Edit User Dialog Buttons:", true,
+                getInfo("userDialog"), errorTester);
         userDialogButtons.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(userDialogButtons, gbc);
         

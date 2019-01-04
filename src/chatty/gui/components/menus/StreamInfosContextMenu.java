@@ -1,11 +1,13 @@
 
 package chatty.gui.components.menus;
 
+import chatty.gui.components.LiveStreamsDialog;
 import chatty.lang.Language;
 import chatty.util.api.StreamInfo;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JMenuItem;
 
 /**
  *
@@ -16,6 +18,7 @@ public class StreamInfosContextMenu extends ContextMenu {
     private final List<StreamInfo> streamInfos;
     
     private static final String SORT_SUBMENU = Language.getString("streams.cm.menu.sortBy");
+    private static final String SORT_GROUP = "sort";
     
     public StreamInfosContextMenu(List<StreamInfo> selected, boolean liveStreams) {
         this.streamInfos = selected;
@@ -35,13 +38,20 @@ public class StreamInfosContextMenu extends ContextMenu {
             }
         }
         if (liveStreams) {
-            addItem("sortRecent", Language.getString("streams.sorting.recent"), SORT_SUBMENU);
-            addItem("sortName", Language.getString("streams.sorting.name"), SORT_SUBMENU);
-            addItem("sortGame", Language.getString("streams.sorting.game"), SORT_SUBMENU);
-            addItem("sortViewers", Language.getString("streams.sorting.viewers"), SORT_SUBMENU);
+            for (LiveStreamsDialog.Sorting s : LiveStreamsDialog.Sorting.values()) {
+                addRadioItem("sort_"+s.key, s.getLabel(), SORT_GROUP, SORT_SUBMENU);
+                getItem("sort_"+s.key).setToolTipText(s.getToolTipText());
+            }
             addItem("showRemovedList", Language.getString("streams.cm.removedStreams"));
             addSeparator();
             addItem("manualRefreshStreams", Language.getString("streams.cm.refresh"));
+        }
+    }
+    
+    public void setSorting(String key) {
+        JMenuItem item = getItem("sort_"+key);
+        if (item != null) {
+            item.setSelected(true);
         }
     }
     

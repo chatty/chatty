@@ -5,6 +5,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -239,6 +240,22 @@ public class Buttons {
      */
     private void clearShortcut(JButton button) {
         owner.getRootPane().getActionMap().remove(button);
+    }
+    
+    /**
+     * Update button enable status based on whether all named (not numbered)
+     * parameters are available for the associated command.
+     * 
+     * @param parameters 
+     */
+    public void updateButtonForParameters(Parameters parameters) {
+        for (Map.Entry<JButton, CustomCommand> entry : commands.entrySet()) {
+            JButton button = entry.getKey();
+            CustomCommand command = entry.getValue();
+            boolean allParams = !command.hasError() &&
+                    parameters.getIdentifiers().containsAll(command.getRequiredIdentifiers());
+            button.setEnabled(allParams);
+        }
     }
     
 }

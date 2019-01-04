@@ -90,12 +90,22 @@ public class Debugging {
         Chatty.println(line);
     }
     
-    public synchronized static void println(String type, String line) {
+    public synchronized static void printlnf(String line, Object... args) {
+        println(String.format(line, args));
+    }
+    
+    public synchronized static void printlnTimed(String type, String line) {
         if (isEnabled("rt")) {
             println(line);
         }
         timedOutput.put(type, line);
         timedOutputTimes.put(type, System.currentTimeMillis());
+    }
+    
+    public synchronized static void println(String type, String line, Object... args) {
+        if (isEnabled(type)) {
+            println(String.format(line, args));
+        }
     }
     
     public static void edt() {

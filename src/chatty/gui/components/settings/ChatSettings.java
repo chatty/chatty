@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.gui.components.LinkLabel;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -116,15 +117,26 @@ public class ChatSettings extends SettingsPanel {
         JPanel commandPanel = new JPanel(new GridBagLayout());
         
         commandPanel.add(new JLabel("Run command when clicking on user (holding Ctrl):"),
-                d.makeGbc(0, 0, 1, 1));
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         
         Map<String, String> commandChoices = new HashMap<>();
         commandChoices.put("", "Off");
         commandChoices.put("/timeout", "Timeout");
         commandChoices.put("/ban", "Ban");
-        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 30, false, commandChoices);
-        commandPanel.add(commandOnCtrlClick,
-                d.makeGbc(1, 0, 1, 1));
+        commandChoices.put("/delete $$(msg-id)", "Delete message");
+        ComboStringSetting commandOnCtrlClick = d.addComboStringSetting("commandOnCtrlClick", 100, true, commandChoices);
+        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        commandPanel.add(commandOnCtrlClick, gbc);
+        
+        gbc = d.makeGbc(0, 2, 1, 1);
+        commandPanel.add(new LinkLabel(SettingConstants.HTML_PREFIX
+                + "When manually editing the command: If there is only a single "
+                + "word, it will execute the command of that name (username "
+                + "as parameter), otherwise you can use "
+                + "[help-commands:replacements Custom Command Replacements] "
+                + "such as <code>$1</code> (username) or <code>$(msg-id)</code>.",
+                d.getLinkLabelListener()), gbc);
         
         gbc = d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(0, 0, 0, 0);

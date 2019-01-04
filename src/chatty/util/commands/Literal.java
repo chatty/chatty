@@ -38,6 +38,11 @@ class Literal implements Item {
     }
     
     @Override
+    public Set<String> getRequiredIdentifiers() {
+        return null;
+    }
+    
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;

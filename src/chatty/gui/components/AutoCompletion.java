@@ -2,7 +2,7 @@
 package chatty.gui.components;
 
 import chatty.Helper;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.AutoCompletionServer.CompletionItems;
 import chatty.util.StringUtil;
 import java.awt.Color;
@@ -196,6 +196,10 @@ public class AutoCompletion {
      */
     public void setCompleteToCommonPrefix(boolean common) {
         this.completeToCommonPrefix = common;
+    }
+    
+    public boolean getCompleteToCommonPrefix() {
+        return completeToCommonPrefix;
     }
 
     /**

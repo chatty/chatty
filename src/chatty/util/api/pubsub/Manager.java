@@ -54,6 +54,12 @@ public class Manager {
             public void handleReceived(String received) {
                 listener.info("<< "+StringUtil.trim(received));
                 Message message = Message.fromJson(received, userIds);
+                if (message.data instanceof ModeratorActionData) {
+                    ModeratorActionData data = (ModeratorActionData)message.data;
+                    if (data.type == ModeratorActionData.Type.UNMODDED) {
+                        unlistenModLog(data.stream);
+                    }
+                }
                 if (message.type.equals("MESSAGE")) {
                     listener.messageReceived(message);
                 }

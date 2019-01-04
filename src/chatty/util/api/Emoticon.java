@@ -34,7 +34,7 @@ import javax.swing.SwingWorker;
  * A single emoticon, that contains a pattern, an URL to the image and
  * a width/height.
  * 
- * It also includes a facility to load the image in a seperate thread once
+ * It also includes a facility to load the image in a separate thread once
  * it is needed.
  * 
  * @author tduva

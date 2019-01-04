@@ -29,6 +29,7 @@
         | <a href="#Advanced">Advanced</a>
         | <a href="#TAB_Completion">TAB Completion</a>
         | <a href="#History">History</a>
+        | <a href="#Stream">Stream Highlights</a>
         | <a href="#Hotkeys">Hotkeys</a></p>
     
     <p>This page details some of the settings in the Settings Dialog
@@ -81,8 +82,8 @@
         <a name="Message_Colors">Message Colors</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>You can customize the color of messages based on the same message
-        matching rules and patterns that are used for the
+    <p>You can customize the foreground and background color of messages based
+        on the same message matching rules and patterns that are used for the
         <a href="#Highlight_Matching">Highlight system</a> (not all prefixes
         apply). Add a new item, enter what messages you want to match and select
         the color you want them to have.</p>
@@ -90,8 +91,7 @@
     <p>The order of entries can matter, the first color from the top that
         matches is used.</p>
     
-    <p><em>Note:</em> The default message color is set on the "Colors" settings
-        page ("Normal message").</p>
+    <p><em>Note:</em> The default colors are set on the "Colors" settings page.</p>
     
     <p><em>Note:</em> This feature only changes the message <em>color</em>. Use
         the Highlight system instead if you want
@@ -634,10 +634,32 @@
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <dl class="dl-settings">
-        <dt>Show moderator actions in chat</dt>
+        <dt>Show Moderator Actions in chat</dt>
         <dd>Show commands that moderators execute directly in chat. You can also
             view the same messages under <code>Extra - Moderation Log</code>.
-            Only works if you are a moderator yourself.</dd>
+            Only works if you are a moderator yourself.
+            <dl class="dl-settings dl-settings-sub">
+                <dt>Hide if associated action already visible in chat (e.g. ban)</dt>
+                <dd>Example: If a mod turns on Subscriber-Only mode, everyone
+                    will get an info message about it, which means (if enabled,
+                    for mods) @Mod will be appended to that info message. Due to
+                    this, no separate Mod Action message will be shown.</dd>
+                <dd>On the other hand, if a mod unbans someone, there is no
+                    associated message in chat, so (if enabled) a separate Mod
+                    Action message will always be shown.</dd>
+                <dd>In addition, if a mod bans someone, but no message of that
+                    user is currently visible in chat, then a separate Mod
+                    Action message might be shown.</dd>
+            </dl>
+        </dd>
+        
+        <dt>Append which @Mod caused an Action (e.g. ban)</dt>
+        <dd>Append the name of the moderator to actions in chat, for example
+            behind a deleted message or an info message such as
+            <code>[Info] This room is now in subscribers-only mode. (@tduva)</code>.</dd>
+        <dd>Note that the association of Mod Action and existing message in chat
+            may not always be perfect, especially if different mods perform the
+            same or similiar action at the same time.</dd>
         
         <dt>Show messages rejected by AutoMod</dt>
         <dd>Show messages that have to be approved directly in chat. To approve
@@ -710,11 +732,23 @@
         <li><strong>Check ignored messages</strong>: Only checks ignored messages
         for highlights if this is enabled.</li>
     </ul>
-    <h3>Add terms to be highlighted</h3>
+    <h3>Overview</h3>
     <p>Add items to the list to make a message highlighted if any one of them
         match the message. The <code>Users to never highlight</code> and
         <code>Highlight Blacklist</code> settings can be used to prevent some of
         those Highlights.</p>
+    
+    <p>The following sections list different kinds of prefixes that can modify
+        the behaviour of the system:</p>
+    <ul>
+        <li><a href="#Highlight_Matching">Text Matching Prefixes</a></li>
+        <li><a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> (e.g. matching by channel, user or message type)</li>
+        <li><a href="#Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a> (e.g. changing resulting text color)</li>
+    </ul>
+    
+    <p>By default only regular chat messages are matched, however with the
+        <code>config:info</code> prefix info messages (e.g. subs, chat status)
+        can be matched instead.</p>
     
     <h3><a name="Highlight_Matching">Text Matching Prefixes</a></h3>
     <p>By default, matching is performed <em>case-insensitive</em> and <em>anywhere</em> in the
@@ -753,23 +787,26 @@
         </li>
     </ul>
     
-    <h3>Meta Prefixes</h3>
-    <p>The following prefixes don't change the matching of the text itself, but
-        rather provide other information for the highlight system. You can place
-        one or several of these prefixes before the search text (separated by
+    <h3><a name="Highlight_Meta_Matching">Meta Prefixes (Matching)</a></h3>
+    <p>The following prefix don't match on the text itself, but define other
+        things that should or should not trigger a Highlight. You can place one
+        or several of these prefixes before the search text (separated by
         spaces):
         <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
-
     <ul>
-        <li><code>user:</code> to specifiy one exact username (case-insensitive)
+        <li><code>user:</code> to specify one exact username (case-insensitive)
             which should highlight only if this user send the message, doesn't
             search in the message itself.</li>
+        <li><code>reuser:</code> to specify a regex to match usernames against.
+            Behaves like the <code>regm:</code>/<code>re:</code> prefix, in that
+            it always tries to match the entire username. Example:
+            <code>reuser:(?i)a.*</code> would match all names starting with "a".</li>
         <li><code>cat:</code> to specify a category the user who send the message
         should be in (as defined in the <a href="help.html#addressbook">Addressbook</a>).</li>
         <li><code>!cat:</code> to specify a category the user who send the message
         can NOT be in.</li>
         <li><code>chan:</code> to specify one or more channels the message has
-        to be send in to match (several channels are specified as comma-seperated
+        to be send in to match (several channels are specified as comma-separated
         list, without spaces).</li>
         <li><code>!chan:</code> to specify one or more channels the message must
         NOT be send in to match.</li>
@@ -792,6 +829,7 @@
                     enabled) and values in the <a href="help-setting_commands.html#bots">botNames</a> setting)</li>
                 <li><code>M</code> User with any kind of moderator/special powers
                     (so Broadcaster/Moderator/Global Moderator/Admin/Staff combined)</li>
+                <li><code>v</code> VIP</li>
             </ul>
             For example: <code>status:st</code> matches
         all subscriber and turbo users.</li>
@@ -799,26 +837,68 @@
             the given status codes (see <code>status:</code> for codes). For example:
             <code>!status:stM</code> matches all 'normal' users that have no
             badge by default (NOT a Subscriber, Turbo User or any kind of Moderator).</li>
-        <li><code>color:</code> to specify a color other than the default one
-            for displaying this highlight. <em>If you have items with a custom
-                color defined, which match something that might also be matched
-                by other items (with another color or custom color)
-            then the order of items is important so it displays the desired color.
-            Items on the top are matched first, so move items up that should take
-            precedence. For example <code>test</code> and
-            <code>color:blue test2</code>. If <code>test</code> is on the top
-            it will never get to the blue one, because <code>test</code> will
-            always match when <code>test2</code> would match as well.</em></li>
-            <li><code>config:</code> to specify one or more options (seperated
-            by comma) that changes the behaviour):
+        <li><code>config:</code> to specify on or more options (separated by comma, no spaces):
             <ul>
-                <li><code>silent</code> - Disable sounds for this item</li>
-                <li><code>!notify</code> - Disable notifications for this item</li>
-                <li><code>info</code> - This item applies to info messages instead
-                of regular user messages (works only for Ignoring messages at the
-                moment)</li>
+                <li><code>config:firstmsg</code> - Restrict matching to the
+                    first message of this user in this channel during the
+                    current session (first message in User Dialog)</li>
+                <li><code>config:info</code> - This item applies to info
+                    messages instead of regular user messages</li>
+                <li><code>config:any</code> - This item applies to both info
+                    messages and regular user messages</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h3><a name="Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a></h3>
+    <p>The following prefixes don't change what is highlighted, but rather
+        change what a Highlight does. You can place one or several of these
+        prefixes before the search text (separated by spaces):
+        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
+
+    <ul>
+        <li><code>color:</code> to specify a color other than the default
+            Highlight color for displaying this Highlight (HTML Color Codes as
+            well as some Named Colors such as "blue").</li>
+        <li><code>bgcolor:</code> to specify a background color other than the
+            default Highlight background color for displaying this Highlight.</li>
+        <li><code>config:</code> to specify one or more options (separated
+            by comma, no spaces):
+            <ul>
+                <li><code>config:silent</code> - Disable sounds for this item</li>
+                <li><code>config:!notify</code> - Disable notifications for this item</li>
             </ul></li>
     </ul>
+    
+    <p><em>Note:</em> If you're using the <code>color:</code> or <code>bgcolor:</code>
+        prefix to merely change the message color, but are not interested in
+        actually Highlighting it - which includes a Notification and adding the
+        message to the Highlighted Messages window - then consider using Custom
+        Message Colors instead.</p>
+    
+    <h3>Order of items</h3>
+    <p>When using prefixes that change the behaviour (like setting a color) the
+        order of Highlight items may be important, since the settings of the
+        first matching item (from the top of the list) will be used. Contrary to
+        that, if the choice is merely whether or not to highlight, then the
+        order matter less (it can still matter for which matches in the message
+        are emphasized).
+        
+    <p>Example: If you have one item <code>bgcolor:yellow&nbsp;user:joshimuz</code>
+        that makes all messages of "Joshimuz" have a yellow background and
+        another item <code>start:!bet</code> that highlights all messages
+        starting with "!bet", then messages from "Joshimuz" that also happen to
+        be starting with "!bet" will either have a yellow background or not,
+        depending on the order of the two items in the list, so which one comes
+        first.</p>
+    
+    <p><em>Note:</em> If you have the "Highlight own name" setting enabled, then
+        it creates a Highlight item containing your name that will always be
+        checked first. So if you want to e.g. change the color of messages
+        containing your name as well, then you should disable that option and
+        manually add an appropriate entry to the list (e.g.
+        <code>w:&lt;yourname&gt;</code>), so that you can control it's position
+        in the list in relation to other items yourself.</p>
     
     <h3><a name="Highlight_Examples">Examples</a></h3>
     <dl>
@@ -973,13 +1053,11 @@
         For example if you add <code>regw:a\w*</code> to the list, it will
         remove all words starting with <code>a</code> from messages in chat and
         replace it with <code><u>..</u></code>, which can be hovered over to
-        show the original text. If you prepend <code>replacement:Wordwitha</code>,
-        then instead of replacing it with the default <code><u>..</u></code>,
-        the removed text gets replaced with <code><u>Wordwitha</u></code>. If
-        you don't just want to use this as a fun word guessing game, then a more
-        useful application might be to e.g. filter out parts of bot messages
-        that are always the same.</p>
-
+        show the original text.</p>
+    
+    <p>An example usage for this could be to shorten bot messages by removing
+        parts that are always the same.</p>
+    
     <p>The text matching syntax is the same as for the <a href="#Highlight">Highlight</a> list,
         although you have to remember that only the the parts of a message that
         match the pattern are removed, so you may have to use it a bit
@@ -989,12 +1067,22 @@
         also only uses the matches from the first item in the list that matches
         any part of the message. This may be changed in the future.</p>
     
+    <h3>Customize replacement</h3>
+    <p>The <code>replacement:</code> prefix can be used to change the default
+        <code><u>..</u></code> the filtered text is replaced with to something
+        more meaningfull. For example if your entry is
+        <code>replacement:Wordwitha regw:a\w*</code> then the removed text gets
+        replaced with <code><u>Wordwitha</u></code>.</p>
+    
+    <p>You can use <code>replacement:none</code> to output no replacement at
+        all.</p>
+    
     <h2>
         <a name="Log_to_file">Log to file</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p>If you enable logging, chat messages (and more if enabled) will be written
-    into a seperate textfile for each channel.</p>
+    into a separate textfile for each channel.</p>
     <h3>Channels</h3>
     <p>You can specify which channels should be logged:</p>
     <ul>
@@ -1053,6 +1141,10 @@
         <dd><code>BAN: name1, name2 (30s) [reason], name3 (600s)</code></dd>
         <dd>The reason is specified by the mod taking the action, so it may be
             consist of any text.</dd>
+        
+        <dt>Deleted Messages</dt>
+        <dd>Single deleted messages, specifying the username and message text.</dd>
+        <dd><code>DELETED: name1 (msg1), name1 (msg2), name2 (msg3)</code></dd>
         
         <dt>Mod/Unmod</dt>
         <dd>When someone in chat is modded or unmodded. Remember that this info
@@ -1684,6 +1776,22 @@
     <p>Both of these lists also allow you to manually add favorites, in addition
         to the automatic history.</p>
     
+    <h2>
+        <a name="Stream">Stream Highlights</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>Allows your mods to trigger <a href="help.html#streamhighlights">Stream Highlights</a>,
+        which writes the current uptime/optional note to a textfile.</p>
+    
+    <dl class="dl-settings">
+        <dt>Mod Command Channel</dt>
+        <dd>Allows moderators in the given channel to run the command.</dd>
+        <dd>For example if your channel/stream is called <code>zoton2</code> you would enter <code>zoton2</code>.</dd>
+        
+        <dt>Mod Command</dt>
+        <dd>The command the mods have to use to add a Stream Highlight.</dd>
+        <dd>With the default <code>!highlight</code> mods would enter <code>!highlight [optional message]</code>.</dd>
+    </dl>
     
     <h2>
         <a name="Hotkeys">Hotkeys</a>

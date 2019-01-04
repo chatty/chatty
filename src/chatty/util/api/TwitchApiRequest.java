@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
- * A request to the Twitch API that is running in a seperate Thread. Does the
+ * A request to the Twitch API that is running in a separate Thread. Does the
  * request and reads the answer, which is then send back to the TwitchApi
  * object.
  * 
@@ -119,7 +119,7 @@ public class TwitchApiRequest implements Runnable {
     private String getUrl(String targetUrl) {
         // Debug output
         if (token != null) {
-            LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl + " "
+            LOGGER.info(requestMethod + " (" + apiVersion + "): " + Requests.filterToken(targetUrl, token) + " "
                     + "(using authorization)");
         } else {
             LOGGER.info(requestMethod + " (" + apiVersion + "): " + targetUrl);

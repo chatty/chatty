@@ -76,10 +76,10 @@ public class Addressbook {
     }
     
     /**
-     * Set a comma-seperated list of categories that should be unqiue to one
+     * Set a comma-separated list of categories that should be unqiue to one
      * user when using the add/set commands.
      * 
-     * @param cats Comma-seperated list of categories (spaces are removed)
+     * @param cats Comma-separated list of categories (spaces are removed)
      */
     public void setSomewhatUniqueCategories(String cats) {
         if (cats == null) {
@@ -395,7 +395,7 @@ public class Addressbook {
      * categories if an entry already exists.
      * 
      * @param name The name, should not be null or empty.
-     * @param categories The categories as a comma-seperated String, can not be
+     * @param categories The categories as a comma-separated String, can not be
      *  null.
      * @return The changed entry or <tt>null</tt> if no entry for this name
      * existed before.
@@ -597,6 +597,22 @@ public class Addressbook {
     }
     
     /**
+     * Check whether the given name contains the given category.
+     * 
+     * @param name
+     * @param category
+     * @return true if an entry with the given name exists and has the given
+     * category
+     */
+    public synchronized boolean hasCategory(String name, String category) {
+        AddressbookEntry entry = get(name);
+        if (entry != null) {
+            return entry.hasCategory(category);
+        }
+        return false;
+    }
+    
+    /**
      * Returns all entries.
      * 
      * @return A list of all entries.
@@ -606,7 +622,7 @@ public class Addressbook {
     }
     
     /**
-     * Turns a String of comma-seperated categories into a Set of categories.
+     * Turns a String of comma-separated categories into a Set of categories.
      * 
      * @param categoriesString The categories.
      * @return The Set of categories.
@@ -627,8 +643,8 @@ public class Addressbook {
      * Returns a version of {@code present} that is modified by the changes
      * specified in {@code change}. Changes are sets categories that have to be
      * prepended by + to add them, - to remove them and ! to toggle them (add if
-     * not present and remove if present). Categories are seperated by comma,
-     * sets of categories are seperated by space.
+     * not present and remove if present). Categories are separated by comma,
+     * sets of categories are separated by space.
      * 
      * <p>Does not modifiy the {@code present} parameter, but performs a copy
      * instead, which is then modified.</p>
@@ -662,7 +678,7 @@ public class Addressbook {
     }
     
     /**
-     * Turns a Set of categories into a comma-seperated String of categories.
+     * Turns a Set of categories into a comma-separated String of categories.
      * 
      * @param categories The Set of categories.
      * @return The String of categories.

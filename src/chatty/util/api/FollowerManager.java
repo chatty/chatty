@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.Optional;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -45,6 +46,10 @@ public class FollowerManager {
     /**
      * Saves followers by name. Used to check if the same follower was already
      * seen as following before and whether it was with the same time.
+     * 
+     * Also used to store and retrieve followers for single follower requests.
+     * May contain Follower objects with time=-1 for users who are not
+     * following.
      */
     private final Map<String, Map<String, Follower>> alreadyFollowed = new HashMap<>();
     
@@ -178,29 +183,36 @@ public class FollowerManager {
             }
             requested.add(stream);
         } else {
-            String errorMessage = "";
-            if (responseCode == 404) {
-                errorMessage = "Channel not found.";
-                error(stream, 10);
-            } else if (responseCode == 200) {
-                errorMessage = "Parse error.";
-                error(stream, 1);
-            } else if (responseCode == 401 || responseCode == 403) {
-                errorMessage = "Access denied.";
-                error(stream, 1);
-            } else if (responseCode == 422) {
-                errorMessage = "No data for this channel.";
-                error(stream, 10);
-            } else {
-                errorMessage = "Request error.";
-                error(stream, 1);
-            }
-            FollowerInfo errorResult = new FollowerInfo(type, stream, errorMessage);
-            cached.put(stream, errorResult);
-            sendResult(type, errorResult);
+            parseRequestError(responseCode, stream);
         }
     }
-    
+
+    /**
+     * Received data from the API for a single follow, so parse it or handle a possible error, then
+     * give it to the listener.
+     *
+     * @param responseCode The HTTP response code from the API request
+     * @param stream The name of the stream this data is for
+     * @param json The data returned from the API
+     */
+    protected synchronized void receivedSingle(int responseCode, String stream, String json, String user) {
+        if (responseCode == 404) {
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.NOT_FOUND, null);
+            if (!alreadyFollowed.containsKey(stream)) {
+                alreadyFollowed.put(stream, new HashMap<>());
+            }
+            alreadyFollowed.get(stream).put(user, new Follower(type, user, null, -1, false, false));
+            return;
+        }
+        // Parsing adds to alreadyFollowed automatically
+        Follower result = parseFollowerSingle(stream, user, json);
+        if (result != null) {
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.SUCCESS, result);
+        } else {
+            listener.receivedFollower(stream, user, TwitchApi.RequestResultCode.FAILED, null);
+        }
+    }
+
     private FollowerInfo parseFollowers(String stream, String json) {
         List<Follower> result = new ArrayList<>();
         int total = -1;
@@ -257,7 +269,26 @@ public class FollowerManager {
         }
         return null;
     }
-    
+
+    private Follower parseFollowerSingle(String stream, String user, String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            Object root = parser.parse(json);
+            if (!(root instanceof JSONObject)) {
+                LOGGER.warning("Error parsing "+type+": root should be object");
+                return null;
+            }
+            JSONObject data = (JSONObject)root;
+            String created_at = (String)data.get("created_at");
+            long time = DateTime.parseDatetime(created_at);
+
+            return createFollowerItem(stream, user, user, time);
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing entry of "+type+" for user "+user+": "+json+" ["+ex+"]");
+        }
+        return null;
+    }
+
     /**
      * Creates a new Follower item with the given values, also adding
      * information about whether it is a refollow/new follower in this request.
@@ -283,6 +314,9 @@ public class FollowerManager {
         // Check if this follower is already present
         Map<String,Follower> entries = alreadyFollowed.get(stream);
         Follower existingEntry = entries.get(name);
+        if (existingEntry != null && existingEntry.time == -1) {
+            existingEntry = null;
+        }
         boolean refollow = false;
         boolean newFollow = true;
         if (existingEntry != null) {
@@ -309,6 +343,62 @@ public class FollowerManager {
             listener.receivedFollowers(result);
         } else if (type == Follower.Type.SUBSCRIBER) {
             listener.receivedSubscribers(result);
+        }
+    }
+
+    private void parseRequestError(int responseCode, String stream) {
+        String errorMessage = "";
+        if (responseCode == 404) {
+            errorMessage = "Channel not found.";
+            error(stream, 10);
+        } else if (responseCode == 200) {
+            errorMessage = "Parse error.";
+            error(stream, 1);
+        } else if (responseCode == 401 || responseCode == 403) {
+            errorMessage = "Access denied.";
+            error(stream, 1);
+        } else if (responseCode == 422) {
+            errorMessage = "No data for this channel.";
+            error(stream, 10);
+        } else {
+            errorMessage = "Request error.";
+            error(stream, 1);
+        }
+        FollowerInfo errorResult = new FollowerInfo(type, stream, errorMessage);
+        cached.put(stream, errorResult);
+        sendResult(type, errorResult);
+    }
+
+    public Follower getSingleFollower(String stream, String streamId, String username, String userId) {
+        Follower follower = null;
+        synchronized(this) {
+            if (alreadyFollowed.containsKey(stream)) {
+                follower = alreadyFollowed.get(stream).get(username);
+            }
+        }
+        if (follower != null) {
+            if (follower.time == -1) {
+                listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
+            } else {
+                return follower;
+            }
+        } else {
+            requestSingleFollower(stream, streamId, username, userId);
+        }
+        return null;
+    }
+    
+    private void requestSingleFollower(String stream, String streamId, String username, String userId) {
+        if (streamId != null && userId != null) {
+            api.requests.getSingleFollower(stream, streamId, username, userId);
+        } else {
+            api.userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.FAILED, null);
+                } else {
+                    api.requests.getSingleFollower(stream, r.getId(stream), username, r.getId(username));
+                }
+            }, stream, username);
         }
     }
     

@@ -4,7 +4,7 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;

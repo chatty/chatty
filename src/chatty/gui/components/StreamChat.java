@@ -99,8 +99,8 @@ public class StreamChat extends JDialog {
         }
 
         @Override
-        public void userMenuItemClicked(ActionEvent e, User user, String msgId) {
-            contextMenuListener.userMenuItemClicked(e, user, msgId);
+        public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
+            contextMenuListener.userMenuItemClicked(e, user, msgId, autoModMsgId);
         }
 
         @Override

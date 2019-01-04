@@ -292,13 +292,16 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private void updateInfoText() {
         Highlighter.Blacklist blacklist = null;
         if (blacklistItem != null) {
-            blacklist = new Highlighter.Blacklist(null, testInput.getText(), Arrays.asList(new HighlightItem[]{blacklistItem}), true);
+            // Match ANY type, same as the other matching in this (ignoring
+            // non-text prefixes)
+            blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, testInput.getText(), null,
+                    null, null, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
             testResult.setText("No pattern.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Invalid pattern: "+highlightItem.getError());
-        } else if (highlightItem.matches(null, testInput.getText(), true, blacklist)) {
+        } else if (highlightItem.matchesAny(testInput.getText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
             testResult.setText("No match.");
@@ -373,7 +376,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     private void updateTestText() {
         HighlightItem item = editingBlacklistItem ? blacklistItem : highlightItem;
-        boolean matches = item != null && item.matches(null, testInput.getText(), true, null);
+        boolean matches = item != null && item.matchesAny(testInput.getText(), null);
         if (!matches && (testInput.getText().isEmpty() || testInput.getText().equals(prevTestText))) {
             if (item != null) {
                 testInput.setText(TEST_PRESET_EXAMPLE+item.getTextWithoutPrefix());

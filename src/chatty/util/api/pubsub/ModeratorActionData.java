@@ -19,7 +19,7 @@ import org.json.simple.parser.ParseException;
 public class ModeratorActionData extends MessageData {
 
     public enum Type {
-        AUTOMOD_REJECTED, AUTOMOD_APPROVED, AUTOMOD_DENIED, OTHER
+        AUTOMOD_REJECTED, AUTOMOD_APPROVED, AUTOMOD_DENIED, OTHER, UNMODDED
     }
     
     /**
@@ -53,7 +53,7 @@ public class ModeratorActionData extends MessageData {
      */
     public final Type type;
     
-    public ModeratorActionData(String topic, String message, String stream,
+    public ModeratorActionData(String msgType, String topic, String message, String stream,
             String moderation_action, List<String> args, String created_by,
             String msgId) {
         super(topic, message);
@@ -65,28 +65,35 @@ public class ModeratorActionData extends MessageData {
         this.msgId = msgId;
         
         // Determine some known types of actions
-        switch (moderation_action) {
-            case "twitchbot_rejected":
-            case "automod_rejected":
-            case "rejected_automod_message":
-                // Just guessing at this point D:
-                type = Type.AUTOMOD_REJECTED;
-                break;
-            case "approved_automod_message":
-                type = Type.AUTOMOD_APPROVED;
-                break;
-            case "denied_automod_message":
-                type = Type.AUTOMOD_DENIED;
-                break;
-            default:
-                type = Type.OTHER;
-                break;
+        if (msgType.equals("moderator_removed")) {
+            type = Type.UNMODDED;
+        } else {
+            switch (moderation_action) {
+                case "twitchbot_rejected":
+                case "automod_rejected":
+                case "rejected_automod_message":
+                    // Just guessing at this point D:
+                    type = Type.AUTOMOD_REJECTED;
+                    break;
+                case "approved_automod_message":
+                    type = Type.AUTOMOD_APPROVED;
+                    break;
+                case "denied_automod_message":
+                    type = Type.AUTOMOD_DENIED;
+                    break;
+                default:
+                    type = Type.OTHER;
+                    break;
+            }
         }
     }
     
     public static ModeratorActionData decode(String topic, String message, Map<String, String> userIds) throws ParseException {
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject)parser.parse(message);
+        
+        String msgType = (String)root.getOrDefault("type", "");
+        
         JSONObject data = (JSONObject)root.get("data");
         
         String moderation_action = (String)data.get("moderation_action");
@@ -114,7 +121,7 @@ public class ModeratorActionData extends MessageData {
         
         String stream = Helper.getStreamFromTopic(topic, userIds);
         
-        return new ModeratorActionData(topic, message, stream, moderation_action, args, created_by, msgId);
+        return new ModeratorActionData(msgType, topic, message, stream, moderation_action, args, created_by, msgId);
     }
     
     public String getCommandAndParameters() {
@@ -157,6 +164,11 @@ public class ModeratorActionData extends MessageData {
         hash = 53 * hash + Objects.hashCode(this.created_by);
         hash = 53 * hash + Objects.hashCode(this.stream);
         return hash;
+    }
+    
+    @Override
+    public String toString() {
+        return String.format("'%s'@%s", getCommandAndParameters(), created_by);
     }
     
 }

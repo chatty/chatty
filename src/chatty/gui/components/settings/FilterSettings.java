@@ -1,21 +1,11 @@
 
 package chatty.gui.components.settings;
 
-import chatty.gui.GuiUtil;
 import chatty.lang.Language;
-import chatty.util.StringUtil;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.List;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
-import javax.swing.text.Highlighter;
 
 /**
  *
@@ -34,7 +24,8 @@ public class FilterSettings extends SettingsPanel {
             + "<dd>Same as previous, but replace with 'Schedule'.</dd>"
             + "</dl>"
             + "<em>Note:</em> This only filters the parts of the message that "
-            + "are matched. To ignore a message entirely use the Ignore feature.";
+            + "are matched. To ignore a message entirely use the Ignore feature."
+            + "<br /><em>Note:</em> This only works for regular chat messages.";
     
     public FilterSettings(SettingsDialog d) {
         super(true);
@@ -46,7 +37,8 @@ public class FilterSettings extends SettingsPanel {
         gbc = d.makeGbc(0,0,1,1);
         gbc.insets.bottom -= 3;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("filterEnabled"), gbc);
+        JCheckBox filterEnabled = d.addSimpleBooleanSetting("filterEnabled");
+        base.add(filterEnabled, gbc);
 
         gbc = d.makeGbc(0,1,1,1);
         gbc.insets = new Insets(5,10,5,5);
@@ -61,6 +53,7 @@ public class FilterSettings extends SettingsPanel {
         gbc.weighty = 1;
         base.add(items, gbc);
         
+        SettingsUtil.addSubsettings(filterEnabled, items);
     }
     
 }

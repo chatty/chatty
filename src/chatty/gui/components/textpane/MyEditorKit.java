@@ -176,7 +176,7 @@ class MyEditorKit extends StyledEditorKit {
                         }
                     }
                 }
-                Debugging.println("imageViews"+this.hashCode(),
+                Debugging.printlnTimed("imageViews"+this.hashCode(),
                         String.format("images: %d views: %d animated: %d hidden: %d",
                         imageViews.size(), totalViews, animated, hiddenViews));
             }

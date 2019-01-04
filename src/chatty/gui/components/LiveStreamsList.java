@@ -6,6 +6,7 @@ import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamInfosContextMenu;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
@@ -51,6 +52,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private ListDataChangedListener listDataChangedListener;
     
     private JPopupMenu lastContextMenu;
+    private LiveStreamsDialog.Sorting currentSorting;
     
     private long lastChecked = 0;
     private long lastRepainted = 0;
@@ -77,8 +79,9 @@ public class LiveStreamsList extends JList<StreamInfo> {
         }
     }
     
-    public void setComparator(Comparator<StreamInfo> comparator) {
-        data.setComparator(comparator);
+    public void setComparator(LiveStreamsDialog.Sorting s) {
+        data.setComparator(s.comparator);
+        currentSorting = s;
     }
     
     /**
@@ -88,14 +91,23 @@ public class LiveStreamsList extends JList<StreamInfo> {
      */
     public void addStream(StreamInfo info) {
         if (info.isValidEnough() && info.getOnline()) {
-            if (data.contains(info)) {
-                data.remove(info);
+            if (Debugging.isEnabled("slold")) {
+                if (data.contains(info)) {
+                    data.remove(info);
+                }
+                data.add(info);
+            } else {
+                if (!data.contains(info)) {
+                    data.add(info);
+                }
             }
-            data.add(info);
             itemAdded(info);
         } else if (data.contains(info)) {
             data.remove(info);
             itemRemoved(info);
+        }
+        if (!Debugging.isEnabled("slold")) {
+            data.resort();
         }
         listDataChanged();
     }
@@ -206,6 +218,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
         JListActionHelper.install(this, (a, l, s) -> {
             if (a == Action.CONTEXT_MENU) {
                 StreamInfosContextMenu m = new StreamInfosContextMenu(s, true);
+                m.setSorting(currentSorting.key);
                 for (ContextMenuListener cml : contextMenuListeners) {
                     m.addContextMenuListener(cml);
                 }

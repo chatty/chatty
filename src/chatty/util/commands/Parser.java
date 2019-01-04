@@ -2,7 +2,9 @@
 package chatty.util.commands;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,6 +187,9 @@ public class Parser {
         else if (type.equals("lower")) {
             return lower(isRequired);
         }
+        else if (type.equals("rand")) {
+            return rand(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -275,6 +280,18 @@ public class Parser {
         Item identifier = peekParam();
         expect(")");
         return new Lower(identifier, isRequired);
+    }
+    
+    private Item rand(boolean isRequired) throws ParseException {
+        expect("(");
+        List<Item> params = new ArrayList<>();
+        Items param;
+        while (!(param = param()).isEmpty()) {
+            params.add(param);
+            accept(",");
+        }
+        expect(")");
+        return new Rand(isRequired, params);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

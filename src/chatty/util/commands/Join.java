@@ -28,17 +28,14 @@ class Join implements Item {
     @Override
     public String replace(Parameters parameters) {
         String value = identifier.replace(parameters);
-        if (value != null && !value.isEmpty()) {
-            String sep = separator.replace(parameters);
-            if (sep == null) {
-                return null;
-            }
-            return value.replaceAll(" ", sep);
-        }
-        if (isRequired) {
+        if (!Item.checkReq(isRequired, value)) {
             return null;
         }
-        return "";
+        String sep = separator.replace(parameters);
+        if (sep == null) {
+            return null;
+        }
+        return value.replaceAll(" ", sep);
     }
 
     @Override
@@ -49,6 +46,11 @@ class Join implements Item {
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return Item.getIdentifiersWithPrefix(prefix, identifier, separator);
+    }
+    
+    @Override
+    public Set<String> getRequiredIdentifiers() {
+        return Item.getRequiredIdentifiers(isRequired, identifier, separator);
     }
     
     @Override

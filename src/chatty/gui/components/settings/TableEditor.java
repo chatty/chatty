@@ -114,20 +114,26 @@ public class TableEditor<T> extends JPanel {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    editSelectedItem();
+                if (isEnabled()) {
+                    if (e.getClickCount() == 2) {
+                        editSelectedItem();
+                    }
                 }
             }
             
             @Override
             public void mousePressed(MouseEvent e) {
-                selectRowAt(e.getPoint());
-                popupMenu(e);
+                if (isEnabled()) {
+                    selectRowAt(e.getPoint());
+                    popupMenu(e);
+                }
             }
             
             @Override
             public void mouseReleased(MouseEvent e) {
-                popupMenu(e);
+                if (isEnabled()) {
+                    popupMenu(e);
+                }
             }
         });
         
@@ -317,6 +323,17 @@ public class TableEditor<T> extends JPanel {
         this.listener = listener;
     }
     
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        updateButtons();
+        // Make table visibily disabled
+        table.setEnabled(enabled);
+        table.setFocusable(enabled);
+        table.setOpaque(enabled);
+        table.setShowGrid(enabled);
+    }
+    
     /**
      * Opens the context menu if this MouseEvent was a popup trigger and a menu
      * is set.
@@ -402,8 +419,8 @@ public class TableEditor<T> extends JPanel {
      * Update the enabled-state of the buttons.
      */
     private void updateButtons() {
-        boolean enabled = table.getSelectedRowCount() == 1;
-        add.setEnabled(true);
+        boolean enabled = table.getSelectedRowCount() == 1 && isEnabled();
+        add.setEnabled(isEnabled());
         remove.setEnabled(enabled);
         edit.setEnabled(enabled);
         moveUp.setEnabled(enabled);

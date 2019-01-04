@@ -4,9 +4,11 @@ package chatty.gui.components.menus;
 import chatty.Helper;
 import chatty.util.commands.CustomCommand;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +18,7 @@ import java.util.regex.Pattern;
  */
 public class CommandMenuItems {
 
-    
+    private static final Logger LOGGER = Logger.getLogger(CommandMenuItems.class.getName());
 
     public enum MenuType {
         USER, CHANNEL, STREAMS

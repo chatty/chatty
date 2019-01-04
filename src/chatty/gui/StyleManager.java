@@ -1,9 +1,12 @@
 
 package chatty.gui;
 
+import chatty.util.colors.HtmlColors;
 import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import chatty.gui.components.textpane.ChannelTextPane.Setting;
 import chatty.gui.components.textpane.MyStyleConstants;
+import chatty.util.colors.ColorCorrectionNew;
+import chatty.util.colors.ColorCorrector;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Component;
@@ -43,10 +46,10 @@ public class StyleManager implements StyleServer {
             "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
-            "colorCorrection", "banReasonAppended", "banDurationAppended",
+            "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
-            "showImageTooltips", "highlightMatches",
+            "showImageTooltips", "highlightMatches", "nickColorCorrection",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -67,6 +70,8 @@ public class StyleManager implements StyleServer {
     private Color searchResultColor;
     private Color searchResultColor2;
     private Color infoColor;
+    
+    private ColorCorrector colorCorrector;
     
     private final Settings settings;
     private final Component dummyComponent = new JDialog();
@@ -157,7 +162,6 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");
         addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
-        addBooleanSetting(Setting.COLOR_CORRECTION, "colorCorrection");
         addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
@@ -169,6 +173,8 @@ public class StyleManager implements StyleServer {
         }
         other.addAttribute(Setting.DELETED_MESSAGES_MODE, deletedMessagesModeNumeric);
         addLongSetting(Setting.DISPLAY_NAMES_MODE, "displayNamesMode");
+        
+        colorCorrector = ColorCorrector.get(settings.getString("nickColorCorrection"));
     }
     
     private void addBooleanSetting(Setting key, String name) {
@@ -259,6 +265,11 @@ public class StyleManager implements StyleServer {
             }
         }
         return null;
+    }
+
+    @Override
+    public ColorCorrector getColorCorrector() {
+        return colorCorrector;
     }
     
 }

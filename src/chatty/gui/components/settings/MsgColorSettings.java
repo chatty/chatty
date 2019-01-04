@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.util.List;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 /**
@@ -20,6 +21,18 @@ public class MsgColorSettings extends SettingsPanel {
             + "Customize message colors based on Highlighting rules. "
             + "[help:Message_Colors More information..]";
     
+    private static final String INFO = HighlightSettings.INFO
+            + "Examples:"
+            + "<dl>"
+            + "<dt><code>user:botimuz</code></dt>"
+            + "<dd>Match all regular messages by user 'Botimuz'</dd>"
+            + "<dt><code>config:info [Notification]</code></dt>"
+            + "<dd>Match all info messages containing '[Notification]', so "
+            + "basicially all subscriber notifications</dd>"
+            + "</dl>"
+            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the"
+            + "default color will be used.</p>";
+    
     private final ItemColorEditor<MsgColorItem> data;
     
     public MsgColorSettings(SettingsDialog d) {
@@ -30,18 +43,27 @@ public class MsgColorSettings extends SettingsPanel {
         
         GridBagConstraints gbc;
         
+        JCheckBox msgColorsEnabled = d.addSimpleBooleanSetting("msgColorsEnabled");
         gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.WEST;
-        main.add(d.addSimpleBooleanSetting("msgColorsEnabled", "Enable custom message colors", "Changes colors and stuff.."), gbc);
+        main.add(msgColorsEnabled, gbc);
         
         data = new ItemColorEditor<>(d,
-                (id, color) -> { return new MsgColorItem(id, color); });
+                (id,
+                        foreground, foregroundEnabled,
+                        background, backgroundEnabled) -> {
+                    return new MsgColorItem(id,
+                            foreground, foregroundEnabled,
+                            background, backgroundEnabled);
+                }, true, new LinkLabel(INFO, d.getLinkLabelListener()));
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
         main.add(data, gbc);
+        
+        SettingsUtil.addSubsettings(msgColorsEnabled, data);
         
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         main.add(info, d.makeGbc(0, 2, 1, 1));
@@ -59,11 +81,16 @@ public class MsgColorSettings extends SettingsPanel {
         return data.getData();
     }
     
-    public void setBackgroundColor(Color color) {
-        data.setBackgroundColor(color);
+    public void setDefaultForeground(Color color) {
+        data.setDefaultForeground(color);
+    }
+    
+    public void setDefaultBackground(Color color) {
+        data.setDefaultBackground(color);
     }
     
     public void editItem(String item) {
         data.edit(item);
     }
+    
 }

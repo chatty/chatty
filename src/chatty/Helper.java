@@ -63,7 +63,7 @@ public class Helper {
     }
     
     /**
-     * Takes a Set of Strings and builds a single comma-seperated String of
+     * Takes a Set of Strings and builds a single comma-separated String of
      * streams out of it.
      * 
      * @param set
@@ -554,7 +554,7 @@ public class Helper {
     /**
      * Top Level Domains (only relevant for URLs not starting with http or www).
      */
-    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io|gg)";
+    private static final String TLD = "(?:tv|com|org|edu|gov|uk|net|ca|de|jp|fr|au|us|ru|ch|it|nl|se|no|es|me|gl|fm|io|gg|be)";
     
     private static final String MID = "[-A-Z0-9+&@#/%=~_|$?!:,;.()]";
     
@@ -648,24 +648,35 @@ public class Helper {
         return String.format("%sh", nf.format(Math.round(duration/30.0)*30/60.0));
     }
     
-    
-    
     public static String makeBanInfo(long duration, String reason,
             boolean durationEnabled, boolean reasonEnabled, boolean includeBan) {
         String banInfo = "";
         if (durationEnabled) {
             if (duration > 0) {
                 banInfo = String.format("(%s)", makeBanInfoDuration(duration));
+            } else if (duration == -2) {
+                banInfo = "(deleted)";
             } else if (includeBan) {
                 banInfo = "(banned)";
             }
         }
-        if (reasonEnabled) {
-            if (reason != null && !reason.isEmpty()) {
-                banInfo = StringUtil.append(banInfo, " ", "[" + reason + "]");
-            }
-        }
+        // Reason not via IRC anymore
+//        if (reasonEnabled) {
+//            if (reason != null && !reason.isEmpty()) {
+//                banInfo = StringUtil.append(banInfo, " ", "[" + reason + "]");
+//            }
+//        }
         return banInfo;
+    }
+    
+    public static String makeBanCommand(User user, long duration, String id) {
+        if (duration > 0) {
+            return StringUtil.concats("timeout", user.getName(), duration).trim();
+        }
+        if (duration == -2) {
+            return StringUtil.concats("delete", id).trim();
+        }
+        return StringUtil.concats("ban", user.getName()).trim();
     }
     
     public static Dimension getDimensionFromParameter(String parameter) {
@@ -740,6 +751,35 @@ public class Helper {
     
     public static String encodeFilename2(String input) {
         return input.replaceAll("[%\\.\"\\*/:<>\\?\\\\\\|\\+,\\.;=\\[\\]]", "_");
+    }
+    
+    /**
+     * Returns commands split up by '|' and trimmed for leading and trailing
+     * whitespace. Only non-empty commands are included.
+     * 
+     * Use '||' to use the '|' character literally.
+     * 
+     * Example: '/chain /echo first | /echo second || third'
+     * Returns: '/echo first' and '/echo second | third'
+     * 
+     * @param input
+     * @return 
+     */
+    public static List<String> getChainedCommands(String input) {
+        if (StringUtil.isNullOrEmpty(input)) {
+            return new ArrayList<>();
+        }
+        List<String> result = new ArrayList<>();
+        // A '|' not preceeded or followed by '|'
+        String[] split = input.split("(?<!\\|)\\|(?!\\|)");
+        for (String part : split) {
+            // Remove first '|' from two or more '|' in a row
+            part = part.trim().replaceAll("\\|(\\|+)", "$1");
+            if (!part.isEmpty()) {
+                result.add(part);
+            }
+        }
+        return result;
     }
     
 }

@@ -3,6 +3,7 @@ package chatty.util;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Logging;
 import chatty.User;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
@@ -84,6 +85,8 @@ public class StreamHighlightHelper {
             return "Failed adding stream highlight (no channel).";
         }
         
+        boolean createdMarker = addStreamMarker(channel, comment);
+        
         // Get StreamInfo
         StreamInfo streamInfo = api.getStreamInfo(Helper.toStream(channel), null);
         String streamTime = "Stream Time N/A";
@@ -94,13 +97,15 @@ public class StreamHighlightHelper {
         if (comment == null) {
             comment = "";
         }
+        comment = comment.trim();
         
         // Make the line to add to the file
-        String line = String.format("%s %s [%s] %s",
+        String line = String.format("%s %s [%s]%s%s",
                 DateTime.fullDateTime(),
                 channel,
                 streamTime,
-                comment);
+                !comment.isEmpty() ? " "+comment : "",
+                createdMarker ? " (Created Stream Marker)" : "");
         
         synchronized(this) {
             // Add seperator if probably new stream
@@ -116,9 +121,10 @@ public class StreamHighlightHelper {
                 if (!comment.isEmpty()) {
                     shortComment = "(" + StringUtil.shortenTo(comment, 30) + ")";
                 }
-                return "Added stream highlight for " + channel + " [" + streamTime + "] " + shortComment;
+                return "Added stream highlight"+(createdMarker ? "/marker" : "")
+                        +" for " + channel + " [" + streamTime + "] " + shortComment;
             }
-            return "Failed adding stream highlight (write error).";
+            return "Failed adding stream highlight (write error)."+(createdMarker ? " (Created Stream Marker)" : "");
         }
     }
     
@@ -152,6 +158,23 @@ public class StreamHighlightHelper {
             return "Opened stream highlights file in default application.";
         }
         return "Error opening stream highlights file.";
+    }
+    
+    private boolean addStreamMarker(String channel, String description) {
+        if (settings.getBoolean("streamHighlightMarker")) {
+            api.createStreamMarker(Helper.toStream(channel), description, e -> {
+                if (e != null) {
+                    String errorMessage = String.format("Error adding stream marker for %s (%s)",
+                                    channel, e);
+                    LOGGER.log(Logging.USERINFO, errorMessage);
+                    synchronized(this) {
+                        addToFile(DateTime.fullDateTime()+" "+errorMessage);
+                    }
+                }
+            });
+            return true;
+        }
+        return false;
     }
     
 }

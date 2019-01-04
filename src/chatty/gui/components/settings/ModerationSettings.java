@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -14,12 +15,20 @@ public class ModerationSettings extends SettingsPanel {
     
     public ModerationSettings(final SettingsDialog d) {
         
-        JPanel blah = addTitledPanel("Messages (can only be received as a mod)", 0);
+        JPanel blah = addTitledPanel(Language.getString("settings.section.modInfos"), 0);
         
-        blah.add(d.addSimpleBooleanSetting(
-                "showModActions",
-                "<html><body>Show moderator actions in chat (similiar to <code>Extra - Moderation Log</code>)",
-                "Show what commands mods perform, except your own (you can also open Extra - Moderation Log)"),
+        JCheckBox showModActions = d.addSimpleBooleanSetting("showModActions");
+        JCheckBox showModActionsRestrict = d.addSimpleBooleanSetting("showModActionsRestrict");
+        
+        SettingsUtil.addSubsettings(showModActions, showModActionsRestrict);
+        
+        blah.add(showModActions,
+                d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST));
+        
+        blah.add(showModActionsRestrict,
+                d.makeGbcSub(0, 1, 3, 1, GridBagConstraints.WEST));
+        
+        blah.add(d.addSimpleBooleanSetting("showActionBy"),
                 d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
         blah.add(d.addSimpleBooleanSetting("showAutoMod", "Show messages rejected by AutoMod", ""),

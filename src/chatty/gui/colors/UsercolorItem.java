@@ -1,11 +1,11 @@
+
 package chatty.gui.colors;
 
 import chatty.Helper;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -34,6 +34,7 @@ public class UsercolorItem extends ColorItem {
     public final String category;
 
     public UsercolorItem(String id, Color color) {
+        super(id, color, true, null, false);
         this.color = color;
         this.id = id;
         
@@ -69,14 +70,6 @@ public class UsercolorItem extends ColorItem {
         } else {
             type = TYPE_UNDEFINED;
         }
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public String getId() {
-        return id;
     }
 
 }

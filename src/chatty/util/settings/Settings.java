@@ -464,7 +464,7 @@ public class Settings {
      * @throws SettingNotFoundException if a setting with this name doesn't
      * exist or isn't a List setting.
      */
-    public void putList(String settingName, List list) {
+    public void putList(String settingName, Collection list) {
         synchronized (LOCK) {
             Collection settingList = (Collection) get(settingName, Setting.LIST);
             settingList.clear();

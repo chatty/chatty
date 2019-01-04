@@ -2,7 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
-import chatty.gui.HtmlColors;
+import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
@@ -10,6 +10,7 @@ import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
+import chatty.util.api.TokenInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
@@ -114,7 +115,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         COMPLETION("TAB Completion", Language.getString("settings.page.completion")),
         CHAT("Chat", Language.getString("settings.page.chat")),
         NAMES("Names", Language.getString("settings.page.names")),
-        MODERATION("Moderation", Language.getString("settings.page.moderation"));
+        MODERATION("Moderation", Language.getString("settings.page.moderation")),
+        STREAM("Stream", Language.getString("settings.page.stream"));
         
         public final String name;
         public final String displayName;
@@ -170,6 +172,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             Page.ADVANCED,
             Page.COMPLETION,
             Page.HISTORY,
+            Page.STREAM,
             Page.HOTKEYS,
         }));
     }
@@ -251,6 +254,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new ChatSettings(this), Page.CHAT.name);
         nameSettings = new NameSettings(this);
         cards.add(nameSettings, Page.NAMES.name);
+        cards.add(new StreamSettings(this), Page.STREAM.name);
 
         // Track current settings page
         currentlyShown = Page.MAIN;
@@ -316,7 +320,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     public void showSettings(String action, Object parameter) {
         loadSettings();
-        notificationSettings.setUserReadPermission(settings.getBoolean("token_user"));
+        notificationSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.USERINFO.scope));
         setLocationRelativeTo(owner);
         if (action != null) {
             editDirectly(action, parameter);
@@ -385,9 +389,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     public void updateBackgroundColor() {
-        Color color = HtmlColors.decode(getStringSetting("backgroundColor"));
-        usercolorSettings.setBackgroundColor(color);
-        msgColorSettings.setBackgroundColor(color);
+        Color foreground = HtmlColors.decode(getStringSetting("foregroundColor"));
+        msgColorSettings.setDefaultForeground(foreground);
+        Color background = HtmlColors.decode(getStringSetting("backgroundColor"));
+        usercolorSettings.setDefaultBackground(background);
+        msgColorSettings.setDefaultBackground(background);
     }
     
     /**
@@ -624,8 +630,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return null;
     }
     
-    protected ComboStringSetting addComboStringSetting(String name, int size, boolean editable, String[] choices) {
-        ComboStringSetting result = new ComboStringSetting(choices);
+    protected ComboStringSetting addComboStringSetting(String name, boolean editable, String[] choices) {
+        Map<String, String> localizedChoices = new LinkedHashMap<>();
+        for (String choice : choices) {
+            String label = Language.getString("settings.string."+name+".option."+choice, false);
+            if (label != null) {
+                localizedChoices.put(choice, label);
+            } else {
+                localizedChoices.put(choice, choice);
+            }
+        }
+        ComboStringSetting result = new ComboStringSetting(localizedChoices);
         result.setEditable(editable);
         stringSettings.put(name, result);
         return result;
@@ -700,6 +715,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
     protected JTextField addSimpleLongSetting(String name, int size, boolean editable) {
         SimpleLongSetting result = new SimpleLongSetting(size, editable);
         addLongSetting(name, result);
+        return result;
+    }
+    
+    protected ComboLongSetting addComboLongSetting(String name, int[] choices) {
+        Map<Long, String> localizedChoices = new LinkedHashMap<>();
+        for (Integer choice : choices) {
+            String label = Language.getString("settings.long."+name+".option."+choice);
+            localizedChoices.put((long)choice, label);
+        }
+        ComboLongSetting result = new ComboLongSetting(localizedChoices);
+        longSettings.put(name, result);
         return result;
     }
     

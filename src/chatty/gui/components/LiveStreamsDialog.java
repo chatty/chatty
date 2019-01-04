@@ -23,14 +23,54 @@ import javax.swing.JScrollPane;
  */
 public class LiveStreamsDialog extends JFrame {
     
-    private static final Comparator<StreamInfo> NAME_COMPARATOR
-            = new LiveStreamsNameComparator();
-    private static final Comparator<StreamInfo> CHANGED_COMPARATOR
-            = new LiveStreamsTimeChangedComparator();
-    private static final Comparator<StreamInfo> GAME_COMPARATOR
-            = new LiveStreamsGameComparator();
-    private static final Comparator<StreamInfo> VIEWERS_COMPARATOR
-            = new LiveStreamsViewersComparator();
+    /**
+     * Sorting algorithms for the live streams list. All the ones listed here
+     * are automatically added to the context menu (in this order).
+     */
+    public enum Sorting {
+    
+        RECENT("recent", new LiveStreamsTimeChangedComparator()),
+        UPTIME("uptime", new LiveStreamsUptimeComparator()),
+        NAME("name", new LiveStreamsNameComparator()),
+        GAME("game", new LiveStreamsGameComparator()),
+        VIEWERS("viewers", new LiveStreamsViewersComparator());
+        
+        public final String key;
+        public final Comparator<StreamInfo> comparator;
+        
+        Sorting(String key, Comparator<StreamInfo> comparator) {
+            this.key = key;
+            this.comparator = comparator;
+        }
+        
+        /**
+         * Get the label as defined in the localization file.
+         * 
+         * @return The string
+         */
+        public String getLabel() {
+            return Language.getString("streams.sorting."+key);
+        }
+        
+        /**
+         * Get the tooltip text as defined in the localization file, or null if
+         * none exists.
+         * 
+         * @return The string (or null if none exists)
+         */
+        public String getToolTipText() {
+            return Language.getString("streams.sorting."+key+".tip", false);
+        }
+        
+        public static Sorting fromKey(String key) {
+            for (Sorting s : Sorting.values()) {
+                if (s.key.equals(key)) {
+                    return s;
+                }
+            }
+            return null;
+        }
+    }
     
     
     private final ChannelInfoDialog channelInfo;
@@ -63,7 +103,7 @@ public class LiveStreamsDialog extends JFrame {
         list = new LiveStreamsList(localLiveStreamListener);
         list.addContextMenuListener(listener);
         list.addContextMenuListener(localCml);
-        setSorting(CHANGED_COMPARATOR);
+        setSorting(Sorting.RECENT);
         list.addListDataChangedListener(new ListDataChangedListener() {
 
             @Override
@@ -154,14 +194,9 @@ public class LiveStreamsDialog extends JFrame {
      * @param sorting 
      */
     public void setSorting(String sorting) {
-        if (sorting.equals("recent")) {
-            setSorting(CHANGED_COMPARATOR);
-        } else if (sorting.equals("name")) {
-            setSorting(NAME_COMPARATOR);
-        } else if (sorting.equals("game")) {
-            setSorting(GAME_COMPARATOR);
-        } else if (sorting.equals("viewers")) {
-            setSorting(VIEWERS_COMPARATOR);
+        Sorting s = Sorting.fromKey(sorting);
+        if (s != null) {
+            setSorting(s);
         }
     }
     
@@ -179,18 +214,10 @@ public class LiveStreamsDialog extends JFrame {
      * 
      * @param mode 
      */
-    private void setSorting(Comparator<StreamInfo> mode) {
-        if (mode == NAME_COMPARATOR) {
-            titleSorting = Language.getString("streams.sorting.name");
-        } else if (mode == CHANGED_COMPARATOR) {
-            titleSorting = Language.getString("streams.sorting.recent");
-        } else if (mode == GAME_COMPARATOR) {
-            titleSorting = Language.getString("streams.sorting.game");
-        } else if (mode == VIEWERS_COMPARATOR) {
-            titleSorting = Language.getString("streams.sorting.viewers");
-        }
+    private void setSorting(Sorting s) {
+        titleSorting = s.getLabel();
         updateTitle();
-        list.setComparator(mode);
+        list.setComparator(s);
     }
     
     private void updateTitle() {
@@ -246,6 +273,26 @@ public class LiveStreamsDialog extends JFrame {
         @Override
         public int compare(StreamInfo o1, StreamInfo o2) {
             return o1.getStream().compareTo(o2.getStream());
+        } 
+    }
+    
+    /**
+     * Comparator to sort StreamInfo objects by the uptime.
+     */
+    private static class LiveStreamsUptimeComparator implements Comparator<StreamInfo> {
+
+        @Override
+        public int compare(StreamInfo o1, StreamInfo o2) {
+            long time1 = o1.getTimeStartedWithPicnicAgo();
+            long time2 = o2.getTimeStartedWithPicnicAgo();
+            //System.out.println("Comparing: "+o1.getStream()+time1+" "+time2+o2.getStream());
+            if (time1 == time2) {
+                return o1.getStream().compareTo(o2.getStream());
+            }
+            if (time1 > time2) {
+                return 1;
+            }
+            return -1;
         } 
     }
     

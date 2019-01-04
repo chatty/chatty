@@ -9,6 +9,7 @@ import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
@@ -16,7 +17,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,12 +25,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JPanel;
@@ -191,6 +194,9 @@ public class Channel extends JPanel {
     
     @Override
     public String getToolTipText() {
+        if (room.getStreamId() != null) {
+            return room.getChannel()+" ("+room.getStreamId()+")";
+        }
         return room.getChannel();
     }
     
@@ -252,18 +258,18 @@ public class Channel extends JPanel {
         
         private final Set<String> commands = new TreeSet<>(Arrays.asList(new String[]{
             "subscribers", "subscribersOff", "timeout", "ban", "unban", "host", "unhost", "raid", "unraid", "clear", "mods",
-            "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteonly", "emoteonlyoff",
-            "connection", "uptime", "appinfo", "releaseInfo",
+            "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteOnly", "emoteOnlyOff",
+            "connection", "uptime", "appInfo", "releaseInfo",
             "dir", "wdir", "openDir", "openWdir",
             "showBackupDir", "openBackupDir", "showDebugDir", "openDebugDir",
             "showTempDir", "openTempDir", "showJavaDir", "openJavaDir",
-            "clearChat", "refresh", "changetoken", "testNotification", "server",
+            "clearChat", "refresh", "changeToken", "testNotification", "server",
             "set", "add", "clearSetting", "remove", "customCompletion",
             "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
             "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
             "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
             "follow", "unfollow", "ffzws", "followers", "followersoff",
-            "setcolor", "untimeout", "userinfo", "joinhosted", "favorite", "unfavorite"
+            "setcolor", "untimeout", "userinfo", "joinHosted", "favorite", "unfavorite"
         }));
         
         private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
@@ -308,8 +314,8 @@ public class Channel extends JPanel {
                 //--------------
                 // Setting Names
                 //--------------
-                items = filterCompletionItems(main.getSettingNames(), search);
                 input.setCompleteToCommonPrefix(true);
+                items = filterCompletionItems(main.getSettingNames(), search);
             } else if (prefix.equals("/")) {
                 //--------------
                 // Command Names
@@ -407,34 +413,66 @@ public class Channel extends JPanel {
             Map<String, String> info = new HashMap<>();
             // Get font height for correct display size of Emoji
             int height = input.getFontMetrics(input.getFont()).getHeight();
-            for (Emoticon emote : main.emoticons.getEmoji()) {
-                if (emote.stringId != null
-                        && (emote.stringId.startsWith(":"+search)
-                            || (search.length() > 3 && emote.stringId.contains(search)))) {
-                    if (main.getSettings().getBoolean("emojiReplace")) {
-                        result.add(emote.stringId);
-                        info.put(emote.stringId, "<img width='"+height+"' height='"+height+"' src='"+emote.url+"'/>");
-                    } else {
-                        result.add(emote.code);
-                        info.put(emote.code, emote.stringId+" <img width='"+height+"' height='"+height+"' src='"+emote.url+"'/>");
-                    }
+            Collection<Emoticon> searchResult = new LinkedHashSet<>();
+            findEmoji(searchResult, code -> code.startsWith(":"+search));
+            if (searchResult.size() < 20) {
+                findEmoji(searchResult, code -> code.contains("_"+search));
+            }
+            for (Emoticon emote : searchResult) {
+                if (main.getSettings().getBoolean("emojiReplace")) {
+                    result.add(emote.stringId);
+                    info.put(emote.stringId, "<img width='" + height + "' height='" + height + "' src='" + emote.url + "'/>");
+                } else {
+                    result.add(emote.code);
+                    info.put(emote.code, emote.stringId + " <img width='" + height + "' height='" + height + "' src='" + emote.url + "'/>");
                 }
             }
             return new CompletionItems(result, info, ":");
         }
         
-        private List<String> filterCompletionItems(Collection<String> data,
-                String search) {
-            List<String> matched = new ArrayList<>();
-            for (String name : data) {
-                if (StringUtil.toLowerCase(name).startsWith(search)) {
-                    matched.add(name);
+        private void findEmoji(Collection<Emoticon> result, Function<String, Boolean> matcher) {
+            for (Emoticon emote : main.emoticons.getEmoji()) {
+                if (emote.stringId != null && matcher.apply(emote.stringId)) {
+                    result.add(emote);
                 }
             }
-            Collections.sort(matched);
+        }
+        
+        /**
+         * Filter list of ready-to-use items based on the given search.
+         * 
+         * @param data
+         * @param search Should be all-lowercase
+         * @return 
+         */
+        private List<String> filterCompletionItems(Collection<String> data,
+                String search) {
+            List<String> containing = new ArrayList<>();
+            List<String> matched = new ArrayList<>();
+            Pattern cSearch = Pattern.compile(
+                    Pattern.quote(search.substring(0, 1).toUpperCase(Locale.ENGLISH))
+                    + "(?i)" + Pattern.quote(search.substring(1))
+            );
+            String searchMode = main.getSettings().getString("completionSearch");
+            for (String item : data) {
+                String lc = StringUtil.toLowerCase(item);
+                if (lc.startsWith(search)) {
+                    matched.add(item);
+                } else if (searchMode.equals("words") &&
+                        !input.getCompleteToCommonPrefix()
+                        && cSearch.matcher(item).find()) {
+                    containing.add(item);
+                } else if (searchMode.equals("anywhere")
+                        && lc.contains(search)) {
+                    containing.add(item);
+                }
+            }
+            Collections.sort(matched, String.CASE_INSENSITIVE_ORDER);
+            Collections.sort(containing, String.CASE_INSENSITIVE_ORDER);
+            matched.addAll(containing);
             return matched;
         }
-            
+        
         private CompletionItems getCompletionItemsNames(String search, boolean preferUsernames) {
             List<User> matchedUsers = new ArrayList<>();
             Set<User> regularMatched = new HashSet<>();
@@ -586,6 +624,10 @@ public class Channel extends JPanel {
     
     public void printLine(String line) {
         text.printLine(line);
+    }
+    
+    public void printInfoMessage(InfoMessage message) {
+        text.printInfoMessage(message);
     }
     
     public void userBanned(User user, long duration, String reason, String id) {

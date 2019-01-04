@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.gui.LaF;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -42,6 +43,8 @@ public class ViewerHistory extends JComponent {
     private static final Color FIRST_COLOR = new Color(20,180,62);
     
     private static final Color SECOND_COLOR = new Color(0,0,220);
+    
+    private static final Color SECOND_COLOR_DARK = new Color(160,160,255);
     
     private static final Color OFFLINE_COLOR = new Color(255,140,140);
     
@@ -631,7 +634,7 @@ public class ViewerHistory extends JComponent {
                     && !prevStatus.equals(newStatus)) {
                 // Change color
                 if (currentColor == FIRST_COLOR) {
-                    currentColor = SECOND_COLOR;
+                    currentColor = !LaF.isDarkTheme() ? SECOND_COLOR : SECOND_COLOR_DARK;
                 } else {
                     currentColor = FIRST_COLOR;
                 }

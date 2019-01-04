@@ -1,8 +1,10 @@
 
 package chatty.gui.notifications;
 
+import chatty.Addressbook;
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Room;
 import chatty.User;
 import chatty.gui.MainGui;
 import chatty.gui.notifications.Notification.State;
@@ -21,7 +23,9 @@ import chatty.util.settings.Settings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -31,15 +35,17 @@ public class NotificationManager {
     
     private final Settings settings;
     private final MainGui main;
+    private final Addressbook ab;
     
     private final List<Notification> properties = new ArrayList<>();
     private static final String SETTING_NAME = "notifications";
     public static final String COLOR_PRESETS_SETTING_NAME = "nColorPresets";
-    
+
     public NotificationManager(MainGui main,
-            Settings settings) {
+            Settings settings, Addressbook ab) {
         this.settings = settings;
         this.main = main;
+        this.ab = ab;
         loadFromSettings();
         settings.addSettingChangeListener((s, t, v) -> {
             if (s.equals(SETTING_NAME)) {
@@ -110,6 +116,19 @@ public class NotificationManager {
                 return new NotificationData(title, message);
             }
             return null;
+        });
+    }
+    
+    public void infoHighlight(Room room, String message, boolean noNotify,
+            boolean noSound) {
+        check(Type.HIGHLIGHT, room.getChannel(), null, message, noNotify, noSound,  n -> {
+            String title;
+            if (!room.getChannel().isEmpty()) {
+                title = String.format("[Highlight] Info Message in %s", room.getChannel());
+            } else {
+                title = "[Highlight] Info Message";
+            }
+            return new NotificationData(title, message);
         });
     }
     
@@ -228,7 +247,7 @@ public class NotificationManager {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
-                    && n.matches(user, message)) {
+                    && n.matches(message, channel, ab, user)) {
                 
                 NotificationData d = c.check(n);
                 if (d != null) {

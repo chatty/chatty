@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,7 +24,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 public class HighlightSettings extends SettingsPanel {
     
     public static final String INFO = "<html><body style='width:300px;font-weight:normal;'>"
-            + "Quick reference (see [help-settings:Highlight_Matching help] for more):"
+            + "Message matching examples (see [help-settings:Highlight_Matching help] for more):"
             + "<ul style='margin-left:30px'>"
             + "<li><code>Bets open</code> - 'Bets open' anywhere in the message"
             + "<li><code>cs:Bets open</code> - Same, but case-sensitive</li>"
@@ -40,7 +41,15 @@ public class HighlightSettings extends SettingsPanel {
             + "<li><code>config:info</code> - Match info messages</li>"
             + "</ul>";
     
-    private static final String INFO_HIGHLIGHTS = INFO+"Example: <code>user:botimuz cs:Bets open</code>";
+    private static final String INFO_HIGHLIGHTS = INFO
+            +"Examples: "
+            + "<dl>"
+            + "<dt><code>user:botimuz cs:Bets open</code></dt>"
+            + "<dd>Matches the user Botimuz saying 'Bets open' (case sensitive)</dd>"
+            + "<dt><code>config:info [Notification]</code></dt>"
+            + "<dd>Matches info messages containing '[Notification]', so all "
+            + "sub notifications</dd>"
+            + "</dl>";
     
     private final NoHighlightUsers noHighlightUsers;
     private final HighlightBlacklist highlightBlacklist;
@@ -58,33 +67,39 @@ public class HighlightSettings extends SettingsPanel {
         gbc = d.makeGbc(0,0,1,1);
         gbc.insets.bottom -= 3;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightEnabled"), gbc);
+        JCheckBox highlightEnabled = d.addSimpleBooleanSetting("highlightEnabled");
+        base.add(highlightEnabled, gbc);
         
         Insets settingInsets = new Insets(1,14,1,4);
         
         gbc = d.makeGbc(0,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = settingInsets;
-        base.add(d.addSimpleBooleanSetting("highlightUsername"), gbc);
+        JCheckBox highlightUsername = d.addSimpleBooleanSetting("highlightUsername");
+        base.add(highlightUsername, gbc);
 
         gbc = d.makeGbc(1,1,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightNextMessages"), gbc);
+        JCheckBox highlightNextMessages = d.addSimpleBooleanSetting("highlightNextMessages");
+        base.add(highlightNextMessages, gbc);
         
         gbc = d.makeGbc(0,2,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightOwnText"), gbc);
+        JCheckBox highlightOwnText = d.addSimpleBooleanSetting("highlightOwnText");
+        base.add(highlightOwnText, gbc);
         
         gbc = d.makeGbc(1,2,1,1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
-        base.add(d.addSimpleBooleanSetting("highlightIgnored"), gbc);
+        JCheckBox highlightIgnored = d.addSimpleBooleanSetting("highlightIgnored");
+        base.add(highlightIgnored, gbc);
         
         gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
         gbc.insets = settingInsets;
-        base.add(d.addSimpleBooleanSetting("highlightMatches"), gbc);
+        JCheckBox highlightMatches = d.addSimpleBooleanSetting("highlightMatches");
+        base.add(highlightMatches, gbc);
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
@@ -123,6 +138,11 @@ public class HighlightSettings extends SettingsPanel {
         gbc.insets = new Insets(1,5,5,30);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(highlightBlacklistButton, gbc);
+        
+        SettingsUtil.addSubsettings(highlightEnabled, highlightUsername,
+                highlightNextMessages, highlightOwnText, highlightIgnored,
+                highlightMatches, items, noHighlightUsersButton,
+                highlightBlacklistButton);
     }
     
     private static class NoHighlightUsers extends JDialog {
