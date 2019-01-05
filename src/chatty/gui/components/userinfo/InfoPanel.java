@@ -20,6 +20,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.Timer;
 
 /**
  *
@@ -37,7 +38,7 @@ public class InfoPanel extends JPanel {
     
     private final JLabel createdAt = new JLabel("Loading..");
     private final JLabel followers = new JLabel();
-    private final JLabel userId = new JLabel();
+    private final JLabel firstSeen = new JLabel();
     private final JLabel followedAt = new JLabel();
 
     private User currentUser;
@@ -51,20 +52,24 @@ public class InfoPanel extends JPanel {
         panel2.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 1));
         
         panel1.add(numberOfLines);
-        panel1.add(colorInfo);
+        panel1.add(firstSeen);
         panel1.add(followedAt);
         
-        panel2.add(userId);
+        panel2.add(colorInfo);
         panel2.add(followers);
         panel2.add(createdAt);
         
-        userId.setComponentPopupMenu(new DataContextMenu("userid", listener));
+        //firstSeen.setComponentPopupMenu(new DataContextMenu("userid", listener));
         followedAt.setComponentPopupMenu(new DataContextMenu("following", listener));
         createdAt.setComponentPopupMenu(new DataContextMenu("account", listener));
 
         setLayout(new GridBagLayout());
         add(panel1, Util.makeGbc(0, 0, 1, 1));
         add(panel2, Util.makeGbc(0, 1, 1, 1));
+        
+        Timer updateTimer = new Timer(60*1000, e -> updateTimes(false));
+        updateTimer.setRepeats(true);
+        updateTimer.start();
     }
     
     public void update(User user) {
@@ -74,6 +79,22 @@ public class InfoPanel extends JPanel {
         currentUser = user;
         numberOfLines.setText("Messages: "+user.getNumberOfMessages());
         updateColor();
+        updateTimes(true);
+    }
+    
+    private void updateTimes(boolean force) {
+        if (!owner.isVisible() && !force) {
+            return;
+        }
+        if (currentUser != null) {
+            firstSeen.setText(String.format("First seen: %s ago",
+                    formatAgoTime(currentUser.getCreatedAt())));
+            firstSeen.setToolTipText(String.format("<html>First seen: %s ago (%s)"
+                    + "<br /><br />"
+                    + "(Could mean the first message or when the user first joined, during this Chatty session)",
+                    formatAgoTimeVerbose(currentUser.getCreatedAt()),
+                    DateTime.formatFullDatetime(currentUser.getCreatedAt())));
+        }
     }
     
     private void updateColor() {
@@ -119,8 +140,6 @@ public class InfoPanel extends JPanel {
             createdAt.setToolTipText(null);
             followers.setText(null);
             panel2.setToolTipText(null);
-            userId.setText(null);
-            userId.setToolTipText(null);
         } else {
             setChannelInfo(requestedInfo);
         }
@@ -148,17 +167,17 @@ public class InfoPanel extends JPanel {
     //                DateTime.formatFullDatetime(info.createdAt)));
             followers.setText(Language.getString("userDialog.followers",
                     Helper.formatViewerCount(info.followers)));
-            userId.setText(Language.getString("userDialog.id", info.id));
             String tooltip = String.format("<html><em>Channel Info</em><br />"
                     + "Title: %s<br />"
                     + "Category: %s<br />"
                     + "Views: %s<br />"
-                    + "Registered: %s ago (%s)<br /><br />"
+                    + "Registered: %s ago (%s)<br />"
+                    + "ID: %s<br /><br />"
                     + "(Info may not be entirely up-to-date)",
                     info.status, info.game, Helper.formatViewerCount(info.views),
                     formatAgoTimeVerbose(info.createdAt),
-                    DateTime.formatFullDatetime(info.createdAt));
-            userId.setToolTipText(tooltip);
+                    DateTime.formatFullDatetime(info.createdAt),
+                    info.id);
             followers.setToolTipText(tooltip);
             createdAt.setToolTipText(tooltip);
 

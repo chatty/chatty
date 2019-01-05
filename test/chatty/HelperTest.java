@@ -103,4 +103,47 @@ public class HelperTest {
         assertEquals(Helper.tagsvalue_decode(" "), " ");
         assertEquals(Helper.tagsvalue_decode("\\\\s\\s\\:"), "\\s ;");
     }
+    
+    @Test
+    public void testUrls() {
+        String[] shouldMatch = new String[]{
+            "twitch.tv",
+            "twitch.tv/abc",
+            "http://twitch.tv",
+            "https://twitch.tv",
+            "amazon.de/ääh",
+            "https://google.de",
+            "google.com/abc(blah)",
+            "http://börse.de",
+            "www.twitch.tv/"
+        };
+        
+        /**
+         * Trying to match the full string, so it's not necessary to check the
+         * matches. Ofc it would find an URL in most of those.
+         */
+        String[] shouldNotMatch = new String[]{
+            "twitch.tv.",
+            "https:/twitch.tv",
+            "https://twitch.tv:",
+            "twitch.tv:",
+            "twitch.tv,",
+            "www.twitch.tv,",
+            "www.twitch.tv/,",
+            "asdas.abc",
+            "http://",
+            "http://www.",
+            "https://",
+            "https://www."
+        };
+        
+        for (String test : shouldMatch) {
+            assertTrue("Should match: "+test, Helper.getUrlPattern().matcher(test).matches());
+        }
+        
+        for (String test : shouldNotMatch) {
+            assertFalse("Should not match: "+test, Helper.getUrlPattern().matcher(test).matches());
+        }
+    }
+    
 }
