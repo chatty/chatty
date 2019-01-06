@@ -206,6 +206,14 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
+            Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
+        addressbook.loadFromFile();
+        addressbook.setSomewhatUniqueCategories(settings.getString("abUniqueCats"));
+        if (settings.getBoolean("abAutoImport")) {
+            addressbook.enableAutoImport();
+        }
+        
         initDxSettings();
         
         if (settings.getBoolean("splash")) {
@@ -249,14 +257,6 @@ public class TwitchClient {
         
         testUser.setUsericonManager(usericonManager);
         testUser.setUsercolorManager(usercolorManager);
-        
-        addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
-            Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
-        addressbook.loadFromFile();
-        addressbook.setSomewhatUniqueCategories(settings.getString("abUniqueCats"));
-        if (settings.getBoolean("abAutoImport")) {
-            addressbook.enableAutoImport();
-        }
         testUser.setAddressbook(addressbook);
         
         speedrunsLive = new SpeedrunsLive();
@@ -1221,8 +1221,12 @@ public class TwitchClient {
             g.setAnnouncementAvailable(Boolean.parseBoolean(parameter));
         } else if (command.equals("removechan")) {
             g.removeChannel(parameter);
-        } else if (command.equals("testtimer")) {
-            new Thread(new TestTimer(this, new Integer(parameter))).start();
+        } else if (command.equals("tt")) {
+            String[] split = parameter.split(" ", 3);
+            int repeats = Integer.parseInt(split[0]);
+            int delay = Integer.parseInt(split[1]);
+            String c = split[2];
+            TestTimer.testTimer(this, room, c, repeats, delay);
         } //        else if (command.equals("usertest")) {
         //            System.out.println(users.getChannelsAndUsersByUserName(parameter));
         //        }
@@ -1279,6 +1283,9 @@ public class TwitchClient {
             info.setOffline();
         } else if (command.equals("tsaon")) {
             StreamInfo info = api.getStreamInfo(g.getActiveStream(), null);
+            info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
+        } else if (command.equals("tss")) {
+            StreamInfo info = api.getStreamInfo(parameter, null);
             info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("tston")) {
             int viewers = 12;
@@ -1398,7 +1405,7 @@ public class TwitchClient {
         } else if (command.equals("automod")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
-            args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+new Random().nextInt(100));
+            args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+Debugging.count(channel));
             g.printModerationAction(new ModeratorActionData("", "", "", room.getStream(), "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);

@@ -138,9 +138,9 @@ public class UserInfoManager {
     
     private UserInfo getBestByUser(User user) {
         for (UserInfo dialog : dialogs) {
-//            if (dialog.getUser() == user && dialog.isVisible()) {
-//                return dialog;
-//            }
+            if (dialog.getUser() == user && dialog.isVisible()) {
+                return dialog;
+            }
             if (!dialog.isPinned() && dialog.isVisible()) {
                 return dialog;
             }

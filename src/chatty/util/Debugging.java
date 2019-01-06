@@ -24,6 +24,7 @@ public class Debugging {
     private static final Map<String, String> timedOutput = new HashMap<>();
     private static final Map<String, Long> timedOutputTimes = new HashMap<>();
     private static final Timer timer;
+    private static final Map<String, Long> counter = new HashMap<>();
     
     static {
         timer = new Timer("Debugging", true);
@@ -122,6 +123,15 @@ public class Debugging {
             return -1;
         }
         return System.currentTimeMillis() - previous;
+    }
+    
+    public synchronized static long count(String key) {
+        long value = 0;
+        if (counter.containsKey(key)) {
+            value = counter.get(key) + 1;
+        }
+        counter.put(key, value);
+        return value;
     }
     
     public interface OutputListener {

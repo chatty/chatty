@@ -74,9 +74,9 @@ public class InfoPanel extends JPanel {
     
     public void update(User user) {
         if (user != currentUser) {
+            currentUser = user;
             showInfo();
         }
-        currentUser = user;
         numberOfLines.setText("Messages: "+user.getNumberOfMessages());
         updateColor();
         updateTimes(true);

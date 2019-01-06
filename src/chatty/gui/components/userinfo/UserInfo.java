@@ -99,7 +99,7 @@ public class UserInfo extends JDialog {
             }
         };
         closeButton.addActionListener(actionListener);
-
+        
         setLayout(new GridBagLayout());
         
         GridBagConstraints gbc;
