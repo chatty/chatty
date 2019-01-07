@@ -56,7 +56,7 @@ public class Buttons {
         add(setting);
     }
     
-    public void updateModButtons(boolean localIsStreamer, boolean userIsMod) {
+    protected void updateModButtons(boolean localIsStreamer, boolean userIsMod) {
         if (modUnmodButton == null) {
             return;
         }
@@ -79,7 +79,7 @@ public class Buttons {
         modUnmodButton.setVisible(localIsStreamer);
     }
     
-    public void updateAutoModButtons(String autoModMsgId) {
+    protected void updateAutoModButtons(String autoModMsgId) {
         boolean show = autoModMsgId != null;
         if (approveButton != null) {
             approveButton.setVisible(show);
@@ -87,7 +87,6 @@ public class Buttons {
         if (denyButton != null) {
             denyButton.setVisible(show);
         }
-        updateRows();
     }
     
     private void remove() {
@@ -248,7 +247,7 @@ public class Buttons {
      * 
      * @param parameters 
      */
-    public void updateButtonForParameters(Parameters parameters) {
+    protected void updateButtonForParameters(Parameters parameters) {
         for (Map.Entry<JButton, CustomCommand> entry : commands.entrySet()) {
             JButton button = entry.getKey();
             CustomCommand command = entry.getValue();
@@ -261,7 +260,7 @@ public class Buttons {
     /**
      * Hide rows that don't have any visible elements.
      */
-    private void updateRows() {
+    protected void updateButtonRows() {
         for (JPanel row : rows.values()) {
             boolean hasVisibleElements = false;
             synchronized(row.getTreeLock()) {

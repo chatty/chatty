@@ -127,6 +127,8 @@ public class ChannelInfoManager {
             String id = (String)root.get("_id");
             String status = (String)root.get("status");
             String game = (String)root.get("game");
+            String broadcaster_type = (String)root.get("broadcaster_type");
+            String description = (String)root.get("description");
             int views = JSONUtil.getInteger(root, "views", -1);
             int followers = JSONUtil.getInteger(root, "followers", -1);
             long createdAt = -1;
@@ -137,7 +139,8 @@ public class ChannelInfoManager {
             } catch (Exception ex) {
                 LOGGER.warning("Error parsing ChannelInfo: "+ex);
             }
-            return new ChannelInfo(name, id, status, game, createdAt, followers, views, updatedAt);
+            return new ChannelInfo(name, id, status, game, createdAt, followers,
+                    views, updatedAt, broadcaster_type, description);
         }
         catch (ParseException ex) {
             LOGGER.warning("Error parsing ChannelInfo.");

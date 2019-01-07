@@ -62,4 +62,15 @@ public class StringUtilTest {
         assertEquals(StringUtil.join(list, ", "), "a, b, c,  d");
     }
     
+    @Test
+    public void testFirstToUpperCase() {
+        assertEquals(StringUtil.firstToUpperCase(""), "");
+        assertEquals(StringUtil.firstToUpperCase("a"), "A");
+        assertEquals(StringUtil.firstToUpperCase(null), null);
+        assertEquals(StringUtil.firstToUpperCase("Abc"), "Abc");
+        assertEquals(StringUtil.firstToUpperCase("abc"), "Abc");
+        assertEquals(StringUtil.firstToUpperCase(" abc"), " abc");
+        
+    }
+    
 }

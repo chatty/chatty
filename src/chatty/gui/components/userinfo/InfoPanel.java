@@ -3,12 +3,12 @@ package chatty.gui.components.userinfo;
 
 import chatty.Helper;
 import chatty.User;
-import chatty.gui.components.menus.ChannelContextMenu;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.colors.HtmlColors;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
@@ -19,7 +19,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 /**
@@ -167,17 +166,32 @@ public class InfoPanel extends JPanel {
     //                DateTime.formatFullDatetime(info.createdAt)));
             followers.setText(Language.getString("userDialog.followers",
                     Helper.formatViewerCount(info.followers)));
-            String tooltip = String.format("<html><em>Channel Info</em><br />"
-                    + "Title: %s<br />"
-                    + "Category: %s<br />"
-                    + "Views: %s<br />"
-                    + "Registered: %s ago (%s)<br />"
-                    + "ID: %s<br /><br />"
+            String tooltip = String.format("<html>"
+                    + "Registered: %6$s ago (%7$s)<br />"
+                    + "ID: %8$s<br />"
+                    + "Type: %9$s<br />"
+                    + "<br />"
+                    + "Title: %2$s<br />"
+                    + "Category: %3$s<br />"
+                    + "Views: %4$s<br />"
+                    + "Followers: %5$s<br />"
+                    + "<br />"
+                    + "%1$s<br />"
+                    + "<br />"
                     + "(Info may not be entirely up-to-date)",
-                    info.status, info.game, Helper.formatViewerCount(info.views),
+                    !StringUtil.isNullOrEmpty(info.description)
+                            ? StringUtil.addLinebreaks(info.description, 70, true)
+                            : "No description",
+                    info.status,
+                    info.game,
+                    Helper.formatViewerCount(info.views),
+                    Helper.formatViewerCount(info.followers),
                     formatAgoTimeVerbose(info.createdAt),
                     DateTime.formatFullDatetime(info.createdAt),
-                    info.id);
+                    info.id,
+                    !StringUtil.isNullOrEmpty(info.broadcaster_type)
+                            ? StringUtil.firstToUpperCase(info.broadcaster_type)
+                            : "Regular");
             followers.setToolTipText(tooltip);
             createdAt.setToolTipText(tooltip);
 
@@ -247,6 +261,13 @@ public class InfoPanel extends JPanel {
         return null;
     }
     
+    protected String getChannelInfoTooltipText() {
+        if (currentChannelInfo != null) {
+            return createdAt.getToolTipText().replace("<br />", "\n").replace("<html>", "");
+        }
+        return null;
+    }
+    
     /**
      * Indiciate that the follow age data is being loaded.
      */
@@ -264,13 +285,16 @@ public class InfoPanel extends JPanel {
             if (type.equals("userid")) {
                 addItem("copyUserId", "Copy User ID");
             } else if (type.equals("following")) {
-                addItem("sendFollowAge", "Send Follow age message");
-                addItem("copyFollowAge", "Copy Follow age");
+                addItem("sendFollowAge", "Send Follow Age message");
+                addItem("copyFollowAge", "Copy Follow Age");
                 addSeparator();
                 addItem("refresh", "Refresh");
             } else if (type.equals("account")) {
-                addItem("sendAccountAge", "Send Account age message");
-                addItem("copyAccountAge", "Copy Account age");
+                addItem("sendAccountAge", "Send Account Age message");
+                addItem("copyAccountAge", "Copy Account Age");
+                addSeparator();
+                addItem("copyUserId", "Copy ID");
+                addItem("copyChannelInfo", "Copy Full Info (Tooltip)");
             }
         }
         

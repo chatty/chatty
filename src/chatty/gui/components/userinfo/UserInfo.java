@@ -78,7 +78,8 @@ public class UserInfo extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (settings.getBoolean("closeUserDialogOnAction")) {
+                if (settings.getBoolean("closeUserDialogOnAction")
+                        && !isPinned()) {
                     setVisible(false);
                 }
                 CustomCommand command = getCommand(e.getSource());
@@ -119,7 +120,7 @@ public class UserInfo extends JDialog {
         gbc = makeGbc(2,1,1,1);
         gbc.insets = new Insets(2, 8, 2, 8);
         gbc.anchor = GridBagConstraints.EAST;
-        pinnedDialog.setToolTipText("Pinned dialogs stay open on the same user until closed");
+        pinnedDialog.setToolTipText(Language.getString("userDialog.setting.pin.tip"));
         topPanel.add(pinnedDialog, gbc);
         
         JComboBox<String> reasons = new JComboBox<>();
@@ -170,6 +171,9 @@ public class UserInfo extends JDialog {
                     case "refresh":
                         infoPanel.setRefreshingFollowAge();
                         getFollowInfo(true);
+                        break;
+                    case "copyChannelInfo":
+                        MiscUtil.copyToClipboard(infoPanel.getChannelInfoTooltipText());
                         break;
                 }
             }
@@ -253,8 +257,37 @@ public class UserInfo extends JDialog {
         return parameters;
     }
     
+    /**
+     * This has to be called after any updates to the active User, button
+     * settings or other dialog parameters that could affect buttons, in order
+     * to hide/show/activate/deactive buttons.
+     */
     protected void updateButtons() {
+        if (currentUser == null) {
+            return;
+        }
+        
+        //------------
+        // Parameters
+        //------------
         buttons.updateButtonForParameters(makeParameters());
+        
+        //------------------
+        // Mod/Unmod Button
+        //------------------
+        boolean localIsStreamer = currentUser.getStream() != null
+                && currentUser.getStream().equalsIgnoreCase(currentLocalUsername);
+        buttons.updateModButtons(localIsStreamer, currentUser.isModerator());
+        
+        //---------
+        // AutoMod
+        //---------
+        buttons.updateAutoModButtons(currentAutoModMsgId);
+        
+        //--------
+        // Finish
+        //--------
+        buttons.updateButtonRows();
     }
     
     public void setFontSize(float size) {
@@ -275,7 +308,7 @@ public class UserInfo extends JDialog {
      */
     public void setUserDefinedButtonsDef(String def) {
         buttons.set(def);
-        updateModButtons();
+        updateButtons();
         GuiUtil.setFontSize(fontSize, this);
         // Pack because otherwise the dialog won't be sized correctly when
         // displaying it for the first time (not sure why)
@@ -316,19 +349,8 @@ public class UserInfo extends JDialog {
         pastMessages.update(user, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
-        updateModButtons();
         updateButtons();
-        buttons.updateAutoModButtons(autoModMsgId);
         finishDialog();
-    }
-    
-    public void updateModButtons() {
-        if (currentUser == null) {
-            return;
-        }
-        boolean localIsStreamer = currentUser.getStream() != null
-                && currentUser.getStream().equalsIgnoreCase(currentLocalUsername);
-        buttons.updateModButtons(localIsStreamer, currentUser.isModerator());
     }
 
     public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {

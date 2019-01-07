@@ -136,6 +136,13 @@ public class StringUtil {
         return s != null ? s.toLowerCase(Locale.ENGLISH) : null;
     }
     
+    public static String firstToUpperCase(String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        return s.substring(0, 1).toUpperCase(Locale.ENGLISH) + s.substring(1);
+    }
+    
     /**
      * Removes leading and trailing whitespace and removes and duplicate
      * whitespace in the middle. Due to the way it works, it also replaces any
@@ -235,8 +242,7 @@ public class StringUtil {
      *
      * @param input The intput to modify
      * @param maxLineLength The maximum line length in number of characters
-     * @param html If true, a "&lt;br /&gt;" will be added in addition to a
-     * linebreak character
+     * @param html If true, a "&lt;br /&gt;" will be added instead of a \n
      * @return 
      */
     public static String addLinebreaks(String input, int maxLineLength, boolean html) {
@@ -252,8 +258,9 @@ public class StringUtil {
                     && lineLength + word.length() > maxLineLength) {
                 if (html) {
                     b.append("<br />");
+                } else {
+                    b.append("\n");
                 }
-                b.append("\n");
                 lineLength = 0;
             } else if (b.length() > 0) {
                 b.append(" ");
