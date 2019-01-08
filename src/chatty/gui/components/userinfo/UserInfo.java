@@ -355,7 +355,11 @@ public class UserInfo extends JDialog {
 
     public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
         if (user == currentUser && isVisible()) {
-            GuiUtil.shake(this);
+            if (Objects.equals(currentMsgId, msgId)) {
+                GuiUtil.shake(this, 2, 2);
+            } else {
+                GuiUtil.shake(this, 1, 1);
+            }
         }
         banReasons.updateReasonsFromSettings();
         banReasons.reset();

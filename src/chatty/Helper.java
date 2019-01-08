@@ -558,7 +558,7 @@ public class Helper {
     
     private static final String MID = "[^\\s]";
     
-    private static final String END = "[^:,.]";
+    private static final String END = "[^:,.\\s]";
     
     /**
      * Start of the URL.

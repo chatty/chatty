@@ -53,7 +53,7 @@ public class ModerationSettings extends SettingsPanel {
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         userInfo.add(d.addSimpleBooleanSetting(
-                "reusePinnedUserDialog"),
+                "reuseUserDialog"),
                 d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
     }
     

@@ -137,12 +137,16 @@ public class UserInfoManager {
     }
     
     private UserInfo getBestByUser(User user) {
-        for (UserInfo dialog : dialogs) {
-            if (settings.getBoolean("reusePinnedUserDialog")) {
+        // First try to find existing one for user, if enabled
+        if (settings.getBoolean("reuseUserDialog")) {
+            for (UserInfo dialog : dialogs) {
                 if (dialog.getUser() == user && dialog.isVisible()) {
                     return dialog;
                 }
             }
+        }
+        // Then try to find visible and unpinned one
+        for (UserInfo dialog : dialogs) {
             if (!dialog.isPinned() && dialog.isVisible()) {
                 return dialog;
             }

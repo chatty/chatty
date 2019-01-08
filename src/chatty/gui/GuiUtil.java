@@ -226,20 +226,26 @@ public class GuiUtil {
         return bounds;
     }
     
-    private static final int SHAKE_INTENSITY = 2;
-    
-    public static void shake(Window window) {
+    /**
+     * Moves the window very quickly to create a shaking effect, ending on the
+     * original location. Uses Thread.sleep() so length should not be too high.
+     *
+     * @param window The window to shake
+     * @param intensity The distance the window will move
+     * @param length The number of iterations of the shaking effect
+     */
+    public static void shake(Window window, int intensity, int length) {
         Point original = window.getLocation();
-        for (int i=0;i<2;i++) {
+        for (int i=0;i<length;i++) {
             try {
                 // Using Thread.sleep() is not ideal because it freezes the GUI,
                 // but it's really short
                 Thread.sleep(50);
-                window.setLocation(original.x+SHAKE_INTENSITY, original.y);
+                window.setLocation(original.x+intensity, original.y);
                 Thread.sleep(10);
-                window.setLocation(original.x, original.y-SHAKE_INTENSITY);
+                window.setLocation(original.x, original.y-intensity);
                 Thread.sleep(10);
-                window.setLocation(original.x-SHAKE_INTENSITY, original.y+SHAKE_INTENSITY);
+                window.setLocation(original.x-intensity, original.y+intensity);
                 Thread.sleep(10);
                 window.setLocation(original);
             } catch (InterruptedException ex) {
@@ -255,7 +261,7 @@ public class GuiUtil {
             dialog.setLocationRelativeTo(null);
             dialog.setVisible(true);
             JButton button = new JButton("Shake");
-            button.addActionListener(e -> shake(dialog));
+            button.addActionListener(e -> shake(dialog, 2, 2));
             dialog.add(button);
             dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         });

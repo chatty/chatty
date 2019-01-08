@@ -284,7 +284,7 @@ public class SettingsManager {
         
         settings.addBoolean("closeUserDialogOnAction", true);
         settings.addBoolean("openUserDialogByMouse", true);
-        settings.addBoolean("reusePinnedUserDialog", true);
+        settings.addBoolean("reuseUserDialog", false);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);
