@@ -115,7 +115,7 @@ public class Requests {
             try {
                 for (inc = 0; inc < MAX_FOLLOWS;
                      inc = inc + StreamInfoManager.FOLLOWED_STREAMS_LIMIT) {
-                    request = new TwitchApiRequest(url+inc, "v5");
+                    request = new TwitchApiRequest(url, "v5");
                     request.setToken(token);
                     execute(request, r -> {
                         api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
