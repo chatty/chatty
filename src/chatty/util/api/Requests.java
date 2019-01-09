@@ -36,7 +36,6 @@ import org.json.simple.JSONObject;
 public class Requests {
     
     private static final Logger LOGGER = Logger.getLogger(Requests.class.getName());
-    private static final short MAX_FOLLOWS = 2000;
     
     private final ExecutorService executor;
     private final TwitchApi api;
@@ -99,30 +98,18 @@ public class Requests {
     //===================
     
     protected void requestFollowedStreams(String token, String nextUrl) {
-        int inc;
         String url;
-        TwitchApiRequest request;
         if (nextUrl != null) {
             url = nextUrl;
-            request = new TwitchApiRequest(url, "v5");
-            request.setToken(token);
-            execute(request, r -> {
-                api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
-            });
         } else {
             url = "https://api.twitch.tv/kraken/streams/followed?limit="
-                    + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=";
-            try {
-                for (inc = 0; inc < MAX_FOLLOWS;
-                     inc = inc + StreamInfoManager.FOLLOWED_STREAMS_LIMIT) {
-                    request = new TwitchApiRequest(url, "v5");
-                    request.setToken(token);
-                    execute(request, r -> {
-                        api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
-                    });
-                }
-            } finally {}
+                    + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=0";
         }
+        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setToken(token);
+        execute(request, r -> {
+            api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
+        });
     }
     
     /**
