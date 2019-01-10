@@ -6,12 +6,15 @@ import java.awt.Color;
 import java.awt.GraphicsDevice;
 import static java.awt.GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSLUCENT;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JWindow;
+import java.util.ArrayList;
 
 /**
  * Backup splashscreen, when the "native" one doesn't work (for example for the
@@ -38,10 +41,27 @@ public class SplashWindow extends JFrame {
         setUndecorated(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Chatty starting..");
+        setWindowIcons();
         
         if (translucency) {
             setBackground(new Color(0,0,0,0));
         }
+    }
+
+    /**
+     * Sets different sizes of a splash window icon.
+     */
+    private void setWindowIcons() {
+        ArrayList<Image> windowIcons = new ArrayList<>();
+        windowIcons.add(createImage("app_main_16.png"));
+        windowIcons.add(createImage("app_main_64.png"));
+        windowIcons.add(createImage("app_main_128.png"));
+        setIconImages(windowIcons);
+    }
+
+    private Image createImage(String name) {
+        name = "chatty/gui/" + name;
+        return Toolkit.getDefaultToolkit().createImage(getClass().getClassLoader().getResource(name));
     }
     
     /**
