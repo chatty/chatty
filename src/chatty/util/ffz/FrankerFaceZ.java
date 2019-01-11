@@ -7,6 +7,7 @@ import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
+import chatty.util.api.TwitchApi;
 import chatty.util.settings.Settings;
 import java.util.*;
 import java.util.logging.Logger;
@@ -53,10 +54,13 @@ public class FrankerFaceZ {
     private int featureFridaySet = -1;
     
     private final WebsocketManager ws;
+    private final TwitchApi api;
     
-    public FrankerFaceZ(FrankerFaceZListener listener, Settings settings) {
+    public FrankerFaceZ(FrankerFaceZListener listener, Settings settings,
+            TwitchApi api) {
         this.listener = listener;
         this.ws = new WebsocketManager(listener, settings);
+        this.api = api;
     }
     
     public void connectWs() {
@@ -97,7 +101,12 @@ public class FrankerFaceZ {
         if (stream == null || stream.isEmpty()) {
             return;
         }
-        request(Type.ROOM, stream, forcedUpdate);
+        String username = stream;
+        api.getUserId(r -> {
+            if (!r.hasError()) {
+                request(Type.ROOM, username, r.getId(username), forcedUpdate);
+            }
+        }, username);
         requestGlobalEmotes(false);
         if (!botNamesRequested) {
             requestBotNames();
@@ -112,7 +121,7 @@ public class FrankerFaceZ {
      * only requests the emotes when not already requested this session
      */
     public synchronized void requestGlobalEmotes(boolean forcedUpdate) {
-        request(Type.GLOBAL, null, forcedUpdate);
+        request(Type.GLOBAL, null, null, forcedUpdate);
         requestFeatureFridayEmotes(forcedUpdate);
     }
     
@@ -142,7 +151,7 @@ public class FrankerFaceZ {
      * only requests the emotes when not already requested this session
      */
     public synchronized void requestFeatureFridayEmotes(boolean forcedUpdate) {
-        request(Type.FEATURE_FRIDAY, null, forcedUpdate);
+        request(Type.FEATURE_FRIDAY, null, null, forcedUpdate);
     }
     
     /**
@@ -158,10 +167,12 @@ public class FrankerFaceZ {
      *
      * @param type The type of request
      * @param stream The stream, can be {@code null} if not needed for this type
+     * @param id The id to use for the request, depending on the type
      * @param forcedUpdate Whether to request even if already requested before
      */
-    private void request(final Type type, final String stream, boolean forcedUpdate) {
-        final String url = getUrl(type, stream);
+    private synchronized void request(final Type type, final String stream,
+            String id, boolean forcedUpdate) {
+        final String url = getUrl(type, id);
         if (requestPending.contains(url)
                 || (alreadyRequested.contains(url) && !forcedUpdate)) {
             return;
@@ -171,11 +182,11 @@ public class FrankerFaceZ {
         
         // Create request and run it in a separate thread
         UrlRequest request = new UrlRequest();
-        request.setLabel("FFZ");
+        request.setLabel("FFZ/"+stream);
         request.setUrl(url);
         request.async((result, responseCode) -> {
             requestPending.remove(url);
-            parseResult(type, stream, result);
+            parseResult(type, stream, id, result);
         });
     }
     
@@ -183,31 +194,40 @@ public class FrankerFaceZ {
      * Gets the URL for the given request type and stream.
      * 
      * @param type The type
-     * @param stream The stream, if applicable to the type
+     * @param id The stream, if applicable to the type
      * @return The URL as a String
      */
-    private String getUrl(Type type, String stream) {
+    private String getUrl(Type type, String id) {
         if (type == Type.GLOBAL) {
             return "https://api.frankerfacez.com/v1/set/global";
         } else if (type == Type.FEATURE_FRIDAY) {
-            if (stream == null) {
+            if (id == null) {
                 return "https://cdn.frankerfacez.com/script/event.json";
 //                return "http://127.0.0.1/twitch/ffz_feature";
             } else {
                 // The stream is a set id in this case
-                return "https://api.frankerfacez.com/v1/set/"+stream;
+                return "https://api.frankerfacez.com/v1/set/"+id;
 //                return "http://127.0.0.1/twitch/ffz_v1_set_"+stream;
             }
         } else {
-            return "https://api.frankerfacez.com/v1/room/"+stream;
+            return "https://api.frankerfacez.com/v1/room/id/"+id;
         }
     }
     
-    private void parseResult(Type type, String stream, String result) {
+    /**
+     * Parse the result of several types of API requests.
+     * 
+     * @param type The type of request
+     * @param stream The stream (null for some types), just used for info here
+     * @param id The id of the resource that was requested, depending on the
+     * type (e.g. room id or emote set)
+     * @param result The result JSON, may be null if the request failed
+     */
+    private void parseResult(Type type, String stream, String id, String result) {
         if (result == null) {
             return;
         }
-        if (type == Type.FEATURE_FRIDAY && stream == null) {
+        if (type == Type.FEATURE_FRIDAY && id == null) {
             // Response of the first request having only the info which channel
             handleFeatureFriday(result);
             return;
@@ -284,7 +304,7 @@ public class FrankerFaceZ {
                 clearFeatureFridayEmotes();
             }
             featureFridaySet = set;
-            request(Type.FEATURE_FRIDAY, String.valueOf(set), true);
+            request(Type.FEATURE_FRIDAY, null, String.valueOf(set), true);
         }
     }
     

@@ -287,6 +287,10 @@ public class TwitchApi {
         userIDs.waitForUserIDs(listener, names);
     }
     
+    public void getUserId(UserIDs.UserIdResultListener listener, String... names) {
+        userIDs.getUserIDs(listener, names);
+    }
+    
     /**
      * @see UserIDs#getUserIDsAsap(chatty.util.api.UserIDs.UserIdResultListener, java.lang.String...) 
      * 

@@ -234,7 +234,7 @@ public class TwitchClient {
         pubsub = new chatty.util.api.pubsub.Manager(
                 settings.getString("pubsub"), pubsubListener, api);
         
-        frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings);
+        frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings, api);
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
