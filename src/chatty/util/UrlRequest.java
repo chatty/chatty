@@ -63,7 +63,7 @@ public class UrlRequest {
      * is automatically added after it)
      */
     public final void setLabel(String label) {
-        this.label = "["+label+"] ";
+        this.label = "["+label+"]";
     }
 
     public void async(ResultListener listener) {
@@ -101,7 +101,7 @@ public class UrlRequest {
      * @return
      */
     private void performRequest(Result result) {
-        LOGGER.info(label+"Request: "+url);
+        LOGGER.info("<"+label+" "+url);
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
@@ -123,14 +123,14 @@ public class UrlRequest {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, CHARSET))) {
                 result.fill(reader, responseCode);
             }
-            LOGGER.info(String.format("%sResponse (%s, %,d%s): %s",
+            LOGGER.info(String.format(">%s (%s, %,d%s): %s",
                     label,
                     responseCode,
                     result.getLength(),
                     (encoding != null ? ", " + encoding : ""),
                     url));
         } catch (IOException ex) {
-            LOGGER.warning(label+"Request Error [" + url + "] (" + ex + ")");
+            LOGGER.warning(label+" Request Error [" + url + "] (" + ex + ")");
         } finally {
             if (connection != null) {
                 connection.disconnect();

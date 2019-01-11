@@ -38,7 +38,7 @@ public class SimpleCache2 {
         this.id = id;
         this.file = Paths.get(file);
         this.expireTime = expireTime;
-        this.debugPrefix = "["+id+"] Cache: ";
+        this.debugPrefix = "C["+id+"] Cache: ";
     }
     
     /**

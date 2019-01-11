@@ -258,9 +258,9 @@ public class FrankerFaceZ {
             }
         }
         
-        LOGGER.info("[FFZ] ("+stream+", "+globalText+"): "+emotes.size()+" emotes received.");
+        LOGGER.info("|[FFZ] ("+stream+", "+globalText+"): "+emotes.size()+" emotes received.");
         if (!usericons.isEmpty()) {
-            LOGGER.info("[FFZ] ("+stream+"): "+usericons.size()+" usericons received.");
+            LOGGER.info("|[FFZ] ("+stream+"): "+usericons.size()+" usericons received.");
         }
         
         // Package accordingly and send the result to the listener
@@ -289,7 +289,7 @@ public class FrankerFaceZ {
             // No feature friday found
             featureFridaySet = -1;
             clearFeatureFridayEmotes();
-            LOGGER.info(String.format("[FFZ] No Feature Friday found: %s",
+            LOGGER.info(String.format("|[FFZ] No Feature Friday found: %s",
                     StringUtil.trim(StringUtil.removeLinebreakCharacters(
                             StringUtil.shortenTo(json, 100)))));
         } else {
@@ -349,7 +349,7 @@ public class FrankerFaceZ {
         request.async((result, responseCode) -> {
             if (result != null && responseCode == 200) {
                 Set<String> botNames = FrankerFaceZParsing.getBotNames(result);
-                LOGGER.info("[FFZ Bots] Found " + botNames.size() + " names");
+                LOGGER.info("|[FFZ Bots] Found " + botNames.size() + " names");
                 listener.botNamesReceived(botNames);
             }
         });

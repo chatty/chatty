@@ -78,7 +78,7 @@ public class BTTVEmotes {
         alreadyRequested.add(stream);
         requestPending.add(stream);
         UrlRequest request = new UrlRequest(url);
-        request.setLabel("[BTTV]");
+        request.setLabel("BTTV");
         request.async((result, responseCode) -> {
             if (responseCode == 200) {
                 if (loadEmotes(result, stream) > 0 && stream.equals("$global$")) {
@@ -111,7 +111,7 @@ public class BTTVEmotes {
         }
         Set<Emoticon> emotes = parseEmotes(json, streamRestriction);
         Set<String> bots = parseBots(json);
-        LOGGER.info("BTTV: Found " + emotes.size() + " emotes / "+bots.size()+" bots");
+        LOGGER.info("|[BTTV] Found " + emotes.size() + " emotes / "+bots.size()+" bots");
         listener.receivedEmoticons(emotes);
         listener.receivedBotNames(streamRestriction, bots);
         return emotes.size();
@@ -140,7 +140,7 @@ public class BTTVEmotes {
                 result.add((String)o);
             }
         } catch (ParseException | ClassCastException ex) {
-            LOGGER.warning("BTTV: Error parsing bots: "+ex);
+            LOGGER.warning("|[BTTV] Error parsing bots: "+ex);
         }
         return result;
     }
@@ -178,7 +178,7 @@ public class BTTVEmotes {
         } catch (ParseException | ClassCastException ex) {
             // ClassCastException is also caught in parseEmote(), so it won't
             // quit completely when one emote is invalid.
-            LOGGER.warning("BTTV: Error parsing emotes: "+ex);
+            LOGGER.warning("|[BTTV] Error parsing emotes: "+ex);
         }
         return emotes;
     }
@@ -234,7 +234,7 @@ public class BTTVEmotes {
             }
             return builder.build();
         } catch (ClassCastException | NullPointerException ex) {
-            LOGGER.warning("BTTV: Error parsing emote: "+o+" ["+ex+"]");
+            LOGGER.warning("|[BTTV] Error parsing emote: "+o+" ["+ex+"]");
             return null;
         }
     }

@@ -26,6 +26,7 @@ public class SimpleCache {
     private final String id;
     private final Path file;
     private final long expireTime;
+    private final String debugPrefix;
     
     /**
      * Creates a new cache object for a single file.
@@ -38,6 +39,7 @@ public class SimpleCache {
         this.id = id;
         this.file = Paths.get(file);
         this.expireTime = expireTime;
+        this.debugPrefix = "C["+id+"]";
     }
     
     /**
@@ -46,14 +48,14 @@ public class SimpleCache {
      * @param data The text to save
      */
     public void save(String data) {
-        LOGGER.info("Cache: Trying to save "+id+"..");
+        LOGGER.info(debugPrefix+" Cache: Trying to save..");
         try (BufferedWriter writer = Files.newBufferedWriter(file,CHARSET)) {
             writer.write(new Long(System.currentTimeMillis() / 1000).toString()+"\n");
             writer.write(data);
-            LOGGER.info("Cache: Saved "+id+".");
+            LOGGER.info(debugPrefix+" Cache: Saved");
         }
         catch (IOException ex) {
-            LOGGER.warning("Cache: Error saving "+id+" ["+ex+"]");
+            LOGGER.warning(debugPrefix+" Cache: Error saving ["+ex+"]");
         }
     }
     
@@ -69,12 +71,12 @@ public class SimpleCache {
      * error occured
      */
     public String load(boolean loadEvenIfExpired) {
-        LOGGER.info("Cache: Trying to load "+id+"..");
+        LOGGER.info(debugPrefix+" Cache: Trying to load..");
         try (BufferedReader reader = Files.newBufferedReader(file, CHARSET)) {
             long time = Long.parseLong(reader.readLine());
             long timePassed = (System.currentTimeMillis() / 1000) - time;
             if (!loadEvenIfExpired && timePassed > expireTime) {
-                LOGGER.info("Cache: Did not load "+id+" (expired)");
+                LOGGER.info(debugPrefix+" Cache: Did not load (expired)");
                 return null;
             }
             StringBuilder data = new StringBuilder();
@@ -85,7 +87,7 @@ public class SimpleCache {
             }
             return data.toString();
         } catch (IOException | NumberFormatException ex) {
-            LOGGER.warning("Cache: Error loading "+id+" ["+ex+"]");
+            LOGGER.warning(debugPrefix+" Cache: Error loading ["+ex+"]");
             return null;
         }
     }
