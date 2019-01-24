@@ -7,3 +7,4 @@ SourceDir=pack
 SetupIconFile=Chatty.ico
 Uninstallable=no
 UsePreviousSetupType=no
+DisableProgramGroupPage=yes
