@@ -5,11 +5,13 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.Room;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
-import chatty.util.api.CommunitiesManager.CommunitiesListener;
-import chatty.util.api.CommunitiesManager.Community;
-import chatty.util.api.CommunitiesManager.CommunityListener;
-import chatty.util.api.CommunitiesManager.CommunityPutListener;
+import chatty.util.api.StreamTagManager.StreamTagsListener;
+import chatty.util.api.StreamTagManager.StreamTag;
+import chatty.util.api.StreamTagManager.StreamTagListener;
+import chatty.util.api.StreamTagManager.StreamTagPutListener;
+import chatty.util.api.StreamTagManager.StreamTagsResult;
 import chatty.util.api.TwitchApi.GameSearchListener;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.TwitchApi.StreamMarkerResult;
@@ -17,6 +19,7 @@ import chatty.util.api.TwitchApiRequest.TwitchApiRequestResult;
 import chatty.util.api.queue.QueuedApi;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -276,6 +279,7 @@ public class Requests {
     
     /**
      * 
+     * @param userId
      * @param info
      * @param token 
      */
@@ -294,81 +298,97 @@ public class Requests {
         }
     }
     
-    public void getCommunitiesTop(CommunitiesManager.CommunityTopListener listener) {
-        String url = "https://api.twitch.tv/kraken/communities/top?limit=100";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            Collection<Community> result = CommunitiesManager.parseTop(r.text);
-            listener.received(result);
-            result.forEach(c -> { api.communitiesManager.addCommunity(c); });
-        });
+    private int allTagsRequestCount;
+    
+    public void getAllTags(StreamTagManager.StreamTagsListener listener) {
+        allTagsRequestCount = 0;
+        getAllTags(api.defaultToken, null, listener);
     }
     
-    public void getCommunityByName(String name, CommunityListener listener) {
-        try {
-            String url = "https://api.twitch.tv/kraken/communities?name="+URLEncoder.encode(name, "UTF-8");
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                Community result = CommunitiesManager.parse(r.text);
-                if (r.responseCode == 404) {
-                    listener.received(null, "Community not found.");
-                } else {
-                    api.communitiesManager.addCommunity(result);
-                    listener.received(result, null);
-                }
-            });
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(Requests.class.getName()).log(Level.SEVERE, null, ex);
+    private void getAllTags(String token, String cursor, StreamTagManager.StreamTagsListener listener) {
+        String url = "https://api.twitch.tv/helix/tags/streams?first=100";
+        if (cursor != null) {
+            url += "&after="+cursor;
         }
-    }
-    
-    public void getCommunityById(String id, CommunityListener listener) {
-        String url = "https://api.twitch.tv/kraken/communities/"+id;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            Community result = CommunitiesManager.parse(r.text);
-            if (r.responseCode == 404) {
-                listener.received(null, "Community not found.");
+        allTagsRequestCount++;
+        // Just in case
+        LOGGER.info("Request "+allTagsRequestCount);
+        if (allTagsRequestCount > 10) {
+            return;
+        }
+        newApi.add(url, "GET", token, (result, responseCode) -> {
+            if (responseCode == 200) {
+                StreamTagsResult data = StreamTagManager.parseAllTags(result);
+                if (data != null) {
+                    listener.received(data.tags, null);
+                    if (!StringUtil.isNullOrEmpty(data.cursor)) {
+                        getAllTags(token, data.cursor, listener);
+                    } else {
+                        listener.received(null, null);
+                    }
+                    data.tags.forEach(t -> { api.communitiesManager.addTag(t); });
+                } else {
+                    listener.received(null, "Parse error");
+                }
             } else {
-                api.communitiesManager.addCommunity(result);
-                listener.received(result, null);
+                listener.received(null, "Error "+responseCode);
             }
         });
     }
     
-    public void setCommunities(String userId, List<String> communityIds,
-            String token, CommunityPutListener listener) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setToken(token);
-        request.setContentType("application/json");
+    public void getTagsByIds(Set<String> ids, StreamTagsListener listener) {
+        String parameters = "?tag_id="+StringUtil.join(ids, "&tag_id=");
+        String url = "https://api.twitch.tv/helix/tags/streams"+parameters;
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            if (responseCode == 200) {
+                StreamTagsResult data = StreamTagManager.parseAllTags(result);
+                if (data != null) {
+                    data.tags.forEach(t -> { api.communitiesManager.addTag(t); });
+                    listener.received(data.tags, null);
+                } else {
+                    listener.received(null, "Parse error");
+                }
+            } else {
+                listener.received(null, "Request error");
+            }
+        });
+    }
+    
+    public void setStreamTags(String userId, Collection<StreamTag> tags,
+            StreamTagPutListener listener) {
+        List<String> tagIds = new ArrayList<>();
+        tags.forEach(t -> tagIds.add(t.getId()));
+        String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
         JSONObject data = new JSONObject();
-        data.put("community_ids", communityIds);
-        request.setData(data.toJSONString(), "PUT");
-        execute(request, r -> {
-            if (r.responseCode == 204) {
+        data.put("tag_ids", tagIds);
+        newApi.add(url, "PUT", data.toJSONString(), api.defaultToken, (text, responseCode) -> {
+            if (responseCode == 204) {
                 listener.result(null);
+            } else if (responseCode == 400 || responseCode == 403) {
+                api.getInvalidStreamTags(tags, (t, e) -> {
+                    if (e != null || t == null || t.isEmpty()) {
+                        listener.result("Error "+responseCode);
+                    } else {
+                        listener.result("Invalid: "+t);
+                    }
+                });
             } else {
-                listener.result("Error");
+                listener.result("Error "+responseCode);
             }
         });
     }
     
-    public void getCommunities(String userId, CommunitiesListener listener) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/communities";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            if (r.responseCode == 204 || r.responseCode == 404) { // 404 just in case Twitch changes it
+    public void getTagsByStream(String userId, StreamTagsListener listener) {
+        String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
+        newApi.add(url, "GET", api.defaultToken, (data, responseCode) -> {
+            if (responseCode == 204 || responseCode == 404) {
                 listener.received(null, null);
             } else {
-                List<Community> result = CommunitiesManager.parseCommunities(r.text);
+                StreamTagsResult result = StreamTagManager.parseAllTags(data);
                 if (result == null) {
-                    listener.received(null, "Communities error");
+                    listener.received(null, "Tags error");
                 } else {
-                    for (Community c : result) {
-                        api.communitiesManager.addCommunity(c);
-                    }
-                    listener.received(result, null);
+                    listener.received(result.tags, url);
                 }
             }
         });

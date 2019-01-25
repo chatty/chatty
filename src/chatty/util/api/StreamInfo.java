@@ -4,7 +4,7 @@ package chatty.util.api;
 import chatty.Helper;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -50,7 +50,7 @@ public class StreamInfo {
     private String status = null;
     private String game = "";
     private int viewers = 0;
-    private List<Community> communities;
+    private List<StreamTag> communities;
     private long startedAt = -1;
     private long lastOnline = -1;
     private long startedAtWithPicnic = -1;
@@ -431,11 +431,11 @@ public class StreamInfo {
         return false;
     }
     
-    public synchronized void setCommunities(List<Community> communities) {
+    public synchronized void setCommunities(List<StreamTag> communities) {
         this.communities = communities;
     }
     
-    public synchronized List<Community> getCommunities() {
+    public synchronized List<StreamTag> getCommunities() {
         return communities;
     }
     

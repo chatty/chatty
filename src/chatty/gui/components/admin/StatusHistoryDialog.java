@@ -34,7 +34,7 @@ import javax.swing.event.ListSelectionListener;
 public class StatusHistoryDialog extends JDialog {
     
     private enum CloseAction {
-        CANCEL, USE_TITLE, USE_ALL
+        CANCEL, USE_TITLE, USE_ALL, USE_TAGS
     }
     
     private static final String INFO_TEXT = "<html><body style='width: 240px;text-align:center;'>"
@@ -185,8 +185,8 @@ public class StatusHistoryDialog extends JDialog {
      * 
      * @param currentGame The game to be set as current game
      * @return The selected {@code StatusHistoryEntry} (containing {@code null}
-     * for the game if only the title is to be used) or {@code null} if none was
-     * selected or the dialog was cancelled.
+     * for values that should not be used) or {@code null} if none was selected
+     * or the dialog was cancelled.
      */
     public StatusHistoryEntry showDialog(String currentGame) {
         this.currentGame = currentGame;
@@ -202,6 +202,8 @@ public class StatusHistoryDialog extends JDialog {
         if (selected != null) {
             if (closeAction == CloseAction.USE_TITLE) {
                 return new StatusHistoryEntry(selected.title, null, null, -1, -1, false);
+            } else if (closeAction == CloseAction.USE_TAGS) {
+                return new StatusHistoryEntry(null, null, selected.tags, -1, -1, false);
             } else if (closeAction == CloseAction.USE_ALL) {
                 return selected;
             }
@@ -293,6 +295,11 @@ public class StatusHistoryDialog extends JDialog {
         setVisible(false);
     }
     
+    private void useTags() {
+        closeAction = CloseAction.USE_TAGS;
+        setVisible(false);
+    }
+    
     /**
      * Action listener for normal buttons.
      */
@@ -333,6 +340,7 @@ public class StatusHistoryDialog extends JDialog {
             addSeparator();
             addItem("useAll", Language.getString("admin.presets.cm.useStatus"));
             addItem("useTitle", Language.getString("admin.presets.cm.useTitleOnly"));
+            addItem("useTags", Language.getString("admin.presets.cm.useTagsOnly"));
         }
 
         @Override
@@ -345,6 +353,8 @@ public class StatusHistoryDialog extends JDialog {
                 useStatus();
             } else if (e.getActionCommand().equals("useTitle")) {
                 useTitle();
+            } else if (e.getActionCommand().equals("useTags")) {
+                useTags();
             }
         }
         

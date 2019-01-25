@@ -9,7 +9,7 @@ import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HistoryContextMenu;
 import chatty.lang.Language;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
@@ -148,8 +148,8 @@ public class ViewerHistory extends JComponent {
         public long startTime;
         public long picnicStartTime;
         
-        public void add(String title, String game, int viewers, StreamType streamType, Community... communities) {
-            java.util.List<Community> c;
+        public void add(String title, String game, int viewers, StreamType streamType, StreamTag... communities) {
+            java.util.List<StreamTag> c;
             if (communities == null) {
                 c = null;
             } else {
@@ -171,9 +171,9 @@ public class ViewerHistory extends JComponent {
             
             
             history = new LinkedHashMap<>();
-            Community c1 = new Community("abc", "VarietyStreaming");
-            Community c2 = new Community("abc", "Speedrunning");
-            Community c3 = new Community("abc", "Pro-Audio");
+            StreamTag c1 = new StreamTag("abc", "VarietyStreaming");
+            StreamTag c2 = new StreamTag("abc", "Speedrunning");
+            StreamTag c3 = new StreamTag("abc", "Pro-Audio");
             
             test.startTime = -5*60*1000;
             test.picnicStartTime = -10*60*1000;
@@ -193,7 +193,7 @@ public class ViewerHistory extends JComponent {
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 14, StreamType.WATCH_PARTY, c1);
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
             test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 18, StreamType.WATCH_PARTY, c1);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, (Community) null);
+            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, (StreamTag) null);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 34, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
             test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);

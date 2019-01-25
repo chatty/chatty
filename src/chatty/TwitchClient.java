@@ -56,6 +56,7 @@ import chatty.util.api.FollowerInfo;
 import chatty.util.api.RoomsInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
@@ -1452,6 +1453,15 @@ public class TwitchClient {
         } else if (command.equals("clearoldsetups")) {
             Stuff.init();
             Stuff.clearOldSetups();
+        } else if (command.equals("tags")) {
+            Set<StreamTag> tags = new HashSet<>();
+            tags.add(new StreamTag("id", "name", "summary", false));
+            if (parameter != null) {
+                tags.add(new StreamTag(parameter, "name2", "summary", false));
+            }
+            api.getInvalidStreamTags(tags, (t,e) -> {
+                System.out.println(t+" "+e);
+            });
         } else if (command.equals("-")) {
             g.printSystem(Debugging.command(parameter));
         }

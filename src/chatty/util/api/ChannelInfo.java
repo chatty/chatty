@@ -2,7 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.StringUtil;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 
 /**
  * Holds info about the channel (title, game). This is different to stream info

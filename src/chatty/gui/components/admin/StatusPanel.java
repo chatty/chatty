@@ -9,8 +9,8 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
-import chatty.util.api.CommunitiesManager;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -47,19 +48,19 @@ public class StatusPanel extends JPanel {
     
     private final JTextArea status = new JTextArea();
     private final JTextField game = new JTextField(20);
-    private final JTextArea community = new JTextArea();
+    private final JTextArea streamTags = new JTextArea();
     private final JButton update = new JButton(Language.getString("admin.button.update"));
     private final JLabel updated = new JLabel("No info loaded");
     private final JLabel putResult = new JLabel("...");
     private final JButton selectGame = new JButton(Language.getString("admin.button.selectGame"));
     private final JButton removeGame = new JButton(Language.getString("admin.button.removeGame"));
-    private final JButton selectCommunity = new JButton(Language.getString("admin.button.selectCommunity"));
-    private final JButton removeCommunity = new JButton(Language.getString("admin.button.removeCommunity"));
+    private final JButton selectTags = new JButton(Language.getString("admin.button.selectTags"));
+    private final JButton removeTags = new JButton(Language.getString("admin.button.removeTags"));
     private final JButton reloadButton = new JButton(Language.getString("admin.button.reload"));
     private final JButton historyButton = new JButton(Language.getString("admin.button.presets"));
     private final JButton addToHistoryButton = new JButton(Language.getString("admin.button.fav"));
     private final SelectGameDialog selectGameDialog;
-    private final SelectCommunityDialog selectCommunityDialog;
+    private final SelectTagsDialog selectTagsDialog;
     private final StatusHistoryDialog statusHistoryDialog;
     
     private final AdminDialog parent;
@@ -68,16 +69,16 @@ public class StatusPanel extends JPanel {
     
     private String currentChannel;
     private boolean statusEdited;
-    private final List<Community> currentCommunities = new ArrayList<>();
+    private final List<StreamTag> currentStreamTags = new ArrayList<>();
     private long infoLastLoaded;
     
     private boolean loading;
     private boolean loadingStatus;
-    private boolean loadingCommunity;
+    private boolean loadingTags;
     private String statusLoadError;
-    private String communityLoadError;
+    private String tagsLoadError;
     private String statusPutResult;
-    private String communityPutResult;
+    private String tagsPutResult;
     private long lastPutResult = -1;
     
     public StatusPanel(AdminDialog parent, MainGui main, TwitchApi api) {
@@ -87,7 +88,7 @@ public class StatusPanel extends JPanel {
         this.api = api;
         
         selectGameDialog = new SelectGameDialog(main, api);
-        selectCommunityDialog = new SelectCommunityDialog(main, api);
+        selectTagsDialog = new SelectTagsDialog(main, api);
         statusHistoryDialog = new StatusHistoryDialog(parent, main.getStatusHistory());
         
         GridBagConstraints gbc;
@@ -179,28 +180,26 @@ public class StatusPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(removeGame,gbc);
         
-        community.setEditable(false);
-        community.setBackground(game.getBackground());
-        community.setBorder(game.getBorder());
-        community.setLineWrap(true);
-        community.setWrapStyleWord(true);
+        streamTags.setEditable(false);
+        streamTags.setBackground(game.getBackground());
+        streamTags.setBorder(game.getBorder());
+        streamTags.setLineWrap(true);
+        streamTags.setWrapStyleWord(true);
         gbc = makeGbc(0,4,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        //add(community, gbc);
-        gbc = makeGbc(0,4,3,1);
-        add(new JLabel("Twitch removed Communities (Tags not implemented yet)"), gbc);
+        add(streamTags, gbc);
         
-        selectCommunity.setMargin(SMALL_BUTTON_INSETS);
+        selectTags.setMargin(SMALL_BUTTON_INSETS);
         gbc = makeGbc(1,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        //add(selectCommunity, gbc);
+        add(selectTags, gbc);
         
-        removeCommunity.setMargin(SMALL_BUTTON_INSETS);
+        removeTags.setMargin(SMALL_BUTTON_INSETS);
         gbc = makeGbc(2,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        //add(removeCommunity, gbc);
+        add(removeTags, gbc);
         
         gbc = makeGbc(0,5,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -217,11 +216,11 @@ public class StatusPanel extends JPanel {
                 if (e.getSource() == update) {
                     if (currentChannel != null && !currentChannel.isEmpty()) {
                         loadingStatus = true;
-                        loadingCommunity = true;
+                        loadingTags = true;
                         setLoading(true);
                         ChannelInfo info = new ChannelInfo(currentChannel, status.getText(), game.getText());
                         main.putChannelInfo(info);
-                        //putCommunity();
+                        putTags();
                         addCurrentToHistory();
                     }
                 } else if (e.getSource() == reloadButton) {
@@ -236,15 +235,15 @@ public class StatusPanel extends JPanel {
                 } else if (e.getSource() == removeGame) {
                     game.setText("");
                     statusEdited();
-                } else if (e.getSource() == selectCommunity) {
-                    selectCommunityDialog.setLocationRelativeTo(StatusPanel.this);
-                    List<CommunitiesManager.Community> result = selectCommunityDialog.open(currentCommunities);
+                } else if (e.getSource() == selectTags) {
+                    selectTagsDialog.setLocationRelativeTo(StatusPanel.this);
+                    List<StreamTagManager.StreamTag> result = selectTagsDialog.open(currentStreamTags);
                     if (result != null) {
-                        setCommunities(result);
+                        setTags(result);
                         statusEdited();
                     }
-                } else if (e.getSource() == removeCommunity) {
-                    setCommunities(null);
+                } else if (e.getSource() == removeTags) {
+                    setTags(null);
                     statusEdited();
                 } else if (e.getSource() == historyButton) {
                     StatusHistoryEntry result = statusHistoryDialog.showDialog(game.getText());
@@ -257,8 +256,8 @@ public class StatusPanel extends JPanel {
                         if (result.game != null) {
                             game.setText(result.game);
                         }
-                        if (result.communities != null) {
-                            setCommunities(result.communities);
+                        if (result.tags != null) {
+                            setTags(result.tags);
                         }
                     }
                 } else if (e.getSource() == addToHistoryButton) {
@@ -270,8 +269,8 @@ public class StatusPanel extends JPanel {
         reloadButton.addActionListener(actionListener);
         selectGame.addActionListener(actionListener);
         removeGame.addActionListener(actionListener);
-        selectCommunity.addActionListener(actionListener);
-        removeCommunity.addActionListener(actionListener);
+        selectTags.addActionListener(actionListener);
+        removeTags.addActionListener(actionListener);
         historyButton.addActionListener(actionListener);
         addToHistoryButton.addActionListener(actionListener);
         update.addActionListener(actionListener);
@@ -281,33 +280,37 @@ public class StatusPanel extends JPanel {
         currentChannel = channel;
         status.setText("");
         game.setText("");
-        setCommunities(null);
+        setTags(null);
         
         // This will reset last loaded anyway
         getChannelInfo();
     }
     
-    private void setCommunities(List<Community> c) {
-        currentCommunities.clear();
-        if (c == null) {
-            community.setText(null);
+    private void setTags(Collection<StreamTag> tags) {
+        currentStreamTags.clear();
+        if (tags == null) {
+            streamTags.setText(null);
         } else {
-            currentCommunities.addAll(c);
-            community.setText(StringUtil.join(c, ", "));
+            for (StreamTag t : tags) {
+                if (t.canUserSet()) {
+                    currentStreamTags.add(t);
+                }
+            }
+            streamTags.setText(StringUtil.join(currentStreamTags, ", "));
         }
         parent.pack();
     }
     
-    private void putCommunity() {
+    private void putTags() {
         final String channel = currentChannel;
-        api.setCommunities(currentChannel, currentCommunities, error -> {
+        api.setStreamTags(currentChannel, currentStreamTags, error -> {
             if (currentChannel.equals(channel)) {
                 if (error != null) {
-                    communityPutResult = "Failed setting community.";
+                    tagsPutResult = "Failed setting tags. ("+error+")";
                 } else {
-                    communityPutResult = "Community updated.";
+                    tagsPutResult = "Tags updated.";
                 }
-                loadingCommunity = false;
+                loadingTags = false;
                 checkLoadingDone();
             }
         });
@@ -382,50 +385,51 @@ public class StatusPanel extends JPanel {
      */
     private void getChannelInfo() {
         loadingStatus = true;
-        loadingCommunity = true;
+        loadingTags = true;
         statusLoadError = null;
-        communityLoadError = null;
+        tagsLoadError = null;
         
         setLoading(true);
         main.getChannelInfo(currentChannel);
         final String channel = currentChannel;
-//        api.getCommunitiesForChannel(currentChannel, (r, e) -> {
-//            if (currentChannel.equals(channel)) {
-//                if (r == null) {
-//                    communityLoadError = e == null ? "" : e;
-//                } else {
-//                    setCommunities(r);
-//                }
-//                loadingCommunity = false;
-//                checkLoadingDone();
-//            }
-//            if (r != null) {
-//                for (Community c : r) {
-//                    updateCommunityName(c);
-//                }
-//            }
-//        });
+        api.getTagsByStream(currentChannel, (tags, e) -> {
+            // Tags may contain automatically set tags as well
+            if (currentChannel.equals(channel)) {
+                if (tags == null) {
+                    tagsLoadError = e == null ? "" : e;
+                } else {
+                    setTags(tags);
+                }
+                loadingTags = false;
+                checkLoadingDone();
+            }
+            if (tags != null) {
+                for (StreamTag c : tags) {
+                    updateStreamTagName(c);
+                }
+            }
+        });
     }
     
     private void checkLoadingDone() {
-        if (!loadingStatus) {
+        if (!loadingStatus && !loadingTags) {
             statusEdited = false;
             updated.setText(Language.getString("admin.infoLoaded.now"));
-            if (statusPutResult != null || communityPutResult != null) {
-                setPutResult(statusPutResult);
+            if (statusPutResult != null || tagsPutResult != null) {
+                setPutResult(statusPutResult+" / "+tagsPutResult);
                 statusPutResult = null;
-                communityPutResult = null;
+                tagsPutResult = null;
             }
-            if (statusLoadError != null || communityLoadError != null) {
+            if (statusLoadError != null || tagsLoadError != null) {
                 infoLastLoaded = -1;
-                String error = getError(statusLoadError, "Status");
-                error = StringUtil.append(error, ", ", getError(communityLoadError, "Community"));
+                String error = getError(statusLoadError);
+                error = StringUtil.append(error, ", ", getError(tagsLoadError));
                 if (error.isEmpty()) {
                     error = "Unkonwn Error";
                 }
                 updated.setText("Loading failed: "+error);
                 statusLoadError = null;
-                communityLoadError = null;
+                tagsLoadError = null;
             } else {
                 infoLastLoaded = System.currentTimeMillis();
             }
@@ -433,7 +437,7 @@ public class StatusPanel extends JPanel {
         }
     }
     
-    private static String getError(String message, String type) {
+    private static String getError(String message) {
         if (message != null) {
             if (!message.isEmpty()) {
                 return message;
@@ -455,8 +459,8 @@ public class StatusPanel extends JPanel {
         update.setEnabled(!loading);
         selectGame.setEnabled(!loading);
         removeGame.setEnabled(!loading);
-        selectCommunity.setEnabled(!loading);
-        removeCommunity.setEnabled(!loading);
+        selectTags.setEnabled(!loading);
+        removeTags.setEnabled(!loading);
         reloadButton.setEnabled(!loading);
         historyButton.setEnabled(!loading);
         addToHistoryButton.setEnabled(!loading);
@@ -482,21 +486,21 @@ public class StatusPanel extends JPanel {
     
     /**
      * This should be done from an up-to-date source, like a direct response
-     * from the API. It might not be necessary, but just in case a Community
-     * gets renamed at some point, at least this way it's possible to change it
-     * for existing status/favorite entries.
+     * from the API. It might not be necessary, but just in case a Tag gets
+     * renamed at some point, at least this way it's possible to change it for
+     * existing status/favorite entries.
      * 
      * @param c 
      */
-    protected void updateCommunityName(Community c) {
+    protected void updateStreamTagName(StreamTag c) {
         if (c == null) {
             return;
         }
-        main.getStatusHistory().updateCommunityName(c);
-        Map<String, String> communities = main.getCommunityFavorites();
-        if (communities.containsKey(c.getId())) {
-            communities.put(c.getId(), c.getCapitalizedName());
-            main.setCommunityFavorites(communities);
+        main.getStatusHistory().updateStreamTagName(c);
+        Map<String, String> tags = main.getStreamTagFavorites();
+        if (tags.containsKey(c.getId())) {
+            tags.put(c.getId(), c.getDisplayName());
+            main.setStreamTagFavorites(tags);
         }
     }
     
@@ -519,8 +523,8 @@ public class StatusPanel extends JPanel {
         String currentTitle = status.getText().trim();
         String currentGame = game.getText();
         if (main.getSaveStatusHistorySetting()
-                || main.getStatusHistory().isFavorite(currentTitle, currentGame, currentCommunities)) {
-            main.getStatusHistory().addUsed(currentTitle, currentGame, currentCommunities);
+                || main.getStatusHistory().isFavorite(currentTitle, currentGame, currentStreamTags)) {
+            main.getStatusHistory().addUsed(currentTitle, currentGame, currentStreamTags);
         }
     }
     
@@ -528,7 +532,7 @@ public class StatusPanel extends JPanel {
      * Adds the current status to the preset favorites
      */
     private void addCurrentToFavorites() {
-        main.getStatusHistory().addFavorite(status.getText().trim(), game.getText(), currentCommunities);
+        main.getStatusHistory().addFavorite(status.getText().trim(), game.getText(), currentStreamTags);
     }
     
 }

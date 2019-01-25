@@ -1,14 +1,10 @@
 
 package chatty.gui.components.admin;
 
-import chatty.Helper;
 import chatty.gui.GuiUtil;
-import chatty.util.colors.HtmlColors;
 import chatty.gui.MainGui;
-import chatty.gui.UrlOpener;
 import chatty.lang.Language;
-import chatty.util.StringUtil;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,10 +28,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.html.HTMLDocument;
 
 /**
  * Select a game by manually entering it, searching for it on Twitch or
@@ -43,13 +37,13 @@ import javax.swing.text.html.HTMLDocument;
  * 
  * @author tduva
  */
-public class SelectCommunityDialog extends JDialog {
+public class SelectTagsDialog extends JDialog {
 
     private static final String INFO = "<html><body style='width:340px'>"
-            + Language.getString("admin.communities.info");
+            + Language.getString("admin.tags.info");
 
-    private static final ImageIcon ADD_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-add.png"));
-    private static final ImageIcon REMOVE_ICON = new ImageIcon(SelectCommunityDialog.class.getResource("list-remove.png"));
+    private static final ImageIcon ADD_ICON = new ImageIcon(SelectTagsDialog.class.getResource("list-add.png"));
+    private static final ImageIcon REMOVE_ICON = new ImageIcon(SelectTagsDialog.class.getResource("list-remove.png"));
     
     private final MainGui main;
     private final TwitchApi api;
@@ -58,44 +52,43 @@ public class SelectCommunityDialog extends JDialog {
     private final JButton ok = new JButton(Language.getString("dialog.button.save"));
     private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     
-    // Game search/fav buttons
-    private final JButton searchButton = new JButton(Language.getString("admin.communities.button.search"));
-    private final JButton addToFavoritesButton = new JButton(Language.getString("admin.communities.button.favorite"));
-    private final JButton removeFromFavoritesButton = new JButton(Language.getString("admin.communities.button.unfavorite"));
-    private final JButton clearSearchButton = new JButton(Language.getString("admin.communities.button.clear"));
-    private final JButton openUrl = new JButton(Language.getString("admin.communities.button.openUrl"));
-    private final JButton top100 = new JButton(Language.getString("admin.communities.button.top100"));
+    // Search/fav buttons
+    private final JButton clearFilterButton = new JButton(Language.getString("admin.tags.button.clearFilter"));
+    private final JButton addToFavoritesButton = new JButton(Language.getString("admin.tags.button.favorite"));
+    private final JButton removeFromFavoritesButton = new JButton(Language.getString("admin.tags.button.unfavorite"));
+    private final JCheckBox showAllTags = new JCheckBox(Language.getString("admin.tags.button.showAll"));
 
     // Current info elements
-    private final JLabel searchResultInfo = new JLabel();
-    private final JTextField input = new JTextField(30);
-    private final JList<Community> list = new JList<>();
-    private final DefaultListModel<Community> listData = new DefaultListModel<>();
-    private final JTextPane description = new JTextPane();
+    private final JLabel listInfo = new JLabel();
+    private final JTextField input = new JTextField();
+    private final JList<StreamTag> list = new JList<>();
+    private final DefaultListModel<StreamTag> listData = new DefaultListModel<>();
+    private final JTextArea description = new JTextArea();
     
-    // Currently selected communities
+    // Currently selected tags
     private final JPanel currentPanel = new JPanel();
-    private final JButton addButton = new JButton(Language.getString("admin.communities.button.addSelected"));
+    private final JButton addButton = new JButton(Language.getString("admin.tags.button.addSelected"));
     
-    private static final int MAX_COMMUNITIES = 3;
+    private static final int MAX_TAGS = 5;
     
-    // Current games data separate from GUI
-    private final Set<Community> favorites = new TreeSet<>();
-    private final Set<Community> searchResult = new TreeSet<>();
+    // Current tags data separate from GUI
+    private final Set<StreamTag> favorites = new TreeSet<>();
+    private final Set<StreamTag> allTags = new TreeSet<>();
     
-    private Community selected;
-    private final List<Community> current = new ArrayList<>();
-    private final List<Community> preset = new ArrayList<>();
+    private StreamTag selected;
+    private final List<StreamTag> current = new ArrayList<>();
+    private final List<StreamTag> preset = new ArrayList<>();
     private final Timer timer;
     private long lastSelectionTime;
-    private boolean loading;
-    private Community shouldMaybeRequest;
+    private boolean loadingInfo;
+    private String loadingAllTagsInfo;
+    private StreamTag shouldMaybeRequest;
     
-    // Whether to use the current game
+    // Whether to use the current tags
     private boolean save;
     
-    public SelectCommunityDialog(MainGui main, TwitchApi api) {
-        super(main, Language.getString("admin.communities.title", MAX_COMMUNITIES), true);
+    public SelectTagsDialog(MainGui main, TwitchApi api) {
+        super(main, Language.getString("admin.tags.title", MAX_TAGS), true);
         setResizable(true);
         
         this.main = main;
@@ -103,7 +96,7 @@ public class SelectCommunityDialog extends JDialog {
         
         setLayout(new GridBagLayout());
         list.setModel(listData);
-        list.setVisibleRowCount(12);
+        list.setVisibleRowCount(14);
         list.setCellRenderer(new ListRenderer());
         GridBagConstraints gbc;
         
@@ -142,6 +135,13 @@ public class SelectCommunityDialog extends JDialog {
         });
         timer.setRepeats(true);
         
+        //========
+        // Layout
+        //========
+        
+        //-------------
+        // Top Section
+        //-------------
         gbc = makeGbc(0,0,5,1);
         add(new JLabel(INFO), gbc);
         
@@ -149,57 +149,48 @@ public class SelectCommunityDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(input, gbc);
         
-        searchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         gbc = makeGbc(2,1,1,1);
+        clearFilterButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(searchButton, gbc);
+        add(clearFilterButton, gbc);
         
         gbc = makeGbc(0,2,3,1);
         gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(2,4,4,4);
+        gbc.insets = new Insets(2,4,5,4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(searchResultInfo, gbc);
+        add(listInfo, gbc);
         
-        gbc = makeGbc(2, 2, 1, 1);
-        clearSearchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(2,4,4,4);
-        add(clearSearchButton, gbc);
-        
-        gbc = makeGbc(4, 2, 1, 1);
-        openUrl.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-        gbc.insets = new Insets(2,4,4,4);
-        gbc.anchor = GridBagConstraints.EAST;
-        add(openUrl, gbc);
-        
-        gbc = makeGbc(3, 1, 1, 1);
-        top100.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        gbc = makeGbc(3, 1, 2, 1);
         gbc.insets = new Insets(2,4,4,4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.SOUTHEAST;
-        add(top100, gbc);
+        add(showAllTags, gbc);
         
-        gbc = makeGbc(0, 4, 2, 1);
+        //--------------
+        // List Section
+        //--------------
+        
+        gbc = makeGbc(0, 4, 2, 2);
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 0;
         gbc.weighty = 1;
         add(new JScrollPane(list), gbc);
         
-        gbc = makeGbc(2, 4, 3, 2);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
+        gbc = makeGbc(2, 4, 3, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         description.setEditable(false);
-        description.setContentType("text/html");
-        String textColor = HtmlColors.getColorString(searchResultInfo.getForeground());
-        int textSize = searchResultInfo.getFont().getSize();
-        ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(""
-                + "body { font: sans-serif; font-size: "+textSize+"pt; padding:3px; color:"+textColor+"; }"
-                + "a { color:"+textColor+"; }"
-                + "h2 { border-bottom: 1px solid "+textColor+"; font-size: "+(textSize+2)+"pt; }");
+        description.setLineWrap(true);
+        description.setWrapStyleWord(true);
+        description.setRows(4);
+        description.setMargin(new Insets(2, 2, 2, 2));
         add(new JScrollPane(description), gbc);
+        
+        gbc = makeGbc(2, 5, 3, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+        currentPanel.setLayout(new GridBagLayout());
+        add(currentPanel, gbc);
  
-        gbc = makeGbc(0,5,1,1);
+        gbc = makeGbc(0,6,1,1);
         addToFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -208,20 +199,14 @@ public class SelectCommunityDialog extends JDialog {
         
         removeFromFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
-        gbc = makeGbc(1,5,1,1);
+        gbc = makeGbc(1,6,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         add(removeFromFavoritesButton, gbc);
         
-        gbc = makeGbc(0,6,5,1);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 5, 0, 5);
-        //add(new JLabel("Currently chosen Communities:"), gbc);
-        
-        gbc = makeGbc(0,7,5,1);
-        gbc.anchor = GridBagConstraints.WEST;
-        add(currentPanel, gbc);
+        //--------------------
+        // Save/close buttons
+        //--------------------
         
         ok.setMnemonic(KeyEvent.VK_S);
         gbc = makeGbc(0,8,3,1);
@@ -235,9 +220,7 @@ public class SelectCommunityDialog extends JDialog {
         add(cancel, gbc);
 
         ActionListener actionListener = new MyActionListener();
-        searchButton.addActionListener(actionListener);
-        openUrl.addActionListener(actionListener);
-        top100.addActionListener(actionListener);
+        clearFilterButton.addActionListener(actionListener);
         input.addActionListener(actionListener);
         ok.addActionListener(actionListener);
         cancel.addActionListener(actionListener);
@@ -245,30 +228,23 @@ public class SelectCommunityDialog extends JDialog {
         list.addMouseListener(new ListClickListener());
         addToFavoritesButton.addActionListener(actionListener);
         removeFromFavoritesButton.addActionListener(actionListener);
-        clearSearchButton.addActionListener(actionListener);
+        showAllTags.addActionListener(actionListener);
         
         input.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                updateSearchButton();
+                updateList();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                updateSearchButton();
+                updateList();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                updateSearchButton();
-            }
-        });
-        
-        description.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                String url = e.getURL().toString();
-                UrlOpener.openUrlPrompt(SelectCommunityDialog.this, url, true);
+                updateList();
             }
         });
         
@@ -277,37 +253,30 @@ public class SelectCommunityDialog extends JDialog {
         addButton.addActionListener(e -> {
             addSelected();
         });
-        addButton.setToolTipText(Language.getString("admin.communities.button.addSelected.tip"));
         addButton.setIcon(ADD_ICON);
         
         updateFavoriteButtons();
-        updateSearchButton();
         
         pack();
         
-        setMinimumSize(getSize());
+        setResizable(false);
         
     }
     
     /**
-     * Open the dialog with the given game preset.
+     * Open the dialog with the given tags preset.
      * 
      * @param preset
-     * @return The name of the game to use, or {@code null} if the game should
-     * not be changed
+     * @return The list of tags to use, or {@code null} if they should not be
+     * changed
      */
-    public List<Community> open(List<Community> preset) {
+    public List<StreamTag> open(List<StreamTag> preset) {
         timer.start();
         this.preset.clear();
         this.preset.addAll(preset);
         setCurrent(preset);
         loadFavorites();
-        for (Community c : preset) {
-            if (c != Community.EMPTY && !favorites.contains(c)) {
-                searchResult.add(c);
-            }
-        }
-        update();
+        updateList();
         save = false;
         setVisible(true);
 
@@ -320,75 +289,105 @@ public class SelectCommunityDialog extends JDialog {
     }
 
     /**
-     * Closes the dialog, using the current game.
+     * Closes the dialog, using the current tags.
      */
-    private void useGameAndClose() {
+    private void useCurrentTagsAndClose() {
         save = true;
         setVisible(false);
     }
     
-    private void setCurrent(List<Community> data) {
+    private void setCurrent(List<StreamTag> data) {
         current.clear();
         current.addAll(data);
         updateCurrent();
     }
     
     /**
-     * Update the display of the currently chosen Communities, this means
-     * adding the labels and buttons to remove them.
+     * Update the display of the currently chosen tags, this means adding the
+     * labels and removal buttons.
      */
     private void updateCurrent() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2, 2, 5, 2);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.WEST;
         currentPanel.removeAll();
-        if (current.isEmpty()) {
-            currentPanel.add(new JLabel(Language.getString("admin.communities.none")));
-        } else {
-            for (Community c : current) {
-                JLabel label = new JLabel(c.toString());
-                currentPanel.add(label);
-                JButton removeButton = new JButton(REMOVE_ICON);
-                removeButton.setToolTipText(Language.getString("admin.communities.button.remove.tip", c.toString()));
-                removeButton.setMargin(new Insets(0,0,0,0));
-                removeButton.setSize(10, 10);
-                removeButton.addActionListener(e -> {
-                    current.remove(c);
-                    updateCurrent();
-                });
-                currentPanel.add(removeButton);
+        gbc.insets = new Insets(2, 2, 2, 2);
+        for (int i = 0; i < MAX_TAGS; i++) {
+            StreamTag tag;
+            if (current.size() > i) {
+                tag = current.get(i);
+            } else {
+                tag = new StreamTag(null, "empty");
             }
+            gbc.gridy++;
+            gbc.gridx = 0;
+            gbc.anchor = GridBagConstraints.CENTER;
+            JLabel label = new JLabel(tag.toString());
+            label.setEnabled(tag.isValid());
+            currentPanel.add(label, gbc);
+
+            gbc.gridx = 1;
+            gbc.anchor = GridBagConstraints.EAST;
+            gbc.weightx = 0;
+            currentPanel.add(createRemoveTagButton(tag), gbc);
         }
-        // Only add "Add" button if less then max Communities are chosen
-        if (current.size() < 3) {
-            currentPanel.add(addButton);
+        gbc.insets = new Insets(5, 2, 2, 2);
+        gbc.gridy++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.EAST;
+        // Only add "Add" button if less then max Tags are chosen
+        if (current.size() < MAX_TAGS) {
+            currentPanel.add(addButton, gbc);
         }
-        revalidate();
-        // Make dialog bigger if necessary
-        if (currentPanel.getPreferredSize().width+20 > getWidth()) {
-            setSize(currentPanel.getPreferredSize().width+20, getHeight());
-        }
+        currentPanel.invalidate();
+        pack();
+        repaint();
+        SwingUtilities.invokeLater(() -> {
+            pack();
+        });
         updateAddButton();
         updateOkButton();
     }
     
+    private JButton createRemoveTagButton(StreamTag tag) {
+        JButton removeButton = new JButton(REMOVE_ICON);
+        removeButton.setToolTipText(Language.getString("admin.tags.button.remove.tip", tag.toString()));
+        removeButton.setMargin(new Insets(0, 0, 0, 0));
+        removeButton.setSize(10, 10);
+        removeButton.addActionListener(e -> {
+            current.remove(tag);
+            updateCurrent();
+        });
+        removeButton.setEnabled(tag.isValid());
+        return removeButton;
+    }
+    
     /**
-     * Add the Communities currently selected in the list.
+     * Add the tags currently selected in the list.
      */
     private void addSelected() {
-        for (Community c : list.getSelectedValuesList()) {
-            if (canAddCommunity(c)) {
+        for (StreamTag c : list.getSelectedValuesList()) {
+            if (canAddTag(c)) {
                 current.add(c);
-                updateCurrent();
+            } else {
+                current.remove(c);
             }
+            updateCurrent();
         }
     }
     
     /**
-     * Check if one of the currently selected Communities can be added.
+     * Check if any of the currently selected tags can be added.
      * 
      * @return 
      */
     private boolean canAddSomething() {
-        for (Community c : list.getSelectedValuesList()) {
-            if (canAddCommunity(c)) {
+        for (StreamTag c : list.getSelectedValuesList()) {
+            if (canAddTag(c)) {
                 return true;
             }
         }
@@ -396,15 +395,15 @@ public class SelectCommunityDialog extends JDialog {
     }
     
     /**
-     * Check if the given Community can be added, so if any can be added and if
-     * this one isn't added yet.
+     * Check if the given Tag can be added, so if any can be added and if this
+     * one isn't added yet.
      * 
      * @param c
      * @return 
      */
-    private boolean canAddCommunity(Community c) {
-        return c != null && c != Community.EMPTY
-                && current.size() < MAX_COMMUNITIES
+    private boolean canAddTag(StreamTag c) {
+        return c != null && c != StreamTag.EMPTY
+                && current.size() < MAX_TAGS
                 && !current.contains(c);
     }
    
@@ -417,47 +416,42 @@ public class SelectCommunityDialog extends JDialog {
      * 
      * @param c 
      */
-    private void setSelected(Community c) {
+    private void setSelected(StreamTag c) {
         if (c == null) {
             selected = null;
-            input.setText(null);
         } else {
             selected = c;
-            input.setText(c.toString());
         }
         updateInfo();
         updateAddButton();
     }
     
     private void updateInfo() {
-        if (selected == null || selected.isValid()) {
+        if (selected == null || !selected.isValid()) {
             description.setText("Nothing to see here.");
             return;
         }
         
-        Community maybe = api.getCachedCommunityInfo(selected.getId());
+        StreamTag maybe = api.getCachedOnlyTagInfo(selected.getId());
         if (maybe != null) {
-            description.setText(String.format(
-                    "<html><body>%s<h2>Rules</h2>%s",
-                    maybe.getSummary(),
-                    maybe.getRules()));
+            description.setText(maybe.getSummary());
             description.setCaretPosition(0);
         } else {
-            description.setText("Loading..");
+            description.setText(Language.getString("status.loading"));
             lastSelectionTime = System.currentTimeMillis();
             shouldMaybeRequest = selected;
         }
     }
     
     private void loadCurrentInfo() {
-        if (!loading && selected != null && selected == shouldMaybeRequest) {
-            final Community forRequest = selected;
+        if (!loadingInfo && selected != null && selected == shouldMaybeRequest) {
+            final StreamTag forRequest = selected;
             // This should only be done if cached info could not be found
-            loading = true;
+            loadingInfo = true;
             shouldMaybeRequest = null;
             // The request will also add it to cached infos, so we don't need
             // to retrieve the result directly
-            api.getCommunityById(forRequest.getId(), (r, e) -> {
+            api.getStreamTagById(forRequest.getId(), (r, e) -> {
                 SwingUtilities.invokeLater(() -> {
                     updateInfo();
                     
@@ -465,14 +459,14 @@ public class SelectCommunityDialog extends JDialog {
                     if (forRequest.equals(shouldMaybeRequest)) {
                         shouldMaybeRequest = null;
                     }
-                    loading = false;
+                    loadingInfo = false;
                     updateName(r);
                 });
             });
         }
     }
     
-    private void updateName(Community c) {
+    private void updateName(StreamTag c) {
         if (c != null && favorites.remove(c)) {
             favorites.add(c);
             saveFavorites();
@@ -483,86 +477,99 @@ public class SelectCommunityDialog extends JDialog {
      * Clear the list and fill it with the current search result and favorites.
      * Also update the status text.
      */
-    private void update() {
+    private void updateList() {
         listData.clear();
-        for (Community c : searchResult) {
-            listData.addElement(c);
+        String search = input.getText();
+        if (search == null || search.trim().isEmpty()) {
+            search = "";
         }
-        if (!searchResult.isEmpty() && !favorites.isEmpty()) {
-            listData.addElement(Community.EMPTY);
+        search = search.toLowerCase();
+        int addedCount = 0;
+        if (showAllTags.isSelected()) {
+            for (StreamTag c : allTags) {
+                if (c.getDisplayName().toLowerCase().contains(search)) {
+                    listData.addElement(c);
+                    addedCount++;
+                }
+            }
+        } else {
+            for (StreamTag c : current) {
+                if (c.getDisplayName().toLowerCase().contains(search)) {
+                    listData.addElement(c);
+                    addedCount++;
+                }
+            }
         }
-        for (Community c : favorites) {
-            listData.addElement(c);
+        if (!listData.isEmpty() && !favorites.isEmpty()) {
+            listData.addElement(StreamTag.EMPTY);
         }
-        searchResultInfo.setText(Language.getString("admin.communities.listInfo",
-                searchResult.size(), favorites.size()));
+        int addedCountFavs = 0;
+        for (StreamTag c : favorites) {
+            if (c.getDisplayName().toLowerCase().contains(search)) {
+                listData.addElement(c);
+                addedCountFavs++;
+            }
+        }
+        listInfo.setText(Language.getString("admin.tags.listInfo",
+                addedCount,
+                showAllTags.isSelected() ? allTags.size() : current.size(),
+                addedCountFavs, favorites.size())
+            + (loadingAllTagsInfo != null ? " ("+loadingAllTagsInfo+")": ""));
         list.setSelectedValue(selected, false);
     }
     
-    private void doSearch() {
-        String searchString = StringUtil.toLowerCase(input.getText().trim());
-        if (searchString.isEmpty()) {
-            return;
-        }
-        api.getCommunityByName(searchString, (r, e) -> {
-            SwingUtilities.invokeLater(() -> {
-                if (r == null) {
-                    if (e != null) {
-                        searchResultInfo.setText(e);
-                    } else {
-                        searchResultInfo.setText("An error occured.");
+    private void showAllTags() {
+        /**
+         * Only request if allTags is currently empty. As soon as one request
+         * succeeded that will be no longer the case. If on the other hand an
+         * error occured without receiving any tags, another attempt may be
+         * possible.
+         */
+        if (showAllTags.isSelected() && allTags.isEmpty()) {
+            loadingAllTagsInfo = Language.getString("status.loading");
+            api.requestAllTags((r,e) -> {
+                SwingUtilities.invokeLater(() -> {
+                    if (r != null) {
+                        for (StreamTag t : r) {
+                            if (!t.isAuto()) {
+                                allTags.add(t);
+                            }
+                        }
                     }
-                } else {
-                    setSelected(r);
-                    // Update cached name, if necessary (not sure if Communities
-                    // can even change name, but it's certainly not impossible).
-                    // Do it here because the result from the API should be
-                    // correct.
-                    updateName(r);
-                    
-                    searchResult.clear();
-                    searchResult.add(r);
-                    update();
-                }
+                    if (e != null) {
+                        loadingAllTagsInfo = e;
+                    } else if (r == null && e == null) {
+                        loadingAllTagsInfo = null;
+                    }
+                    updateList();
+                });
             });
-        });
-        searchResultInfo.setText(Language.getString("admin.communities.searching"));
-    }
-    
-    private void showTop() {
-        api.getCommunityTop((r) -> {
-            SwingUtilities.invokeLater(() -> {
-                searchResult.clear();
-                searchResult.addAll(r);
-                update();
-                searchResultInfo.setText(Language.getString("admin.communities.top100"));
-            });
-        });
-        searchResultInfo.setText(Language.getString("admin.communities.loading"));
+            listInfo.setText(Language.getString("status.loading"));
+        }
     }
     
     /**
-     * Adds the currently selected games to the favorites.
+     * Adds the currently selected tags to the favorites.
      */
     private void addToFavorites() {
-        for (Community game : list.getSelectedValuesList()) {
-            if (!game.isValid()) {
-                favorites.add(game);
+        for (StreamTag tag : list.getSelectedValuesList()) {
+            if (tag.isValid()) {
+                favorites.add(tag);
             }
         }
         saveFavorites();
-        update();
+        updateList();
     }
 
     /**
-     * Removes the currently selected games from the favorites.
+     * Removes the currently selected tags from the favorites.
      */
     private void removeFromFavorites() {
-        for (Community c : list.getSelectedValuesList()) {
-            favorites.remove(c);
+        for (StreamTag tag : list.getSelectedValuesList()) {
+            favorites.remove(tag);
         }
         saveFavorites();
-        update();
+        updateList();
     }
     
     /**
@@ -570,31 +577,37 @@ public class SelectCommunityDialog extends JDialog {
      * favorites.
      */
     private void toggleFavorite() {
-        for (Community c : list.getSelectedValuesList()) {
-            if (favorites.contains(c) || c.isValid()) {
-                favorites.remove(c);
+        for (StreamTag tag : list.getSelectedValuesList()) {
+            if (favorites.contains(tag) || !tag.isValid()) {
+                favorites.remove(tag);
             } else {
-                favorites.add(c);
+                favorites.add(tag);
             }
         }
         saveFavorites();
-        update();
+        updateList();
     }
     
+    /**
+     * Stores the current list of favorites in the settings.
+     */
     private void saveFavorites() {
         Map<String, String> favs = new HashMap<>();
-        for (Community c : favorites) {
-            favs.put(c.getId(), c.getCapitalizedName());
+        for (StreamTag c : favorites) {
+            favs.put(c.getId(), c.getDisplayName());
         }
-        main.setCommunityFavorites(favs);
+        main.setStreamTagFavorites(favs);
     }
     
+    /**
+     * Loads the current list of favorites from the settings.
+     */
     private void loadFavorites() {
         favorites.clear();
         
-        Map<String, String> favs = main.getCommunityFavorites();
+        Map<String, String> favs = main.getStreamTagFavorites();
         for (String id : favs.keySet()) {
-            Community c = new Community(id, favs.get(id));
+            StreamTag c = new StreamTag(id, favs.get(id));
             favorites.add(c);
         }
     }
@@ -606,8 +619,8 @@ public class SelectCommunityDialog extends JDialog {
     private void updateFavoriteButtons() {
         boolean favoriteSelected = false;
         boolean nonFavoriteSelected = false;
-        for (Community c : list.getSelectedValuesList()) {
-            if (!c.isValid()) {
+        for (StreamTag c : list.getSelectedValuesList()) {
+            if (c.isValid()) {
                 if (favorites.contains(c)) {
                     favoriteSelected = true;
                 } else {
@@ -617,10 +630,6 @@ public class SelectCommunityDialog extends JDialog {
         }
         addToFavoritesButton.setEnabled(nonFavoriteSelected);
         removeFromFavoritesButton.setEnabled(favoriteSelected);
-    }
-    
-    private void updateSearchButton() {
-        searchButton.setEnabled(!input.getText().isEmpty());
     }
     
     private void updateOkButton() {
@@ -644,7 +653,7 @@ public class SelectCommunityDialog extends JDialog {
      * @param list 
      */
     private void updateGameFromSelection() {
-        Community selected = list.getSelectedValue();
+        StreamTag selected = list.getSelectedValue();
         if (selected != null) {
             setSelected(selected);
         }
@@ -664,9 +673,9 @@ public class SelectCommunityDialog extends JDialog {
         if (e.isPopupTrigger()) {
             selectClicked(e, false);
 
-            List<Community> listSelected = list.getSelectedValuesList();
+            List<StreamTag> listSelected = list.getSelectedValuesList();
             JPopupMenu menu = new JPopupMenu();
-            menu.add(new AbstractAction(Language.getString("admin.communities.cm.replaceAll")) {
+            menu.add(new AbstractAction(Language.getString("admin.tags.cm.replaceAll")) {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -679,12 +688,12 @@ public class SelectCommunityDialog extends JDialog {
                     && !current.isEmpty()
                     && !current.contains(list.getSelectedValue())) {
                 menu.addSeparator();
-                for (Community c : current) {
-                    menu.add(new AbstractAction(Language.getString("admin.communities.cm.replace", c)) {
+                for (StreamTag c : current) {
+                    menu.add(new AbstractAction(Language.getString("admin.tags.cm.replace", c)) {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            Community replaceWith = list.getSelectedValue();
+                            StreamTag replaceWith = list.getSelectedValue();
                             current.replaceAll(item -> {
                                 if (item.equals(c)) {
                                     return replaceWith;
@@ -720,14 +729,8 @@ public class SelectCommunityDialog extends JDialog {
     
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == input || e.getSource() == searchButton) {
-                doSearch();
-            }
-            if (e.getSource() == top100) {
-                showTop();
-            }
             if (e.getSource() == ok) {
-                useGameAndClose();
+                useCurrentTagsAndClose();
             }
             if (e.getSource() == cancel) {
                 save = false;
@@ -739,15 +742,12 @@ public class SelectCommunityDialog extends JDialog {
             if (e.getSource() == removeFromFavoritesButton) {
                 removeFromFavorites();
             }
-            if (e.getSource() == clearSearchButton) {
-                searchResult.clear();
-                update();
+            if (e.getSource() == clearFilterButton) {
+                input.setText(null);
             }
-            if (e.getSource() == openUrl) {
-                if (selected != null && !selected.getName().isEmpty()) {
-                    UrlOpener.openUrlPrompt(main,
-                            Helper.buildUrlString("https", "twitch.tv", "/communities/"+selected.getName()));
-                }
+            if (e.getSource() == showAllTags) {
+                showAllTags();
+                updateList();
             }
         }
     }
@@ -807,6 +807,9 @@ public class SelectCommunityDialog extends JDialog {
             }
             if (favorites.contains(value)) {
                 label.setIcon(icon);
+            }
+            if (current.contains(value)) {
+                label.setEnabled(false);
             }
             return label;
         }

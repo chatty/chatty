@@ -2,6 +2,12 @@
 package chatty.util;
 
 import chatty.Chatty;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -148,6 +154,14 @@ public class Debugging {
      */
     public static String filterToken(String input) {
         return input.replaceAll("(-set:token|-token|-password) \\w+", "$1 <token>");
+    }
+    
+    public static void writeToFile(String output) {
+        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get("E:\\abcdtest"), Charset.forName("UTF-8"))) {
+            writer.append(output);
+        } catch (IOException ex) {
+            System.out.println(ex);
+        }
     }
     
     // For testing

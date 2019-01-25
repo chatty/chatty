@@ -60,11 +60,14 @@ public class Request implements Runnable {
         this.token = token;
     }
     
-    public void setJSONData(String requestMethod, Map<String, String> data) {
+    public void setJSONData(String requestMethod, String data) {
         this.requestMethod = requestMethod;
-        JSONObject json = new JSONObject(data);
-        this.data = json.toJSONString();
+        this.data = data;
         this.contentType = "application/json";
+    }
+    
+    public void setJSONData(String requestMethod, Map<String, String> data) {
+        setJSONData(requestMethod, new JSONObject(data).toJSONString());
     }
     
     /**
@@ -85,6 +88,13 @@ public class Request implements Runnable {
         this.contentType = contentType;
     }
     
+    /**
+     * Set the listener for this request. Should probably not be set when this
+     * request is supposed to be performed by QueuedApi, since it will overwrite
+     * it (set to Entry instead).
+     * 
+     * @param origin 
+     */
     public void setResultListener(RequestResultListener origin) {
         this.listener = origin;
     }

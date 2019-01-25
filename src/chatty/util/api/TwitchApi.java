@@ -4,10 +4,10 @@ package chatty.util.api;
 import chatty.Helper;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes.EmotesetInfo;
-import chatty.util.api.CommunitiesManager.CommunitiesListener;
-import chatty.util.api.CommunitiesManager.Community;
-import chatty.util.api.CommunitiesManager.CommunityListener;
-import chatty.util.api.CommunitiesManager.CommunityPutListener;
+import chatty.util.api.StreamTagManager.StreamTagsListener;
+import chatty.util.api.StreamTagManager.StreamTag;
+import chatty.util.api.StreamTagManager.StreamTagListener;
+import chatty.util.api.StreamTagManager.StreamTagPutListener;
 import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
@@ -48,7 +48,7 @@ public class TwitchApi {
     protected final BadgeManager badgeManager;
     protected final UserIDs userIDs;
     protected final ChannelInfoManager channelInfoManager;
-    protected final CommunitiesManager communitiesManager;
+    protected final StreamTagManager communitiesManager;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -69,9 +69,8 @@ public class TwitchApi {
         requests = new Requests(this, resultListener);
         channelInfoManager = new ChannelInfoManager(this, resultListener);
         userIDs = new UserIDs(this);
-        communitiesManager = new CommunitiesManager(this);
+        communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
-        //getCommunityTop(r -> {});
     }
     
     
@@ -365,6 +364,9 @@ public class TwitchApi {
         public void result(Collection<String> result);
     }
     
+    //-------------
+    // Stream Tags
+    //-------------
     /**
      * Gets Community by id, which is guaranteed to contain description/rules.
      * Cached only, so it doesn't requests it if it's not in the cache.
@@ -372,105 +374,12 @@ public class TwitchApi {
      * @param id
      * @return 
      */
-    public Community getCachedCommunityInfo(String id) {
+    public StreamTag getCachedOnlyTagInfo(String id) {
         return communitiesManager.getCachedByIdWithInfo(id);
     }
     
-    /**
-     * Gets community by id, which may or may not contain description/rules.
-     * Requests it if not cached (but not again in case of error).
-     * 
-     * @param id The community id
-     * @param listener 
-     */
-    public void getCommunity(String id, CommunityListener listener) {
-        if (id == null || id.isEmpty()) {
-            listener.received(null, "No community id.");
-        } else {
-            communitiesManager.getById(id, listener);
-        }
-    }
-    
-    /**
-     * Gets the communities for the given ids, in the same order, however only
-     * returns communities that could be retrieved without error.
-     * 
-     * If the communities were all cached the listener is notified immediately,
-     * in the same thread, otherwise it will request asynchronously.
-     * 
-     * Duplicate ids will be reduced to one entry in the result.
-     * 
-     * @param ids
-     * @param listener 
-     */
-    public void getCommunities(List<String> ids, CommunitiesListener listener) {
-        if (ids == null || ids.isEmpty()) {
-            listener.received(null, "No community ids.");
-        } else {
-            CommunityListener clistener = new CommunityListener() {
-                
-                private final Community[] data = new Community[ids.size()];
-                private int counter = ids.size();
-
-                @Override
-                public void received(Community community, String error) {
-                    List<Community> result = null;
-                    synchronized(data) {
-                        counter--;
-                        if (community != null) {
-                            //System.out.println("received (" + counter + "/" + ids.size() + "): " + community + " " + community.getId());
-                            // Find occurence of id in request, to retain order
-                            // (this implicitly also removes duplicates, since it
-                            // only finds the first occurence)
-                            data[ids.indexOf(community.getId())] = community;
-                        } else {
-                            //System.out.println("error (" + counter + "/" + ids.size() + "): "+error);
-                        }
-                        if (counter == 0) {
-                            // All received, make and send result
-                            result = new ArrayList<>();
-                            for (Community c : data) {
-                                if (c != null) {
-                                    result.add(c);
-                                }
-                            }
-                            //System.out.println("result: " + result);
-                        }
-                    }
-                    if (result != null) {
-                        listener.received(result, null);
-                    }
-                }
-            };
-            
-            // Request using the created listener
-            for (String id : ids) {
-                communitiesManager.getById(id, clistener);
-            }
-        }
-    }
-    
-    /**
-     * Requests the current top 100 communities.
-     * 
-     * @param listener 
-     */
-    public void getCommunityTop(CommunitiesManager.CommunityTopListener listener) {
-        requests.getCommunitiesTop(listener);
-    }
-    
-    /**
-     * Requests the community by name (no caching).
-     * 
-     * @param name The name of the community
-     * @param listener 
-     */
-    public void getCommunityByName(String name, CommunityListener listener) {
-        if (name != null && !name.isEmpty()) {
-            requests.getCommunityByName(name, listener);
-        } else {
-            listener.received(null, "Invalid community name");
-        }
+    public void requestAllTags(StreamTagManager.StreamTagsListener listener) {
+        requests.getAllTags(listener);
     }
     
     /**
@@ -479,34 +388,65 @@ public class TwitchApi {
      * @param id
      * @param listener 
      */
-    public void getCommunityById(String id, CommunityListener listener) {
-        requests.getCommunityById(id, listener);
+    public void getStreamTagById(String id, StreamTagListener listener) {
+        requests.getTagsByIds(new HashSet<>(Arrays.asList(new String[]{id})), (t,e) -> {
+            if (t != null && t.size() == 1) {
+                listener.received(t.iterator().next(), e);
+            } else {
+                listener.received(null, e);
+            }
+        });
     }
     
-    public void setCommunities(String channelName, List<Community> communities,
-            CommunityPutListener listener) {
+    public void getInvalidStreamTags(Collection<StreamTag> checkTags, StreamTagsListener listener) {
+        Set<String> ids = new HashSet<>();
+        checkTags.forEach(t -> ids.add(t.getId()));
+        requests.getTagsByIds(ids, (resultTags, e) -> {
+            if (e != null) {
+                listener.received(resultTags, e);
+            } else {
+                Set<StreamTag> invalid = new HashSet<>();
+                // Any found tags that can not be manually set are invalid
+                resultTags.forEach(tag -> {
+                    if (!tag.canUserSet()) {
+                        invalid.add(tag);
+                    }
+                });
+                // Any not found tags are invalid
+                checkTags.forEach(tag -> {
+                    if (!resultTags.contains(tag)) {
+                        invalid.add(tag);
+                    }
+                });
+                listener.received(invalid, e);
+            }
+        });
+    }
+    
+    public void setStreamTags(String channelName, List<StreamTag> tags,
+            StreamTagPutListener listener) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
                 listener.result("Failed getting user id");
             } else {
-                List<String> communityIds = new ArrayList<>();
-                for (Community c : communities) {
-                    communityIds.add(c.getId());
-                }
-                requests.setCommunities(r.getId(channelName), communityIds, defaultToken, listener);
+                requests.setStreamTags(r.getId(channelName), tags, listener);
             }
         }, channelName);
     }
     
-    public void getCommunitiesForChannel(String channelName, CommunitiesListener listener) {
+    public void getTagsByStream(String stream, StreamTagsListener listener) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
                 listener.received(null, "Error resolving id.");
             } else {
-                requests.getCommunities(r.getId(channelName), listener);
+                requests.getTagsByStream(r.getId(stream), listener);
             }
-        }, channelName);
+        }, stream);
     }
+    
+    //-------------
+    // Commercials
+    //-------------
     
     public void runCommercial(String stream, int length) {
         userIDs.getUserIDsAsap(r -> {
@@ -518,6 +458,10 @@ public class TwitchApi {
         }, stream);
     }
     
+    //---------
+    // AutoMod
+    //---------
+    
     public void autoModApprove(String msgId) {
         requests.autoMod("approve", msgId, defaultToken);
     }
@@ -526,6 +470,10 @@ public class TwitchApi {
         requests.autoMod("deny", msgId, defaultToken);
     }
 
+    //---------------
+    // Stream Marker
+    //---------------
+    
     public void createStreamMarker(String stream, String description, StreamMarkerResult listener) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {

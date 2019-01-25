@@ -12,7 +12,7 @@ import static chatty.util.DateTime.H;
 import static chatty.util.DateTime.S;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
@@ -53,9 +53,9 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     private final JLabel gameLabel = new JLabel(GAME_LABEL_TEXT);
     private final JTextField game = new JTextField();
     
-    private final LinkLabel communityLabel;
+//    private final LinkLabel communityLabel;
     private final LinkLabel testLabel = new LinkLabel(null, null);
-    private List<Community> communities;
+    private List<StreamTag> communities;
     
     private final JLabel historyLabel = new JLabel(Language.getString("channelInfo.viewers")+":");
     private final ViewerHistory history = new ViewerHistory();
@@ -112,52 +112,52 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         gbc.anchor = GridBagConstraints.EAST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.9;
-        communityLabel = new LinkLabel(" ", new LinkLabelListener() {
-
-            @Override
-            public void linkClicked(String type, String ref) {
-                if (type.equals("overflow")) {
-                    int overflow = Integer.valueOf(ref);
-                    JPopupMenu menu = new JPopupMenu();
-                    for (int i=communities.size()-overflow;i<communities.size();i++) {
-                        Community c = communities.get(i);
-                        Action a = new AbstractAction(c.toString()) {
-                            
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                String url = "https://www.twitch.tv/communities/"+c.getName();
-                                UrlOpener.openUrlPrompt(ChannelInfoDialog.this, url);
-                            }
-                        };
-                        menu.add(new JMenuItem(a));
-                    }
-                    menu.addSeparator();
-                    menu.add(new JMenuItem(new AbstractAction(Language.getString("channelInfo.cm.copyAllCommunities")) {
-                        
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            MiscUtil.copyToClipboard(StringUtil.join(communities, ", "));
-                        }
-                    }));
-                    menu.show(communityLabel, communityLabel.getWidth(), communityLabel.getHeight());
-                } else {
-                    String url = "https://www.twitch.tv/communities/"+ref;
-                    UrlOpener.openUrlPrompt(ChannelInfoDialog.this, url);
-                }
-            }
-        });
-        communityLabel.setMargin(game.getMargin());
+//        communityLabel = new LinkLabel(" ", new LinkLabelListener() {
+//
+//            @Override
+//            public void linkClicked(String type, String ref) {
+//                if (type.equals("overflow")) {
+//                    int overflow = Integer.valueOf(ref);
+//                    JPopupMenu menu = new JPopupMenu();
+//                    for (int i=communities.size()-overflow;i<communities.size();i++) {
+//                        StreamTag c = communities.get(i);
+//                        Action a = new AbstractAction(c.toString()) {
+//                            
+//                            @Override
+//                            public void actionPerformed(ActionEvent e) {
+//                                String url = "https://www.twitch.tv/communities/"+c.getName();
+//                                UrlOpener.openUrlPrompt(ChannelInfoDialog.this, url);
+//                            }
+//                        };
+//                        menu.add(new JMenuItem(a));
+//                    }
+//                    menu.addSeparator();
+//                    menu.add(new JMenuItem(new AbstractAction(Language.getString("channelInfo.cm.copyAllCommunities")) {
+//                        
+//                        @Override
+//                        public void actionPerformed(ActionEvent e) {
+//                            MiscUtil.copyToClipboard(StringUtil.join(communities, ", "));
+//                        }
+//                    }));
+//                    menu.show(communityLabel, communityLabel.getWidth(), communityLabel.getHeight());
+//                } else {
+//                    String url = "https://www.twitch.tv/communities/"+ref;
+//                    UrlOpener.openUrlPrompt(ChannelInfoDialog.this, url);
+//                }
+//            }
+//        });
+//        communityLabel.setMargin(game.getMargin());
         
         // Size listener to the dialog, since that is most relevant (other
         // changes update anyway)
-        addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                updateCommunities();
-            }
-        });
-        add(communityLabel, gbc);
+//        addComponentListener(new ComponentAdapter() {
+//
+//            @Override
+//            public void componentResized(ComponentEvent e) {
+//                updateCommunities();
+//            }
+//        });
+//        add(communityLabel, gbc);
  
         // Graph
         gbc = makeGbc(0,4,1,1);
@@ -251,7 +251,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
     }
     
-    private void setCommunities(List<Community> c) {
+    private void setCommunities(List<StreamTag> c) {
         if (c != null && c.contains(null)) {
             // This usually shouldn't contain null elements, but just in case
             c = new ArrayList<>(c);
@@ -261,26 +261,26 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     }
     
     private void updateCommunities() {
-        // Wrapped in invokeLater so that the size of the gameLabel is updated
-        SwingUtilities.invokeLater(() -> {
-            if (communities == null || communities.isEmpty()) {
-                communityLabel.setText("");
-            } else {
-                // -80 to leave some distance between "Playing" and this
-                int availableWidth = getWidth() - gameLabel.getWidth() - 80;
-                for (int i = 0; i <= communities.size(); i++) {
-                    String result = makeCommunitiesText(communities, i);
-                    // Use a separate label, as to not update the acual one
-                    // until it fits
-                    testLabel.setText(result);
-                    if (availableWidth > testLabel.getPreferredSize().width) {
-                        // Found content that fits, so go set it and stop
-                        communityLabel.setText(result);
-                        break;
-                    }
-                }
-            }
-        });
+//        // Wrapped in invokeLater so that the size of the gameLabel is updated
+//        SwingUtilities.invokeLater(() -> {
+//            if (communities == null || communities.isEmpty()) {
+//                communityLabel.setText("");
+//            } else {
+//                // -80 to leave some distance between "Playing" and this
+//                int availableWidth = getWidth() - gameLabel.getWidth() - 80;
+//                for (int i = 0; i <= communities.size(); i++) {
+//                    String result = makeCommunitiesText(communities, i);
+//                    // Use a separate label, as to not update the acual one
+//                    // until it fits
+//                    testLabel.setText(result);
+//                    if (availableWidth > testLabel.getPreferredSize().width) {
+//                        // Found content that fits, so go set it and stop
+//                        communityLabel.setText(result);
+//                        break;
+//                    }
+//                }
+//            }
+//        });
     }
     
     /**
@@ -290,22 +290,22 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
      * @param overflow How many communities should be in the overflow menu
      * @return The resulting String
      */
-    private String makeCommunitiesText(List<Community> communities, int overflow) {
-        StringBuilder b = new StringBuilder("<div style='text-align:right'>");
-        for (int i = 0; i < communities.size() - overflow; i++) {
-            Community c = communities.get(i);
-            if (i > 0) {
-                b.append(", ");
-            }
-            b.append("[community:").append(c.getName()).append(" ");
-            b.append(c.getDisplayName()).append("]");
-        }
-        if (overflow > 0) {
-            b.append(" [overflow:").append(overflow).append(" (+").append(overflow).append(")]");
-        }
-        b.append("</div>");
-        return b.toString();
-    }
+//    private String makeCommunitiesText(List<StreamTag> communities, int overflow) {
+//        StringBuilder b = new StringBuilder("<div style='text-align:right'>");
+//        for (int i = 0; i < communities.size() - overflow; i++) {
+//            StreamTag c = communities.get(i);
+//            if (i > 0) {
+//                b.append(", ");
+//            }
+//            b.append("[community:").append(c.getName()).append(" ");
+//            b.append(c.getDisplayName()).append("]");
+//        }
+//        if (overflow > 0) {
+//            b.append(" [overflow:").append(overflow).append(" (+").append(overflow).append(")]");
+//        }
+//        b.append("</div>");
+//        return b.toString();
+//    }
     
     private void updateStreamType(StreamType streamType) {
         if (streamType != StreamType.LIVE) {

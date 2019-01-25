@@ -4083,8 +4083,8 @@ public class MainGui extends JFrame implements Runnable {
         client.settings.putList("gamesFavorites", new ArrayList(favorites));
     }
     
-    public void setCommunityFavorites(Map<String, String> favorites) {
-        client.settings.putMap("communityFavorites", favorites);
+    public void setStreamTagFavorites(Map<String, String> favorites) {
+        client.settings.putMap("tagsFavorites", favorites);
     }
     
     /**
@@ -4096,8 +4096,8 @@ public class MainGui extends JFrame implements Runnable {
         return new HashSet<>(client.settings.getList("gamesFavorites"));
     }
     
-    public Map<String, String> getCommunityFavorites() {
-        return client.settings.getMap("communityFavorites");
+    public Map<String, String> getStreamTagFavorites() {
+        return client.settings.getMap("tagsFavorites");
     }
     
     public void putChannelInfoResult(final RequestResultCode result) {

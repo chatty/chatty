@@ -1,7 +1,7 @@
 
 package chatty.gui.components.admin;
 
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.util.ArrayList;
@@ -87,16 +87,16 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title The title
      * @param game The game
-     * @param communities
+     * @param tags
      * @return 
      */
-    public synchronized StatusHistoryEntry get(String title, String game, List<Community> communities) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, communities);
+    public synchronized StatusHistoryEntry get(String title, String game, List<StreamTag> tags) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags);
         return entries.get(entry);
     }
     
-    public synchronized boolean isFavorite(String title, String game, List<Community> communities) {
-        StatusHistoryEntry entry = get(title, game, communities);
+    public synchronized boolean isFavorite(String title, String game, List<StreamTag> tags) {
+        StatusHistoryEntry entry = get(title, game, tags);
         return entry != null ? entry.favorite : false;
     }
     
@@ -109,13 +109,13 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
-     * @param communities
+     * @param tags
      * @param lastSet
      * @param timesUsed
      * @return 
      */
-    public synchronized StatusHistoryEntry add(String title, String game, List<Community> communities, long lastSet, int timesUsed) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, communities, lastSet, timesUsed, false);
+    public synchronized StatusHistoryEntry add(String title, String game, List<StreamTag> tags, long lastSet, int timesUsed) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, lastSet, timesUsed, false);
         put(entry);
         return entry;
     }
@@ -125,10 +125,10 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game 
-     * @param community 
+     * @param tags 
      */
-    public synchronized void remove(String title, String game, List<Community> communities) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, communities);
+    public synchronized void remove(String title, String game, List<StreamTag> tags) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags);
         entries.remove(entry);
     }
     
@@ -147,11 +147,11 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
-     * @param communities
+     * @param tags
      * @return 
      */
-    public synchronized StatusHistoryEntry addUsed(String title, String game, List<Community> communities) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, communities, System.currentTimeMillis(), 1, false);
+    public synchronized StatusHistoryEntry addUsed(String title, String game, List<StreamTag> tags) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, System.currentTimeMillis(), 1, false);
         StatusHistoryEntry present = entries.get(entry);
         if (present != null) {
             entry = present.increaseUsed();
@@ -166,11 +166,11 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
-     * @param communities
+     * @param tags
      * @return 
      */
-    public synchronized StatusHistoryEntry addFavorite(String title, String game, List<Community> communities) {
-        return setFavorite(title, game, communities, true);
+    public synchronized StatusHistoryEntry addFavorite(String title, String game, List<StreamTag> tags) {
+        return setFavorite(title, game, tags, true);
     }
     
     /**
@@ -180,10 +180,10 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game 
-     * @param communities 
+     * @param tags 
      */
-    public synchronized void removeFavorite(String title, String game, List<Community> communities) {
-        setFavorite(title, game, communities, false);
+    public synchronized void removeFavorite(String title, String game, List<StreamTag> tags) {
+        setFavorite(title, game, tags, false);
     }
     
     /**
@@ -191,12 +191,12 @@ public class StatusHistory implements SettingsListener {
      * 
      * @param title
      * @param game
-     * @param communities
+     * @param tags
      * @param favorite
      * @return 
      */
-    public synchronized StatusHistoryEntry setFavorite(String title, String game, List<Community> communities, boolean favorite) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, communities, System.currentTimeMillis(), 0, favorite);
+    public synchronized StatusHistoryEntry setFavorite(String title, String game, List<StreamTag> tags, boolean favorite) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, System.currentTimeMillis(), 0, favorite);
         return setFavorite(entry, favorite);
     }
     
@@ -221,10 +221,10 @@ public class StatusHistory implements SettingsListener {
         return entry;
     }
     
-    public synchronized void updateCommunityName(Community c) {
+    public synchronized void updateStreamTagName(StreamTag c) {
         Set<StatusHistoryEntry> modifiedValues = new HashSet<>();
         for (StatusHistoryEntry entry : entries.values()) {
-            StatusHistoryEntry modified = entry.updateCommunityName(c);
+            StatusHistoryEntry modified = entry.updateTagName(c);
             if (modified != entry) {
                 modifiedValues.add(modified);
             }
@@ -298,13 +298,15 @@ public class StatusHistory implements SettingsListener {
         list.add(entry.lastActivity);
         list.add(entry.timesUsed);
         list.add(entry.favorite);
-        if (entry.communities != null && !entry.communities.isEmpty()) {
+        // Add empty list in between where Communities would have been
+        list.add(new ArrayList<>());
+        if (entry.tags != null && !entry.tags.isEmpty()) {
             // New format, for several Communities
             List<List<String>> clist = new ArrayList<>();
-            for (Community c : entry.communities) {
+            for (StreamTag c : entry.tags) {
                 List<String> cdata = new ArrayList<>();
                 cdata.add(c.getId());
-                cdata.add(c.getCapitalizedName());
+                cdata.add(c.getDisplayName());
                 clist.add(cdata);
             }
             list.add(clist);
@@ -337,29 +339,26 @@ public class StatusHistory implements SettingsListener {
             Number lastSet = (Number) list.get(2);
             Number timesUsed = (Number) list.get(3);
             Boolean favorite = (Boolean) list.get(4);
-            List<Community> communities = new ArrayList<>();
-            if (list.size() > 5) {
-                if (list.get(5) instanceof List) {
+            List<StreamTag> tags = new ArrayList<>();
+            // Communities were at 5, Tags are now at 6 (to be able to
+            // differentiate them)
+            if (list.size() > 6) {
+                if (list.get(6) instanceof List) {
                     // New format, for several Communities
-                    List clist = (List) list.get(5);
+                    List clist = (List) list.get(6);
                     for (Object obj : clist) {
                         List cdata = (List) obj;
-                        String communityId = (String) cdata.get(0);
-                        String communityName = (String) cdata.get(1);
-                        communities.add(new Community(communityId, communityName));
+                        String tagId = (String) cdata.get(0);
+                        String tagName = (String) cdata.get(1);
+                        tags.add(new StreamTag(tagId, tagName));
                     }
-                } else {
-                    // Old format
-                    String communityId = (String) list.get(5);
-                    String communityName = (String) list.get(6);
-                    communities.add(new Community(communityId, communityName));
                 }
             }
             if (title == null || game == null) {
                 //LOGGER.warning("Didn't load "+list+" (Unexpected null)");
                 return null;
             }
-            return new StatusHistoryEntry(title, game, communities, lastSet.longValue(), timesUsed.intValue(), favorite);
+            return new StatusHistoryEntry(title, game, tags, lastSet.longValue(), timesUsed.intValue(), favorite);
         } catch (ClassCastException | IndexOutOfBoundsException ex) {
             //LOGGER.warning("Didn't load "+list+" ("+ex.getLocalizedMessage()+")");
             return null;

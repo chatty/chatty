@@ -1,12 +1,13 @@
 
 package chatty.util.api.queue;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *
+ * An Entry in the QueuedApi queue, that carries the Request to be performed, a
+ * priority and some other metadata.
+ * 
  * @author tduva
  */
 public class Entry implements Comparable<Entry> {

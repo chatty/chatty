@@ -1,7 +1,7 @@
 
 package chatty.util.api;
 
-import chatty.util.api.CommunitiesManager.Community;
+import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class StreamInfoHistoryItem {
     private final long time;
     private final String title;
     private final StreamType streamType;
-    private final List<Community> community;
+    private final List<StreamTag> community;
     private final long streamDuration;
     private final long streamDurationWithPicnic;
     
@@ -40,7 +40,7 @@ public class StreamInfoHistoryItem {
     }
     
     public StreamInfoHistoryItem(long time, int viewers, String status, String game,
-            StreamType streamType, List<Community> community, long startedTime,
+            StreamType streamType, List<StreamTag> community, long startedTime,
             long startedTimeWithPicnic) {
         this.viewers = viewers;
         this.status = status;
@@ -98,7 +98,7 @@ public class StreamInfoHistoryItem {
         return time;
     }
     
-    public List<Community> getCommunities() {
+    public List<StreamTag> getCommunities() {
         return community;
     }
     
