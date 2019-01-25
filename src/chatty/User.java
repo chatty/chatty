@@ -350,16 +350,23 @@ public class User implements Comparable {
             if (System.currentTimeMillis() - m.getTime() > BAN_INFO_WAIT) {
                 return false;
             }
+            /**
+             * Note: Only set info if not already set, as to not overwrite
+             * existing one while waiting for next message to show up (which
+             * could happen with close together bans). In this each ban message
+             * has it's own line, so appending several by strings shouldn't be
+             * necessary.
+             */
             if (m instanceof BanMessage) {
                 BanMessage bm = (BanMessage)m;
-                if (command.equals(Helper.makeBanCommand(this, bm.duration, bm.id))) {
+                if (bm.by == null && command.equals(Helper.makeBanCommand(this, bm.duration, bm.id))) {
                     messages.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data)));
                     return true;
                 }
             } else if (m instanceof MsgDeleted) {
-                MsgDeleted dm = (MsgDeleted)m;
-                if (command.equals(Helper.makeBanCommand(this, -2, dm.targetMsgId))) {
-                    messages.set(i, dm.addModLogInfo(data.created_by));
+                MsgDeleted md = (MsgDeleted)m;
+                if (md.by == null && command.equals(Helper.makeBanCommand(this, -2, md.targetMsgId))) {
+                    messages.set(i, md.addModLogInfo(data.created_by));
                     return true;
                 }
             }
