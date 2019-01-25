@@ -1085,7 +1085,10 @@ public class TwitchConnection {
             String login = tags.get("login");
             String text = StringUtil.removeLinebreakCharacters(tags.get("system-msg"));
             String emotes = tags.get("emotes");
-            int months = tags.getInteger("msg-param-months", -1);
+            int months = tags.getInteger("msg-param-cumulative-months", -1);
+            if (months == -1) {
+                months = tags.getInteger("msg-param-months", -1);
+            }
             if (StringUtil.isNullOrEmpty(login, text)) {
                 return;
             }

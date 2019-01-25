@@ -2833,9 +2833,7 @@ public class TwitchClient {
 
         @Override
         public void onSubscriberNotification(User user, String text, String message, int months, String emotes) {
-            //System.out.println(channel+" "+user+" "+months);
-            
-            g.printSubscriberMessage(user, text, message, months, emotes);
+            g.printSubscriberMessage(user, text, message, emotes);
             
             // May be using dummy User if from twitchnotify that doesn't contain a propery name tag
             if (user.getName().isEmpty()) {

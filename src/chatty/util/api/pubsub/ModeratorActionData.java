@@ -105,7 +105,11 @@ public class ModeratorActionData extends MessageData {
         JSONArray argsData = (JSONArray)data.get("args");
         if (argsData != null) {
             for (Object argsItem : argsData) {
-                args.add(String.valueOf(argsItem));
+                String item = String.valueOf(argsItem);
+                // AutoMod messages seem to sometimes require this
+                item = StringUtil.removeLinebreakCharacters(item);
+                item = StringUtil.shortenTo(item, 500);
+                args.add(item);
             }
         }
         

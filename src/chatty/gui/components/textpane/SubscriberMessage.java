@@ -12,11 +12,8 @@ import java.util.List;
  */
 public class SubscriberMessage extends UserNotice {
     
-    public final int months;
-    
-    public SubscriberMessage(User user, String text, String message, int months,
+    public SubscriberMessage(User user, String text, String message,
             Emoticons.TagEmotes emotes) {
         super("Notification", user, text, message, emotes);
-        this.months = months;
     }
 }

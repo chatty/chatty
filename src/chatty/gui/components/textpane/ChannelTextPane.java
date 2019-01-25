@@ -442,7 +442,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private void printAutoModMessage(AutoModMessage message, AttributeSet style) {
         closeCompactMode();
-        print(getTimePrefix(), styles.info());
+        print(getTimePrefix(), style);
         
         MutableAttributeSet specialStyle = styles.nick(message.user, style);
         specialStyle.addAttribute(Attribute.ID_AUTOMOD, message.msgId);

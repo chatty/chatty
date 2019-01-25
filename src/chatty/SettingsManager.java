@@ -574,6 +574,7 @@ public class SettingsManager {
         settings.addString("livestreamerCommand", "livestreamer");
         settings.addBoolean("livestreamerUseAuth", false);
         settings.addBoolean("livestreamerShowDialog", true);
+        settings.addBoolean("livestreamerAutoCloseDialog", true);
 
         // Stream Highlights
         settings.addString("streamHighlightCommand", "!highlight");

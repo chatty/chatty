@@ -2851,12 +2851,11 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void printSubscriberMessage(final User user,
-            final String text, final String message, final int months,
-            final String emotes) {
+    public void printSubscriberMessage(final User user, final String text,
+            final String message, final String emotes) {
         SwingUtilities.invokeLater(() -> {
             Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-            SubscriberMessage m = new SubscriberMessage(user, text, message, months, tagEmotes);
+            SubscriberMessage m = new SubscriberMessage(user, text, message, tagEmotes);
 
             boolean printed = printUsernotice(m);
             if (printed) {
