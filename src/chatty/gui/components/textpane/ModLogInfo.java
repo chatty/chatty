@@ -65,6 +65,33 @@ public class ModLogInfo extends InfoMessage {
         return isBanCommand(data) || InfoMessage.msgIdHasCommand(data.moderation_action);
     }
     
+    public static boolean isAssociated(ModeratorActionData data) {
+        return isBanOrInfoAssociated(data) || isAutoModAction(data);
+    }
+    
+    /**
+     * An action that is attributed to the user, but not actually performed
+     * directly by the user. For example accepting/rejecting an AutoMod message,
+     * which can trigger terms being permitted/blocked without the moderator
+     * explicitly doing it.
+     * 
+     * @param data
+     * @return 
+     */
+    public static boolean isIndirectAction(ModeratorActionData data) {
+        return data.moderation_action.equals("add_permitted_term")
+                || data.moderation_action.equals("add_blocked_term");
+    }
+    
+    public boolean isAutoModAction() {
+        return isAutoModAction(data);
+    }
+    
+    public static boolean isAutoModAction(ModeratorActionData data) {
+        return data.type == ModeratorActionData.Type.AUTOMOD_APPROVED
+                || data.type == ModeratorActionData.Type.AUTOMOD_DENIED;
+    }
+    
     public static String makeDeleteCommand(ModeratorActionData data) {
         if (data.args.size() > 2) {
             return data.moderation_action+" "+data.args.get(2);

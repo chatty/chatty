@@ -3255,8 +3255,10 @@ public class MainGui extends JFrame implements Runnable {
                         && data.type != ModeratorActionData.Type.UNMODDED) {
                     boolean showActions = client.settings.getBoolean("showModActions");
                     boolean showActionsRestrict = client.settings.getBoolean("showModActionsRestrict");
-                    boolean showMessage = showActions && !ownAction
-                            && !(showActionsRestrict && ModLogInfo.isBanOrInfoAssociated(data));
+                    boolean showMessage =
+                               showActions
+                            && (!ownAction || ModLogInfo.isIndirectAction(data))
+                            && !(showActionsRestrict && ModLogInfo.isAssociated(data));
                     boolean showActionby = client.settings.getBoolean("showActionBy");
                     for (Channel chan : chans) {
                         // Create for each channel, just in case (since they get

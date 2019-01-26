@@ -1245,7 +1245,7 @@ public class TwitchClient {
                 }
             }
             g.userBanned(testUser, duration, reason, null);
-        } else if (command.equals("bantest2")) {
+        } else if (command.equals("ban")) {
             String[] split = parameter.split(" ", 3);
             int duration = -1;
             if (split.length > 1) {
@@ -1406,8 +1406,17 @@ public class TwitchClient {
         } else if (command.equals("automod")) {
             List<String> args = new ArrayList<>();
             args.add("tduva");
-            args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+Debugging.count(channel));
-            g.printModerationAction(new ModeratorActionData("", "", "", room.getStream(), "twitchbot_rejected", args, "twitchbot", "TEST"+Math.random()), false);
+            if (parameter != null) {
+                args.add(parameter);
+            } else {
+                args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+Debugging.count(channel));
+            }
+            g.printModerationAction(new ModeratorActionData("", "", "", room.getStream(), "twitchbot_rejected", args, "twitchbot", "TEST"), false);
+        } else if (command.equals("automod2")) {
+            List<String> args = new ArrayList<>();
+            args.add("tduva");
+            ModeratorActionData data = new ModeratorActionData("", "", "", room.getStream(), "denied_automod_message", args, "asdas", "TEST");
+            g.printModerationAction(data, false);
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
