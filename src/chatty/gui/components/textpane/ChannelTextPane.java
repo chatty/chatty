@@ -936,9 +936,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user 
      * @param duration 
      * @param reason 
-     * @param id The id of the deleted message, null if no specific message
+     * @param targetMsgId The id of the deleted message, null if no specific message
      */
-    public void userBanned(User user, long duration, String reason, String id) {
+    public void userBanned(User user, long duration, String reason, String targetMsgId) {
         if (styles.showBanMessages()) {
             //-----------------------
             // For extra ban message
@@ -955,7 +955,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (duration == -2) {
                 message = "had a message deleted";
             }
-            if (!StringUtil.isNullOrEmpty(id)) {
+            if (!StringUtil.isNullOrEmpty(targetMsgId)) {
                 message += " (single message)";
             }
             if (!banInfo.isEmpty()) {
@@ -994,11 +994,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         boolean first = true;
         for (Userline l : getUserLines(user)) {
-            boolean idMatches = id == null || id.equals(getIdFromElement(l.userElement));
+            boolean msgIdMatches = targetMsgId == null || targetMsgId.equals(getIdFromElement(l.userElement));
             boolean isAutoModMessage = Util.hasAttributeKey(l.userElement, Attribute.ID_AUTOMOD);
             boolean isUserMessage = Util.hasAttributeKeyValue(l.userElement, Attribute.IS_USER_MESSAGE, true);
 
-            if (idMatches && (isAutoModMessage || isUserMessage)) {
+            if (msgIdMatches && (isAutoModMessage || isUserMessage)) {
                 if (delete) {
                     deleteMessage(l.line);
                 } else {
@@ -1006,7 +1006,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 }
                 if (first) {
                     setBanInfo(l.line, banInfo);
-                    setLineCommand(l.line.getStartOffset(), Helper.makeBanCommand(user, duration, id));
+                    setLineCommand(l.line.getStartOffset(), Helper.makeBanCommand(user, duration, targetMsgId));
                     replayModLogInfo();
                     first = false;
                 }
