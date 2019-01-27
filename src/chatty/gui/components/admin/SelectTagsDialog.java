@@ -8,6 +8,7 @@ import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -61,7 +62,7 @@ public class SelectTagsDialog extends JDialog {
     // Current info elements
     private final JLabel listInfo = new JLabel();
     private final JTextField input = new JTextField();
-    private final JList<StreamTag> list = new JList<>();
+    private final MyList list = new MyList();
     private final DefaultListModel<StreamTag> listData = new DefaultListModel<>();
     private final JTextArea description = new JTextArea();
     
@@ -89,15 +90,20 @@ public class SelectTagsDialog extends JDialog {
     
     public SelectTagsDialog(MainGui main, TwitchApi api) {
         super(main, Language.getString("admin.tags.title", MAX_TAGS), true);
-        setResizable(true);
+        setResizable(false);
         
         this.main = main;
         this.api = api;
         
         setLayout(new GridBagLayout());
         list.setModel(listData);
-        list.setVisibleRowCount(14);
         list.setCellRenderer(new ListRenderer());
+        list.setFixedCellWidth(200);
+        list.setVisibleRowCount(14);
+        // Add dummy element to calculate normal cell height
+        listData.addElement(new StreamTag("dummy", "dummy"));
+        list.initCellHeight();
+        
         GridBagConstraints gbc;
         
         Action doneAction = new DoneAction();
@@ -258,9 +264,6 @@ public class SelectTagsDialog extends JDialog {
         updateFavoriteButtons();
         
         pack();
-        
-        setResizable(false);
-        
     }
     
     /**
@@ -346,9 +349,6 @@ public class SelectTagsDialog extends JDialog {
         currentPanel.invalidate();
         pack();
         repaint();
-        SwingUtilities.invokeLater(() -> {
-            pack();
-        });
         updateAddButton();
         updateOkButton();
     }
@@ -516,6 +516,7 @@ public class SelectTagsDialog extends JDialog {
                 addedCountFavs, favorites.size())
             + (loadingAllTagsInfo != null ? " ("+loadingAllTagsInfo+")": ""));
         list.setSelectedValue(selected, false);
+        pack();
     }
     
     private void showAllTags() {
@@ -780,6 +781,56 @@ public class SelectTagsDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             addSelected();
+        }
+        
+    }
+    
+    /**
+     * Due to how the default getPreferredScrollableViewportSize() is
+     * implemented, it only calculates the height correctly (when based on
+     * visible rows) if there is at least one element in the list (since it
+     * takes the height of the first element).
+     * 
+     * This sets the default cellHeight once and then uses that for height
+     * calculation. It also only bases the size on fixed width and visible rows,
+     * so setVisibleRowCount() and setFixedCellWidth() should be used.
+     */
+    private static class MyList extends JList<StreamTag> {
+        
+        private int cellHeight = 16;
+        
+        /**
+         * Sets the default cell height using the height of the first cell, so
+         * at least one element of regular size (e.g. with text) has to be in
+         * the list. The correct renderer should also already be set.
+         */
+        public void initCellHeight() {
+            Rectangle r = getCellBounds(0, 0);
+            if (r != null) {
+                cellHeight = r.height;
+            }
+        }
+        
+        /**
+         * Calculate the preferred size only based on the fixed cell width and
+         * visible row count, using the cellHeight set with initCellHeight (or a
+         * default).
+         * 
+         * @return 
+         */
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            Insets insets = getInsets();
+            int dx = insets.left + insets.right;
+            int dy = insets.top + insets.bottom;
+
+            int visibleRowCount = getVisibleRowCount();
+            int fixedCellWidth = getFixedCellWidth();
+
+            int width = fixedCellWidth + dx;
+            int height = cellHeight * visibleRowCount + dy;
+            
+            return new Dimension(width, height);
         }
         
     }
