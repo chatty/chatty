@@ -60,6 +60,7 @@ public class Usericon implements Comparable {
         PRIME(10, "Prime", "TPR", "+", "premium", null),
         BITS(11, "Bits", "BIT", "$", "bits", null),
         OTHER(12, "Other", "OTH", "'", null, null),
+        VIP(13, "VIP", "VIP", "!", "vip", null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;

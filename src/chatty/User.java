@@ -631,8 +631,8 @@ public class User implements Comparable {
         
         int broadcaster = 16;
         int admin = 8;
-        int globalmod = 4;
-        int moderator = 2;
+        int moderator = 4;
+        int vip = 2;
         int subscriber = 1;
         
         int result = 0;
@@ -641,12 +641,6 @@ public class User implements Comparable {
         }
         if (u.isAdmin() || u.isStaff()) {
             result = result + admin;
-        }
-        if (this.isGlobalMod()) {
-            result = result - globalmod;
-        }
-        if (u.isGlobalMod()) {
-            result = result + globalmod;
         }
         if (this.isBroadcaster()) {
             result = result - broadcaster;
@@ -665,6 +659,12 @@ public class User implements Comparable {
         }
         if (u.isModerator()) {
             result = result + moderator;
+        }
+        if (this.isVip()) {
+            result = result - vip;
+        }
+        if (u.isVip()) {
+            result = result + vip;
         }
         if (result == 0) {
             return this.nick.compareTo(u.nick);
@@ -836,11 +836,11 @@ public class User implements Comparable {
     
     public synchronized String getModeSymbol() {
         String result = "";
-        if (isSubscriber()) {
-            result += "%";
-        }
         if (isVip()) {
             result += "!";
+        }
+        if (isSubscriber()) {
+            result += "%";
         }
         if (hasTwitchBadge("bits")) {
             result += "$";
