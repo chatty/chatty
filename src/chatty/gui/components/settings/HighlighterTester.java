@@ -301,6 +301,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
             testResult.setText("No pattern.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Invalid pattern: "+highlightItem.getError());
+        } else if (highlightItem.patternThrowsError()) {
+            testResult.setText("Item may cause errors (see help, 'Text Matching Prefixes')");
         } else if (highlightItem.matchesAny(testInput.getText(), blacklist)) {
             testResult.setText("Matched.");
         } else {

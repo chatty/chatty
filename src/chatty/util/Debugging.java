@@ -5,6 +5,8 @@ import chatty.Chatty;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,13 +16,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
- *
+ * Stuff to help with debugging.
+ * 
  * @author tduva
  */
 public class Debugging {
+    
+    private static final Logger LOGGER = Logger.getLogger(Debugging.class.getName());
     
     private static final long TIMED_OUTPUT_DELAY = 5000;
     
@@ -122,6 +128,15 @@ public class Debugging {
         }
     }
     
+    /**
+     * Get the amount of milliseconds that have passed since the last time this
+     * was called with the given id. The time is updated every time this is
+     * called.
+     * 
+     * @param id The identifier, can be any string
+     * @return The amount of milliseconds that have passed since the last call
+     * (for the given id)
+     */
     public synchronized static long millisecondsElapsed(String id) {
         Long previous = stopwatchData.get(id);
         stopwatchData.put(id, System.currentTimeMillis());
@@ -129,6 +144,23 @@ public class Debugging {
             return -1;
         }
         return System.currentTimeMillis() - previous;
+    }
+    
+    /**
+     * Test if at least the given amount of milliseconds has passed since the
+     * last time this was called for the given id. The time is updated every
+     * time this is called, so there has to be a long enough break between
+     * whatever events this is used for to return true. If this has not yet been
+     * called with the given id it will return true.
+     * 
+     * @param id The identifier, can be any string
+     * @param milliseconds The amount of milliseconds
+     * @return true if enough time has passed since the last call or it hasn't
+     * been called yet (for the given id)
+     */
+    public synchronized static boolean millisecondsElapsed(String id, int milliseconds) {
+        long elapsed = millisecondsElapsed(id);
+        return elapsed == -1 || elapsed >= milliseconds;
     }
     
     public synchronized static long count(String key) {
@@ -162,6 +194,17 @@ public class Debugging {
         } catch (IOException ex) {
             System.out.println(ex);
         }
+    }
+    
+    public static String getStacktrace(Exception ex) {
+        try {
+            StringWriter sw = new StringWriter();
+            ex.printStackTrace(new PrintWriter(sw));
+            return sw.toString();
+        } catch (Exception ex2) {
+            LOGGER.warning("Error occured trying to get stacktrace: "+ex2);
+        }
+        return null;
     }
     
     // For testing

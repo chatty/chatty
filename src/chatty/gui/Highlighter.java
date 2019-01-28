@@ -4,7 +4,9 @@ package chatty.gui;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.Helper;
+import chatty.Logging;
 import chatty.User;
+import chatty.util.Debugging;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -154,7 +156,7 @@ public class Highlighter {
      * @see #check(HighlightItem.Type, String, String, Addressbook, User)
      */
     public boolean check(User user, String text) {
-        return Highlighter.this.check(HighlightItem.Type.REGULAR, text, null, null, user);
+        return check(HighlightItem.Type.REGULAR, text, null, null, user);
     }
     
     /**
@@ -522,10 +524,56 @@ public class Highlighter {
             if (pattern == null) {
                 return true;
             }
-            Matcher m = pattern.matcher(text);
-            while (m.find()) {
-                if (blacklist == null || !blacklist.isBlacklisted(m.start(), m.end())) {
-                    return true;
+            try {
+                Matcher m = pattern.matcher(text);
+                while (m.find()) {
+                    if (blacklist == null || !blacklist.isBlacklisted(m.start(), m.end())) {
+                        return true;
+                    }
+                }
+            } catch (Exception ex) {
+                /**
+                 * Catch error since there seems to be a rare case where some
+                 * regex matching on some text may trigger an exception:
+                 * 
+                 * Excerpt:
+                 * java.lang.StringIndexOutOfBoundsException: String index out of range: 21
+                 *   at java.lang.String.charAt(String.java:658)
+                 *   at java.lang.Character.codePointAt(Character.java:4866)
+                 *   at java.util.regex.Pattern$CIBackRef.match(Pattern.java:4948)
+                 *   at java.util.regex.Pattern$BmpCharProperty.match(Pattern.java:3800)
+                 *   at java.util.regex.Pattern$GroupTail.match(Pattern.java:4719)
+                 *   at java.util.regex.Pattern$CharProperty.match(Pattern.java:3779)
+                 *   at java.util.regex.Pattern$Curly.match0(Pattern.java:4274)
+                 *   at java.util.regex.Pattern$Curly.match0(Pattern.java:4265)
+                 *   at java.util.regex.Pattern$Curly.match(Pattern.java:4236)
+                 *   at java.util.regex.Pattern$CharProperty.match(Pattern.java:3779)
+                 *   at java.util.regex.Pattern$GroupHead.match(Pattern.java:4660)
+                 *   at java.util.regex.Pattern$GroupTail.match(Pattern.java:4719)
+                 *   at java.util.regex.Pattern$BranchConn.match(Pattern.java:4570)
+                 *   at java.util.regex.Pattern$Begin.match(Pattern.java:3527)
+                 *   at java.util.regex.Pattern$Branch.match(Pattern.java:4606)
+                 *   at java.util.regex.Pattern$GroupHead.match(Pattern.java:4660)
+                 *   at java.util.regex.Pattern$Start.match(Pattern.java:3463)
+                 *   at java.util.regex.Matcher.search(Matcher.java:1248)
+                 *   at java.util.regex.Matcher.find(Matcher.java:637)
+                 *   at chatty.gui.Highlighter$HighlightItem.matchesPattern(Highlighter.java:526)
+                 * 
+                 * Possibly related: https://stackoverflow.com/q/16008974
+                 */
+                if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
+                    /**
+                     * Some delay to not spam too much as well as preventing
+                     * possible infinite loop (since this outputs an info
+                     * message which would in turn trigger an error again,
+                     * however unlikely).
+                     */
+                    LOGGER.log(Logging.USERINFO,
+                            String.format("Error: Regex '%s' failed with %s",
+                                    pattern, ex));
+                    LOGGER.warning(
+                        String.format("Error: Regex '%s' failed on '%s' with %s",
+                        pattern, text, Debugging.getStacktrace(ex)));
                 }
             }
             return false;
@@ -543,11 +591,39 @@ public class Highlighter {
                 return null;
             }
             List<Match> result = new ArrayList<>();
-            Matcher m = pattern.matcher(text);
-            while (m.find()) {
-                result.add(new Match(m.start(), m.end()));
+            try {
+                Matcher m = pattern.matcher(text);
+                while (m.find()) {
+                    result.add(new Match(m.start(), m.end()));
+                }
+            } catch (Exception ex) {
+                // See matchesPattern() for explanation
+                if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
+                    LOGGER.log(Logging.USERINFO,
+                            String.format("Error: Regex '%s' failed with %s",
+                                    pattern, ex));
+                    LOGGER.warning(
+                        String.format("Error: Regex '%s' failed on '%s' with %s",
+                        pattern, text, Debugging.getStacktrace(ex)));
+                }
             }
             return result;
+        }
+        
+        /**
+         * Test for possible bug. See matchesPattern() for explanation.
+         * 
+         * @return true if an error is thrown on the test text, false otherwise
+         */
+        public boolean patternThrowsError() {
+            if (pattern != null) {
+                try {
+                    pattern.matcher("💕💕💕").find();
+                } catch (Exception ex) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         /**

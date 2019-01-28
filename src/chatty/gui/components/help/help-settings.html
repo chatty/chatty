@@ -784,6 +784,11 @@
                     like "<code>Test </code>" (which <code>reg:Test</code> would
                     match).</li>
             </ul>
+            <em>Note:</em> There appears to be an error in the Java Regex implementation
+                which can cause some patterns to cause errors sometimes (possibly
+                related to backreferences, also see <a href="https://stackoverflow.com/q/16008974">this</a>).
+                When editing a Highlight/Ignore entry you will be warned when a
+                pattern could be problematic.
         </li>
     </ul>
     
