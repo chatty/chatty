@@ -66,6 +66,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames = new LinkedHashMap<>();
         typeNames.put(Usericon.Type.ADDON, "Addon");
         typeNames.put(Usericon.Type.MOD, "Moderator");
+        typeNames.put(Usericon.Type.VIP, "VIP");
         typeNames.put(Usericon.Type.SUB, "Subscriber");
         typeNames.put(Usericon.Type.TURBO, "Turbo");
         typeNames.put(Usericon.Type.PRIME, "Prime");

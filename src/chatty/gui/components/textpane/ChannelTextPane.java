@@ -1088,10 +1088,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private Element getUserElementFromLine(Element line, boolean onlyUserMessage) {
-        for (int i = 0; i < 30; i++) {
-            if (i > line.getElementCount()) {
-                break;
-            }
+        for (int i = 0; i < line.getElementCount(); i++) {
             Element element = line.getElement(i);
             User elementUser = getUserFromElement(element, onlyUserMessage);
             // If there is a User object, we're done

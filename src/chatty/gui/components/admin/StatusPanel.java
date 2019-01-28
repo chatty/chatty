@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -304,15 +305,17 @@ public class StatusPanel extends JPanel {
     private void putTags() {
         final String channel = currentChannel;
         api.setStreamTags(currentChannel, currentStreamTags, error -> {
-            if (currentChannel.equals(channel)) {
-                if (error != null) {
-                    tagsPutResult = "Failed setting tags. ("+error+")";
-                } else {
-                    tagsPutResult = "Tags updated.";
+            SwingUtilities.invokeLater(() -> {
+                if (currentChannel.equals(channel)) {
+                    if (error != null) {
+                        tagsPutResult = "Failed setting tags. (" + error + ")";
+                    } else {
+                        tagsPutResult = "Tags updated.";
+                    }
+                    loadingTags = false;
+                    checkLoadingDone();
                 }
-                loadingTags = false;
-                checkLoadingDone();
-            }
+            });
         });
     }
 
@@ -393,21 +396,23 @@ public class StatusPanel extends JPanel {
         main.getChannelInfo(currentChannel);
         final String channel = currentChannel;
         api.getTagsByStream(currentChannel, (tags, e) -> {
-            // Tags may contain automatically set tags as well
-            if (currentChannel.equals(channel)) {
-                if (tags == null) {
-                    tagsLoadError = e == null ? "" : e;
-                } else {
-                    setTags(tags);
+            SwingUtilities.invokeLater(() -> {
+                // Tags may contain automatically set tags as well
+                if (currentChannel.equals(channel)) {
+                    if (tags == null) {
+                        tagsLoadError = e == null ? "" : e;
+                    } else {
+                        setTags(tags);
+                    }
+                    loadingTags = false;
+                    checkLoadingDone();
                 }
-                loadingTags = false;
-                checkLoadingDone();
-            }
-            if (tags != null) {
-                for (StreamTag c : tags) {
-                    updateStreamTagName(c);
+                if (tags != null) {
+                    for (StreamTag c : tags) {
+                        updateStreamTagName(c);
+                    }
                 }
-            }
+            });
         });
     }
     

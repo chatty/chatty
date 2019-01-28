@@ -595,6 +595,12 @@ public class LinkController extends MouseAdapter {
             text = text.replace("\n", "\\n"); // Make linebreaks visible
             result.append("'").append(text).append("'");
             result.append("<br />");
+            if (e.isLeaf() && e.getParentElement() != null) {
+                Element parent = e.getParentElement();
+                int elementIndex = parent.getElementIndex(e.getStartOffset());
+                result.append("Index: ").append(elementIndex).append(" - Count: ").append(parent.getElementCount());
+                result.append("<br />");
+            }
         } catch (BadLocationException ex) {
             Logger.getLogger(LinkController.class.getName()).log(Level.SEVERE, null, ex);
         }
