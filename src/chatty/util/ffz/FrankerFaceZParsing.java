@@ -28,20 +28,22 @@ public class FrankerFaceZParsing {
      * Request: /room/:room
      * 
      * @param json
+     * @param stream
      * @return 
      */
-    public static Usericon parseModIcon(String json) {
+    public static Usericon parseModIcon(String json, String stream) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject o = (JSONObject)parser.parse(json);
             JSONObject room = (JSONObject)o.get("room");
+            // Room ID (name) may not be correct if name changed
             String roomId = (String)room.get("id");
             String modBadgeUrl = (String)room.get("moderator_badge");
             if (modBadgeUrl == null) {
                 return null;
             }
             return UsericonFactory.createTwitchLikeIcon(Usericon.Type.MOD,
-                            roomId, modBadgeUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)");
+                            stream, modBadgeUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)");
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             
         }
@@ -79,19 +81,21 @@ public class FrankerFaceZParsing {
      * Request: /room/:room
      * 
      * @param json The JSON to parse
+     * @param stream
      * @return Set of emotes, can be empty if there are no emotes or an error
      * occured
      */
-    public static Set<Emoticon> parseRoomEmotes(String json) {
+    public static Set<Emoticon> parseRoomEmotes(String json, String stream) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject o = (JSONObject)parser.parse(json);
             JSONObject room = (JSONObject)o.get("room");
+            // Room ID (name) may not be correct if name changed
             String roomId = (String)room.get("id");
             int set = ((Number)room.get("set")).intValue();
             JSONObject sets = (JSONObject)o.get("sets");
             JSONObject setData = (JSONObject)sets.get(String.valueOf(set));
-            return parseEmoteSet(setData, roomId, null);
+            return parseEmoteSet(setData, stream, null);
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             LOGGER.warning("Error parsing FFZ emotes: "+ex);
         }

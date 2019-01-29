@@ -244,8 +244,9 @@ public class FrankerFaceZ {
         if (type == Type.GLOBAL) {
             emotes = FrankerFaceZParsing.parseGlobalEmotes(result);
         } else if (type == Type.ROOM) {
-            emotes = FrankerFaceZParsing.parseRoomEmotes(result);
-            Usericon modIcon = FrankerFaceZParsing.parseModIcon(result);
+            // If type is ROOM, stream should be available
+            emotes = FrankerFaceZParsing.parseRoomEmotes(result, stream);
+            Usericon modIcon = FrankerFaceZParsing.parseModIcon(result, stream);
             if (modIcon != null) {
                 usericons.add(modIcon);
             }
