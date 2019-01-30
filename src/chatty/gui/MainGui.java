@@ -1234,6 +1234,19 @@ public class MainGui extends JFrame implements Runnable {
         return client.settings.getBoolean("saveStatusHistory");
     }
     
+    /**
+     * Should be thread-safe.
+     * 
+     * @param input
+     * @return 
+     */
+    public String replaceEmojiCodes(String input) {
+        if (client.settings.getBoolean("emojiReplace")) {
+            return emoticons.emojiReplace(input);
+        }
+        return input;
+    }
+    
     class MyActionListener implements ActionListener {
 
         @Override
@@ -1241,11 +1254,7 @@ public class MainGui extends JFrame implements Runnable {
             // text input
             Channel chan = channels.getChannelFromInput(event.getSource());
             if (chan != null) {
-                if (client.settings.getBoolean("emojiReplace")) {
-                    client.textInput(chan.getRoom(), emoticons.emojiReplace(chan.getInputText()), null);
-                } else {
-                    client.textInput(chan.getRoom(), chan.getInputText(), null);
-                }
+                client.textInput(chan.getRoom(), chan.getInputText(), null);
             }
 
             Object source = event.getSource();

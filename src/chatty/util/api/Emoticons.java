@@ -980,22 +980,23 @@ public class Emoticons {
         }
     }
     
-    private final Map<Pattern, String> emojiReplacement = new HashMap<>();
+    private volatile Map<Pattern, String> emojiReplacement;
     
     public void addEmoji(String sourceId) {
         emoji.clear();
         emoji.addAll(EmojiUtil.makeEmoticons(sourceId));
-        emojiReplacement.clear();
+        Map<Pattern, String> replacements = new HashMap<>();
         for (Emoticon e : emoji) {
             if (e.stringId != null) {
-                emojiReplacement.put(Pattern.compile(e.stringId), e.code);
+                replacements.put(Pattern.compile(e.stringId), e.code);
             }
         }
+        emojiReplacement = replacements;
     }
     
     /**
      * Replace Emoji shortcodes in the given text with the corresponding Emoji
-     * characters.
+     * characters. Should be thread-safe.
      * 
      * @param input
      * @return 

@@ -712,18 +712,20 @@ public class TwitchClient {
     }
 
     /**
-     * Anything entered in a channel input box is reacted to here.
+     * Directly entered into the input box or entered by Custom Commands.
      * 
      * This must be safe input (i.e. input directly by the local user) because
      * this can execute all kind of commands.
      * 
-     * @param channel
+     * @param room
+     * @param commandParameters
      * @param text 
      */
     public void textInput(Room room, String text, Parameters commandParameters) {
         if (text.isEmpty()) {
             return;
         }
+        text = g.replaceEmojiCodes(text);
         String channel = room.getChannel();
         if (text.startsWith("//")) {
             anonCustomCommand(room, text.substring(1), commandParameters);

@@ -391,7 +391,7 @@ public class Emoticon {
      * @return The name of the stream, or null if none is set
      * @see hasStreamSet()
      */
-    public String getStream() {
+    public synchronized String getStream() {
         return stream;
     }
     
@@ -401,7 +401,7 @@ public class Emoticon {
      * @return true if a stream name has been set, false otherwise
      * @see getStream()
      */
-    public boolean hasStreamSet() {
+    public synchronized boolean hasStreamSet() {
         return stream != null;
     }
     
@@ -456,19 +456,19 @@ public class Emoticon {
      * @param stream The name of the stream
      * @see getStream()
      */
-    public void setStream(String stream) {
+    public synchronized void setStream(String stream) {
         this.stream = stream;
     }
     
-    public void setEmotesetInfo(String info) {
+    public synchronized void setEmotesetInfo(String info) {
         this.emotesetInfo = info;
     }
     
-    public String getEmotesetInfo() {
+    public synchronized String getEmotesetInfo() {
         return emotesetInfo;
     }
     
-    public boolean hasEmotesetInfo() {
+    public synchronized boolean hasEmotesetInfo() {
         return emotesetInfo != null;
     }
     
@@ -485,8 +485,9 @@ public class Emoticon {
     }
     
     /**
-     * Get a scaled EmoticonImage for this Emoticon.
-     *
+     * Get a scaled EmoticonImage for this Emoticon. Should only be called from
+     * the EDT.
+     * 
      * @param scaleFactor Scale Factor, default (no scaling) should be 1
      * @param maxHeight Maximum height in pixels, default (no max height) should
      * be 0
@@ -512,7 +513,8 @@ public class Emoticon {
     }
     
     /**
-     * Removes all currently cached images.
+     * Removes all currently cached images. Should probably be called from the
+     * EDT.
      */
     public void clearImages() {
         if (images != null) {
@@ -522,7 +524,8 @@ public class Emoticon {
     
     /**
      * Requests an ImageIcon to be loaded, returns the default icon at first,
-     * but starts a SwingWorker to get the actual image.
+     * but starts a SwingWorker to get the actual image. Should be called from
+     * the EDT.
      * 
      * @param user
      * @return 
