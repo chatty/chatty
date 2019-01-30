@@ -6,52 +6,97 @@
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
     <h1><a name="top">Memory Usage</a></h1>
     
-    <p>
-        <a href="#restrict">Restrict Memory Usage</a> |
-        <a href="#error">OutOfMemoryError</a>
-    </p>
-    <p>The programs memory is managed by Java, which means Java allocates a
-        certain amount of memory which is then filled up with data of the program
-        and once Java decides so, it cleans up data that is not used anymore
-        (Garbage Collection). This leads to the actual memory usage going up and
-        down constantly, while the allocated memory mostly stays the same. So
-        even if only 50 MB are filled with data by the program <em>at the time</em>, Java may
-        still have 200 MB reserved to optimize Gargabe Collection. Thus, the memory usage in e.g. the Task Manager
-        may not reflect what the program actually <em>requires</em>, just how
-        much Java uses.</p>
+    <p>This page gives some information about memory usage and performance and
+        how to affect memory usage.</p>
+    <ul>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#restrict">Increase or reduce allocated memory</a></li>
+        <li><a href="#error">Running out of memory</a></li>
+    </ul>
     
-    <p>Use the <code>/appinfo</code> command in Chatty to get some information
-        about the current memory usage.</p>
+    <h2><a name="intro">Introduction</a></h2>
+    <p>There are a few reasons Chatty may use a considerable greater amount of
+        memory compared to other IRC clients:</p>
     
-    <p>A typical memory usage pattern, which can change over time as the program
-        is running while Java optimizes Gargabe Collection:<br />
-        <img src="jconsole.jpg" alt="Typical memory usage pattern" /></p>
+    <ul>
+        <li>Java prefers to allocate more memory than absolutely needed, so it
+            can reduce the work going into Garbage Collection, which reduces CPU
+            usage.</li>
+        <li>Java management and ressources it has to have loaded add some
+            overhead that other programs may not have.</li>
+        <li>Chatty stores a lot of information for all it's features to work,
+            such as emoticons, badges, stream info, user data - some of which
+            can increase over time as the program is running.</li>
+        <li>Memory and CPU usage may increase depending on how many channels you
+            are in and their activity, as more data is created and deleted in
+            busy chats, requiring either more memory or (if Java is not allowed
+            to allocate more) more Garbage Collection work to be performed.</li>
+    </ul>
     
-    <h2><a name="restrict">Restrict Memory Usage</a></h2>
-    <p>You can <a href="http://stackoverflow.com/questions/1493913/how-to-set-the-maximum-memory-usage-for-jvm">restrict</a> how much memory Java is allowed to use by specifying
-        commandline parameters for Java. <a href="help-guide_create_shortcut.html">Create a shortcut</a>
-        and add the appropriate parameter after the <code>javaw.exe</code> but
-        before the <code>-jar</code> parameter.</p>
+    <p>You can use the <code>/appinfo</code> command in Chatty to get some
+        information about current memory usage. Note that these values can be
+        somewhat different from what is shown in e.g. Task Manager.</p>
     
-    <p>For example to restrict memory to 400 MB: <code>javaw -Xmx400M -jar "D:\Chatty\Chatty.jar"</code>.
-        You should test out yourself how low you can go, although more than 150 MB
-        is usually recommended. Note that Java will show a higher usage than
-        this in the Task Manager, since this pretty much only restricts how much
-        the program can store, Java will need some more for it's own management
-        and data.</p>
     
-    <p>For the <a href="help-standalone.html">Windows Standalone</a> version you can add this value to the file
-        <code>Chatty.cfg</code> located in the <code>app</code> subfolder of
-        the Chatty folder (it should already be there by default, so you can
-        simply adjust it if necessary).</p>
+    <h2><a name="restrict">Increase or reduce allocated memory</a></h2>
+    <p>When you start a Java program there is some default maximum amount of
+        memory it is allowed to use, which can vary on a case-by-case basis.</p>
     
-    <h2><a name="error">OutOfMemoryError</a></h2>
-    <p>If you get an OutOfMemoryError then Java ran out of memory. This can
-        either be because it simply can't allocate enough memory (at least 100 MB is recommended)
-        or there is a bug that prevents it from cleaning up memory that is not
-        actually used anymore. These kinds of bugs are pretty difficult to track
-        down though, especially if they only occur somewhat randomly.</p>
+    <ul>
+        <li>If the default size is too small you can experience performance
+            issues (or even errors) and you may want to allow Java to allocate
+            more memory.</li>
+        <li>If you're not experiencing performance issues you can decrease
+            memory usage, although be careful to not set it too low.</li>
+    </ul>
     
+    <p>You can tell Java the maximum amount heap memory it can use by using the
+        launch option <code>-Xmx400M</code>. In this example it allows a maximum
+        heap of 400MB, which is recommended for good performance. You should
+        normally never set it below 200MB or you may experience issues.</p>
+    
+    <h3>JAR Version</h3>
+    <p><a href="help-guide_create_shortcut.html">Create a shortcut</a> (you may
+        already have created one with the installer). When editing the shortcut
+        change the target and add the launch option after Java but before the
+        <code>-jar</code> part (you may have to add the <code>javaw</code> and
+        <code>-jar</code> parts). It should end up looking similiar to:</p>
+    <p><code>javaw <strong>-Xmx400M</strong> -jar "D:\Chatty\Chatty.jar"</code></p>
+    
+    <h3>Standalone Version</h3>
+    <p>The Chatty.exe of the <a href="help-standalone.html">Windows Standalone</a>
+        version will look for launch options in the file <code>Chatty.cfg</code>
+        in the <code>app</code> folder, so you can add the <code>-Xmx400M</code>
+        there, after <code>[JVMOptions]</code> (should already be there by
+        default, so you can just change the number).</p>
+    
+    
+    <h2><a name="error">Running out of memory</a></h2>
+    <p>If Java cannot clean up enough memory to make space for new data to be
+        stored, an OutOfMemory exception will occur.</p>
+    
+    <ul>
+        <li>This can be a sign that you should increase the amount of memory
+            Java is allowed to use. For example if the maximum heap is 50MB
+            there simply won't be enough space to even start Chatty, if it is
+            100MB it may still start but you'll likely run into issues a bit
+            later. Use <code>/appinfo</code> to find out current and max usage.</li>
+        <li>The longer Chatty is running at a time and the more active channels
+            you have joined, the more data it will accumulate that are necessary
+            for features such as displaying Stream Info History or messages that
+            users have sent in the User Dialog. If you run into issues after
+            leaving Chatty running for several days, then a simple restart may
+            be helpful.</li>
+        <li>There may be a bug, either in Chatty or some Java library,
+            preventing memory from being cleaned up properly, resulting in a
+            memory leak.</li>
+    </ul>
+    
+    <p>Short of analyzing a heap dump, basicially a full copy of the programs
+        memory, it is hard to tell what exactly takes up the memory. Such
+        analysis is often performed duing development and testing, but if an
+        issue can not be reproduced then finding the exact cause can be
+        difficult.</p>
 </body>
 </html>
 
