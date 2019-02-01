@@ -5,6 +5,8 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.Logging;
 import chatty.User;
+import chatty.gui.Highlighter;
+import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.settings.Settings;
@@ -55,19 +57,42 @@ public class StreamHighlightHelper {
      * @return A response to either echo or send to the channel
      */
     public String modCommand(User user, String line) {
+        //---------
+        // Channel
+        //---------
         String channel = user.getOwnerChannel();
         String settingChannel = Helper.toChannel(settings.getString("streamHighlightChannel"));
-        String command = StringUtil.toLowerCase(settings.getString("streamHighlightCommand"));
-        if (command != null && !command.isEmpty()
-                && settingChannel != null && settingChannel.equalsIgnoreCase(channel)
-                && user.hasChannelModeratorRights()) {
-            if (StringUtil.toLowerCase(line).startsWith(command)) {
-                String comment = line.substring(command.length());
-                //System.out.println(comment);
-                return addHighlight(channel, "["+user.getDisplayNick()+"]"+comment);
-            }
+        if (settingChannel == null || !settingChannel.equalsIgnoreCase(channel)) {
+            return null;
         }
-        return null;
+        //---------
+        // Command
+        //---------
+        String command = StringUtil.toLowerCase(settings.getString("streamHighlightCommand"));
+        if (command == null || command.trim().isEmpty()) {
+            return null;
+        }
+        String lcLine = StringUtil.toLowerCase(line);
+        if (!lcLine.startsWith(command+" ") && !lcLine.equals(command)) {
+            return null;
+        }
+        //--------
+        // Access
+        //--------
+        String match = settings.getString("streamHighlightMatch");
+        // An empty HighlightItem would match everything, so check before
+        if (match == null || match.trim().isEmpty()) {
+            return null;
+        }
+        HighlightItem item = new Highlighter.HighlightItem(match);
+        if (!item.matches(HighlightItem.Type.REGULAR, line, user)) {
+            return null;
+        }
+        //---------------------------------------
+        // All challenges successfully completed
+        //---------------------------------------
+        String comment = line.substring(command.length()).trim();
+        return addHighlight(channel, "["+user.getDisplayNick()+"] "+comment);
     }
     
     /**

@@ -659,7 +659,12 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected JTextField addSimpleStringSetting(String settingName, int size, boolean editable) {
-        SimpleStringSetting s = new SimpleStringSetting(size, editable);
+        return addSimpleStringSetting(settingName, size, editable, null);
+    }
+    
+    protected JTextField addSimpleStringSetting(String settingName, int size,
+            boolean editable, DataFormatter<String> formatter) {
+        SimpleStringSetting s = new SimpleStringSetting(size, editable, formatter);
         addStringSetting(settingName, s);
         return s;
     }

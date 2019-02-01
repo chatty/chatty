@@ -1789,13 +1789,26 @@
         which writes the current uptime/optional note to a textfile.</p>
     
     <dl class="dl-settings">
-        <dt>Mod Command Channel</dt>
-        <dd>Allows moderators in the given channel to run the command.</dd>
+        <dt>Command Channel</dt>
+        <dd>Allows users in the given channel to run the command.</dd>
         <dd>For example if your channel/stream is called <code>zoton2</code> you would enter <code>zoton2</code>.</dd>
         
-        <dt>Mod Command</dt>
-        <dd>The command the mods have to use to add a Stream Highlight.</dd>
+        <dt>Command Name</dt>
+        <dd>The command used to add a Stream Highlight.</dd>
         <dd>With the default <code>!highlight</code> mods would enter <code>!highlight [optional message]</code>.</dd>
+        
+        <dt>Command Access</dt>
+        <dd>Which users have access to the command. It is highly recommended to
+            restrict this to trusted users only, such as Moderators.</dd>
+        <dd>You can select a default value from the drop down menu, however in
+            the background it is using <a href="#Highlight_Meta_Matching">Highlighting Syntax</a>.</dd>
+        <dd>Default values are:
+            <ul>
+                <li>Moderators: <code>status:m</code></li>
+                <li>Moderators/VIPs: <code>status:mv</code></li>
+                <li>Moderators/VIPs/Subscribers: <code>status:mvs</code></li>
+            </ul>
+        </dd>
     </dl>
     
     <h2>

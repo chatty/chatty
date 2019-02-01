@@ -578,6 +578,7 @@ public class SettingsManager {
 
         // Stream Highlights
         settings.addString("streamHighlightCommand", "!highlight");
+        settings.addString("streamHighlightMatch", "status:m");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
         settings.addBoolean("streamHighlightMarker", true);

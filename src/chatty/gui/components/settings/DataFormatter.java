@@ -9,6 +9,17 @@ package chatty.gui.components.settings;
  */
 public interface DataFormatter<E> {
     
+    public static final DataFormatter<String> TRIM = new DataFormatter<String>() {
+
+        @Override
+        public String format(String input) {
+            if (input != null) {
+                return input.trim();
+            }
+            return null;
+        }
+    };
+    
     /**
      * The input is changed somehow, then returned changed or the same,
      * depending on the implementation of the formatter.

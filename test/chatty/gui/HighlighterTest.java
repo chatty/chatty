@@ -426,6 +426,33 @@ public class HighlighterTest {
         assertFalse(highlighter.check(adminBroadcasterTurbo, "hello"));
         assertFalse(highlighter.check(staff, ""));
         assertFalse(highlighter.check(subscriber, ""));
+        
+        // Highlighter shouldn't take empty items
+        update("");
+        assertFalse(highlighter.check(broadcaster, "test"));
+        assertFalse(highlighter.check(normal, ""));
+        assertFalse(highlighter.check(modTurbo, "test"));
+        assertFalse(highlighter.check(admin, ""));
+        assertFalse(highlighter.check(adminBroadcasterTurbo, "hello"));
+        assertFalse(highlighter.check(staff, ""));
+        assertFalse(highlighter.check(subscriber, ""));
+        
+        update();
+        assertFalse(highlighter.check(broadcaster, "test"));
+        assertFalse(highlighter.check(normal, ""));
+        assertFalse(highlighter.check(modTurbo, "test"));
+        assertFalse(highlighter.check(admin, ""));
+        assertFalse(highlighter.check(adminBroadcasterTurbo, "hello"));
+        assertFalse(highlighter.check(staff, ""));
+        assertFalse(highlighter.check(subscriber, ""));
+        
+        // Although HighlightItem alone would match everything on empty item
+        Highlighter.HighlightItem item = new Highlighter.HighlightItem("");
+        assertTrue(item.matchesAny("", null));
+        assertTrue(item.matchesAny("abc", null));
+        assertTrue(item.matches(Highlighter.HighlightItem.Type.REGULAR, "", broadcaster));
+        assertTrue(item.matches(Highlighter.HighlightItem.Type.REGULAR, "", normal));
+        assertFalse(item.matches(Highlighter.HighlightItem.Type.INFO, "", normal));
     }
     
     @Test

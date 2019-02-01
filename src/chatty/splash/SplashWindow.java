@@ -60,8 +60,8 @@ public class SplashWindow extends JFrame {
     }
 
     private Image createImage(String name) {
-        name = "chatty/gui/" + name;
-        return Toolkit.getDefaultToolkit().createImage(getClass().getClassLoader().getResource(name));
+        name = "/chatty/gui/" + name;
+        return Toolkit.getDefaultToolkit().createImage(getClass().getResource(name));
     }
     
     /**
