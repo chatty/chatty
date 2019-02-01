@@ -34,7 +34,10 @@ public class PastMessages extends JTextArea {
     
     private String makeLines(User user, String currentMessageId) {
         StringBuilder b = new StringBuilder();
-        if (user.maxNumberOfLinesReached()) {
+        if (user.linesCleared()) {
+            b.append("<some lines cleared due to user inactivity>\n");
+        }
+        if (user.maxLinesExceeded()) {
             b.append("<only last ");
             b.append(user.getMaxNumberOfLines());
             b.append(" lines are saved>\n");

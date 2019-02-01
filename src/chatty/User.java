@@ -54,7 +54,7 @@ public class User implements Comparable {
     private static final int MAXLINES = 100;
     
     private final Set<Integer> emoteSets = new HashSet<>();
-    private final List<Message> messages = new ArrayList<>();
+    private final List<Message> lines = new ArrayList<>();
     
     /**
      * The nick, all-lowercase.
@@ -262,8 +262,25 @@ public class User implements Comparable {
         return MAXLINES;
     }
     
-    public boolean maxNumberOfLinesReached() {
-        return numberOfLines > MAXLINES;
+    /**
+     * Returns true if clearing old lines is responsible for not all lines being
+     * present.
+     * 
+     * @return 
+     */
+    public synchronized boolean linesCleared() {
+        return lines.size() < MAXLINES && lines.size() < numberOfLines;
+    }
+    
+    /**
+     * Returns true if the max number of lines per user is responsible for not
+     * all lines being present (or would be responsible, if lines had not been
+     * cleared before).
+     * 
+     * @return 
+     */
+    public synchronized boolean maxLinesExceeded() {
+        return lines.size() == MAXLINES && lines.size() < numberOfLines;
     }
     
     /**
@@ -344,8 +361,8 @@ public class User implements Comparable {
     
     private synchronized boolean addBanInfoNow(ModeratorActionData data) {
         String command = ModLogInfo.makeCommand(data);
-        for (int i=messages.size() - 1; i>=0; i--) {
-            Message m = messages.get(i);
+        for (int i=lines.size() - 1; i>=0; i--) {
+            Message m = lines.get(i);
             // Too old, abort (associated message might not be here yet)
             if (System.currentTimeMillis() - m.getTime() > BAN_INFO_WAIT) {
                 return false;
@@ -360,13 +377,13 @@ public class User implements Comparable {
             if (m instanceof BanMessage) {
                 BanMessage bm = (BanMessage)m;
                 if (bm.by == null && command.equals(Helper.makeBanCommand(this, bm.duration, bm.id))) {
-                    messages.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data)));
+                    lines.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data)));
                     return true;
                 }
             } else if (m instanceof MsgDeleted) {
                 MsgDeleted md = (MsgDeleted)m;
                 if (md.by == null && command.equals(Helper.makeBanCommand(this, -2, md.targetMsgId))) {
-                    messages.set(i, md.addModLogInfo(data.created_by));
+                    lines.set(i, md.addModLogInfo(data.created_by));
                     return true;
                 }
             }
@@ -381,12 +398,12 @@ public class User implements Comparable {
     /**
      * Adds a Message.
      * 
-     * @param message The Message object containig the data for this line.
+     * @param line The Message object containig the data for this line.
      */
-    private void addLine(Message message) {
-        messages.add(message);
-        if (messages.size() > MAXLINES) {
-            messages.remove(0);
+    private void addLine(Message line) {
+        lines.add(line);
+        if (lines.size() > MAXLINES) {
+            lines.remove(0);
         }
         numberOfLines++;
     }
@@ -398,7 +415,24 @@ public class User implements Comparable {
      * @return 
      */
     public synchronized List<Message> getMessages() {
-        return new ArrayList<>(messages);
+        return new ArrayList<>(lines);
+    }
+    
+    public synchronized int clearMessagesIfInactive(long duration) {
+        if (!lines.isEmpty()
+                && System.currentTimeMillis() - getLastMessageTime() >= duration) {
+            int size = lines.size();
+            lines.clear();
+            return size;
+        }
+        return 0;
+    }
+    
+    private long getLastMessageTime() {
+        if (lines != null && !lines.isEmpty()) {
+            return lines.get(lines.size() - 1).time;
+        }
+        return 0;
     }
     
     public synchronized String getName() {

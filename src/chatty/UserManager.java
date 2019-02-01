@@ -24,6 +24,8 @@ public class UserManager {
 
     private static final Logger LOGGER = Logger.getLogger(UserManager.class.getName());
     
+    private static final int CLEAR_MESSAGES_TIMER = 1*60*60*1000;
+    
     private final Set<UserManagerListener> listeners = new HashSet<>();
     
     private volatile String localUsername;
@@ -43,6 +45,17 @@ public class UserManager {
     private UsercolorManager usercolorManager;
     private Addressbook addressbook;
     private BotNameManager botNameManager;
+    
+    public UserManager() {
+        Timer clearMessageTimer = new Timer("Clear User Messages", true);
+        clearMessageTimer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                clearMessagesOfInactiveUsers();
+            }
+        }, CLEAR_MESSAGES_TIMER, CLEAR_MESSAGES_TIMER);
+    }
     
     public void setLocalUsername(String username) {
         this.localUsername = username;
@@ -278,6 +291,16 @@ public class UserManager {
      */
     public synchronized void clear(String channel) {
         getUsersByChannel(channel).clear();
+    }
+    
+    public synchronized void clearMessagesOfInactiveUsers() {
+        int numRemoved = 0;
+        for (Map<String, User> chan : users.values()) {
+            for (User user : chan.values()) {
+                numRemoved += user.clearMessagesIfInactive(6*60*60*1000);
+            }
+        }
+        LOGGER.info("Cleared "+numRemoved+" user messages");
     }
     
     /**

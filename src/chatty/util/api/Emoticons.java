@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.Timer;
 
 /**
  * Add emoticons and get a list of them matching a certain emoteset.
@@ -141,6 +142,23 @@ public class Emoticons {
     private final Map<String, Set<String>> emotesNamesPerStream = new HashMap<>();
     
     private Set<Integer> localEmotesets = new HashSet<>();
+    
+    public Emoticons() {
+        Timer timer = new Timer(1*60*60*1000, e -> {
+            LOGGER.info("Clearing unused emoticon images");
+            int removedCount = 0;
+            removedCount += clearOldEmoticonImages(twitchEmotesById.values());
+            removedCount += clearOldEmoticonImages(otherGlobalEmotes);
+            for (Set<Emoticon> emotes : streamEmoticons.values()) {
+                removedCount += clearOldEmoticonImages(emotes);
+            }
+            if (removedCount > 0) {
+                LOGGER.info("Cleared " + removedCount + " unused emoticon images");
+            }
+        });
+        timer.setRepeats(true);
+        timer.start();
+    }
     
     public void updateEmoticons(EmoticonUpdate update) {
         removeEmoticons(update);
@@ -286,6 +304,14 @@ public class Emoticons {
      */
     public void addTempEmoticon(Emoticon emote) {
         twitchEmotesById.put(emote.numericId, emote);
+    }
+    
+    private static int clearOldEmoticonImages(Collection<Emoticon> emotes) {
+        int removedCount = 0;
+        for (Emoticon emote : emotes) {
+            removedCount += emote.clearOldImages();
+        }
+        return removedCount;
     }
 
     public Set<Emoticon> getCustomEmotes() {
