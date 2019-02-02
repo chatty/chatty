@@ -3,6 +3,8 @@ package chatty.gui.components.settings;
 
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -46,15 +48,20 @@ public class ModerationSettings extends SettingsPanel {
         
         userInfo.add(d.addSimpleBooleanSetting(
                 "closeUserDialogOnAction"),
-                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
         userInfo.add(d.addSimpleBooleanSetting(
                 "openUserDialogByMouse"),
-                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
         userInfo.add(d.addSimpleBooleanSetting(
                 "reuseUserDialog"),
-                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
+
+        userInfo.add(new JLabel(Language.getString("settings.long.clearUserMessages.label")),
+                d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST));
+        userInfo.add(d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}),
+                d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
     }
     
 }

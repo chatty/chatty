@@ -102,6 +102,7 @@ public class TwitchConnection {
         spamProtection = new SpamProtection();
         spamProtection.setLinesPerSeconds(settings.getString("spamProtection"));
         users.setCapitalizedNames(settings.getBoolean("capitalizedNames"));
+        users.setSettings(settings);
         users.addListener(new UserManager.UserManagerListener() {
 
             @Override

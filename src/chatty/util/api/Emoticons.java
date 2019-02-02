@@ -145,16 +145,13 @@ public class Emoticons {
     
     public Emoticons() {
         Timer timer = new Timer(1*60*60*1000, e -> {
-            LOGGER.info("Clearing unused emoticon images");
             int removedCount = 0;
             removedCount += clearOldEmoticonImages(twitchEmotesById.values());
             removedCount += clearOldEmoticonImages(otherGlobalEmotes);
             for (Set<Emoticon> emotes : streamEmoticons.values()) {
                 removedCount += clearOldEmoticonImages(emotes);
             }
-            if (removedCount > 0) {
-                LOGGER.info("Cleared " + removedCount + " unused emoticon images");
-            }
+            LOGGER.info("Cleared " + removedCount + " unused emoticon images");
         });
         timer.setRepeats(true);
         timer.start();

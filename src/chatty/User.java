@@ -986,24 +986,10 @@ public class User implements Comparable {
     
     public static class Message {
         
-        public static final int MESSAGE = 0;
-        public static final int BAN = 1;
-        public static final int SUB = 2;
-        public static final int MOD_ACTION = 3;
-        public static final int AUTO_MOD_MESSAGE = 4;
-        public static final int INFO = 5;
-        public static final int MSG_DELETED = 6;
+        private final long time;
         
-        private final Long time;
-        private final int type;
-        
-        public Message(int type, Long time) {
+        public Message(long time) {
             this.time = time;
-            this.type = type;
-        }
-        
-        public int getType() {
-            return type;
         }
         
         public long getTime() {
@@ -1016,8 +1002,8 @@ public class User implements Comparable {
         public final boolean action;
         public final String id;
         
-        public TextMessage(Long time, String message, boolean action, String id) {
-            super(MESSAGE, time);
+        public TextMessage(long time, String message, boolean action, String id) {
+            super(time);
             this.text = message;
             this.action = action;
             this.id = id;
@@ -1039,9 +1025,9 @@ public class User implements Comparable {
         public final String id;
         public final String by;
         
-        public BanMessage(Long time, long duration, String reason, String id,
+        public BanMessage(long time, long duration, String reason, String id,
                 String by) {
-            super(BAN, time);
+            super(time);
             this.duration = duration;
             this.reason = reason;
             this.id = id;
@@ -1064,8 +1050,8 @@ public class User implements Comparable {
         public final String msg;
         public final String by;
         
-        public MsgDeleted(Long time, String targetMsgId, String msg, String by) {
-            super(MSG_DELETED, time);
+        public MsgDeleted(long time, String targetMsgId, String msg, String by) {
+            super(time);
             this.targetMsgId = targetMsgId;
             this.msg = msg;
             this.by = by;
@@ -1081,8 +1067,8 @@ public class User implements Comparable {
         public final String attached_message;
         public final String system_msg;
         
-        public SubMessage(Long time, String message, String text) {
-            super(SUB, time);
+        public SubMessage(long time, String message, String text) {
+            super(time);
             this.attached_message = message;
             this.system_msg = text;
         }
@@ -1093,8 +1079,8 @@ public class User implements Comparable {
         public final String attached_message;
         public final String system_msg;
         
-        public InfoMessage(Long time, String message, String text) {
-            super(INFO, time);
+        public InfoMessage(long time, String message, String text) {
+            super(time);
             this.attached_message = message;
             this.system_msg = text;
         }
@@ -1104,8 +1090,8 @@ public class User implements Comparable {
 
         public final String commandAndParameters;
         
-        public ModAction(Long time, String commandAndParameters) {
-            super(MOD_ACTION, time);
+        public ModAction(long time, String commandAndParameters) {
+            super(time);
             this.commandAndParameters = commandAndParameters;
         }
         
@@ -1117,7 +1103,7 @@ public class User implements Comparable {
         public final String id;
         
         public AutoModMessage(String message, String id) {
-            super(AUTO_MOD_MESSAGE, System.currentTimeMillis());
+            super(System.currentTimeMillis());
             this.message = message;
             this.id = id;
         }

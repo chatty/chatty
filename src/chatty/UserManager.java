@@ -5,6 +5,7 @@ import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
 import chatty.util.StringUtil;
+import chatty.util.settings.Settings;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -45,6 +46,7 @@ public class UserManager {
     private UsercolorManager usercolorManager;
     private Addressbook addressbook;
     private BotNameManager botNameManager;
+    private Settings settings;
     
     public UserManager() {
         Timer clearMessageTimer = new Timer("Clear User Messages", true);
@@ -104,6 +106,10 @@ public class UserManager {
         for (User user : data.values()) {
             user.setRoom(room);
         }
+    }
+    
+    public void setSettings(Settings settings) {
+        this.settings = settings;
     }
     
     public void setCapitalizedNames(boolean capitalized) {
@@ -294,13 +300,19 @@ public class UserManager {
     }
     
     public synchronized void clearMessagesOfInactiveUsers() {
-        int numRemoved = 0;
-        for (Map<String, User> chan : users.values()) {
-            for (User user : chan.values()) {
-                numRemoved += user.clearMessagesIfInactive(6*60*60*1000);
-            }
+        if (settings == null) {
+            return;
         }
-        LOGGER.info("Cleared "+numRemoved+" user messages");
+        long clearUserMessages = settings.getLong("clearUserMessages");
+        if (clearUserMessages >= 0) {
+            int numRemoved = 0;
+            for (Map<String, User> chan : users.values()) {
+                for (User user : chan.values()) {
+                    numRemoved += user.clearMessagesIfInactive(clearUserMessages*60*60*1000);
+                }
+            }
+            LOGGER.info("Cleared "+numRemoved+" user messages");
+        }
     }
     
     /**
