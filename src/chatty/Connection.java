@@ -2,6 +2,9 @@
 package chatty;
 
 import static chatty.Irc.SSL_ERROR;
+import chatty.util.DateTime;
+import chatty.util.Debugging;
+import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -9,6 +12,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
@@ -25,6 +29,8 @@ public class Connection implements Runnable {
     
     private final InetSocketAddress address;
     private final Irc irc;
+    private final RingBuffer<Msg> debugBuffer = new RingBuffer(20);
+    private int debugCounter = -1;
     
     private Socket socket;
     private PrintWriter out;
@@ -161,6 +167,7 @@ public class Connection implements Runnable {
                 }
                 
                 // Line was received
+                debugBuffer.add(new Msg(System.currentTimeMillis(), receivedLine, false));
                 irc.received(receivedLine);
                 receivedLine = null;
                 activity();
@@ -186,6 +193,13 @@ public class Connection implements Runnable {
      */
     private void activity() {
         connectionCheckedCount = 0;
+        if (debugCounter != -1) {
+            debugCounter++;
+            if (debugCounter == 10) {
+                debug();
+                debugCounter = -1;
+            }
+        }
     }
     
     /**
@@ -200,6 +214,7 @@ public class Connection implements Runnable {
         } else if (connectionCheckedCount > PING_AFTER_CHECKS) {
             LOGGER.log(Logging.USERINFO, "Warning: Server not responding");
             warning("No message received from server after PING for "+SOCKET_BLOCK_TIMEOUT+"ms");
+            debugCounter = 0;
             // Wait a bit longer until next Ping
             connectionCheckedCount -= PING_AFTER_CHECKS*2;
         }
@@ -236,8 +251,52 @@ public class Connection implements Runnable {
      */
     synchronized public void send(String data) {
         data = StringUtil.removeLinebreakCharacters(data);
+        debugBuffer.add(new Msg(System.currentTimeMillis(), data, true));
         irc.sent(data);
         out.print(data+"\r\n");
         out.flush();
     }
+    
+    public void debug() {
+        List<Msg> recent = debugBuffer.getItems();
+        StringBuilder b = new StringBuilder();
+        b.append(idPrefix);
+        b.append(address);
+        if (secured) {
+            b.append(" (secured)");
+        }
+        b.append(" / Check count: ");
+        b.append(connectionCheckedCount).append("/").append(PING_AFTER_CHECKS);
+        b.append("\n");
+        for (Msg msg : recent) {
+            b.append(DateTime.formatExact(msg.time));
+            b.append(" ");
+            if (msg.sent) {
+                b.append("<<< ");
+            }
+            b.append(filterToken(msg.raw)).append("\n");
+        }
+        LOGGER.info(b.toString());
+    }
+    
+    private static String filterToken(String msg) {
+        if (msg.startsWith("PASS")) {
+            return "PASS <token>";
+        }
+        return msg;
+    }
+    
+    private static class Msg {
+        
+        public final long time;
+        public final String raw;
+        public final boolean sent;
+        
+        public Msg(long time, String raw, boolean sent) {
+            this.time = time;
+            this.raw = raw;
+            this.sent = sent;
+        }
+    }
+    
 }

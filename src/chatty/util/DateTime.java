@@ -50,6 +50,10 @@ public class DateTime {
         return currentTime(SDF3);
     }
     
+    public static String formatExact(long time) {
+        return format(time, SDF3);
+    }
+    
     public static String currentTime(String format) {
         return currentTime(new SimpleDateFormat(format));
     }

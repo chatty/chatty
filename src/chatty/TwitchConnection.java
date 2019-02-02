@@ -128,6 +128,10 @@ public class TwitchConnection {
         irc.simulate(data);
     }
     
+    public void debugConnection() {
+        irc.debugConnection();
+    }
+    
     public void addChannelStateListener(ChannelStateListener listener) {
         channelStates.addListener(listener);
     }
@@ -1105,6 +1109,9 @@ public class TwitchConnection {
                 listener.onUsernotice("Charity", user, text, message, emotes);
             } else if (tags.isValue("msg-id", "raid")) {
                 listener.onUsernotice("Raid", user, text, message, emotes);
+            } else if (text.equals("reward") && !message.isEmpty()) {
+                // For Bits reward text has "reward" and message what should be in text
+                listener.onUsernotice("Usernotice", user, message, null, emotes);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this

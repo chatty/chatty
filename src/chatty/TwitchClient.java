@@ -22,6 +22,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.ModLogInfo;
+import chatty.gui.components.textpane.Util;
 import chatty.gui.components.updating.Stuff;
 import chatty.splash.Splash;
 import chatty.util.BTTVEmotes;
@@ -1507,6 +1508,8 @@ public class TwitchClient {
             });
         } else if (command.equals("-")) {
             g.printSystem(Debugging.command(parameter));
+        } else if (command.equals("connection")) {
+            c.debugConnection();
         }
     }
     

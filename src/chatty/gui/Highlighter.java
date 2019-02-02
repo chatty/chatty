@@ -698,9 +698,6 @@ public class Highlighter {
             //---------
             // Channel
             //---------
-            if (channel == null && user != null) {
-                channel = user.getChannel();
-            }
             if (user != null) {
                 if (channel == null) {
                     channel = user.getChannel();

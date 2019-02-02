@@ -241,6 +241,12 @@ public abstract class Irc {
     public void simulate(String data) {
         received(data);
     }
+    
+    public void debugConnection() {
+        if (connection != null) {
+            connection.debug();
+        }
+    }
 
     /**
      * Parse IRC-Messages receveived from the Connection-Thread.
