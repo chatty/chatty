@@ -138,7 +138,7 @@ public class UsericonManager {
     public synchronized List<Usericon> getBadges(Map<String, String> badgesDef, User user, boolean botBadgeEnabled) {
         List<Usericon> icons = getTwitchBadges(badgesDef, user);
         if (user.isBot() && botBadgeEnabled) {
-            Usericon icon = user.getIcon(Usericon.Type.BOT);
+            Usericon icon = getIcon(Usericon.Type.BOT, null, null, user);
             if (icon != null) {
                 icons.add(icon);
             }

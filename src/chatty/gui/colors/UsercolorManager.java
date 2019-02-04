@@ -94,6 +94,8 @@ public class UsercolorManager {
     
     /**
      * Returns the color for this user, or null if no items matched this user.
+     * Should only be called through the User object, not directly, for easier
+     * synchronization.
      * 
      * @param user
      * @return 

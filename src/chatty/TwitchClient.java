@@ -22,7 +22,6 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.ModLogInfo;
-import chatty.gui.components.textpane.Util;
 import chatty.gui.components.updating.Stuff;
 import chatty.splash.Splash;
 import chatty.util.BTTVEmotes;
@@ -70,15 +69,12 @@ import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.awt.Color;
-import java.awt.Point;
-import java.awt.SplashScreen;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 
 /**
