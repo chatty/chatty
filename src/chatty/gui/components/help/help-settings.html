@@ -1800,24 +1800,33 @@
     <dl class="dl-settings">
         <dt>Command Channel</dt>
         <dd>Allows users in the given channel to run the command.</dd>
-        <dd>For example if your channel/stream is called <code>zoton2</code> you would enter <code>zoton2</code>.</dd>
+        <dd>For example if your channel/stream is called <code>zoton2</code> you
+            would enter <code>zoton2</code>.</dd>
         
         <dt>Command Name</dt>
         <dd>The command used to add a Stream Highlight.</dd>
-        <dd>With the default <code>!highlight</code> mods would enter <code>!highlight [optional message]</code>.</dd>
+        <dd>With the default <code>!highlight</code> mods would enter
+            <code>!highlight [optional message]</code>.</dd>
         
         <dt>Command Access</dt>
         <dd>Which users have access to the command. It is highly recommended to
             restrict this to trusted users only, such as Moderators.</dd>
-        <dd>You can select a default value from the drop down menu, however in
-            the background it is using <a href="#Highlight_Meta_Matching">Highlighting Syntax</a>.</dd>
-        <dd>Default values are:
+        <dd>There are a few presets available which should fit most needs (they
+            all include the broadcaster as well). This setting is using the
+            <a href="#Highlight_Meta_Matching">Highlighting</a> <code>status:</code>
+            prefix to match only on some types of users. The preset names/values
+            are:
             <ul>
-                <li>Moderators: <code>status:m</code></li>
-                <li>Moderators/VIPs: <code>status:mv</code></li>
-                <li>Moderators/VIPs/Subscribers: <code>status:mvs</code></li>
+                <li>Moderators: <code>status:bm</code></li>
+                <li>Moderators/VIPs: <code>status:bmv</code></li>
+                <li>Moderators/VIPs/Subscribers: <code>status:bmvs</code></li>
             </ul>
         </dd>
+        <dd>If you want to set a custom value, you can use the command
+            <code>/set streamHighlightMatch &lt;value&gt;</code>. You can use
+            anything the <a href="#Highlight_Meta_Matching">Highlighting</a>
+            syntax provides (for example Addressbook categories), not just the
+            <code>status:</code> prefix.</dd>
     </dl>
     
     <h2>

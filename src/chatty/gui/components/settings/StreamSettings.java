@@ -43,12 +43,12 @@ public class StreamSettings extends SettingsPanel {
         
         Map<String, String> presets = new LinkedHashMap<>();
         presets.put("", "Nobody");
-        presets.put("status:m", "Moderators");
-        presets.put("status:mv", "Moderators/VIPs");
-        presets.put("status:mvs", "Moderators/VIPs/Subscribers");
+        presets.put("status:bm", "Moderators");
+        presets.put("status:bmv", "Moderators/VIPs");
+        presets.put("status:bmvs", "Moderators/VIPs/Subscribers");
         commandPanel.add(new JLabel(Language.getString("settings.streamHighlights.match")),
                 d.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST));
-        commandPanel.add(d.addComboStringSetting("streamHighlightMatch", 20, true, presets),
+        commandPanel.add(d.addComboStringSetting("streamHighlightMatch", 20, false, presets),
                 d.makeGbc(1, 5, 1, 1, GridBagConstraints.WEST));
         
         commandPanel.add(d.addSimpleBooleanSetting("streamHighlightChannelRespond"),
