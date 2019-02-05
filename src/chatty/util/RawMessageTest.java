@@ -38,6 +38,14 @@ public class RawMessageTest {
         if (type.equals("anonsubgift")) {
             return "@badges=;color=;emotes=;id=123;login=channame;mod=0;msg-id=subgift;msg-param-months=1;msg-param-recipient-display-name=user2;msg-param-recipient-id=44452165;msg-param-recipient-user-name=user2;msg-param-sub-plan-name=Channel\\sSubscription\\s(LIRIK);msg-param-sub-plan=1000;room-id=123;subscriber=0;system-msg=An\\sanonymous\\suser\\sgifted\\sa\\sTier\\s1\\ssub\\sto\\sabc!\\s;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
         }
+        if (type.equals("newresub")) {
+            // Without months in system-msg (even though it should have)
+            return "@badges=moderator/1,subscriber/36,turbo/1;color=#0000FF;display-name=USER;emotes=;flags=;id=1234;login=user;mod=1;msg-id=resub;msg-param-cumulative-months=45;msg-param-cumulative-tenure-months=45;msg-param-months=0;msg-param-should-share-streak-tenure=false;msg-param-should-share-streak=0;msg-param-sub-plan-name=CHANNEL\\sSub;msg-param-sub-plan=Prime;room-id=123;subscriber=1;system-msg=USER\\sSubscribed\\swith\\sTwitch\\sPrime.;turbo=1;user-id=123;user-type=mod :tmi.twitch.tv USERNOTICE "+channel+" :Abc";
+        }
+        if (type.equals("newresub2")) {
+            // With months in system-msg (theoretically)
+            return "@badges=moderator/1,subscriber/36,turbo/1;color=#0000FF;display-name=USER;emotes=;flags=;id=1234;login=user;mod=1;msg-id=resub;msg-param-cumulative-months=45;msg-param-cumulative-tenure-months=45;msg-param-months=0;msg-param-should-share-streak-tenure=false;msg-param-should-share-streak=0;msg-param-sub-plan-name=CHANNEL\\sSub;msg-param-sub-plan=Prime;room-id=123;subscriber=1;system-msg=USER\\sSubscribed\\swith\\sTwitch\\sPrime.\\sThey've\\ssubscribed\\sfor\\s45\\smonthss!;turbo=1;user-id=123;user-type=mod :tmi.twitch.tv USERNOTICE "+channel+" :Abc";
+        }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }

@@ -1100,6 +1100,9 @@ public class TwitchConnection {
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
             if (tags.isValueOf("msg-id", "resub", "sub", "subgift", "anonsubgift")) {
+                if (months != -1 && !text.matches(".*\\b"+months+"\\b.*")) {
+                    text += " They've subscribed for "+months+" months!";
+                }
                 if (tags.isValueOf("msg-id", "subgift", "anonsubgift")) {
                     giftedSubCombiner.add(user, text, message, months, emotes, tags);
                 } else {
