@@ -30,7 +30,7 @@ public class MsgColorSettings extends SettingsPanel {
             + "<dd>Match all info messages containing '[Notification]', so "
             + "basicially all subscriber notifications</dd>"
             + "</dl>"
-            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the"
+            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the "
             + "default color will be used.</p>";
     
     private final ItemColorEditor<MsgColorItem> data;

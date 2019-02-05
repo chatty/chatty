@@ -27,10 +27,10 @@ public class AdminDialog extends JDialog {
     
     private final static String EDITOR_TEXT = "[help-admin:status Help]";
     private final static String EDITOR_TEXT_NO_ACCESS
-            = "No Editor Access available. [help-admin:top More information..]";
+            = "Required access not available. [help-admin:access More information..]";
     private final static String COMMERCIALS_TEXT = "[help-admin:commercials Help]";
     private final static String COMMERCIALS_TEXT_NO_ACCESS
-            = "No Commercial Access available. [help-admin:top More information..]";
+            = "No Commercial Access available. [help-admin:access More information..]";
     
     // Colors for hideable labels
     private static final Color LABEL_INVISIBLE = new Color(0, 0, 0, 0);
@@ -178,10 +178,11 @@ public class AdminDialog extends JDialog {
      * appropriate info texts.
      * 
      * @param editor
+     * @param edit_broadcast
      * @param commercials 
      */
-    public void updateAccess(boolean editor, boolean commercials) {
-        this.editorAccess = editor;
+    public void updateAccess(boolean editor, boolean edit_broadcast, boolean commercials) {
+        this.editorAccess = editor && edit_broadcast;
         this.commercialAccess = commercials;
         updateInfoText();
     }

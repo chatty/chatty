@@ -6,7 +6,8 @@
     <div id="backlink"><a href="help.html">To main help page</a></div>
     <h1><a name="top">Admin Dialog</a></h1>
     <p>
-        <a href="#status">Change game/title</a> | 
+        <a href="#access">Access</a> | 
+        <a href="#status">Change stream title/game/tags</a> | 
         <a href="#commercials">Run commercials</a>
     </p>
 
@@ -14,31 +15,38 @@
             right-clicking on the channel to open the context menu and choose
             <code>Channel Admin</code>.</em></p>
     
-    <p>In the Admin Dialog you can edit your title/game and run commercials, if
-        you have allowed Chatty access (you need <code>Editor Access</code>/
-        <code>Commercial access</code> respectively, see <a href="help.html#access">allow more access</a>).</p>
-    
     <p>The Admin Dialog is always opened for the currently active channel,
     unless there is no channel open (which is the case just after you started Chatty),
     in which case it will open for your own channel (you login with).</p>
     
-    <h2><a name="status">Change game/title</a></h2>
-    <p>The Status-Tab lets you view and change the title and game of your channel.
-    The information is loaded when you open the dialog and when you press the
-    <code>reload</code>-Button. If others may have changed the info in the meantime,
-    you may want to reload before trying to change it.</p>
+    <h2><a name="access">Access</a></h2>
+    <p>The Admin Dialog requires the following access:</p>
+    <ul>
+        <li><strong>Editor access</strong>: To change the stream title/game</li>
+        <li><strong>Edit broadcast</strong>: To change stream tags</li>
+        <li><strong>Run commercials</strong>: To run commercials</li>
+    </ul>
+    
+    <p>If some access is missing, please go to <code>Main - Login..</code> in
+        the main menu and check for the access you need.</p>
+    
+    <h2><a name="status">Change stream title/game/tags</a></h2>
+    <p>The Status-Tab lets you view and (if you have access) change some stream
+        settings.</p>
+    
+    <h3>Set the title</h3>
+    <p>Simply enter the stream title you want to use in the input field.</p>
     
     <h3>Select a game</h3>
     <p>Use <code>Select game</code> to open a dialog where you can search for
-        a game and also add games to the favorites.</p>
+        a game and also add games to favorites.</p>
     
     <h3>Select tags</h3>
     <p>Tags are an additional categorization for streams. You can select up to
-        five tags and as with games also add your most frequently used ones to
-        favorites for easy access.</p>
+        five tags and also add tags to favorites.</p>
     
     <h3>Presets</h3>
-    <p>Status Presets allow you to store the current title, game and communities
+    <p>Status Presets allow you to store the current title, game and tags
         for later use. A status is automatically added every time you press the
         <code>Update</code> button (can be disabled in the History settings),
         but will be removed after some time of not being used. You can also add
@@ -46,9 +54,12 @@
         button, which means it is never automatically removed from the Status
         Presets.</p>
     
-    <p>Press the <code>Presets</code> button to open the Presets, where you can
-        select a status (double-click to immediately use it) and filter by
-        current game or favorites.</p>
+    <p>In the Presets dialog there are different ways to use an entry:</p>
+    <ul>
+        <li>Double-click an entry to use full status</li>
+        <li>Select an entry and choose one of the buttons to use full status or just title</li>
+        <li>Right-click an entry to open the context menu with various options</li>
+    </ul>
     
     <p>The <code>Last Activity</code> column shows when this status was last
         set using the <code>Update</code> button (or when it was added to the

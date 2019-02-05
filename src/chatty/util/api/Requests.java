@@ -372,6 +372,8 @@ public class Requests {
                         listener.result("Invalid: "+t);
                     }
                 });
+            } else if (responseCode == 401) {
+                listener.result("Access denied");
             } else {
                 listener.result("Error "+responseCode);
             }

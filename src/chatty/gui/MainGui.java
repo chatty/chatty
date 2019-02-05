@@ -3992,6 +3992,7 @@ public class MainGui extends JFrame implements Runnable {
         tokenDialog.updateAccess(scopes);
         adminDialog.updateAccess(
                 scopes.contains(TokenInfo.Scope.EDITOR.scope),
+                scopes.contains(TokenInfo.Scope.EDIT_BROADCAST.scope),
                 scopes.contains(TokenInfo.Scope.COMMERICALS.scope));
     }
     
