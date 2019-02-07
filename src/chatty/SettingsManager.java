@@ -211,7 +211,7 @@ public class SettingsManager {
         
         settings.addString("emoji", "twemoji");
         settings.addBoolean("emojiReplace", true);
-        settings.addString("cheersType", "static");
+        settings.addString("cheersType", "animated");
 
         settings.addBoolean("usericonsEnabled", true);
         

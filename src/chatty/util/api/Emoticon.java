@@ -528,6 +528,12 @@ public class Emoticon {
     
     private static final int IMAGE_EXPIRE_MINUTES = 4*60;
     
+    /**
+     * Set unused EmoticonImage objects to be garbage collected. Should only be
+     * called from the EDT.
+     * 
+     * @return 
+     */
     public int clearOldImages() {
         if (images != null) {
             Set<EmoticonImage> toRemove = new HashSet<>();
