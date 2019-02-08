@@ -49,6 +49,8 @@ import javax.swing.text.StyledDocument;
  * @author tduva
  */
 public class HighlighterTester extends JDialog implements StringEditor {
+    
+    private static final int MAX_INPUT_LENGTH = 50*1000;
 
     private final static String INFO = "<html><body style='width: 300px;padding:5px;'>"
             + "Test the entered 'Item' pattern with the 'Test' text. Disregards non-text related prefixes.";
@@ -116,6 +118,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         itemValue.setFont(Font.decode(Font.MONOSPACED));
+        GuiUtil.installLengthLimitDocumentFilter(itemValue, MAX_INPUT_LENGTH, false);
         add(itemValue, gbc);
         
         if (showBlacklist) {
@@ -126,6 +129,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             blacklistValue.setFont(Font.decode(Font.MONOSPACED));
+            GuiUtil.installLengthLimitDocumentFilter(blacklistValue, MAX_INPUT_LENGTH, false);
             add(blacklistValue, gbc);
             
             gbc = GuiUtil.makeGbc(1, 3, 2, 1);
@@ -157,6 +161,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         // Enable focus traversal keys
         testInput.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERS‌​AL_KEYS, null);
         testInput.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERS‌​AL_KEYS, null);
+        GuiUtil.installLengthLimitDocumentFilter(testInput, 1000, false);
         add(new JScrollPane(testInput),
                 gbc);
         

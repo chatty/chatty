@@ -40,6 +40,8 @@ import javax.swing.event.DocumentListener;
  * @author tduva
  */
 public class Editor implements StringEditor {
+    
+    private static final int INPUT_LENGTH_LIMIT = 100*1000;
 
     private final JDialog dialog;
     private final JLabel label;
@@ -87,12 +89,12 @@ public class Editor implements StringEditor {
         input = new JTextArea();
         input.getDocument().addDocumentListener(new ChangeListener());
         input.setMargin(new Insets(2, 2, 2, 2));
-        setAllowLinebreaks(false);
         input.setLineWrap(true);
         input.setWrapStyleWord(true);
         input.setText("test");
         // Use monospaced font for easier editing of some kinds of text
         input.setFont(Font.decode(Font.MONOSPACED));
+        GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, false);
         dialog.add(new JScrollPane(input), gbc);
         
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);
@@ -214,7 +216,7 @@ public class Editor implements StringEditor {
      * @param allow true to allow linebreaks
      */
     public final void setAllowLinebreaks(boolean allow) {
-        input.getDocument().putProperty("filterNewlines", !allow);
+        GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, allow);
     }
     
     private String format(String input) {

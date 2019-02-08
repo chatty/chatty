@@ -1,6 +1,7 @@
 
 package chatty.gui.components.admin;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import static chatty.gui.components.admin.AdminDialog.hideableLabel;
@@ -158,6 +159,7 @@ public class StatusPanel extends JPanel {
                 statusEdited();
             }
         });
+        GuiUtil.installLengthLimitDocumentFilter(status, 500, false);
         gbc = makeGbc(0,2,3,1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;

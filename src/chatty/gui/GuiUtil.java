@@ -6,6 +6,7 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
+import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.BorderLayout;
@@ -52,9 +53,12 @@ import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
@@ -516,6 +520,58 @@ public class GuiUtil {
                 }
             }
         });
+    }
+    
+    /**
+     * Set a DocumentFilter that limits the text length and allows or filters
+     * linebreak characters.
+     * 
+     * Note that this replaces an already set DocumentFilter.
+     * 
+     * @param comp The JTextComponent, using AbstractDocument
+     * @param limit The character limit
+     * @param allowNewlines false to filter linebreak characters
+     */
+    public static void installLengthLimitDocumentFilter(JTextComponent comp, int limit, boolean allowNewlines) {
+        if (limit < 0) {
+            throw new IllegalArgumentException("Invalid limit < 0");
+        }
+        DocumentFilter filter = new DocumentFilter() {
+            
+            @Override
+            public void replace(DocumentFilter.FilterBypass fb, int offset,
+                    int delLength, String text, AttributeSet attrs) throws BadLocationException {
+                if (text == null || text.isEmpty()) {
+                    super.replace(fb, offset, delLength, text, attrs);
+                } else {
+                    int currentLength = fb.getDocument().getLength();
+                    int overLimit = (currentLength + text.length()) - limit - delLength;
+                    if (overLimit > 0) {
+                        /**
+                         * Might be negative otherwise if limit already exceeded
+                         * (e.g. if the filter wasn't always active).
+                         */
+                        int newLength = Math.max(text.length() - overLimit, 0);
+                        text = text.substring(0, newLength);
+                    }
+                    if (!allowNewlines) {
+                        text = StringUtil.removeLinebreakCharacters(text);
+                    }
+                    super.replace(fb, offset, delLength, text, attrs);
+                }
+            }
+            
+        };
+        Document doc = comp.getDocument();
+        if (doc instanceof AbstractDocument) {
+            AbstractDocument ad = (AbstractDocument)doc;
+//            if (ad.getDocumentFilter() != null) {
+//                System.out.println("Filter already installed "+comp);
+//            }
+            ad.setDocumentFilter(filter);
+        } else {
+            throw new IllegalArgumentException("Textcomponent not using AbstractDocument");
+        }
     }
     
 }

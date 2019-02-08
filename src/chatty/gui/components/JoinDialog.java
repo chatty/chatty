@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.Helper;
+import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.lang.Language;
 import java.awt.Dimension;
@@ -60,6 +61,7 @@ public class JoinDialog extends JDialog {
                 changed();
             }
         });
+        GuiUtil.installLengthLimitDocumentFilter(channels, 5000, false);
         
         GridBagConstraints gbc;
         

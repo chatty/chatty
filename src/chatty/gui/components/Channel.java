@@ -7,6 +7,7 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.MainGui;
 import chatty.User;
+import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
@@ -40,9 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -126,6 +125,7 @@ public class Channel extends JPanel {
         // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
+        GuiUtil.installLengthLimitDocumentFilter(input, 500, false);
 
         // Add components
         add(mainPane, BorderLayout.CENTER);
