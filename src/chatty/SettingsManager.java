@@ -340,10 +340,12 @@ public class SettingsManager {
         settings.addBoolean("bufferStrategy1", false);
         settings.addBoolean("mainResizable", true);
         settings.addBoolean("splash", true);
+        settings.addBoolean("hideStreamsOnMinimize", true);
         
         // Tray
         settings.addBoolean("closeToTray", false);
         settings.addBoolean("minimizeToTray", false);
+        settings.addBoolean("trayIconAlways", false);
         
         // Window State
         settings.addMap("windows", new HashMap<>(), Setting.STRING);
