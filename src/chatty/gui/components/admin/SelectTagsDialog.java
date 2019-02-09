@@ -166,10 +166,11 @@ public class SelectTagsDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(listInfo, gbc);
         
-        gbc = makeGbc(3, 1, 2, 1);
+        gbc = makeGbc(2, 2, 2, 1);
         gbc.insets = new Insets(2,4,4,4);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.SOUTHEAST;
+        showAllTags.setSelected(true);
         add(showAllTags, gbc);
         
         //--------------
@@ -485,7 +486,7 @@ public class SelectTagsDialog extends JDialog {
         }
         search = search.toLowerCase();
         int addedCount = 0;
-        if (showAllTags.isSelected()) {
+        if (!showAllTags.isSelected()) {
             for (StreamTag c : allTags) {
                 if (c.getDisplayName().toLowerCase().contains(search)) {
                     listData.addElement(c);
@@ -512,7 +513,7 @@ public class SelectTagsDialog extends JDialog {
         }
         listInfo.setText(Language.getString("admin.tags.listInfo",
                 addedCount,
-                showAllTags.isSelected() ? allTags.size() : current.size(),
+                !showAllTags.isSelected() ? allTags.size() : current.size(),
                 addedCountFavs, favorites.size())
             + (loadingAllTagsInfo != null ? " ("+loadingAllTagsInfo+")": ""));
         list.setSelectedValue(selected, false);
@@ -526,7 +527,7 @@ public class SelectTagsDialog extends JDialog {
          * error occured without receiving any tags, another attempt may be
          * possible.
          */
-        if (showAllTags.isSelected() && allTags.isEmpty()) {
+        if (!showAllTags.isSelected() && allTags.isEmpty()) {
             loadingAllTagsInfo = Language.getString("status.loading");
             api.requestAllTags((r,e) -> {
                 SwingUtilities.invokeLater(() -> {
