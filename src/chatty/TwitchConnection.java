@@ -1077,7 +1077,14 @@ public class TwitchConnection {
             
         }
         
-        private final GiftedSubCombiner giftedSubCombiner = new GiftedSubCombiner();
+        /**
+         * Disable for now, since it didn't work very well:
+         * - Delay until the message is output (should maybe look for how many
+         * subs there are in the summary mesage)
+         * - Makes less sense now since each user seems to have the months shown
+         * now for gifted subs as well, since the cumulative subs update
+         */
+//        private final GiftedSubCombiner giftedSubCombiner = new GiftedSubCombiner();
         
         @Override
         void onUsernotice(String channel, String message, MsgTags tags) {
@@ -1103,11 +1110,7 @@ public class TwitchConnection {
                 if (months > 1 && !text.matches(".*\\b"+months+"\\b.*")) {
                     text += " They've subscribed for "+months+" months!";
                 }
-                if (tags.isValueOf("msg-id", "subgift", "anonsubgift")) {
-                    giftedSubCombiner.add(user, text, message, months, emotes, tags);
-                } else {
-                    listener.onSubscriberNotification(user, text, message, months, emotes);
-                }
+                listener.onSubscriberNotification(user, text, message, months, emotes);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
                 listener.onUsernotice("Charity", user, text, message, emotes);
             } else if (tags.isValue("msg-id", "raid")) {
