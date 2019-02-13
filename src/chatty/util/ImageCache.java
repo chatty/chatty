@@ -48,7 +48,7 @@ public class ImageCache {
      * Used as expire time for {@link clearOldFiles()} and
      * {@link clearOldFiles(Path)}.
      */
-    private static final int DELETE_FILES_OLDER_THAN = 60*60*24*30*2;
+    private static final int DELETE_FILES_OLDER_THAN = 60*60*24*30;
     
     private static volatile Path defaultPath = Paths.get("");
     private static volatile boolean cachingEnabled = true;
@@ -163,6 +163,8 @@ public class ImageCache {
     public static void clearOldFiles(Path path, int expireTime) {
         File[] files = path.toAbsolutePath().toFile().listFiles();
         if (files != null) {
+            LOGGER.info(String.format("ImageCache: Checking %d files",
+                    files.length));
             int deleted = 0;
             int toDelete = 0;
             for (File file : files) {
@@ -181,7 +183,10 @@ public class ImageCache {
                 }
             }
             if (toDelete > 0) {
-                LOGGER.info("ImageCache: Deleted "+deleted+"/"+toDelete+" old files");
+                LOGGER.info(String.format("ImageCache: Deleted %d/%d old files",
+                        deleted, toDelete));
+            } else {
+                LOGGER.info("ImageCache: No files to delete");
             }
         }
     }
