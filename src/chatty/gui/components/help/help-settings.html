@@ -1217,10 +1217,11 @@
                 at the same position when you reopen them during the same
                 session (so they are put on the default location when you open
                 them the first time after starting Chatty).</li>
-                <li><strong>Restore dialogs from last session</strong>: Puts
-                dialogs at the same position they were at when you closed Chatty
-                last session and also keeps the position during the session.</li>
-                <li><strong>Reopen dialogs from last session</strong>: Reopens
+                <li><strong>Keep location / size from last session</strong>:
+                Puts dialogs at the same position/size they were at when you
+                closed Chatty last session and also keeps the position during
+                the session.</li>
+                <li><strong>Reopen from last session</strong>: Reopens
                 any dialogs that were open when you closed Chatty last session
                 and also puts them at the same position they were before.</li>
             </ol>
@@ -1229,10 +1230,24 @@
             restores the position on start only if a large portion of the top of
             the dialog/window is visible on screen. This is to prevent dialogs
             from being lost off-screen by accident.</li>
-        <li><strong>Attach dialogs position to main window</strong>: If enabled,
+        <li><strong>Move dialogs when moving main window</strong>: If enabled,
         moves the dialogs like Channel Info or Admin Dialog along with the
         main window, so they always keep the same relative position. You can
         still move the dialogs by themselves of course.</li>
+    </ul>
+    
+    <h3>Minimizing / Tray</h3>
+    <ul>
+        <li><strong>Minimize to tray</strong>: When minimizing the main Chatty
+        window, it will be minimized to tray.</li>
+        <li><strong>Close to tray</strong>: Closing the main Chatty window will
+        not actually exit the program, but instead minimize it to tray. You can
+        actually close the program via <code>Main - Exit</code> or the tray icon
+        context menu.</li>
+        <li><strong>Always show tray icon</strong>: Always show the tray icon,
+        even when not minimized to tray.</li>
+        <li><strong>Hide Live Streams window on minimize</strong>: When you
+        minimize the main window, automatically hide the Live Streams window.</li>
     </ul>
     
     <h3>Other</h3>
@@ -1244,20 +1259,17 @@
         scrollbar in the chat window (there should never be a horizontal one),
         even if no scrolling is necessary. This can be useful for using window
         capture for streaming, because you can always keep the same subregion.</li>
-        <li><strong>Minimize to tray</strong>: When minimizing the main Chatty
-        window, it will be minimized to tray.</li>
-        <li><strong>Close to tray</strong>: Closing the main Chatty window will
-        not actually exit the program, but instead minimize it to tray. You can
-        actually close the program via <code>Main - Exit</code> or the tray icon
-        context menu.</li>
-        <li><strong>Default Userlist Width</strong>: The default width of the
-            userlist in pixels.</li>
-        <li><strong>Min. Width</strong>: The minimum width of the userlist in
-            pixels.</li>
         <li><strong>Enable userlist by default</strong>: Show the userlist by
             default. When you disable this the userlist will be entirely hidden
             from the start. You can always use a shortcut (<kbd>Shift+F10</kbd>
             by default) to toggle the userlist per channel.</li>
+        <li><strong>Default Userlist Width</strong>: The default width of the
+            userlist in pixels.</li>
+        <li><strong>Min. Width</strong>: The minimum width of the userlist in
+            pixels.</li>
+        <li><strong>Enable input field by default</strong>: Show the chat input
+            field by default. You can also configure a hotkey in the Hotkey
+            settings to toggle the input field.</li>
     </ul>
     
     <h3>Popout</h3>

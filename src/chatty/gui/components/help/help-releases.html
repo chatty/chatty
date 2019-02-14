@@ -55,11 +55,62 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.9.5">Version 0.9.5</a> <a name="latest">(This one!)</a> (2019-??-??)
+        <a name="0.9.5">Version 0.9.5</a> <a name="latest">(This one!)</a> (2019-02-14)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>Twitch released the Stream Tags API for third-party developers, so Chatty
+        now supports setting Stream Tags in the Admin Dialog, including the
+        ability to add Favorites and set them via Presets.</p>
+    
+    <p>There have also been improvements on base memory usage and memory usage
+        for long running instances, which may improve overall performance as
+        well.</p>
+    
     <pre>
-TBD
+### Chat
+- Added symbol ! for VIPs and sort in userlist
+- Improved support for some new chat messages
+- Changed Cheeremote default setting to animated
+- Limited inputbox to 500 characters (Twitch Chat cuts off messages longer than
+  500 characters, so this probably makes sense in most cases)
+- Disabled gift sub combining since it didn't work well enough
+
+### Moderation
+- Append approved/denied behind AutoMod messages
+- Don't hide indirect ModLog actions (e.g. "add blocked terms" when denying
+  AutoMod message)
+- Treat AutoMod messages like regular messages concerning bans (so e.g. they get
+  deleted when the user is timed out)
+- Shorten and filter linebreaks from AutoMod messages (normal chat messages
+  cannot contain linebreaks, but AutoMod messages apparently do sometimes)
+- Added setting to remove User Dialog messages of inactive users to reduce
+  memory usage (defaults to 12 hours, changeable in Moderation Settings)
+
+### Other
+- Added Stream Tags support to Admin Dialog
+- Added setting to automatically close Livestreamer/Streamlink Dialog when
+  player is started
+- Replace Emoji codes in Custom Commands as well
+- Added setting to Stream Highlights to select which user types can trigger chat
+  command (e.g. Moderators and VIPs)
+- Added setting to always show tray icon
+- Changed tray icon action to switch between show/minimize to tray
+- Added setting to automatically hide Live Streams window when minimizing Main
+  window
+- Added splash screen window icon
+- Changed image file cache duration in an attempt to improve startup time
+- Improved memory usage
+- Improved debug output
+- Updated help
+
+### Bugfixes
+- Added handling for possible regex error
+- Added limit to some input fields to prevent hanging when inadvertently pasting
+  very long text
+- Removed confusing Program Group page from installer
+- Fixed AutoMod message timestamp custom color
+- Fixed loading FFZ Emotes for namechanged channels
+- Fixed User Dialog ban info being overwritten sometimes
     </pre>
     
     <h2>
