@@ -142,7 +142,7 @@ public class MainMenu extends JMenuBar {
         //----------
         // Channels
         //----------
-        addItem(channels, "favoritesDialog", Language.getString("menubar.dialog.favorites"), KeyEvent.VK_F);
+        addItem(channels, "dialog.favorites");
         addItem(channels, "dialog.streams");
         addItem(channels, "dialog.addressbook");
         channels.addSeparator();
