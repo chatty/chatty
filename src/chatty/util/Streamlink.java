@@ -17,15 +17,15 @@ import java.util.regex.Pattern;
  * 
  * @author tduva
  */
-public class Livestreamer extends Thread {
+public class Streamlink extends Thread {
     
-    private final static Logger LOGGER = Logger.getLogger(Livestreamer.class.getName());
+    private final static Logger LOGGER = Logger.getLogger(Streamlink.class.getName());
     
     private final String command;
-    private final LivestreamerListener listener;
+    private final StreamlinkListener listener;
     private Process process;
     
-    public Livestreamer(String command, LivestreamerListener listener) {
+    public Streamlink(String command, StreamlinkListener listener) {
         this.command = command;
         this.listener = listener;
     }
@@ -37,7 +37,7 @@ public class Livestreamer extends Thread {
             String[] cmd = split(command);
             Process process = rt.exec(cmd);
             this.process = process;
-            LOGGER.info("Livestreamer: Process "+id()+" started. ["+filterToken(command)+"]");
+            LOGGER.info("Streamlink: Process "+id()+" started. ["+filterToken(command)+"]");
             listener.processStarted(command);
             
             // Read both output streams (output of the process, so input), so
@@ -52,13 +52,13 @@ public class Livestreamer extends Thread {
             errorStream.join(1000);
             inputStream.join(1000);
             listener.processFinished(exitValue);
-            LOGGER.info("Livestreamer: Process "+id()+" finished.");
+            LOGGER.info("Streamlink: Process "+id()+" finished.");
         } catch (IOException ex) {
             listener.message("Error: "+ex);
-            LOGGER.warning("Livestreamer: Error starting process / "+ex);
+            LOGGER.warning("Streamlink: Error starting process / "+ex);
         } catch (InterruptedException ex) {
             listener.message("Error: "+ex);
-            LOGGER.warning("Livestreamer: "+ex);
+            LOGGER.warning("Streamlink: "+ex);
         }
     }
     
@@ -67,11 +67,11 @@ public class Livestreamer extends Thread {
     }
     
     public void kill() {
-        LOGGER.info("Livestreamer: Killing Process "+id());
+        LOGGER.info("Streamlink: Killing Process "+id());
         process.destroy();
     }
     
-    public static interface LivestreamerListener {
+    public static interface StreamlinkListener {
         public void processStarted(String command);
         public void message(String message);
         public void processFinished(int exitValue);
@@ -94,11 +94,11 @@ public class Livestreamer extends Thread {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     listener.message(line);
-                    LOGGER.info("Livestreamer ("+id()+"): "+line);
+                    LOGGER.info("Streamlink ("+id()+"): "+line);
                 }
             } catch (IOException ex) {
                 listener.message("Error: "+ex);
-                LOGGER.warning("Livestreamer ("+id()+"): Error reading stream / "+ex);
+                LOGGER.warning("Streamlink ("+id()+"): Error reading stream / "+ex);
             }
         }
     }

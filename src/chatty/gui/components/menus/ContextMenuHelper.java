@@ -24,17 +24,17 @@ public class ContextMenuHelper {
     protected static final ImageIcon ICON_COMMANDLINE = new ImageIcon(ContextMenuHelper.class.getResource("commandline.png"));
     protected static final ImageIcon ICON_COPY = new ImageIcon(ContextMenuHelper.class.getResource("edit-copy.png"));
 
-    public static boolean enableLivestreamer = true;
+    public static boolean enableStreamlink = true;
     
     // This shouldn't usually be used before it is set, but just to be sure set
     // it to an empty String instead of null by default
-    public static String livestreamerQualities = "";
+    public static String streamlinkQualities = "";
     public static Settings settings;
     
     /**
-     * Pattern for finding the qualities in the Livestreamer qualities setting
+     * Pattern for finding the qualities in the Streamlink qualities setting
      */
-    private static final Pattern LIVESTREAMER_PATTERN
+    private static final Pattern STREAMLINK_PATTERN
             = Pattern.compile("(\\|)|(?:\\{(?<name>[^:}]+:)?(?<qualities>.+?)\\})|(?<basic>[^,\\s]+)");
     
     /**
@@ -69,7 +69,7 @@ public class ContextMenuHelper {
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
         m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
         m.addItem("streamsKadgar", "Kadgar.net", streamSubmenu);
-        addLivestreamerOptions(m);
+        addStreamlinkOptions(m);
         if (join) {
             m.addSeparator();
             m.addItem("join", Language.getString("channelCm.join", numStreams));
@@ -85,29 +85,29 @@ public class ContextMenuHelper {
     }
     
     /**
-     * Parses the livestreamer qualities setting and adds the defined qualities
+     * Parses the streamlink qualities setting and adds the defined qualities
      * as menu items.
      * 
      * @param m 
      */
-    public static void addLivestreamerOptions(ContextMenu m) {
-        if (enableLivestreamer) {
-            String livestreamerMenu = "Livestreamer";
-            m.setSubMenuIcon(livestreamerMenu, ICON_COMMANDLINE);
-            List<Quality> qualities = parseLivestreamerQualities(livestreamerQualities);
+    public static void addStreamlinkOptions(ContextMenu m) {
+        if (enableStreamlink) {
+            String streamlinkMenu = "Streamlink";
+            m.setSubMenuIcon(streamlinkMenu, ICON_COMMANDLINE);
+            List<Quality> qualities = parseStreamlinkQualities(streamlinkQualities);
             for (Quality q : qualities) {
                 if (q == null) {
-                    m.addSeparator(livestreamerMenu);
+                    m.addSeparator(streamlinkMenu);
                 } else {
-                    m.addItem("livestreamerQ"+q.qualities, q.displayName, livestreamerMenu);
+                    m.addItem("streamlinkQ"+q.qualities, q.displayName, streamlinkMenu);
                 }
             }
         }
     }
 
-    static List<Quality> parseLivestreamerQualities(String input) {
+    static List<Quality> parseStreamlinkQualities(String input) {
         List<Quality> result = new ArrayList<>();
-        Matcher matcher = LIVESTREAMER_PATTERN.matcher(input);
+        Matcher matcher = STREAMLINK_PATTERN.matcher(input);
         boolean sep = false;
         while (matcher.find()) {
             if (matcher.group().equals("|")) {
