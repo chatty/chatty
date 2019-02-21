@@ -236,12 +236,16 @@ public class LivestreamerDialog extends JDialog {
                 tabs.setSelectedComponent(newItem);
                 tabs.setToolTipTextAt(tabs.getSelectedIndex(), stream);
                 newItem.start();
-                pack();
+                if (getWidth() < getPreferredSize().width) {
+                    setSize(getPreferredSize().width, getHeight());
+                }
             }
         }
         loadSettings();
         if (stream == null || quality == null || openDialog.isSelected()) {
-            setLocationRelativeTo(parent);
+            if (!isVisible()) {
+                setLocationRelativeTo(parent);
+            }
             setVisible(true);
         }
     }
