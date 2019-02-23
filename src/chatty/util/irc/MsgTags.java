@@ -130,6 +130,15 @@ public class MsgTags {
         return defaultValue;
     }
     
+    public boolean hasInteger(String key) {
+        try {
+            Integer.parseInt(tags.get(key));
+            return true;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
     /**
      * Returns the long associated with the given key, or the defaultValue if no
      * long was found for that key.

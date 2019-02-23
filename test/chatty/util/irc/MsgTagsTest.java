@@ -3,6 +3,7 @@ package chatty.util.irc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -16,6 +17,8 @@ public class MsgTagsTest {
         MsgTags emptyTags1 = MsgTags.EMPTY;
         assertEquals(emptyTags1.isEmpty(), true);
         assertEquals(emptyTags1.get("abc"), null);
+        assertFalse(emptyTags1.containsKey("abc"));
+        assertFalse(emptyTags1.hasInteger("abc"));
         
         MsgTags emptyTags2 = MsgTags.parse(null);
         assertEquals(emptyTags2.isEmpty(), true);
@@ -40,6 +43,9 @@ public class MsgTagsTest {
         assertEquals(tags3.get("display-name"), "tduva");
         assertEquals(tags3.get("user-type"), "");
         assertEquals(tags3.get("user-type", null), "");
+        assertTrue(tags3.hasInteger("subscriber"));
+        assertFalse(tags3.hasInteger("user-type"));
+        assertFalse(tags3.hasInteger("color"));
         
         MsgTags tags4 = MsgTags.parse("ban-duration=1;ban-reason=test\\smessage");
         assertFalse(tags4.isEmpty());

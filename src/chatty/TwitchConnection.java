@@ -1118,6 +1118,13 @@ public class TwitchConnection {
             } else if (text.equals("reward") && !message.isEmpty()) {
                 // For Bits reward text has "reward" and message what should be in text
                 listener.onUsernotice("Usernotice", user, message, null, emotes);
+            } else if (tags.isValueOf("msg-id", "bitsbadgetier")
+                    && text.equals("bits badge tier notification")
+                    && tags.hasInteger("msg-param-threshold")) {
+                text = String.format("%s just earned a new %,d Bits badge!",
+                        user.getDisplayNick(),
+                        tags.getInteger("msg-param-threshold", -1));
+                listener.onUsernotice("Usernotice", user, text, null, emotes);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this

@@ -49,6 +49,9 @@ public class RawMessageTest {
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }
+        if (type.equals("bitsbadgetier")) {
+            return "@badges=subscriber/3,bits/1000;color=#FF0000;display-name=USERNAME;emotes=;flags=;id=123;login=username;mod=0;msg-id=bitsbadgetier;msg-param-threshold=1000;room-id=123;subscriber=1;system-msg=bits\\sbadge\\stier\\snotification;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :tmi.twitch.tv USERNOTICE "+channel;
+        }
         if (type.equals("autohost")) {
             return ":jtv!jtv@jtv.tmi.twitch.tv PRIVMSG "+localUsername+" :UserName is now auto hosting you.";
         }
