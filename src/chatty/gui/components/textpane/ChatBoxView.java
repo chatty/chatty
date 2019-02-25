@@ -66,9 +66,10 @@ class ChatBoxView extends BoxView {
                 textBlockHeight += spans[i];
             }
             offset = (targetSpan - textBlockHeight);
-            //System.out.println(offset);
-            for (int i = 0; i < offsets.length; i++) {
-                offsets[i] += offset;
+            if (offset > 0) {
+                for (int i = 0; i < offsets.length; i++) {
+                    offsets[i] += offset;
+                }
             }
         }
     }
