@@ -16,8 +16,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -45,10 +49,15 @@ public class ImageCache {
     private static final String GLOBAL_PREFIX = "imgcache-";
     
     /**
-     * Used as expire time for {@link clearOldFiles()} and
-     * {@link clearOldFiles(Path)}.
+     * Used as expire time for {@link #deleteExpiredFiles()} and
+     * {@link #deleteExpiredFiles(Path)}.
      */
     private static final int DELETE_FILES_OLDER_THAN = 60*60*24*30;
+    
+    /**
+     * Number of files checked that will stop it going to the next directory.
+     */
+    private static final int EXPIRED_FILES_CHECK_CAP = 100;
     
     private static volatile Path defaultPath = Paths.get("");
     private static volatile boolean cachingEnabled = true;
@@ -56,7 +65,7 @@ public class ImageCache {
     /**
      * Sets the default image cache Path, used by some functions.
      * 
-     * @see clearOldFiles()
+     * @see #deleteExpiredFiles()
      * @see getImage(URL, String, int)
      * @see clearCache(String)
      * 
@@ -99,29 +108,63 @@ public class ImageCache {
      * files if the prefix is null. Uses the default path.
      * 
      * @param prefix The prefix, or null to delete all image cache files
+     * @return The number of deleted files, or -1 if failed
      */
-    public static void clearCache(String prefix) {
-        clearCache(defaultPath, prefix);
+    public static int clearCache(String prefix) {
+        return clearCache(defaultPath, prefix);
     }
     
     /**
      * Deletes all image cache files with the given prefix, or all image cache
-     * files if the prefix is null.
+     * files if the prefix is null. Deletes folders as possible.
      * 
      * @param path The path to delete the files from
      * @param prefix The prefix, or null to delete all image cache files
+     * @return The number of deleted files, or -1 if failed
      */
-    public static void clearCache(Path path, String prefix) {
-        File[] files = path.toAbsolutePath().toFile().listFiles();
-        if (files != null) {
-            for (File file : files) {
-                
-                if ((prefix == null && file.getName().startsWith(GLOBAL_PREFIX))
-                        || file.getName().startsWith(GLOBAL_PREFIX+prefix+"__")) {
-                    //System.out.println(file+" "+GLOBAL_PREFIX+prefix+"__");
-                    file.delete();
+    private static int clearCache(Path path, String prefix) {
+        try {
+            File dir = path.toRealPath().toFile();
+            String fullPrefix;
+            if (prefix == null) {
+                fullPrefix = GLOBAL_PREFIX;
+            } else {
+                fullPrefix = GLOBAL_PREFIX+prefix+"__";
+            }
+            int deletedFilesCount = MiscUtil.deleteInDir(dir, fullPrefix, false);
+            LOGGER.info(String.format("ImageCache: Deleted %d files in %s",
+                    deletedFilesCount, dir));
+            return deletedFilesCount;
+        } catch (IOException ex) {
+            LOGGER.warning("ImageCache: Failed to resolve path ["+ex+"]");
+            return -1;
+        }
+    }
+    
+    /**
+     * Deletes any cache files in the old format, where all files were in one
+     * directory.
+     */
+    private static void removeOldCache() {
+        try {
+            int deletedCount = 0;
+            File dir = defaultPath.toRealPath().toFile();
+            File[] files = dir.listFiles(file -> {
+                return file.isFile() && file.getName().startsWith(GLOBAL_PREFIX);
+            });
+            if (files != null) {
+                for (File file : files) {
+                    if (file.delete()) {
+                        deletedCount++;
+                    }
                 }
             }
+            if (deletedCount > 0) {
+                LOGGER.info(String.format("Deleted %d files from old cache",
+                        deletedCount));
+            }
+        } catch (IOException ex) {
+            LOGGER.warning("ImageCache: Error deleting old cache ("+ex+")");
         }
     }
     
@@ -131,24 +174,62 @@ public class ImageCache {
      * expired according to the default expire time (roughly 2 months).
      * 
      * @see setDefaultPath(Path path)
-     * @see clearOldFiles(Path path)
+     * @see #deleteExpiredFiles(Path)
      * @see clearOldFiles(Path path, int expireTime)
      */
-    public static void clearOldFiles() {
-        clearOldFiles(defaultPath);
+    public static void deleteExpiredFiles() {
+        deleteExpiredFiles(defaultPath);
     }
     
     /**
      * Remove all the image cache files (that are starting with the global
      * prefix) from the given Path that have expired according to the default
-     * expire time (roughly 2 months).
+     * expire time.
      * 
-     * @see clearOldFiles(Path path, int expireTime)
-     * 
-     * @param path The path to delete the files from
+     * @param imgCachePath The path to delete the files from
      */
-    public static void clearOldFiles(Path path) {
-        clearOldFiles(path, DELETE_FILES_OLDER_THAN);
+    public static void deleteExpiredFiles(Path imgCachePath) {
+        removeOldCache();
+        LOGGER.info("ImageCache: Checking for old files in random directory..");
+        try {
+            File[] dirs = imgCachePath.toRealPath().toFile().listFiles(file -> {
+                return file.isDirectory() && file.getName().startsWith(GLOBAL_PREFIX);
+            });
+            if (dirs != null && dirs.length > 0) {
+                File random = dirs[ThreadLocalRandom.current().nextInt(dirs.length)];
+                File[] subdirs = random.listFiles(file -> {
+                    return file.isDirectory();
+                });
+                deleteExpiredFilesInSubDirs(subdirs);
+            }
+        } catch (IOException ex) {
+            LOGGER.warning("ImageCache: Failed clearing old files ["+ex+"]");
+        }
+    }
+    
+    /**
+     * Clears old cache files in one or more of the given directories, in random
+     * order, with a cap on how many files are checked.
+     *
+     * @param dirsArray
+     * @throws IOException 
+     */
+    private static void deleteExpiredFilesInSubDirs(File[] dirsArray) throws IOException {
+        if (dirsArray == null || dirsArray.length == 0) {
+            return;
+        }
+        // Take dir from this list and remove when checked
+        List<File> dirs = new ArrayList<>(Arrays.asList(dirsArray));
+        int fileCount = 0;
+        while (!dirs.isEmpty() && fileCount < EXPIRED_FILES_CHECK_CAP) {
+            File random = dirs.get(ThreadLocalRandom.current().nextInt(dirs.size()));
+            fileCount += deleteExpiredFilesInDir(random.getCanonicalFile(), DELETE_FILES_OLDER_THAN);
+            dirs.remove(random);
+        }
+        LOGGER.info(String.format("ImageCache: Checked %d files in %d subdirs (%s)",
+                fileCount,
+                dirsArray.length - dirs.size(),
+                dirsArray[0].getParent()));
     }
     
     /**
@@ -159,12 +240,11 @@ public class ImageCache {
      * @param path The path to delete the files from
      * @param expireTime The time in seconds that needs to have passed since the
      * files last modification date for it to be considered expired
+     * @return The number of files checked
      */
-    public static void clearOldFiles(Path path, int expireTime) {
-        File[] files = path.toAbsolutePath().toFile().listFiles();
+    private static int deleteExpiredFilesInDir(File dir, int expireTime) {
+        File[] files = dir.listFiles();
         if (files != null) {
-            LOGGER.info(String.format("ImageCache: Checking %d files",
-                    files.length));
             int deleted = 0;
             int toDelete = 0;
             for (File file : files) {
@@ -183,12 +263,12 @@ public class ImageCache {
                 }
             }
             if (toDelete > 0) {
-                LOGGER.info(String.format("ImageCache: Deleted %d/%d old files",
-                        deleted, toDelete));
-            } else {
-                LOGGER.info("ImageCache: No files to delete");
+                LOGGER.info(String.format("ImageCache: Deleted %d/%d files (checked %d in %s)",
+                        deleted, toDelete, files.length, dir));
             }
+            return files.length;
         }
+        return 0;
     }
     
     /**
@@ -305,6 +385,7 @@ public class ImageCache {
         
         String id = sha1(url.toString());
         
+        path = path.resolve(GLOBAL_PREFIX+prefix).resolve(id.substring(0, 1));
         path.toFile().mkdirs();
         Path file = path.resolve(getFilename(prefix, id));
         ImageIcon result = null;

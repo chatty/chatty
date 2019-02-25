@@ -236,7 +236,7 @@ public class TwitchClient {
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
-        ImageCache.clearOldFiles();
+        ImageCache.deleteExpiredFiles();
         EmoticonSizeCache.loadFromFile();
 
         usercolorManager = new UsercolorManager(settings);
@@ -1109,12 +1109,23 @@ public class TwitchClient {
         }
         else if (command.equals("clearimagecache")) {
             g.printLine("Clearing image cache (this can take a few seconds)");
-            ImageCache.clearCache(null);
-            g.printLine("Image cache cleared.");
+            int result = ImageCache.clearCache(null);
+            if (result == -1) {
+                g.printLine("Failed clearing image cache.");
+            } else {
+                g.printLine(String.format("Deleted %d image cache files",
+                        result));
+            }
         }
         else if (command.equals("clearemotecache")) {
-            ImageCache.clearCache("emote_"+parameter);
-            g.printLine("Emoticon image cache for type "+parameter+" cleared.");
+            g.printLine("Clearing Emoticon image cache for type "+parameter+".");
+            int result = ImageCache.clearCache("emote_"+parameter);
+            if (result == -1) {
+                g.printLine("Failed clearing image cache.");
+            } else {
+                g.printLine(String.format("Deleted %d image cache files",
+                        result));
+            }
         }
         
         //------
@@ -1506,6 +1517,8 @@ public class TwitchClient {
             g.printSystem(Debugging.command(parameter));
         } else if (command.equals("connection")) {
             c.debugConnection();
+        } else if (command.equals("clearoldcachefiles")) {
+            ImageCache.deleteExpiredFiles();
         }
     }
     

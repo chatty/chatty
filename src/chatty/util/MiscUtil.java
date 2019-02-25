@@ -112,6 +112,47 @@ public class MiscUtil {
     }
     
     /**
+     * Delete all files and directories in the given directory.
+     * 
+     * The prefix can be used if all the files to delete share a common prefix,
+     * to ensure that only the correct files are deleted.
+     * 
+     * If the deleteDir parameter is true, then the given directory itself is
+     * also deleted, otherwise only subdirectories are deleted.
+     * 
+     * If a file or directory fails to be deleted (for directories this often
+     * occurs because it is not empty), then the rest of the process will still
+     * continue and no error is thrown.
+     * 
+     * @param dir The directory to act upon
+     * @param prefix Files need to have this prefix to be deleted
+     * @param deleteDir If true, delete the given directory itself as well
+     * @return The number of files successfully deleted
+     */
+    public static int deleteInDir(File dir, String prefix, boolean deleteDir) {
+        int count = 0;
+        if (dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (null != files) {
+                for (int i = 0; i < files.length; i++) {
+                    File file = files[i];
+                    if (file.isDirectory()) {
+                        count += deleteInDir(file, prefix, true);
+                    } else if (file.getName().startsWith(prefix)) {
+                        if (files[i].delete()) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        if (deleteDir) {
+            dir.delete();
+        }
+        return count;
+    }
+    
+    /**
      * Returns the StackTrace of the given Throwable as a String.
      * 
      * @param e
