@@ -4541,6 +4541,12 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
+    public void showPopupMessage(String text) {
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane.showMessageDialog(this, text);
+        });
+    }
+    
     /**
      * Display an error dialog with the option to quit or continue the program
      * and to report the error.

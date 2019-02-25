@@ -70,11 +70,14 @@ import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.awt.Color;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -989,6 +992,20 @@ public class TwitchClient {
         }
         else if (command.equals("openjavadir")) {
             MiscUtil.openFolder(new File(System.getProperty("java.home")), g);
+        }
+        else if (command.equals("showfallbackfontdir")) {
+            Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
+            g.printSystem("Fallback font directory (may not exist yet): "+path);
+        }
+        else if (command.equals("openfallbackfontdir")) {
+            Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
+            if (Files.exists(path)) {
+                MiscUtil.openFolder(path.toFile(), g);
+            } else {
+                path = path.getParent();
+                g.showPopupMessage("Fallback font folder does not exist. Create a folder called 'fallback' in '"+path+"'.");
+                MiscUtil.openFolder(path.toFile(), g);
+            }
         }
         else if (command.equals("copy")) {
             MiscUtil.copyToClipboard(parameter);

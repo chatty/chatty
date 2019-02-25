@@ -43,7 +43,7 @@ public class MiscUtil {
             Desktop.getDesktop().open(folder);
         } catch (Exception ex) {
             if (parent != null) {
-                JOptionPane.showMessageDialog(parent, "Opening folder failed.");
+                JOptionPane.showMessageDialog(parent, "Opening folder failed.\n"+ex.getLocalizedMessage());
             }
             return false;
         }
