@@ -22,10 +22,11 @@ package chatty.util.gif;
  * graphicsControlExtensionNode.setAttribute("disposalMethod", "restoreToBackgroundColor");
  * 
  * as suggested in http://stackoverflow.com/questions/777947/creating-animated-gif-with-imageio/789723#comment26719121_789723
- * 
  * ----------
- * 
  * Modified to add per-frame delay.
+ * ----------
+ * Further modified to choose disposal method based on whether the image has
+ * transparent pixels. Some other refactoring.
  */
 
 import javax.imageio.*;
@@ -39,13 +40,15 @@ public class GifSequenceWriter {
   protected ImageWriter gifWriter;
   protected ImageWriteParam imageWriteParam;
   protected IIOMetadata imageMetaData;
-  private final boolean loopContinuously;
+  private final String metaFormatName;
+  private final boolean hasTransparency;
   
   /**
    * Creates a new GifSequenceWriter
    * 
    * @param outputStream the ImageOutputStream to be written to
    * @param imageType one of the imageTypes specified in BufferedImage
+   * @param hasTransparency whether the gif has any transparent pixels
    * @param loopContinuously wether the gif should loop repeatedly
    * @throws IIOException if no gif ImageWriters are found
    *
@@ -54,7 +57,8 @@ public class GifSequenceWriter {
   public GifSequenceWriter(
       ImageOutputStream outputStream,
       int imageType,
-      boolean loopContinuously) throws IIOException, IOException {
+      boolean loopContinuously,
+      boolean hasTransparency) throws IIOException, IOException {
     // my method to create a writer
     gifWriter = getWriter(); 
     imageWriteParam = gifWriter.getDefaultWriteParam();
@@ -65,34 +69,9 @@ public class GifSequenceWriter {
       gifWriter.getDefaultImageMetadata(imageTypeSpecifier,
       imageWriteParam);
 
-    this.loopContinuously = loopContinuously;
+    metaFormatName = imageMetaData.getNativeMetadataFormatName();
 
-    gifWriter.setOutput(outputStream);
-
-    gifWriter.prepareWriteSequence(null);
-  }
-  
-  private void setSettings(int frameDelay) throws IOException {
-    String metaFormatName = imageMetaData.getNativeMetadataFormatName();
-
-    IIOMetadataNode root = (IIOMetadataNode)
-      imageMetaData.getAsTree(metaFormatName);
-
-    IIOMetadataNode graphicsControlExtensionNode = getNode(
-      root,
-      "GraphicControlExtension");
-
-    graphicsControlExtensionNode.setAttribute("disposalMethod", "restoreToBackgroundColor");
-    graphicsControlExtensionNode.setAttribute("userInputFlag", "FALSE");
-    graphicsControlExtensionNode.setAttribute(
-      "transparentColorFlag",
-      "FALSE");
-    graphicsControlExtensionNode.setAttribute(
-              "delayTime",
-              Integer.toString(frameDelay / 10));
-    graphicsControlExtensionNode.setAttribute(
-      "transparentColorIndex",
-      "0");
+    IIOMetadataNode root = (IIOMetadataNode)imageMetaData.getAsTree(metaFormatName);
 
     IIOMetadataNode commentsNode = getNode(root, "CommentExtensions");
     commentsNode.setAttribute("CommentExtension", "Created by MAH");
@@ -113,23 +92,79 @@ public class GifSequenceWriter {
     appEntensionsNode.appendChild(child);
 
     imageMetaData.setFromTree(metaFormatName, root);
+
+    gifWriter.setOutput(outputStream);
+
+    gifWriter.prepareWriteSequence(null);
+    
+    this.hasTransparency = hasTransparency;
   }
   
-  /**
-   * 
-   * @param img
-   * @param frameDelay milliseconds
-   * @throws IOException 
-   */
-  public void writeToSequence(RenderedImage img, int frameDelay) throws IOException {
-      setSettings(frameDelay);
-    gifWriter.writeToSequence(
-      new IIOImage(
-        img,
-        null,
-        imageMetaData),
-      imageWriteParam);
-  }
+    /**
+     * Add a frame to the GIF. The frame delay is capped (see
+     * {@link capDelay(int)}).
+     * 
+     * @param img The image to add
+     * @param frameDelay The frame delay (capped)
+     * @throws IOException
+     */
+    public void writeToSequence(RenderedImage img, int frameDelay) throws IOException {
+        writeToSequence(img, frameDelay, true);
+    }
+  
+    /**
+     * Add a frame to the GIF. The frame delay is capped when capDelay is true
+     * (see {@link capDelay(int)}).
+     * 
+     * @param img The image to add
+     * @param frameDelay The frame delay
+     * @param capDelay Whether to cap the frame delay
+     * @throws IOException 
+     */
+    public void writeToSequence(RenderedImage img, int frameDelay, boolean capDelay) throws IOException {
+        if (capDelay) {
+            frameDelay = capDelay(frameDelay);
+        }
+        setGceOptions(frameDelay);
+        gifWriter.writeToSequence(
+                new IIOImage(
+                        img,
+                        null,
+                        imageMetaData),
+                imageWriteParam);
+    }
+  
+    private void setGceOptions(int frameDelay) throws IOException {
+        IIOMetadataNode root = (IIOMetadataNode) imageMetaData.getAsTree(metaFormatName);
+
+        IIOMetadataNode graphicsControlExtensionNode = getNode(
+                root,
+                "GraphicControlExtension");
+
+        /**
+         * Choose disposal method so that now unwanted transparent pixels appear
+         * in images that contain no transparent pixels at all. There is
+         * probably a better way to do this, but it seems to work well enough
+         * for now.
+         */
+        graphicsControlExtensionNode.setAttribute(
+                "disposalMethod",
+                hasTransparency ? "restoreToBackgroundColor" : "doNotDispose");
+        graphicsControlExtensionNode.setAttribute(
+                "userInputFlag",
+                "FALSE");
+        graphicsControlExtensionNode.setAttribute(
+                "transparentColorFlag",
+                "FALSE");
+        graphicsControlExtensionNode.setAttribute(
+                "transparentColorIndex",
+                "0");
+        graphicsControlExtensionNode.setAttribute(
+                "delayTime",
+                Integer.toString(frameDelay / 10));
+
+        imageMetaData.setFromTree(metaFormatName, root);
+    }
   
   /**
    * Close this GifSequenceWriter object. This does not close the underlying
@@ -178,42 +213,77 @@ public class GifSequenceWriter {
     rootNode.appendChild(node);
     return(node);
   }
-  
-  /**
-  public GifSequenceWriter(
-       BufferedOutputStream outputStream,
-       int imageType,
-       int timeBetweenFramesMS,
-       boolean loopContinuously) {
-   
-   */
-  
-  public static void main(String[] args) throws Exception {
-    if (args.length > 1) {
-      // grab the output image type from the first image in the sequence
-      BufferedImage firstImage = ImageIO.read(new File(args[0]));
 
-      // create a new BufferedOutputStream with the last argument
-      ImageOutputStream output = 
-        new FileImageOutputStream(new File(args[args.length - 1]));
-      
-      // create a gif sequence with the type of the first image, 1 second
-      // between frames, which loops continuously
-      GifSequenceWriter writer = 
-        new GifSequenceWriter(output, firstImage.getType(), false);
-      
-      // write out the first image to our sequence...
-      writer.writeToSequence(firstImage, 1);
-      for(int i=1; i<args.length-1; i++) {
-        BufferedImage nextImage = ImageIO.read(new File(args[i]));
-        writer.writeToSequence(nextImage, 1);
-      }
-      
-      writer.close();
-      output.close();
-    } else {
-      System.out.println(
-        "Usage: java GifSequenceWriter [list of gif files] [output file]");
+//  public static void main(String[] args) throws Exception {
+//    if (args.length > 1) {
+//      // grab the output image type from the first image in the sequence
+//      BufferedImage firstImage = ImageIO.read(new File(args[0]));
+//
+//      // create a new BufferedOutputStream with the last argument
+//      ImageOutputStream output = 
+//        new FileImageOutputStream(new File(args[args.length - 1]));
+//      
+//      // create a gif sequence with the type of the first image, 1 second
+//      // between frames, which loops continuously
+//      GifSequenceWriter writer = 
+//        new GifSequenceWriter(output, firstImage.getType(), 1, false);
+//      
+//      // write out the first image to our sequence...
+//      writer.writeToSequence(firstImage);
+//      for(int i=1; i<args.length-1; i++) {
+//        BufferedImage nextImage = ImageIO.read(new File(args[i]));
+//        writer.writeToSequence(nextImage);
+//      }
+//      
+//      writer.close();
+//      output.close();
+//    } else {
+//      System.out.println(
+//        "Usage: java GifSequenceWriter [list of gif files] [output file]");
+//    }
+//  }
+  
+    /**
+     * Create a GifSequenceWriter automatically getting the image type from the
+     * given image, looping repeatedly and checking the image for transparencey.
+     * 
+     * @param output The image output stream
+     * @param image A frame of the GIF, usually the first
+     * @return The GifSequenceWriter
+     * @throws IOException 
+     */  
+    public static GifSequenceWriter create(ImageOutputStream output, BufferedImage image) throws IOException {
+        return new GifSequenceWriter(output, image.getType(), true, hasTransparency(image));
     }
-  }
+    
+    public static boolean hasTransparency(BufferedImage image) {
+        if (image.getColorModel().hasAlpha()) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                for (int y = 0; y < image.getHeight(); y++) {
+                    int alpha = (image.getRGB(x, y) >> 24) & 0xFF;
+                    if (alpha == 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Browsers usually seem to turn a delay of 0/100 or 1/100 into 10/100, so
+     * do the same.
+     * 
+     * @see <a href="https://www.deviantart.com/humpy77/journal/Frame-Delay-Times-for-Animated-GIFs-240992090">How browsers handle frame delays (Web)</a>
+     * 
+     * @param delay Time between frames in ms
+     * @return
+     */
+    public static int capDelay(int delay) {
+        if (delay <= 10) {
+            return 100;
+        }
+        return delay;
+    }
+    
 }
