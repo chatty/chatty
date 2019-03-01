@@ -86,8 +86,14 @@ public class Emoticons {
      */
     private final HashMap<Integer,HashSet<Emoticon>> emoticonsByEmoteset = new HashMap<>();
     
+    /**
+     * All successfully loaded Custom Emotes.
+     */
     private final Set<Emoticon> customEmotes = new HashSet<>();
     
+    /**
+     * Custom Emotes for lookup by id. All of these are also in customEmotes.
+     */
     private final Map<Integer, Emoticon> customEmotesById = new HashMap<>();
     
     /**
@@ -702,7 +708,7 @@ public class Emoticons {
     }
     
     private void findFavorites() {
-        favorites.find(twitchEmotesById, otherGlobalEmotes, emoji);
+        favorites.find(twitchEmotesById, otherGlobalEmotes, emoji, customEmotes);
     }
     
     public Set<Integer> getFavoritesEmotesets() {
@@ -743,6 +749,7 @@ public class Emoticons {
                 }
             }
             LOGGER.info("Loaded "+countLoaded+" custom emotes");
+            findFavorites();
         } catch (IOException ex) {
             LOGGER.info("Didn't load custom emotes: "+ex);
         }

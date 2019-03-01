@@ -151,18 +151,18 @@ public class EmoticonFavorites {
      * everytime new emotes are added (e.g. from request or loaded from cache).
      * 
      * @param twitchEmotesById All Twitch emotes currently loaded
-     * @param otherGlobalEmotes All non-Twitch global emotes
-     * @param emoji All Emoji currently loaded
+     * @param more
      */
     public void find(Map<Integer, Emoticon> twitchEmotesById,
-            Set<Emoticon> otherGlobalEmotes, Set<Emoticon> emoji) {
+            Set<Emoticon>... more) {
         if (favoritesNotFound.isEmpty()) {
             return;
         }
         int count = favoritesNotFound.size();
         findFavorites(twitchEmotesById.values());
-        findFavorites(otherGlobalEmotes);
-        findFavorites(emoji);
+        for (Set<Emoticon> emotes : more) {
+            findFavorites(emotes);
+        }
         if (favoritesNotFound.isEmpty()) {
             LOGGER.info("Emoticons: Found all remaining " + count + " favorites");
         } else {
