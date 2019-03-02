@@ -115,6 +115,9 @@ External Libraries
 	(for the license text see the APACHE_LICENSE file
 	or <http://www.apache.org/licenses/LICENSE-2.0>).
 
+* Additional external/modified libraries integrated under `src/chatty/` have license/source
+  information in the file header
+
 Images / Other
 --------------
 

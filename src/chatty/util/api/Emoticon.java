@@ -347,7 +347,7 @@ public class Emoticon {
                  * 
                  * http://mts.io/2015/04/21/unicode-symbol-render-text-emoji/
                  */
-                search = Pattern.quote(search)+"(\uFE0E|\uFE0F)?";
+                search = Pattern.quote(search)+"[\uFE0E\uFE0F]?";
             } else {
                 // Any regular emotes should be separated by spaces
                 if (literal) {
