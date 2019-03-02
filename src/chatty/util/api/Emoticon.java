@@ -338,9 +338,16 @@ public class Emoticon {
             int flags = 0;
             
             if (type == Type.EMOJI) {
-                // Some Emoji seemed to not compile without this, although not
-                // sure why, but just do it just in case
-                flags = Pattern.LITERAL;
+                /**
+                 * Match variation selectors for text and emoji style, if
+                 * present, so it's included in the Emoji image and not visible.
+                 * If \uFE0E (text style) is at the end of the match, it should
+                 * not be turned into an image (although not sure how often that
+                 * actually occurs).
+                 * 
+                 * http://mts.io/2015/04/21/unicode-symbol-render-text-emoji/
+                 */
+                search = Pattern.quote(search)+"(\uFE0E|\uFE0F)?";
             } else {
                 // Any regular emotes should be separated by spaces
                 if (literal) {

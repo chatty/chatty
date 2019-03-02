@@ -189,4 +189,13 @@ public class HelperTest {
         }
     }
     
+    @Test
+    public void removeEmojiVariationSelectorTest() {
+        assertEquals(Helper.removeEmojiVariationSelector(null), null);
+        assertEquals(Helper.removeEmojiVariationSelector("❤︎"), "❤");
+        assertEquals(Helper.removeEmojiVariationSelector("❤︎︎"), "❤");
+        assertEquals(Helper.removeEmojiVariationSelector("\uFE0F❤︎︎"), "❤");
+        assertEquals(Helper.removeEmojiVariationSelector("\uFE0F\uFE0E"), "");
+        assertEquals(Helper.removeEmojiVariationSelector("❤️ 	❤ 	❤︎"), "❤ 	❤ 	❤");
+    }
 }

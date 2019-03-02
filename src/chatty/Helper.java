@@ -377,7 +377,21 @@ public class Helper {
         return HTMLSPECIALCHARS_ENCODE.replace(s);
     }
     
+    private static final Pattern EMOJI_VARIATION_SELECTOR = Pattern.compile("[\uFE0E\uFE0F]");
     
+    /**
+     * Remove both the text style and emoji style variation selector from the
+     * input.
+     * 
+     * @param input
+     * @return 
+     */
+    public static String removeEmojiVariationSelector(String input) {
+        if (input == null) {
+            return null;
+        }
+        return EMOJI_VARIATION_SELECTOR.matcher(input).replaceAll("");
+    }
     
     private static final Pattern UNDERSCORE = Pattern.compile("_");
     

@@ -2250,6 +2250,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private String processText(User user, String text) {
         String result = Helper.htmlspecialchars_decode(text);
         result = StringUtil.removeDuplicateWhitespace(result);
+        result = Helper.removeEmojiVariationSelector(result);
         int filterMode = styles.filterCombiningCharacters();
         if (filterMode > Helper.FILTER_COMBINING_CHARACTERS_OFF) {
             String prev = result;
@@ -2451,7 +2452,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 // found) and move on
                 int start = m.start();
                 int end = m.end() - 1;
-                addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                // For Emoji, check for text style variation selector
+                boolean textEmoji = emoticon.type == Emoticon.Type.EMOJI && m.group().endsWith("\uFE0E");
+                if (!textEmoji) {
+                    addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                }
             }
         }
     }
