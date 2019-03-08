@@ -90,6 +90,9 @@ public class Util {
      * This should only be used on appropriate lines. Anything after the User
      * and before the appended info (if present) is counted as message text.
      * 
+     * The message element should always start with a single space to separate
+     * from the user element: [user][ actual message]
+     * 
      * @param line The line element
      * @return An array containing the start and end offset, or an empty array
      * if something went wrong
@@ -128,7 +131,8 @@ public class Util {
                 endOffset--;
             }
 //            System.out.println("'"+Util.getText(line.getDocument(), startOffset, endOffset)+"'");
-            return new int[]{startOffset, endOffset};
+            // +1 for separating space
+            return new int[]{startOffset+1, endOffset};
         }
         return new int[0];
     }

@@ -79,9 +79,13 @@ public class WrapLabelView extends LabelView {
             }
         }
         
+        boolean isHoveredUser = ChannelTextPane.hoveredUser != null &&
+                (getAttributes().containsAttribute(Attribute.USER, ChannelTextPane.hoveredUser)
+                || getAttributes().containsAttribute(Attribute.MENTION, ChannelTextPane.hoveredUser));
+        
         boolean highlightMatchesEnabled = MyStyleConstants.getHighlightMatchesEnabled(getAttributes());
-        if (highlightMatchesEnabled
-                && getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true)) {
+        if ((highlightMatchesEnabled && getAttributes().containsAttribute(Attribute.HIGHLIGHT_WORD, true))
+                || isHoveredUser) {
             Color c = StyleConstants.getForeground(getAttributes());
             Color c2;
             Color c3;
@@ -112,7 +116,9 @@ public class WrapLabelView extends LabelView {
             // Move text a bit to the right (there should probably be a better
             // way of doing this, this is a bit of a hack, not sure if it breaks
             // anything
-            r.translate(2, 0);
+            if (!isHoveredUser) {
+                r.translate(2, 0);
+            }
         }
         if (Debugging.isEnabled("labeloutlines")) {
             g.setColor(Color.red);

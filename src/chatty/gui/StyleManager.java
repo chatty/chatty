@@ -50,6 +50,7 @@ public class StyleManager implements StyleServer {
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
             "showImageTooltips", "highlightMatches", "nickColorCorrection",
+            "mentions", "markHoveredUser",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -158,6 +159,8 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.BAN_REASON_MESSAGE, "banReasonMessage");
         addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
         addBooleanSetting(Setting.SHOW_TOOLTIPS, "showImageTooltips");
+        addLongSetting(Setting.MENTIONS, "mentions");
+        addBooleanSetting(Setting.HIGHLIGHT_HOVERED_USER, "markHoveredUser");
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");

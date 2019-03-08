@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -63,6 +64,9 @@ public class LinkController extends MouseAdapter {
      * When a User is clicked, the User object is send here
      */
     private final Set<UserListener> userListener = new HashSet<>();
+    
+    private Consumer<User> userHoverListener;
+    
     /**
      * When a link is clicked, the String with the url is send here
      */
@@ -87,6 +91,10 @@ public class LinkController extends MouseAdapter {
         if (listener != null) {
             userListener.add(listener);
         }
+    }
+    
+    public void setUserHoverListener(Consumer<User> listener) {
+        this.userHoverListener = listener;
     }
     
     /**
@@ -155,10 +163,12 @@ public class LinkController extends MouseAdapter {
             if (linkListener != null) {
                 linkListener.linkClicked(url);
             }
-        } else if ((user = getUser(element)) != null) {
+        } else if ((user = getUser(element)) != null
+                || (user = getMention(element)) != null) {
             for (UserListener listener : userListener) {
+                final User finalUser = user;
                 SwingUtilities.invokeLater(() -> {
-                    listener.userClicked(user, getMsgId(element), getAutoModMsgId(element), e);
+                    listener.userClicked(finalUser, getMsgId(element), getAutoModMsgId(element), e);
                 });
             }
         } else if ((emoteImage = getEmoticonImage(element)) != null) {
@@ -225,8 +235,10 @@ public class LinkController extends MouseAdapter {
             popup.hide();
         }
 
+        User user = null;
         boolean isClickableElement = (getUrl(element) != null && !isUrlDeleted(element))
-                || getUser(element) != null
+                || (user = getUser(element)) != null
+                || (user = getMention(element)) != null
                 || emoteImage != null
                 || usericon != null;
         
@@ -234,6 +246,9 @@ public class LinkController extends MouseAdapter {
             textPane.setCursor(HAND_CURSOR);
         } else {
             textPane.setCursor(NORMAL_CURSOR);
+        }
+        if (userHoverListener != null) {
+            userHoverListener.accept(user);
         }
     }
     
@@ -256,6 +271,10 @@ public class LinkController extends MouseAdapter {
 
     private User getUser(Element e) {
         return (User) e.getAttributes().getAttribute(ChannelTextPane.Attribute.USER);
+    }
+    
+    private User getMention(Element e) {
+        return (User) e.getAttributes().getAttribute(ChannelTextPane.Attribute.MENTION);
     }
     
     private String getMsgId(Element e) {
@@ -326,6 +345,9 @@ public class LinkController extends MouseAdapter {
             return;
         }
         User user = getUser(element);
+        if (user == null) {
+            user = getMention(element);
+        }
         String url = getUrl(element);
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
@@ -598,7 +620,8 @@ public class LinkController extends MouseAdapter {
             if (e.isLeaf() && e.getParentElement() != null) {
                 Element parent = e.getParentElement();
                 int elementIndex = parent.getElementIndex(e.getStartOffset());
-                result.append("Index: ").append(elementIndex).append(" - Count: ").append(parent.getElementCount());
+                result.append("Index: ").append(elementIndex).append(" of ").append(parent.getElementCount());
+                result.append(" (Length: ").append(e.getEndOffset() - e.getStartOffset()).append(")");
                 result.append("<br />");
             }
         } catch (BadLocationException ex) {

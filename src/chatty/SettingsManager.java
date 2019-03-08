@@ -194,6 +194,8 @@ public class SettingsManager {
         settings.addLong("displayNamesMode", DISPLAY_NAMES_MODE_BOTH);
         settings.addLong("displayNamesModeUserlist", DISPLAY_NAMES_MODE_CAPITALIZED);
         settings.addBoolean("showImageTooltips", true);
+        settings.addLong("mentions", 1);
+        settings.addBoolean("markHoveredUser", true);
 
         // Badges/Emotes
         settings.addBoolean("emoticonsEnabled",true);

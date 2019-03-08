@@ -2,9 +2,11 @@
 package chatty.gui.components.settings;
 
 import chatty.SettingsManager;
+import chatty.lang.Language;
 import java.awt.GridBagConstraints;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -55,8 +57,17 @@ public class NameSettings extends SettingsPanel {
                 "Requires a restart of Chatty to have any effect."),
                 d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
 
+        JPanel other = addTitledPanel("Other", 1);
         
-        JPanel custom = addTitledPanel("Custom Names", 1, true);
+        other.add(new JLabel(Language.getString("settings.names.mentions")),
+                d.makeGbc(0, 0, 1, 1));
+        other.add(d.addComboLongSetting("mentions", new int[]{0,1,2,3,4}),
+                d.makeGbc(1, 0, 1, 1));
+        
+        other.add(d.addSimpleBooleanSetting("markHoveredUser"),
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
+        JPanel custom = addTitledPanel("Custom Names", 2, true);
         customNamesEditor = d.addStringMapSetting("customNames", 270, 200);
         customNamesEditor.setKeyFilter("[^\\w]");
         
