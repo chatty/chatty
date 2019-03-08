@@ -225,8 +225,8 @@ public class GuiUtil {
         Debugging.println("screenbounds", "%s %s", bounds, insets);
         bounds.x += insets.left;
         bounds.y += insets.top;
-        bounds.width -= insets.right;
-        bounds.height -= insets.bottom;
+        bounds.width -= insets.right + insets.left;
+        bounds.height -= insets.bottom + insets.top;
         return bounds;
     }
     
