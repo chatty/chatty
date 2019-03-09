@@ -13,7 +13,9 @@
         <li>
             <a href="#custom-commands">Custom Commands</a>
             <ul>
+                <li><a href="#restrict-channel">Restrict to channel</a></li>
                 <li><a href="#anonymous-custom-commands">Anonymous Custom Commands</a></li>
+                <li><a href="#chain-commands">Chaining Commands</a></li>
             </ul>
         </li>
         <li>
@@ -61,6 +63,9 @@
         <code>Hello World!</code> to chat, just as if you would have written it
         yourself and pressed Enter.</p>
     
+    <p>See <a href="#replacements">Replacements</a> for more advanced usage.</p>
+    
+    <h3><a name="restrict-channel">Restrict to channel</a></h3>
     <p>Adding a <code>#</code> and a channel name you can restrict the command
         to that channel:</p>
     
@@ -90,6 +95,11 @@
         <dd>Executes as an Anonymous Custom Command</dd>
         <dd>Outputs <code>Open Channels: joshimuz lotsofs cirno_tv</code></dd>
     </dl>
+    
+    <h3><a name="chain-commands">Chaining Commands</a></h3>
+    <p>Executing several commands in a row is not a feature of Custom Commands,
+        although the <a href="help.html#commands-chain">/chain command</a> can
+        be used to achieve something like that.</p>
     
     <h2><a name="replacements">Replacements</a></h2>
     <ul>
@@ -162,7 +172,7 @@
     
     <p>The short notation ( <code>$1</code> ) only works for the numbers 1 to 9,
         which usually should be enough. For other kinds of replacements you must
-        use the regular notation including parentheses: <code>$(1)</code> .</p>
+        use the regular notation including parentheses: <code>$(10)</code> .</p>
     
     <h3><a name="parameters-context">Pre-defined Parameters</a></h3>
     <p>Custom Commands can be used in a number of different places. Depending on
@@ -339,6 +349,16 @@
             with <code>1-</code> referring to <code>apple pie</code> turns into
             either <code>cheesecake</code>, <code>strawberry cake</code> or
             <code>apple pie</code>.</dd>
+        
+        <dt><code>$randnum(&lt;from&gt;,&lt;to&gt;)</code> or <code>$randnum(&lt;to&gt;)</code></dt>
+        <dd>Randomly chooses a number in the given range (inclusive). If only
+            one number is given, it the range is 0 to the given number. If the
+            "from" is not a number, it defaults to 0, if the "to" is not a
+            number it defaults to a really big number.</dd>
+        <dd><em>Example:</em> <code>$randnum(600,800)</code> chooses a random
+            number between 600 and 800.</dd>
+        <dd><em>Example:</em> <code>$randum($$1)</code> chooses a random number
+            between 0 and what is the first parameter.</dd>
     </dl>
     
     <p class="note"><em>Note:</em> The <code>&lt;identifier&gt;</code> parameter means <em>only</em>

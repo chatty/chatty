@@ -18,7 +18,8 @@ public class UsericonPosition {
         Ref.create("staff"),
         Ref.create("admin"),
         Ref.create("global_mod"),
-        Ref.create("broadcaster")
+        Ref.create("broadcaster"),
+        Ref.create("vip")
     };
     
     private static final Ref[] subscriber = new Ref[]{

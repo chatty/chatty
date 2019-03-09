@@ -95,8 +95,8 @@ public class WrapLabelView extends LabelView {
                 c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 200);
                 c3 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
             } else {
-                c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 100);
-                c3 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 160);
+                c3 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 100);
+                c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 160);
             }
             
             g.setColor(c2);
