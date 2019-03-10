@@ -114,7 +114,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     protected LinkController linkController = new LinkController();
     private static StyleServer styleServer;
     
-    private final RingBuffer<MentionCheck> lastUsers = new RingBuffer<>(100);
+    private final RingBuffer<MentionCheck> lastUsers = new RingBuffer<>(300);
     
     protected static User hoveredUser;
     
@@ -242,7 +242,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private void setHoveredUser(User user) {
-        if (!styles.isEnabled(Setting.HIGHLIGHT_HOVERED_USER)) {
+        int mode = styles.getInt(Setting.HIGHLIGHT_HOVERED_USER);
+        if (mode == SettingConstants.USER_HOVER_HL_OFF) {
             if (hoveredUser != null) {
                 hoveredUser = null;
                 repaint();
@@ -506,7 +507,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         printUser(user, action, message.whisper, message.id);
         
         // Change style for text if /me and no highlight (if enabled)
-        if (!highlighted && color == null && action && styles.actionColored()) {
+        if (!highlighted && color == null && action && styles.isEnabled(Setting.ACTION_COLORED)) {
             style = styles.standard(user.getDisplayColor());
         }
         print(" ", style);
@@ -962,7 +963,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param targetMsgId The id of the deleted message, null if no specific message
      */
     public void userBanned(User user, long duration, String reason, String targetMsgId) {
-        if (styles.showBanMessages()) {
+        if (styles.isEnabled(Setting.SHOW_BANMESSAGES)) {
             //-----------------------
             // For extra ban message
             //-----------------------
@@ -986,7 +987,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
 
             Element prevMessage = null;
-            if (styles.combineBanMessages()) {
+            if (styles.isEnabled(Setting.COMBINE_BAN_MESSAGES)) {
                 prevMessage = findPreviousBanMessage(user, message);
             }
             if (prevMessage != null) {
@@ -1013,7 +1014,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * value == 0 means strike through
          * value < 0 means delete message
          */
-        boolean delete = styles.deletedMessagesMode() < DELETED_MESSAGES_KEEP;
+        int mode = styles.getInt(Setting.DELETED_MESSAGES_MODE);
+        boolean delete = mode < DELETED_MESSAGES_KEEP;
         
         boolean first = true;
         for (Userline l : getUserLines(user)) {
@@ -1025,7 +1027,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 if (delete) {
                     deleteMessage(l.line);
                 } else {
-                    strikeThroughMessage(l.line, styles.deletedMessagesMode());
+                    strikeThroughMessage(l.line, mode);
                 }
                 if (first) {
                     setBanInfo(l.line, banInfo);
@@ -1912,7 +1914,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param user 
      */
     private void printUserIcons(User user) {
-        java.util.List<Usericon> badges = user.getBadges(styles.botBadgeEnabled());
+        boolean botBadgeEnabled = styles.isEnabled(Setting.BOT_BADGE_ENABLED);
+        java.util.List<Usericon> badges = user.getBadges(botBadgeEnabled);
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (badge.image != null && !badge.removeBadge) {
@@ -2168,7 +2171,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
-        if (styles.mentions() > 0) {
+        if (styles.getInt(Setting.MENTIONS) > 0) {
             findMentions(text, ranges, rangesStyle, style);
         }
         
@@ -2266,7 +2269,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         String result = Helper.htmlspecialchars_decode(text);
         result = StringUtil.removeDuplicateWhitespace(result);
         result = Helper.removeEmojiVariationSelector(result);
-        int filterMode = styles.filterCombiningCharacters();
+        int filterMode = styles.getInt(Setting.FILTER_COMBINING_CHARACTERS);
         if (filterMode > Helper.FILTER_COMBINING_CHARACTERS_OFF) {
             String prev = result;
             result = Helper.filterCombiningCharacters(result, "****", filterMode);
@@ -2889,11 +2892,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (fixedChat || pauseKeyPressed) {
                 return false;
             }
-            if (!styles.autoScroll()) {
+            if (!styles.isEnabled(Setting.AUTO_SCROLL)) {
                 return false;
             }
             long timePassed = System.currentTimeMillis() - lastManualScrollChange;
-            if (timePassed > 1000 * styles.autoScrollTimeout()) {
+            if (timePassed > 1000 * styles.getInt(Setting.AUTO_SCROLL_TIME)) {
                 LOGGER.info("ScrolledUp Timeout (" + timePassed + ")");
                 return true;
             }
@@ -3317,7 +3320,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
             addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
             addSetting(Setting.SHOW_TOOLTIPS, true);
-            addSetting(Setting.HIGHLIGHT_HOVERED_USER, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -3327,8 +3329,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 10);
             addNumericSetting(Setting.BOTTOM_MARGIN, -1, -1, 100);
             addNumericSetting(Setting.MENTIONS, 0, 0, 10);
+            addNumericSetting(Setting.HIGHLIGHT_HOVERED_USER, 0, 0, 4);
             timestampFormat = styleServer.getTimestampFormat();
             linkController.setPopupEnabled(settings.get(Setting.SHOW_TOOLTIPS));
+            linkController.setUserHoverHighlightMode(getInt(Setting.HIGHLIGHT_HOVERED_USER));
         }
         
         /**
@@ -3578,7 +3582,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         public MutableAttributeSet mention(User user, AttributeSet style) {
             SimpleAttributeSet mentionStyle = new SimpleAttributeSet(style);
-            switch (mentions()) {
+            switch (getInt(Setting.MENTIONS)) {
                 case 1:
                     StyleConstants.setBold(mentionStyle, true);
                     break;
@@ -3620,10 +3624,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
             return style;
         }
-
-        public boolean showTimestamp() {
-            return settings.get(Setting.TIMESTAMP_ENABLED);
-        }
         
         public int emoticonMaxHeight() {
             return numericSettings.get(Setting.EMOTICON_MAX_HEIGHT);
@@ -3633,44 +3633,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return (float)(numericSettings.get(Setting.EMOTICON_SCALE_FACTOR) / 100.0);
         }
         
-        public boolean botBadgeEnabled() {
-            return settings.get(Setting.BOT_BADGE_ENABLED);
-        }
-        
-        public int filterCombiningCharacters() {
-            return numericSettings.get(Setting.FILTER_COMBINING_CHARACTERS);
-        }
-        
-        public boolean showBanMessages() {
-            return settings.get(Setting.SHOW_BANMESSAGES);
-        }
-        
-        public boolean combineBanMessages() {
-            return settings.get(Setting.COMBINE_BAN_MESSAGES);
-        }
-        
-        public boolean autoScroll() {
-            return settings.get(Setting.AUTO_SCROLL);
-        }
-        
-        public Integer autoScrollTimeout() {
-            return numericSettings.get(Setting.AUTO_SCROLL_TIME);
-        }
-        
-        public boolean actionColored() {
-            return settings.get(Setting.ACTION_COLORED);
-        }
-        
-        public boolean deleteMessages() {
-            return settings.get(Setting.DELETE_MESSAGES);
-        }
-
-        public int deletedMessagesMode() {
-            return (int)numericSettings.get(Setting.DELETED_MESSAGES_MODE);
-        }
-        
-        public int mentions() {
-            return (int)numericSettings.get(Setting.MENTIONS);
+        public int getInt(Setting setting) {
+            return (int)numericSettings.get(setting);
         }
         
         public boolean isEnabled(Setting setting) {

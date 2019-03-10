@@ -59,13 +59,15 @@ public class NameSettings extends SettingsPanel {
 
         JPanel other = addTitledPanel("Other", 1);
         
-        other.add(new JLabel(Language.getString("settings.names.mentions")),
-                d.makeGbc(0, 0, 1, 1));
+        other.add(d.createLabel("mentions"),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
         other.add(d.addComboLongSetting("mentions", new int[]{0,1,2,3,4}),
-                d.makeGbc(1, 0, 1, 1));
-        
-        other.add(d.addSimpleBooleanSetting("markHoveredUser"),
-                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+
+        other.add(d.createLabel("markHoveredUser"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
+        other.add(d.addComboLongSetting("markHoveredUser", new int[]{0,1,2,3,4}),
+                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
         
         JPanel custom = addTitledPanel("Custom Names", 2, true);
         customNamesEditor = d.addStringMapSetting("customNames", 270, 200);

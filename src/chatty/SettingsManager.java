@@ -195,7 +195,7 @@ public class SettingsManager {
         settings.addLong("displayNamesModeUserlist", DISPLAY_NAMES_MODE_CAPITALIZED);
         settings.addBoolean("showImageTooltips", true);
         settings.addLong("mentions", 1);
-        settings.addBoolean("markHoveredUser", true);
+        settings.addLong("markHoveredUser", chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS);
 
         // Badges/Emotes
         settings.addBoolean("emoticonsEnabled",true);

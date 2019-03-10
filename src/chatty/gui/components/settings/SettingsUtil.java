@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.util.StringUtil;
 import java.awt.Component;
 import javax.swing.JCheckBox;
 
@@ -19,6 +20,13 @@ public class SettingsUtil {
         for (Component sub : subs) {
             sub.setEnabled(false);
         }
+    }
+    
+    public static String addTooltipLinebreaks(String tooltipText) {
+        if (tooltipText != null && !tooltipText.isEmpty()) {
+            tooltipText = "<html><body>"+StringUtil.addLinebreaks(tooltipText, 70, true);
+        }
+        return tooltipText;
     }
     
 }

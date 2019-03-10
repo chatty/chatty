@@ -13,6 +13,9 @@ import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.menus.UsericonContextMenu;
+import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL;
+import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
+import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
@@ -66,6 +69,7 @@ public class LinkController extends MouseAdapter {
     private final Set<UserListener> userListener = new HashSet<>();
     
     private Consumer<User> userHoverListener;
+    private int userHoverHighlightMode;
     
     /**
      * When a link is clicked, the String with the url is send here
@@ -95,6 +99,10 @@ public class LinkController extends MouseAdapter {
     
     public void setUserHoverListener(Consumer<User> listener) {
         this.userHoverListener = listener;
+    }
+    
+    public void setUserHoverHighlightMode(int mode) {
+        this.userHoverHighlightMode = mode;
     }
     
     /**
@@ -236,9 +244,10 @@ public class LinkController extends MouseAdapter {
         }
 
         User user = null;
+        User mention = null;
         boolean isClickableElement = (getUrl(element) != null && !isUrlDeleted(element))
                 || (user = getUser(element)) != null
-                || (user = getMention(element)) != null
+                || (mention = getMention(element)) != null
                 || emoteImage != null
                 || usericon != null;
         
@@ -248,6 +257,19 @@ public class LinkController extends MouseAdapter {
             textPane.setCursor(NORMAL_CURSOR);
         }
         if (userHoverListener != null) {
+            if (user == null) {
+                user = mention;
+            }
+            // Don't highlight depending on setting, whether it's a mention and
+            // ctrl is being held
+            if ((userHoverHighlightMode == USER_HOVER_HL_MENTIONS_CTRL_ALL
+                        && mention == null && !e.isControlDown())
+                    || (userHoverHighlightMode == USER_HOVER_HL_CTRL
+                        && !e.isControlDown())
+                    || (userHoverHighlightMode == USER_HOVER_HL_MENTIONS
+                        && mention == null)) {
+                user = null;
+            }
             userHoverListener.accept(user);
         }
     }
