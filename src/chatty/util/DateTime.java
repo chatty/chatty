@@ -2,6 +2,8 @@
 package chatty.util;
 
 import java.text.SimpleDateFormat;
+import java.time.Month;
+import java.time.MonthDay;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -294,10 +296,10 @@ public class DateTime {
         return result;
     }
     
+    private static final MonthDay APRIL_FIRST = MonthDay.of(Month.APRIL, 1);
+    
     public static boolean isAprilFirst() {
-        Calendar cal = Calendar.getInstance();
-        return cal.get(Calendar.MONTH) == Calendar.APRIL
-                && cal.get(Calendar.DAY_OF_MONTH) == 1;
+        return MonthDay.now().equals(APRIL_FIRST);
     }
     
     /**

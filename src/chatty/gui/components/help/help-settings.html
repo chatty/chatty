@@ -1354,6 +1354,18 @@
         <dd>Any Chat Message (including highlighted ones, in this case
             the order of list entries can matter).</dd>
         
+        <dt>Info Message</dt>
+        <dd>Most messages that are not regular Chat Messages, by default shown
+            in blue color (e.g. joining a channel, channel state change, command
+            responses, sub notifications, and more).</dd>
+        <dd>A few of these messages are output in all open channels at once
+            (e.g. "Disconnected" message), which would trigger a notification
+            for each channel.</dd>
+        <dd>This will trigger at the same time as some other event types, e.g.
+            Subscriber Notification, so make sure you're not using both of them
+            at the same time, or using text or channel matching to restrict it
+            accordingly.</dd>
+        
         <dt>Whisper</dt>
         <dd>Any Whisper message (including highlighted ones).</dd>
 

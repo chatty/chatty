@@ -202,8 +202,8 @@ class NotificationEditor extends TableEditor<Notification> {
         private static final String MATCHER_HELP = "<html><body width='300px'>"
                 + "The Matcher allows you to match on the text of the "
                 + "notification. You can use the same format as for the "
-                + "[help-settings:Highlight Highlights] list, although some prefixes may not have an "
-                + "effect.<br /><br />";
+                + "[help-settings:Highlight Highlights] list, although some "
+                + "prefixes may have no effect.<br /><br />";
         
         private static final int VOLUME_MIN = 0;
         private static final int VOLUME_MAX = 100;

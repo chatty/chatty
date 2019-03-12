@@ -912,7 +912,7 @@ public class TwitchConnection {
             if (user.setVip(badges.containsKey("vip"))) {
                 changed = true;
             }
-            if (user.setModerator(badges.containsKey("moderator"))) {
+            if (user.setModerator(badges.containsKey("moderator") || tags.isTrue("mod"))) {
                 changed = true;
             }
             if (user.setAdmin(badges.containsKey("admin"))) {

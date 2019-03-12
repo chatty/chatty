@@ -717,6 +717,22 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
+        hotkeyManager.registerAction("commercial.120", "Run commercial (120s)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runCommercial(120);
+            }
+        });
+        
+        hotkeyManager.registerAction("commercial.180", "Run commercial (180s)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runCommercial(180);
+            }
+        });
+        
         hotkeyManager.registerAction("stream.addhighlight", "Stream: Add Stream Highlight", new AbstractAction() {
 
             @Override
