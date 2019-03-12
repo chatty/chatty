@@ -906,29 +906,37 @@ public class TwitchConnection {
             if (user.setTurbo(turbo)) {
                 changed = true;
             }
-            if (user.setSubscriber(tags.isTrue("subscriber"))) {
+            if (user.setSubscriber(badges.containsKey("subscriber"))) {
                 changed = true;
             }
-            boolean vip = badges.containsKey("vip");
-            if (user.setVip(vip)) {
+            if (user.setVip(badges.containsKey("vip"))) {
+                changed = true;
+            }
+            if (user.setModerator(badges.containsKey("moderator"))) {
+                changed = true;
+            }
+            if (user.setAdmin(badges.containsKey("admin"))) {
+                changed = true;
+            }
+            if (user.setStaff(badges.containsKey("staff"))) {
                 changed = true;
             }
             
             // Temporarily check both for containing a value as Twitch is
             // changing it
-            String userType = tags.get("user-type");
-            if (user.setModerator("mod".equals(userType))) {
-                changed = true;
-            }
-            if (user.setStaff("staff".equals(userType))) {
-                changed = true;
-            }
-            if (user.setAdmin("admin".equals(userType))) {
-                changed = true;
-            }
-            if (user.setGlobalMod("global_mod".equals(userType))) {
-                changed = true;
-            }
+//            String userType = tags.get("user-type");
+//            if (user.setModerator("mod".equals(userType))) {
+//                changed = true;
+//            }
+//            if (user.setStaff("staff".equals(userType))) {
+//                changed = true;
+//            }
+//            if (user.setAdmin("admin".equals(userType))) {
+//                changed = true;
+//            }
+//            if (user.setGlobalMod("global_mod".equals(userType))) {
+//                changed = true;
+//            }
             
             user.setId(tags.get("user-id"));
             

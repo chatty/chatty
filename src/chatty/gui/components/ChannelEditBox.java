@@ -139,6 +139,18 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
         setCaretPosition(pos+text.length());
     }
     
+    /**
+     * Set to end of text if caret pos is greater than length of text.
+     * 
+     * @param pos 
+     */
+    @Override
+    public void setCaretPosition(int pos) {
+        if (pos > getText().length()) {
+            pos = getText().length();
+        }
+        super.setCaretPosition(pos);
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {

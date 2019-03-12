@@ -302,7 +302,7 @@ public class TwitchClient {
         
         if (Chatty.DEBUG) {
             getSpecialUser().setEmoteSets("130,4280,33,42,19194");
-            Room testRoom =  Room.createRegular("#tduva");
+            Room testRoom =  Room.createRegular("");
             g.addUser(new User("josh", testRoom));
             g.addUser(new User("joshua", testRoom));
             User j = new User("joshimuz", "Joshimuz", testRoom);
@@ -483,7 +483,6 @@ public class TwitchClient {
     private void createTestUser(String name, String channel) {
         testUser = new User(name, name, Room.createRegular(channel));
         testUser.setColor(new Color(94, 0, 211));
-        testUser.setGlobalMod(true);
         //testUser.setBot(true);
         //testUser.setTurbo(true);
         //testUser.setModerator(true);
@@ -1018,6 +1017,13 @@ public class TwitchClient {
                 g.printLine(parameter);
             } else {
                 g.printLine("Invalid parameters: /echo <message>");
+            }
+        }
+        else if (command.equals("echoall")) {
+            if (parameter != null) {
+                g.printLineAll(parameter);
+            } else {
+                g.printLine("Invalid parameters: /echoall <message>");
             }
         }
         else if (command.equals("uptime")) {

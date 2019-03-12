@@ -102,7 +102,7 @@ public class FavoritesDialog extends JDialog {
                 channelsChanged();
             }
         });
-        GuiUtil.installLengthLimitDocumentFilter(input, 1000, false);
+        GuiUtil.installLengthLimitDocumentFilter(input, 5000, false);
         
         // Table
         data = new MyTableModel();

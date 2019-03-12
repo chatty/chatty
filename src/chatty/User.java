@@ -122,7 +122,6 @@ public class User implements Comparable {
     //========
     private boolean online;
     private boolean isModerator;
-    private boolean isGlobalMod;
     private boolean isBroadcaster;
     private boolean isAdmin;
     private boolean isStaff;
@@ -806,8 +805,14 @@ public class User implements Comparable {
         return isModerator;
     }
     
+    /**
+     * Always returns false, since global moderators have been removed from
+     * Twitch. Just keeping this for now since it's used in some places.
+     * 
+     * @return false
+     */
     public synchronized boolean isGlobalMod() {
-        return isGlobalMod;
+        return false;
     }
     
     public synchronized boolean isAdmin() {
@@ -841,15 +846,6 @@ public class User implements Comparable {
     public synchronized boolean setModerator(boolean mod) {
         if (isModerator != mod) {
             isModerator = mod;
-            updateFullNick();
-            return true;
-        }
-        return false;
-    }
-    
-    public synchronized boolean setGlobalMod(boolean globalMod) {
-        if (globalMod != isGlobalMod) {
-            isGlobalMod = globalMod;
             updateFullNick();
             return true;
         }
@@ -941,9 +937,6 @@ public class User implements Comparable {
         }
         if (isStaff() || isAdmin()) {
             return "&"+result;
-        }
-        if (isGlobalMod()) {
-            return "*"+result;
         }
         if (isModerator()) {
             return "@"+result;

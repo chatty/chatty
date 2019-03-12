@@ -240,7 +240,6 @@ public class UserManager {
                  * message.
                  */
                 user.setAdmin(specialUser.isAdmin());
-                user.setGlobalMod(specialUser.isGlobalMod());
                 user.setStaff(specialUser.isStaff());
                 user.setTurbo(specialUser.hasTurbo());
                 if (!specialUser.hasDefaultColor()) {
