@@ -119,16 +119,58 @@ public class NotificationManager {
         });
     }
     
+    /**
+     * Info highlight, although also check as normal info message.
+     * 
+     * @param room May be null or empty (although not currently used with null)
+     * @param message
+     * @param noNotify
+     * @param noSound 
+     */
     public void infoHighlight(Room room, String message, boolean noNotify,
             boolean noSound) {
-        check(Type.HIGHLIGHT, room.getChannel(), null, message, noNotify, noSound,  n -> {
-            String title;
-            if (!room.getChannel().isEmpty()) {
-                title = String.format("[Highlight] Info Message in %s", room.getChannel());
-            } else {
-                title = "[Highlight] Info Message";
+        String channel = room != null ? room.getChannel() : null;
+        check(null, channel, null, message, noNotify, noSound,  n -> {
+            boolean hasChannel = channel != null && !channel.isEmpty();
+            if (n.type == Type.HIGHLIGHT) {
+                String title;
+                if (hasChannel) {
+                    title = String.format("[Highlight] Info Message in %s",
+                            channel);
+                } else {
+                    title = "[Highlight] Info Message";
+                }
+                return new NotificationData(title, message);
+            } else if (n.type == Type.INFO) {
+                String title;
+                if (hasChannel) {
+                    title = String.format("[Info] %s",
+                            channel);
+                } else {
+                    title = "[Info]";
+                }
+                return new NotificationData(title, message);
             }
-            return new NotificationData(title, message);
+            return null;
+        });
+    }
+    
+    /**
+     * Non-highlighted info message.
+     * 
+     * @param room May be null or empty
+     * @param text 
+     */
+    public void info(Room room, String text) {
+        String channel = room != null ? room.getChannel() : null;
+        check(Type.INFO, channel, null, text, n -> {
+            String title;
+            if (channel == null || channel.isEmpty()) {
+                title = "[Info]";
+            } else {
+                title = "[Info] "+channel;
+            }
+            return new NotificationData(title, text);
         });
     }
     

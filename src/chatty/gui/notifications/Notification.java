@@ -30,6 +30,7 @@ public class Notification {
         
         STREAM_STATUS("Stream Status", createStreamStatusSubtypes()),
         HIGHLIGHT("Highlights", createMessageSubtypes()),
+        INFO("Info Message"),
         MESSAGE("Chat Message", createMessageSubtypes()),
         WHISPER("Whisper", createMessageSubtypes()),
         JOIN("User Joined"),

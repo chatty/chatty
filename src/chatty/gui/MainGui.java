@@ -3086,15 +3086,10 @@ public class MainGui extends JFrame implements Runnable {
     
     public void printLineAll(final String line) {
         SwingUtilities.invokeLater(() -> {
-            if (channels.getChannelCount() == 0) {
-                Channel panel = channels.getActiveChannel();
-                if (panel != null) {
-                    printInfo(panel, InfoMessage.createInfo(line));
-                }
-            } else {
-                for (Channel channel : channels.channels()) {
-                    printInfo(channel, InfoMessage.createInfo(line));
-                }
+            for (Channel channel : channels.allChannels()) {
+                // Separate for each channel, since it could be modified based
+                // on channel
+                printInfo(channel, InfoMessage.createInfo(line));
             }
         });
     }
@@ -3107,6 +3102,15 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    /**
+     * Central method for printing info messages. Each message is intended for
+     * a single channel, so for printing to e.g. all channels at once, this is
+     * called once each for all channels.
+     * 
+     * @param channel
+     * @param message
+     * @return 
+     */
     private boolean printInfo(Channel channel, InfoMessage message) {
         boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, channel.getChannel(), client.addressbook);
         if (!ignored) {
@@ -3135,6 +3139,7 @@ public class MainGui extends JFrame implements Runnable {
                             message.text, channel.getChannel(), client.addressbook);
                     message.color = colorItem.getForegroundIfEnabled();
                     message.bgColor = colorItem.getBackgroundIfEnabled();
+                    notificationManager.info(channel.getRoom(), message.text);
                 }
             }
             channel.printInfoMessage(message);
