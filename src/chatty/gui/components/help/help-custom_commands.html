@@ -359,7 +359,65 @@
             number between 600 and 800.</dd>
         <dd><em>Example:</em> <code>$randum($$1)</code> chooses a random number
             between 0 and what is the first parameter.</dd>
+        
+        <dt><code>$datetime([format],[timezone],[locale])</code></dt>
+        <dd>Outputs the current date/time. You can optionally give a format
+            pattern (based on <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">DateTimeFormatter</a>),
+            a timezone (based on <a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html">ZoneId</a>,
+            although something like "New York" should also work) and a locale
+            (a language tag such as "en").</dd>
+        <dd>Predefined formats:
+            <ul style="margin-top:0">
+                <li>Short: <code>date</code>, <code>time</code>, <code>datetime</code></li>
+                <li>With timezone: <code>date2</code>, <code>time2</code>, <code>datetime2</code></li>
+                <li>Locale-specific: Append <code>_short</code>, <code>_medium</code>,
+            <code>_long</code> or <code>_full</code>, e.g. <code>datetime_full</code></li>
+            </ul>
+        </dd>
+        <dd>
+            <em>Examples:</em>
+            <dl style="margin-top:0">
+                <dt><code>$datetime()</code></dt>
+                <dd><code>Wednesday, March 13, 2019 3:11:48 PM CET</code></dd>
+                <dd>(Default format depends on the locale, in this case using the system default.)</dd>
+                
+                <dt><code>$datetime(,,de)</code></dt>
+                <dd><code>Mittwoch, 13. März 2019 15:12 Uhr MEZ</code></dd>
+                <dd>(Default format depends on the locale, in this case explicitly specified.)</dd>
+                
+                <dt><code>$datetime(time)</code></dt>
+                <dd><code>23:31:27</code></dd>
+                <dd>(Using one of the pre-defined formats "<code>time</code>".)</dd>
+                
+                <dt><code>$datetime(datetime2,Vancouver)</code></dt>
+                <dd><code>2019-03-12 15:31:45 PDT GMT-0700</code></dd>
+                <dd>(Using the more verbose "<code>datetime2</code>" pre-defined format, with a timezone specified.)</dd>
+                
+                <dt><code>$datetime(datetime_full,Rome,it)</code></dt>
+                <dd><code>mercoledì 13 marzo 2019 15.32.03 CET</code></dd>
+                <dd>(Using one of the locale-specific pre-defined formats, with timezone and locale specified.)</dd>
+                
+                <dt><code>$datetime(,london)</code></dt>
+                <dd><code>Wednesday, March 13, 2019 2:16:36 PM GMT</code></dd>
+                <dd>(Empty format to be able to specify timezone.)</dd>
+                
+                <dt><code>$datetime(HH:mm:ss zzzz,Tokyo,en)</code></dt>
+                <dd><code>07:50:20 Japan Standard Time</code></dd>
+                <dd>(Output is usually based on your system language, but you
+                    can also explicitely specify it.)</dd>
+                
+                <dt><code>$datetime(eeee\, dd. MMMM yyyy,,de)</code></dt>
+                <dd><code>Dienstag, 12. März 2019</code></dd>
+                <dd>(Custom format, <code>,</code> escaped since it normally
+                    separates function parameters, empty timezone in order to be
+                    able to specify locale.)</dd>
+            </dl>
     </dl>
+    
+    <p class="note"><em>Tip:</em> Enter e.g. <code>//echo $datetime()</code>
+        into the chat inputbox to test a function directly, use arrow up/down
+        keys to cycle through previous inputs. Of course you won't be able to
+        use some context dependant parameters this way.</p>
     
     <p class="note"><em>Note:</em> The <code>&lt;identifier&gt;</code> parameter means <em>only</em>
         the identifier, without any <code>$</code>, while the other parameters

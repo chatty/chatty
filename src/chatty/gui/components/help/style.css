@@ -146,6 +146,9 @@ table.files {
 .defList dt {
     margin-top: 5px;
 }
+.defList dd {
+    margin-top: 3px;
+}
 
 .dl-settings {
     margin-left: 20px;
