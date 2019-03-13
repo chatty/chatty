@@ -732,8 +732,8 @@ public class MainGui extends JFrame implements Runnable {
                 runCommercial(180);
             }
         });
-        
-        hotkeyManager.registerAction("stream.addhighlight", "Stream: Add Stream Highlight", new AbstractAction() {
+
+        addMenuAction("stream.addhighlight", "Stream: Add Stream Highlight", KeyEvent.VK_A, new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
