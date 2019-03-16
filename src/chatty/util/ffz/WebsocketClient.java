@@ -45,7 +45,7 @@ public class WebsocketClient {
     
     private final MessageHandler handler;
     
-    private final TimedCounter disconnectsPerHour = new TimedCounter(60*60*1000, 0);
+    private final TimedCounter disconnectsPerHour = new TimedCounter(60*60*1000);
     
     private volatile boolean requestedDisconnect;
     private int connectionAttempts;

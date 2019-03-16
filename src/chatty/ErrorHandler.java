@@ -16,7 +16,7 @@ public class ErrorHandler implements UncaughtExceptionHandler {
 
     private final static Logger LOGGER = Logger.getLogger(ErrorHandler.class.getName());
 
-    private final TimedCounter counter = new TimedCounter(60*1000, 0);
+    private final TimedCounter counter = new TimedCounter(60*1000);
     
     @Override
     public void uncaughtException(Thread t, Throwable e) {

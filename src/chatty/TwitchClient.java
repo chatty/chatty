@@ -1339,7 +1339,7 @@ public class TwitchClient {
         } else if (command.equals("testspam")) {
             g.printLine("test" + spamProtection.getAllowance() + spamProtection.tryMessage());
         } else if (command.equals("spamprotectioninfo")) {
-            g.printSystem("Spam Protection: "+c.getSpamProtectionInfo());
+            g.printSystem("Spam Protection: "+spamProtection);
         } else if (command.equals("tsv")) {
             testStreamInfo.set("Title", "Game", Integer.parseInt(parameter), -1, StreamType.LIVE);
         } else if (command.equals("tsvs")) {

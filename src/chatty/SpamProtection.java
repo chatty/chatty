@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.TimedCounter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tracks when lines where send to the server to prevent spam.
@@ -10,7 +11,7 @@ import chatty.util.TimedCounter;
  */
 public class SpamProtection {
     
-    private final TimedCounter counter = new TimedCounter(30*1000, 0);
+    private final TimedCounter counter = new TimedCounter(30*1000);
     
     private boolean enabled = false;
     private int lines;
@@ -27,7 +28,7 @@ public class SpamProtection {
         enabled = lines > 0 && seconds > 0;
         this.lines = lines;
         this.seconds = seconds;
-        counter.setInterval(seconds*1000);
+        counter.setInterval(TimeUnit.SECONDS.toMillis(seconds));
     }
     
     /**
