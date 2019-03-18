@@ -6,7 +6,7 @@ import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamInfosContextMenu;
 import chatty.util.DateTime;
-import chatty.util.Debugging;
+import chatty.util.ElapsedTime;
 import chatty.util.api.StreamInfo;
 import java.awt.Color;
 import java.awt.Component;
@@ -54,8 +54,8 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private JPopupMenu lastContextMenu;
     private LiveStreamsDialog.Sorting currentSorting;
     
-    private long lastChecked = 0;
-    private long lastRepainted = 0;
+    private final ElapsedTime lastCheckedET = new ElapsedTime();
+    private final ElapsedTime lastRepaintedET = new ElapsedTime();
     
     private final Timer resortTimer;
     
@@ -155,10 +155,10 @@ public class LiveStreamsList extends JList<StreamInfo> {
      * Checks all added streams and removes invalid ones.
      */
     private void checkStreams() {
-        if ((System.currentTimeMillis() - lastChecked) / 1000 < CHECK_DELAY) {
+        if (!lastCheckedET.secondsElapsed(CHECK_DELAY)) {
             return;
         }
-        lastChecked = System.currentTimeMillis();
+        lastCheckedET.set();
         Set<StreamInfo> toRemove = new HashSet<>();
         for (StreamInfo info : data) {
             if (!info.isValidEnough() || !info.getOnline()) {
@@ -199,10 +199,9 @@ public class LiveStreamsList extends JList<StreamInfo> {
      * Repaints the list on a set delay to update colors.
      */
     private void checkToRepaint() {
-        long timePassed = (System.currentTimeMillis() - lastRepainted) / 1000;
-        if (timePassed > REPAINT_DELAY) {
+        if (lastRepaintedET.secondsElapsed(REPAINT_DELAY)) {
             repaint();
-            lastRepainted = System.currentTimeMillis();
+            lastRepaintedET.set();
         }
     }
     

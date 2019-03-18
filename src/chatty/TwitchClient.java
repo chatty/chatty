@@ -414,8 +414,6 @@ public class TwitchClient {
             
         }
         
-        new UpdateTimer(g);
-        
         // Shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(new Shutdown(this)));
         

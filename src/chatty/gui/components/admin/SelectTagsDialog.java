@@ -4,6 +4,7 @@ package chatty.gui.components.admin;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.lang.Language;
+import chatty.util.ElapsedTime;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
@@ -80,7 +81,7 @@ public class SelectTagsDialog extends JDialog {
     private final List<StreamTag> current = new ArrayList<>();
     private final List<StreamTag> preset = new ArrayList<>();
     private final Timer timer;
-    private long lastSelectionTime;
+    private ElapsedTime lastSelectionET = new ElapsedTime();
     private boolean loadingInfo;
     private String loadingAllTagsInfo;
     private StreamTag shouldMaybeRequest;
@@ -134,7 +135,7 @@ public class SelectTagsDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (System.currentTimeMillis() - lastSelectionTime > 500) {
+                if (lastSelectionET.millisElapsed(500)) {
                     loadCurrentInfo();
                 }
             }
@@ -439,7 +440,7 @@ public class SelectTagsDialog extends JDialog {
             description.setCaretPosition(0);
         } else {
             description.setText(Language.getString("status.loading"));
-            lastSelectionTime = System.currentTimeMillis();
+            lastSelectionET.set();
             shouldMaybeRequest = selected;
         }
     }

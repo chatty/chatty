@@ -566,11 +566,6 @@ public class TwitchConnection {
          * fully established (registered).
          */
         private int connectionAttempts = 0;
-        
-        /**
-         * At what time this connection last attempted to connect.
-         */
-        private long lastConnectionAttempt;
 
         private final JoinChecker joinChecker = new JoinChecker(this);
         
@@ -600,10 +595,6 @@ public class TwitchConnection {
         public IrcConnection(String id) {
             super(id);
             this.idPrefix= "["+id+"] ";
-        }
-        
-        public int getLastConnectionAttemptAgo() {
-            return (int)((System.currentTimeMillis() - lastConnectionAttempt) / 1000);
         }
         
         public Set<String> getJoinedChannels() {
@@ -658,7 +649,6 @@ public class TwitchConnection {
         @Override
         void onConnectionAttempt(String server, int port, boolean secured) {
             connectionAttempts++;
-            lastConnectionAttempt = System.currentTimeMillis();
             if (this != irc) {
                 return;
             }

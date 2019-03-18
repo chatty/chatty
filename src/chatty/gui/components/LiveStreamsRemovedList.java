@@ -156,7 +156,7 @@ public class LiveStreamsRemovedList extends JPanel {
     private static class RemovedListItem implements Comparable<RemovedListItem> {
         
         private final StreamInfo info;
-        private final Long time;
+        private final long time;
         
         public RemovedListItem(StreamInfo info) {
             this.info = info;
@@ -173,7 +173,7 @@ public class LiveStreamsRemovedList extends JPanel {
             return info;
         }
         
-        public Long getTime() {
+        public long getTime() {
             return time;
         }
 

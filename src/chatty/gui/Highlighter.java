@@ -7,6 +7,7 @@ import chatty.Helper;
 import chatty.Logging;
 import chatty.User;
 import chatty.util.Debugging;
+import chatty.util.MiscUtil;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -230,7 +231,7 @@ public class Highlighter {
     private void addMatch(User user, HighlightItem item) {
         if (highlightNextMessages && user != null) {
             String username = user.getName();
-            lastHighlighted.put(username, System.currentTimeMillis());
+            lastHighlighted.put(username, MiscUtil.ems());
             lastHighlightedItem.put(username, item);
         }
     }
@@ -244,7 +245,7 @@ public class Highlighter {
         Iterator<Map.Entry<String, Long>> it = lastHighlighted.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, Long> entry = it.next();
-            if (System.currentTimeMillis() - entry.getValue() > LAST_HIGHLIGHTED_TIMEOUT) {
+            if (MiscUtil.ems() - entry.getValue() > LAST_HIGHLIGHTED_TIMEOUT) {
                 it.remove();
                 lastHighlightedItem.remove(entry.getKey());
             }

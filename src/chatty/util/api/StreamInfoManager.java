@@ -1,16 +1,14 @@
 
 package chatty.util.api;
 
-import chatty.Logging;
 import chatty.util.DateTime;
+import chatty.util.ElapsedTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -79,9 +77,9 @@ public class StreamInfoManager {
      * Stores when the streams info was last requested, so the delay can be
      * ensured.
      */
-    private long streamsInfoLastRequested = 0;
-    private long followsLastRequested = 0;
-    private long specialCheckLastDone = 0;
+    private final ElapsedTime streamsInfoRequestedET = new ElapsedTime();
+    private final ElapsedTime followsRequestedET = new ElapsedTime();
+    private final ElapsedTime specialCheckDoneET = new ElapsedTime();
     
     private int followsRequestErrors = 0;
     private String prevToken = "";
@@ -112,8 +110,8 @@ public class StreamInfoManager {
     }
     
     public synchronized void manualRefresh() {
-        followsLastRequested = 0;
-        streamsInfoLastRequested = 0;
+        followsRequestedET.reset();
+        streamsInfoRequestedET.reset();
     }
     
     public synchronized void getFollowedStreams(String token) {
@@ -123,10 +121,10 @@ public class StreamInfoManager {
         if (!prevToken.equals(token)) {
             followsRequestErrors = 0;
         }
-        if (checkTimePassed(followsLastRequested, UPDATE_FOLLOWS_DELAY,
+        if (checkTimePassed(followsRequestedET, UPDATE_FOLLOWS_DELAY,
                 followsRequestErrors)) {
             prevToken = token;
-            followsLastRequested = System.currentTimeMillis();
+            followsRequestedET.set();
             followedStreamsRequests = 1;
             api.requests.requestFollowedStreams(token, null);
         }
@@ -143,13 +141,8 @@ public class StreamInfoManager {
         }
     }
     
-    public static boolean checkTimePassed(long lastTime, int delay, int errors) {
-        long timePassed = System.currentTimeMillis() - lastTime;
-        //System.out.println(delay + errors * delay/4);
-        if (timePassed/1000 < delay + errors * delay/4) {
-            return false;
-        }
-        return true;
+    public static boolean checkTimePassed(ElapsedTime et, int delay, int errors) {
+        return et.secondsElapsed(delay + errors * delay/4);
     }
     
     /**
@@ -212,7 +205,7 @@ public class StreamInfoManager {
      * @param streams 
      */
     private void checkRerequest(Set<String> streams) {
-        if (!checkTimePassed(specialCheckLastDone, SPECIAL_CHECK_DELAY,
+        if (!checkTimePassed(specialCheckDoneET, SPECIAL_CHECK_DELAY,
                 streamsRequestErrors)) {
             return;
         }
@@ -227,7 +220,7 @@ public class StreamInfoManager {
      * @param streams 
      */
     private void requestStreamsInfo(Set<String> streams) {
-        if (!checkTimePassed(streamsInfoLastRequested, UPDATE_STREAMINFO_DELAY,
+        if (!checkTimePassed(streamsInfoRequestedET, UPDATE_STREAMINFO_DELAY,
                 streamsRequestErrors)) {
             return;
         }
@@ -265,11 +258,11 @@ public class StreamInfoManager {
             }
         }
         if (special) {
-            specialCheckLastDone = System.currentTimeMillis();
+            specialCheckDoneET.set();
         }
         if (!streamsForRequest.isEmpty()) {
             if (!special) {
-                streamsInfoLastRequested = System.currentTimeMillis();
+                streamsInfoRequestedET.set();
             }
             api.requests.requestStreamsInfo(streamsForRequest, streamInfosForRequest);
         }

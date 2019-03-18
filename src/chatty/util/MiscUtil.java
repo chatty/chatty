@@ -16,6 +16,7 @@ import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
@@ -172,4 +173,16 @@ public class MiscUtil {
         String os = System.getProperty("os.name");
         return os.startsWith(check);
     }
+    
+    /**
+     * Returns System.nanoTime() as milliseconds and can thus only be used to
+     * compare two values to eachother to get elapsed time that is not dependent
+     * on system clock time.
+     * 
+     * @return Some elapsed time in milliseconds
+     */
+    public static long ems() {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+    }
+    
 }

@@ -3535,15 +3535,23 @@ public class MainGui extends JFrame implements Runnable {
     private class StateUpdater {
         
         /**
-         * Saves when the state was last setd, so the delay can be measured.
+         * Saves when the state was last updated, so the delay can be measured.
          */
-        private long stateLastUpdated = 0;
+        private final ElapsedTime lastUpdatedET = new ElapsedTime();
         
         /**
          * Update state no faster than this amount of milliseconds.
          */
         private static final int UPDATE_STATE_DELAY = 500;
 
+        private StateUpdater() {
+            javax.swing.Timer timer = new javax.swing.Timer(5000, e -> {
+                update(false);
+            });
+            timer.setRepeats(true);
+            timer.start();
+        }
+        
         /**
          * Update the title and other things based on the current state and
          * stream/channel information. This is a convenience method that doesn't
@@ -3575,10 +3583,13 @@ public class MainGui extends JFrame implements Runnable {
          * @param forced If {@literal true} the update is performed with every call
          */
         protected void update(boolean forced) {
-            if (!forced && System.currentTimeMillis() - stateLastUpdated < UPDATE_STATE_DELAY) {
+            if (!guiCreated) {
                 return;
             }
-            stateLastUpdated = System.currentTimeMillis();
+            if (!forced && !lastUpdatedET.millisElapsed(UPDATE_STATE_DELAY)) {
+                return;
+            }
+            lastUpdatedET.set();
 
             int state = client.getState();
 

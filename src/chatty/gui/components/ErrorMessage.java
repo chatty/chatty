@@ -4,6 +4,7 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.DateTime;
+import chatty.util.ElapsedTime;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import java.awt.Dimension;
@@ -74,8 +75,8 @@ public class ErrorMessage extends JDialog {
     private final JPanel normal;
     private final JPanel minimized;
     
-    private Timer minimizeTimer;
-    private long timeOpened;
+    private final Timer minimizeTimer;
+    private final ElapsedTime openedET = new ElapsedTime();
 
     private int result;
 
@@ -214,7 +215,7 @@ public class ErrorMessage extends JDialog {
                 debugMessage.scrollRectToVisible(new Rectangle());
             }
         });
-        timeOpened = System.currentTimeMillis();
+        openedET.set();
         if (!isFocused()) {
             stopTimer();
             minimizeTimer.restart();
@@ -280,8 +281,7 @@ public class ErrorMessage extends JDialog {
     private void update() {
         if (isVisible()) {
             //System.out.println("update");
-            long timePassed = System.currentTimeMillis() - timeOpened;
-            long leftToMinimize = (MINIMIZE_AFTER - timePassed) / 1000;
+            long leftToMinimize = (MINIMIZE_AFTER - openedET.millisElapsed()) / 1000;
             if (leftToMinimize <= 0) {
                 minimize();
                 stopTimer();
