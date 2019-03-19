@@ -207,6 +207,11 @@ public class Debugging {
         return null;
     }
     
+    public static String getStacktrace() {
+        StackTraceElement[] st = Thread.currentThread().getStackTrace();
+        return StringUtil.join(st);
+    }
+    
     // For testing
     public static void main(String[] args) {
         System.out.println(filterToken("-d \"G:\\chatty settings\" -set:token abc -token abc -password -password abc -connect"));
