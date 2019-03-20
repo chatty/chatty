@@ -154,7 +154,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         SHOW_TOOLTIPS, BOTTOM_MARGIN,
         
         DISPLAY_NAMES_MODE,
-        MENTIONS, HIGHLIGHT_HOVERED_USER
+        MENTIONS, MENTIONS_BOLD, MENTIONS_UNDERLINE, MENTIONS_COLORED,
+        HIGHLIGHT_HOVERED_USER, HIGHLIGHT_MATCHES_ALL
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
@@ -2171,7 +2172,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
-        if (styles.getInt(Setting.MENTIONS) > 0) {
+        if (styles.isEnabled(Setting.MENTIONS)) {
             findMentions(text, ranges, rangesStyle, style);
         }
         
@@ -2193,25 +2194,26 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (start > lastPrintedPos) {
                 // If there is anything between the special stuff, print that
                 // first as regular text
-//                String processed = processText(user, text.substring(lastPrintedPos, start));
-//                print(processed, style);
                 specialPrint(user, text, lastPrintedPos, start, style, highlightMatches);
             }
             AttributeSet rangeStyle = rangesStyle.get(start);
             String rangeText;
             if (rangeStyle.containsAttribute(Attribute.IS_REPLACEMENT, true)) {
                 rangeText = (String)rangeStyle.getAttribute(Attribute.REPLACED_WITH);
+                if (!rangeText.isEmpty()) {
+                    print(rangeText, rangeStyle);
+                }
             } else {
-                rangeText = text.substring(start, end + 1);
-            }
-            if (!rangeText.isEmpty()) {
-                print(rangeText, rangeStyle);
+                if (styles.isEnabled(Setting.HIGHLIGHT_MATCHES_ALL)) {
+                    specialPrint(user, text, start, end+1, rangeStyle, highlightMatches);
+                } else {
+                    print(text.substring(start, end+1), rangeStyle);
+                }
             }
             lastPrintedPos = end + 1;
         }
         // If anything is left, print that as well as regular text
         if (lastPrintedPos < text.length()) {
-//            print(processText(user, text.substring(lastPrintedPos)), style);
             specialPrint(user, text, lastPrintedPos, text.length(), style, highlightMatches);
         }
     }
@@ -3320,6 +3322,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
             addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
             addSetting(Setting.SHOW_TOOLTIPS, true);
+            addSetting(Setting.MENTIONS, true);
+            addSetting(Setting.MENTIONS_BOLD, true);
+            addSetting(Setting.MENTIONS_UNDERLINE, false);
+            addSetting(Setting.MENTIONS_COLORED, false);
+            addSetting(Setting.HIGHLIGHT_MATCHES_ALL, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -3328,7 +3335,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addNumericSetting(Setting.EMOTICON_SCALE_FACTOR, 100, 1, 200);
             addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 10);
             addNumericSetting(Setting.BOTTOM_MARGIN, -1, -1, 100);
-            addNumericSetting(Setting.MENTIONS, 0, 0, 10);
             addNumericSetting(Setting.HIGHLIGHT_HOVERED_USER, 0, 0, 4);
             timestampFormat = styleServer.getTimestampFormat();
             linkController.setPopupEnabled(settings.get(Setting.SHOW_TOOLTIPS));
@@ -3582,21 +3588,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         public MutableAttributeSet mention(User user, AttributeSet style) {
             SimpleAttributeSet mentionStyle = new SimpleAttributeSet(style);
-            switch (getInt(Setting.MENTIONS)) {
-                case 1:
-                    StyleConstants.setBold(mentionStyle, true);
-                    break;
-                case 2:
-                    StyleConstants.setForeground(mentionStyle, getUserColor(user));
-                    break;
-                case 3:
-                    StyleConstants.setForeground(mentionStyle, getUserColor(user));
-                    StyleConstants.setBold(mentionStyle, true);
-                    break;
-                case 4:
-                    StyleConstants.setForeground(mentionStyle, getUserColor(user));
-                    StyleConstants.setUnderline(mentionStyle, true);
-                    break;
+            if (isEnabled(Setting.MENTIONS_BOLD)) {
+                StyleConstants.setBold(mentionStyle, true);
+            }
+            if (isEnabled(Setting.MENTIONS_UNDERLINE)) {
+                StyleConstants.setUnderline(mentionStyle, true);
+            }
+            if (isEnabled(Setting.MENTIONS_COLORED)) {
+                StyleConstants.setForeground(mentionStyle, getUserColor(user));
             }
             mentionStyle.addAttribute(Attribute.MENTION, user);
             return mentionStyle;

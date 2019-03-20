@@ -90,16 +90,21 @@ public class HighlightSettings extends SettingsPanel {
         JCheckBox highlightOwnText = d.addSimpleBooleanSetting("highlightOwnText");
         base.add(highlightOwnText, gbc);
         
-        gbc = d.makeGbc(1,2,1,1);
+        gbc = d.makeGbc(1, 2, 1, 1);
         gbc.insets = settingInsets;
         gbc.anchor = GridBagConstraints.WEST;
         JCheckBox highlightIgnored = d.addSimpleBooleanSetting("highlightIgnored");
         base.add(highlightIgnored, gbc);
         
-        gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
         gbc.insets = settingInsets;
         JCheckBox highlightMatches = d.addSimpleBooleanSetting("highlightMatches");
         base.add(highlightMatches, gbc);
+        
+        gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = settingInsets;
+        JCheckBox highlightMatchesAll = d.addSimpleBooleanSetting("highlightMatchesAll");
+        base.add(highlightMatchesAll, gbc);
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
@@ -142,7 +147,7 @@ public class HighlightSettings extends SettingsPanel {
         SettingsUtil.addSubsettings(highlightEnabled, highlightUsername,
                 highlightNextMessages, highlightOwnText, highlightIgnored,
                 highlightMatches, items, noHighlightUsersButton,
-                highlightBlacklistButton);
+                highlightBlacklistButton, highlightMatchesAll);
     }
     
     private static class NoHighlightUsers extends JDialog {

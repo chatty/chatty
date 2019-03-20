@@ -185,4 +185,8 @@ public class MiscUtil {
         return TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
     }
     
+    public static boolean biton(int value, int i) {
+        return (value & (1 << i)) != 0;
+    }
+    
 }

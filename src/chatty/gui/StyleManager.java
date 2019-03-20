@@ -5,6 +5,7 @@ import chatty.util.colors.HtmlColors;
 import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import chatty.gui.components.textpane.ChannelTextPane.Setting;
 import chatty.gui.components.textpane.MyStyleConstants;
+import chatty.util.MiscUtil;
 import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.colors.ColorCorrector;
 import chatty.util.settings.Settings;
@@ -50,7 +51,7 @@ public class StyleManager implements StyleServer {
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
             "showImageTooltips", "highlightMatches", "nickColorCorrection",
-            "mentions", "markHoveredUser",
+            "mentions", "markHoveredUser", "highlightMatchesAll",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -159,7 +160,7 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.BAN_REASON_MESSAGE, "banReasonMessage");
         addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
         addBooleanSetting(Setting.SHOW_TOOLTIPS, "showImageTooltips");
-        addLongSetting(Setting.MENTIONS, "mentions");
+        addBooleanSetting(Setting.HIGHLIGHT_MATCHES_ALL, "highlightMatchesAll");
         addLongSetting(Setting.HIGHLIGHT_HOVERED_USER, "markHoveredUser");
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
@@ -178,6 +179,13 @@ public class StyleManager implements StyleServer {
         addLongSetting(Setting.DISPLAY_NAMES_MODE, "displayNamesMode");
         
         colorCorrector = ColorCorrector.get(settings.getString("nickColorCorrection"));
+        
+        // Order determined by the CompoundBooleanSetting in the Settings Dialog
+        int mentions = (int)settings.getLong("mentions");
+        other.addAttribute(Setting.MENTIONS, MiscUtil.biton(mentions, 0));
+        other.addAttribute(Setting.MENTIONS_BOLD, MiscUtil.biton(mentions, 1));
+        other.addAttribute(Setting.MENTIONS_UNDERLINE, MiscUtil.biton(mentions, 2));
+        other.addAttribute(Setting.MENTIONS_COLORED, MiscUtil.biton(mentions, 3));
     }
     
     private void addBooleanSetting(Setting key, String name) {

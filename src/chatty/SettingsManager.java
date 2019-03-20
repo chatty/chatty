@@ -496,6 +496,7 @@ public class SettingsManager {
         settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
         settings.addList("highlightBlacklist", new ArrayList(), Setting.STRING);
         settings.addBoolean("highlightMatches", true);
+        settings.addBoolean("highlightMatchesAll", true);
 
         // Ignore
         settings.addList("ignore", new ArrayList(), Setting.STRING);

@@ -609,10 +609,20 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected SimpleBooleanSetting addSimpleBooleanSetting(String name, String description, String tooltipText) {
-        tooltipText = SettingsUtil.addTooltipLinebreaks(tooltipText);
-        SimpleBooleanSetting result = new SimpleBooleanSetting(description, tooltipText);
+        SimpleBooleanSetting result = makeSimpleBooleanSetting(description, tooltipText);
         booleanSettings.put(name,result);
         return result;
+    }
+    
+    protected SimpleBooleanSetting makeSimpleBooleanSetting(String labelName) {
+        return makeSimpleBooleanSetting(
+                Language.getString("settings.label."+labelName),
+                Language.getString("settings.label."+labelName+".tip", false));
+    }
+    
+    protected SimpleBooleanSetting makeSimpleBooleanSetting(String description, String tooltipText) {
+        tooltipText = SettingsUtil.addTooltipLinebreaks(tooltipText);
+        return new SimpleBooleanSetting(description, tooltipText);
     }
     
     protected void setBooleanSetting(String name, Boolean value) {
