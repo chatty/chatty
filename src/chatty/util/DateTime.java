@@ -5,11 +5,14 @@ import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.MonthDay;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -297,9 +300,15 @@ public class DateTime {
     }
     
     private static final MonthDay APRIL_FIRST = MonthDay.of(Month.APRIL, 1);
+    private static final ElapsedTime isAprilFirstET = new ElapsedTime();
+    private static boolean isAprilFirst;
     
     public static boolean isAprilFirst() {
-        return MonthDay.now().equals(APRIL_FIRST);
+        if (isAprilFirstET.secondsElapsed(600)) {
+            isAprilFirstET.set();
+            isAprilFirst = MonthDay.now().equals(APRIL_FIRST);
+        }
+        return isAprilFirst;
     }
     
     /**
@@ -352,4 +361,5 @@ public class DateTime {
         System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
         System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
     }
+    
 }

@@ -3,8 +3,11 @@ package chatty.util.api;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.util.DateTime;
 import chatty.util.HalfWeakSet;
 import chatty.util.ImageCache;
+import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,6 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -503,18 +507,20 @@ public class Emoticon {
      * @param user
      * @return
      */
-    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user) {
+    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user, boolean f) {
+        boolean flipped = f && ((ChannelTextPane)user).getRand(5) != 0;
         if (images == null) {
             images = new HalfWeakSet<>();
         }
         EmoticonImage resultImage = null;
         for (EmoticonImage image : images) {
-            if (image.scaleFactor == scaleFactor && image.maxHeight == maxHeight) {
+            if (image.scaleFactor == scaleFactor && image.maxHeight == maxHeight
+                    && image.flipped == flipped) {
                 resultImage = image;
             }
         }
         if (resultImage == null) {
-            resultImage = new EmoticonImage(scaleFactor, maxHeight);
+            resultImage = new EmoticonImage(scaleFactor, maxHeight, flipped);
             images.add(resultImage);
         } else {
             images.markStrong(resultImage);
@@ -568,7 +574,7 @@ public class Emoticon {
      * @return 
      */
     public EmoticonImage getIcon(EmoticonUser user) {
-        return getIcon(1, 0, user);
+        return getIcon(1, 0, user, false);
     }
     
     /**
@@ -789,9 +795,10 @@ public class Emoticon {
              * loaded according to the MediaTracker though, so check that as
              * well. Not quite sure what that means exactly though.
              */
+            boolean gif = isAnimated || (icon.getDescription() != null && icon.getDescription().startsWith("GIF"));
             if ((icon.getIconWidth() != targetSize.width
                     || icon.getIconHeight() != targetSize.height)
-                    && (icon.getDescription() == null || !icon.getDescription().startsWith("GIF"))) {
+                    && !gif) {
                 Image scaled = getScaledImage(icon.getImage(), targetSize.width,
                         targetSize.height);
                 icon.setImage(scaled);
@@ -808,6 +815,10 @@ public class Emoticon {
                     // setCachedSize checks for type
                     setCachedSize(width, height);
                 }
+            }
+            
+            if (image.flipped && !gif) {
+                icon.setImage(MiscUtil.rotateImage(icon.getImage()));
             }
             return icon;
         }
@@ -932,6 +943,7 @@ public class Emoticon {
         private ImageIcon icon;
         public final float scaleFactor;
         public final int maxHeight;
+        public final boolean flipped;
         
         private Set<EmoticonUser> users;
       
@@ -948,9 +960,10 @@ public class Emoticon {
         private long lastLoadingAttempt;
         private long lastUsed;
         
-        public EmoticonImage(float scaleFactor, int maxHeight) {
+        public EmoticonImage(float scaleFactor, int maxHeight, boolean flipped) {
             this.scaleFactor = scaleFactor;
             this.maxHeight = maxHeight;
+            this.flipped = flipped;
         }
         
         /**

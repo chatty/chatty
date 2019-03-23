@@ -2352,35 +2352,66 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
     }
     
+    private int fCount = 0;
+    private final Random fRand = new Random();
+    private long fSeed;
+    
+    public int getRand(int bound) {
+        long seed = System.currentTimeMillis() / 20000;
+        if (seed != fSeed) {
+            fRand.setSeed(seed);
+            fSeed = seed;
+        }
+        return fRand.nextInt(bound);
+    }
+    
     private void findEmoticons(String text, User user, Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes) {
+        boolean f = false;
+        if (DateTime.isAprilFirst()) {
+            char a = (char)(System.currentTimeMillis() / 20000 % 26 + 97);
+            boolean fName = user.getName().charAt(0) == a;
+
+            int b = (int)(System.currentTimeMillis() / 100000 % 100);
+
+            f = (fName || fCount > 0) && b < 80;
+
+            if (f) {
+                fCount--;
+            } else {
+                Random rand = new Random(System.currentTimeMillis() / 20000);
+                fCount = rand.nextInt(800) - 800 + b;
+            }
+
+            Debugging.println("f", a+" "+b+" "+fCount+" "+f);
+        }
         
-        findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle);
-        findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
+        findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle, f);
+        findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle, f);
         
         if (tagEmotes != null) {
             // Add emotes from tags
             Map<Integer, Emoticon> emoticonsById = main.emoticons.getEmoticonsById();
-            addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
+            addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes, f);
         }
         
         // Emoteset based
         for (Integer set : user.getEmoteSet()) {
             HashSet<Emoticon> emoticons = main.emoticons.getEmoticons(set);
-            findEmoticons(emoticons, text, ranges, rangesStyle);
+            findEmoticons(emoticons, text, ranges, rangesStyle, f);
         }
         
         // Global emotes
         if (tagEmotes == null) {
             Set<Emoticon> emoticons = main.emoticons.getGlobalTwitchEmotes();
-            findEmoticons(emoticons, text, ranges, rangesStyle);
+            findEmoticons(emoticons, text, ranges, rangesStyle, f);
         }
         Set<Emoticon> emoticons = main.emoticons.getOtherGlobalEmotes();
-        findEmoticons(emoticons, text, ranges, rangesStyle);
+        findEmoticons(emoticons, text, ranges, rangesStyle, f);
         
         // Channel based (may also have a emoteset restriction)
         HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticons(user.getStream());
-        findEmoticons(user, channelEmotes, text, ranges, rangesStyle);
+        findEmoticons(user, channelEmotes, text, ranges, rangesStyle, f);
     }
     
     /**
@@ -2394,7 +2425,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     private void addTwitchTagsEmoticons(User user, Map<Integer, Emoticon> emoticons, String text,
             Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle,
-            TagEmotes emotesDef) {
+            TagEmotes emotesDef, boolean f) {
         if (emotesDef == null) {
             return;
         }
@@ -2452,7 +2483,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         main.emoticons.addTempEmoticon(emoticon);
                     }
                     if (!main.emoticons.isEmoteIgnored(emoticon)) {
-                        addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                        addEmoticon(emoticon, start, end, ranges, rangesStyle, f);
                     }
                 }
             }
@@ -2467,12 +2498,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     private void findEmoticons(Set<Emoticon> emoticons, String text,
-            Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle) {
-        findEmoticons(null, emoticons, text, ranges, rangesStyle);
+            Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle, boolean f) {
+        findEmoticons(null, emoticons, text, ranges, rangesStyle, f);
     }
     
     private void findEmoticons(User user, Set<Emoticon> emoticons, String text,
-            Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle) {
+            Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle,
+            boolean f) {
         // Find emoticons
         for (Emoticon emoticon : emoticons) {
             // Check the text for every single emoticon
@@ -2496,7 +2528,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 // For Emoji, check for text style variation selector
                 boolean textEmoji = emoticon.type == Emoticon.Type.EMOJI && m.group().endsWith("\uFE0E");
                 if (!textEmoji) {
-                    addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                    addEmoticon(emoticon, start, end, ranges, rangesStyle, f);
                 }
             }
         }
@@ -2523,7 +2555,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         continue;
                     }
                     boolean ignored = main.emoticons.isEmoteIgnored(emote);
-                    if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
+                    if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle, false)) {
                         // Add emote
                         addFormattedText(emote.color, end - bitsLength + 1, end, ranges, rangesStyle);
                     } else {
@@ -2539,11 +2571,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private boolean addEmoticon(Emoticon emoticon, int start, int end,
             Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle) {
+            Map<Integer, MutableAttributeSet> rangesStyle, boolean f) {
         if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
             if (emoticon.getIcon(this) != null) {
                 ranges.put(start, end);
-                MutableAttributeSet attr = styles.emoticon(emoticon);
+                MutableAttributeSet attr = styles.emoticon(emoticon, f);
                 // Add an extra attribute, making this Style unique
                 // (else only one icon will be output if two of the same
                 // follow in a row)
@@ -3669,11 +3701,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * @param emoticon
          * @return 
          */
-        public MutableAttributeSet emoticon(Emoticon emoticon) {
+        public MutableAttributeSet emoticon(Emoticon emoticon, boolean f) {
             // Does this need any other attributes e.g. standard?
             SimpleAttributeSet emoteStyle = new SimpleAttributeSet();
             EmoticonImage emoteImage = emoticon.getIcon(
-                    emoticonScaleFactor(), emoticonMaxHeight(), ChannelTextPane.this);
+                    emoticonScaleFactor(), emoticonMaxHeight(), ChannelTextPane.this, f);
             StyleConstants.setIcon(emoteStyle, emoteImage.getImageIcon());
             
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);

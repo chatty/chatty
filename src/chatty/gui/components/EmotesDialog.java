@@ -469,7 +469,7 @@ public class EmotesDialog extends JDialog {
                 EmoticonUser emoteUser) {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addMouseListener(mouseListener);
-            EmoticonImage emoteImage = emote.getIcon(scale, 0, emoteUser);
+            EmoticonImage emoteImage = emote.getIcon(scale, 0, emoteUser, false);
             this.code = emote.code;
             this.emote = emoteImage;
             setIcon(emoteImage.getImageIcon());

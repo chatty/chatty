@@ -3,9 +3,14 @@ package chatty.util;
 
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -187,6 +192,24 @@ public class MiscUtil {
     
     public static boolean biton(int value, int i) {
         return (value & (1 << i)) != 0;
+    }
+
+    public static Image rotateImage(Image image) {
+        BufferedImage bi;
+        if (image instanceof BufferedImage) {
+            bi = (BufferedImage)image;
+        } else {
+            bi = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+            Graphics g = bi.createGraphics();
+            g.drawImage(image, 0, 0, null);
+            g.dispose();
+        }
+        AffineTransform tx;
+        AffineTransformOp op;
+        tx = AffineTransform.getScaleInstance(-1, -1);
+        tx.translate(-image.getWidth(null), -image.getHeight(null));
+        op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        return op.filter(bi, null);
     }
     
 }

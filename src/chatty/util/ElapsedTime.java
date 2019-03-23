@@ -13,6 +13,16 @@ public class ElapsedTime {
     
     private long time = -1;
     
+    public ElapsedTime(boolean initNow) {
+        if (initNow) {
+            time = ems();
+        }
+    }
+    
+    public ElapsedTime() {
+        this(false);
+    }
+    
     /**
      * Measure elapsed time from this point on.
      */
