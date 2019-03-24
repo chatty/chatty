@@ -14,7 +14,12 @@ public class SettingsUtil {
     public static void addSubsettings(JCheckBox control, Component... subs) {
         control.addItemListener(e -> {
             for (Component sub : subs) {
-                sub.setEnabled(control.isSelected());
+                sub.setEnabled(control.isSelected() && control.isEnabled());
+            }
+        });
+        control.addPropertyChangeListener("enabled", e -> {
+            for (Component sub : subs) {
+                sub.setEnabled(control.isSelected() && control.isEnabled());
             }
         });
         for (Component sub : subs) {

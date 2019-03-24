@@ -147,7 +147,9 @@ public class HighlightSettings extends SettingsPanel {
         SettingsUtil.addSubsettings(highlightEnabled, highlightUsername,
                 highlightNextMessages, highlightOwnText, highlightIgnored,
                 highlightMatches, items, noHighlightUsersButton,
-                highlightBlacklistButton, highlightMatchesAll);
+                highlightBlacklistButton);
+        
+        SettingsUtil.addSubsettings(highlightMatches, highlightMatchesAll);
     }
     
     private static class NoHighlightUsers extends JDialog {

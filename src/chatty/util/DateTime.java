@@ -304,6 +304,9 @@ public class DateTime {
     private static boolean isAprilFirst;
     
     public static boolean isAprilFirst() {
+        if (Debugging.isEnabled("f2")) {
+            return true;
+        }
         if (isAprilFirstET.secondsElapsed(600)) {
             isAprilFirstET.set();
             isAprilFirst = MonthDay.now().equals(APRIL_FIRST);
