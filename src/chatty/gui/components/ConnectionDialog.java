@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.lang.Language;
 import java.awt.*;
@@ -87,6 +88,7 @@ public class ConnectionDialog extends JDialog {
         final JLabel channelLabel = new JLabel(Language.getString("connect.channel"));
         add(channelLabel, makeGbc(0,4,1,1,GridBagConstraints.EAST));
 
+        GuiUtil.installLengthLimitDocumentFilter(channel, 8000, false);
         gbc = makeGbc(1,4,2,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5,5,5,8);

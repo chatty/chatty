@@ -49,7 +49,7 @@ public class MainSettings extends SettingsPanel {
         
         gbc = d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST);
         JTextField channels = d.addSimpleStringSetting("autojoinChannel", 25, true);
-        GuiUtil.installLengthLimitDocumentFilter(channels, 5000, false);
+        GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
         startSettingsPanel.add(channels, gbc);
         
         onStart.addActionListener(e -> {
