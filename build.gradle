@@ -142,7 +142,7 @@ task release(group: 'build') {
 }
 
 //--------
-// Windows
+// Build standalone package
 //--------
 
 def javapackagerBuildDir = new File(buildDir, 'javapackager')
@@ -156,8 +156,23 @@ task javapackager(type: Exec, group: 'build') {
         }
     }
     if (project.hasProperty('javapackagerPath')) {
-        def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
-        command << "-Bicon=assets-bundle/Chatty.ico"
+        def nativeType
+        def iconFile
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            nativeType = 'image'
+            iconFile = "assets-bundle/Chatty.ico"
+        }
+        if (System.properties['os.name'].toLowerCase().contains('mac')) {
+            nativeType = 'installer'
+            iconFile = "assets-bundle/Chatty.icns"
+        }
+        if (project.hasProperty('nativeType')) {
+          nativeType = project.getProperty('nativeType')
+        }
+        def command = [javapackagerPath, '-deploy', '-native', nativeType, '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
+        if (iconFile) {
+            command << "-Bicon=${iconFile}"
+        }
         command << "-BappVersion=${version}"
         command << "-BjvmProperties=sun.java2d.d3d=false"
         command << "-BjvmOptions=-Xmx400M"
