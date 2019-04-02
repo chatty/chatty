@@ -187,6 +187,9 @@ public class Parser {
         else if (type.equals("lower")) {
             return lower(isRequired);
         }
+        else if (type.equals("upper")) {
+            return upper(isRequired);
+        }
         else if (type.equals("rand")) {
             return rand(isRequired);
         }
@@ -286,6 +289,13 @@ public class Parser {
         Item identifier = peekParam();
         expect(")");
         return new Lower(identifier, isRequired);
+    }
+    
+    private Item upper(boolean isRequired) throws ParseException {
+        expect("(");
+        Item identifier = peekParam();
+        expect(")");
+        return new Upper(identifier, isRequired);
     }
     
     private Item rand(boolean isRequired) throws ParseException {
