@@ -464,6 +464,26 @@ public class User implements Comparable {
         return new ArrayList<>(lines);
     }
     
+    public synchronized TextMessage getMessage(String msgId) {
+        if (msgId == null) {
+            return null;
+        }
+        for (Message msg : lines) {
+            if (msg instanceof TextMessage) {
+                TextMessage textMsg = (TextMessage)msg;
+                if (msgId.equals(textMsg.id)) {
+                    return textMsg;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public String getMessageText(String msgId) {
+        TextMessage msg = getMessage(msgId);
+        return msg != null ? msg.text : null;
+    }
+    
     public synchronized int clearMessagesIfInactive(long duration) {
         if (!lines.isEmpty()
                 && System.currentTimeMillis() - getLastLineTime() >= duration) {

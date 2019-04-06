@@ -2,6 +2,7 @@
 package chatty.util.commands;
 
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -13,15 +14,18 @@ public class CustomCommand {
     
     private final Items items;
     private final String error;
+    private final String singleLineError;
 
     private CustomCommand(Items items) {
         this.items = items;
         this.error = null;
+        this.singleLineError = null;
     }
 
-    private CustomCommand(String error) {
-        this.error = error;
+    private CustomCommand(String error, String singleLineError) {
         this.items = null;
+        this.error = error;
+        this.singleLineError = singleLineError;
     }
     
     public String replace(Parameters parameters) {
@@ -36,12 +40,33 @@ public class CustomCommand {
         return error;
     }
     
+    /**
+     * Get the error formatted with linebreaks. The error position in the
+     * excerpt is point at from below.
+     * 
+     * @return The error message, or null when there is no error
+     */
     public String getError() {
         return error;
     }
     
+    /**
+     * Check if there is an error.
+     * 
+     * @return true there is an error, false otherwise
+     */
     public boolean hasError() {
         return error != null;
+    }
+    
+    /**
+     * Get the error formatted without linebreaks. The error position in the
+     * excerpt is marked in the excerpt itself.
+     * 
+     * @return The error message, or null when there is no error
+     */
+    public String getSingleLineError() {
+        return singleLineError;
     }
     
     public Set<String> getIdentifiersWithPrefix(String prefix) {
@@ -74,8 +99,66 @@ public class CustomCommand {
         try {
             return new CustomCommand(parser.parse());
         } catch (ParseException ex) {
-            return new CustomCommand(ex.getLocalizedMessage());
+            return new CustomCommand(
+                    makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, false),
+                    makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, true)
+            );
         }
+    }
+    
+    /**
+     * Creates an error message containing the error description, position and
+     * an excerpt of the input with the position marked.
+     * 
+     * Optionally it can either format the message to be on several lines, with
+     * the error position pointed at from below, or output just one line, with
+     * the error position pointed at from the right in the excerpt itself.
+     * 
+     * @param input The original input
+     * @param pos The position of the error
+     * @param error The error description
+     * @param singleLine No linebreaks in resulting message
+     * @return The error message
+     */
+    private static String makeErrorMessage(String error, int pos, String input,
+            boolean singleLine) {
+        final int before = 30;
+        final int after = 20;
+        final String dotdot = "[..]";
+        
+        int start = pos > before+dotdot.length() ? pos - before : 0;
+        int end = input.length() > pos + after + dotdot.length() ? pos + after : input.length();
+        int displayPos = pos - start;
+        String excerpt = input.substring(start, end);
+        if (start > 0) {
+            excerpt = dotdot+excerpt;
+            displayPos += dotdot.length();
+        }
+        if (end < input.length()) {
+            excerpt = excerpt+dotdot;
+        }
+        if (singleLine) {
+            String excerpt1 = excerpt.substring(0, displayPos);
+            int endExcerptStart = displayPos + 1;
+            if (endExcerptStart > excerpt.length()) {
+                // If the pos is right at the end, there may not be an extra
+                // character to show/point at, so restrict to length
+                endExcerptStart = excerpt.length();
+            }
+            String excerpt2 = excerpt.substring(displayPos, endExcerptStart);
+            String excerpt3 = excerpt.substring(endExcerptStart);
+            return String.format("%s at pos %s (\"%s%s<<<%s\")",
+                error,
+                pos+1,
+                excerpt1,
+                excerpt2,
+                excerpt3);
+        }
+        return String.format("%s at pos %s\n %s\n %s^",
+                error,
+                pos+1,
+                excerpt,
+                String.join("", Collections.nCopies(displayPos, " ")));
     }
     
     public static CustomCommand createDefault(String commandName) {

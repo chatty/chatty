@@ -246,6 +246,9 @@ public class UserInfo extends JDialog {
             reason = " " + reason;
         }
         Parameters parameters = Parameters.create(nick + reason);
+        parameters.put("nick", nick);
+        parameters.put("reason", reason);
+        parameters.put("msg", getMsg());
         parameters.put("msg-id", getMsgId());
         parameters.put("target-msg-id", getTargetMsgId());
         parameters.put("automod-msg-id", getAutoModMsgId());
@@ -393,6 +396,13 @@ public class UserInfo extends JDialog {
     
     public String getMsgId() {
         return currentMsgId;
+    }
+    
+    public String getMsg() {
+        if (currentUser != null) {
+            return currentUser.getMessageText(currentMsgId);
+        }
+        return null;
     }
     
     public String getTargetMsgId() {

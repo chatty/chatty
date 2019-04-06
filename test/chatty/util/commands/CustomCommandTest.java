@@ -32,6 +32,14 @@ public class CustomCommandTest {
         test("$lower($$1)", lowerTests2);
         test("$$lower($1)", lowerTests2);
         
+        test("$upper(1)", new String[]{
+            "", "",
+            "a", "A",
+            "abc", "ABC",
+            "A", "A",
+            "ä", "Ä"
+        });
+        
         test("$ifeq($$1,$$2,one,two)", new String[]{
             "", null,
             "a a", "one",
@@ -157,6 +165,8 @@ public class CustomCommandTest {
             assertTrue(Arrays.asList(randomOutput1).contains(random5.replace(Parameters.create("a"))));
             assertTrue(Arrays.asList(randomOutput2b).contains(random5.replace(Parameters.create(""))));
         }
+        
+        CustomCommand.parse("$rand()").replace(Parameters.create(""));
     }
     
     @Test
@@ -171,6 +181,21 @@ public class CustomCommandTest {
         assertEquals(command.replace(parameters2), "");
         assertEquals(command2.replace(parameters), "123456");
         assertEquals(command2.replace(parameters2), null);
+    }
+    
+    @Test
+    public void testErrorBuilding() {
+        /**
+         * Test if building the error message at the very least doesn't throw
+         * an error.
+         */
+        CustomCommand.parse("$");
+        CustomCommand.parse("$(");
+        CustomCommand.parse("$$");
+        CustomCommand.parse("$abc");
+        CustomCommand.parse(" $ ");
+        CustomCommand.parse(" $join(");
+        CustomCommand.parse(" $join( ");
     }
     
 }

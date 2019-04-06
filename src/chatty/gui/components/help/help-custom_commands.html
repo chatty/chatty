@@ -227,14 +227,21 @@
         </tr>
         <!-- User Context Menu -->
         <tr>
-            <td rowspan="3">User Context Menu</td>
-            <td><code>1</code></td>
+            <td rowspan="4">User Context Menu</td>
+            <td><code>1</code>, <code>nick</code></td>
             <td>Name of the user</td>
+        </tr>
+        <tr>
+            <td><code>msg</code></td>
+            <td>Message text of the selected message (depending on the line in
+                chat you opened the User Contex Menu from, not available for
+                your own messages)</td>
         </tr>
         <tr>
             <td><code>msg-id</code></td>
             <td>Message id of the selected message (depending on the line in
-                chat you opened the User Contex Menu from)</td>
+                chat you opened the User Contex Menu from, not available for
+                your own messages)</td>
         </tr>
         <tr>
             <td><code>automod-msg-id</code></td>
@@ -244,18 +251,25 @@
         </tr>
         <!-- User Dialog -->
         <tr>
-            <td rowspan="7">User Dialog</td>
-            <td><code>1</code></td>
+            <td rowspan="8">User Dialog</td>
+            <td><code>1</code>, <code>nick</code></td>
             <td>Name of the user</td>
         </tr>
         <tr>
-            <td><code>2-</code></td>
+            <td><code>2-</code>, <code>reason</code></td>
             <td>Ban reason (if selected)</td>
+        </tr>
+        <tr>
+            <td><code>msg</code></td>
+            <td>Message text of the selected message (<code>&gt;</code> in front
+                of message, depending on the line in chat you opened it from,
+                not available for your own messages)</td>
         </tr>
         <tr>
             <td><code>msg-id</code></td>
             <td>Message id of the selected message (<code>&gt;</code> in front
-                of message, depending on the line in chat you opened it from)</td>
+                of message, depending on the line in chat you opened it from,
+                not available for your own messages)</td>
         </tr>
         <tr>
             <td><code>automod-msg-id</code></td>
@@ -348,7 +362,7 @@
         <dd><em>Example:</em> <code>$upper(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>FREMILY</code>.</dd>
         
-        <dt><code>$rand(&lt;output1&gt;,&lt;output2&gt;,&lt;output3&gt,..)</code></dt>
+        <dt><code>$rand([output1],[output2],[output3],..)</code></dt>
         <dd>Randomly chooses one of the outputs.</dd>
         <dd><em>Example:</em> <code>$rand(cheesecake,strawberry cake,$1-)</code>
             with <code>1-</code> referring to <code>apple pie</code> turns into

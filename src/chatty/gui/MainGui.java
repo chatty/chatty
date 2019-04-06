@@ -1632,6 +1632,8 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.startsWith("command")) {
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+                parameters.put("nick", user.getName());
+                parameters.put("msg", user.getMessageText(msgId));
                 parameters.put("msg-id", msgId);
                 parameters.put("automod-msg-id", autoModMsgId);
                 customCommand(user.getRoom(), e, parameters);
