@@ -7,10 +7,14 @@ import chatty.util.api.usericons.UsericonManager;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.NamedColor;
 import chatty.gui.components.textpane.ModLogInfo;
+import chatty.util.settings.Setting;
+import chatty.util.settings.Settings;
+import chatty.util.settings.SettingsListener;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
+import static java.lang.Math.toIntExact;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +30,8 @@ import java.util.regex.Pattern;
  * @author tduva
  */
 public class User implements Comparable {
+    
+    private Settings settings;
     
     private static final Pattern SPLIT_EMOTESET = Pattern.compile("[^0-9]");
     
@@ -49,7 +55,7 @@ public class User implements Comparable {
         new NamedColor("SpringGreen", 0, 255, 127)
     };
     
-    private static final int MAXLINES = 100;
+    private int MAXLINES = 100;
     
     //========
     // Basics
@@ -298,6 +304,10 @@ public class User implements Comparable {
     
     public synchronized int getMaxNumberOfLines() {
         return MAXLINES;
+    }
+    
+    public void setMaxNumberOfLines(int num) {
+        this.MAXLINES = num;
     }
     
     /**

@@ -62,6 +62,12 @@ public class ModerationSettings extends SettingsPanel {
                 d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST));
         userInfo.add(d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}),
                 d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
+        
+        userInfo.add(new JLabel(Language.getString("settings.long.UserDialogMessageLimit.label")),
+                d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
+        userInfo.add(d.addSimpleLongSetting("UserDialogMessageLimit", 3, true),
+                d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
+                
     }
     
 }

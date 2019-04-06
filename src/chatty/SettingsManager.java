@@ -288,6 +288,7 @@ public class SettingsManager {
         settings.addBoolean("openUserDialogByMouse", true);
         settings.addBoolean("reuseUserDialog", false);
         settings.addLong("clearUserMessages", 12);
+        settings.addLong("UserDialogMessageLimit", 100);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);

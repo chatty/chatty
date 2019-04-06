@@ -6,6 +6,7 @@ import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
+import static java.lang.Math.toIntExact;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -252,6 +253,12 @@ public class UserManager {
             }
             // Put User into the map for the channel
             getUsersByChannel(room.getChannel()).put(name, user);
+            
+            // Set history length
+            long UserDialogMessageLimit = settings.getLong("UserDialogMessageLimit");
+            if (UserDialogMessageLimit >= 0) {
+                user.setMaxNumberOfLines(toIntExact(UserDialogMessageLimit));
+            }
         }
         return user;
     }
