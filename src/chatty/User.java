@@ -14,7 +14,6 @@ import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
-import static java.lang.Math.toIntExact;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
