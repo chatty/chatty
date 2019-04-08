@@ -306,7 +306,7 @@ public class InfoPanel extends JPanel {
     }
     
     protected static final CustomCommand COMMAND_FOLLOW_AGE =
-            CustomCommand.parse("$$1 has been following for $$(followage)");
+            CustomCommand.parse("$$(nick) has been following for $$(followage)");
     protected static final CustomCommand COMMAND_ACCOUNT_AGE =
-            CustomCommand.parse("$$1 has been registered for $$(accountage)");
+            CustomCommand.parse("$$(nick) has been registered for $$(accountage)");
 }

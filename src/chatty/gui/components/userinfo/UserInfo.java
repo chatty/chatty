@@ -246,7 +246,7 @@ public class UserInfo extends JDialog {
             reason = " " + reason;
         }
         Parameters parameters = Parameters.create(nick + reason);
-        parameters.put("nick", nick);
+        parameters.put("nick", user.getRegularDisplayNick());
         parameters.put("reason", reason);
         parameters.put("msg", getMsg());
         parameters.put("msg-id", getMsgId());
