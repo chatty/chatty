@@ -2204,7 +2204,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     print(rangeText, rangeStyle);
                 }
             } else {
-                if (styles.isEnabled(Setting.HIGHLIGHT_MATCHES_ALL)) {
+                if (styles.isEnabled(Setting.HIGHLIGHT_MATCHES_ALL)
+                        && StyleConstants.getIcon(rangeStyle) == null) {
                     specialPrint(user, text, start, end+1, rangeStyle, highlightMatches);
                 } else {
                     print(text.substring(start, end+1), rangeStyle);
