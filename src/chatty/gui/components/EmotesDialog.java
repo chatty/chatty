@@ -839,7 +839,9 @@ public class EmotesDialog extends JDialog {
             //------------
             // Add emotes
             //------------
-            for (String stream : perStream.keySet()) {
+            List<String> sortedStreams = new ArrayList<>(perStream.keySet());
+            Collections.sort(sortedStreams, String.CASE_INSENSITIVE_ORDER);
+            for (String stream : sortedStreams) {
                 addEmotes(stream, perStream.get(stream));
             }
             
