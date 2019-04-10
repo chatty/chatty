@@ -59,4 +59,30 @@ public class LanguageTest {
         }
     }
     
+    /**
+     * Find strings in translations that don't have the same amount of format
+     * parameters as in the master bundle (English). This only outputs any
+     * mismatching strings instead of failing the test, because there could be
+     * good reasons for the amount of parameters not being exactly the same.
+     */
+    @Test
+    public void findMissingParameters() {
+        String masterLang = "en_US";
+        Collection<String> languages = new HashSet<>(MainSettings.getLanguageOptions().keySet());
+        ResourceBundle masterBundle = Language.getBundleForLanguage(masterLang);
+        for (String lang : languages) {
+            ResourceBundle bundle = Language.getBundleForLanguage(lang);
+            for (String key : bundle.keySet()) {
+                String masterItem = masterBundle.getString(key);
+                String item = bundle.getString(key);
+                MessageFormat mmf = new MessageFormat(masterItem);
+                MessageFormat mf = new MessageFormat(item);
+                if (mmf.getFormats().length != mf.getFormats().length) {
+                    System.out.println(String.format("Parameter count mismatch: %s\n %s: %s\n %s: %s",
+                            key, masterLang, masterItem, lang, item));
+                }
+            }
+        }
+    }
+    
 }
