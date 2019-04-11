@@ -284,15 +284,16 @@ public class Emoticons {
          * has access to.
          */
         if ((emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteSet))) {
+            String code = emote.type == Emoticon.Type.EMOJI ? emote.code : toWriteable(emote.code);
             if (!emote.hasStreamRestrictions()) {
-                emoteNames.add(emote.code);
+                emoteNames.add(code);
             } else {
                 // Channel specific emotes
                 for (String stream : emote.getStreamRestrictions()) {
                     if (!emotesNamesPerStream.containsKey(stream)) {
                         emotesNamesPerStream.put(stream, new HashSet<String>());
                     }
-                    emotesNamesPerStream.get(stream).add(emote.code);
+                    emotesNamesPerStream.get(stream).add(code);
                 }
             }
         }
