@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.util.MiscUtil;
 import chatty.util.TwitchEmotes.Emoteset;
 import chatty.util.TwitchEmotes.EmotesetInfo;
 import java.util.HashSet;
@@ -18,6 +19,8 @@ import java.util.logging.Logger;
 public class EmoticonManager2 {
     
     private static final Logger LOGGER = Logger.getLogger(EmoticonManager2.class.getName());
+    
+    private static final int MAX_NUMBER_OF_SETS_IN_REQUEST = 400;
     
     /**
      * How often to try to make a request. This is used to "bunch up" requests
@@ -152,7 +155,9 @@ public class EmoticonManager2 {
         // All of these are being requested, so remember as such
         requestedEmotesets.addAll(toRequest);
         
-        requests.requestEmotesets(toRequest);
+        for (Set<Integer> split : MiscUtil.splitSetByLimit(toRequest, MAX_NUMBER_OF_SETS_IN_REQUEST)) {
+            requests.requestEmotesets(split);
+        }
         lastRequestTime = System.currentTimeMillis();
     }
     

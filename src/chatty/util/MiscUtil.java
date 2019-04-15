@@ -19,8 +19,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -210,6 +215,34 @@ public class MiscUtil {
         tx.translate(-image.getWidth(null), -image.getHeight(null));
         op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         return op.filter(bi, null);
+    }
+    
+    /**
+     * Split up a set into several sets, so that each one only has at most limit
+     * entries.
+     * 
+     * @param <T>
+     * @param original The input, will not be modified
+     * @param limit The limit (limits smaller than 1 will be turned into 1)
+     * @return A list of sets
+     */
+    public static <T> List<Set<T>> splitSetByLimit(Set<T> original, int limit) {
+        if (limit <= 0) {
+            limit = 1;
+        }
+        List<Set<T>> result = new ArrayList<>();
+        Iterator<T> it = original.iterator();
+        while (it.hasNext()) {
+            Set<T> part = new HashSet<>();
+            for (int i=0;i<limit;i++) {
+                if (!it.hasNext()) {
+                    break;
+                }
+                part.add(it.next());
+            }
+            result.add(part);
+        }
+        return result;
     }
     
 }
