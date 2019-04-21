@@ -163,7 +163,7 @@ task javapackager(type: Exec, group: 'build') {
             iconFile = "assets-bundle/Chatty.ico"
         }
         if (System.properties['os.name'].toLowerCase().contains('mac')) {
-            nativeType = 'installer'
+            nativeType = 'pkg'
             iconFile = "assets-bundle/Chatty.icns"
         }
         if (project.hasProperty('nativeType')) {
