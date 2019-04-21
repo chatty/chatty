@@ -208,3 +208,18 @@ parameter, otherwise it will use the default JRE of the system.
 Currently the build includes the JIntellitype32.dll, so you may have to
 exchange that file if you bundle a 64bit version of Java.
 
+Mac Installer
+-------------
+
+You can create an installer for a standalone Mac application.
+
+As with Windows, you must specify the path to the javapackager program. If the
+javapackager program is in your path, you may be able to run it like this:
+`gradle javapackager -PjavapackagerPath=$(which javapackager)`
+
+You can build a disk image (dmg) or application (app) directly by passing
+`-PnativeType=dmg` or `-PnativeType=image` respectively if you would rather
+build that than an installer.
+
+You may also specify the path to the JRE to bundle using the `-PjrePath`
+parameter, otherwise it will use the default JRE of the system.
