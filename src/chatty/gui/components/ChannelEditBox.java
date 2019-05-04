@@ -1,6 +1,11 @@
 
 package chatty.gui.components;
 
+import chatty.gui.components.completion.AutoCompletion;
+import chatty.gui.components.completion.AutoCompletionServer;
+import chatty.util.colors.ColorCorrectionNew;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -42,6 +47,7 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
     
     public ChannelEditBox(int size) {
         autoCompletion = new AutoCompletion(this);
+        autoCompletion.setFont(getFont());
         this.addKeyListener(this);
         setLineWrap(true);
         setWrapStyleWord(true);
@@ -95,6 +101,39 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
     
     public boolean getCompleteToCommonPrefix() {
         return autoCompletion.getCompleteToCommonPrefix();
+    }
+    
+    public void setCompletionCellSize(int width, int height) {
+        autoCompletion.setCellSize(width, height);
+    }
+    
+    public void setCompletionAppendSpace(boolean append) {
+        autoCompletion.setAppendSpace(append);
+    }
+
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+        if (autoCompletion != null) {
+            autoCompletion.setFont(font);
+        }
+    }
+    
+    @Override
+    public void setForeground(Color color) {
+        super.setForeground(color);
+        if (autoCompletion != null) {
+            autoCompletion.setForegroundColor(color);
+        }
+    }
+    
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (autoCompletion != null) {
+            autoCompletion.setBackgroundColor(ColorCorrectionNew.offset(color, 0.9f));
+            autoCompletion.setHighlightColor(ColorCorrectionNew.offset(color, 0.8f));
+        }
     }
     
     public void setHistoryRequireCtrlMultirow(boolean require) {
@@ -187,15 +226,15 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
             }
             if (e.isShiftDown()) {
                 if (autoCompletion.inCompletion()) {
-                    autoCompletion.doAutoCompletion(null, false);
+                    autoCompletion.manual(-1, null);
                 } else {
-                    autoCompletion.doAutoCompletion("special", true);
+                    autoCompletion.manual(1, "special");
                 }
             } else {
-                autoCompletion.doAutoCompletion(null, true);
+                autoCompletion.manual(1, null);
             }
         } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            autoCompletion.cancelAutoCompletion();
+            autoCompletion.cancel();
         }
     }
     

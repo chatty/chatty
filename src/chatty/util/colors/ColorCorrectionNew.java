@@ -85,4 +85,17 @@ public class ColorCorrectionNew {
         return new Color((int)(c.getRed() * factor), (int)(c.getGreen() * factor), (int)(c.getBlue() * factor));
     }
     
+    public static Color offset(Color c, float factor) {
+        if (getLightness(c) < 180) {
+            return makeBrighter(c, 1 - factor);
+        }
+        return makeDarker(c, factor);
+    }
+    
+    public static void main(String[] args) {
+        Color c = Color.BLACK;
+        System.out.println(makeBrighter(Color.BLACK, 0.2f));
+        System.out.println(makeDarker(Color.WHITE, 0.2f));
+    }
+    
 }

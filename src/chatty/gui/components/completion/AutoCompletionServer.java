@@ -1,9 +1,10 @@
 
-package chatty.gui.components;
+package chatty.gui.components.completion;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import javax.swing.ImageIcon;
 
 /**
  * Defines the CompletionServer, which creates the actual search result used
@@ -38,22 +39,14 @@ public interface AutoCompletionServer {
     public CompletionItems getCompletionItems(String type, String prefix,
             String search);
     
+    public boolean isAutostartPrefix(String prefix);
+    
     /**
      * A container for the data the CompletionServer returns.
      */
     public static class CompletionItems {
 
-        public final List<String> items;
-        
-        /**
-         * Can store info on certain items. The key is an item that may or may
-         * not be in the list of matched items. The key is the value that can be
-         * used for display.
-         * 
-         * This may be null. The methods {@link hasInfo(String) hasInfo()} and
-         * {@link getInfo(String) getInfo()} can be used for more convenience.
-         */
-        public final Map<String, String> info;
+        public final List<CompletionItem> items;
         public final String prefixToRemove;
 
         /**
@@ -68,18 +61,19 @@ public interface AutoCompletionServer {
          * actually matter. It must not be longer than the actual prefix was.
          *
          * @param items Some HTML characters will be escaped
-         * @param info May contain HTML, make sure that unwanted HTML characters
-         * are escaped
          * @param prefixToRemove 
          */
-        public CompletionItems(List<String> items, Map<String, String> info, String prefixToRemove) {
+        public CompletionItems(List<CompletionItem> items, String prefixToRemove) {
             this.items = items;
             this.prefixToRemove = prefixToRemove;
-            this.info = info;
         }
         
-        public CompletionItems(List<String> items, String prefixToRemove) {
-            this(items, null, prefixToRemove);
+        public static CompletionItems createFromStrings(List<String> items, String prefixToRemove) {
+            List<CompletionItem> result = new ArrayList<>();
+            for (String item : items) {
+                result.add(new CompletionItem(item, null));
+            }
+            return new CompletionItems(result, prefixToRemove);
         }
         
         /**
@@ -88,30 +82,6 @@ public interface AutoCompletionServer {
         public CompletionItems() {
             this.items = new ArrayList<>();
             this.prefixToRemove = "";
-            this.info = null;
-        }
-        
-        /**
-         * Checks if there is an info String for the given item.
-         *
-         * @param item The item, usually a match result
-         * @return true if there is an info for the given item, false otherwise
-         */
-        public boolean hasInfo(String item) {
-            return info != null && info.containsKey(item);
-        }
-        
-        /**
-         * Returns the info for the given item.
-         * 
-         * @param item The item, usually a match result
-         * @return The info, or null if no info is set
-         */
-        public String getInfo(String item) {
-            if (info == null) {
-                return null;
-            }
-            return info.get(item);
         }
         
         /**
@@ -122,8 +92,46 @@ public interface AutoCompletionServer {
          */
         public void append(CompletionItems other) {
             items.addAll(other.items);
-            info.putAll(other.info);
         }
+        
     }
+    
+    public static class CompletionItem implements Comparable<CompletionItem> {
+        
+        private final String code;
+        private final String info;
+        
+        public CompletionItem(String code, String info) {
+            this.code = code;
+            this.info = info;
+        }
+        
+        public String getCode() {
+            return code;
+        }
+        
+        public String getInfo() {
+            return info;
+        }
+        
+        public boolean hasInfo() {
+            return info != null && !info.isEmpty();
+        }
+        
+        public ImageIcon getImage(Component c) {
+            return null;
+        }
+        
+        public String toString() {
+            return code;
+        }
+
+        @Override
+        public int compareTo(CompletionItem o) {
+            return code.compareToIgnoreCase(o.code);
+        }
+        
+    }
+    
 }
 

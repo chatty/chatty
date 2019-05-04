@@ -328,6 +328,7 @@ public class TwitchClient {
             }
             kb.clearMessagesIfInactive(0);
             kb.addMessage("abc", false, null);
+            kb.setDisplayNick("reallyLongDisplayNickAndStuffBlahNeedsToBeLonger");
             kb.setBot(true);
             g.addUser(kb);
             User l = new User("lotsofs", "LotsOfS", testRoom);

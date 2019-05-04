@@ -4460,12 +4460,12 @@ public class MainGui extends JFrame implements Runnable {
         return client.settings.getSettingNames();
     }
     
-    public Collection<String> getEmoteNames() {
-        return emoticons.getEmoteNames();
+    public Collection<Emoticon> getUsableGlobalEmotes() {
+        return emoticons.getLocalTwitchEmotes();
     }
     
-    public Collection<String> getEmoteNamesPerStream(String stream) {
-        return emoticons.getEmotesNamesByStream(stream);
+    public Collection<Emoticon> getUsableEmotesPerStream(String stream) {
+        return emoticons.getUsableEmotesByStream(stream);
     }
     
     public String getCustomCompletionItem(String key) {
@@ -4481,7 +4481,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                emoticons.updateEmoteNames(client.getSpecialUser().getEmoteSet());
+                emoticons.updateLocalEmotes(client.getSpecialUser().getEmoteSet());
             }
         });
     }

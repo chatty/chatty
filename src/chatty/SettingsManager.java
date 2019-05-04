@@ -546,6 +546,9 @@ public class SettingsManager {
         settings.addString("completionTab", "both");
         settings.addString("completionTab2", "emotes");
         settings.addString("completionSearch", "words");
+        settings.addBoolean("completionAuto", true);
+        settings.addString("completionEmotePrefix", ":");
+        settings.addBoolean("completionSpace", false);
 
         // Stream Chat
         settings.addLong("streamChatMessageTimeout", -1);
