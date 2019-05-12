@@ -73,13 +73,19 @@ public class LanguageTest {
         for (String lang : languages) {
             ResourceBundle bundle = Language.getBundleForLanguage(lang);
             for (String key : bundle.keySet()) {
-                String masterItem = masterBundle.getString(key);
-                String item = bundle.getString(key);
-                MessageFormat mmf = new MessageFormat(masterItem);
-                MessageFormat mf = new MessageFormat(item);
-                if (mmf.getFormats().length != mf.getFormats().length) {
-                    System.out.println(String.format("Parameter count mismatch: %s\n %s: %s\n %s: %s",
-                            key, masterLang, masterItem, lang, item));
+                /**
+                 * If a key was removed or renamed it may still be in a not yet
+                 * updated language file, but not in the master file
+                 */
+                if (masterBundle.containsKey(key)) {
+                    String masterItem = masterBundle.getString(key);
+                    String item = bundle.getString(key);
+                    MessageFormat mmf = new MessageFormat(masterItem);
+                    MessageFormat mf = new MessageFormat(item);
+                    if (mmf.getFormats().length != mf.getFormats().length) {
+                        System.out.println(String.format("Parameter count mismatch: %s\n %s: %s\n %s: %s",
+                                key, masterLang, masterItem, lang, item));
+                    }
                 }
             }
         }
