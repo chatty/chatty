@@ -12,7 +12,6 @@ import java.util.Collection;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -149,17 +148,20 @@ public class TokenDialog extends JDialog {
 
         StringBuilder b = new StringBuilder("<html><body style='line-height:28px;'>");
         for (TokenInfo.Scope s : TokenInfo.Scope.values()) {
-            b.append(accessStatusImage(scopes.contains(s.scope))).append("&nbsp;").append(s.label).append("<br />");
+            boolean enabled = scopes.contains(s.scope);
+            if (enabled) {
+                b.append(OK_IMAGE);
+                b.append("&nbsp;");
+                b.append(s.label);
+            } else {
+                b.append(NO_IMAGE);
+                b.append("&nbsp;");
+                b.append("<span style='text-decoration:line-through'>").append(s.label).append("</span>");
+            }
+            b.append("<br />");
         }
         access.setText(b.toString());
         update();
-    }
-    
-    private static String accessStatusImage(boolean status) {
-        if (status) {
-            return OK_IMAGE;
-        }
-        return NO_IMAGE;
     }
     
     /**
