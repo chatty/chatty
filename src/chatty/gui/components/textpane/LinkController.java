@@ -657,7 +657,9 @@ public class LinkController extends MouseAdapter {
             while (en.hasMoreElements()) {
                 Object key = en.nextElement();
                 Object value = attrs.getAttribute(key);
-                result.append(key).append(" => ").append(value);
+                result.append(Helper.htmlspecialchars_encode(String.valueOf(key)));
+                result.append(" => ");
+                result.append(Helper.htmlspecialchars_encode(String.valueOf(value)));
                 result.append("<br />");
             }
             attrs = attrs.getResolveParent();

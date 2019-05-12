@@ -180,7 +180,7 @@ public class InfoPanel extends JPanel {
                     + "<br />"
                     + "(Info may not be entirely up-to-date)",
                     !StringUtil.isNullOrEmpty(info.description)
-                            ? StringUtil.addLinebreaks(info.description, 70, true)
+                            ? StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(info.description), 70, true)
                             : "No description",
                     info.status,
                     info.game,
