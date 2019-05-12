@@ -1,6 +1,7 @@
 
 package chatty.util.api.pubsub;
 
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
 import java.util.Collections;
@@ -132,13 +133,16 @@ public class Manager {
      * @param token 
      */
     public void listenModLog(String username, String token) {
+        Debugging.println("pubsub", "Listen 1 %s", username);
         if (!hasServer()) {
             return;
         }
+        Debugging.println("pubsub", "Listen 2 %s", username);
         // Already listening, so don't do anything
         if (modLogListen.containsKey(username)) {
             return;
         }
+        Debugging.println("pubsub", "Listen 3 %s", username);
         this.token = token;
         LOGGER.info("[PubSub] LISTEN ModLog "+username+" pending");
         modLogListen.put(username, null);
