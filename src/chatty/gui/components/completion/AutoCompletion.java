@@ -136,6 +136,13 @@ public class AutoCompletion {
         w.setMaxResultsShown(max);
     }
     
+    /**
+     * Set the fixed width/height for the list elements. The height is also used
+     * for the min icon width of elements.
+     * 
+     * @param width
+     * @param height 
+     */
     public void setCellSize(int width, int height) {
         w.setCellSize(width, height);
     }

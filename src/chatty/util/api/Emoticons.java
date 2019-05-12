@@ -121,7 +121,7 @@ public class Emoticons {
     private final Set<Emoticon> otherGlobalEmotes = new HashSet<>();
     
     /**
-     * All loalded Twitch Emotes, by their Twitch Emote Id.
+     * All loaded Twitch Emotes, by their Twitch Emote Id.
      */
     private final HashMap<Integer,Emoticon> twitchEmotesById = new HashMap<>();
     

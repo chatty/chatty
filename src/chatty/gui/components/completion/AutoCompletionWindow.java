@@ -160,6 +160,13 @@ public class AutoCompletionWindow {
         this.maxResultsShown = max;
     }
     
+    /**
+     * Set the fixed width/height for the list elements. The height is also used
+     * for the min icon width of elements.
+     * 
+     * @param width
+     * @param height 
+     */
     public void setCellSize(int width, int height) {
         cellWidth = width;
         cellHeight = height;
@@ -344,6 +351,8 @@ public class AutoCompletionWindow {
         list.setFixedCellWidth(cellWidth);
         list.setFixedCellHeight(cellHeight);
         listRenderer.setCellHeight(cellHeight);
+        // Just use cellHeight for this as well for now, seems to fit well
+        listRenderer.setMinIconWidth(cellHeight);
     }
 
     private int cellHeight = 40;
@@ -544,6 +553,10 @@ public class AutoCompletionWindow {
             icon.setCellHeight(height);
         }
         
+        public void setMinIconWidth(int width) {
+            icon.setMinWidth(width);
+        }
+        
         public void setCommonPrefix(String prefix) {
             if (prefix == null) {
                 this.commonPrefix = "";
@@ -563,6 +576,7 @@ public class AutoCompletionWindow {
         private final JLabel label = new JLabel();
         private ImageIcon icon;
         private int cellHeight = 40;
+        private int minWidth = 40;
         
         public void setIcon(ImageIcon icon) {
             GridBagConstraints gbc = new GridBagConstraints();
@@ -584,18 +598,22 @@ public class AutoCompletionWindow {
             this.cellHeight = height;
         }
         
+        public void setMinWidth(int width) {
+            this.minWidth = width;
+        }
+        
         @Override
         public Dimension getMinimumSize() {
-            if (icon != null && icon.getIconWidth() < 40) {
-                return new Dimension(40, cellHeight);
+            if (icon != null && icon.getIconWidth() < minWidth) {
+                return new Dimension(minWidth, cellHeight);
             }
             return super.getMinimumSize();
         }
 
         @Override
         public Dimension getPreferredSize() {
-            if (icon != null && icon.getIconWidth() < 40) {
-                return new Dimension(40, cellHeight);
+            if (icon != null && icon.getIconWidth() < minWidth) {
+                return new Dimension(minWidth, cellHeight);
             }
             return super.getPreferredSize();
         }
