@@ -1,6 +1,7 @@
 
 package chatty.gui.components.completion;
 
+import chatty.Helper;
 import chatty.gui.components.completion.AutoCompletionServer.CompletionItems;
 import java.awt.Color;
 import java.awt.Component;
@@ -102,12 +103,11 @@ public class AutoCompletionWindow {
 
             @Override
             public void componentResized(ComponentEvent e) {
-                infoWindow.setVisible(false);
             }
 
             @Override
             public void componentMoved(ComponentEvent e) {
-                infoWindow.setVisible(false);
+                reposition();
             }
 
             @Override
@@ -190,6 +190,16 @@ public class AutoCompletionWindow {
             SwingUtilities.invokeLater(() -> {
                 setWindowPosition(startPos);
             });
+        }
+    }
+    
+    protected boolean isShowing() {
+        return infoWindow != null && infoWindow.isVisible();
+    }
+    
+    private void reposition() {
+        if (infoWindow != null && infoWindow.isVisible()) {
+            setWindowPosition(startPos);
         }
     }
     
@@ -479,22 +489,25 @@ public class AutoCompletionWindow {
                 return panel;
             }
             AutoCompletionServer.CompletionItem item = (AutoCompletionServer.CompletionItem)value;
-            String code;
-            boolean html = false;
             if (!commonPrefix.isEmpty()) {
-                code = String.format("<u>%s</u>%s",
-                        commonPrefix,
-                        item.getCode().substring(commonPrefix.length()));
-                html = true;
+                if (item.hasInfo()) {
+                    text.setText(String.format("<html><body><u>%s</u>%s&nbsp;<span style='font-size:0.9em;'>(%s)</span>",
+                            enc(commonPrefix),
+                            enc(item.getCode().substring(commonPrefix.length())),
+                            enc(item.getInfo())));
+                } else {
+                    text.setText(String.format("<html><body><u>%s</u>%s",
+                            enc(commonPrefix),
+                            enc(item.getCode().substring(commonPrefix.length()))));
+                }
             } else {
-                code = item.getCode();
-            }
-            if (item.hasInfo()) {
-                text.setText("<html><body>"+code+"&nbsp;<span style='font-size:0.9em;'>("+item.getInfo()+")</span>");
-            } else if (html) {
-                text.setText("<html><body>"+code);
-            } else {
-                text.setText(code);
+                if (item.hasInfo()) {
+                    text.setText(String.format("<html><body>%s&nbsp;<span style='font-size:0.9em;'>(%s)</span>",
+                            enc(item.getCode()),
+                            enc(item.getInfo())));
+                } else {
+                    text.setText(item.getCode());
+                }
             }
             
             ImageIcon image = item.getImage(list);
@@ -509,6 +522,10 @@ public class AutoCompletionWindow {
                 panel.setBackground(null);
             }
             return panel;
+        }
+        
+        private static String enc(String input) {
+            return Helper.htmlspecialchars_encode(input);
         }
         
         public void setFont(Font font) {

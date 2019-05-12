@@ -59,7 +59,7 @@ public class CompletionSettings extends SettingsPanel {
                 d.addComboStringSetting("completionTab2", 0, false, tabChoices),
                 d.makeGbc(3, 0, 1, 1, GridBagConstraints.WEST));
         
-        entries.add(new JLabel("<html><body style='width:300px;padding-bottom:5px;'>"
+        entries.add(new JLabel("<html><body style='width:300px;padding-bottom:3px;'>"
                 + Language.getString("settings.completion.info")),
                 d.makeGbc(0, 1, 4, 1));
         
@@ -110,24 +110,22 @@ public class CompletionSettings extends SettingsPanel {
         JPanel appearance = addTitledPanel(Language.getString("settings.section.completionAppearance"), 1);
         
         final JCheckBox popup = d.addSimpleBooleanSetting("completionShowPopup");
-        appearance.add(popup,
-            d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
+        JPanel numResults = SettingsUtil.createStandardGapPanel();
+        final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
+        numResults.add(popup);
+        numResults.add(max);
+        numResults.add(d.createLabel("searchResults"));
+        appearance.add(numResults, d.makeNoGapGbc(0, 0, 2, 1, GridBagConstraints.LINE_START));
         
         JPanel popupSettings = new JPanel(new GridBagLayout());
-
-        popupSettings.add(d.createLabel("completionMaxItemsShown"),
-                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
-        final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
-        popupSettings.add(max,
-                d.makeGbcCloser(1, 0, 1, 1, GridBagConstraints.LINE_START));
         
         final JCheckBox auto = d.addSimpleBooleanSetting("completionAuto");
         popupSettings.add(auto,
-                d.makeGbcCloser(0, 2, 4, 1, GridBagConstraints.LINE_START));
+                d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.LINE_START));
         
         final JCheckBox common = d.addSimpleBooleanSetting("completionCommonPrefix");
-//        popupSettings.add(common,
-//                d.makeGbcCloser(0, 1, 2, 1, GridBagConstraints.WEST));
+        popupSettings.add(common,
+                d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
         
         SettingsUtil.addSubsettings(popup, max, common, auto);
         
@@ -157,7 +155,7 @@ public class CompletionSettings extends SettingsPanel {
             d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
         
         appearance.add(d.addSimpleBooleanSetting("completionSpace"),
-                d.makeGbc(0, 4, 4, 1, GridBagConstraints.WEST));
+                d.makeGbcCloser(0, 4, 4, 1, GridBagConstraints.WEST));
     }
     
     private class CustomCompletionEntries extends JDialog {

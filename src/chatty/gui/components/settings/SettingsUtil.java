@@ -3,7 +3,9 @@ package chatty.gui.components.settings;
 
 import chatty.util.StringUtil;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
 
 /**
  *
@@ -32,6 +34,12 @@ public class SettingsUtil {
             tooltipText = "<html><body>"+StringUtil.addLinebreaks(tooltipText, 70, true);
         }
         return tooltipText;
+    }
+    
+    public static JPanel createStandardGapPanel() {
+        JPanel result = new JPanel();
+        result.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 4));
+        return result;
     }
     
 }

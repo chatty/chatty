@@ -569,6 +569,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
     
+    protected GridBagConstraints makeNoGapGbc(int x, int y, int w, int h, int anchor) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = w;
+        gbc.gridheight = h;
+        gbc.insets = new Insets(0,0,0,0);
+        gbc.anchor = anchor;
+        return gbc;
+    }
+    
     protected GridBagConstraints makeGbcCloser(int x, int y, int w, int h, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;

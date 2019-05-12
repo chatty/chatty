@@ -71,7 +71,7 @@ public class AutoCompletion {
         this.w = new AutoCompletionWindow(textField, clickedIndex -> {
             resultIndex = clickedIndex;
             updatePopup(false);
-            insertWord(clickedIndex);
+            insertWord(clickedIndex, appendSpace);
         });
         
         caretListener = new CaretListener() {
@@ -308,6 +308,7 @@ public class AutoCompletion {
             // If text/caret changed based on completion, ignore this change
             return;
         }
+        autoSetText = null;
         
         // Find word at cursor (with these default values if none found)
         startPos = -1;
@@ -399,9 +400,9 @@ public class AutoCompletion {
             return;
         }
         results = server.getCompletionItems(type, prefix, word);
-        if (completeToCommonPrefix && results.items.size() > 1) {
+        if (completeToCommonPrefix && results.items.size() > 1 && showPopup) {
             commonPrefix = findPrefixCommonToAll(results.items);
-            if (commonPrefix.length() - word.length() < 5) {
+            if (commonPrefix.length() - word.length() == 0 && w.isShowing()) {
                 commonPrefix = "";
             }
         } else {
@@ -448,7 +449,7 @@ public class AutoCompletion {
             preCaretPos = textField.getCaretPosition();
         }
         if (resultIndex == -1 && !commonPrefix.isEmpty()) {
-            insertWord(commonPrefix);
+            insertWord(commonPrefix, false);
             commonPrefix = "";
         } else {
             resultIndex += step;
@@ -464,7 +465,7 @@ public class AutoCompletion {
                 resultIndex = 0;
             }
             updatePopup(true);
-            insertWord(resultIndex);
+            insertWord(resultIndex, appendSpace);
         }
     }
     
@@ -477,12 +478,12 @@ public class AutoCompletion {
      * 
      * @param index 
      */
-    private void insertWord(int index) {
+    private void insertWord(int index, boolean appendSpace) {
         if (results.items.size() <= index) {
             return;
         }
         String item = results.items.get(index).getCode();
-        insertWord(item);
+        insertWord(item, appendSpace);
     }
     
     /**
@@ -490,7 +491,7 @@ public class AutoCompletion {
      * 
      * @param item 
      */
-    private void insertWord(String item) {
+    private void insertWord(String item, boolean appendSpace) {
         removePrefix();
         
         if (appendSpace) {
