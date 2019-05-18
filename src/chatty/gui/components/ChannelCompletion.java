@@ -273,6 +273,9 @@ public class ChannelCompletion implements AutoCompletionServer {
         if (searchResult.size() < 20) {
             findEmoji(searchResult, code -> code.contains("_" + search));
         }
+        if (searchResult.size() < 20) {
+            findEmoji(searchResult, code -> code.contains(search));
+        }
         for (Emoticon emote : searchResult) {
             if (main.getSettings().getBoolean("emojiReplace")) {
                 result.add(createEmoteItem(emote.stringId, emote));

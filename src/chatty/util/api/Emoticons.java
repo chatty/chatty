@@ -303,6 +303,10 @@ public class Emoticons {
                 }
             }
         }
+        
+        /**
+         * Add to collection.
+         */
         collection.remove(emote);
         collection.add(emote);
     }
@@ -425,8 +429,15 @@ public class Emoticons {
         return names == null ? EMPTY_SET : names;
     }
     
+    /**
+     * Update Twitch Emotes for TAB Completion. Twitch Emotes are always global,
+     * so only need to update usableGlobalEmotes.
+     * 
+     * @param emotesets 
+     */
     public void updateLocalEmotes(Set<Integer> emotesets) {
         if (!this.localEmotesets.equals(emotesets)) {
+            usableGlobalEmotes.clear();
             this.localEmotesets = emotesets;
             for (int emoteset : emotesets) {
                 for (Emoticon emote : getEmoticons(emoteset)) {
