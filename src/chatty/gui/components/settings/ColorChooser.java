@@ -212,8 +212,8 @@ public class ColorChooser extends JDialog {
          * @param background 
          */
         public void update(Color foreground, Color background) {
-            super.setForeground(foreground);
-            super.setBackground(background);
+            super.setForeground(new Color(foreground.getRed(), foreground.getGreen(), foreground.getBlue()));
+            super.setBackground(new Color(background.getRed(), background.getGreen(), background.getBlue()));
         }
         
         /**

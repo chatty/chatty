@@ -119,6 +119,13 @@ public class WrapLabelView extends LabelView {
             if (isHl) {
                 r.translate(2, 0);
             }
+        } else {
+            // Mostly used for namecolor background
+            Color bgColor = MyStyleConstants.getLabelBackground(getAttributes());
+            if (bgColor != null) {
+                g.setColor(bgColor);
+                g.fillRect(r.x, r.y, r.width, r.height);
+            }
         }
         if (Debugging.isEnabled("labeloutlines")) {
             g.setColor(Color.red);

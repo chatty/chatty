@@ -92,6 +92,9 @@ public class UsercolorSettings extends SettingsPanel {
         });
         otherPanel.add(colorCorrectionPreview,
                 d.makeGbc(2, 0, 1, 1));
+        
+        otherPanel.add(d.addSimpleBooleanSetting("nickColorBackground"),
+                d.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
     }
     
     public void setData(List<UsercolorItem> data) {

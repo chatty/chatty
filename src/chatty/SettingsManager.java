@@ -247,6 +247,7 @@ public class SettingsManager {
         settings.addString("searchResultColor2", "#FFFF80");
         settings.addBoolean("colorCorrection", true);
         settings.addString("nickColorCorrection", "normal");
+        settings.addBoolean("nickColorBackground", true);
         settings.addList("colorPresets", new ArrayList<>(), Setting.LIST);
         
         // Message Colors

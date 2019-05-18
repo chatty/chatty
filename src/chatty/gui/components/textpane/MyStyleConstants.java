@@ -13,7 +13,7 @@ public class MyStyleConstants {
     
     enum Attribute {
         BACKGROUND2, HIGHLIGHT_BACKGROUND, SEPARATOR_COLOR, FONT_HEIGHT,
-        HIGHLIGHT_MATCHES
+        HIGHLIGHT_MATCHES, LABEL_BACKGROUND
     }
     
     public static void setHighlightMatchesEnabled(MutableAttributeSet attr, boolean state) {
@@ -54,6 +54,14 @@ public class MyStyleConstants {
     
     public static Color getSeparatorColor(AttributeSet attr) {
         return getColor(attr, Attribute.SEPARATOR_COLOR);
+    }
+    
+    public static void setLabelBackground(MutableAttributeSet attr, Color color) {
+        setColor(attr, color, Attribute.LABEL_BACKGROUND);
+    }
+    
+    public static Color getLabelBackground(AttributeSet attr) {
+        return getColor(attr, Attribute.LABEL_BACKGROUND);
     }
     
     private static void setColor(MutableAttributeSet attr, Color color, Attribute key) {

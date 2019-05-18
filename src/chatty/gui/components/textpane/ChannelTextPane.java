@@ -28,6 +28,7 @@ import chatty.util.api.Emoticon.EmoticonUser;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.colors.ColorCorrector;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -155,7 +156,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         DISPLAY_NAMES_MODE,
         MENTIONS, MENTIONS_BOLD, MENTIONS_UNDERLINE, MENTIONS_COLORED,
-        HIGHLIGHT_HOVERED_USER, HIGHLIGHT_MATCHES_ALL
+        HIGHLIGHT_HOVERED_USER, HIGHLIGHT_MATCHES_ALL, USERCOLOR_BACKGROUND
     }
     
     private static final long DELETED_MESSAGES_KEEP = 0;
@@ -496,6 +497,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             highlighted = true;
         }
         
+        Color background = null;
+        if (message.backgroundColor != null) {
+            background = message.backgroundColor;
+        } else if (message.highlighted) {
+            background = MyStyleConstants.getHighlightBackground(styles.paragraph());
+        }
+        
         closeCompactMode();
 
         MutableAttributeSet style;
@@ -505,7 +513,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.standard(color);
         }
         print(getTimePrefix(), style);
-        printUser(user, action, message.whisper, message.id);
+        printUser(user, action, message.whisper, message.id, background);
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && color == null && action && styles.isEnabled(Setting.ACTION_COLORED)) {
@@ -1778,7 +1786,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param msgId 
      */
     private void printUser(User user, boolean action,
-            boolean whisper, String msgId) {
+            boolean whisper, String msgId, Color background) {
         
         // Decide on name based on settings and available names
         String userName;
@@ -1810,7 +1818,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         } else if (user.hasCategory("golden")) {
             printRainbowUser(user, userName, action, SpecialColor.GOLD, msgId);
         } else {
-            MutableAttributeSet style = styles.messageUser(user, msgId);
+            MutableAttributeSet style = styles.messageUser(user, msgId, background);
             if (whisper) {
                 if (action) {
                     print(">>["+userName + "]", style);
@@ -1827,7 +1835,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         // Add username in parentheses behind, if necessary
         if (!user.hasRegularDisplayNick() && !user.hasCustomNickSet()
                 && styles.namesMode() == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
-            MutableAttributeSet style = styles.messageUser(user, msgId);
+            MutableAttributeSet style = styles.messageUser(user, msgId, background);
             StyleConstants.setBold(style, false);
             int fontSize = StyleConstants.getFontSize(style) - 2;
             if (fontSize <= 0) {
@@ -1841,7 +1849,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         // Requires user style because it needs the metadata to detect the end
         // of the nick when deleting messages (and possibly other stuff)
         if (!action && !whisper) {
-            print(":", styles.messageUser(user, msgId));
+            print(":", styles.messageUser(user, msgId, background));
         } else {
             //print(" ", styles.messageUser(user));
         }
@@ -3360,6 +3368,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.MENTIONS_UNDERLINE, false);
             addSetting(Setting.MENTIONS_COLORED, false);
             addSetting(Setting.HIGHLIGHT_MATCHES_ALL, true);
+            addSetting(Setting.USERCOLOR_BACKGROUND, true);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -3597,16 +3606,27 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * Makes a style for the given User, containing the User-object itself
          * and the user-color. Changes the color to hopefully improve readability.
          * 
-         * @param user The User-object to base this style on
-         * @param style Attributes to base the user style on
+         * @param user The User object to configure this style for
+         * @param msgId The msg-id of this line (may be null)
+         * @param background The background color used for this line, may be
+         * null (e.g. if not using a custom background)
          * @return 
          */
-        public MutableAttributeSet messageUser(User user, String msgId) {
+        public MutableAttributeSet messageUser(User user, String msgId, Color background) {
             SimpleAttributeSet userStyle = new SimpleAttributeSet(nick());
             userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
             userStyle.addAttribute(Attribute.USER, user);
             
-            StyleConstants.setForeground(userStyle, getUserColor(user));
+            Color foreground = getUserColor(user);
+            StyleConstants.setForeground(userStyle, foreground);
+//            if (background != null) {
+//                System.out.println(user+" "+ColorCorrectionNew.getLightnessDifference(foreground, background));
+//            }
+            if (isEnabled(Setting.USERCOLOR_BACKGROUND)
+                    && background != null
+                    && Math.abs(ColorCorrectionNew.getLightnessDifference(foreground, background)) < 80) {
+                MyStyleConstants.setLabelBackground(userStyle, getBackground());
+            }
             if (msgId != null) {
                 userStyle.addAttribute(Attribute.ID, msgId);
             }
