@@ -13,6 +13,17 @@ public class CustomCommandTest {
     
     @Test
     public void testCommands() {
+        //------
+        // Misc
+        //------
+        test("", new String[]{
+            "a", "",
+            "", ""
+        });
+        
+        //-------------------
+        // upper() / lower()
+        //-------------------
         String[] lowerTests1 = new String[] {
             "ABC", "abc",
             "A B C", "a",
@@ -40,6 +51,9 @@ public class CustomCommandTest {
             "ä", "Ä"
         });
         
+        //--------
+        // ifeq()
+        //--------
         test("$ifeq($$1,$$2,one,two)", new String[]{
             "", null,
             "a a", "one",
@@ -63,6 +77,34 @@ public class CustomCommandTest {
             "a b c", "c",
         });
         
+        test("$ifeq(1,123,a)", new String[] {
+            "", "",
+            "123", "a",
+            "abc", ""
+        });
+        
+        test("$$ifeq(1,123,a)", new String[] {
+            "", null,
+            "123", "a",
+            "abc", null
+        });
+        
+        test("$ifeq($$1,123,a)", new String[] {
+            "", null,
+            "123", "a",
+            "abc", ""
+        });
+        
+        test("$ifeq(1,123,$$2)", new String[] {
+            "", "",
+            "123", null,
+            "abc", "",
+            "123 abc", "abc"
+        });
+        
+        //--------
+        // join()
+        //--------
         test("$join($lower($1-),/)", new String[]{
             "a b C", "a/b/c",
             "", "",
@@ -71,11 +113,9 @@ public class CustomCommandTest {
             "  A", "//a"
         });
         
-        test("", new String[]{
-            "a", "",
-            "", ""
-        });
-        
+        //------
+        // if()
+        //------
         test("$if(2,a,$ifeq(1,cake,cheesecake))", new String[]{
             "a", "",
             "", "",
@@ -104,30 +144,53 @@ public class CustomCommandTest {
             "123", null,
             "123 456", "456"
         });
-        
-        test("$ifeq(1,123,a)", new String[] {
-            "", "",
-            "123", "a",
-            "abc", ""
-        });
-        
-        test("$$ifeq(1,123,a)", new String[] {
+
+        //--------
+        // sort()
+        //--------
+        test("$sort($$1)", new String[] {
             "", null,
-            "123", "a",
-            "abc", null
+            "123", "123",
+            "1 3 2", "1",
+            "123 abc", "123"
         });
         
-        test("$ifeq($$1,123,a)", new String[] {
+        test("$sort($$1-)", new String[] {
             "", null,
-            "123", "a",
-            "abc", ""
+            "123", "123",
+            "1 3 2", "1 2 3",
+            "123 abc", "123 abc",
+            "abc 123", "123 abc",
+            "Abc 123", "123 Abc",
+            "a B c", "a B c"
         });
         
-        test("$ifeq(1,123,$$2)", new String[] {
-            "", "",
-            "123", null,
-            "abc", "",
-            "123 abc", "abc"
+        test("$sort($$1-,Abc)", new String[] {
+            "", null,
+            "123", "123",
+            "1 3 2", "1 2 3",
+            "123 abc", "123 abc",
+            "abc 123", "123 abc",
+            "Abc 123", "123 Abc",
+            "a B c", "B a c"
+        });
+        
+        test("$sort($$1-,Abc,#)", new String[] {
+            "", null,
+            "123", "123",
+            "1#3#2", "1#2#3",
+            "123#abc", "123#abc",
+            "abc#123", "123#abc",
+            "Abc#123", "123#Abc",
+            "a#B#c", "B#a#c"
+        });
+        
+        //-------------
+        // urlencode()
+        //-------------
+        test("$urlencode($$1-)", new String[] {
+            "abc", "abc",
+            "a b c", "a+b+c"
         });
     }
     
@@ -137,7 +200,7 @@ public class CustomCommandTest {
             throw new RuntimeException(c.getError());
         }
         for (int i=0; i<tests.length; i += 2) {
-            assertEquals(c.replace(Parameters.create(tests[i])), tests[i+1]);
+            assertEquals(tests[i+1], c.replace(Parameters.create(tests[i])));
         }
     }
     

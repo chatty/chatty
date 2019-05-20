@@ -177,6 +177,12 @@ public class Parser {
         else if (type.equals("datetime")) {
             return datetime(isRequired);
         }
+        else if (type.equals("urlencode")) {
+            return urlencode(isRequired);
+        }
+        else if (type.equals("sort")) {
+            return sort(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -310,6 +316,28 @@ public class Parser {
         }
         expect(")");
         return new DateTime(format, timezone, locale, isRequired);
+    }
+    
+    private Item urlencode(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        expect(")");
+        return new UrlEncode(item, isRequired);
+    }
+    
+    private Item sort(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        Item type = null;
+        if (accept(",")) {
+            type = param();
+        }
+        Item sep = null;
+        if (accept(",")) {
+            sep = param();
+        }
+        expect(")");
+        return new Sort(item, sep, type, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

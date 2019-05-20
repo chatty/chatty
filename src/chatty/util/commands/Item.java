@@ -37,8 +37,20 @@ interface Item {
      */
     public Set<String> getIdentifiersWithPrefix(String prefix);
     
+    /**
+     * Returns all identifiers if this replacement is required.
+     * 
+     * @return 
+     */
     public Set<String> getRequiredIdentifiers();
     
+    /**
+     * If isRequired is true, returns all identifiers in the specified items.
+     * 
+     * @param isRequired Whether to return identifiers
+     * @param input The items to look for identifiers in
+     * @return A Set of identifiers, or null
+     */
     public static Set<String> getRequiredIdentifiers(boolean isRequired, Object... input) {
         if (isRequired) {
             return getIdentifiersWithPrefix("", input);

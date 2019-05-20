@@ -73,6 +73,15 @@ public class CustomCommand {
         return items.getIdentifiersWithPrefix(prefix);
     }
     
+    /**
+     * Returns all non-numeric identifiers that are part of top-level required
+     * replacements. Since it only searches the top-level, not all identifiers
+     * that can result in an "insufficient parameters" when executed may be
+     * returned (this can be useful for something like $rand(), where it's only
+     * decided at execution time what identifier is actually used).
+     * 
+     * @return 
+     */
     public Set<String> getRequiredIdentifiers() {
         return items.getRequiredIdentifiers();
     }
