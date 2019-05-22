@@ -272,13 +272,19 @@ public class SettingsManager {
         settings.addBoolean("abSaveOnChange", false);
 
         // Custom Commands
-        settings.addList("commands", new ArrayList(), Setting.STRING);
-        // Default entries, will only be set if setting is not loaded from file
-        settings.setAdd("commands", "/slap /me slaps $$1- around a bit with a large trout");
-        settings.setAdd("commands", "/permit !permit $$1");
+        List<String> commandsDefault = new ArrayList<>();
+        commandsDefault.add("/slap /me slaps $$1- around a bit with a large trout");
+        commandsDefault.add("/permit !permit $$1");
+        settings.addList("commands", commandsDefault, Setting.STRING);
 
         // Menu Entries
-        settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4]");
+        settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4], /ModUnmod"
+                + "\n\n"
+                + "@AutoMod\n"
+                + ".Approve=/Automod_approve\n"
+                + ".Deny=/Automod_deny\n"
+                + "\n"
+                + "Delete=/delete $$(msg-id)");
         settings.addString("banReasons", "Spam\nPosting Bad Links\nBan Evasion\n"
                                 + "Hate / Harassment\nSpoilers / Backseat Gaming");
         settings.addString("userContextMenu", "");
