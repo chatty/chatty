@@ -10,6 +10,7 @@ import java.awt.GridBagLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -68,8 +69,16 @@ public class CompletionSettings extends SettingsPanel {
         for (String item : ":,;-#+~!'$§%&".split("")) {
             emotePrefixValues.put(item, item);
         }
+        
+        ComboStringSetting prefix = d.addComboStringSetting("completionEmotePrefix", 10, false, emotePrefixValues);
+        ComboLongSetting mixed = d.addComboLongSetting("completionMixed", 0, 1, 2);
+        Consumer<String> preferEmojiTest = s -> mixed.setEnabled(prefix.getSettingValue().equals(s));
+        preferEmojiTest.accept(":");
+        prefix.addActionListener(e -> preferEmojiTest.accept(":"));
+        
         entries.add(d.createPanel("completionEmotePrefix",
-                d.addComboStringSetting("completionEmotePrefix", 10, false, emotePrefixValues)),
+                prefix,
+                mixed),
                 d.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST));
 
         //-------------------

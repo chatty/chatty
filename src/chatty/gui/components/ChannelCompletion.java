@@ -188,9 +188,22 @@ public class ChannelCompletion implements AutoCompletionServer {
         }
         if (prefix.endsWith(":")) {
             if (emotePrefix.equals(":")) {
-                CompletionItems items = getCompletionItemsEmotes(search, ":");
-                items.append(getCompletionItemsEmoji(search));
-                return items;
+                CompletionItems items;
+                switch ((int)settings().getLong("completionMixed")) {
+                    case 0:
+                        items = getCompletionItemsEmoji(search);
+                        items.append(getCompletionItemsEmotes(search, ":"));
+                        sortMixed(items, search);
+                        return items;
+                    case 1:
+                        items = getCompletionItemsEmoji(search);
+                        items.append(getCompletionItemsEmotes(search, ":"));
+                        return items;
+                    case 2:
+                        items = getCompletionItemsEmotes(search, ":");
+                        items.append(getCompletionItemsEmoji(search));
+                        return items;
+                }
             }
             return getCompletionItemsEmoji(search);
         }
@@ -283,16 +296,27 @@ public class ChannelCompletion implements AutoCompletionServer {
                 result.add(createEmoteItem(emote.code, emote));
             }
         }
-        Collections.sort(result);
         return new AutoCompletionServer.CompletionItems(result, ":");
     }
+    
+    private static final Comparator<Emoticon> EMOJI_SORTER = new Comparator<Emoticon>() {
+
+        @Override
+        public int compare(Emoticon o1, Emoticon o2) {
+            return o1.stringId.compareTo(o2.stringId);
+        }
+    };
 
     private void findEmoji(Collection<Emoticon> result, Function<String, Boolean> matcher) {
+        // Find Emoji items
+        List<Emoticon> searchResult = new LinkedList<>();
         for (Emoticon emote : main.emoticons.getEmoji()) {
             if (emote.stringId != null && matcher.apply(emote.stringId)) {
-                result.add(emote);
+                searchResult.add(emote);
             }
         }
+        Collections.sort(searchResult, EMOJI_SORTER);
+        result.addAll(searchResult);
     }
 
     //=================
@@ -354,6 +378,35 @@ public class ChannelCompletion implements AutoCompletionServer {
         Collections.sort(containing, comparator);
         matched.addAll(containing);
         return matched;
+    }
+    
+    private static void sortMixed(CompletionItems items, String search) {
+        String emojiSearch = ":"+search;
+        Collections.sort(items.items, new Comparator<CompletionItem>() {
+
+            @Override
+            public int compare(CompletionItem o1, CompletionItem o2) {
+                String o1l = StringUtil.toLowerCase(o1.getCode());
+                String o2l = StringUtil.toLowerCase(o2.getCode());
+                boolean o1s = o1l.startsWith(search) || o1.getCode().startsWith(emojiSearch);
+                boolean o2s = o2l.startsWith(search) || o2.getCode().startsWith(emojiSearch);
+                if (o1s == o2s) {
+                    return normalize(o1l).compareTo(normalize(o2l));
+                }
+                if (o1s) {
+                    return -1;
+                }
+                return 1;
+            }
+            
+            private String normalize(String input) {
+                if (input.startsWith(":")) {
+                    return input.substring(1);
+                }
+                return input;
+            }
+            
+        });
     }
 
     //===========

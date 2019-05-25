@@ -555,6 +555,7 @@ public class SettingsManager {
         settings.addString("completionSearch", "words");
         settings.addBoolean("completionAuto", true);
         settings.addString("completionEmotePrefix", ":");
+        settings.addLong("completionMixed", 0);
         settings.addBoolean("completionSpace", false);
 
         // Stream Chat

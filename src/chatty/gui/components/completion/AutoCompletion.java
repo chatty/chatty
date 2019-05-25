@@ -68,10 +68,15 @@ public class AutoCompletion {
      */
     public AutoCompletion(JTextComponent textField) {
         this.textField = textField;
-        this.w = new AutoCompletionWindow(textField, clickedIndex -> {
+        this.w = new AutoCompletionWindow(textField, (clickedIndex, shift) -> {
             resultIndex = clickedIndex;
             updatePopup(false);
-            insertWord(clickedIndex, appendSpace);
+            if (shift) {
+                insertWord(clickedIndex, appendSpace, true);
+                startPos = textField.getCaretPosition();
+            } else {
+                insertWord(clickedIndex, appendSpace, false);
+            }
         });
         
         caretListener = new CaretListener() {
@@ -376,7 +381,7 @@ public class AutoCompletion {
     }
     
     private void start(String type) {
-        if (word.isEmpty()) {
+        if (word == null || word.isEmpty()) {
             return;
         }
         Debugging.println("completion", "START");
@@ -456,7 +461,7 @@ public class AutoCompletion {
             preCaretPos = textField.getCaretPosition();
         }
         if (resultIndex == -1 && !commonPrefix.isEmpty()) {
-            insertWord(commonPrefix, false);
+            insertWord(commonPrefix, false, false);
             commonPrefix = "";
         } else {
             resultIndex += step;
@@ -472,7 +477,7 @@ public class AutoCompletion {
                 resultIndex = 0;
             }
             updatePopup(true);
-            insertWord(resultIndex, appendSpace);
+            insertWord(resultIndex, appendSpace, false);
         }
     }
     
@@ -485,12 +490,12 @@ public class AutoCompletion {
      * 
      * @param index 
      */
-    private void insertWord(int index, boolean appendSpace) {
+    private void insertWord(int index, boolean appendSpace, boolean ensureSpace) {
         if (results.items.size() <= index) {
             return;
         }
         String item = results.items.get(index).getCode();
-        insertWord(item, appendSpace);
+        insertWord(item, appendSpace, ensureSpace);
     }
     
     /**
@@ -498,7 +503,7 @@ public class AutoCompletion {
      * 
      * @param item 
      */
-    private void insertWord(String item, boolean appendSpace) {
+    private void insertWord(String item, boolean appendSpace, boolean ensureSpace) {
         removePrefix();
         
         if (appendSpace) {
@@ -507,6 +512,9 @@ public class AutoCompletion {
         
         // Update text
         String text = textField.getText();
+        if (ensureSpace && startPos > 0 && text.charAt(startPos-1) != ' ') {
+            item = " "+item;
+        }
         String newText = text.substring(0, startPos) + item + text.substring(endPos);
         textField.setText(newText);
         

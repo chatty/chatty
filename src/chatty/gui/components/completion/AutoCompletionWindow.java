@@ -23,9 +23,11 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.SelectionMode;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -35,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JWindow;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -68,9 +71,9 @@ public class AutoCompletionWindow {
     private final MyRenderer listRenderer = new MyRenderer();
     private int startPos;
     private final JTextComponent textField;
-    private final Consumer<Integer> clickListener;
+    private final BiConsumer<Integer, Boolean> clickListener;
     
-    public AutoCompletionWindow(JTextComponent textField, Consumer<Integer> clickListener) {
+    public AutoCompletionWindow(JTextComponent textField, BiConsumer<Integer, Boolean> clickListener) {
         this.clickListener = clickListener;
         this.textField = textField;
         /**
@@ -383,13 +386,14 @@ public class AutoCompletionWindow {
         list.setCellRenderer(listRenderer);
         list.setFocusable(false);
         list.setBackground(backgroundColor);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.addMouseListener(new MouseAdapter() {
             
             @Override
             public void mouseClicked(MouseEvent e) {
                 int index = list.locationToIndex(e.getPoint());
                 if (index != -1 && list.getCellBounds(index, index).contains(e.getPoint())) {
-                    clickListener.accept(index);
+                    clickListener.accept(index, e.isShiftDown());
                 }
             }
             

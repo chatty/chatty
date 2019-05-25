@@ -1696,41 +1696,10 @@
     <ul>
         <li>Prefixing <code>@</code> always completes usernames</li>
         <li>Prefixing <code>/</code> always completes command names</li>
-        <li>Prefixing <code>:</code> always completes Emoji codes (not Twitch Emotes!)</li>
+        <li>Prefixing <code>:</code> always completes Emoji codes, and by default also Twitch Emotes</li>
         <li>Prefixing <code>.</code> always performs Custom Completion</li>
         <li>Certain commands such as <code>/ban</code> always complete usernames</li>
     </ul>
-    
-    <h3>Localized Names</h3>
-    <dl class="dl-settings">
-        <dt>Prefer Regular name for username-based commmands</dt>
-        <dd>If you complete a username after a command like <code>/ban</code>
-            which needs a regular username as parameter, then always prefer the
-            regular name.</dd>
-        
-        <dt>Include all name types in result</dt>
-        <dd>If a user has a Localized name, or you have a
-            <a href="help.html#customNames">Custom name</a> set, then not only
-            the name that matched, but also the other types of names are added
-            to the result.</dd>
-        <dd><em>Example:</em> If a user is called <code>test</code> and has the
-            Localized Name <code>名前</code>, then entering
-            <code>tes</code> and <kbd>TAB</kbd> will show in the results both
-            <code>test (名前)</code> and
-            <code>名前 (test)</code>, so you can select either name by cycling
-            through the results via <kbd>TAB</kbd> as usual.</dd>
-        <dd>
-            <dl class="dl-settings-sub">
-                <dt>Only when no more than two matches</dt>
-                <dd>Only include all name types when no more than two names
-                    match, so that you don't have to cycle through all the
-                    different name types when you have a larger list.</dd>
-                <dd><em>Tip:</em> Once you found the right name, you can move the cursor
-                    to leave completion, and then press <kbd>TAB</kbd> again to
-                    complete the name again to get the other name types again.</dd>
-            </dl>
-        </dd>
-    </dl>
         
     <h3>Apperance / Behaviour</h3>
     <dl class="dl-settings">
@@ -1776,6 +1745,37 @@
         </dd>
         
         
+    </dl>
+    
+    <h3>Localized Names</h3>
+    <dl class="dl-settings">
+        <dt>Prefer Regular name for username-based commmands</dt>
+        <dd>If you complete a username after a command like <code>/ban</code>
+            which needs a regular username as parameter, then always prefer the
+            regular name.</dd>
+        
+        <dt>Include all name types in result</dt>
+        <dd>If a user has a Localized name, or you have a
+            <a href="help.html#customNames">Custom name</a> set, then not only
+            the name that matched, but also the other types of names are added
+            to the result.</dd>
+        <dd><em>Example:</em> If a user is called <code>test</code> and has the
+            Localized Name <code>名前</code>, then entering
+            <code>tes</code> and <kbd>TAB</kbd> will show in the results both
+            <code>test (名前)</code> and
+            <code>名前 (test)</code>, so you can select either name by cycling
+            through the results via <kbd>TAB</kbd> as usual.</dd>
+        <dd>
+            <dl class="dl-settings-sub">
+                <dt>Only when no more than two matches</dt>
+                <dd>Only include all name types when no more than two names
+                    match, so that you don't have to cycle through all the
+                    different name types when you have a larger list.</dd>
+                <dd><em>Tip:</em> Once you found the right name, you can move the cursor
+                    to leave completion, and then press <kbd>TAB</kbd> again to
+                    complete the name again to get the other name types again.</dd>
+            </dl>
+        </dd>
     </dl>
 
     <h3><a name="TAB_Completion-custom">Custom Completion Items</a><a name="Completion-custom"></a></h3>

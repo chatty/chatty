@@ -743,13 +743,14 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return result;
     }
     
-    protected ComboLongSetting addComboLongSetting(String name, int[] choices) {
+    protected ComboLongSetting addComboLongSetting(String name, int... choices) {
         Map<Long, String> localizedChoices = new LinkedHashMap<>();
         for (Integer choice : choices) {
             String label = Language.getString("settings.long."+name+".option."+choice);
             localizedChoices.put((long)choice, label);
         }
         ComboLongSetting result = new ComboLongSetting(localizedChoices);
+        result.setToolTipText(SettingsUtil.addTooltipLinebreaks(Language.getString("settings.long."+name+".tip", false)));
         longSettings.put(name, result);
         return result;
     }
@@ -837,7 +838,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return label;
     }
     
-    protected JPanel createPanel(String settingName, JComponent settingComponent) {
+    protected JPanel createPanel(String settingName, JComponent... settingComponent) {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = makeGbc(0, 0, 1, 1);
         // Make sure to only have space between the two components, since other
@@ -846,7 +847,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
         panel.add(createLabel(settingName), gbc);
         gbc = makeGbc(1, 0, 1, 1);
         gbc.insets = new Insets(0, gbc.insets.left, 0, 0);
-        panel.add(settingComponent, gbc);
+        for (JComponent comp : settingComponent) {
+            panel.add(comp, gbc);
+            gbc.gridx++;
+        }
         return panel;
     }
     
