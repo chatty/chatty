@@ -133,13 +133,27 @@ public class Emoticons {
     //===============
     // Usable Emotes
     //===============
-    // Global Emotes the local user has access to, channel specific emotes not
-    // included.
+    // Used for TAB completion
     
+    /**
+     * Global emotes the local user has access to.
+     */
     private final Set<Emoticon> usableGlobalEmotes = new HashSet<>();
     
+    /**
+     * Channel-specific emotes the local user has access to. Needs to be in a
+     * separate map if the user may not have access to all channel-specific
+     * emotes, which is rather unusual, but some BTTV may have an emoteset as
+     * requirement.
+     * 
+     * TODO: May need to check when localEmotesets changes as well
+     */
     private final Map<String, Set<Emoticon>> usableStreamEmotes = new HashMap<>();
     
+    /**
+     * Used to check what emotes the local user has access to for completion. If
+     * this changes, it checks usableGlobalEmotes again.
+     */
     private Set<Integer> localEmotesets = new HashSet<>();
     
     //==================
@@ -205,6 +219,11 @@ public class Emoticons {
                     if (update.subTypeToRemove == null
                             || emote.subType == update.subTypeToRemove) {
                         it.remove();
+                        usableGlobalEmotes.remove(emote);
+                        if (update.roomToRemove != null &&
+                                usableStreamEmotes.containsKey(update.roomToRemove)) {
+                            usableStreamEmotes.get(update.roomToRemove).remove(emote);
+                        }
                         removedCount++;
                     }
                 }
