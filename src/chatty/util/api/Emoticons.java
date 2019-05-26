@@ -400,7 +400,8 @@ public class Emoticons {
     
     /**
      * Gets a list of emoticons that are associated with the given emoteset.
-     * This returns the original Set, so it should not be modified.
+     * This returns the original Set, so it should not be modified. Does not
+     * return emotes for the global emoteset (0).
      *
      * @param emoteSet
      * @return
@@ -450,14 +451,23 @@ public class Emoticons {
     
     /**
      * Update Twitch Emotes for TAB Completion. Twitch Emotes are always global,
-     * so only need to update usableGlobalEmotes.
+     * so only need to update usableGlobalEmotes. This only updates based on
+     * emotesets, other global emotes (like FFZ) must not be removed by this.
      * 
      * @param emotesets 
      */
     public void updateLocalEmotes(Set<Integer> emotesets) {
         if (!this.localEmotesets.equals(emotesets)) {
-            usableGlobalEmotes.clear();
             this.localEmotesets = emotesets;
+            // Remove emotes not having current sets (and not being global)
+            Iterator<Emoticon> it = usableGlobalEmotes.iterator();
+            while (it.hasNext()) {
+                Emoticon emote = it.next();
+                if (!emote.hasGlobalEmoteset() && !localEmotesets.contains(emote.emoteSet)) {
+                    it.remove();
+                }
+            }
+            // Add all emotes for current sets
             for (int emoteset : emotesets) {
                 for (Emoticon emote : getEmoticons(emoteset)) {
                     usableGlobalEmotes.add(emote);
