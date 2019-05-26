@@ -3368,7 +3368,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.MENTIONS_UNDERLINE, false);
             addSetting(Setting.MENTIONS_COLORED, false);
             addSetting(Setting.HIGHLIGHT_MATCHES_ALL, true);
-            addSetting(Setting.USERCOLOR_BACKGROUND, true);
+            addNumericSetting(Setting.USERCOLOR_BACKGROUND, 1, 0, 200);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
             addNumericSetting(Setting.DELETED_MESSAGES_MODE, 30, -1, 9999999);
             addNumericSetting(Setting.BUFFER_SIZE, 250, BUFFER_SIZE_MIN, BUFFER_SIZE_MAX);
@@ -3622,11 +3622,25 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
 //            if (background != null) {
 //                System.out.println(user+" "+ColorCorrectionNew.getLightnessDifference(foreground, background));
 //            }
-            if (isEnabled(Setting.USERCOLOR_BACKGROUND)
-                    && background != null
-                    && Math.abs(ColorCorrectionNew.getLightnessDifference(foreground, background)) < 80) {
-                MyStyleConstants.setLabelBackground(userStyle, getBackground());
+            int threshold;
+            switch(getInt(Setting.USERCOLOR_BACKGROUND)) {
+                case 1:
+                    threshold = 38;
+                    break;
+                case 2:
+                    threshold = 89;
+                    break;
+                default:
+                    threshold = 0;
             }
+            if (threshold > 0 && background != null) {
+                int difference = ColorCorrectionNew.getLightnessDifferenceAbs(foreground, background);
+                if (difference < threshold
+                        && ColorCorrectionNew.getLightnessDifferenceAbs(foreground, getBackground()) > difference) {
+                    MyStyleConstants.setLabelBackground(userStyle, getBackground());
+                }
+            }
+                    
             if (msgId != null) {
                 userStyle.addAttribute(Attribute.ID, msgId);
             }

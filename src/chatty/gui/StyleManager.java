@@ -167,7 +167,7 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");
         addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
-        addBooleanSetting(Setting.USERCOLOR_BACKGROUND, "nickColorBackground");
+        addLongSetting(Setting.USERCOLOR_BACKGROUND, "nickColorBackground");
         addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");

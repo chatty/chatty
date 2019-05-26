@@ -79,7 +79,7 @@ public class UsercolorSettings extends SettingsPanel {
         // Other Settings
         //================
         otherPanel.add(new JLabel(Language.getString("settings.string.nickColorCorrection")),
-                d.makeGbc(0, 0, 1, 1));
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
         
         String[] colorCorrectionTypes = new String[ColorCorrector.TYPES.keySet().size()];
         ColorCorrector.TYPES.keySet().toArray(colorCorrectionTypes);
@@ -93,8 +93,11 @@ public class UsercolorSettings extends SettingsPanel {
         otherPanel.add(colorCorrectionPreview,
                 d.makeGbc(2, 0, 1, 1));
         
-        otherPanel.add(d.addSimpleBooleanSetting("nickColorBackground"),
-                d.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
+        otherPanel.add(d.createLabel("nickColorBackground"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
+        
+        otherPanel.add(d.addComboLongSetting("nickColorBackground", 0, 1, 2),
+                d.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST));
     }
     
     public void setData(List<UsercolorItem> data) {

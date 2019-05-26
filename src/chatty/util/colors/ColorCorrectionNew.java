@@ -33,6 +33,17 @@ public class ColorCorrectionNew {
     }
     
     /**
+     * Gets the difference between the perceived brightness between colors.
+     *
+     * @param c1
+     * @param c2
+     * @return
+     */
+    public static int getLightnessDifferenceAbs(Color c1, Color c2) {
+        return Math.abs(getLightnessDifference(c1, c2));
+    }
+    
+    /**
      * Tries to change the color (if necessary) so it it better readable on the
      * given background color.
      *
