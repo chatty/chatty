@@ -1,6 +1,7 @@
 
 package chatty.gui.components.tabs;
 
+import chatty.gui.LaF;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -17,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.TabbedPaneUI;
 
 /**
  * A JPanel that can have one or more Components added to it, and it will show
@@ -53,6 +55,11 @@ public class Tabs extends JPanel {
     
     public Tabs() {
         setLayout(new BorderLayout());
+        // Use customized UI to disable switching tab rows for some Look&Feel
+        TabbedPaneUI customizedUi = LaF.getTabbedPaneUI();
+        if (customizedUi != null) {
+            tabs.setUI(customizedUi);
+        }
         tabs.setOpaque(false);
         tabs.addMouseWheelListener(new MouseWheelListener() {
 

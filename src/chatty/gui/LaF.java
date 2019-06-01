@@ -15,6 +15,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
@@ -29,6 +30,7 @@ public class LaF {
     private static Settings settings;
     private static String linkColor = "#0000FF";
     private static boolean isDarkTheme;
+    private static String lafClass;
     
     public static void setSettings(Settings settings) {
         LaF.settings = settings;
@@ -119,9 +121,13 @@ public class LaF {
 
             LOGGER.info("[LAF] Set " + lafCode + "/" + theme + " [" + laf + "]");
             UIManager.setLookAndFeel(laf);
+            lafClass = laf;
         } catch (Exception ex) {
             LOGGER.warning("Failed setting LAF: "+ex);
         }
+        
+        // Tab rows not overlaying eachother
+        UIManager.getDefaults().put("TabbedPane.tabRunOverlay", 0);
         
         if (lafCode.equals("hifi") || lafCode.equals("hifi2")
                 || lafCode.equals("noire")) {
@@ -131,6 +137,31 @@ public class LaF {
             linkColor = "#0000FF";
             isDarkTheme = false;
         }
+    }
+    
+    /**
+     * Return a customized UI that disables switching tab rows, based on the
+     * current Look&Feel.
+     * 
+     * @return A customized UI, or null if no customized UI should be used
+     */
+    public static TabbedPaneUI getTabbedPaneUI() {
+        if (lafClass == null) {
+            return null;
+        }
+        if (lafClass.equals("com.jtattoo.plaf.hifi.HiFiLookAndFeel")
+                || lafClass.equals("com.jtattoo.plaf.noire.NoireLookAndFeel")) {
+            // Both of these share the same class for tabs
+            return new com.jtattoo.plaf.hifi.HiFiTabbedPaneUI() {
+
+                @Override
+                protected boolean shouldRotateTabRuns(int i) {
+                    return false;
+                }
+
+            };
+        }
+        return null;
     }
     
     private static Properties prepareTheme(Properties properties) {
