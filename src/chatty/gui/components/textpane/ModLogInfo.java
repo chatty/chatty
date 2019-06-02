@@ -18,6 +18,9 @@ public class ModLogInfo extends InfoMessage {
     private static final Set<String> BAN_COMMANDS
             = new HashSet<>(Arrays.asList(new String[]{"timeout", "ban", "delete"}));
     
+    private static final Set<String> UNBAN_COMMANDS
+            = new HashSet<>(Arrays.asList(new String[]{"untimeout", "unban"}));
+    
     public final ModeratorActionData data;
     public final boolean showActionBy;
     public final boolean ownAction;
@@ -59,6 +62,10 @@ public class ModLogInfo extends InfoMessage {
     
     public static boolean isBanCommand(ModeratorActionData data) {
         return BAN_COMMANDS.contains(data.moderation_action);
+    }
+    
+    public static boolean isUnbanCommand(ModeratorActionData data) {
+        return UNBAN_COMMANDS.contains(data.moderation_action);
     }
     
     public static boolean isBanOrInfoAssociated(ModeratorActionData data) {
@@ -134,6 +141,14 @@ public class ModLogInfo extends InfoMessage {
     
     public static String getBannedUsername(ModeratorActionData data) {
         if (isBanCommand(data) && data.args.size() > 0
+                && Helper.isValidStream(data.args.get(0))) {
+            return data.args.get(0);
+        }
+        return null;
+    }
+    
+    public static String getUnbannedUsername(ModeratorActionData data) {
+        if (isUnbanCommand(data) && data.args.size() > 0
                 && Helper.isValidStream(data.args.get(0))) {
             return data.args.get(0);
         }

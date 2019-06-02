@@ -81,6 +81,17 @@ public class PastMessages extends JTextArea {
                 }
                 b.append("\n");
             }
+            else if (m instanceof User.UnbanMessage) {
+                User.UnbanMessage ubm = (User.UnbanMessage)m;
+                b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
+                if (ubm.type == User.UnbanMessage.TYPE_UNBAN) {
+                    b.append("Unbanned");
+                } else if (ubm.type == User.UnbanMessage.TYPE_UNTIMEOUT) {
+                    b.append("Timeout removed");
+                }
+                b.append(" (@").append(ubm.by).append(")");
+                b.append("\n");
+            }
             else if (m instanceof User.MsgDeleted) {
                 User.MsgDeleted md = (User.MsgDeleted)m;
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");

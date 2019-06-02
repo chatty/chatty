@@ -345,6 +345,10 @@ public class User implements Comparable {
         replayCachedBanInfo();
     }
     
+    public synchronized void addUnban(int type, String by) {
+        addLine(new UnbanMessage(System.currentTimeMillis(), type, by));
+    }
+    
     public synchronized void addMsgDeleted(String targetMsgId, String msg) {
         addLine(new MsgDeleted(System.currentTimeMillis(), targetMsgId, msg, null));
         replayCachedBanInfo();
@@ -1098,6 +1102,31 @@ public class User implements Comparable {
                 reason = this.reason;
             }
             return new BanMessage(getTime(), duration, reason, id, by);
+        }
+        
+    }
+    
+    public static class UnbanMessage extends Message {
+        
+        public static final int TYPE_UNKNOWN = -1;
+        public static final int TYPE_UNBAN = 0;
+        public static final int TYPE_UNTIMEOUT = 1;
+        
+        public final int type;
+        public final String by;
+        
+        public UnbanMessage(long time, int type, String by) {
+            super(time);
+            this.type = type;
+            this.by = by;
+        }
+        
+        public static int getType(String modAction) {
+            switch (modAction) {
+                case "unban": return TYPE_UNBAN;
+                case "untimeout": return TYPE_UNTIMEOUT;
+            }
+            return TYPE_UNKNOWN;
         }
         
     }
