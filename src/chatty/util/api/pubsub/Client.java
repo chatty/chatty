@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.ClientEndpointConfig;
@@ -35,7 +36,7 @@ public class Client {
     private final MessageHandler handler;
     
     private final TimedCounter disconnectsPerHour = new TimedCounter(60*60*1000);
-    private int connectionAttempts;
+    private AtomicInteger connectionAttempts = new AtomicInteger();
     
     private boolean connecting;
     private boolean requestedDisconnect;
@@ -87,7 +88,7 @@ public class Client {
                 return false;
             }
             disconnectsPerHour.increase();
-            connectionAttempts++;
+            connectionAttempts.incrementAndGet();
             LOGGER.info("[PubSub] Reconnecting in "+getDelay()+"s");
             return true;
         }
@@ -98,7 +99,7 @@ public class Client {
                 LOGGER.info("[PubSub] Cancelled reconnecting..");
                 return false;
             }
-            connectionAttempts++;
+            connectionAttempts.incrementAndGet();
             LOGGER.info(String.format("[PubSub] Another connection attempt (%d) in %ds [%s/%s]",
                     connectionAttempts,
                     getDelay(),
@@ -116,7 +117,7 @@ public class Client {
              * time should slow down connecting as well, just in case.
              */
             int disconnects = disconnectsPerHour.getCount();
-            return connectionAttempts*connectionAttempts+disconnects*disconnects;
+            return connectionAttempts.get()*connectionAttempts.get()+disconnects*disconnects;
         }
         
     }
@@ -175,6 +176,7 @@ public class Client {
     public synchronized void onOpen(Session session) {
         LOGGER.info("[PubSub] Connected: "+session.getRequestURI());
         connectedSince = System.currentTimeMillis();
+        connectionAttempts.set(0);
         this.s = session;
         handler.handleConnect();
     }

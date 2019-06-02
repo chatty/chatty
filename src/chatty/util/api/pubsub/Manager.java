@@ -269,4 +269,8 @@ public class Manager {
         sendPing();
     }
     
+    public void reconnect() {
+        c.reconnect();
+    }
+    
 }
