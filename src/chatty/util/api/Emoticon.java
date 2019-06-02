@@ -802,6 +802,11 @@ public class Emoticon {
                 Image scaled = getScaledImage(icon.getImage(), targetSize.width,
                         targetSize.height);
                 icon.setImage(scaled);
+            } else if (icon.getIconWidth() > MAX_SCALED_WIDTH
+                    || icon.getIconHeight() > MAX_SCALED_HEIGHT) {
+                // Fail-safe for accidentally large images that can't be scaled
+                // (e.g. GIF)
+                return null;
             }
 
             /**
