@@ -256,7 +256,7 @@ public class ChannelCompletion implements AutoCompletionServer {
                     public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
                         c.repaint();
                     }
-                }, false).getImageIcon();
+                }).getImageIcon();
                 return new ImageIcon(icon.getImage());
             }
         };

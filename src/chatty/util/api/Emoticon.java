@@ -507,20 +507,18 @@ public class Emoticon {
      * @param user
      * @return
      */
-    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user, boolean f) {
-        boolean flipped = f && ((ChannelTextPane)user).getRand(5) != 0;
+    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user) {
         if (images == null) {
             images = new HalfWeakSet<>();
         }
         EmoticonImage resultImage = null;
         for (EmoticonImage image : images) {
-            if (image.scaleFactor == scaleFactor && image.maxHeight == maxHeight
-                    && image.flipped == flipped) {
+            if (image.scaleFactor == scaleFactor && image.maxHeight == maxHeight) {
                 resultImage = image;
             }
         }
         if (resultImage == null) {
-            resultImage = new EmoticonImage(scaleFactor, maxHeight, flipped);
+            resultImage = new EmoticonImage(scaleFactor, maxHeight);
             images.add(resultImage);
         } else {
             images.markStrong(resultImage);
@@ -574,7 +572,7 @@ public class Emoticon {
      * @return 
      */
     public EmoticonImage getIcon(EmoticonUser user) {
-        return getIcon(1, 0, user, false);
+        return getIcon(1, 0, user);
     }
     
     /**
@@ -821,10 +819,6 @@ public class Emoticon {
                     setCachedSize(width, height);
                 }
             }
-            
-            if (image.flipped && !gif) {
-                icon.setImage(MiscUtil.rotateImage(icon.getImage()));
-            }
             return icon;
         }
         
@@ -948,7 +942,6 @@ public class Emoticon {
         private ImageIcon icon;
         public final float scaleFactor;
         public final int maxHeight;
-        public final boolean flipped;
         
         private Set<EmoticonUser> users;
       
@@ -965,10 +958,9 @@ public class Emoticon {
         private long lastLoadingAttempt;
         private long lastUsed;
         
-        public EmoticonImage(float scaleFactor, int maxHeight, boolean flipped) {
+        public EmoticonImage(float scaleFactor, int maxHeight) {
             this.scaleFactor = scaleFactor;
             this.maxHeight = maxHeight;
-            this.flipped = flipped;
         }
         
         /**
