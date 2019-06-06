@@ -54,6 +54,10 @@ public class ColorItem {
         return backgroundEnabled;
     }
     
+    public boolean isEmpty() {
+        return foreground == null && background == null;
+    }
+    
     @Override
     public String toString() {
         return getId();

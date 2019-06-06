@@ -2868,14 +2868,15 @@ public class MainGui extends JFrame implements Runnable {
                             highlightMatches,
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null);
-                    if (highlighted) {
+                    
+                    ColorItem colorItem = msgColorManager.getMsgColor(user, text);
+                    message.color = colorItem.getForegroundIfEnabled();
+                    message.backgroundColor = colorItem.getBackgroundIfEnabled();
+                    if (highlighted && (colorItem.isEmpty() || !client.settings.getBoolean("msgColorsPrefer"))) {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
-                    } else {
-                        ColorItem colorItem = msgColorManager.getMsgColor(user, text);
-                        message.color = colorItem.getForegroundIfEnabled();
-                        message.backgroundColor = colorItem.getBackgroundIfEnabled();
                     }
+
                     message.whisper = whisper;
                     message.action = action;
                     if (highlighted) {

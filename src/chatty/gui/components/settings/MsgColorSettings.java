@@ -68,6 +68,9 @@ public class MsgColorSettings extends SettingsPanel {
         LinkLabel info = new LinkLabel(INFO_TEXT, d.getSettingsHelpLinkLabelListener());
         main.add(info, d.makeGbc(0, 2, 1, 1));
         
+        other.add(d.addSimpleBooleanSetting("msgColorsPrefer"),
+                d.makeGbc(0, 9, 2, 1, GridBagConstraints.WEST));
+        
         other.add(d.addSimpleBooleanSetting("actionColored"),
                 d.makeGbc(0, 10, 2, 1, GridBagConstraints.WEST));
         
