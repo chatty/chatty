@@ -16,6 +16,7 @@ import chatty.User;
 import chatty.gui.Highlighter.Match;
 import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.emoji.EmojiUtil;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.RingBuffer;
@@ -2378,7 +2379,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes) {
         
         findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle);
-        findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
+        if (EmojiUtil.mightContainEmoji(text)) {
+            findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
+        }
         
         if (tagEmotes != null) {
             // Add emotes from tags

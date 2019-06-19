@@ -20,14 +20,14 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.control.SelectionMode;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -288,7 +288,9 @@ public class AutoCompletionWindow {
      * TODO: Popup closes when input switches to next line from completion
      */
     protected void updateHelp(int resultIndex) {
-        if (resultIndex == -1) {
+        if (LocalDateTime.now().get(ChronoField.MINUTE_OF_HOUR) > 50) {
+            helpLabel.setText("Shift-click to insert several results");
+        } else if (resultIndex == -1) {
             helpLabel.setText("Use TAB or mouse to select");
         } else {
             helpLabel.setText("Continue typing to close");
@@ -504,7 +506,7 @@ public class AutoCompletionWindow {
             AutoCompletionServer.CompletionItem item = (AutoCompletionServer.CompletionItem)value;
             if (!commonPrefix.isEmpty()) {
                 if (item.hasInfo()) {
-                    text.setText(String.format("<html><body><u>%s</u>%s&nbsp;<span style='font-size:0.9em;'>(%s)</span>",
+                    text.setText(String.format("<html><body><u>%s</u>%s&nbsp;<span style='font-size:0.8em;'>(%s)</span>",
                             enc(commonPrefix),
                             enc(item.getCode().substring(commonPrefix.length())),
                             enc(item.getInfo())));
@@ -515,7 +517,7 @@ public class AutoCompletionWindow {
                 }
             } else {
                 if (item.hasInfo()) {
-                    text.setText(String.format("<html><body>%s&nbsp;<span style='font-size:0.9em;'>(%s)</span>",
+                    text.setText(String.format("<html><body>%s&nbsp;<span style='font-size:0.8em;'>(%s)</span>",
                             enc(item.getCode()),
                             enc(item.getInfo())));
                 } else {

@@ -66,7 +66,7 @@ public class CompletionSettings extends SettingsPanel {
         
         Map<String, String> emotePrefixValues = new LinkedHashMap<>();
         emotePrefixValues.put("", Language.getString("settings.completionEmotePrefix.option.none"));
-        for (String item : ":,;-#+~!'$§%&".split("")) {
+        for (String item : ":,;-#~!'$§%&".split("")) {
             emotePrefixValues.put(item, item);
         }
         

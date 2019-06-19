@@ -1065,7 +1065,10 @@ public class Emoticons {
         Map<Pattern, String> replacements = new HashMap<>();
         for (Emoticon e : emoji) {
             if (e.stringId != null) {
-                replacements.put(Pattern.compile(e.stringId), e.code);
+                replacements.put(Pattern.compile(e.stringId, Pattern.LITERAL), e.code);
+            }
+            if (e.stringIdAlias != null) {
+                replacements.put(Pattern.compile(e.stringIdAlias, Pattern.LITERAL), e.code);
             }
         }
         emojiReplacement = replacements;

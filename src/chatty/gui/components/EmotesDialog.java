@@ -1122,6 +1122,12 @@ public class EmotesDialog extends JDialog {
             }
             
             // Info
+            if (emote.type == Emoticon.Type.EMOJI && emote.stringId != null) {
+                addInfo(panel2, emote.stringId);
+                if (emote.stringIdAlias != null) {
+                    addInfo(panel2, "("+emote.stringIdAlias+")");
+                }
+            }
             featured = emote.subType == Emoticon.SubType.EVENT ? "Featured " : "";
             for (String info : emote.getInfos()) {
                 addInfo(panel2, featured+info);

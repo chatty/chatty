@@ -33,7 +33,11 @@ public class EmoteContextMenu extends ContextMenu {
         } else {
             addItem("code", StringUtil.shortenTo(emote.code, 40, 28));
             if (emote.type == Emoticon.Type.EMOJI && emote.stringId != null) {
-                addItem("codeEmoji", emote.stringId);
+                if (emote.stringIdAlias != null) {
+                    addItem("codeEmoji", emote.stringId+" ("+emote.stringIdAlias+")");
+                } else {
+                    addItem("codeEmoji", emote.stringId);
+                }
             }
         }
         addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
@@ -51,7 +55,7 @@ public class EmoteContextMenu extends ContextMenu {
             } else if (emote.type == Emoticon.Type.CUSTOM) {
                 addItem("", "Custom Emote");
             } else if (emote.type == Emoticon.Type.EMOJI) {
-                addItem("", "Emoji ("+emote.creator+")");
+                addItem("", "Emoji");
             }
             if (emote.creator != null) {
                 addItem("emoteCreator", Language.getString("emoteCm.emoteBy", emote.creator));
@@ -64,9 +68,7 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             } else {
                 for (String info : emote.getInfos()) {
-                    if (!info.equals(emote.stringId)) {
-                        addItem("", info);
-                    }
+                    addItem("", info);
                 }
             }
             

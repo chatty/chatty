@@ -106,6 +106,7 @@ public class Emoticon {
     public final boolean literal;
     public final int numericId;
     public final String stringId;
+    public final String stringIdAlias;
     public final String urlX2;
     public final String creator;
     
@@ -145,6 +146,7 @@ public class Emoticon {
         private int emoteset = SET_UNDEFINED;
         private int numericId = ID_UNDEFINED;
         private String stringId = null;
+        private String stringIdAlias = null;
         private String creator;
         private boolean isAnimated = false;
         
@@ -197,6 +199,11 @@ public class Emoticon {
         
         public Builder setStringId(String id) {
             this.stringId = id;
+            return this;
+        }
+        
+        public Builder setStringIdAlias(String id) {
+            this.stringIdAlias = id;
             return this;
         }
         
@@ -330,6 +337,7 @@ public class Emoticon {
         this.literal = builder.literal;
         this.numericId = builder.numericId;
         this.stringId = builder.stringId;
+        this.stringIdAlias = builder.stringIdAlias;
         this.creator = builder.creator;
         this.infos = builder.infos;
         this.isAnimated = builder.isAnimated;

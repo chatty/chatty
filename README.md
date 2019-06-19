@@ -163,9 +163,16 @@ Images / Other
   * Source: <http://emojione.com/>
   * License: CC-BY 4.0
 	(<https://creativecommons.org/licenses/by/4.0/>)
+  * Old version (seems no longer available), not updated since newer
+    versions are not under a free license
 
-* Emoji Metadata based on EmojiOne emoji.json:
-  * Source: https://github.com/Ranks/emojione/blob/master/emoji.json
+* Emoji Metadata based on:
+  * Source: https://github.com/github/gemoji/blob/master/db/emoji.json
+  * License: MIT
+	(<https://opensource.org/licenses/MIT>)
+
+* Emoji Metadata supplemented by:
+  * Source: https://github.com/joypixels/emojione/blob/master/emoji.json
   * License: MIT
 	(<https://opensource.org/licenses/MIT>)
 

@@ -131,8 +131,8 @@ public class EmoteSettings extends SettingsPanel {
         JPanel emojiSettings = addTitledPanel(Language.getString("settings.section.emoji"), 2);
         
         Map<String, String> emojiSetDef = new LinkedHashMap<>();
-        emojiSetDef.put("twemoji", "Twitter Emoji");
-        emojiSetDef.put("e1", "Emoji One");
+        emojiSetDef.put("twemoji", "Twemoji (Twitter)");
+        emojiSetDef.put("e1", "Emoji One [outdated]");
         emojiSetDef.put("none", Language.getString("settings.emoji.option.none"));
         ComboStringSetting emojiSet = new ComboStringSetting(emojiSetDef);
         

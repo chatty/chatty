@@ -1982,6 +1982,8 @@ public class MainGui extends JFrame implements Runnable {
             } else if (e.getActionCommand().equals("emoteCreator")) {
                 if (emote.type == Emoticon.Type.FFZ) {
                     url = TwitchUrl.makeFFZUrl(emote.creator);
+                } else if (emote.creator.equals("Twemoji")) {
+                    url = "https://github.com/twitter/twemoji";
                 }
             } else if (e.getActionCommand().equals("twitchturbolink")) {
                 url = TwitchUrl.makeTwitchTurboUrl();

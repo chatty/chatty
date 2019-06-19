@@ -241,13 +241,13 @@ public class ChannelCompletion implements AutoCompletionServer {
         List<CompletionItem> items = new ArrayList<>();
         for (Emoticon emote : result) {
             String code = Emoticons.toWriteable(emote.code);
-            items.add(createEmoteItem(code, emote));
+            items.add(createEmoteItem(code, null, emote));
         }
         return new CompletionItems(items, prefix);
     }
     
-    private CompletionItem createEmoteItem(String code, Emoticon emote) {
-        return new CompletionItem(code, "") {
+    private CompletionItem createEmoteItem(String code, String info, Emoticon emote) {
+        return new CompletionItem(code, info) {
             public ImageIcon getImage(Component c) {
                 float scale = (float)(currentEmoteScaling / 100.0);
                 ImageIcon icon = emote.getIcon(scale, 0, new Emoticon.EmoticonUser() {
@@ -291,9 +291,13 @@ public class ChannelCompletion implements AutoCompletionServer {
         }
         for (Emoticon emote : searchResult) {
             if (main.getSettings().getBoolean("emojiReplace")) {
-                result.add(createEmoteItem(emote.stringId, emote));
+                String alias = null;
+                if (!emote.stringId.contains(search) && emote.stringIdAlias.contains(search)) {
+                    alias = emote.stringIdAlias;
+                }
+                result.add(createEmoteItem(emote.stringId, alias, emote));
             } else {
-                result.add(createEmoteItem(emote.code, emote));
+                result.add(createEmoteItem(emote.code, null, emote));
             }
         }
         return new AutoCompletionServer.CompletionItems(result, ":");
@@ -312,6 +316,8 @@ public class ChannelCompletion implements AutoCompletionServer {
         List<Emoticon> searchResult = new LinkedList<>();
         for (Emoticon emote : main.emoticons.getEmoji()) {
             if (emote.stringId != null && matcher.apply(emote.stringId)) {
+                searchResult.add(emote);
+            } else if (emote.stringIdAlias != null && matcher.apply(emote.stringIdAlias)) {
                 searchResult.add(emote);
             }
         }

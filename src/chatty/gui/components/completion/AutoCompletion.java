@@ -40,7 +40,7 @@ public class AutoCompletion {
      * Word pattern to be used to find the start/end of the word to be
      * completed.
      */
-    private static final Pattern WORD = Pattern.compile("[^\\s,.:;\\-@#+~!\"'$§%&\\/]+");
+    private static final Pattern WORD = Pattern.compile("[^\\s,.:;\\-@#~!\"'$§%&\\/]+");
 
     //------------
     // References
@@ -69,14 +69,20 @@ public class AutoCompletion {
     public AutoCompletion(JTextComponent textField) {
         this.textField = textField;
         this.w = new AutoCompletionWindow(textField, (clickedIndex, shift) -> {
-            resultIndex = clickedIndex;
-            updatePopup(false);
             if (shift) {
+                if (resultIndex != -1) {
+                    // If current already completed a word, add next one after
+                    startPos = textField.getCaretPosition();
+                }
                 insertWord(clickedIndex, appendSpace, true);
-                startPos = textField.getCaretPosition();
+                // Set new start after the ensured space, so a non-shift click
+                // inserts at the correct position
+                startPos++;
             } else {
                 insertWord(clickedIndex, appendSpace, false);
             }
+            resultIndex = clickedIndex;
+            updatePopup(false);
         });
         
         caretListener = new CaretListener() {
@@ -317,6 +323,9 @@ public class AutoCompletion {
         int caretPos = textField.getCaretPosition();
         Debugging.println("completion", "[Update] %d %s", caretPos, text);
         if (text.equals(autoSetText)) {
+            if (caretPos != endPos) {
+                end();
+            }
             // If text/caret changed based on completion, ignore this change
             return;
         }
