@@ -24,7 +24,13 @@ public class EmojiUtil {
     
     private static final Logger LOGGER = Logger.getLogger(EmojiUtil.class.getName());
     
-    private static final Pattern EMOJI_PATTERN = Pattern.compile("[\u203C-\u2940]|[\u2B00-\u2B60]|[\u3030-\u3300]|[^\u0000-\uFFFF]|\uE50A");
+    /**
+     * Generated automatically based on all Emoji codepoints, except under 100
+     * (50 non-Emoji characters threshold, 25 ranges). Probably not entirely
+     * ideal, but should work well enough.
+     */
+    private static final Pattern EMOJI_PATTERN = Pattern.compile(
+            "[\\x{200D}-\\x{2049}]|\\x{20E3}|\\x{2139}|[\\x{2194}-\\x{21AA}]|[\\x{231A}-\\x{2328}]|[\\x{23CF}-\\x{23FA}]|\\x{24C2}|[\\x{25AA}-\\x{25C0}]|[\\x{25FB}-\\x{27BF}]|[\\x{2934}-\\x{2935}]|[\\x{2B05}-\\x{2B1C}]|[\\x{2B50}-\\x{2B55}]|[\\x{3030}-\\x{303D}]|[\\x{3297}-\\x{3299}]|\\x{E50A}|\\x{FE0F}|\\x{1F004}|\\x{1F0CF}|[\\x{1F170}-\\x{1F19A}]|[\\x{1F1E6}-\\x{1F251}]|[\\x{1F300}-\\x{1F6FA}]|[\\x{1F7E0}-\\x{1F7EB}]|[\\x{1F90D}-\\x{1F9FF}]|[\\x{1FA70}-\\x{1FA95}]|[\\x{E0062}-\\x{E007F}]");
     
     /**
      * Check if the given text may contain Emoji. This will give plenty of false
@@ -127,11 +133,8 @@ public class EmojiUtil {
      * @param args 
      */
     public static void main(String[] args) {
-        Set<Emoticon> emotes = makeEmoticons("e1");
-        System.out.println(emotes.size());
-        for (Emoticon emote : emotes) {
-//            System.out.println(emote.getInfos());
-        }
+        Set<Emoticon> emotes = makeEmoticons("twemoji");
+        System.out.println("#"+emotes.size());
     }
     
     private static void twemoji(EmojiSet set, Set<Emoticon> result) {
