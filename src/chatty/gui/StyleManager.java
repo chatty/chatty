@@ -51,7 +51,7 @@ public class StyleManager implements StyleServer {
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
             "showImageTooltips", "highlightMatches", "nickColorCorrection",
-            "mentions", "markHoveredUser", "highlightMatchesAll",
+            "mentions", "mentionsInfo", "markHoveredUser", "highlightMatchesAll",
             "nickColorBackground",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
@@ -169,6 +169,8 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
         addLongSetting(Setting.USERCOLOR_BACKGROUND, "nickColorBackground");
         addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
+        addLongSetting(Setting.MENTIONS, "mentions");
+        addLongSetting(Setting.MENTIONS_INFO, "mentionsInfo");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
         long deletedMessagesModeNumeric = 0;
@@ -181,13 +183,6 @@ public class StyleManager implements StyleServer {
         addLongSetting(Setting.DISPLAY_NAMES_MODE, "displayNamesMode");
         
         colorCorrector = ColorCorrector.get(settings.getString("nickColorCorrection"));
-        
-        // Order determined by the CompoundBooleanSetting in the Settings Dialog
-        int mentions = (int)settings.getLong("mentions");
-        other.addAttribute(Setting.MENTIONS, MiscUtil.biton(mentions, 0));
-        other.addAttribute(Setting.MENTIONS_BOLD, MiscUtil.biton(mentions, 1));
-        other.addAttribute(Setting.MENTIONS_UNDERLINE, MiscUtil.biton(mentions, 2));
-        other.addAttribute(Setting.MENTIONS_COLORED, MiscUtil.biton(mentions, 3));
     }
     
     private void addBooleanSetting(Setting key, String name) {

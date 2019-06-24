@@ -921,6 +921,31 @@ public class Highlighter {
         public String toString() {
             return start+"-"+end;
         }
+        
+        /**
+         * Add to the index of all Match objects in the given list of matches.
+         * Resulting negative indices are set to 0, if start and end are equal
+         * the match is not added to the result.
+         * 
+         * @param input The input list
+         * @param shift How much to add to the indices
+         * @return A new list with new Match objects, or the same as input if it
+         * was null or empty
+         */
+        public static List<Match> shiftMatchList(List<Match> input, int shift) {
+            if (input == null || input.isEmpty()) {
+                return input;
+            }
+            List<Match> result = new ArrayList<>();
+            for (Match m : input) {
+                int start = Math.max(m.start + shift, 0);
+                int end = Math.max(m.end + shift, 0);
+                if (start != end) {
+                    result.add(new Match(start, end));
+                }
+            }
+            return result;
+        }
 
     }
     

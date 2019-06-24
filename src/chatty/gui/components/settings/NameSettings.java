@@ -59,6 +59,9 @@ public class NameSettings extends SettingsPanel {
 
         JPanel other = addTitledPanel("Other", 1);
         
+        //----------
+        // Mentions
+        //----------
         SimpleBooleanSetting mentions = d.makeSimpleBooleanSetting("mentions");
         // Smaller border to align with setting below (not completely empty to
         // accomodate focus rectangle)
@@ -78,14 +81,40 @@ public class NameSettings extends SettingsPanel {
         
         d.addLongSetting("mentions", new CompoundBooleanSetting(mentions, mentionsBold, mentionsUnderline, mentionsColored));
         SettingsUtil.addSubsettings(mentions, mentionsBold, mentionsUnderline, mentionsColored);
-
-        gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST);
+        
+        //---------------
+        // Mentions Info
+        //---------------
+        SimpleBooleanSetting mentionsInfo = d.makeSimpleBooleanSetting("mentionsInfo");
+        // Smaller border to align with setting below (not completely empty to
+        // accomodate focus rectangle)
+        mentionsInfo.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        SimpleBooleanSetting mentionsBoldInfo = d.makeSimpleBooleanSetting("mentionsBold");
+        SimpleBooleanSetting mentionsUnderlineInfo = d.makeSimpleBooleanSetting("mentionsUnderline");
+        SimpleBooleanSetting mentionsColoredInfo = d.makeSimpleBooleanSetting("mentionsColored");
+        
+        other.add(mentionsInfo,
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
+        other.add(mentionsBoldInfo,
+                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+        other.add(mentionsUnderlineInfo,
+                d.makeGbc(2, 1, 1, 1, GridBagConstraints.WEST));
+        other.add(mentionsColoredInfo,
+                d.makeGbc(3, 1, 1, 1, GridBagConstraints.WEST));
+        
+        d.addLongSetting("mentionsInfo", new CompoundBooleanSetting(mentionsInfo, mentionsBoldInfo, mentionsUnderlineInfo, mentionsColoredInfo));
+        SettingsUtil.addSubsettings(mentionsInfo, mentionsBoldInfo, mentionsUnderlineInfo, mentionsColoredInfo);
+        
+        //-------------------
+        // Mark Hovered User
+        //-------------------
+        gbc = d.makeGbc(0, 2, 1, 1, GridBagConstraints.EAST);
         // +1 on the right to align properly
         gbc.insets = new Insets(5, 5, 5, 6);
         other.add(d.createLabel("markHoveredUser"),
                 gbc);
         other.add(d.addComboLongSetting("markHoveredUser", new int[]{0,1,2,3,4}),
-                d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST));
         
         JPanel custom = addTitledPanel("Custom Names", 2, true);
         customNamesEditor = d.addStringMapSetting("customNames", 270, 200);

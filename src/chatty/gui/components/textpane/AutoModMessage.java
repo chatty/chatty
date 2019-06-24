@@ -20,10 +20,10 @@ public class AutoModMessage extends InfoMessage {
         this.message = message;
     }
     
-    private static String makeText(User user, String text) {
+    private static String makeText(User user, String message) {
         return String.format("[AutoMod] <%s> %s",
                 user.getDisplayNick(),
-                text);
+                message);
     }
     
 }

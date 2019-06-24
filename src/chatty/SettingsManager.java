@@ -195,6 +195,7 @@ public class SettingsManager {
         settings.addLong("displayNamesModeUserlist", DISPLAY_NAMES_MODE_CAPITALIZED);
         settings.addBoolean("showImageTooltips", true);
         settings.addLong("mentions", 3);
+        settings.addLong("mentionsInfo", 3);
         settings.addLong("markHoveredUser", chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS);
 
         // Badges/Emotes
@@ -800,6 +801,10 @@ public class SettingsManager {
             if (!settings.getBoolean("colorCorrection")) {
                 settings.setString("nickColorCorrection", "off");
             }
+        }
+        
+        if (switchedFromVersionBefore("0.9.7-b4")) {
+            settings.setLong("mentionsInfo", settings.getLong("mentions"));
         }
         
         overrideHotkeySettings();

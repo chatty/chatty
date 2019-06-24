@@ -2871,12 +2871,17 @@ public class MainGui extends JFrame implements Runnable {
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null);
                     
-                    ColorItem colorItem = msgColorManager.getMsgColor(user, text);
-                    message.color = colorItem.getForegroundIfEnabled();
-                    message.backgroundColor = colorItem.getBackgroundIfEnabled();
-                    if (highlighted && (colorItem.isEmpty() || !client.settings.getBoolean("msgColorsPrefer"))) {
+                    // Custom color
+                    if (highlighted) {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
+                    }
+                    if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
+                        ColorItem colorItem = msgColorManager.getMsgColor(user, text);
+                        if (!colorItem.isEmpty()) {
+                            message.color = colorItem.getForegroundIfEnabled();
+                            message.backgroundColor = colorItem.getBackgroundIfEnabled();
+                        }
                     }
 
                     message.whisper = whisper;
@@ -3157,11 +3162,15 @@ public class MainGui extends JFrame implements Runnable {
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound());
                 } else {
+                    notificationManager.info(channel.getRoom(), message.text);
+                }
+                if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
                     ColorItem colorItem = msgColorManager.getInfoColor(
                             message.text, channel.getChannel(), client.addressbook);
-                    message.color = colorItem.getForegroundIfEnabled();
-                    message.bgColor = colorItem.getBackgroundIfEnabled();
-                    notificationManager.info(channel.getRoom(), message.text);
+                    if (!colorItem.isEmpty()) {
+                        message.color = colorItem.getForegroundIfEnabled();
+                        message.bgColor = colorItem.getBackgroundIfEnabled();
+                    }
                 }
             }
             channel.printInfoMessage(message);
