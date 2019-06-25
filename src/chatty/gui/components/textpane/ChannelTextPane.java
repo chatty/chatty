@@ -14,6 +14,7 @@ import chatty.gui.UrlOpener;
 import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.Highlighter.Match;
+import chatty.gui.components.Channel;
 import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.emoji.EmojiUtil;
@@ -113,6 +114,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private static final Matcher urlMatcher = Helper.getUrlPattern().matcher("");
     
     public MainGui main;
+    private Channel channel;
 
     protected LinkController linkController = new LinkController();
     private static StyleServer styleServer;
@@ -243,6 +245,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     public void setMouseClickedListener(MouseClickedListener listener) {
         linkController.setMouseClickedListener(listener);
+    }
+    
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+        linkController.setChannel(channel);
     }
     
     private void setHoveredUser(User user) {

@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.gui.components.Channel;
 import chatty.lang.Language;
 import java.awt.event.ActionEvent;
 
@@ -16,8 +17,11 @@ public class ChannelContextMenu extends ContextMenu {
     
     private final ContextMenuListener listener;
     
-    public ChannelContextMenu(ContextMenuListener listener) {
+    private final Channel channel;
+    
+    public ChannelContextMenu(ContextMenuListener listener, Channel channel) {
         this.listener = listener;
+        this.channel = channel;
         
         addItem("channelInfo", Language.getString("menubar.dialog.channelInfo"));
         addItem("channelAdmin", Language.getString("menubar.dialog.channelAdmin"));
@@ -46,7 +50,7 @@ public class ChannelContextMenu extends ContextMenu {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (listener != null) {
-            listener.menuItemClicked(e);
+            listener.channelMenuItemClicked(e, channel);
         }
     }
     

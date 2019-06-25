@@ -214,6 +214,11 @@ public class HighlightedMessages extends JDialog {
         public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
             contextMenuListener.roomsMenuItemClicked(e, rooms);
         }
+
+        @Override
+        public void channelMenuItemClicked(ActionEvent e, Channel channel) {
+            contextMenuListener.channelMenuItemClicked(e, channel);
+        }
     }
     
     /**

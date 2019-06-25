@@ -3,13 +3,12 @@ package chatty.gui.components.menus;
 
 import chatty.Room;
 import chatty.User;
-import chatty.util.api.Emoticon;
+import chatty.gui.components.Channel;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
-import java.util.List;
 
 /**
  *
@@ -52,6 +51,10 @@ public class ContextMenuAdapter implements ContextMenuListener {
 
     @Override
     public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
+    }
+
+    @Override
+    public void channelMenuItemClicked(ActionEvent e, Channel channel) {
     }
     
 }

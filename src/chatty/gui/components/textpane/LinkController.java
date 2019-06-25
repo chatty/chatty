@@ -6,6 +6,7 @@ import chatty.User;
 import chatty.gui.LinkListener;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.UserListener;
+import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ChannelContextMenu;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -82,6 +83,8 @@ public class LinkController extends MouseAdapter {
     
     private ContextMenu defaultContextMenu;
     
+    private Channel channel;
+    
     private MyPopup popup = new MyPopup();
     
     private Element prevHoverElement;
@@ -139,6 +142,10 @@ public class LinkController extends MouseAdapter {
     public void setDefaultContextMenu(ContextMenu contextMenu) {
         defaultContextMenu = contextMenu;
         contextMenu.addContextMenuListener(contextMenuListener);
+    }
+    
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
    
     /**
@@ -373,7 +380,7 @@ public class LinkController extends MouseAdapter {
         String url = getUrl(element);
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
-        JPopupMenu m;
+        JPopupMenu m = null;
         if (user != null) {
             m = new UserContextMenu(user, getMsgId(element),
                     getAutoModMsgId(element), contextMenuListener);
@@ -389,12 +396,16 @@ public class LinkController extends MouseAdapter {
         }
         else {
             if (defaultContextMenu == null) {
-                m = new ChannelContextMenu(contextMenuListener);
+                if (channel != null) {
+                    m = new ChannelContextMenu(contextMenuListener, channel);
+                }
             } else {
                 m = defaultContextMenu;
             }
         }
-        m.show(e.getComponent(), e.getX(), e.getY());
+        if (m != null) {
+            m.show(e.getComponent(), e.getX(), e.getY());
+        }
         popup.hide();
     }
     

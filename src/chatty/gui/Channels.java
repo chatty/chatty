@@ -199,6 +199,7 @@ public class Channels {
      */
     private Channel createChannel(Room room, Channel.Type type) {
         Channel channel = new Channel(room,type,gui,styleManager, contextMenuListener);
+        channel.init();
         channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
         channel.setMouseClickedListener(mouseClickedListener);
         channel.setScrollbarAlways(chatScrollbarAlaways);

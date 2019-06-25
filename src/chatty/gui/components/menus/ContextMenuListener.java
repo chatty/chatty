@@ -3,6 +3,7 @@ package chatty.gui.components.menus;
 
 import chatty.Room;
 import chatty.User;
+import chatty.gui.components.Channel;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
@@ -18,6 +19,7 @@ public interface ContextMenuListener {
     public void urlMenuItemClicked(ActionEvent e, String url);
     public void menuItemClicked(ActionEvent e);
     public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms);
+    public void channelMenuItemClicked(ActionEvent e, Channel channel);
     public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams);
     public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos);
     public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote);

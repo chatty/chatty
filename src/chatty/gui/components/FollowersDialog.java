@@ -6,7 +6,6 @@ import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
-import chatty.gui.components.menus.RoomsContextMenu;
 import chatty.gui.components.menus.StreamsContextMenu;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;

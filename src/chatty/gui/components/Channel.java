@@ -35,7 +35,7 @@ import javax.swing.event.DocumentListener;
  * 
  * @author tduva
  */
-public class Channel extends JPanel {
+public final class Channel extends JPanel {
     
     public enum Type {
         NONE, CHANNEL, WHISPER, SPECIAL
@@ -71,7 +71,6 @@ public class Channel extends JPanel {
         // Text Pane
         text = new ChannelTextPane(main,styleManager);
         text.setContextMenuListener(contextMenuListener);
-        
         
         setTextPreferredSizeTemporarily();
         
@@ -113,7 +112,11 @@ public class Channel extends JPanel {
         // Add components
         add(mainPane, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
-
+    }
+    
+    public void init() {
+        text.setChannel(this);
+        
         input.requestFocusInWindow();
         setStyles();
         
