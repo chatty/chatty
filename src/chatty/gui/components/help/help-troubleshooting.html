@@ -10,7 +10,7 @@
         <li>Startup / Folders / Settings
             <ul>
                 <li><a href="#start">Chatty won't start</a></li>
-                <li><a href="#jintellitype">Could not load JIntellitype.dll</a></li>
+                <li><a href="#jintellitype">Global Hotkeys / JIntellitype.dll error</a></li>
                 <li><a href="#settings_lost">Settings lost</a></li>
                 <li><a href="#wrong_folders">Wrong image/sounds folder</a></li>
             </ul>
@@ -73,53 +73,34 @@
     be disabled by default, but can lower performance if checked.</p>
     
     <h2>
-        <a name="jintellitype">Global hotkeys don't work</a>
+        <a name="jintellitype">Global Hotkeys / JIntellitype.dll error</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>First of all, you only need Global Hotkey support when you want to use
-        global hotkeys (which you can define in the settings). If you don't, you
-        can just ignore any related messages or download the version of Chatty
-        without Hotkey support. Global hotkeys currently only work on Windows.</p>
+    <p><em>Note:</em> If you don't use global hotkeys you don't have to worry
+        about this. Global hotkeys are currently only available on Windows.</p>
     
-    <p>If you want to use global hotkeys and you get a message related to them
-        not working, check the following sections. If you don't get a message,
-        but the global hotkeys you defined just don't work, make sure you
-        actually have global hotkeys enabled in the settings.</p>
+    <p>If global hotkeys don't work, but there is no error message about it,
+        make sure that you actually have global hotkeys enabled in the Hotkeys
+        settings or in the menu "Extra - Options".</p>
     
-    <h3>Wrong version of Chatty</h3>
-    <p>If you try to add a global hotkey and it tells you that you have the
-        wrong version of Chatty, you probably don't have the version supporting
-        global hotkeys. Download the version that contains <code>hotkey</code>
-        in the <code>.zip</code> filename and try that instead.</p>
-    
-    <h3>Could not load library (jintellitype-1.3.8.jar)</h3>
-    <p>Chatty requires the <code>jintellitype-1.3.8.jar</code> to be in the
-        <code>lib</code> subfolder of where the <code>Chatty.jar</code> is
-        located.</p>
-        
-    <h3>Could not load JIntellitype.dll</h3>
-    <p>If you get this error, you started Chatty with Hotkey support, but it
-    couldn't load the library (.dll) necessary to register hotkeys. This can
-    mean that:
+    <h3>Error message</h3>
+    <p>If you get an error message related to JIntellitype or global hotkeys:</p>
     
     <ul>
-        <li>You have the wrong version for your version
-            of Java (32bit or 64bit Java need different versions of the <code>.dll</code>)</li>
-        <li>The <code>JIntellitype.dll</code> isn't stored where the program can
-        find it</li>
+        <li>Make sure that you are using a version that had <code>hotkey</code>
+            in the download name, or the Windows standalone version.</li>
+        <li>When you're not using the Windows standalone, make sure that you're
+            using the correct <code>hotkey</code> version for the version of
+            Java you have installed: <code>hotkey_32bit</code> for 32bit Java
+            and <code>hotkey_64bit</code> for 64bit Java. For example if Java is
+            installed in <code>C:\Program Files (x86)</code>, then it should be
+            a 32bit version. You can find out where the JRE that Chatty is using
+            is located by entering <code>/appinfo</code> in Chatty.</li>
+        <li>Make sure the <code>JIntellitype.dll</code> is located in the folder
+            that opens when you enter <code>/openWdir</code> in Chatty.</li>
+        <li>Try restarting your computer, sometimes it is only a temporary
+            issue.</li>
     </ul>
-    <p>
-        Find out if you have the 64bit or 32bit version of Java (e.g. by
-        entering <code>java -version</code> on the commandline to check if there
-        is 64bit in the response), then check if you downloaded the matching
-        version of Chatty.</p>
-    
-    <p>Enter <code>/wdir</code> in Chatty to find out what your working directory
-        is and make sure the <code>JIntellitype.dll</code> is in there. If you
-        are starting Chatty via a shortcut, remember that the directory
-        specified in the <code>Run in</code> field determines your working
-        directory (on Windows at least, but global hotkeys are currently Windows only
-        anyway).</p>
     
     <div class="moreInfo">Related information: <a href="help-guide_folders.html">Chatty directories and files</a></div>
     
