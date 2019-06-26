@@ -82,7 +82,7 @@ public class UserTest {
         assertTrue(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());
         for (int i=0;i<99;i++) {
-            otherTypes.addAutoModMessage(null, null);
+            otherTypes.addAutoModMessage(null, null, null);
         }
         assertTrue(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());

@@ -298,6 +298,7 @@ public class AutoModDialog extends JDialog {
         String channel = Helper.toValidChannel(modData.stream);
         String username = modData.args.get(0);
         String message = modData.args.get(1);
+        String reason = modData.getArg(2, null);
         if (channel == null) {
             return;
         }
@@ -306,7 +307,7 @@ public class AutoModDialog extends JDialog {
         }
         
         User user = client.getUser(channel, username);
-        user.addAutoModMessage(message, modData.msgId);
+        user.addAutoModMessage(message, modData.msgId, reason);
         gui.updateUserinfo(user);
         Item item = new Item(modData, user);
 

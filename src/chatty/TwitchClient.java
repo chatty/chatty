@@ -1474,7 +1474,13 @@ public class TwitchClient {
             List<String> args = new ArrayList<>();
             args.add("tduva");
             if (parameter != null) {
-                args.add(parameter);
+                if (parameter.contains(",")) {
+                    String[] split = parameter.split(",", 2);
+                    args.add(split[1]);
+                    args.add(split[0]);
+                } else {
+                    args.add(parameter);
+                }
             } else {
                 args.add("fuck and stuff like that, rather long message and whatnot Kappa b "+Debugging.count(channel));
             }

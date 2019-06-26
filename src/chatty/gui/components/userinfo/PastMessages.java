@@ -133,7 +133,11 @@ public class PastMessages extends JTextArea {
                     b.append(">");
                 }
                 b.append(DateTime.format(m.getTime(), TIMESTAMP)).append(">");
-                b.append("Filtered by AutoMod: ").append(ma.message);
+                b.append("Filtered by AutoMod");
+                if (!StringUtil.isNullOrEmpty(ma.reason)) {
+                    b.append(" (").append(ma.reason).append(")");
+                }
+                b.append(": ").append(ma.message);
                 b.append("\n");
             }
         }

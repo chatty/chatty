@@ -3,6 +3,7 @@ package chatty.util.api.pubsub;
 
 import chatty.util.StringUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -130,6 +131,21 @@ public class ModeratorActionData extends MessageData {
     
     public String getCommandAndParameters() {
         return moderation_action+" "+StringUtil.join(args, " ");
+    }
+    
+    /**
+     * Get the argument with the given index, or defaultValue if it an argument
+     * with that index doesn't exist.
+     * 
+     * @param index The index
+     * @param defaultValue The fallback value
+     * @return The argument value, or the defaultValue if it doesn't exist
+     */
+    public String getArg(int index, String defaultValue) {
+        if (args.size() > index) {
+            return args.get(index);
+        }
+        return defaultValue;
     }
 
     @Override

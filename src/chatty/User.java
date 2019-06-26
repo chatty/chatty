@@ -441,8 +441,8 @@ public class User implements Comparable {
         return false;
     }
     
-    public synchronized void addAutoModMessage(String line, String id) {
-        addLine(new AutoModMessage(line, id));
+    public synchronized void addAutoModMessage(String line, String id, String reason) {
+        addLine(new AutoModMessage(line, id, reason));
     }
     
     /**
@@ -1188,11 +1188,13 @@ public class User implements Comparable {
         
         public final String message;
         public final String id;
+        public final String reason;
         
-        public AutoModMessage(String message, String id) {
+        public AutoModMessage(String message, String id, String reason) {
             super(System.currentTimeMillis());
             this.message = message;
             this.id = id;
+            this.reason = reason;
         }
         
     }
