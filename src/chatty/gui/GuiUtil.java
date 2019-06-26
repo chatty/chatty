@@ -219,6 +219,13 @@ public class GuiUtil {
         c.setLocation(mouseLocation);
     }
     
+    /**
+     * Get the bounds for the given GraphicsConfiguration, with insets (e.g.
+     * taskbar) removed.
+     * 
+     * @param config
+     * @return 
+     */
     public static Rectangle getEffectiveScreenBounds(GraphicsConfiguration config) {
         Rectangle bounds = config.getBounds();
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
@@ -228,6 +235,21 @@ public class GuiUtil {
         bounds.width -= insets.right + insets.left;
         bounds.height -= insets.bottom + insets.top;
         return bounds;
+    }
+    
+    /**
+     * Get the bounds of the screen of the given Component, with screen insets
+     * (e.g. taskbar) removed.
+     * 
+     * @param c
+     * @return 
+     */
+    public static Rectangle getEffectiveScreenBounds(Component c) {
+        GraphicsConfiguration config = c.getGraphicsConfiguration();
+        if (config == null) {
+            return null;
+        }
+        return getEffectiveScreenBounds(config);
     }
     
     /**

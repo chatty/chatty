@@ -16,11 +16,13 @@ import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -180,7 +182,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
     public SettingsDialog(final MainGui owner, final Settings settings) {
         super(owner, Language.getString("settings.title"), true);
-        setResizable(false);
+//        setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         addWindowListener(new WindowAdapter() {
@@ -212,17 +214,29 @@ public class SettingsDialog extends JDialog implements ActionListener {
         selection = Tree.createTree(MENU);
         selection.setSelectionRow(0);
         selection.setBorder(BorderFactory.createEtchedBorder());
+        JScrollPane selectionScroll = new JScrollPane(selection);
+        selectionScroll.setBorder(null);
+        selectionScroll.setMinimumSize(selectionScroll.getPreferredSize());
 
         gbc = makeGbc(0,0,1,1);
         gbc.insets = new Insets(10,10,10,3);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 0;
         gbc.weighty = 1;
-        add(selection, gbc);
+        add(selectionScroll, gbc);
 
         // Create setting pages, the order here doesn't matter
         cardManager = new CardLayout();
-        cards = new JPanel(cardManager);
+        cards = new JPanel(cardManager) {
+            
+            @Override
+            public void add(Component comp, Object constraints) {
+                JScrollPane scroll = new JScrollPane(comp);
+                scroll.setBorder(null);
+                super.add(scroll, constraints);
+            }
+            
+        };
         cards.add(new MainSettings(this), Page.MAIN.name);
         cards.add(new MessageSettings(this), Page.MESSAGES.name);
         cards.add(new ModerationSettings(this), Page.MODERATION.name);
@@ -330,6 +344,15 @@ public class SettingsDialog extends JDialog implements ActionListener {
         selection.requestFocusInWindow();
         
         pack();
+        Rectangle screenSize = GuiUtil.getEffectiveScreenBounds(this);
+//        screenSize = new Rectangle(800, 600); // Test
+        if (getHeight() > screenSize.height) {
+            /**
+             * Add some width for possible scrollbars, not ideal but should do
+             * for now (especially since this shouldn't happen for many users)
+             */
+            setSize(getWidth()+50, screenSize.height);
+        }
         setVisible(true);
     }
     
