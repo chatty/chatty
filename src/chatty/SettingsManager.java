@@ -250,7 +250,8 @@ public class SettingsManager {
         settings.addString("nickColorCorrection", "normal");
         settings.addLong("nickColorBackground", 1);
         settings.addList("colorPresets", new ArrayList<>(), Setting.LIST);
-        
+        settings.addBoolean("displayColoredNamesInUserlist", false);
+
         // Message Colors
         settings.addBoolean("msgColorsEnabled", false);
         settings.addList("msgColors", new LinkedList(), Setting.STRING);

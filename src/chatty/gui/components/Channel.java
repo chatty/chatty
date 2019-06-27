@@ -90,7 +90,7 @@ public final class Channel extends JPanel {
 
         
         // User list
-        users = new UserList(contextMenuListener, main.getUserListener());
+        users = new UserList(contextMenuListener, main.getUserListener(), main.getSettings());
         updateUserlistSettings();
         userlist = new JScrollPane(users);
         

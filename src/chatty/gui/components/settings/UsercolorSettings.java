@@ -98,6 +98,12 @@ public class UsercolorSettings extends SettingsPanel {
         
         otherPanel.add(d.addComboLongSetting("nickColorBackground", 0, 1, 2),
                 d.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST));
+
+        JCheckBox coloredNamesInUserlist = d.addSimpleBooleanSetting(
+            "displayColoredNamesInUserlist",
+            Language.getString("settings.label.displayColoredNamesInUserlist"),
+            "");
+        otherPanel.add(coloredNamesInUserlist, d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
     }
     
     public void setData(List<UsercolorItem> data) {
