@@ -334,15 +334,20 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     public void showSettings(String action, Object parameter) {
+        //------------
+        // Initialize
+        //------------
         loadSettings();
         notificationSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.USERINFO.scope));
-        setLocationRelativeTo(owner);
         if (action != null) {
             editDirectly(action, parameter);
         }
         stuffBasedOnPanel();
         selection.requestFocusInWindow();
         
+        //-----------------
+        // Size / Position
+        //-----------------
         pack();
         Rectangle screenSize = GuiUtil.getEffectiveScreenBounds(this);
 //        screenSize = new Rectangle(800, 600); // Test
@@ -353,6 +358,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
              */
             setSize(getWidth()+50, screenSize.height);
         }
+        GuiUtil.setLocationRelativeTo(this, owner);
         setVisible(true);
     }
     
