@@ -1454,6 +1454,25 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     disable();
                 }
             });
+
+            getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("R"), "LineSelection.reply");
+            getActionMap().put("LineSelection.reply", new AbstractAction() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (currentSelection != null && doesLineExist(currentSelection)) {
+                        User userFromElement = getUserFromElement(getUserElementFromLine(currentSelection, false), false);
+                        if (null == userFromElement) {
+                            return;
+                        }
+
+                        disable();
+
+                        channel.getInput().setText("@" + userFromElement.getDisplayNick() + " ");
+                        channel.getInput().requestFocus();
+                    }
+                }
+            });
         }
         
         /**
