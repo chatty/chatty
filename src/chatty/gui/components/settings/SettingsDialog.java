@@ -82,7 +82,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final HashMap<String,ListSetting> listSettings = new HashMap<>();
     private final HashMap<String,MapSetting> mapSettings = new HashMap<>();
     
-    private final Settings settings;
+    final Settings settings;
     private final MainGui owner;
     
     private final NotificationSettings notificationSettings;

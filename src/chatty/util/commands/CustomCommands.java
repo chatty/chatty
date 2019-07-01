@@ -61,8 +61,7 @@ public class CustomCommands {
     
     public synchronized String command(CustomCommand command, Parameters parameters, Room room) {
         // Add some more parameters
-        parameters.put("chan", Helper.toStream(room.getChannel()));
-        parameters.put("stream", room.getStream());
+        addChans(room, parameters);
         Set<String> chans = new HashSet<>();
         client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
         parameters.put("chans", StringUtil.join(chans, " "));
@@ -92,7 +91,12 @@ public class CustomCommands {
 
         return command.replace(parameters);
     }
-
+    
+    public static void addChans(Room room, Parameters parameters) {
+        parameters.put("chan", Helper.toStream(room.getChannel()));
+        parameters.put("stream", room.getStream());
+    }
+    
     /**
      * Checks if the given command exists (case-insensitive).
      * 

@@ -1,6 +1,7 @@
 
 package chatty.gui.components.userinfo;
 
+import chatty.Room;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
@@ -8,6 +9,8 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.Point;
@@ -35,6 +38,8 @@ public class UserInfoManager {
     private final MainGui main;
     private final Settings settings;
     private final ContextMenuListener contextMenuListener;
+    private final UserInfoListener userInfoListener;
+    private final UserInfoRequester userInfoRequester;
     
     private String buttonsDef;
     private float fontSize;
@@ -59,6 +64,25 @@ public class UserInfoManager {
             @Override
             public void componentResized(ComponentEvent e) {
 //                handleChanged(e.getComponent());
+            }
+        };
+        userInfoListener = new UserInfoListener() {
+
+            @Override
+            public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
+                main.anonCustomCommand(room, command, parameters);
+            }
+        };
+        userInfoRequester = new UserInfoRequester() {
+
+            @Override
+            public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {
+                return main.getSingleFollower(stream, streamId, user, userId, refresh);
+            }
+
+            @Override
+            public ChannelInfo getCachedChannelInfo(String channel, String id) {
+                return main.getCachedChannelInfo(channel, id);
             }
         };
     }
@@ -155,7 +179,7 @@ public class UserInfoManager {
     }
     
     private UserInfo createNew() {
-        UserInfo dialog = new UserInfo(main, settings, contextMenuListener);
+        UserInfo dialog = new UserInfo(main, userInfoListener, userInfoRequester, settings, contextMenuListener);
         dialog.setUserDefinedButtonsDef(buttonsDef);
         dialog.setFontSize(fontSize);
         return dialog;

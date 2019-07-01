@@ -498,6 +498,12 @@ public class User implements Comparable {
         return 0;
     }
     
+    public synchronized void clearMessages() {
+        lines.clear();
+        numberOfMessages = 0;
+        numberOfLines = 0;
+    }
+    
     private long getLastLineTime() {
         if (lines != null && !lines.isEmpty()) {
             return lines.get(lines.size() - 1).time;

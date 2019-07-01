@@ -65,13 +65,15 @@ public class UserInfo extends JDialog {
     
     private float fontSize;
     
-    private final MainGui owner;
+    private final UserInfoRequester requester;
    
-    public UserInfo(final MainGui owner, Settings settings,
+    public UserInfo(final Window parent, UserInfoListener listener,
+            UserInfoRequester requester,
+            Settings settings,
             final ContextMenuListener contextMenuListener) {
-        super(owner);
+        super(parent);
+        this.requester = requester;
         GuiUtil.installEscapeCloseOperation(this);
-        this.owner = owner;
         banReasons = new BanReasons(this, settings);
         
         buttons = new Buttons(this, new ActionListener() {
@@ -87,8 +89,9 @@ public class UserInfo extends JDialog {
                     return;
                 }
                 
-                owner.anonCustomCommand(getUser().getRoom(), command, makeParameters());
-                owner.getActionListener().actionPerformed(e);
+                if (listener != null) {
+                    listener.anonCustomCommand(getUser().getRoom(), command, makeParameters());
+                }
             }
         });
         
@@ -157,13 +160,13 @@ public class UserInfo extends JDialog {
                         MiscUtil.copyToClipboard(currentUser.getId());
                         break;
                     case "sendFollowAge":
-                        owner.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_FOLLOW_AGE, makeParameters());
+                        listener.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_FOLLOW_AGE, makeParameters());
                         break;
                     case "copyFollowAge":
                         MiscUtil.copyToClipboard(InfoPanel.COMMAND_FOLLOW_AGE.replace(makeParameters()));
                         break;
                     case "sendAccountAge":
-                        owner.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_ACCOUNT_AGE, makeParameters());
+                        listener.anonCustomCommand(getUser().getRoom(), InfoPanel.COMMAND_ACCOUNT_AGE, makeParameters());
                         break;
                     case "copyAccountAge":
                         MiscUtil.copyToClipboard(InfoPanel.COMMAND_ACCOUNT_AGE.replace(makeParameters()));
@@ -211,8 +214,10 @@ public class UserInfo extends JDialog {
             }
             
             private void showPopupMenu(MouseEvent e) {
-                JPopupMenu menu = new UserContextMenu(currentUser, currentMsgId, currentAutoModMsgId, contextMenuListener);
-                menu.show(e.getComponent(), e.getX(), e.getY());
+                if (contextMenuListener != null) {
+                    JPopupMenu menu = new UserContextMenu(currentUser, currentMsgId, currentAutoModMsgId, contextMenuListener);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         });
       
@@ -436,7 +441,10 @@ public class UserInfo extends JDialog {
     }
     
     protected ChannelInfo getChannelInfo() {
-        return owner.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
+        if (requester != null) {
+            return requester.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
+        }
+        return null;
     }
 
     public void setFollowInfo(String stream, String user, Follower follow, TwitchApi.RequestResultCode result) {
@@ -448,10 +456,13 @@ public class UserInfo extends JDialog {
     }
 
     protected Follower getFollowInfo(boolean refresh) {
-        return owner.getSingleFollower(currentUser.getStream(),
-                currentUser.getRoom().getStreamId(),
-                currentUser.getName(),
-                currentUser.getId(),
-                refresh);
+        if (requester != null) {
+            return requester.getSingleFollower(currentUser.getStream(),
+                    currentUser.getRoom().getStreamId(),
+                    currentUser.getName(),
+                    currentUser.getId(),
+                    refresh);
+        }
+        return null;
     }
 }

@@ -4,6 +4,7 @@ package chatty.gui.components.userinfo;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
+import chatty.gui.components.settings.CommandSettings;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.FlowLayout;
@@ -113,7 +114,8 @@ public class Buttons {
             }
             JButton button = new JButton(item.getLabel());
             button.addActionListener(listener);
-            button.setToolTipText(item.getCommand().toString());
+            button.setToolTipText("<html><body><p style='font-family:monospaced;'>"
+                    +CommandSettings.formatCommandInfo(item.getCommand().toString()));
             commands.put(button, item.getCommand());
             
             boolean secondaryButton = false;

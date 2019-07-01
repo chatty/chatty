@@ -2,12 +2,18 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.TestContextMenu;
+import chatty.gui.components.userinfo.UserInfo;
+import chatty.gui.components.userinfo.UserInfoListener;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.CustomCommands;
+import chatty.util.commands.Parameters;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
@@ -178,28 +184,48 @@ public class CommandSettings extends SettingsPanel {
             }
         };
         
-        Editor.Tester errorTester = new Editor.Tester() {
+        Editor.Tester userDialogTester = new Editor.Tester() {
 
+            private final User user = new User("testUser", Room.createRegular("#testchannel"));
+            
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
-                StringBuilder errors = new StringBuilder();
+                updateErrors(value);
+                UserInfo dialog = new UserInfo(parent, new UserInfoListener() {
+
+                    @Override
+                    public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
+                        CustomCommands.addChans(room, parameters);
+                        String result = String.format("<html><body><p style='font-family:monospaced;'>%s</p>",
+                                formatCommandInfo(command.replace(parameters)));
+                        JOptionPane.showMessageDialog(parent, result, "Command result", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }, null, d.settings, null);
+                dialog.setUserDefinedButtonsDef(value);
+                GuiUtil.setLocationRelativeTo(dialog, parent);
+                dialog.show(component, user, null, null, null);
+                return null;
+            }
+            
+            /**
+             * Add command error messages to User messages.
+             * 
+             * @param value
+             * @return 
+             */
+            private void updateErrors(String value) {
+                user.clearMessages();
                 List<CommandMenuItem> items = CommandMenuItems.parse(value);
                 for (CommandMenuItem item : items) {
                     if (item.getCommand() != null && item.getCommand().hasError()) {
-                        errors.append("<p style='font-family:monospaced;'>");
-                        errors.append("Error in command '").append(item.getLabel()).append("': ");
-                        errors.append(formatCommandInfo(item.getCommand().getError()));
-                        errors.append("</p>");
+                        user.addMessage(String.format("Error in command '%s': %s",
+                                item.getLabel(), item.getCommand().getSingleLineError()
+                        ), false, null);
                     }
                 }
-                String output = "No errors found.";
-                if (errors.length() > 0) {
-                    output = errors.toString();
-                }
-                GuiUtil.showNonModalMessage(parent, "Custom Commands", output,
-                JOptionPane.INFORMATION_MESSAGE, true);
-                return null;
+                user.addMessage("Note that some replacements may not work in this test dialog.", false, null);
             }
+            
         };
         
         gbc = d.makeGbc(0, 0, 1, 1);
@@ -219,7 +245,7 @@ public class CommandSettings extends SettingsPanel {
         
         gbc = d.makeGbc(1, 1, 1, 1);
         EditorStringSetting channelContextMenu = d.addEditorStringSetting(
-                "channelContextMenu", 20, true, "Edit Channel Context Menu:", true,
+                "channelContextMenu", 20, true, "Edit Channel Context Menu", true,
                 getInfo("channelMenu"), menuTester);
         channelContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(channelContextMenu, gbc);
@@ -230,7 +256,7 @@ public class CommandSettings extends SettingsPanel {
         
         gbc = d.makeGbc(1, 2, 1, 1);
         EditorStringSetting streamsContextMenu = d.addEditorStringSetting(
-                "streamsContextMenu", 20, true, "Edit Streams Context Menu:", true,
+                "streamsContextMenu", 20, true, "Edit Streams Context Menu", true,
                 getInfo("streamsMenu"), menuTester);
         streamsContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(streamsContextMenu, gbc);
@@ -241,8 +267,8 @@ public class CommandSettings extends SettingsPanel {
         
         gbc = d.makeGbc(1, 3, 1, 1);
         EditorStringSetting userDialogButtons = d.addEditorStringSetting(
-                "timeoutButtons", 20, true, "Edit User Dialog Buttons:", true,
-                getInfo("userDialog"), errorTester);
+                "timeoutButtons", 20, true, "Edit User Dialog Buttons", true,
+                getInfo("userDialog"), userDialogTester);
         userDialogButtons.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(userDialogButtons, gbc);
         
@@ -267,7 +293,7 @@ public class CommandSettings extends SettingsPanel {
     
     public static String formatCommandInfo(String input) {
         return Helper.htmlspecialchars_encode(input)
-                .replace("\n", "<br />").replace(" ", "&nbsp;");
+                .replace("\n", "<br>").replace(" ", "&nbsp;");
     }
     
 }
