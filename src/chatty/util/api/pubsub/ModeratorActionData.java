@@ -73,6 +73,7 @@ public class ModeratorActionData extends MessageData {
                 case "twitchbot_rejected":
                 case "automod_rejected":
                 case "rejected_automod_message":
+                case "automod_cheer_rejected":
                     // Just guessing at this point D:
                     type = Type.AUTOMOD_REJECTED;
                     break;
