@@ -60,8 +60,50 @@
         <a name="0.9.7">Version 0.9.7</a> <a name="latest">(This one!)</a> (2019-??-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>The most prominent change in this update is probably the new TAB
+        Completion, which has slightly changed behaviour as well as a new popup,
+        which shows the actual Emote images instead just the codes.</p>
+    
     <pre>
-TBD
+### New TAB Completion
+- Show emote images in TAB Completion popup (not just Emoji)
+- Automatically start completion in some cases
+- Allow scrolling and selection of emotes with the mouse (Shift-Click to insert
+  several emotes)
+- Improved Emoji search (expanding search if few results, aliases)
+- Added new settings to Settings Dialog
+
+### Custom Commands
+- Added new function `$upper()` (make text uppercase)
+- Added new function `$sort()` (sort space separated items)
+- Added new function `$urlencode()` (prepare text for including it in a URL)
+- Improved error output
+- Added new identifiers `nick`, `reason` and `msg` in some contexts
+- Improved "User Dialog Buttons" setting Test-button to show a User Dialog
+
+### Chat / Moderation
+- Added clickable mentions to Info Messages
+- Added Highlight matches marking in AutoMod messages
+- Added AutoMod reason/category (e.g. "aggressive") to User Dialog
+- Added info to User Dialog when a user is unbanned (from Moderation Log)
+- Added setting to add background to unreadable nicknames in chat
+- Added Msg. Colors setting to prefer Custom Msg. Colors over Highlight Colors
+
+### Emoticons
+- Sort Subemote channels in Emotes Dialog alphabetically
+- Added previously missing Cheeremotes
+- Updated Twemoji Emoji to Unicode 12 (and improved metadata)
+
+### Other
+- Disabled rotating tab rows for dark Look&amp;Feels
+- Added scrollbars (if necessary) to Settings Dialog
+
+### Bugfixes
+- Fixed $rand() command error
+- Fixed duped emotes occuring when an emote causes a highlight and "Mark all occurences" is enabled
+- Fixed own subemotes not being displayed if subscribed to a lot(!) of different channels
+- Fixed wrong channel context for commands executed from context menu of non-focused popout
+- Reduced PubSub reconnect delay
     </pre>
     
     <h2>

@@ -208,7 +208,7 @@ public class SettingsManager {
         settings.addBoolean("ffzEvent", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
-        settings.addBoolean("showAnimatedEmotes", false);
+        settings.addBoolean("showAnimatedEmotes", true);
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         

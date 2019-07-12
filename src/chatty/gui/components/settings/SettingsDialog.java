@@ -69,6 +69,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private boolean restartRequired = false;
     private boolean reconnectRequired = false;
+    private Dimension autoSetSize;
     
     private static final String RESTART_REQUIRED_INFO = "<html><body style='width: 280px'>"
             + Language.getString("settings.restartRequired");
@@ -348,17 +349,26 @@ public class SettingsDialog extends JDialog implements ActionListener {
         //-----------------
         // Size / Position
         //-----------------
-        pack();
-        Rectangle screenSize = GuiUtil.getEffectiveScreenBounds(this);
-//        screenSize = new Rectangle(800, 600); // Test
-        if (getHeight() > screenSize.height) {
-            /**
-             * Add some width for possible scrollbars, not ideal but should do
-             * for now (especially since this shouldn't happen for many users)
-             */
-            setSize(getWidth()+50, screenSize.height);
+        // If not set and not manually resized window (not ideal, but should be
+        // good enough for now, manually resizing indicates wanting to have it
+        // a certain way)
+        if (autoSetSize == null || autoSetSize.equals(getSize())) {
+            pack();
+            Rectangle screenBounds = GuiUtil.getEffectiveScreenBounds(this);
+//            screenBounds = new Rectangle(700, 400); // Test
+            if (getHeight() > screenBounds.height) {
+                /**
+                 * Add some width for possible scrollbars, not ideal but should do
+                 * for now (especially since this shouldn't happen for many users)
+                 */
+                setSize(getWidth()+50, screenBounds.height);
+            }
+            if (getWidth() > screenBounds.width) {
+                setSize(screenBounds.width, getHeight());
+            }
+            GuiUtil.setLocationRelativeTo(this, owner);
+            autoSetSize = getSize(autoSetSize);
         }
-        GuiUtil.setLocationRelativeTo(this, owner);
         setVisible(true);
     }
     

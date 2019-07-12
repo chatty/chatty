@@ -39,6 +39,20 @@ public interface AutoCompletionServer {
     public CompletionItems getCompletionItems(String type, String prefix,
             String search);
     
+    /**
+     * Decide if the prefix should auto-start the completion (i.e. show the
+     * popup). This is called by the completion instance.
+     * 
+     * The prefix is everything before what is considered the actual completion
+     * search term. This could be fairly long, so usually only the end (which
+     * would be right before the search term) would have to be checked, although
+     * there may be cases where checking the entire prefix would also make
+     * sense (for example to check if something is a command, so the input
+     * starts with a '/').
+     * 
+     * @param prefix The prefix to check
+     * @return true for auto-start, false to take no action
+     */
     public boolean isAutostartPrefix(String prefix);
     
     /**

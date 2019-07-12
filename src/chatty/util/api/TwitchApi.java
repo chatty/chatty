@@ -78,12 +78,6 @@ public class TwitchApi {
     // Chat / Emoticons
     //=================
     
-    public void requestCheerEmoticons(boolean forcedUpdate) {
-        if (forcedUpdate || !cheersManager.load(false)) {
-            requests.requestCheerEmoticons(forcedUpdate);
-        }
-    }
-    
     public void getEmotesBySets(Integer... emotesets) {
         getEmotesBySets(new HashSet<>(Arrays.asList(emotesets)));
     }

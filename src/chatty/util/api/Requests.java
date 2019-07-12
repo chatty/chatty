@@ -575,19 +575,9 @@ public class Requests {
         
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
     }
-
-    public void requestCheerEmoticons(boolean forcedUpdate) {
-        String url = "https://api.twitch.tv/kraken/bits/actions";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.cheersManager.dataReceived(r.text, forcedUpdate);
-            });
-        }
-    }
     
     public void requestCheerEmoticons(String channelId, String stream) {
-        String url = "https://api.twitch.tv/kraken/bits/actions?channel_id="+channelId;
+        String url = "https://api.twitch.tv/kraken/bits/actions?channel_id="+channelId+"&include_sponsored=1";
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             execute(request, r -> {

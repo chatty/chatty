@@ -514,11 +514,22 @@ public class ChannelCompletion implements AutoCompletionServer {
         return new CompletionItems(result, "");
     }
 
+    /**
+     * Only auto-start if enabled and if it's either one of the fixed prefixes
+     * or the value of "completionEmotePrefix". Also check that there is a space
+     * in front (or nothing).
+     * 
+     * @param prefix
+     * @return 
+     */
     @Override
     public boolean isAutostartPrefix(String prefix) {
-        if (settings().getBoolean("completionAuto")) {
-            return prefix.endsWith(":") || prefix.endsWith("@")
+        if (settings().getBoolean("completionAuto") && !prefix.isEmpty()) {
+            boolean eligible = prefix.endsWith(":")
+                    || prefix.endsWith("@")
                     || prefix.endsWith(settings().getString("completionEmotePrefix"));
+            boolean spaceInFront = prefix.length() == 1 || prefix.charAt(prefix.length() - 2) == ' ';
+            return eligible && spaceInFront;
         }
         return false;
     }
