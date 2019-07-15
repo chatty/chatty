@@ -71,7 +71,7 @@ public class MainSettings extends SettingsPanel {
                 +Language.getString("settings.language.info")
                 + "<br /><br />"
                 + "If you would like to help with translations, check "
-                + "[url:http://chatty.github.io/localization.html the website].",
+                + "[url:https://chatty.github.io/localization.html the website].",
                 d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
     }

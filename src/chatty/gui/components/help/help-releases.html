@@ -57,17 +57,21 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.9.7">Version 0.9.7</a> <a name="latest">(This one!)</a> (2019-??-??)
+        <a name="0.9.7">Version 0.9.7</a> <a name="latest">(This one!)</a> (2019-07-15)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>The most prominent change in this update is probably the new TAB
-        Completion, which has slightly changed behaviour as well as a new popup,
-        which shows the actual Emote images instead just the codes.</p>
+    <p>The updated TAB Completion now shows emote images and allows scrolling
+        and inserting results with the mouse. It is also easier accessible since
+        it automatically shows up in some cases and includes some simple usage
+        tooltips. As always, several settings allow customization.</p>
+    
+    <p>Also included in this update are several Moderation and Chat related
+        improvements, updated Emoji, Bugfixes, and more.</p>
     
     <pre>
-### New TAB Completion
+### TAB Completion
 - Show emote images in TAB Completion popup (not just Emoji)
-- Automatically start completion in some cases
+- Automatically start TAB Completion in some cases
 - Allow scrolling and selection of emotes with the mouse (Shift-Click to insert
   several emotes)
 - Improved Emoji search (expanding search if few results, aliases)
@@ -75,11 +79,11 @@
 
 ### Custom Commands
 - Added new function `$upper()` (make text uppercase)
-- Added new function `$sort()` (sort space separated items)
+- Added new function `$sort()` (sort token separated items alphabetically)
 - Added new function `$urlencode()` (prepare text for including it in a URL)
-- Improved error output
 - Added new identifiers `nick`, `reason` and `msg` in some contexts
 - Improved "User Dialog Buttons" setting Test-button to show a User Dialog
+- Improved error output
 
 ### Chat / Moderation
 - Added clickable mentions to Info Messages
@@ -97,13 +101,15 @@
 ### Other
 - Disabled rotating tab rows for dark Look&amp;Feels
 - Added scrollbars (if necessary) to Settings Dialog
+- Added `/popoutchannel` command (same as right-click on TAB - Popout)
 
 ### Bugfixes
-- Fixed $rand() command error
-- Fixed duped emotes occuring when an emote causes a highlight and "Mark all occurences" is enabled
-- Fixed own subemotes not being displayed if subscribed to a lot(!) of different channels
-- Fixed wrong channel context for commands executed from context menu of non-focused popout
-- Reduced PubSub reconnect delay
+- Fixed Custom Command $rand() function error
+- Fixed duped emotes occuring when an emote causes a highlight and "Mark all
+  occurences" is enabled
+- Fixed own subemotes missing if subscribed to a lot(!) of different channels
+- Fixed channel context for context menu in non-focused popout
+- Fixed PubSub reconnect delay
     </pre>
     
     <h2>

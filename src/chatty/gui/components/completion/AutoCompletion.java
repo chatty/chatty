@@ -6,7 +6,9 @@ import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -35,6 +37,8 @@ import javax.swing.text.JTextComponent;
  * @author tduva
  */
 public class AutoCompletion {
+    
+    private static final Logger LOGGER = Logger.getLogger(AutoCompletion.class.getName());
 
     /**
      * Word pattern to be used to find the start/end of the word to be
@@ -68,8 +72,8 @@ public class AutoCompletion {
      */
     public AutoCompletion(JTextComponent textField) {
         this.textField = textField;
-        this.w = new AutoCompletionWindow(textField, (clickedIndex, shift) -> {
-            if (shift) {
+        this.w = new AutoCompletionWindow(textField, (clickedIndex, e) -> {
+            if (e.isShiftDown()) {
                 if (resultIndex != -1) {
                     // If current already completed a word, add next one after
                     startPos = textField.getCaretPosition();
@@ -80,6 +84,9 @@ public class AutoCompletion {
                 startPos++;
             } else {
                 insertWord(clickedIndex, appendSpace, false);
+                if (!SwingUtilities.isMiddleMouseButton(e)) {
+                    end();
+                }
             }
             resultIndex = clickedIndex;
             updatePopup(false);
@@ -322,13 +329,14 @@ public class AutoCompletion {
         String text = textField.getText();
         int caretPos = textField.getCaretPosition();
         Debugging.println("completion", "[Update] %d %s", caretPos, text);
-        if (text.equals(autoSetText)) {
-            if (caretPos != endPos) {
-                end();
-            }
+        
+        if (text.equals(autoSetText) && caretPos == endPos) {
             // If text/caret changed based on completion, ignore this change
             return;
         }
+        // Check before endPos and autoSetText are updated
+        boolean movedAfter = text.equals(autoSetText) && caretPos != endPos;
+        
         autoSetText = null;
         
         // Find word at cursor (with these default values if none found)
@@ -347,8 +355,7 @@ public class AutoCompletion {
         }
         
         Debugging.println("completion", "[Updated] Prefix: '%s' Word: '%s' Caret: %d", prefix, word, caretPos);
-        
-        if (startPos == -1 || endPos == -1) {
+        if (startPos == -1 || endPos == -1 || movedAfter) {
             // Didn't find anything usable for search, so just quit
             end();
         } else {
@@ -448,7 +455,7 @@ public class AutoCompletion {
     }
     
     private void updatePopup(boolean scroll) {
-        if (showPopup) {
+        if (showPopup && inCompletion) {
             w.show(resultIndex, scroll);
         } else {
             w.close();
@@ -513,26 +520,30 @@ public class AutoCompletion {
      * @param item 
      */
     private void insertWord(String item, boolean appendSpace, boolean ensureSpace) {
-        removePrefix();
-        
-        if (appendSpace) {
-            item = item+" ";
-        }
-        
-        // Update text
-        String text = textField.getText();
-        if (ensureSpace && startPos > 0 && text.charAt(startPos-1) != ' ') {
-            item = " "+item;
-        }
-        String newText = text.substring(0, startPos) + item + text.substring(endPos);
-        textField.setText(newText);
-        
-        autoSetText = newText;
+        try {
+            removePrefix();
 
-        // Update caret and endIndex
-        int newEnd = startPos + item.length();
-        endPos = newEnd;
-        textField.setCaretPosition(newEnd);
+            if (appendSpace) {
+                item = item+" ";
+            }
+
+            // Update text
+            String text = textField.getText();
+            if (ensureSpace && startPos > 0 && text.charAt(startPos-1) != ' ') {
+                item = " "+item;
+            }
+            String newText = text.substring(0, startPos) + item + text.substring(endPos);
+            textField.setText(newText);
+
+            autoSetText = newText;
+
+            // Update caret and endIndex
+            int newEnd = startPos + item.length();
+            endPos = newEnd;
+            textField.setCaretPosition(newEnd);
+        } catch (Exception ex) {
+            LOGGER.warning("Exception in insertWord: "+ex);
+        }
     }
     
     /**

@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.9.7-b5)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.9.7)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -572,8 +572,8 @@
     <p>Once a completion is initiated, <kbd>TAB</kbd> and <kbd>Shift-TAB</kbd>
         cycle forwards and backward through the results, or use the mouse.</p>
 
-    <p>Some prefixes always force a certain completion type
-        no matter if you use <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>:</p>
+    <p>Some prefixes always force a certain completion type (whether you use
+        <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd>):</p>
     
     <ul>
         <li>Prefixing <code>@</code> completes usernames (e.g. <code>@jo</code>)</li>
@@ -586,41 +586,18 @@
             for their first parameter</li>
     </ul>
     
-    <h3>How it works</h3>
-    <p>How the TAB Completion process works:</p>
-
-    <ol>
-        <li>Enter the beginning of an item (name, setting, emote).</li>
-        <li>Press <kbd>TAB</kbd> or <kbd>Shift-TAB</kbd> (see above)
-            to enter the completion mode, which will:
-            <ul>
-                <li>Complete to the full item (e.g. full name) if there is only
-                one item matching what you entered</li>
-                <li>For more than one match, depending on the <em>Complete to common prefix</em> setting:
-                    <ul>
-                        <li>Complete to the common prefix of all found items that match
-                        what you entered, allowing you to enter more characters
-                        to refine the search and then press <kbd>TAB</kbd> or
-                        <kbd>Shift-TAB</kbd> again to enter a new completion</li>
-                        <li>Complete to the full item of the first match</li>
-                        <li>If enabled, it will also show a popup with information
-                        about the completion, which doesn't show if there is only
-                        one match</li>
-                    </ul>
-                </li>
-            </ul>
-        </li>
-        <li>You can then either:
-            <ul>
-                <li>Press <kbd>TAB</kbd> repeatedly to cycle forwards through the found
-                    matches or <kbd>Shift-TAB</kbd> to cycle backwards</li>
-                <li>Press <kbd>ESC</kbd> to cancel the completion mode and go
-                    back to the text when you started the completion</li>
-                <li>Continue typing/editing the text to exit the completion
-                    while keeping what you already completed</li>
-            </ul>
-        </li>
-    </ol>
+    <p>Additionally, some prefixes will automatically initiate completion (this
+        too can be changed in the settings).</p>
+    
+    <h3>Further usage</h3>
+    <ul>
+        <li>Use <kbd>TAB</kbd> to cycle <em>forward</em> through results and
+            <kbd>Shift-TAB</kbd> to cycle <em>backwards</em> through results</li>
+        <li>Continue typing, send the message or move the cursor to end completion</li>
+        <li>Click on a result to choose it, or <kbd>Shift</kbd>-Click to insert
+            several results</li>
+        <li>Press ESC to go back to before completion</li>
+    </ul>
     
     <p>The found matches are all ordered alphabetically, except for nickcompletion
     for which you can choose different types of sorting. By default nicknames use
