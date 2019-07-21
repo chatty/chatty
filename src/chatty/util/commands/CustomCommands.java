@@ -108,48 +108,69 @@ public class CustomCommands {
     }
     
     /**
-     * Load the commands from the settings. Everything before the first space
-     * is interpreted as command name, removing a leading "/" if present.
-     * Everything else is used as the command parameters.
+     * Load the commands from the settings.
      */
     public synchronized void loadFromSettings() {
         List<String> commandsToLoad = settings.getList("commands");
         commands.clear();
         replacements.clear();
-        for (String c : commandsToLoad) {
-            if (c != null && !c.isEmpty()) {
-                String[] split = c.split(" ", 2);
-                if (split.length == 2) {
-                    String commandName = split[0];
-                    if (commandName.startsWith("/")) {
-                        commandName = commandName.substring(1);
+        for (String entry : commandsToLoad) {
+            CustomCommand command = parseCommandWithName(entry);
+            if (command != null) {
+                // Always has non-empty name at this point
+                if (!command.hasError()) {
+                    String commandName = command.getName();
+                    String chan = command.getChan();
+                    if (commandName.startsWith("_") && commandName.length() > 1) {
+                        addCommand(replacements, commandName, chan, command);
                     }
-                    commandName = StringUtil.toLowerCase(commandName.trim());
-                    String chan = null;
-                    if (commandName.contains("#")) {
-                        String[] splitChan = commandName.split("#", 2);
-                        commandName = splitChan[0];
-                        chan = splitChan[1];
+                    else {
+                        addCommand(commands, commandName, chan, command);
                     }
-                    
-                    // Trim when loading, to ensure consistent behaviour
-                    // (in-line menu commands and Test-button parsing trim too)
-                    String commandValue = split[1].trim();
-                    if (!commandName.isEmpty()) {
-                        CustomCommand parsedCommand = CustomCommand.parse(commandValue);
-                        if (parsedCommand.getError() == null) {
-                            if (commandName.startsWith("_") && commandName.length() > 1) {
-                                addCommand(replacements, commandName, chan, parsedCommand);
-                            } else {
-                                addCommand(commands, commandName, chan, parsedCommand);
-                            }
-                        } else {
-                            LOGGER.warning("Error parsing custom command: "+parsedCommand.getError());
-                        }
-                    }
+                }
+                else {
+                    LOGGER.warning("Error parsing custom command: " + command.getError());
                 }
             }
         }
+    }
+    
+    /**
+     * Parses a Custom Command in "commands" setting format.
+     * 
+     * 
+     * 
+     * @param c Non-empty line
+     * @return The CustomCommand (maybe with parsing errors), with name set, or
+     * null if no name or command is found
+     */
+    public static CustomCommand parseCommandWithName(String c) {
+        if (c != null && !c.isEmpty()) {
+            // Trim to ensure consistent behaviour between setting loading and
+            // Test-button
+            c = c.trim();
+            String[] split = c.split(" ", 2);
+            if (split.length == 2) {
+                String commandName = split[0];
+                if (commandName.startsWith("/")) {
+                    commandName = commandName.substring(1);
+                }
+                commandName = StringUtil.toLowerCase(commandName.trim());
+                String chan = null;
+                if (commandName.contains("#")) {
+                    String[] splitChan = commandName.split("#", 2);
+                    commandName = splitChan[0];
+                    chan = splitChan[1];
+                }
+
+                // Trim again, to ensure consistent behaviour
+                String commandValue = split[1].trim();
+                if (!commandName.isEmpty()) {
+                    return CustomCommand.parse(commandName, chan, commandValue);
+                }
+            }
+        }
+        return null;
     }
     
     public synchronized Collection<String> getCommandNames() {

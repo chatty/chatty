@@ -156,11 +156,7 @@ public class CommandSettings extends SettingsPanel {
 
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
-                CustomCommand command = null;
-                String[] split = value.split(" ", 2);
-                if (split.length == 2) {
-                    command = CustomCommand.parse(split[1].trim());
-                }
+                CustomCommand command = CustomCommands.parseCommandWithName(value);
                 showCommandInfoPopup(component, command);
                 return null;
             }
@@ -287,7 +283,13 @@ public class CommandSettings extends SettingsPanel {
         } else {
             message += formatCommandInfo(command.toString());
         }
-        GuiUtil.showNonModalMessage(parent, "Custom Command", message,
+        String name = "";
+        String chan = "";
+        if (command != null) {
+            name = command.hasName() ? " ("+command.getName()+")" : "";
+            chan = command.hasChan() ? " [#"+command.getChan()+"]" : "";
+        }
+        GuiUtil.showNonModalMessage(parent, "Custom Command"+name+chan, message,
                 JOptionPane.INFORMATION_MESSAGE, true);
     }
     

@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.StringUtil;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.Objects;
@@ -12,20 +13,26 @@ import java.util.Set;
  */
 public class CustomCommand {
     
+    private final String name;
+    private final String chan;
     private final Items items;
     private final String error;
     private final String singleLineError;
 
-    private CustomCommand(Items items) {
+    private CustomCommand(String name, String chan, Items items) {
         this.items = items;
         this.error = null;
         this.singleLineError = null;
+        this.name = name;
+        this.chan = chan;
     }
 
-    private CustomCommand(String error, String singleLineError) {
+    private CustomCommand(String name, String chan, String error, String singleLineError) {
         this.items = null;
         this.error = error;
         this.singleLineError = singleLineError;
+        this.name = name;
+        this.chan = chan;
     }
     
     public String replace(Parameters parameters) {
@@ -69,6 +76,22 @@ public class CustomCommand {
         return singleLineError;
     }
     
+    public boolean hasName() {
+        return !StringUtil.isNullOrEmpty(name);
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public boolean hasChan() {
+        return !StringUtil.isNullOrEmpty(chan);
+    }
+    
+    public String getChan() {
+        return chan;
+    }
+    
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         return items.getIdentifiersWithPrefix(prefix);
     }
@@ -102,13 +125,18 @@ public class CustomCommand {
         }
         return null;
     }
-
+    
     public static CustomCommand parse(String input) {
+        return parse(null, null, input);
+    }
+
+    public static CustomCommand parse(String name, String chan, String input) {
         Parser parser = new Parser(input);
         try {
-            return new CustomCommand(parser.parse());
+            return new CustomCommand(name, chan, parser.parse());
         } catch (ParseException ex) {
             return new CustomCommand(
+                    name, chan,
                     makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, false),
                     makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, true)
             );
