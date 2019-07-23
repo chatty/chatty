@@ -37,7 +37,8 @@ public class ErrorHandler implements UncaughtExceptionHandler {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             String stacktrace = sw.toString();
-            LOGGER.severe(stacktrace);
+            LOGGER.severe(String.format("[%s/%s][%s][%s]\n%s",
+                    e.getClass(), e.getLocalizedMessage(), e.getCause(), Thread.currentThread(), stacktrace));
         } catch (Throwable ex) {
             LOGGER.severe("Exception "+ex+"\n\toccured during logging of uncaught exception: "+e.getClass().getName()+" ["+t.toString()+"]");
         }

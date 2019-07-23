@@ -32,7 +32,7 @@ public class Logging {
      */
     private static final int MAX_LOG_FILES = 3;
     
-    private final RingBuffer<LogRecord> lastMessages = new RingBuffer<>(4);
+    private final RingBuffer<LogRecord> lastMessages = new RingBuffer<>(8);
     
     public Logging(final TwitchClient client) {
         createLogDir();
