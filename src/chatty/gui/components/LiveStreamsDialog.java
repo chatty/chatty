@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 /**
  *
@@ -172,6 +173,7 @@ public class LiveStreamsDialog extends JFrame {
         setLayout(cardLayout);
         scroll = new JScrollPane(list);
         scroll.getVerticalScrollBar().setUnitIncrement(20);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         add(scroll);
         add(removedList);
         pack();
