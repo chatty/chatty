@@ -428,22 +428,20 @@ public class ChannelCompletion implements AutoCompletionServer {
         Set<User> customMatched = new HashSet<>();
         Set<User> localizedMatched = new HashSet<>();
         for (User user : users.getData()) {
-            boolean matched = false;
-            if (user.getName().startsWith(search)) {
-                matched = true;
-                regularMatched.add(user);
+            matchUser(user, search, matchedUsers, regularMatched, localizedMatched, customMatched);
+        }
+        
+        // Try to match current channel name if not matched yet
+        if (channel.getRoom().hasStream()) {
+            User channelUser = new User(channel.getStreamName(), Room.EMPTY);
+            boolean channelUserMatched = false;
+            for (User user : matchedUsers) {
+                if (user.getName().equals(channelUser.getName())) {
+                    channelUserMatched = true;
+                }
             }
-            if (!user.hasRegularDisplayNick() && StringUtil.toLowerCase(user.getDisplayNick()).startsWith(search)) {
-                matched = true;
-                localizedMatched.add(user);
-            }
-            if (user.hasCustomNickSet() && StringUtil.toLowerCase(user.getCustomNick()).startsWith(search)) {
-                matched = true;
-                customMatched.add(user);
-            }
-
-            if (matched) {
-                matchedUsers.add(user);
+            if (!channelUserMatched) {
+                matchUser(channelUser, search, matchedUsers, regularMatched, localizedMatched, customMatched);
             }
         }
         switch (main.getSettings().getString("completionSorting")) {
@@ -513,6 +511,28 @@ public class ChannelCompletion implements AutoCompletionServer {
             result.add(new CompletionItem(nick, nickInfo));
         }
         return new CompletionItems(result, "");
+    }
+    
+    private static void matchUser(User user, String search,
+            List<User> matchedUsers, Set<User> regularMatched,
+            Set<User> localizedMatched, Set<User> customMatched) {
+        boolean matched = false;
+        if (user.getName().startsWith(search)) {
+            matched = true;
+            regularMatched.add(user);
+        }
+        if (!user.hasRegularDisplayNick() && StringUtil.toLowerCase(user.getDisplayNick()).startsWith(search)) {
+            matched = true;
+            localizedMatched.add(user);
+        }
+        if (user.hasCustomNickSet() && StringUtil.toLowerCase(user.getCustomNick()).startsWith(search)) {
+            matched = true;
+            customMatched.add(user);
+        }
+
+        if (matched) {
+            matchedUsers.add(user);
+        }
     }
 
     /**
