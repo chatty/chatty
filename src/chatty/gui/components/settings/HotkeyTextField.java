@@ -4,6 +4,8 @@ package chatty.gui.components.settings;
 import chatty.util.hotkeys.Hotkey;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
@@ -12,12 +14,18 @@ import javax.swing.KeyStroke;
  * 
  * @author tduva
  */
-public class HotkeyTextField extends JTextField {
+public class HotkeyTextField extends JTextField implements StringSetting {
     
     private final HotkeyEditListener listener;
     
     private KeyStroke hotkey;
 
+    /**
+     * Create a new instance with the given size and listener.
+     * 
+     * @param size The number of columns of the JTextField
+     * @param listener Listener to be informed of hotkey changes (optional)
+     */
     public HotkeyTextField(int size, final HotkeyEditListener listener) {
         super(size);
         this.listener = listener;
@@ -27,7 +35,9 @@ public class HotkeyTextField extends JTextField {
             public void keyPressed(KeyEvent e) {
                 KeyStroke newHotkey = KeyStroke.getKeyStrokeForEvent(e);
                 setHotkey(newHotkey);
-                listener.hotkeyEntered(newHotkey);
+                if (listener != null) {
+                    listener.hotkeyEntered(newHotkey);
+                }
                 e.consume();
             }
 
@@ -43,6 +53,14 @@ public class HotkeyTextField extends JTextField {
         
         });
         setFocusTraversalKeysEnabled(false);
+        
+        // Clear hotkey option
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem item = new JMenuItem("Clear");
+        item.addActionListener(e -> { setHotkey(null); });
+        menu.add(item);
+        setComponentPopupMenu(menu);
+        setToolTipText("Open context menu for options");
     }
     
     /**
@@ -58,7 +76,9 @@ public class HotkeyTextField extends JTextField {
         } else {
             setText("No hotkey set.");
         }
-        listener.hotkeyChanged(hotkey);
+        if (listener != null) {
+            listener.hotkeyChanged(hotkey);
+        }
     }
     
     /**
@@ -69,6 +89,19 @@ public class HotkeyTextField extends JTextField {
      */
     public KeyStroke getHotkey() {
         return hotkey;
+    }
+
+    @Override
+    public String getSettingValue() {
+        if (hotkey == null) {
+            return "";
+        }
+        return hotkey.toString();
+    }
+
+    @Override
+    public void setSettingValue(String value) {
+        setHotkey(KeyStroke.getKeyStroke(value));
     }
     
     public interface HotkeyEditListener {

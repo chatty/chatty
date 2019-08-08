@@ -4402,8 +4402,8 @@ public class MainGui extends JFrame implements Runnable {
                 channels.updateUserlistSettings();
             }
             if (type == Setting.STRING) {
-                if (setting.equals("timeoutButtons")) {
-                    userInfoDialog.setUserDefinedButtonsDef((String) value);
+                if (setting.equals("timeoutButtons") || setting.equals("banReasonsHotkey")) {
+                    userInfoDialog.setUserDefinedButtonsDef(client.settings.getString("timeoutButtons"));
                 } else if (setting.equals("token")) {
                     client.api.setToken((String)value);
                 } else if (setting.equals("emoji")) {

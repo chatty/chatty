@@ -290,6 +290,7 @@ public class SettingsManager {
                 + "Delete=/delete $$(msg-id)");
         settings.addString("banReasons", "Spam\nPosting Bad Links\nBan Evasion\n"
                                 + "Hate / Harassment\nSpoilers / Backseat Gaming");
+        settings.addString("banReasonsHotkey", "");
         settings.addString("userContextMenu", "");
         settings.addString("channelContextMenu", "");
         settings.addString("streamsContextMenu", "");

@@ -324,6 +324,7 @@ public class UserInfo extends JDialog {
         pack();
         finishDialog();
         banReasons.removeCustomInput();
+        banReasons.updateHotkey();
     }
     
     protected void finishDialog() {
