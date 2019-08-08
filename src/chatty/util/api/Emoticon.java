@@ -249,7 +249,7 @@ public class Emoticon {
      * @return The URL as a String or null if none could created or not of an
      * applicable type
      */
-    protected String getEmoteUrl(int factor) {
+    public String getEmoteUrl(int factor) {
         if (type == Type.TWITCH) {
             if (numericId != ID_UNDEFINED) {
                 return getTwitchEmoteUrlById(numericId, factor);

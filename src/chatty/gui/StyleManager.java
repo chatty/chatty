@@ -50,7 +50,8 @@ public class StyleManager implements StyleServer {
             "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
-            "showImageTooltips", "highlightMatches", "nickColorCorrection",
+            "showImageTooltips", "showTooltipImages", "highlightMatches",
+            "nickColorCorrection",
             "mentions", "mentionsInfo", "markHoveredUser", "highlightMatchesAll",
             "nickColorBackground",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
@@ -161,6 +162,7 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.BAN_REASON_MESSAGE, "banReasonMessage");
         addBooleanSetting(Setting.BOT_BADGE_ENABLED, "botBadgeEnabled");
         addBooleanSetting(Setting.SHOW_TOOLTIPS, "showImageTooltips");
+        addBooleanSetting(Setting.SHOW_TOOLTIP_IMAGES, "showTooltipImages");
         addBooleanSetting(Setting.HIGHLIGHT_MATCHES_ALL, "highlightMatchesAll");
         addLongSetting(Setting.HIGHLIGHT_HOVERED_USER, "markHoveredUser");
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");

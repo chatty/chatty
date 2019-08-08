@@ -2147,7 +2147,11 @@ public class MainGui extends JFrame implements Runnable {
 
         @Override
         public void emoteClicked(Emoticon emote, MouseEvent e) {
-            openEmotesDialogEmoteDetails(emote);
+            if (e.isControlDown()) {
+                insert(Emoticons.toWriteable(emote.code), true);
+            } else {
+                openEmotesDialogEmoteDetails(emote);
+            }
         }
 
         @Override

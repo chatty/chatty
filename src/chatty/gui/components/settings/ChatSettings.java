@@ -70,9 +70,10 @@ public class ChatSettings extends SettingsPanel {
                 null), gbc);
         
         gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
-        main.add(d.addSimpleBooleanSetting("showImageTooltips",
-                "Show Emoticon/Badge tooltips",
-                null), gbc);
+        main.add(d.addSimpleBooleanSetting("showImageTooltips"), gbc);
+        
+        gbc = d.makeGbcSub(0, 7, 3, 1, GridBagConstraints.WEST);
+        main.add(d.addSimpleBooleanSetting("showTooltipImages"), gbc);
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
         

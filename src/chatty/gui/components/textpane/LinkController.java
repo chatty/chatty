@@ -87,6 +87,8 @@ public class LinkController extends MouseAdapter {
     
     private MyPopup popup = new MyPopup();
     
+    private boolean popupImagesEnabled;
+    
     private Element prevHoverElement;
     
     /**
@@ -241,7 +243,7 @@ public class LinkController extends MouseAdapter {
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
         if (emoteImage != null) {
-            popup.show(textPane, element, makeEmoticonPopupText(emoteImage), emoteImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, makeEmoticonPopupText(emoteImage, popupImagesEnabled), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
             popup.show(textPane, element, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
         } else if (replacedText != null) {
@@ -529,16 +531,20 @@ public class LinkController extends MouseAdapter {
                 if (viewPort instanceof JViewport) {
                     // Only check bounds if parent is as expected
                     Point bounds = viewPort.getLocationOnScreen();
+                    // Top
                     if (bounds.y - 20 > r.y) {
+                        r.y += labelSize.height + r.height + 4;
+                    }
+                    // Bottom
+                    if (bounds.y + viewPort.getHeight() < r.y + labelSize.height) {
                         return null;
                     }
-                    if (bounds.y + viewPort.getHeight() < r.y) {
-                        return null;
-                    }
+                    // Left
                     int overLeftEdge = (bounds.x - 5) - r.x;
                     if (overLeftEdge > 0) {
                         r.x = r.x + overLeftEdge;
                     }
+                    // Right
                     int overRightEdge = (r.x + labelSize.width) - (bounds.x + textPane.getWidth() + 10);
                     if (overRightEdge > 0) {
                         r.x = r.x - overRightEdge;
@@ -572,10 +578,14 @@ public class LinkController extends MouseAdapter {
         popup.setEnabled(enabled);
     }
     
+    public void setPopupImagesEnabled(boolean enabled) {
+        popupImagesEnabled = enabled;
+    }
+    
     private static final String POPUP_HTML_PREFIX = "<html>"
             + "<body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
     
-    private static String makeEmoticonPopupText(EmoticonImage emoticonImage) {
+    private static String makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage) {
         Emoticon emote = emoticonImage.getEmoticon();
         String emoteInfo = "";
         if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
@@ -606,9 +616,21 @@ public class LinkController extends MouseAdapter {
         if (Debugging.isEnabled("tt")) {
             emoteInfo += " ["+emoticonImage.getImageIcon().getDescription()+"]";
         }
+        
+        /**
+         * Just putting the image in HTML is not ideal, since it doesn't use the
+         * usual image caching mechanics and doesn't show the popup until the
+         * image is loaded, but usually this shouldn't be an issue.
+         */
+        String url = emote.getEmoteUrl(2);
+        String image = "";
+        if (showImage && url != null && !emote.isAnimated()) {
+            image = "<img src='"+url+"'/><br />";
+        }
         String code = emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code);
-        return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
+        return String.format("%s%s%s<br /><span style='font-weight:normal'>%s</span>",
                 POPUP_HTML_PREFIX,
+                image,
                 Helper.htmlspecialchars_encode(code),
                 emoteInfo);
     }
