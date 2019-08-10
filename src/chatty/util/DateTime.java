@@ -89,10 +89,15 @@ public class DateTime {
     }
     
     public static String formatAccountAgeCompact(long time) {
+        return formatAccountAgeCompact(time, false);
+    }
+    
+    public static String formatAccountAgeCompact(long time, boolean moreCompact) {
+        Formatting compact = moreCompact ? Formatting.COMPACT : Formatting.VERBOSE;
         if (System.currentTimeMillis() - time >= YEAR*1000) {
-            return ago(time, 0, 1, 0, Formatting.LAST_ONE_EXACT, Formatting.VERBOSE);
+            return ago(time, 0, 1, 0, Formatting.LAST_ONE_EXACT, compact);
         }
-        return ago(time, 0, 1, 0, Formatting.VERBOSE);
+        return ago(time, 0, 1, 0, compact);
     }
     
     public static String formatAccountAgeVerbose(long time) {
@@ -337,7 +342,7 @@ public class DateTime {
         //System.out.println(agoSingleVerbose(System.currentTimeMillis() ));
         //System.out.println(ago(System.currentTimeMillis() - 1000*60*60*25));
 //        System.out.println(duration(1000*(HOUR*2), 0, 0, 0, 1, Formatting.LAST_ONE_EXACT));
-        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*110)));
+//        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*110)));
         int a = 1 << 4;
         int b = 1 << 5;
         int c = 1 << 1;
@@ -356,13 +361,13 @@ public class DateTime {
 //        } catch (ParseException ex) {
 //            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-        System.out.println(TimeUnit.HOURS.toMillis(1));
-        
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 2500*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - DAY*3*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - YEAR*1*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
-        System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
+//        System.out.println(TimeUnit.HOURS.toMillis(1));
+//        
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 2500*1000));
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - DAY*3*1000));
+        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - YEAR*1*1000, true));
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
+//        System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
     }
     
 }

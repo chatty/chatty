@@ -195,7 +195,12 @@ public class UserInfoManager {
         if (isLocationUsed(targetLocation)) {
             targetLocation.translate(20, 20);
         }
-        dialog.setSize(dummyWindow.getSize());
+        if (dummyWindow.getWidth() > 0) {
+            dialog.setSize(dummyWindow.getSize());
+        } else {
+            // Default size
+            dialog.setSize(400, 360);
+        }
         dialog.setLocation(targetLocation);
         dialog.addComponentListener(closeListener);
     }

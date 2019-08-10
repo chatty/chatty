@@ -8,17 +8,25 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.colors.HtmlColors;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
 import chatty.util.commands.CustomCommand;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
@@ -32,13 +40,14 @@ public class InfoPanel extends JPanel {
     private final JPanel panel1 = new JPanel();
     private final JPanel panel2 = new JPanel();
 
-    private final JLabel numberOfLines = new JLabel("");
+    private final SizeMagicLabel numberOfLines = new SizeMagicLabel();
     private final JLabel colorInfo = new JLabel("Color: #123456");
     
-    private final JLabel createdAt = new JLabel("Loading..");
+    private final SizeMagicLabel createdAt = new SizeMagicLabel();
     private final JLabel followers = new JLabel();
-    private final JLabel firstSeen = new JLabel();
-    private final JLabel followedAt = new JLabel();
+    private final SizeMagicLabel firstSeen = new SizeMagicLabel();
+    private final SizeMagicLabel followedAt = new SizeMagicLabel();
+    private final SizeMagic infoLabelSize;
 
     private User currentUser;
     private ChannelInfo currentChannelInfo;
@@ -69,6 +78,24 @@ public class InfoPanel extends JPanel {
         Timer updateTimer = new Timer(60*1000, e -> updateTimes(false));
         updateTimer.setRepeats(true);
         updateTimer.start();
+        
+        addComponentListener(new ComponentAdapter() {
+            
+            @Override
+            public void componentResized(ComponentEvent e) {
+                // invokeLater so that size is properly updated?
+                SwingUtilities.invokeLater(() -> {
+                    infoLabelSize.check();
+                });
+            }
+            
+        });
+        
+        infoLabelSize = new SizeMagic(this, false);
+        infoLabelSize.register(firstSeen);
+        infoLabelSize.register(followedAt);
+        infoLabelSize.register(createdAt);
+        infoLabelSize.register(numberOfLines);
     }
     
     public void update(User user) {
@@ -76,8 +103,13 @@ public class InfoPanel extends JPanel {
             currentUser = user;
             showInfo();
         }
-        numberOfLines.setText("Messages: "+user.getNumberOfMessages());
+        numberOfLines.setText(new String[]{
+            "Messages: "+user.getNumberOfMessages(),
+            "Messages: "+user.getNumberOfMessages(),
+            "Msg: "+user.getNumberOfMessages()
+        });
         updateColor();
+        // Also checks labels size
         updateTimes(true);
     }
     
@@ -86,14 +118,17 @@ public class InfoPanel extends JPanel {
             return;
         }
         if (currentUser != null) {
-            firstSeen.setText(String.format("First seen: %s ago",
-                    formatAgoTime(currentUser.getCreatedAt())));
+            firstSeen.setText(new String[]{
+                String.format("First seen: %s ago", formatAgoTime(currentUser.getCreatedAt(), false)),
+                String.format("First seen: %s ago", formatAgoTime(currentUser.getCreatedAt(), true))
+            });
             firstSeen.setToolTipText(String.format("<html>First seen: %s ago (%s)"
                     + "<br /><br />"
                     + "(Could mean the first message or when the user first joined, during this Chatty session)",
                     formatAgoTimeVerbose(currentUser.getCreatedAt()),
                     DateTime.formatFullDatetime(currentUser.getCreatedAt())));
         }
+        infoLabelSize.check();
     }
     
     private void updateColor() {
@@ -160,8 +195,11 @@ public class InfoPanel extends JPanel {
     public void setChannelInfo(ChannelInfo info) {
         if (info != null) {
             currentChannelInfo = info;
-            createdAt.setText(Language.getString("userDialog.registered",
-                    formatAgoTime(info.createdAt)));
+            createdAt.setText(new String[]{
+                Language.getString("userDialog.registered",formatAgoTime(info.createdAt, false)),
+                Language.getString("userDialog.registered",formatAgoTime(info.createdAt, true)),
+                "Reg. "+formatAgoTime(info.createdAt, true)
+            });
     //        createdAt.setToolTipText(Language.getString("userDialog.registered.tip",
     //                DateTime.formatFullDatetime(info.createdAt)));
             followers.setText(Language.getString("userDialog.followers",
@@ -204,12 +242,15 @@ public class InfoPanel extends JPanel {
         } else {
             createdAt.setText(Language.getString("userDialog.error"));
         }
+        infoLabelSize.check();
     }
 
     public void setFollowInfo(Follower follower, TwitchApi.RequestResultCode result) {
         if (result == TwitchApi.RequestResultCode.SUCCESS && follower.follow_time != -1) {
-            followedAt.setText(Language.getString("userDialog.followed",
-                    formatAgoTime(follower.follow_time)));
+            followedAt.setText(new String[]{
+                Language.getString("userDialog.followed",formatAgoTime(follower.follow_time, false)),
+                Language.getString("userDialog.followed",formatAgoTime(follower.follow_time, true))
+            });
             followedAt.setToolTipText(Language.getString("userDialog.followed.tip",
                     formatAgoTimeVerbose(follower.follow_time),
                     DateTime.formatFullDatetime(follower.follow_time)));
@@ -223,10 +264,11 @@ public class InfoPanel extends JPanel {
         }
         // For button containing $(followage) and such
         owner.updateButtons();
+        infoLabelSize.check();
     }
     
-    private static String formatAgoTime(long time) {
-        return DateTime.formatAccountAgeCompact(time);
+    private String formatAgoTime(long time, boolean compact) {
+        return DateTime.formatAccountAgeCompact(time, compact);
     }
     
     private static String formatAgoTimeVerbose(long time) {
@@ -303,6 +345,172 @@ public class InfoPanel extends JPanel {
             listener.menuItemClicked(e);
         }
 
+    }
+    
+    private static class SizeMagic {
+        
+        private final Set<SizeMagicLabel> components = new HashSet<>();
+        private final Component reference;
+        private final boolean autoCheck;
+        private int currentSize = 0;
+        
+        SizeMagic(Component reference, boolean autoCheck) {
+            this.reference = reference;
+            this.autoCheck = autoCheck;
+        }
+        
+        public void register(SizeMagicLabel component) {
+            components.add(component);
+            if (autoCheck) {
+                component.setController(this);
+            }
+        }
+        
+        /**
+         * Should probably only do things that wouldn't cause this to be called
+         * again. Changing size of components shouldn't be an issue as long as
+         * the reference component doesn't automatically change size from it
+         * (although in that case this wouldn't really be necessary anyway).
+         */
+        public void check() {
+            if (reference.getWidth() == 0) {
+                return;
+            }
+            Debugging.edt();
+            Debugging.println("sizemagic", "---");
+            if (!enoughSpace()) {
+                boolean anyChanged;
+                do {
+                    currentSize++;
+                    Debugging.println("sizemagic", "- -> "+currentSize);
+                    if (!isValidSize(currentSize)) {
+                        Debugging.println("sizemagic", "invalid size");
+                        currentSize--;
+                        break;
+                    }
+                    anyChanged = setSize(currentSize);
+                    if (!anyChanged) {
+                        currentSize--;
+                        Debugging.println("sizemagic", "!anyChanged");
+                    }
+                    else if (enoughSpace()) {
+                        Debugging.println("sizemagic", "Enough");
+                        break;
+                    }
+                } while (anyChanged);
+            } else {
+                boolean anyChanged;
+                do {
+                    currentSize--;
+                    Debugging.println("sizemagic", "+ -> "+currentSize);
+                    if (!isValidSize(currentSize)) {
+                        Debugging.println("sizemagic", "invalid size");
+                        currentSize++;
+                        break;
+                    }
+                    anyChanged = setSize(currentSize);
+                    if (!anyChanged) {
+                        currentSize++;
+                        Debugging.println("sizemagic", "!anyChanged");
+                    }
+                    else if (!enoughSpace()) {
+                        // Revert change and abort
+                        currentSize++;
+                        setSize(currentSize);
+                        Debugging.println("sizemagic", "revert");
+                        break;
+                    }
+                } while (anyChanged);
+            }
+        }
+        
+        private boolean setSize(int size) {
+            boolean anyChanged = false;
+            for (SizeMagicLabel label : components) {
+                if (label.setTextSize(size)) {
+                    anyChanged = true;
+                }
+            }
+            return anyChanged;
+        }
+        
+        /**
+         * Check if at least one of the components supports the given size.
+         * 
+         * @param size
+         * @return 
+         */
+        private boolean isValidSize(int size) {
+            for (SizeMagicLabel label : components) {
+                if (label.isValidSize(size)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private boolean enoughSpace() {
+            Debugging.println("sizemagic", reference.getPreferredSize().width+" <= "+reference.getWidth());
+            return reference.getPreferredSize().width <= reference.getWidth();
+        }
+        
+    }
+    
+    private static class SizeMagicLabel extends JLabel {
+        
+        private String[] texts;
+        private int currentTextSize = 0;
+        private SizeMagic controller;
+        
+        public void setController(SizeMagic controller) {
+            this.controller = controller;
+        }
+        
+        public void setText(String[] texts) {
+            boolean textChanged = !Arrays.equals(texts, this.texts);
+            this.texts = texts;
+            if (currentTextSize >= texts.length) {
+                currentTextSize = texts.length - 1;
+            }
+            updateText();
+            if (controller != null && textChanged) {
+                controller.check();
+            }
+        }
+        
+        public void setText(String text) {
+            setText(new String[]{text});
+        }
+        
+        private void updateText() {
+            if (texts.length == 0) {
+                super.setText(null);
+            }
+            else {
+                super.setText(texts[currentTextSize]);
+            }
+        }
+        
+        public boolean setTextSize(int size) {
+            if (size >= texts.length) {
+                size = texts.length - 1;
+            }
+            if (size < 0) {
+                size = 0;
+            }
+            if (size != currentTextSize) {
+                Debugging.println("sizemagic", "%d -> %d %s", currentTextSize, size, StringUtil.join(texts));
+                currentTextSize = size;
+                updateText();
+                return true;
+            }
+            return false;
+        }
+        
+        public boolean isValidSize(int size) {
+            return size >= 0 && size < texts.length;
+        }
+        
     }
     
     protected static final CustomCommand COMMAND_FOLLOW_AGE =

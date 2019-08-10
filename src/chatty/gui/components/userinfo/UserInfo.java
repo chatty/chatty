@@ -66,7 +66,7 @@ public class UserInfo extends JDialog {
     private float fontSize;
     
     private final UserInfoRequester requester;
-   
+    
     public UserInfo(final Window parent, UserInfoListener listener,
             UserInfoRequester requester,
             Settings settings,
@@ -140,13 +140,17 @@ public class UserInfo extends JDialog {
         gbc.insets = new Insets(0, 0, 0, 0);
         add(topPanel, gbc);
         
+        pastMessages.setRows(4);
+        pastMessages.setPreferredSize(pastMessages.getPreferredSize());
         JScrollPane scrollPane = new JScrollPane(pastMessages);
-        scrollPane.setPreferredSize(new Dimension(300,200));
+        scrollPane.setPreferredSize(scrollPane.getPreferredSize());
+        pastMessages.setRows(0);
+        pastMessages.setPreferredSize(null);
         gbc = makeGbc(0,4,3,1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 0.9;
-        add(scrollPane,gbc);
+        add(scrollPane, gbc);
         
         gbc = makeGbc(0,5,3,1);
         gbc.insets = new Insets(0,0,0,0);
@@ -183,6 +187,7 @@ public class UserInfo extends JDialog {
             
         });
         gbc = makeGbc(0,6,3,1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(2, 0, 0, 0);
         add(infoPanel,gbc);
         
@@ -301,7 +306,6 @@ public class UserInfo extends JDialog {
     public void setFontSize(float size) {
         if (size != fontSize) {
             GuiUtil.setFontSize(size, this);
-            pack();
             finishDialog();
         }
         this.fontSize = size;
@@ -321,7 +325,13 @@ public class UserInfo extends JDialog {
         // Pack because otherwise the dialog won't be sized correctly when
         // displaying it for the first time (not sure why)
         banReasons.addCustomInput();
-        pack();
+        /**
+         * TODO: Want to remove pack() because it makes the window smaller when
+         * manually sized large, however will have to test if removing it has
+         * any negative effects (which maybe could be circumvented somehow, e.g.
+         * revalidate() or something).
+         */
+//        pack();
         finishDialog();
         banReasons.removeCustomInput();
         banReasons.updateHotkey();
