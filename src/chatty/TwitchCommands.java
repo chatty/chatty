@@ -80,7 +80,10 @@ public class TwitchCommands {
         if (command.equals("r9koff")) {
             command = "r9kbetaoff";
         }
-        if (SIMPLE_COMMANDS.contains(command)) {
+        if (command.equals("host") && parameter == null) {
+            commandHostmode2(Helper.toChannel(c.getUsername()), Helper.toStream(channel));
+        }
+        else if (SIMPLE_COMMANDS.contains(command)) {
             // Simple commands that don't require any special handling for
             // decent output
             if (onChannel(channel, true)) {

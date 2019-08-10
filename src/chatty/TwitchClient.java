@@ -921,7 +921,7 @@ public class TwitchClient {
             commandReconnect();
         }
         else if (command.equals("connection")) {
-            g.printLine(c.getConnectionInfo());
+            g.printLine(room, c.getConnectionInfo());
         }
         else if (command.equals("join")) {
             commandJoinChannel(parameter);
@@ -1016,9 +1016,9 @@ public class TwitchClient {
         }
         else if (command.equals("echo")) {
             if (parameter != null) {
-                g.printLine(parameter);
+                g.printLine(room, parameter);
             } else {
-                g.printLine("Invalid parameters: /echo <message>");
+                g.printLine(room, "Invalid parameters: /echo <message>");
             }
         }
         else if (command.equals("echoall")) {
