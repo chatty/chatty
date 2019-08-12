@@ -108,6 +108,10 @@ public interface AutoCompletionServer {
             items.addAll(other.items);
         }
         
+        public boolean isEmpty() {
+            return items == null || items.isEmpty();
+        }
+        
     }
     
     public static class CompletionItem implements Comparable<CompletionItem> {

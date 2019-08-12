@@ -304,6 +304,12 @@ public class AutoCompletion {
     
     private String commonPrefix;
     
+    /**
+     * If true, the next result requested will be the first result since this
+     * completion has started.
+     */
+    private boolean firstResult;
+    
     //------------------
     // Restore / Cancel
     //------------------
@@ -407,6 +413,7 @@ public class AutoCompletion {
         resultsWord = null;
         resultsPrefix = null;
         initialStartPos = startPos;
+        firstResult = true;
         updateSearch();
     }
     
@@ -428,6 +435,11 @@ public class AutoCompletion {
             return;
         }
         results = server.getCompletionItems(type, prefix, word);
+        if (results.isEmpty() && firstResult) {
+            // End so that another "start" type can be used if no results
+            // (e.g. TAB -> no results, Shift-TAB -> results)
+            end();
+        }
         if (completeToCommonPrefix && results.items.size() > 1 && showPopup) {
             commonPrefix = findPrefixCommonToAll(results.items);
             if (commonPrefix.length() - word.length() == 0 && w.isShowing()) {
@@ -439,6 +451,7 @@ public class AutoCompletion {
         resultsWord = word;
         resultsPrefix = prefix;
         resultIndex = -1;
+        firstResult = false;
         showPopup();
     }
     
