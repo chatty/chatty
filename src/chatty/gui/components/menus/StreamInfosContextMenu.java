@@ -20,7 +20,8 @@ public class StreamInfosContextMenu extends ContextMenu {
     private static final String SORT_SUBMENU = Language.getString("streams.cm.menu.sortBy");
     private static final String SORT_GROUP = "sort";
     
-    public StreamInfosContextMenu(List<StreamInfo> selected, boolean liveStreams) {
+    public StreamInfosContextMenu(List<StreamInfo> selected, boolean liveStreams,
+            boolean favFirst) {
         this.streamInfos = selected;
         List<String> streams = new ArrayList<>();
         for (StreamInfo info : selected) {
@@ -42,6 +43,10 @@ public class StreamInfosContextMenu extends ContextMenu {
                 addRadioItem("sort_"+s.key, s.getLabel(), SORT_GROUP, SORT_SUBMENU);
                 getItem("sort_"+s.key).setToolTipText(s.getToolTipText());
             }
+            addSeparator(SORT_SUBMENU);
+            addCheckboxItem("sortOption_favFirst", Language.getString("streams.sortingOption.fav"), SORT_SUBMENU, favFirst);
+            getItem("sortOption_favFirst").setToolTipText(Language.getString("streams.sortingOption.fav.tip"));
+            
             addItem("showRemovedList", Language.getString("streams.cm.removedStreams"));
             addSeparator();
             addItem("manualRefreshStreams", Language.getString("streams.cm.refresh"));

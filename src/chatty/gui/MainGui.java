@@ -253,7 +253,7 @@ public class MainGui extends JFrame implements Runnable {
         GuiUtil.installEscapeCloseOperation(favoritesDialog);
         joinDialog = new JoinDialog(this);
         GuiUtil.installEscapeCloseOperation(joinDialog);
-        liveStreamsDialog = new LiveStreamsDialog(contextMenuListener);
+        liveStreamsDialog = new LiveStreamsDialog(contextMenuListener, client.channelFavorites);
         setLiveStreamsWindowIcons();
         //GuiUtil.installEscapeCloseOperation(liveStreamsDialog);
         EmoteContextMenu.setEmoteManager(emoticons);
@@ -1217,7 +1217,10 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateLiveStreamsDialog() {
-        liveStreamsDialog.setSorting(client.settings.getString("liveStreamsSorting"));
+        liveStreamsDialog.setSorting(
+                client.settings.getString("liveStreamsSorting"),
+                client.settings.getBoolean("liveStreamsSortingFav")
+        );
     }
     
     private void updateHistoryRange() {
@@ -1815,6 +1818,10 @@ public class MainGui extends JFrame implements Runnable {
                 client.api.manualRefreshStreams();
                 state.update(true);
             }
+            if (cmd.equals("sortOption_favFirst")) {
+                JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+                client.settings.setBoolean("liveStreamsSortingFav", item.isSelected());
+            }
         }
         
         /**
@@ -1890,7 +1897,25 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("join")) {
                 makeVisible();
                 client.joinChannels(new HashSet<>(channels));
-            } 
+            }
+            else if (cmd.equals("favoriteChannel")) {
+                for (String chan : channels) {
+                    client.channelFavorites.addFavorite(chan);
+                }
+                /**
+                 * Manually update data when changed from the outside, instead
+                 * of just using ChannelFavorites change listener (since changes
+                 * through the favoritesDialog itself get handled differently
+                 * but would also cause additional updates).
+                 */
+                favoritesDialog.updateData();
+            }
+            else if (cmd.equals("unfavoriteChannel")) {
+                for (String chan : channels) {
+                    client.channelFavorites.removeFavorite(chan);
+                }
+                favoritesDialog.updateData();
+            }
         }
         
         private void streamStuff(ActionEvent e, Collection<String> streams) {
@@ -4436,7 +4461,8 @@ public class MainGui extends JFrame implements Runnable {
                     emotesDialog.setEmoteScale(((Long)value).intValue());
                 }
             }
-            if (setting.equals("liveStreamsSorting")) {
+            if (setting.equals("liveStreamsSorting")
+                    || setting.equals("liveStreamsSortingFav")) {
                 updateLiveStreamsDialog();
             }
             if (setting.equals("historyRange")) {

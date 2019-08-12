@@ -1,7 +1,9 @@
 
 package chatty.gui.components;
 
+import chatty.ChannelFavorites;
 import chatty.Chatty;
+import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LiveStreamsList.ListDataChangedListener;
 import chatty.gui.components.menus.ContextMenuAdapter;
@@ -87,7 +89,8 @@ public class LiveStreamsDialog extends JFrame {
     
     private boolean liveStreamListSelected = true;
     
-    public LiveStreamsDialog(ContextMenuListener listener) {
+    public LiveStreamsDialog(ContextMenuListener listener,
+            ChannelFavorites favs) {
         
         setTitle("Live Streams");
         setPreferredSize(new Dimension(280,350));
@@ -101,10 +104,10 @@ public class LiveStreamsDialog extends JFrame {
             }
         };
         // Create list
-        list = new LiveStreamsList(localLiveStreamListener);
+        list = new LiveStreamsList(localLiveStreamListener, favs);
         list.addContextMenuListener(listener);
         list.addContextMenuListener(localCml);
-        setSorting(Sorting.RECENT);
+        setSorting(Sorting.RECENT, true);
         list.addListDataChangedListener(new ListDataChangedListener() {
 
             @Override
@@ -195,10 +198,10 @@ public class LiveStreamsDialog extends JFrame {
      * 
      * @param sorting 
      */
-    public void setSorting(String sorting) {
+    public void setSorting(String sorting, boolean favFirst) {
         Sorting s = Sorting.fromKey(sorting);
         if (s != null) {
-            setSorting(s);
+            setSorting(s, favFirst);
         }
     }
     
@@ -216,10 +219,10 @@ public class LiveStreamsDialog extends JFrame {
      * 
      * @param mode 
      */
-    private void setSorting(Sorting s) {
+    private void setSorting(Sorting s, boolean favFirst) {
         titleSorting = s.getLabel();
         updateTitle();
-        list.setComparator(s);
+        list.setComparator(s, favFirst);
     }
     
     private void updateTitle() {

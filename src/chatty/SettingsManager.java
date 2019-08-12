@@ -395,6 +395,7 @@ public class SettingsManager {
         settings.addMap("bufferSizes", new HashMap<>(), Setting.LONG);
 
         settings.addString("liveStreamsSorting", "recent");
+        settings.addBoolean("liveStreamsSortingFav", true);
         settings.addLong("historyRange", 0);
         settings.addBoolean("historyVerticalZoom", false);
 

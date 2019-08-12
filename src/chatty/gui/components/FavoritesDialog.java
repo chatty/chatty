@@ -341,6 +341,12 @@ public class FavoritesDialog extends JDialog {
         return result;
     }
     
+    public void updateData() {
+        if (isVisible()) {
+            data.setData(favorites.getAll());
+        }
+    }
+    
     /**
      * Sets the chosen channel(s) to the input box.
      * 

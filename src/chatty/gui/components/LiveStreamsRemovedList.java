@@ -99,7 +99,7 @@ public class LiveStreamsRemovedList extends JPanel {
             for (RemovedListItem item : selectedItems) {
                 selected.add(item.getStreamInfo());
             }
-            StreamInfosContextMenu m = new StreamInfosContextMenu(selected, false);
+            StreamInfosContextMenu m = new StreamInfosContextMenu(selected, false, false);
             for (ContextMenuListener cml : contextMenuListeners) {
                 m.addContextMenuListener(cml);
             }

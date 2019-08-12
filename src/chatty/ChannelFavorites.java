@@ -28,6 +28,8 @@ public class ChannelFavorites {
      * they can be looked-up by channel in this Map for easier editing.
      */
     private final Map<String, Favorite> data = new HashMap<>();
+    
+    private final Set<ChangeListener> listeners = new HashSet<>();
 
     /**
      * Construct a new object, requires the Settings object to work on. Deletes
@@ -210,7 +212,11 @@ public class ChannelFavorites {
      */
     public synchronized Favorite remove(Favorite favorite) {
         if (data.containsKey(favorite.getChannel())) {
-            return data.remove(favorite.getChannel());
+            Favorite removed = data.remove(favorite.getChannel());
+            if (removed.isFavorite) {
+                informListeners();
+            }
+            return removed;
         }
         return null;
     }
@@ -227,7 +233,11 @@ public class ChannelFavorites {
      * @return The Favorite object itself
      */
     private Favorite set(Favorite fav) {
-        data.put(fav.getChannel(), fav);
+        Favorite prev = data.put(fav.getChannel(), fav);
+        if ((prev == null && fav.isFavorite)
+                || (prev != null && fav.isFavorite != prev.isFavorite)) {
+            informListeners();
+        }
         return fav;
     }
     
@@ -245,6 +255,7 @@ public class ChannelFavorites {
                 data.put(fav.room.getChannel(), fav);
             }
         }
+        informListeners();
     }
     
     private synchronized void saveToSettings() {
@@ -330,6 +341,37 @@ public class ChannelFavorites {
         public String toString() {
             return room.toString();
         }
+        
+    }
+    
+    //===========
+    // Listeners
+    //===========
+    
+    public synchronized void addChangeListener(ChangeListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+    
+    public synchronized void removeChangeListener(ChangeListener listener) {
+        listeners.remove(listener);
+    }
+    
+    private void informListeners() {
+        for (ChangeListener listener : listeners) {
+            listener.favoritesChanged();
+        }
+    }
+    
+    public interface ChangeListener {
+        
+        /**
+         * When actual favorites (not history) change (added/removed).
+         * 
+         * This will be run in the ChannelFavorites instance lock.
+         */
+        public void favoritesChanged();
         
     }
     

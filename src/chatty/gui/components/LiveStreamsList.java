@@ -1,6 +1,8 @@
 
 package chatty.gui.components;
 
+import chatty.ChannelFavorites;
+import chatty.ChannelFavorites.ChangeListener;
 import chatty.Helper;
 import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -14,16 +16,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
@@ -43,6 +50,12 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private final SortedListModel<StreamInfo> data;
     private final List<ContextMenuListener> contextMenuListeners;
     private final LiveStreamListener liveStreamListener;
+    
+    /**
+     * Holds a copy of the current channel favorites.
+     */
+    private final Set<String> favs = new HashSet<>();
+    
     /**
      * How long after the last stream status change, that it uses the TITLE_NEW
      * border.
@@ -53,16 +66,18 @@ public class LiveStreamsList extends JList<StreamInfo> {
     
     private JPopupMenu lastContextMenu;
     private LiveStreamsDialog.Sorting currentSorting;
+    private boolean favFirst;
     
     private final ElapsedTime lastCheckedET = new ElapsedTime();
     private final ElapsedTime lastRepaintedET = new ElapsedTime();
     
     private final Timer resortTimer;
     
-    public LiveStreamsList(LiveStreamListener liveStreamListener) {
+    public LiveStreamsList(LiveStreamListener liveStreamListener,
+            ChannelFavorites channelFavorites) {
         data = new SortedListModel<>();
         setModel(data);
-        setCellRenderer(new MyCellRenderer());
+        setCellRenderer(new MyCellRenderer(favs));
         contextMenuListeners = new ArrayList<>();
         this.liveStreamListener = liveStreamListener;
         addListeners();
@@ -74,6 +89,24 @@ public class LiveStreamsList extends JList<StreamInfo> {
         resortTimer = new Timer(50, e -> {
             resortTimer();
         });
+        
+        ChangeListener favChangeListener = () -> {
+            // Listener may be in ChannelFavorites lock, but calling it should
+            // be fine (same lock)
+            Set<String> favorites = channelFavorites.getFavorites();
+            SwingUtilities.invokeLater(() -> {
+                // Make sure to run in EDT for updating
+                favs.clear();
+                for (String chan : favorites) {
+                    // Convert for easier usage
+                    favs.add(Helper.toStream(chan));
+                }
+                resort();
+            });
+        };
+        channelFavorites.addChangeListener(favChangeListener);
+        // Init once
+        favChangeListener.favoritesChanged();
     }
 
     public void addContextMenuListener(ContextMenuListener listener) {
@@ -88,9 +121,29 @@ public class LiveStreamsList extends JList<StreamInfo> {
         }
     }
     
-    public void setComparator(LiveStreamsDialog.Sorting s) {
-        data.setComparator(s.comparator);
+    public void setComparator(LiveStreamsDialog.Sorting s, boolean favFirst) {
+        Comparator<StreamInfo> comp = s.comparator;
+        if (favFirst) {
+            comp = new Comparator<StreamInfo>() {
+
+                @Override
+                public int compare(StreamInfo o1, StreamInfo o2) {
+                    boolean fav1 = favs.contains(o1.stream);
+                    boolean fav2 = favs.contains(o2.stream);
+                    if (fav1 && !fav2) {
+                        return -1;
+                    }
+                    if (fav2 && !fav1) {
+                        return 1;
+                    }
+                    return s.comparator.compare(o1, o2);
+                }
+            };
+        }
+        data.setComparator(comp);
+        resort();
         currentSorting = s;
+        this.favFirst = favFirst;
     }
     
     /**
@@ -124,16 +177,21 @@ public class LiveStreamsList extends JList<StreamInfo> {
             data.remove(info);
             itemRemoved(info);
         }
-        resortTimer.start();
+        resort();
         listDataChanged();
     }
     
+    private void resort() {
+        resortTimer.start();
+    }
+    
     private void resortTimer() {
-        // TODO: This is not really a fix, but until I figure out how to
-        // reproduce the error, I'd rather have it not properly sorted sometimes
-        // (plus depending on what the cause is, e.g. modification of the
-        // StreamStatus objects while they are being sorted, this might prevent
-        // errors sometimes).
+        /**
+         * This is not really a fix, but modification of the StreamStatus
+         * objects while they are being sorted may be annoying to change, and
+         * if the sorting is indeed wrong it should fix itself on the next
+         * update.
+         */
         try {
             data.resort();
         } catch (Exception ex) {
@@ -246,7 +304,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
 
         JListActionHelper.install(this, (a, l, s) -> {
             if (a == Action.CONTEXT_MENU) {
-                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true);
+                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true, favFirst);
                 m.setSorting(currentSorting.key);
                 for (ContextMenuListener cml : contextMenuListeners) {
                     m.addContextMenuListener(cml);
@@ -297,12 +355,16 @@ public class LiveStreamsList extends JList<StreamInfo> {
         private static final Border TITLE_NEW =
                 BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK);
         
-        private final JTextArea area;
+        private final ImageIcon favIcon = new ImageIcon(getClass().getResource("/chatty/gui/star.png"));
         
-        public MyCellRenderer() {
+        private final JTextArea area;
+        private final Set<String> favs;
+        
+        public MyCellRenderer(Set<String> favs) {
             area = new JTextArea();
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
+            this.favs = favs;
         }
         
         @Override
@@ -338,8 +400,35 @@ public class LiveStreamsList extends JList<StreamInfo> {
             if (info.getStatusChangeTimeAgo() < STREAMINFO_NEW_TIME) {
                 titleBaseBorder = TITLE_NEW;
             }
-            Border titleBorder = BorderFactory.createTitledBorder(titleBaseBorder,
+            TitledBorder titleBorder = BorderFactory.createTitledBorder(titleBaseBorder,
                     title, TitledBorder.CENTER, TitledBorder.TOP, null, null);
+            
+            if (favs.contains(info.stream)) {
+                try {
+                    /**
+                     * https://stackoverflow.com/a/38052703/2375667
+                     * 
+                     * Reflection seems kind of ugly, but short of implementing
+                     * a replacement for TitledBorder this seems the most
+                     * practical. Overwriting the paintBorder() method is
+                     * possible, but the positioning of the image and the text
+                     * isn't as good when it's just slapped on there afterwards.
+                     */
+                    // Get the field declaration
+                    Field f = TitledBorder.class.getDeclaredField("label");
+                    // Make it accessible (it normally is private)
+                    f.setAccessible(true);
+                    // Get the label
+                    JLabel borderLabel = (JLabel) f.get(titleBorder);
+                    // Put the field accessibility back to default
+                    f.setAccessible(false);
+                    // Set the icon and do whatever you want with your label
+                    borderLabel.setIcon(favIcon);
+                } catch (Exception ex) {
+                    // Fallback when the reflection doesn't work
+                    titleBorder.setTitle("⭐"+titleBorder.getTitle());
+                }
+            }
             Border innerBorder = BorderFactory.createCompoundBorder(titleBorder, PADDING);
             Border border = BorderFactory.createCompoundBorder(MARGIN, innerBorder);
             area.setBorder(border);

@@ -26,7 +26,6 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
      */
     public void setComparator(Comparator<? super E> c) {
         comparator = c;
-        resort();
     }
     
     public void resort() {
