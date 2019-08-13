@@ -333,7 +333,8 @@ public class GuiUtil {
                 Thread.sleep(10);
                 window.setLocation(original);
             } catch (InterruptedException ex) {
-                Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
+                Thread.currentThread().interrupt();
+                // No action required
             }
         }
     }

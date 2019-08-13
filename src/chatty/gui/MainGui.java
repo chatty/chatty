@@ -83,7 +83,9 @@ import chatty.util.settings.SettingsListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
@@ -1484,6 +1486,8 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("unhandledException")) {
                 String[] array = new String[0];
                 String a = array[1];
+            } else if (cmd.equals("errorTest")) {
+                Logger.getLogger(MainGui.class.getName()).log(Level.SEVERE, null, new ArrayIndexOutOfBoundsException(2));
             } else if (cmd.equals("addressbook")) {
                 openAddressbook(null);
             } else if (cmd.equals("srlRaces")) {
@@ -4672,7 +4676,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                int result = errorMessage.show(error, previous);
+                int result = errorMessage.show(error, previous, client.getOpenChannels().size());
                 if (result == ErrorMessage.QUIT) {
                     exit();
                 }

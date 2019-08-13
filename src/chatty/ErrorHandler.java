@@ -34,9 +34,7 @@ public class ErrorHandler implements UncaughtExceptionHandler {
             return;
         }
         try {
-            StringWriter sw = new StringWriter();
-            e.printStackTrace(new PrintWriter(sw));
-            String stacktrace = sw.toString();
+            String stacktrace = Logging.getStacktrace(e);
             LOGGER.severe(String.format("[%s/%s][%s][%s]\n%s",
                     e.getClass(), e.getLocalizedMessage(), e.getCause(), Thread.currentThread(), stacktrace));
         } catch (Throwable ex) {

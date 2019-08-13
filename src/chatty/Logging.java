@@ -3,6 +3,8 @@ package chatty;
 
 import chatty.util.RingBuffer;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -112,14 +114,45 @@ public class Logging {
 
         @Override
         public String format(LogRecord record) {
-            return String.format("[%1$tF %1$tT/%1$tL %5$s] %2$s [%3$s/%4$s]\n",
-                    new Date(record.getMillis()),
-                    record.getMessage(),
-                    record.getSourceClassName(),
-                    record.getSourceMethodName(),
-                    record.getLevel().getName());
+            return formatRecord(record);
         }
         
+    }
+    
+    public static String formatRecord(LogRecord record) {
+        return String.format("[%1$tF %1$tT/%1$tL %5$s] %2$s%6$s [%3$s/%4$s]\n",
+                new Date(record.getMillis()),
+                record.getMessage(),
+                record.getSourceClassName(),
+                record.getSourceMethodName(),
+                record.getLevel().getName(),
+                getStacktraceForLogging(record.getThrown()));
+    }
+    
+    public static String formatRecordCompact(LogRecord record) {
+        return String.format("[%1$tT/%1$tL] %2$s%5$s [%3$s/%4$s]\n",
+                new Date(record.getMillis()),
+                record.getMessage(),
+                record.getSourceClassName(),
+                record.getSourceMethodName(),
+                getStacktraceForLogging(record.getThrown()));
+    }
+    
+    public static String getStacktrace(Throwable t) {
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
+    
+    public static String getStacktraceForLogging(Throwable t) {
+        if (t != null) {
+            try {
+                return "\n:"+getStacktrace(t);
+            } catch (Exception ex) {
+                return "\n:Error getting stacktrace";
+            }
+        }
+        return "";
     }
     
     static class FileFilter implements Filter {

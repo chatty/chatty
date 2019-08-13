@@ -188,6 +188,7 @@ public class MainMenu extends JMenuBar {
         extra.add(debugOptions);
         if (Chatty.DEBUG) {
             addItem(extra,"unhandledException", "Unhandled Exception");
+            addItem(extra,"errorTest", "Error Test");
         }
         addItem(extra,"debug","Debug window");
         

@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -221,11 +219,12 @@ public class AutoCompletionWindow {
          * Using getMagicCaretPosition() to get the location didn't always seem
          * to work, possibly depending on timing?
          */
-        Rectangle r = null;
+        Rectangle r;
         try {
             r = textField.modelToView(index);
         } catch (BadLocationException ex) {
-            Logger.getLogger(AutoCompletion.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("null lol");
+            return;
         }
 
         // No location found, so don't show window
