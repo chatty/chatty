@@ -466,7 +466,11 @@ public class Emoticon {
     }
     
     public boolean hasGlobalEmoteset() {
-        return this.emoteSet == SET_GLOBAL || this.emoteSet == SET_UNDEFINED;
+        return isGlobalEmoteset(emoteSet);
+    }
+    
+    public static boolean isGlobalEmoteset(int emoteset) {
+        return emoteset == SET_GLOBAL || emoteset == SET_UNDEFINED;
     }
     
     /**

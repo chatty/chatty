@@ -130,7 +130,8 @@ public class UrlRequest {
                     (encoding != null ? ", " + encoding : ""),
                     url));
         } catch (IOException ex) {
-            LOGGER.warning(label+" Request Error [" + url + "] (" + ex + ")");
+            LOGGER.warning(String.format("!%s (%s): %s",
+                    label, ex, url));
         } finally {
             if (connection != null) {
                 connection.disconnect();

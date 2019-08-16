@@ -62,7 +62,8 @@ public class TwitchEmotes {
     }
     
     public void load() {
-        cache.asyncLoad();
+        // Disabled
+        //cache.asyncLoad();
     }
     
     public void refresh() {

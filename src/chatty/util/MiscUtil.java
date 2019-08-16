@@ -245,4 +245,22 @@ public class MiscUtil {
         return result;
     }
     
+    /**
+     * Add items from the source Set to the target Set until the target contains
+     * limit entries or the source is exhausted.
+     * 
+     * @param <T>
+     * @param source The Set to take items from (only read), must be non-null
+     * @param target The Set to add items to, must be non-null
+     * @param limit The amount of items that are at most allowed to be in target
+     */
+    public static <T> void addLimited(Set<T> source, Set<T> target, int limit) {
+        for (T item : source) {
+            if (target.size() >= limit) {
+                return;
+            }
+            target.add(item);
+        }
+    }
+    
 }

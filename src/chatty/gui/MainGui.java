@@ -2521,7 +2521,8 @@ public class MainGui extends JFrame implements Runnable {
     
     private void openEmotesDialogChannelEmotes(String channel) {
         client.requestChannelEmotes(channel);
-        openEmotesDialog(channel);
+        openEmotesDialog(null);
+        emotesDialog.setTempStream(channel);
         emotesDialog.showChannelEmotes();
     }
     

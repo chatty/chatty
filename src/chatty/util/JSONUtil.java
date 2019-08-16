@@ -60,6 +60,14 @@ public class JSONUtil {
         return errorValue;
     }
     
+    public static int parseInteger(JSONObject data, Object key, int errorValue) {
+        try {
+            return Integer.parseInt((String)data.get(key));
+        } catch (Exception ex) {
+            return errorValue;
+        }
+    }
+    
     public static long getLong(JSONObject data, Object key, long errorValue) {
         Object value = data.get(key);
         if (value != null && value instanceof Number) {

@@ -44,6 +44,7 @@ import chatty.util.StringUtil;
 import chatty.util.TwitchEmotes;
 import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.TwitchEmotes.TwitchEmotesListener;
+import chatty.util.TwitchEmotesApi;
 import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChatInfo;
@@ -229,6 +230,7 @@ public class TwitchClient {
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
         twitchemotes = new TwitchEmotes(new TwitchemotesListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener());
+        TwitchEmotesApi.api.setTwitchApi(api);
         
         Language.setLanguage(settings.getString("language"));
         

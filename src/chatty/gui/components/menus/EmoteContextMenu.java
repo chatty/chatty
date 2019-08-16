@@ -7,6 +7,8 @@ import static chatty.gui.components.menus.ContextMenuHelper.ICON_IMAGE;
 import static chatty.gui.components.menus.ContextMenuHelper.ICON_WEB;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotesApi;
+import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
@@ -18,6 +20,8 @@ import java.awt.event.ActionEvent;
  * @author tduva
  */
 public class EmoteContextMenu extends ContextMenu {
+    
+    private static final Object unique = new Object();
     
     private static Emoticons emoteManager;
     private final ContextMenuListener listener;
@@ -79,25 +83,16 @@ public class EmoteContextMenu extends ContextMenu {
             addItem("", "Not found favorite");
         }
         
-        // Emoteset information
-        if (emote.emoteSet > Emoticon.SET_GLOBAL) {
+        if (!emote.hasGlobalEmoteset()) {
             addSeparator();
-            if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
-                addItem("twitchturbolink", "Turbo Emoticon");
-            } else if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
-                addItem("", emote.getEmotesetInfo()+" Emoticon");
-            } else {
-                addItem("", Language.getString("emoteCm.subEmote"));
+            EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, null, emote);
+            addItem("", TwitchEmotesApi.getEmoteType(emote, info, false));
+            if (info !=  null && info.stream_name != null && !info.stream_name.equals("Twitch")) {
+                emote.setStream(info.stream_name);
                 addStreamSubmenu(emote);
             }
-            addItem("", "Emoteset: "+emote.emoteSet+
-                    (emote.hasEmotesetInfo() && emote.hasStreamSet() ? " ("+emote.getEmotesetInfo()+")" : ""));
         }
-        if (emote.emoteSet == Emoticon.SET_UNKNOWN) {
-            addSeparator();
-            addItem("", "Emoteset: unknown");
-        }
-        
+
         addSeparator();
         addItem("emoteDetails", Language.getString("emoteCm.showDetails"));
         

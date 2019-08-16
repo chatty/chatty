@@ -18,7 +18,10 @@ import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
 import chatty.util.Debugging;
+import chatty.util.ElapsedTime;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotesApi;
+import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
@@ -34,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -235,7 +239,7 @@ public class LinkController extends MouseAdapter {
         
         JTextPane textPane = (JTextPane)e.getSource();
         if (Debugging.isEnabled("attr")) {
-            popup.show(textPane, element, debugElement(element), -1);
+            popup.show(textPane, element, () -> debugElement(element), -1);
             return;
         }
         
@@ -243,11 +247,11 @@ public class LinkController extends MouseAdapter {
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
         if (emoteImage != null) {
-            popup.show(textPane, element, makeEmoticonPopupText(emoteImage, popupImagesEnabled), emoteImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, () -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, popup), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
-            popup.show(textPane, element, makeUsericonPopupText(usericon), usericon.image.getIconWidth());
+            popup.show(textPane, element, () -> makeUsericonPopupText(usericon), usericon.image.getIconWidth());
         } else if (replacedText != null) {
-            popup.show(textPane, element, makeReplacementPopupText(replacedText), 1);
+            popup.show(textPane, element, () -> makeReplacementPopupText(replacedText), 1);
         } else {
             popup.hide();
         }
@@ -437,6 +441,7 @@ public class LinkController extends MouseAdapter {
         private String text;
         private Element element;
         private Point position;
+        private boolean textChanged;
 
         public MyPopup() {
             showTimer = new Timer(SHOW_DELAY, e -> {
@@ -449,7 +454,7 @@ public class LinkController extends MouseAdapter {
             this.enabled = enabled;
         }
         
-        public void show(JTextPane textPane, Element element, String text, int sourceWidth) {
+        public void show(JTextPane textPane, Element element, Supplier<String> textProvider, int sourceWidth) {
             if (!enabled) {
                 return;
             }
@@ -461,7 +466,7 @@ public class LinkController extends MouseAdapter {
             }
 
             this.textPane = textPane;
-            this.text = text;
+            this.text = textProvider.get();
             this.sourceWidth = sourceWidth;
             this.element = element;
             
@@ -485,12 +490,18 @@ public class LinkController extends MouseAdapter {
             }
         }
         
+        public void setText(String newText) {
+            this.text = newText;
+            this.textChanged = true;
+            update();
+        }
+        
         public void update() {
             if (popup != null) {
                 Point newPos = determinePosition();
                 if (newPos == null) {
                     hide();
-                } else if (!newPos.equals(position)) {
+                } else if (!newPos.equals(position) || textChanged) {
                     hide();
                     showNow();
                 }
@@ -502,6 +513,7 @@ public class LinkController extends MouseAdapter {
                 return;
             }
             label.setText(text);
+            textChanged = false;
 
             Point p = determinePosition();
             if (p != null) {
@@ -585,36 +597,60 @@ public class LinkController extends MouseAdapter {
     private static final String POPUP_HTML_PREFIX = "<html>"
             + "<body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
     
-    private static String makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage) {
+    private static final Object unique = new Object();
+    
+    private static String makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage, MyPopup popup) {
+        Debugging.println("emoteinfo", "makePopupText %s", emoticonImage.getEmoticon());
         Emoticon emote = emoticonImage.getEmoticon();
-        String emoteInfo = "";
-        if (!emote.hasStreamSet() && emote.hasEmotesetInfo()) {
-            emoteInfo = emote.getEmotesetInfo() + " Emoticon";
-        } else if (emote.subType == Emoticon.SubType.CHEER) {
-            emoteInfo = "Cheering Emote";
-            if (emote.hasStreamRestrictions()) {
-                emoteInfo += " Local";
+        EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, result -> {
+            SwingUtilities.invokeLater(() -> {
+                Debugging.println("emoteinfo", "Request result: %s", result);
+                popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result));
+            });
+        }, emote);
+        return makeEmoticonPopupText2(emoticonImage, showImage, info);
+        
+        
+//        if (emote.type == Emoticon.Type.TWITCH && !emote.hasGlobalEmoteset()) {
+//            EmotesetInfo emoteInfo = TwitchEmotesApi.api.requestById(result -> {
+//                SwingUtilities.invokeLater(() -> {
+//                    System.out.println(result);
+//                    popup.setText(makeEmoticonPopupText2(emoticonImage, result));
+//                });
+//            }, emoticonImage.getEmoticon().numericId);
+//            return makeEmoticonPopupText2(emoticonImage, emoteInfo);
+//        } else {
+//            return makeEmoticonPopupText2(emoticonImage, null);
+//        }
+    }
+    
+    private static String makeEmoticonPopupText2(EmoticonImage emoticonImage, boolean showImage, EmotesetInfo emoteInfo) {
+        Emoticon emote = emoticonImage.getEmoticon();
+        String result = "";
+        if (emote.type == Emoticon.Type.TWITCH) {
+            if (emote.subType == Emoticon.SubType.CHEER) {
+                result = "Cheering Emote";
+                if (emote.hasStreamRestrictions()) {
+                    result += " Local";
+                } else {
+                    result += " Global";
+                }
             } else {
-                emoteInfo += " Global";
+                result = TwitchEmotesApi.getEmoteType(emote, emoteInfo, true);
             }
-        } else if (Emoticons.isTurboEmoteset(emote.emoteSet)) {
-            emoteInfo = "Turbo/Prime";
-        } else if (!emote.hasGlobalEmoteset() && emote.hasStreamSet()) {
-            emoteInfo = "Subemote ("+emote.getStream()+")";
-        } else if (!emote.hasGlobalEmoteset()) {
-            emoteInfo = "Unknown Emote";
         } else {
-            emoteInfo = emote.type.label;
+            result = emote.type.label;
             if (emote.type != Emoticon.Type.EMOJI) {
                 if (emote.hasStreamRestrictions()) {
-                    emoteInfo += " Local";
+                    result += " Local";
                 } else {
-                    emoteInfo += " Global";
+                    result += " Global";
                 }
             }
         }
+
         if (Debugging.isEnabled("tt")) {
-            emoteInfo += " ["+emoticonImage.getImageIcon().getDescription()+"]";
+            result += " [" + emoticonImage.getImageIcon().getDescription() + "]";
         }
         
         /**
@@ -632,7 +668,7 @@ public class LinkController extends MouseAdapter {
                 POPUP_HTML_PREFIX,
                 image,
                 Helper.htmlspecialchars_encode(code),
-                emoteInfo);
+                result);
     }
     
     private static String makeUsericonPopupText(Usericon usericon) {
