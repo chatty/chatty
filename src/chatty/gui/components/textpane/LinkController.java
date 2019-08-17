@@ -26,6 +26,7 @@ import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
 import chatty.util.api.usericons.Usericon;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -35,17 +36,21 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.JViewport;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.AttributeSet;
@@ -239,7 +244,7 @@ public class LinkController extends MouseAdapter {
         
         JTextPane textPane = (JTextPane)e.getSource();
         if (Debugging.isEnabled("attr")) {
-            popup.show(textPane, element, () -> debugElement(element), -1);
+            popup.show(textPane, element, p -> debugElement(element, p), -1);
             return;
         }
         
@@ -247,11 +252,11 @@ public class LinkController extends MouseAdapter {
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
         if (emoteImage != null) {
-            popup.show(textPane, element, () -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, popup), emoteImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
-            popup.show(textPane, element, () -> makeUsericonPopupText(usericon), usericon.image.getIconWidth());
+            popup.show(textPane, element, p -> makeUsericonPopupText(usericon, p), usericon.image.getIconWidth());
         } else if (replacedText != null) {
-            popup.show(textPane, element, () -> makeReplacementPopupText(replacedText), 1);
+            popup.show(textPane, element, p -> makeReplacementPopupText(replacedText, p), 1);
         } else {
             popup.hide();
         }
@@ -415,6 +420,10 @@ public class LinkController extends MouseAdapter {
         popup.hide();
     }
     
+    //=============
+    // Popup Stuff
+    //=============
+    
     private static class MyPopup {
         
         private static final int SHOW_DELAY = 300;
@@ -438,23 +447,29 @@ public class LinkController extends MouseAdapter {
         private boolean preparingToShow;
         private JTextPane textPane;
         private int sourceWidth;
-        private String text;
         private Element element;
         private Point position;
-        private boolean textChanged;
+        private boolean contentChanged;
+        private boolean contentSet;
+        private Consumer<MyPopup> provider;
 
         public MyPopup() {
             showTimer = new Timer(SHOW_DELAY, e -> {
                 showNow();
             });
             showTimer.setRepeats(false);
+            label.setHorizontalTextPosition(SwingConstants.CENTER);
+            label.setVerticalTextPosition(SwingConstants.BOTTOM);
+            label.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(Color.BLACK),
+                    BorderFactory.createEmptyBorder(3, 5, 3, 5)));
         }
         
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
         
-        public void show(JTextPane textPane, Element element, Supplier<String> textProvider, int sourceWidth) {
+        public void show(JTextPane textPane, Element element, Consumer<MyPopup> provider, int sourceWidth) {
             if (!enabled) {
                 return;
             }
@@ -466,10 +481,11 @@ public class LinkController extends MouseAdapter {
             }
 
             this.textPane = textPane;
-            this.text = textProvider.get();
             this.sourceWidth = sourceWidth;
             this.element = element;
+            this.provider = provider;
             
+            contentSet = false;
             preparingToShow = true;
             if (System.currentTimeMillis() - lastShown < NO_DELAY_WINDOW) {
                 showNow();
@@ -490,18 +506,52 @@ public class LinkController extends MouseAdapter {
             }
         }
         
+        /**
+         * Set new text and update if showing.
+         * 
+         * @param newText 
+         */
         public void setText(String newText) {
-            this.text = newText;
-            this.textChanged = true;
+            if (!Objects.equals(newText, label.getText())) {
+                label.setText(newText);
+                contentChanged = true;
+                // Will only update if showing
+                update();
+            }
+        }
+        
+        /**
+         * Set a new icon and update if showing.
+         * 
+         * @param icon 
+         */
+        public void setIcon(ImageIcon icon) {
+            if (!Objects.equals(icon, label.getIcon())) {
+                label.setIcon(icon);
+                contentChanged = true;
+                // Will only update if showing
+                update();
+            }
+        }
+        
+        /**
+         * Reshow (if still visible), even without explicitly changing content.
+         */
+        public void forceUpdate() {
+            contentChanged = true;
             update();
         }
         
+        /**
+         * Reshow or hide, depending on updated position. Can't change position
+         * of a Popup, so reshowing appears to be necessary.
+         */
         public void update() {
             if (popup != null) {
                 Point newPos = determinePosition();
                 if (newPos == null) {
                     hide();
-                } else if (!newPos.equals(position) || textChanged) {
+                } else if (!newPos.equals(position) || contentChanged) {
                     hide();
                     showNow();
                 }
@@ -512,9 +562,16 @@ public class LinkController extends MouseAdapter {
             if (popup != null) {
                 return;
             }
-            label.setText(text);
-            textChanged = false;
-
+            if (!contentSet) {
+                // Reset/set once per show()
+                label.setText(null);
+                label.setIcon(null);
+                // Fill values
+                provider.accept(this);
+                contentSet = true;
+            }
+            contentChanged = false;
+            
             Point p = determinePosition();
             if (p != null) {
                 position = p;
@@ -578,6 +635,10 @@ public class LinkController extends MouseAdapter {
         prevHoverElement = element;
     }
     
+    //======================
+    // Public Popup Methods
+    //======================
+    
     /**
      * This ultimately calls modelToView(), so it probably shouldn't be called
      * during printing a line with many elements.
@@ -594,37 +655,36 @@ public class LinkController extends MouseAdapter {
         popupImagesEnabled = enabled;
     }
     
+    public void cleanUp() {
+        popup.cleanUp();
+    }
+
+    //===============
+    // Popup Content
+    //===============
+    
     private static final String POPUP_HTML_PREFIX = "<html>"
-            + "<body style='text-align:center;font-weight:bold;border:1px solid #000;padding:3px 5px 3px 5px;'>";
+            + "<body style='text-align:center;font-weight:bold;'>";
+    
+    //----------------
+    // Emoticon Popup
+    //----------------
     
     private static final Object unique = new Object();
     
-    private static String makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage, MyPopup popup) {
+    private static void makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage, MyPopup popup) {
         Debugging.println("emoteinfo", "makePopupText %s", emoticonImage.getEmoticon());
         Emoticon emote = emoticonImage.getEmoticon();
         EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, result -> {
             SwingUtilities.invokeLater(() -> {
                 Debugging.println("emoteinfo", "Request result: %s", result);
-                popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result));
+                popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result, popup));
             });
         }, emote);
-        return makeEmoticonPopupText2(emoticonImage, showImage, info);
-        
-        
-//        if (emote.type == Emoticon.Type.TWITCH && !emote.hasGlobalEmoteset()) {
-//            EmotesetInfo emoteInfo = TwitchEmotesApi.api.requestById(result -> {
-//                SwingUtilities.invokeLater(() -> {
-//                    System.out.println(result);
-//                    popup.setText(makeEmoticonPopupText2(emoticonImage, result));
-//                });
-//            }, emoticonImage.getEmoticon().numericId);
-//            return makeEmoticonPopupText2(emoticonImage, emoteInfo);
-//        } else {
-//            return makeEmoticonPopupText2(emoticonImage, null);
-//        }
+        popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, info, popup));
     }
     
-    private static String makeEmoticonPopupText2(EmoticonImage emoticonImage, boolean showImage, EmotesetInfo emoteInfo) {
+    private static String makeEmoticonPopupText2(EmoticonImage emoticonImage, boolean showImage, EmotesetInfo emoteInfo, MyPopup popup) {
         Emoticon emote = emoticonImage.getEmoticon();
         String result = "";
         if (emote.type == Emoticon.Type.TWITCH) {
@@ -652,26 +712,26 @@ public class LinkController extends MouseAdapter {
         if (Debugging.isEnabled("tt")) {
             result += " [" + emoticonImage.getImageIcon().getDescription() + "]";
         }
-        
-        /**
-         * Just putting the image in HTML is not ideal, since it doesn't use the
-         * usual image caching mechanics and doesn't show the popup until the
-         * image is loaded, but usually this shouldn't be an issue.
-         */
-        String url = emote.getEmoteUrl(2);
-        String image = "";
-        if (showImage && url != null && !emote.isAnimated()) {
-            image = "<img src='"+url+"'/><br />";
+
+        if (showImage && !emote.isAnimated()) {
+            EmoticonImage icon = emote.getIcon(2, 0, (o,n,c) -> {
+                // The set ImageIcon will have been updated
+                popup.forceUpdate();
+            });
+            popup.setIcon(icon.getImageIcon());
         }
         String code = emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code);
-        return String.format("%s%s%s<br /><span style='font-weight:normal'>%s</span>",
+        return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
                 POPUP_HTML_PREFIX,
-                image,
                 Helper.htmlspecialchars_encode(code),
                 result);
     }
     
-    private static String makeUsericonPopupText(Usericon usericon) {
+    //----------------
+    // Usericon Popup
+    //----------------
+    
+    private static void makeUsericonPopupText(Usericon usericon, MyPopup p) {
         String info;
         if (!usericon.metaTitle.isEmpty()) {
             info = POPUP_HTML_PREFIX+"Badge: "+usericon.metaTitle;
@@ -687,22 +747,26 @@ public class LinkController extends MouseAdapter {
         if (Debugging.isEnabled("tt")) {
             info += " ["+usericon.image.getDescription()+"]";
         }
-        return info;
+        p.setText(info);
     }
     
-    private static String makeReplacementPopupText(String replacedText) {
-        return String.format("%sFiltered Text<div style='text-align:left;font-weight:normal'>%s</div>",
+    //-------------------
+    // Replacement Popup
+    //-------------------
+    
+    private static void makeReplacementPopupText(String replacedText, MyPopup p) {
+        p.setText(String.format("%sFiltered Text<div style='text-align:left;font-weight:normal'>%s</div>",
                 POPUP_HTML_PREFIX,
-                StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replacedText), 70, true));
+                StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replacedText), 70, true)));
     }
     
-    public void cleanUp() {
-        popup.cleanUp();
-    }
+    //-------------
+    // Debug Popup
+    //-------------
     
-    private static String debugElement(Element e) {
+    private static void debugElement(Element e, MyPopup p) {
         StringBuilder result = new StringBuilder();
-        result.append("<html><body style='font-weight:normal;border:1px solid #000;padding:3px 5px 3px 5px;'>");
+        result.append("<html><body style='font-weight:normal;'>");
         try {
             String text = e.getDocument().getText(e.getStartOffset(), e.getEndOffset() - e.getStartOffset());
             text = text.replace("\n", "\\n"); // Make linebreaks visible
@@ -733,7 +797,7 @@ public class LinkController extends MouseAdapter {
             }
             attrs = attrs.getResolveParent();
         }
-        return result.toString();
+        p.setText(result.toString());
     }
     
 }
