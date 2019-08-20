@@ -373,6 +373,21 @@
         <dd><em>Example:</em> <code>$upper(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>FREMILY</code>.</dd>
         
+        <dt><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code>
+        <dd>Search and replace in text. Especially when using Regex, remember
+            escaping of <code>\</code> (<code>\\</code>) and <code>$</code> (<code>\$</code>).</dd>
+        <dd>Methods are:
+            <ul style="margin-top:0">
+                <li><em>Not specified</em> - Literal case-insensitive search</li>
+                <li><code>cs</code> - Literal case-sensitive search</li>
+                <li><code>reg</code> - Regular Expression search</li>
+                <li><code>regRef</code> - Regular Expression search, with references to groups (<code>\$1</code>) in the replacement</li>
+                <li><code>regFirst</code>, <code>refFirstRef</code> - Same as above, but only replace first occurence</li>
+            </ul>
+        </dd>
+        <dd><em>Example:</em> <code>$replace(A b and another B,b,bee)</code> turns into <code>A bee and another bee</code></dd>
+        <dd><em>Example:</em> <code>$replace(Was timed out for 30 seconds,.*?(\\d+) seconds,Number of seconds: \$1,regRef)</code> turns into <code>Number of seconds: 30</code></dd>
+        
         <dt><code>$rand([output1],[output2],[output3],..)</code></dt>
         <dd>Randomly chooses one of the outputs.</dd>
         <dd><em>Example:</em> <code>$rand(cheesecake,strawberry cake,$1-)</code>

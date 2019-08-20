@@ -3,7 +3,6 @@ package chatty.util.commands;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,6 +182,9 @@ public class Parser {
         else if (type.equals("sort")) {
             return sort(isRequired);
         }
+        else if (type.equals("replace")) {
+            return replace(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -340,6 +342,21 @@ public class Parser {
         return new Sort(item, sep, type, isRequired);
     }
     
+    private Item replace(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = midParam();
+        expect(",");
+        Item search = midParam();
+        expect(",");
+        Item replace = param();
+        Item type = null;
+        if (accept(",")) {
+            type = param();
+        }
+        expect(")");
+        return new Replace(item, search, replace, isRequired, type);
+    }
+    
     private Replacement replacement(boolean isRequired) throws ParseException {
         if (accept("(")) {
             Item identifier = identifier();
@@ -358,6 +375,18 @@ public class Parser {
     
     private Items param() throws ParseException {
         return parse("[,)]");
+    }
+    
+    /**
+     * For parameters that have required parameters following, so they only
+     * expect ",", so other stuff like ")" doesn't have to be escaped if used
+     * literal.
+     * 
+     * @return
+     * @throws ParseException 
+     */
+    private Items midParam() throws ParseException {
+        return parse("[,]");
     }
     
     private Items lastParam() throws ParseException {
