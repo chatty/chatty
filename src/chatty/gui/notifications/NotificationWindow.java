@@ -5,6 +5,8 @@ import chatty.Helper;
 import chatty.gui.MainGui;
 import chatty.util.ActivityListener;
 import chatty.util.ActivityTracker;
+import chatty.util.colors.ColorCorrection;
+import chatty.util.colors.ColorCorrectionNew;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -38,8 +40,8 @@ public class NotificationWindow {
     private static final ImageIcon ICON = new ImageIcon(MainGui.class.getResource("app_main_16.png"));
 
     private static final Border PADDING_BORDER = BorderFactory.createEmptyBorder(9, 9, 9, 8);
-    private static final Border LINE_BORDER = BorderFactory.createLineBorder(new Color(50, 50, 50), 1);
-    private static final Border BORDER = BorderFactory.createCompoundBorder(LINE_BORDER, PADDING_BORDER);
+    private static final Border LINE_BORDER_DARK = BorderFactory.createLineBorder(new Color(50, 50, 50), 1);
+    private static final Border BORDER_DARK = BorderFactory.createCompoundBorder(LINE_BORDER_DARK, PADDING_BORDER);
 
     private static final int MAX_WIDTH = 190;
 
@@ -117,7 +119,20 @@ public class NotificationWindow {
 
         // Panel
         final JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BORDER);
+        /**
+         * Keep black-ish (as before) for light backgrounds, but modify
+         * background color for dark backgrounds (might look a bit better than
+         * a grey around the same lightness, tried a few different methods).
+         * 
+         * Only do on dark enough colors, so there is always enough contrast
+         * between the border and the background.
+         */
+        if (ColorCorrection.getBrightness(background) < 100) {
+            Color bColor = ColorCorrectionNew.toLightness(background, 140);
+            panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(bColor), PADDING_BORDER));
+        } else {
+            panel.setBorder(BORDER_DARK);
+        }
         panel.setOpaque(true);
         panel.setBackground(background);
 
@@ -134,7 +149,7 @@ public class NotificationWindow {
         
         timeLabel = new JLabel("55m");
         timeLabel.setFont(timeLabel.getFont().deriveFont(10.0f));
-        timeLabel.setForeground(Color.GRAY);
+        timeLabel.setForeground(ColorCorrectionNew.offset(foreground, 0.7f));
         //gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx = 0;
         gbc.gridy = 1;

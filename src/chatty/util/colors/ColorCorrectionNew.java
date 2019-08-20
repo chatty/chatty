@@ -10,10 +10,10 @@ import java.awt.Color;
 public class ColorCorrectionNew {
     
     /**
-     * sRGB Luma
+     * Calculate the lightness of the given color (sRGB Luma).
      * 
      * @param c
-     * @return 
+     * @return An integer between 0 and 254 (inclusive)
      */
     public static int getLightness(Color c) {
         return (int)(c.getRed() * 0.2126 + c.getGreen() * 0.7152 + c.getBlue() * 0.0722);
@@ -103,10 +103,39 @@ public class ColorCorrectionNew {
         return makeDarker(c, factor);
     }
     
+    /**
+     * Change a Color to a certain lightness (as determined by
+     * {@link getLightness(Color)}). The resulting lightness may be a bit off.
+     * 
+     * @param c The Color to change
+     * @param target The target lightness (0-255), too high numbers may throw
+     * an error
+     * @return A new modified Color, or the same if the lightness already mtches
+     */
+    public static Color toLightness(Color c, int target) {
+        float current = getLightness(c);
+        if (target == current) {
+            return c;
+        }
+        if (target > current) {
+            float factor = (target - current) / (255 - current);
+            return makeBrighter(c, factor);
+        }
+        return makeDarker(c, target / current);
+    }
+    
     public static void main(String[] args) {
-        Color c = Color.BLACK;
-        System.out.println(makeBrighter(Color.BLACK, 0.2f));
-        System.out.println(makeDarker(Color.WHITE, 0.2f));
+//        Color c = Color.BLACK;
+//        System.out.println(makeBrighter(Color.BLACK, 0.2f));
+//        System.out.println(makeDarker(Color.WHITE, 0.2f));
+        
+//        Color result = toLightness(Color.BLACK, 6);
+//        System.out.println(result);
+//        System.out.println(getLightness(result));
+//        System.out.println("---");
+//        Color c = new Color(140, 140, 140);
+//        System.out.println(getLightness(c)+" "+getLightness(makeDarker(c, 0.5f)));
+//        System.out.println(getLightness(c)+" "+getLightness(makeBrighter(c, 0.24f)));
     }
     
 }
