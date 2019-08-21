@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
@@ -278,7 +279,7 @@ public class Chatty {
      * @param output 
      */
     public static void println(String output) {
-        if (Chatty.DEBUG) {
+        if (Chatty.DEBUG || Debugging.isEnabled("println")) {
             System.out.println(output);
         }
     }

@@ -507,7 +507,7 @@ public class TwitchEmotesApi {
 
         @Override
         public String toString() {
-            return String.format("%d[%s,%s,%s]", emoteset_id, stream_name, stream_id, product);
+            return String.format("%d(%s,%s,%s)", emoteset_id, stream_name, stream_id, product);
         }
         
         @Override
