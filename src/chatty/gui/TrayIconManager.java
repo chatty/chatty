@@ -2,7 +2,10 @@
 package chatty.gui;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 
 /**
@@ -78,6 +81,19 @@ public class TrayIconManager {
     public void addActionListener(ActionListener listener) {
         if (trayIcon != null) {
             trayIcon.addActionListener(listener);
+            /**
+             * Show with single-click. Just keeping the ActionListener in case
+             * the MouseListener doesn't work or the ActionListener is triggered
+             * via different ways as well.
+             */
+            trayIcon.addMouseListener(new MouseAdapter() {
+                
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "show"));
+                }
+                
+            });
             popup.addActionListener(listener);
         }
     }
