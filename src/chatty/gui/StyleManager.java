@@ -39,7 +39,9 @@ public class StyleManager implements StyleServer {
             "backgroundColor2", "alternateBackground", "messageSeparator",
             "separatorColor", "bottomMargin",
             "inputBackgroundColor","inputForegroundColor","usericonsEnabled",
-            "timestamp","highlightColor","highlightBackgroundColor",
+            "timestamp", "timestampColor", "timestampColorEnabled",
+            "timestampFontEnabled", "timestampFont",
+            "highlightColor","highlightBackgroundColor",
             "highlightBackground", "showBanMessages","autoScroll",
             "deletedMessagesMode", "deletedMessagesMaxLength","searchResultColor",
             "lineSpacing", "bufferSize", "actionColored","combineBanMessages",
@@ -59,6 +61,7 @@ public class StyleManager implements StyleServer {
     
     private MutableAttributeSet baseStyle;
     private MutableAttributeSet standardStyle;
+    private MutableAttributeSet timestampStyle;
     private MutableAttributeSet specialStyle;
     private MutableAttributeSet infoStyle;
     private MutableAttributeSet paragraphStyle;
@@ -120,6 +123,29 @@ public class StyleManager implements StyleServer {
         
         standardStyle = new SimpleAttributeSet(baseStyle);
         StyleConstants.setForeground(standardStyle, makeColor("foregroundColor"));
+        
+        /**
+         * Start with empty style, since this is only used to modify the regular
+         * style for any given line (e.g. normal of info).
+         * 
+         * Since it is added as a base style in ChannelTextPane, style updates
+         * to existing lines will only have an effect through this style (e.g.
+         * changing the info style color won't change the color of timestamps of
+         * existing lines).
+         */
+        timestampStyle = new SimpleAttributeSet();
+        if (settings.getBoolean("timestampFontEnabled") || settings.getBoolean("timestampColorEnabled")) {
+            if (settings.getBoolean("timestampFontEnabled")) {
+                Font font = Font.decode(settings.getString("timestampFont"));
+                StyleConstants.setFontFamily(timestampStyle, font.getName());
+                StyleConstants.setFontSize(timestampStyle, font.getSize());
+                StyleConstants.setBold(timestampStyle, font.isBold());
+                StyleConstants.setItalic(timestampStyle, font.isItalic());
+            }
+            if (settings.getBoolean("timestampColorEnabled")) {
+                StyleConstants.setForeground(timestampStyle, makeColor("timestampColor"));
+            }
+        }
         
         highlightStyle = new SimpleAttributeSet(baseStyle);
         StyleConstants.setForeground(highlightStyle, highlightColor);
@@ -215,6 +241,8 @@ public class StyleManager implements StyleServer {
                 return specialStyle;
             case "standard":
                 return standardStyle;
+            case "timestamp":
+                return timestampStyle;
             case "info":
                 return infoStyle;
             case "highlight":

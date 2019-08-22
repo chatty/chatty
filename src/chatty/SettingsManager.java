@@ -179,6 +179,8 @@ public class SettingsManager {
         // Chat Appearance
         settings.addString("font","Consolas");
         settings.addLong("fontSize",14);
+        settings.addBoolean("timestampFontEnabled", false);
+        settings.addString("timestampFont", "Consolas 14");
         settings.addString("inputFont", "Dialog 14");
         settings.addString("userlistFont", "Dialog Bold 12");
         settings.addLong("lineSpacing", 2);
@@ -238,6 +240,8 @@ public class SettingsManager {
         settings.addString("backgroundColor2","#EAEAEA");
         settings.addBoolean("messageSeparator", false);
         settings.addString("separatorColor", "#DFDFDF");
+        settings.addBoolean("timestampColorEnabled", false);
+        settings.addString("timestampColor", "#111111");
         settings.addString("infoColor","#001480");
         settings.addString("compactColor","#A0A0A0");
         settings.addString("inputBackgroundColor","White");
