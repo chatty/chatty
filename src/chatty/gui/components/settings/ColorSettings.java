@@ -8,6 +8,8 @@ import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -81,6 +83,7 @@ public class ColorSettings extends SettingsPanel {
                 "backgroundColor",
                 Language.getString("settings.colors.timestamp"),
                 8, 0);
+        switchOnHover(highlightBackgroundColor, "backgroundColor", "highlightBackgroundColor", "highlightBackground", timestampColor);
         
         //------------------------------------------------
         // Boolean settings that require special handling
@@ -445,6 +448,41 @@ public class ColorSettings extends SettingsPanel {
     }
     
     /**
+     * Switch the base color of the given settings to tempSetting if the mouse
+     * is hovered over hoverSetting.
+     * 
+     * @param hoverSetting Setting to hover over
+     * @param normalSetting Name of the default color setting
+     * @param tempSetting Name of the color setting to switch to on hover
+     * @param onlyIf Name of a boolean setting, only switch if true (optional)
+     * @param settings One or several color settings to switch the base color on
+     */
+    private void switchOnHover(ColorSetting hoverSetting, String normalSetting, String tempSetting, String onlyIf, ColorSetting... settings) {
+        hoverSetting.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (onlyIf != null && !d.getBooleanSetting(onlyIf)) {
+                    return;
+                }
+                for (ColorSetting setting : settings) {
+                    setting.setBaseColorSetting(tempSetting);
+                }
+                updated(tempSetting);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                for (ColorSetting setting : settings) {
+                    setting.setBaseColorSetting(normalSetting);
+                }
+                updated(normalSetting);
+            }
+
+        });
+    }
+    
+    /**
      * Listen for a color setting to be updated. Save the setting name so it's
      * clear which setting it was.
      */
@@ -462,5 +500,5 @@ public class ColorSettings extends SettingsPanel {
         }
         
     }
-
+    
 }
