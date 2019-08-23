@@ -142,6 +142,7 @@ public class PastMessages extends JTextArea {
                 b.append("\n");
             }
         }
+        // Remove last newline
         b.deleteCharAt(b.length() - 1);
         return b.toString();
     }

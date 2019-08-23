@@ -376,7 +376,6 @@ public class InfoPanel extends JPanel {
             if (reference.getWidth() == 0) {
                 return;
             }
-            Debugging.edt();
             Debugging.println("sizemagic", "---");
             if (!enoughSpace()) {
                 boolean anyChanged;
