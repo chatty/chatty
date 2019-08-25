@@ -74,6 +74,7 @@ public class GuiUtil {
     
     public final static Insets NORMAL_BUTTON_INSETS = new Insets(2, 14, 2, 14);
     public final static Insets SMALL_BUTTON_INSETS = new Insets(-1, 10, -1, 10);
+    public final static Insets SMALLER_BUTTON_INSETS = new Insets(0, 4, 0, 4);
     public final static Insets SPECIAL_BUTTON_INSETS = new Insets(2, 12, 2, 6);
     public final static Insets SPECIAL_SMALL_BUTTON_INSETS = new Insets(-1, 12, -1, 6);
     
@@ -653,6 +654,21 @@ public class GuiUtil {
         } else {
             throw new IllegalArgumentException("Textcomponent not using AbstractDocument");
         }
+    }
+    
+    /**
+     * Set the height of the target component to the height of the source
+     * component, by using preferred size.
+     * 
+     * @param target The component to change the size on
+     * @param source The component to retrieve the height from
+     */
+    public static void matchHeight(JComponent target, JComponent source) {
+        target.setPreferredSize(
+                new Dimension(
+                        target.getPreferredSize().width,
+                        source.getPreferredSize().height
+                ));
     }
     
 }

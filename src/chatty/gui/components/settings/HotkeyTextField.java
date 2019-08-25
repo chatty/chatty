@@ -1,10 +1,15 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.util.hotkeys.Hotkey;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -14,9 +19,10 @@ import javax.swing.KeyStroke;
  * 
  * @author tduva
  */
-public class HotkeyTextField extends JTextField implements StringSetting {
+public class HotkeyTextField extends JPanel implements StringSetting {
     
     private final HotkeyEditListener listener;
+    private final JTextField textField;
     
     private KeyStroke hotkey;
 
@@ -27,9 +33,13 @@ public class HotkeyTextField extends JTextField implements StringSetting {
      * @param listener Listener to be informed of hotkey changes (optional)
      */
     public HotkeyTextField(int size, final HotkeyEditListener listener) {
-        super(size);
         this.listener = listener;
-        addKeyListener(new KeyListener() {
+        
+        //------------
+        // Text field
+        //------------
+        textField = new JTextField(size);
+        textField.addKeyListener(new KeyListener() {
             
             @Override
             public void keyPressed(KeyEvent e) {
@@ -52,15 +62,33 @@ public class HotkeyTextField extends JTextField implements StringSetting {
             }
         
         });
-        setFocusTraversalKeysEnabled(false);
+        textField.setFocusTraversalKeysEnabled(false);
         
-        // Clear hotkey option
-        JPopupMenu menu = new JPopupMenu();
-        JMenuItem item = new JMenuItem("Clear");
-        item.addActionListener(e -> { setHotkey(null); });
-        menu.add(item);
-        setComponentPopupMenu(menu);
-        setToolTipText("Open context menu for options");
+        //--------
+        // Button
+        //--------
+        JButton resetButton = new JButton("x");
+        resetButton.addActionListener(e -> {
+            setHotkey(null);
+        });
+        resetButton.setMargin(GuiUtil.SMALLER_BUTTON_INSETS);
+        GuiUtil.matchHeight(resetButton, textField);
+        
+        //--------
+        // Layout
+        //--------
+        setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
+        add(textField);
+        add(resetButton);
+        
+        // Clear hotkey option (removed for now, since it has become redundant
+        // after adding the reset button)
+//        JPopupMenu menu = new JPopupMenu();
+//        JMenuItem item = new JMenuItem("Clear");
+//        item.addActionListener(e -> { setHotkey(null); });
+//        menu.add(item);
+//        textField.setComponentPopupMenu(menu);
+//        textField.setToolTipText("Open context menu for options");
     }
     
     /**
@@ -72,9 +100,9 @@ public class HotkeyTextField extends JTextField implements StringSetting {
     public void setHotkey(KeyStroke hotkey) {
         this.hotkey = hotkey;
         if (hotkey != null) {
-            setText(Hotkey.keyStrokeToText(hotkey));
+            textField.setText(Hotkey.keyStrokeToText(hotkey));
         } else {
-            setText("No hotkey set.");
+            textField.setText("No hotkey set.");
         }
         if (listener != null) {
             listener.hotkeyChanged(hotkey);
