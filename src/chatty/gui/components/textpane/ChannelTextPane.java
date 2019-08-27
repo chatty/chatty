@@ -124,20 +124,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     protected static User hoveredUser;
     
     public enum Attribute {
+        BASE_STYLE, ORIGINAL_BASE_STYLE, TIMESTAMP_COLOR_INHERIT,
+        TIME_CREATED,
+        
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
-        CUSTOM_BACKGROUND,
+        CUSTOM_BACKGROUND, CUSTOM_FOREGROUND,
         
         IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
         ACTION_REASON
-    }
-    
-    public enum MessageType {
-        REGULAR, HIGHLIGHTED, IGNORED_COMPACT
     }
     
     /**
@@ -2709,6 +2708,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (styles.timestampFormat() != null) {
             print(DateTime.currentTime(styles.timestampFormat())+" ", styles.timestamp(style));
         }
+        else {
+            // Inserts the linebreak
+            print("", style);
+        }
     }
     
     public void refreshStyles() {
@@ -3165,10 +3168,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          */
         private final ArrayList<String> changedStyles = new ArrayList<>();
         /**
-         * Key for the style type attribute
-         */
-        private final String TYPE = "ChannelTextPanel Style Type";
-        /**
          * Store the timestamp format
          */
         private SimpleDateFormat timestampFormat;
@@ -3427,7 +3426,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             rawStyles.put(name, newStyle.copyAttributes());
             // Add type attribute to the style, so it can be recognized when
             // refreshing the styles in the document
-            newStyle.addAttribute(TYPE, name);
+            newStyle.addAttribute(Attribute.BASE_STYLE, name);
             styles.put(name, newStyle);
             return true;
         }
@@ -3453,7 +3452,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 
                 for (int j = 0; j < paragraph.getElementCount(); j++) {
                     Element element = paragraph.getElement(j);
-                    String type = (String)element.getAttributes().getAttribute(TYPE);
+                    String type = (String)element.getAttributes().getAttribute(Attribute.BASE_STYLE);
                     int start = element.getStartOffset();
                     int end = element.getEndOffset();
                     int length = end - start;
@@ -3465,6 +3464,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     // the previous one
                     // (seems to be faster than just setting all styles)
                     if (changedStyles.contains(type)) {
+                        if (type.equals("timestamp")) {
+                            /**
+                             * Timestamp style is based on another style, so
+                             * reapply here properly.
+                             */
+                            String originalBaseStyle = (String)element.getAttributes().getAttribute(Attribute.ORIGINAL_BASE_STYLE);
+                            style = timestamp(styles.get(originalBaseStyle));
+                        }
                         doc.setCharacterAttributes(start, length, style, false);
                     }
                 }
@@ -3490,6 +3497,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (color != null) {
                 SimpleAttributeSet specialColor = new SimpleAttributeSet(info());
                 StyleConstants.setForeground(specialColor, color);
+                specialColor.addAttribute(Attribute.CUSTOM_FOREGROUND, color);
                 return specialColor;
             }
             return info();
@@ -3503,6 +3511,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (color != null) {
                 SimpleAttributeSet specialColor = new SimpleAttributeSet(standard());
                 StyleConstants.setForeground(specialColor, color);
+                specialColor.addAttribute(Attribute.CUSTOM_FOREGROUND, color);
                 return specialColor;
             }
             return standard();
@@ -3512,10 +3521,27 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return styles.get("standard");
         }
         
-        public AttributeSet timestamp(AttributeSet style) {
-            SimpleAttributeSet modified = new SimpleAttributeSet(style);
-            modified.addAttributes(styles.get("timestamp"));
-            return modified;
+        public SimpleAttributeSet timestamp(AttributeSet style) {
+            SimpleAttributeSet resultStyle = new SimpleAttributeSet(style);
+            AttributeSet timestamp = styles.get("timestamp");
+            resultStyle.addAttribute(Attribute.ORIGINAL_BASE_STYLE, style.getAttribute(Attribute.BASE_STYLE));
+            resultStyle.addAttributes(timestamp);
+            Object inherit = timestamp.getAttribute(Attribute.TIMESTAMP_COLOR_INHERIT);
+            if (inherit != null
+                    && (style.containsAttribute(Attribute.BASE_STYLE, "highlight")
+                        || style.containsAttribute(Attribute.BASE_STYLE, "info")
+                        || style.getAttribute(Attribute.CUSTOM_FOREGROUND) != null)) {
+                float matchFactor = (Float)inherit;
+                if (matchFactor < 0.1) {
+                    StyleConstants.setForeground(resultStyle, StyleConstants.getForeground(style));
+                } else {
+                    Color newColor = ColorCorrectionNew.matchLightness(
+                            StyleConstants.getForeground(style),
+                            StyleConstants.getForeground(timestamp), matchFactor);
+                    StyleConstants.setForeground(resultStyle, newColor);
+                }
+            }
+            return resultStyle;
         }
         
         public MutableAttributeSet banMessage(User user, String message) {
@@ -3567,6 +3593,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (color != null) {
                 SimpleAttributeSet specialColor = new SimpleAttributeSet(highlight());
                 StyleConstants.setForeground(specialColor, color);
+                specialColor.addAttribute(Attribute.CUSTOM_FOREGROUND, color);
                 return specialColor;
             }
             return highlight();

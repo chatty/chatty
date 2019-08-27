@@ -241,6 +241,7 @@ public class SettingsManager {
         settings.addBoolean("messageSeparator", false);
         settings.addString("separatorColor", "#DFDFDF");
         settings.addBoolean("timestampColorEnabled", false);
+        settings.addString("timestampColorInherit", "off");
         settings.addString("timestampColor", "#111111");
         settings.addString("infoColor","#001480");
         settings.addString("compactColor","#A0A0A0");

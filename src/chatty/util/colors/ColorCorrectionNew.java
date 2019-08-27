@@ -124,6 +124,26 @@ public class ColorCorrectionNew {
         return makeDarker(c, target / current);
     }
     
+    /**
+     * Change the lightness of the given Color to the lightness of the
+     * reference.
+     * 
+     * @param toModify The color to change (a new Color object will be created)
+     * @param reference The color to match the brightness on
+     * @param factor How much to match the brigthness, between 0 and 1.0
+     * @return A new Color, or the given one if no change is necessary
+     */
+    public static Color matchLightness(Color toModify, Color reference, float factor) {
+        if (factor == 0) {
+            return toModify;
+        }
+        int lightness = getLightness(toModify);
+        int lightnessRef = getLightness(reference);
+        int diff = (int)((lightness - lightnessRef) * factor);
+        lightness -= diff;
+        return toLightness(toModify, lightness);
+    }
+    
     public static void main(String[] args) {
 //        Color c = Color.BLACK;
 //        System.out.println(makeBrighter(Color.BLACK, 0.2f));

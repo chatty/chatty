@@ -11,6 +11,7 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -85,6 +86,14 @@ public class ColorSettings extends SettingsPanel {
                 8, 0);
         switchOnHover(highlightBackgroundColor, "backgroundColor", "highlightBackgroundColor", "highlightBackground", timestampColor);
         
+        Map<String, String> timestampInheritOptions = new LinkedHashMap<>();
+        timestampInheritOptions.put("off", "Off");
+        for (int i=10;i<=100;i+=10) {
+            timestampInheritOptions.put(String.valueOf(i), i+"%");
+        }
+        ComboStringSetting timestampInheritSelection = new ComboStringSetting(timestampInheritOptions);
+        d.addStringSetting("timestampColorInherit", timestampInheritSelection);
+        
         //------------------------------------------------
         // Boolean settings that require special handling
         //------------------------------------------------
@@ -98,7 +107,7 @@ public class ColorSettings extends SettingsPanel {
         //=====================
         // The order the settings are added in matters for presets
         presets = new ColorTemplates(settings, "colorPresets",
-                new ColorSetting[]{
+                new StringSetting[]{
                     backgroundColor,
                     addColorSetting(
                             "foregroundColor",
@@ -146,7 +155,8 @@ public class ColorSettings extends SettingsPanel {
                     backgroundColor2,
                     highlightBackgroundColor,
                     separatorColor,
-                    timestampColor
+                    timestampColor,
+                    timestampInheritSelection
                 },
                 new BooleanSetting[]{
                     alternateBackground, messageSeparator, highlightBackground,
@@ -171,7 +181,8 @@ public class ColorSettings extends SettingsPanel {
                     settings.getStringDefault("backgroundColor2"),
                     settings.getStringDefault("highlightBackgroundColor"),
                     settings.getStringDefault("separatorColor"),
-                    settings.getStringDefault("timestampColor")
+                    settings.getStringDefault("timestampColor"),
+                    settings.getStringDefault("timestampColorInherit")
                 },
                 new Boolean[]{
                     settings.getBooleanDefault("alternateBackground"),
@@ -194,13 +205,15 @@ public class ColorSettings extends SettingsPanel {
                     "#2D2D2D",          // backgroundColor2
                     "#7A0000",          // highlightBackgroundColor
                     "#383838",          // separatorColor
-                    "LightGrey"           // timestampColor
-                },         
+                    "LightGrey",        // timestampColor
+                    "off",          // timestampColorInherit
+                },
                 new Boolean[]{
                     false, // alternateBackground
                     false, // messageSeparator
                     true,  // highlightBackground
                     false, // timestampColorEnabled
+                    false, // timestampColorInherit
                 });
         
         presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
@@ -217,13 +230,15 @@ public class ColorSettings extends SettingsPanel {
                     "#1E1E1E", // backgroundColor2
                     "#660000", // highlightBackgroundColor
                     "#7A4B00", // separatorColor
-                    "White"  // timestampColor
-                }, 
+                    "White",  // timestampColor
+                    "off", // timestampColorInherit
+                },
                 new Boolean[]{
                     false, // alternateBackground
                     false, // messageSeparator
                     false, // highlightBackground
                     false, // timestampColorEnabled
+                    false, // timestampColorInherit
                 });
         
         presets.addPreset("Twitch",
@@ -240,13 +255,14 @@ public class ColorSettings extends SettingsPanel {
                     "#DBDBDB", // backgroundColor2
                     "#F0A5B0", // highlightBackgroundColor
                     "#C6C6C6", // separatorColor
-                    "#111111"  // timestampColor
+                    "#6e6779",  // timestampColor
+                    "100", // timestampColorInherit
                 },
                 new Boolean[]{
                     false, // alternateBackground
                     false, // messageSeparator
                     true,  // highlightBackground
-                    false, // timestampColorEnabled
+                    true, // timestampColorEnabled
                 });
         
         presets.addPreset("Twitch Dark",
@@ -263,13 +279,14 @@ public class ColorSettings extends SettingsPanel {
                     "#241F29", // backgroundColor2
                     "#590E1A", // highlightBackgroundColor
                     "#7A4B00", // separatorColor
-                    "#CFC8CD"  // timestampColor
+                    "#898395",  // timestampColor
+                    "70", // timestampColorInherit
                 }, 
                 new Boolean[]{
                     true,  // alternateBackground
                     false, // messageSeparator
                     true,  // highlightBackground
-                    false, // timestampColorEnabled
+                    true, // timestampColorEnabled
                 });
         
         presets.addPreset("Theater",
@@ -286,13 +303,14 @@ public class ColorSettings extends SettingsPanel {
                     "#191522", // backgroundColor2
                     "#660000", // highlightBackgroundColor
                     "#2D2D2D", // separatorColor
-                    "#DAD8DE"  // timestampColor
+                    "#898395",  // timestampColor
+                    "100", // timestampColorInherit
                 }, 
                 new Boolean[]{
                     false, // alternateBackground
                     false, // messageSeparator
                     false, // highlightBackground
-                    false, // timestampColorEnabled
+                    true, // timestampColorEnabled
                 });
         
         presets.addPreset("Dark Smooth",
@@ -309,13 +327,14 @@ public class ColorSettings extends SettingsPanel {
                     "#3B3B3B", // backgroundColor2
                     "#5C0000", // highlightBackgroundColor
                     "#DFDFDF", // separatorColor
-                    "LightGrey"  // timestampColor
+                    "#C5C5C5",  // timestampColor
+                    "off", // timestampColorInherit
                 },
                 new Boolean[]{
                     true,  // alternateBackground
                     false, // messageSeparator
                     true,  // highlightBackground
-                    false, // timestampColorEnabled
+                    true,  // timestampColorEnabled
                 });
         
         presets.init();
@@ -361,8 +380,13 @@ public class ColorSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 9, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(-1,10,0,0);
-        SettingsUtil.addSubsettings(timestampColorEnabled, timestampColor);
+        SettingsUtil.addSubsettings(timestampColorEnabled, timestampColor, timestampInheritSelection);
         colorsPanel.add(timestampColorEnabled, gbc);
+        
+        gbc = d.makeGbc(1, 9, 2, 1);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(-1,10,0,0);
+        colorsPanel.add(d.createPanel("timestampColorInherit", timestampInheritSelection), gbc);
         
         //--------------------------
         // Background Switch Button

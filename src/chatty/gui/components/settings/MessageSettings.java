@@ -10,19 +10,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
@@ -31,8 +26,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.Timer;
-import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -109,6 +102,7 @@ public class MessageSettings extends SettingsPanel {
         
         JButton editTimestampButton = new JButton(Language.getString("dialog.button.customize"));
         editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.matchHeight(editTimestampButton, combo);
         editTimestampButton.addActionListener(e -> {
             TimestampEditor editor = new TimestampEditor(d);
             String preset = combo.getSettingValue();
@@ -203,7 +197,7 @@ public class MessageSettings extends SettingsPanel {
             
             // Time
             Map<String, String> timeFormatOptions = new LinkedHashMap<>();
-            timeFormatOptions.put("", "-");
+            timeFormatOptions.put("", "<none>");
             for (String format : TIME_FORMATS) {
                 if (!format.isEmpty()) {
                     addTimestampFormat(timeFormatOptions, format);
@@ -213,7 +207,7 @@ public class MessageSettings extends SettingsPanel {
             
             // Date
             Map<String, String> dateFormatOptions = new LinkedHashMap<>();
-            dateFormatOptions.put("", "-");
+            dateFormatOptions.put("", "<none>");
             for (String format : DATE_FORMATS) {
                 if (!format.isEmpty()) {
                     addTimestampFormat(dateFormatOptions, format);
@@ -223,7 +217,7 @@ public class MessageSettings extends SettingsPanel {
             
             // Before
             Map<String, String> beforeOptions = new LinkedHashMap<>();
-            beforeOptions.put("", "-");
+            beforeOptions.put("", "<none>");
             for (String option : BEFORE) {
                 beforeOptions.put(option, option.replace(" ", "<space>"));
             }
@@ -231,7 +225,7 @@ public class MessageSettings extends SettingsPanel {
             
             // After
             Map<String, String> afterOptions = new LinkedHashMap<>();
-            afterOptions.put("", "-");
+            afterOptions.put("", "<none>");
             for (String option : AFTER) {
                 afterOptions.put(option, option.replace(" ", "<space>"));
             }

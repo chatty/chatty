@@ -40,7 +40,7 @@ public class StyleManager implements StyleServer {
             "separatorColor", "bottomMargin",
             "inputBackgroundColor","inputForegroundColor","usericonsEnabled",
             "timestamp", "timestampColor", "timestampColorEnabled",
-            "timestampFontEnabled", "timestampFont",
+            "timestampFontEnabled", "timestampFont", "timestampColorInherit",
             "highlightColor","highlightBackgroundColor",
             "highlightBackground", "showBanMessages","autoScroll",
             "deletedMessagesMode", "deletedMessagesMaxLength","searchResultColor",
@@ -125,15 +125,17 @@ public class StyleManager implements StyleServer {
         StyleConstants.setForeground(standardStyle, makeColor("foregroundColor"));
         
         /**
-         * Start with empty style, since this is only used to modify the regular
-         * style for any given line (e.g. normal of info).
+         * Start with empty style, this should only modify whatever style is
+         * used on the timestamp line (e.g. normal or info). That base style is
+         * stored in the element, so that it can reapply it properly when on
+         * old lines when changing styles.
          * 
-         * Since it is added as a base style in ChannelTextPane, style updates
-         * to existing lines will only have an effect through this style (e.g.
-         * changing the info style color won't change the color of timestamps of
-         * existing lines).
+         * Add current time so style always gets changed/updated. Otherwise,
+         * even if inheriting from e.g. "standard", it still wouldn't update
+         * when e.g. "info" is changed.
          */
         timestampStyle = new SimpleAttributeSet();
+        timestampStyle.addAttribute(Attribute.TIME_CREATED, System.currentTimeMillis());
         if (settings.getBoolean("timestampFontEnabled") || settings.getBoolean("timestampColorEnabled")) {
             if (settings.getBoolean("timestampFontEnabled")) {
                 Font font = Font.decode(settings.getString("timestampFont"));
@@ -144,6 +146,24 @@ public class StyleManager implements StyleServer {
             }
             if (settings.getBoolean("timestampColorEnabled")) {
                 StyleConstants.setForeground(timestampStyle, makeColor("timestampColor"));
+                /**
+                 * Add this setting as well, so the style changes when setting
+                 * changes and the timestamp is updated (also used to get the
+                 * setting value, since it is added anyway, instead of an actual
+                 * setting). Should only be set when custom color is enabled,
+                 * since it might match lightness to the wrong color otherwise
+                 * (StyleConstants.getForeground() defaults to black if null).
+                 */
+                String inherit = settings.getString("timestampColorInherit");
+                if (!inherit.equals("off")) {
+                    try {
+                        float inheritFactor = 1 - (Integer.parseInt(inherit) / 100.0f);
+                        inheritFactor = Math.min(inheritFactor, 1); // Max 1.0
+                        timestampStyle.addAttribute(Attribute.TIMESTAMP_COLOR_INHERIT, inheritFactor);
+                    } catch (NumberFormatException ex) {
+                        // Treat as "off"
+                    }
+                }
             }
         }
         
