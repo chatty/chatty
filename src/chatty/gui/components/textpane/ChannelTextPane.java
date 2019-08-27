@@ -2709,7 +2709,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             print(DateTime.currentTime(styles.timestampFormat())+" ", styles.timestamp(style));
         }
         else {
-            // Inserts the linebreak
+            // Inserts the linebreak with a style that shouldn't break anything
             print("", style);
         }
     }

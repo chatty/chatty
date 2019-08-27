@@ -213,7 +213,6 @@ public class ColorSettings extends SettingsPanel {
                     false, // messageSeparator
                     true,  // highlightBackground
                     false, // timestampColorEnabled
-                    false, // timestampColorInherit
                 });
         
         presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
@@ -238,7 +237,6 @@ public class ColorSettings extends SettingsPanel {
                     false, // messageSeparator
                     false, // highlightBackground
                     false, // timestampColorEnabled
-                    false, // timestampColorInherit
                 });
         
         presets.addPreset("Twitch",
