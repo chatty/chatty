@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.StringUtil;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -198,4 +199,31 @@ public class HelperTest {
         assertEquals(Helper.removeEmojiVariationSelector("\uFE0F\uFE0E"), "");
         assertEquals(Helper.removeEmojiVariationSelector("❤️ 	❤ 	❤︎"), "❤ 	❤ 	❤");
     }
+    
+    @Test
+    public void getChainedCommandsTest() {
+        chainedTest("", new String[]{});
+        chainedTest(null, new String[]{});
+        chainedTest("a", new String[]{"a"});
+        chainedTest("a | b", new String[]{"a", "b"});
+        chainedTest("a|b", new String[]{"a", "b"});
+        chainedTest("a || b", new String[]{"a | b"});
+        chainedTest("a||b", new String[]{"a|b"});
+        chainedTest("a|||b", new String[]{"a||b"});
+        chainedTest("|b", new String[]{"b"});
+        chainedTest("a|b           |c", new String[]{"a", "b", "c"});
+        chainedTest("||a|| | b | c", new String[]{"|a|", "b", "c"});
+        chainedTest("||||||", new String[]{"|||||"});
+        chainedTest("|||||| |", new String[]{"|||||"});
+        chainedTest("|||||| | ||", new String[]{"|||||", "|"});
+        chainedTest("| | | | | |", new String[]{});
+        chainedTest("a | /chain b", new String[]{"a", "/chain b"});
+        chainedTest("a |c \\|d |1||", new String[]{"a", "c \\", "d", "1|"});
+        chainedTest("b | a        ", new String[]{"b", "a"});
+    }
+    
+    private static void chainedTest(String input, String[] result) {
+        assertArrayEquals(Helper.getChainedCommands(input).toArray(), result);
+    }
+    
 }
