@@ -133,8 +133,8 @@ public class FontChooser extends JDialog implements InputListListener,
          */
         preview.setText(PREVIEW_TEXT);
         preview.setEditable(false);
-        preview.setForeground(getForeground());
-        preview.setBackground(getBackground());
+        // Transparent background
+        preview.setOpaque(false);
         preview.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         preview.setRows(6);
         preview.setLineWrap(true);
