@@ -856,6 +856,13 @@ public class EmotesDialog extends JDialog {
                     turboEmotes.add(emoteset);
                 } else if (emoteset != Emoticon.SET_GLOBAL) {
                     EmotesetInfo info = emotesetInfo.get(emoteset);
+                    if (info == null) {
+                        /**
+                         * Get cached if already available (otherwise no info
+                         * while waiting for request, if any emoteset changed).
+                         */
+                        info = TwitchEmotesApi.api.getBySet(emoteset);
+                    }
                     if (info != null) {
                         if (info.stream_name == null) {
                             // No stream name, probably special emoteset

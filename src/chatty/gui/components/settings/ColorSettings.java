@@ -326,7 +326,7 @@ public class ColorSettings extends SettingsPanel {
                     "#5C0000", // highlightBackgroundColor
                     "#DFDFDF", // separatorColor
                     "#C5C5C5",  // timestampColor
-                    "off", // timestampColorInherit
+                    "40", // timestampColorInherit
                 },
                 new Boolean[]{
                     true,  // alternateBackground

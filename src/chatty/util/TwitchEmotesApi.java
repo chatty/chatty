@@ -287,6 +287,10 @@ public class TwitchEmotesApi {
         return null;
     }
     
+    public EmotesetInfo getBySet(int emoteset) {
+        return bySet.get(emoteset);
+    }
+    
     /**
      * Helper function to compare a set of integer emotesets against
      * EmotesetInfo objects.

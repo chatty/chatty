@@ -46,6 +46,7 @@ public class FilterSettings extends SettingsPanel {
         items.setInfo(INFO);
         HighlighterTester tester = new HighlighterTester(d, false);
         tester.setLinkLabelListener(d.getLinkLabelListener());
+        items.setInfoLinkLabelListener(d.getLinkLabelListener());
         items.setEditor(tester);
         items.setDataFormatter(input -> input.trim());
         gbc.fill = GridBagConstraints.BOTH;
