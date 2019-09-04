@@ -45,8 +45,8 @@ public class EmoteContextMenu extends ContextMenu {
             }
         }
         addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
-        if (emote.numericId != Emoticon.ID_UNDEFINED) {
-            addItem("emoteId", "ID: "+emote.numericId, ICON_WEB);
+        if (emote.type == Emoticon.Type.TWITCH || emote.type == Emoticon.Type.FFZ) {
+            addItem("emoteId", "ID: "+emote.stringId, ICON_WEB);
         }
         
         // Non-Twitch Emote Information
@@ -98,7 +98,8 @@ public class EmoteContextMenu extends ContextMenu {
         
         addSeparator();
         addItem("ignoreEmote", Language.getString("emoteCm.ignore"));
-        if (emote.subType != Emoticon.SubType.CHEER) {
+        if (emote.subType != Emoticon.SubType.CHEER
+                && (emote.emoteSet > -1 || emote.type != Emoticon.Type.TWITCH)) {
             if (!emote.hasStreamRestrictions()) {
                 if (emoteManager.isFavorite(emote)) {
                     addItem("unfavoriteEmote", Language.getString("emoteCm.unfavorite"));

@@ -217,7 +217,7 @@ public class FrankerFaceZParsing {
             b.setX2Url(url2);
             b.setSize(width, height);
             b.setCreator(creator);
-            b.setNumericId(id);
+            b.setStringId(String.valueOf(id));
             b.addStreamRestriction(streamRestriction);
             b.addInfo(info);
             b.setSubType(subType);

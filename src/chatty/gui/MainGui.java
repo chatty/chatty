@@ -2047,13 +2047,13 @@ public class MainGui extends JFrame implements Runnable {
                 url = TwitchUrl.makeFFZUrl();
             } else if (e.getActionCommand().equals("emoteId")) {
                 if (emote.type == Emoticon.Type.FFZ) {
-                    url = TwitchUrl.makeFFZUrl(emote.numericId);
+                    url = TwitchUrl.makeFFZEmoteUrl(emote.stringId);
                 } else if (emote.type == Emoticon.Type.TWITCH) {
-                    url = TwitchUrl.makeTwitchemotesUrl(emote.numericId);
+                    url = TwitchUrl.makeTwitchemotesUrl(emote.stringId);
                 }
             } else if (e.getActionCommand().equals("emoteCreator")) {
                 if (emote.type == Emoticon.Type.FFZ) {
-                    url = TwitchUrl.makeFFZUrl(emote.creator);
+                    url = TwitchUrl.makeFFZUserUrl(emote.creator);
                 } else if (emote.creator.equals("Twemoji")) {
                     url = "https://github.com/twitter/twemoji";
                 }

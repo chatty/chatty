@@ -73,11 +73,11 @@ public class TwitchUrl {
         return "https://frankerfacez.com";
     }
     
-    public static String makeFFZUrl(int id) {
+    public static String makeFFZEmoteUrl(String id) {
         return "https://www.frankerfacez.com/emoticons/"+id;
     }
     
-    public static String makeFFZUrl(String user) {
+    public static String makeFFZUserUrl(String user) {
         return "https://www.frankerfacez.com/emoticons/user/"+StringUtil.toLowerCase(user);
     }
     
@@ -85,7 +85,7 @@ public class TwitchUrl {
         return "https://www.nightdev.com/betterttv/";
     }
     
-    public static String makeTwitchemotesUrl(int id) {
+    public static String makeTwitchemotesUrl(String id) {
         return "https://twitchemotes.com/emote/"+id;
     }
     

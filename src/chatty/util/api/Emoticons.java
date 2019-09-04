@@ -93,7 +93,7 @@ public class Emoticons {
     /**
      * Custom Emotes for lookup by id. All of these are also in customEmotes.
      */
-    private final Map<Integer, Emoticon> customEmotesById = new HashMap<>();
+    private final Map<String, Emoticon> customEmotesById = new HashMap<>();
     
     /**
      * Emoji should be sorted by length, so that longer Emoji (which can be
@@ -122,7 +122,7 @@ public class Emoticons {
     /**
      * All loaded Twitch Emotes, by their Twitch Emote Id.
      */
-    private final HashMap<Integer,Emoticon> twitchEmotesById = new HashMap<>();
+    private final HashMap<String,Emoticon> twitchEmotesById = new HashMap<>();
     
     /**
      * Emoticons restricted to a channel (FrankerFaceZ/BTTV).
@@ -287,8 +287,8 @@ public class Emoticons {
                 }
             }
             // By Twitch Emote ID
-            if (emote.type == Emoticon.Type.TWITCH && emote.numericId != Emoticon.ID_UNDEFINED) {
-                twitchEmotesById.put(emote.numericId, emote);
+            if (emote.type == Emoticon.Type.TWITCH && emote.stringId != null) {
+                twitchEmotesById.put(emote.stringId, emote);
             }
         }
         LOGGER.info("Added "+newEmoticons.size()+" emotes."
@@ -335,7 +335,7 @@ public class Emoticons {
      * @param emote 
      */
     public void addTempEmoticon(Emoticon emote) {
-        twitchEmotesById.put(emote.numericId, emote);
+        twitchEmotesById.put(emote.stringId, emote);
     }
     
     private static int clearOldEmoticonImages(Collection<Emoticon> emotes) {
@@ -350,7 +350,7 @@ public class Emoticons {
         return customEmotes;
     }
     
-    public Emoticon getCustomEmoteById(int id) {
+    public Emoticon getCustomEmoteById(String id) {
         return customEmotesById.get(id);
     }
     
@@ -393,7 +393,7 @@ public class Emoticons {
         return otherGlobalEmotes;
     }
     
-    public HashMap<Integer, Emoticon> getEmoticonsById() {
+    public HashMap<String, Emoticon> getEmoticonsById() {
         return twitchEmotesById;
     }
     
@@ -825,7 +825,7 @@ public class Emoticons {
         boolean literal = true;
         String url = null;
         int emoteset = Emoticon.SET_UNDEFINED;
-        int id = Emoticon.ID_UNDEFINED;
+        String id = null;
         // Use Dimension because it's easier to check if one value is set
         Dimension size = null;
         String streamRestriction = null;
@@ -838,11 +838,7 @@ public class Emoticons {
                 literal = false;
                 code = item.substring("re:".length());
             } else if (item.startsWith("id:")) {
-                try {
-                    id = Integer.parseInt(item.substring("id:".length()));
-                } catch (NumberFormatException ex) {
-                    // Just don't set the id
-                }
+                id = item.substring("id:".length());
             } else if (item.startsWith("set:")) {
                 try {
                     emoteset = Integer.parseInt(item.substring("set:".length()));
@@ -887,14 +883,14 @@ public class Emoticons {
         if (code != null && url != null) {
             Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.CUSTOM, code, url);
             b.setLiteral(literal).setEmoteset(emoteset);
-            b.setNumericId(id);
+            b.setStringId(id);
             if (size != null) {
                 b.setSize(size.width, size.height);
             }
             b.addStreamRestriction(streamRestriction);
             Emoticon emote = b.build();
             customEmotes.add(emote);
-            if (id != Emoticon.ID_UNDEFINED) {
+            if (id != null) {
                 customEmotesById.put(id, emote);
             }
             return true;
@@ -921,8 +917,8 @@ public class Emoticons {
             if (emote.emoteSet != Emoticon.SET_UNDEFINED) {
                 info.add("set:"+emote.emoteSet);
             }
-            if (emote.numericId != Emoticon.ID_UNDEFINED) {
-                info.add("id:"+emote.numericId);
+            if (emote.stringId != null) {
+                info.add("id:"+emote.stringId);
             }
             b.append("\""+emote.code+"\" ");
             if (info.size() > 0) {
@@ -961,7 +957,7 @@ public class Emoticons {
                      * expected, this emote or at least any further ranges for
                      * this emote are ignored.
                      */
-                    int id = Integer.parseInt(emote.substring(0, idEnd));
+                    String id = emote.substring(0, idEnd);
                     String[] emoteRanges = emote.substring(idEnd+1).split(",");
                     
                     // Save all ranges for this emote
@@ -1042,11 +1038,11 @@ public class Emoticons {
      */
     public static class TagEmote {
         
-        public final int id;
+        public final String id;
         public final int end;
         
-        public TagEmote(int start, int end) {
-            this.id = start;
+        public TagEmote(String id, int end) {
+            this.id = id;
             this.end = end;
         }
         

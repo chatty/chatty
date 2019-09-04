@@ -18,6 +18,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -188,7 +190,7 @@ public class TwitchEmotesApi {
     public EmotesetInfo getInfoByEmote(Object unique, Consumer<EmotesetInfo> listener, Emoticon emote) {
         EmotesetInfo info;
         if (emote.type != Emoticon.Type.TWITCH
-                || emote.numericId == Emoticon.ID_UNDEFINED) {
+                || emote.stringId == null) {
             return null;
         }
         if (emote.hasGlobalEmoteset()) {
@@ -200,11 +202,15 @@ public class TwitchEmotesApi {
                 return info;
             }
         }
+        int numericId = getNumericEmoteId(emote.stringId);
+        if (numericId == -1) {
+            return null;
+        }
         info = byId.getOrQuerySingle(unique, result -> {
             if (listener != null) {
-                listener.accept(result.get(emote.numericId));
+                listener.accept(result.get(numericId));
             }
-        }, ASAP, emote.numericId);
+        }, ASAP, numericId);
         return info;
     }
     
@@ -338,6 +344,34 @@ public class TwitchEmotesApi {
         return emoteset;
     }
     
+    public static int getNumericEmoteId(String id) {
+        try {
+            Matcher m = Pattern.compile("^([0-9]+)(_.*)?$").matcher(id);
+            if (m.find()) {
+                return Integer.parseInt(m.group(1));
+            }
+        } catch (Exception ex) {
+            // Do nothing
+        }
+        return -1;
+    }
+    
+    /**
+     * Returns true if the emote has a string id that consists of more than a
+     * single number.
+     * 
+     * @param emote
+     * @return 
+     */
+    public static boolean isModified(Emoticon emote) {
+        try {
+            Integer.parseInt(emote.stringId);
+            return false;
+        } catch (NumberFormatException ex) {
+            return true;
+        }
+    }
+    
     /**
      * Get a description of the emote type for the given Emoticon, using the
      * EmotesetInfo as well.
@@ -350,20 +384,21 @@ public class TwitchEmotesApi {
      */
     public static String getEmoteType(Emoticon emote, EmotesetInfo info, boolean includeStream) {
         int emoteset = getSet(emote, info);
+        String modified = isModified(emote) ? " [modified]" : "";
         if (emote.hasGlobalEmoteset()) {
-            return "Twitch Global";
+            return "Twitch Global"+modified;
         } else if (Emoticons.isTurboEmoteset(emoteset)) {
-            return "Turbo Emoticon";
+            return "Turbo Emoticon"+modified;
         } else if (info == null) {
             return "Unknown Emote";
         } else if (info.stream_name != null && !info.stream_name.equals("Twitch")) {
             if (includeStream) {
-                return "Subemote (" + info.stream_name + ")";
+                return "Subemote (" + info.stream_name + ")"+modified;
             } else {
-                return "Subemote";
+                return "Subemote"+modified;
             }
         } else {
-            return "Other Twitch Emote";
+            return "Other Twitch Emote"+modified;
         }
     }
     

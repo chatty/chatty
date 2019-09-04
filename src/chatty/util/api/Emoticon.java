@@ -104,7 +104,6 @@ public class Emoticon {
     private final Set<String> streamRestrictions;
     public final String url;
     public final boolean literal;
-    public final int numericId;
     public final String stringId;
     public final String stringIdAlias;
     public final String urlX2;
@@ -144,7 +143,6 @@ public class Emoticon {
         private Set<String> streamRestrictions;
         private Set<String> infos;
         private int emoteset = SET_UNDEFINED;
-        private int numericId = ID_UNDEFINED;
         private String stringId = null;
         private String stringIdAlias = null;
         private String creator;
@@ -189,11 +187,6 @@ public class Emoticon {
         
         public Builder setLiteral(boolean literal) {
             this.literal = literal;
-            return this;
-        }
-        
-        public Builder setNumericId(int id) {
-            this.numericId = id;
             return this;
         }
         
@@ -251,8 +244,8 @@ public class Emoticon {
      */
     public String getEmoteUrl(int factor) {
         if (type == Type.TWITCH) {
-            if (numericId != ID_UNDEFINED) {
-                return getTwitchEmoteUrlById(numericId, factor);
+            if (stringId != null) {
+                return getTwitchEmoteUrlById(stringId, factor);
             }
         } else if (type == Type.BTTV && stringId != null) {
             return getBttvEmoteUrl(stringId, factor);
@@ -264,7 +257,7 @@ public class Emoticon {
         return null;
     }
     
-    public static String getTwitchEmoteUrlById(int id, int factor) {
+    public static String getTwitchEmoteUrlById(String id, int factor) {
         return "https://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
     }
     
@@ -335,7 +328,6 @@ public class Emoticon {
         this.stream = builder.stream;
         this.emotesetInfo = builder.emotesetInfo;
         this.literal = builder.literal;
-        this.numericId = builder.numericId;
         this.stringId = builder.stringId;
         this.stringIdAlias = builder.stringIdAlias;
         this.creator = builder.creator;
@@ -594,7 +586,7 @@ public class Emoticon {
      */
     private String getCachedSizeId() {
         if (type == Type.TWITCH) {
-            return type+"."+numericId;
+            return type+"."+stringId;
         }
         if (type == Type.BTTV) {
             return type+"."+stringId;
@@ -619,7 +611,7 @@ public class Emoticon {
      * @param h The height
      */
     private void setCachedSize(int w, int h) {
-        if ((type == Type.TWITCH && numericId != ID_UNDEFINED)
+        if ((type == Type.TWITCH && stringId != null)
                 || (type == Type.BTTV && stringId != null)) {
             EmoticonSizeCache.setSize(getCachedSizeId(), w, h);
         }

@@ -146,7 +146,7 @@ public class EmoticonManager extends CachedManager {
                 emoteSet = ((Number)emote.get("emoticon_set")).intValue();
             }
             b.setEmoteset(emoteSet);
-            b.setNumericId(id);
+            b.setStringId(String.valueOf(id));
             return b.build();
         } catch (NullPointerException | ClassCastException ex) {
             return null;

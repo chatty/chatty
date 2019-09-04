@@ -153,7 +153,7 @@ public class EmoticonFavorites {
      * @param twitchEmotesById All Twitch emotes currently loaded
      * @param more
      */
-    public void find(Map<Integer, Emoticon> twitchEmotesById,
+    public void find(Map<String, Emoticon> twitchEmotesById,
             Set<Emoticon>... more) {
         if (favoritesNotFound.isEmpty()) {
             return;

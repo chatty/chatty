@@ -2395,7 +2395,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         if (tagEmotes != null) {
             // Add emotes from tags
-            Map<Integer, Emoticon> emoticonsById = main.emoticons.getEmoticonsById();
+            Map<String, Emoticon> emoticonsById = main.emoticons.getEmoticonsById();
             addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
         }
         
@@ -2427,7 +2427,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param rangesStyle The styles for this message
      * @param emotesDef The emotes definition from the IRCv3 tags
      */
-    private void addTwitchTagsEmoticons(User user, Map<Integer, Emoticon> emoticons, String text,
+    private void addTwitchTagsEmoticons(User user, Map<String, Emoticon> emoticons, String text,
             Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle,
             TagEmotes emotesDef) {
         if (emotesDef == null) {
@@ -2453,7 +2453,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             if (def.containsKey(i-offset)) {
                 // An emote starts at the current position, so add it.
                 Emoticons.TagEmote emoteData = def.get(i-offset);
-                int id = emoteData.id;
+                String id = emoteData.id;
                 int start = i;
                 int end = emoteData.end+offset;
                 
@@ -2474,15 +2474,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         String url = Emoticon.getTwitchEmoteUrlById(id, 1);
                         Emoticon.Builder b = new Emoticon.Builder(
                                 Emoticon.Type.TWITCH, code, url);
-                        b.setNumericId(id);
-                        Emoteset emotesetInfo = main.emoticons.getInfoByEmoteId(id);
-                        if (emotesetInfo != null) {
-                            b.setEmoteset(emotesetInfo.emoteset_id);
-                            b.setStream(emotesetInfo.stream);
-                            b.setEmotesetInfo(emotesetInfo.product);
-                        } else {
-                            b.setEmoteset(Emoticon.SET_UNKNOWN);
-                        }
+                        b.setStringId(id);
+                        b.setEmoteset(Emoticon.SET_UNKNOWN);
                         emoticon = b.build();
                         main.emoticons.addTempEmoticon(emoticon);
                     }
