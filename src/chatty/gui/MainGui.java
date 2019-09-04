@@ -1421,14 +1421,28 @@ public class MainGui extends JFrame implements Runnable {
     
     private class TrayMenuListener implements ActionListener {
 
+        private final ElapsedTime lastEvent = new ElapsedTime();
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             String cmd = e.getActionCommand();
-            if (cmd == null || cmd.equals("show")) {
-                if (isMinimized()) {
-                    makeVisible();
-                } else {
-                    minimizeToTray();
+            if (cmd == null
+                    || cmd.equals("show")
+                    || cmd.equals("doubleClick")
+                    || (cmd.equals("singleClick") && client.settings.getBoolean("singleClickTrayOpen"))) {
+                /**
+                 * Prevent hiding/showing too quickly, for example when both the
+                 * mouse listener and the action listener fire (could also be
+                 * platform dependent).
+                 */
+                if (lastEvent.millisElapsed(80)) {
+                    lastEvent.set();
+                    if (isMinimized()) {
+                        makeVisible();
+                    }
+                    else {
+                        minimizeToTray();
+                    }
                 }
             }
             else if (cmd.equals("exit")) {

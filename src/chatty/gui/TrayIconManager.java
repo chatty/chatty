@@ -90,7 +90,20 @@ public class TrayIconManager {
                 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "show"));
+                    // Checking just isPopupTrigger() didn't seem to work
+                    if (!e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1) {
+                        if (e.getClickCount() % 2 == 0) {
+                            /**
+                             * The action listener above may already trigger for
+                             * double-clicks, but this allows for quicker toggle
+                             * (at least on Windows 7).
+                             */
+                            listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "doubleClick"));
+                        }
+                        else {
+                            listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "singleClick"));
+                        }
+                    }
                 }
                 
             });
