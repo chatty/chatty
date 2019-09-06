@@ -17,7 +17,7 @@ public class UsercolorItem extends ColorItem {
 
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
-            "$globalmod", "$anymod"));
+            "$globalmod", "$anymod", "$vip"));
     
     public static final int TYPE_NAME = 0;
     public static final int TYPE_COLOR = 1;

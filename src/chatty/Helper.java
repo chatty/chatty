@@ -541,6 +541,10 @@ public class Helper {
                     || user.isModerator() || user.isStaff()) {
                 return true;
             }
+        } else if (id.equals("$vip")) {
+            if (user.hasTwitchBadge("vip")) {
+                return true;
+            }
         }
         return false;
     }

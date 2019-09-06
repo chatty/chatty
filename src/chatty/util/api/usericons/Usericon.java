@@ -37,7 +37,7 @@ public class Usericon implements Comparable {
     
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
-            "$globalmod", "$anymod"));
+            "$globalmod", "$anymod", "$vip"));
     
     /**
      * The type determines whether it should replace any of the default icons
