@@ -4,8 +4,10 @@ package chatty.gui.components;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.settings.EditorStringSetting;
+import chatty.util.Debugging;
 import chatty.util.Livestreamer;
 import chatty.util.Livestreamer.LivestreamerListener;
+import static chatty.util.Livestreamer.filterToken;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.awt.BorderLayout;
@@ -384,7 +386,7 @@ public class LivestreamerDialog extends JDialog {
             
             Document doc = messages.getDocument();
             try {
-                doc.insertString(doc.getLength(), message+"\n", null);
+                doc.insertString(doc.getLength(), filterToken(message)+"\n", null);
             } catch (BadLocationException ex) {
                 Logger.getLogger(LivestreamerDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
