@@ -2834,20 +2834,18 @@ public class MainGui extends JFrame implements Runnable {
      * # Messages #
      */
     
-    public void printMessage(User user, String text, boolean action,
-            String emotes, int bits) {
-        printMessage(user, text, action, emotes, bits, null);
+    public void printMessage(User user, String text, boolean action) {
+        printMessage(user, text, action, MsgTags.EMPTY);
     }
     
-    public void printMessage(final User user,
-            final String text, final boolean action, final String emotes,
-            final int origBits, final String id) {
+    public void printMessage(User user, String text, boolean action, MsgTags tags) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Channel chan;
                 String channel = user.getChannel();
                 boolean whisper = false;
+                int origBits = tags.getBits();
                 
                 // Disable Cheer emotes altogether if disabled in the settings
                 int bits = origBits;
@@ -2881,7 +2879,7 @@ public class MainGui extends JFrame implements Runnable {
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
-                boolean ignored = checkMsg(ignoreList, "ignore", text, user, isOwnMessage) || ignoredUser;
+                boolean ignored = checkMsg(ignoreList, "ignore", text, user, tags, isOwnMessage) || ignoredUser;
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
                     client.chatLog.message(chan.getFilename(), user, text, action);
@@ -2891,10 +2889,15 @@ public class MainGui extends JFrame implements Runnable {
                 List<Match> highlightMatches = null;
                 if ((client.settings.getBoolean("highlightIgnored") || !ignored)
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
-                    highlighted = checkMsg(highlighter, "highlight", text, user, isOwnMessage);
+                    highlighted = checkMsg(highlighter, "highlight", text, user, tags, isOwnMessage);
+                }
+                if (!highlighted) {
+                    highlighted = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");
+                    // Irregular highlight, so reset last match
+                    highlighter.resetLastMatchVariables();
                 }
                 
-                TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
+                TagEmotes tagEmotes = Emoticons.parseEmotesTag(tags.getRawEmotes());
                 
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
@@ -2906,7 +2909,7 @@ public class MainGui extends JFrame implements Runnable {
                     } else {
                         channels.setChannelNewMessage(chan);
                     }
-                    notificationManager.highlight(user, text,
+                    notificationManager.highlight(user, text, tags,
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound(),
                             isOwnMessage, whisper, origBits > 0);
@@ -2914,7 +2917,7 @@ public class MainGui extends JFrame implements Runnable {
                     if (whisper) {
                         notificationManager.whisper(user, text, isOwnMessage);
                     } else {
-                        notificationManager.message(user, text, isOwnMessage,
+                        notificationManager.message(user, text, tags, isOwnMessage,
                                 origBits > 0);
                     }
                     if (!isOwnMessage) {
@@ -2945,13 +2948,14 @@ public class MainGui extends JFrame implements Runnable {
                         printInfo(chan, InfoMessage.createInfo("Own message ignored."));
                     }
                 } else {
-                    boolean hasReplacements = checkMsg(filter, "filter", text, user, isOwnMessage);
+                    boolean hasReplacements = checkMsg(filter, "filter", text, user, tags, isOwnMessage);
 
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes, id, bits,
+                    UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bits,
                             highlightMatches,
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null);
+                    message.pointsHl = tags.isHighlightedMessage();
                     
                     // Custom color
                     if (highlighted) {
@@ -2959,7 +2963,7 @@ public class MainGui extends JFrame implements Runnable {
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
                     }
                     if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
-                        ColorItem colorItem = msgColorManager.getMsgColor(user, text);
+                        ColorItem colorItem = msgColorManager.getMsgColor(user, text, tags);
                         if (!colorItem.isEmpty()) {
                             message.color = colorItem.getForegroundIfEnabled();
                             message.backgroundColor = colorItem.getBackgroundIfEnabled();
@@ -2982,7 +2986,7 @@ public class MainGui extends JFrame implements Runnable {
                 CopyMessages.copyMessage(client.settings, user, text, highlighted);
                 
                 // Update User
-                user.addMessage(processMessage(text), action, id);
+                user.addMessage(processMessage(text), action, tags.getId());
                 if (highlighted) {
                     user.setHighlighted();
                 }
@@ -3049,27 +3053,27 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private boolean checkHighlight(HighlightItem.Type type, String text,
-            String channel, Addressbook ab, User user, Highlighter hl,
+            String channel, Addressbook ab, User user, MsgTags tags, Highlighter hl,
             String setting, boolean isOwnMessage) {
         if (client.settings.getBoolean(setting + "Enabled")) {
             if (client.settings.getBoolean(setting + "OwnText") ||
                     !isOwnMessage) {
-                return hl.check(type, text, channel, ab, user);
+                return hl.check(type, text, channel, ab, user, tags);
             }
         }
         return false;
     }
     
     private boolean checkMsg(Highlighter hl, String setting, String text,
-            User user, boolean isOwnMessage) {
+            User user, MsgTags tags, boolean isOwnMessage) {
         return checkHighlight(HighlightItem.Type.REGULAR, text, null, null,
-                user, hl, setting, isOwnMessage);
+                user, tags, hl, setting, isOwnMessage);
     }
     
     private boolean checkInfoMsg(Highlighter hl, String setting, String text,
             String channel, Addressbook ab) {
         return checkHighlight(HighlightItem.Type.INFO, text, channel, ab, null,
-                hl, setting, false);
+                null, hl, setting, false);
     }
     
     protected void ignoredMessagesCount(String channel, String message) {

@@ -5,6 +5,7 @@ import chatty.Addressbook;
 import chatty.User;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.colors.HtmlColors;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -122,24 +123,24 @@ public class MsgColorManager {
      * @return 
      */
     public synchronized ColorItem getColor(HighlightItem.Type type, User user,
-            String text, String channel, Addressbook ab) {
+            String text, String channel, MsgTags tags, Addressbook ab) {
         if (data == null || !settings.getBoolean(ENABLED_SETTING)) {
             return EMPTY;
         }
         for (MsgColorItem item : data) {
-            if (item.matches(type, text, channel, ab, user)) {
+            if (item.matches(type, text, channel, ab, user, tags)) {
                 return item;
             }
         }
         return EMPTY;
     }
     
-    public synchronized ColorItem getMsgColor(User user, String text) {
-        return getColor(HighlightItem.Type.REGULAR, user, text, user.getChannel(), user.getAddressbook());
+    public synchronized ColorItem getMsgColor(User user, String text, MsgTags tags) {
+        return getColor(HighlightItem.Type.REGULAR, user, text, user.getChannel(), tags, user.getAddressbook());
     }
     
     public synchronized ColorItem getInfoColor(String text, String channel, Addressbook ab) {
-        return getColor(HighlightItem.Type.INFO, null, text, channel, ab);
+        return getColor(HighlightItem.Type.INFO, null, text, channel, MsgTags.EMPTY, ab);
     }
     
 }

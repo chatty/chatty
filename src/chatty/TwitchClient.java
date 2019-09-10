@@ -779,7 +779,7 @@ public class TwitchClient {
                     if (testUser.getRoom().equals(room)) {
                         user = testUser;
                     }
-                    g.printMessage(user,text,false,null,1);
+                    g.printMessage(user,text,false);
                 } else {
                     g.printLine("Not in a channel");
                 }
@@ -802,9 +802,9 @@ public class TwitchClient {
     private void sendMessage(String channel, String text, boolean allowCommandMessageLocally) {
         if (c.sendSpamProtectedMessage(channel, text, false)) {
             User user = c.localUserJoined(channel);
-            g.printMessage(user, text, false, null, 0);
+            g.printMessage(user, text, false);
             if (allowCommandMessageLocally) {
-                modCommandAddStreamHighlight(user, text);
+                modCommandAddStreamHighlight(user, text, MsgTags.EMPTY);
             }
         } else {
             g.printLine("# Message not sent to prevent ban: " + text);
@@ -1741,7 +1741,7 @@ public class TwitchClient {
     public void sendActionMessage(String channel, String message) {
         if (c.onChannel(channel, true)) {
             if (c.sendSpamProtectedMessage(channel, message, true)) {
-                g.printMessage(c.localUserJoined(channel), message, true, null, 0);
+                g.printMessage(c.localUserJoined(channel), message, true);
             } else {
                 g.printLine("# Action Message not sent to prevent ban: " + message);
             }
@@ -1852,9 +1852,9 @@ public class TwitchClient {
         g.printLine(room, streamHighlights.openFile());
     }
     
-    public void modCommandAddStreamHighlight(User user, String message) {
+    public void modCommandAddStreamHighlight(User user, String message, MsgTags tags) {
         // Stream Highlights
-        String result = streamHighlights.modCommand(user, message);
+        String result = streamHighlights.modCommand(user, message, tags);
         if (result != null) {
             result = user.getDisplayNick() + ": " + result;
             if (settings.getBoolean("streamHighlightChannelRespond")) {
@@ -2738,12 +2738,11 @@ public class TwitchClient {
         }
 
         @Override
-        public void onChannelMessage(User user, String message, boolean action,
-                String emotes, String id, int bits) {
-            g.printMessage(user, message, action, emotes, bits, id);
+        public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
+            g.printMessage(user, text, action, tags);
             if (!action) {
-                addressbookCommands(user.getChannel(), user, message);
-                modCommandAddStreamHighlight(user, message);
+                addressbookCommands(user.getChannel(), user, text);
+                modCommandAddStreamHighlight(user, text, tags);
             }
         }
 
@@ -3036,7 +3035,7 @@ public class TwitchClient {
 
         @Override
         public void whisperReceived(User user, String message, String emotes) {
-            g.printMessage(user, message, false, emotes, 0);
+            g.printMessage(user, message, false, MsgTags.create("emotes", emotes));
             g.updateUser(user);
         }
 
@@ -3047,7 +3046,7 @@ public class TwitchClient {
 
         @Override
         public void whisperSent(User to, String message) {
-            g.printMessage(to, message, true, null, 0);
+            g.printMessage(to, message, true);
         }
     }
     

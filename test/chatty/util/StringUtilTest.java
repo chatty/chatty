@@ -2,6 +2,7 @@
 package chatty.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -71,6 +72,45 @@ public class StringUtilTest {
         assertEquals(StringUtil.firstToUpperCase("abc"), "Abc");
         assertEquals(StringUtil.firstToUpperCase(" abc"), " abc");
         
+    }
+    
+    @Test
+    public void testSplit() {
+        assertEquals(StringUtil.split(null, 'a', 10), null);
+        testSplit2(',', 0, "", "");
+        testSplit2(',', 0, "abc", "abc");
+        testSplit2(',', 0, "\\abc", "abc");
+        testSplit2(',', 0, "\\\\abc", "\\abc");
+        testSplit2(',', 0, "a,b,c", "a", "b", "c");
+        testSplit2(',', 1, "a,b,c", "a,b,c");
+        testSplit2(',', 2, "a,b,c", "a", "b,c");
+        testSplit2(',', 0, "'a,b',c", "a,b", "c");
+        testSplit2(',', 0, "\\'a,b,c", "'a", "b", "c");
+        testSplit2(',', 2, "\\'a,b,c'", "'a", "b,c'");
+        testSplit2(',', '\'', '\\', 2, 2, "\\'a,b,c'", "'a", "b,c");
+        testSplit2(',', 2, "a,b,\\c", "a", "b,\\c");
+        testSplit2(',', '\'', '\\', 2, 2, "a,b,\\c", "a", "b,c");
+        testSplit2(',', 2, "a\\,b,c", "a,b", "c");
+        testSplit2(',', 0, "t|test=abc\\,lol", "t|test=abc,lol");
+        
+        testSplit2(',', '#', '#', 2, 1, "a,b,c", "a", "b,c");
+        testSplit2(',', '#', '#', 2, 1, "a#,b,c", "a,b", "c");
+        testSplit2(' ', '-', '$', 2, 1, "abc- -123 -b c-", "abc 123", "-b c-");
+        testSplit2(' ', '-', '$', 2, 1, "abc- $-123 -b c-", "abc -123 b", "c-");
+        testSplit2(' ', '-', '$', 2, 1, "abc$ 123 -b c-", "abc 123", "-b c-");
+        testSplit2(' ', '-', '$', 3, 1, "abc$ 123 -b c-", "abc 123", "b c");
+        testSplit2(' ', '-', '$', 0, 1, "abc$ 123 -b c-", "abc 123", "b c");
+        testSplit2(' ', '-', '$', 2, 2, "abc$ 123 -b c-", "abc 123", "b c");
+        testSplit2(' ', '-', '$', 2, 0, "abc$ 123 -b c-", "abc$ 123", "-b c-");
+        testSplit2(' ', '-', '$', 0, 0, "abc$ 123 -b c-", "abc$ 123", "-b c-");
+    }
+    
+    private static void testSplit2(char split, int limit, String input, String... result) {
+        testSplit2(split, '\'', '\\', limit, 1, input, result);
+    }
+    
+    private static void testSplit2(char split, char quote, char escape, int limit, int remove, String input, String... result) {
+        assertEquals(StringUtil.split(input, split, quote, escape, limit, remove), Arrays.asList(result));
     }
     
 }

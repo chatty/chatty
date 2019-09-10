@@ -9,6 +9,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -300,7 +301,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             // Match ANY type, same as the other matching in this (ignoring
             // non-text prefixes)
             blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, testInput.getText(), null,
-                    null, null, Arrays.asList(new HighlightItem[]{blacklistItem}));
+                    null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
             testResult.setText("No pattern.");

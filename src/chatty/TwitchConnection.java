@@ -953,13 +953,10 @@ public class TwitchConnection {
                 } else {
                     User user = userJoined(channel, nick);
                     updateUserFromTags(user, tags);
-                    String emotesTag = tags.get("emotes");
-                    String id = tags.get("id");
-                    int bits = tags.getInteger("bits", 0);
                     if (!user.getName().equals(username) || !sentMessages.shouldHide(channel, text)) {
                         // Don't show if own name and message was sent recently,
                         // to prevent echo message from being shown in chatrooms
-                        listener.onChannelMessage(user, text, action, emotesTag, id, bits);
+                        listener.onChannelMessage(user, text, action, tags);
                     }
                 }
             }
@@ -1480,7 +1477,7 @@ public class TwitchConnection {
 
         void onUserUpdated(User user);
 
-        void onChannelMessage(User user, String message, boolean action, String emotes, String id, int bits);
+        void onChannelMessage(User user, String msg, boolean action, MsgTags tags);
         
         void onWhisper(User user, String message, String emotes);
 

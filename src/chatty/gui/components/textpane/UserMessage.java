@@ -23,6 +23,7 @@ public class UserMessage extends Message {
     public boolean highlighted;
     public boolean ignored_compact;
     public boolean action;
+    public boolean pointsHl;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
             String id, int bits, List<Match> highlightMatches,

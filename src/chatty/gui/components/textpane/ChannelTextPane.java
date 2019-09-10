@@ -525,7 +525,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.standard(color);
         }
         printTimestamp(style);
-        printUser(user, action, message.whisper, message.id, background);
+        printUser(user, action, message.whisper, message.id, background, message.pointsHl);
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && color == null && action && styles.isEnabled(Setting.ACTION_COLORED)) {
@@ -1798,7 +1798,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param msgId 
      */
     private void printUser(User user, boolean action,
-            boolean whisper, String msgId, Color background) {
+            boolean whisper, String msgId, Color background, boolean pointsHl) {
         
         // Decide on name based on settings and available names
         String userName;
@@ -1818,7 +1818,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         // Badges or Status Symbols
         if (styles.isEnabled(Setting.USERICONS_ENABLED)) {
-            printUserIcons(user);
+            printUserIcons(user, pointsHl);
         }
         else {
             userName = user.getModeSymbol()+userName;
@@ -1934,9 +1934,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * 
      * @param user 
      */
-    private void printUserIcons(User user) {
+    private void printUserIcons(User user, boolean pointsHl) {
         boolean botBadgeEnabled = styles.isEnabled(Setting.BOT_BADGE_ENABLED);
-        java.util.List<Usericon> badges = user.getBadges(botBadgeEnabled);
+        java.util.List<Usericon> badges = user.getBadges(botBadgeEnabled, pointsHl);
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (badge.image != null && !badge.removeBadge) {

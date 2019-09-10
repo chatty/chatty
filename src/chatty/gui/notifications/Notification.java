@@ -7,6 +7,7 @@ import chatty.User;
 import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import chatty.util.StringUtil;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -267,11 +268,11 @@ public class Notification {
         return channel.equalsIgnoreCase(this.channel);
     }
     
-    public boolean matches(String text, String channel, Addressbook ab, User user) {
+    public boolean matches(String text, String channel, Addressbook ab, User user, MsgTags tags) {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user);
+        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, tags);
     }
     
     public boolean hasChannel() {

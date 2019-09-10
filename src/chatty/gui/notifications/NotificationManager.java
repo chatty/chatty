@@ -19,6 +19,7 @@ import chatty.util.Sound;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,10 +93,10 @@ public class NotificationManager {
         });
     }
     
-    public void highlight(User user, String message, boolean noNotify,
+    public void highlight(User user, String message, MsgTags tags, boolean noNotify,
             boolean noSound, boolean isOwnMessage, boolean isWhisper,
             boolean hasBits) {
-        check(null, user.getChannel(), user, message, noNotify, noSound, n -> {
+        check(null, user.getChannel(), user, message, tags, noNotify, noSound, n -> {
             if (isOwnMessage && !n.hasOption("own")) {
                 return null;
             }
@@ -130,7 +131,7 @@ public class NotificationManager {
     public void infoHighlight(Room room, String message, boolean noNotify,
             boolean noSound) {
         String channel = room != null ? room.getChannel() : null;
-        check(null, channel, null, message, noNotify, noSound,  n -> {
+        check(null, channel, null, message, MsgTags.EMPTY, noNotify, noSound,  n -> {
             boolean hasChannel = channel != null && !channel.isEmpty();
             if (n.type == Type.HIGHLIGHT) {
                 String title;
@@ -174,9 +175,9 @@ public class NotificationManager {
         });
     }
     
-    public void message(User user, String message, boolean isOwnMessage,
-            boolean hasBits) {
-        check(Type.MESSAGE, user.getChannel(), user, message, n -> {
+    public void message(User user, String message, MsgTags tags,
+            boolean isOwnMessage, boolean hasBits) {
+        check(Type.MESSAGE, user.getChannel(), user, message, tags, n -> {
             if (isOwnMessage && !n.hasOption("own")) {
                 return null;
             }
@@ -272,16 +273,21 @@ public class NotificationManager {
     }
     
     private void check(Type type, String channel, NotificationChecker c) {
-        check(type, channel, null, null, false, false, c);
+        check(type, channel, null, null, MsgTags.EMPTY, false, false, c);
     }
     
     private void check(Type type, String channel, User user, String message,
             NotificationChecker c) {
-        check(type, channel, user, message, false, false, c);
+        check(type, channel, user, message, MsgTags.EMPTY, false, false, c);
+    }
+    
+    private void check(Type type, String channel, User user, String message,
+            MsgTags tags, NotificationChecker c) {
+        check(type, channel, user, message, tags, false, false, c);
     }
     
     private void check(Type type, String channel, User user,
-            String message, boolean noNotify, boolean noSound,
+            String message, MsgTags tags, boolean noNotify, boolean noSound,
             NotificationChecker c) {
         boolean shown = false;
         boolean played = false;
@@ -289,7 +295,7 @@ public class NotificationManager {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
-                    && n.matches(message, channel, ab, user)) {
+                    && n.matches(message, channel, ab, user, tags)) {
                 
                 NotificationData d = c.check(n);
                 if (d != null) {

@@ -68,16 +68,17 @@ class UsericonEditor extends TableEditor<Usericon> {
         typeNames.put(Usericon.Type.MOD, "Moderator");
         typeNames.put(Usericon.Type.VIP, "VIP");
         typeNames.put(Usericon.Type.SUB, "Subscriber");
+        typeNames.put(Usericon.Type.BROADCASTER, "Broadcaster");
+        typeNames.put(Usericon.Type.BOT, "Bot");
+        typeNames.put(Usericon.Type.TWITCH, "Other (Twitch)");
+        typeNames.put(Usericon.Type.OTHER, "Other (Third-Party)");
+        typeNames.put(Usericon.Type.HL, "Highlighted (by points)");
         typeNames.put(Usericon.Type.TURBO, "Turbo");
         typeNames.put(Usericon.Type.PRIME, "Prime");
         typeNames.put(Usericon.Type.BITS, "Bits");
         typeNames.put(Usericon.Type.ADMIN, "Admin");
         typeNames.put(Usericon.Type.STAFF, "Staff");
-        typeNames.put(Usericon.Type.BROADCASTER, "Broadcaster");
         typeNames.put(Usericon.Type.GLOBAL_MOD, "Global Moderator");
-        typeNames.put(Usericon.Type.BOT, "Bot");
-        typeNames.put(Usericon.Type.TWITCH, "Other (Twitch)");
-        typeNames.put(Usericon.Type.OTHER, "Other (Third-Party)");
     }
     
     public void setTwitchBadgeTypes(Set<String> types) {

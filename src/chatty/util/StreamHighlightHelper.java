@@ -9,6 +9,7 @@ import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class StreamHighlightHelper {
      * @param line The content of the message
      * @return A response to either echo or send to the channel
      */
-    public String modCommand(User user, String line) {
+    public String modCommand(User user, String line, MsgTags tags) {
         //---------
         // Channel
         //---------
@@ -85,7 +86,7 @@ public class StreamHighlightHelper {
             return null;
         }
         HighlightItem item = new Highlighter.HighlightItem(match);
-        if (!item.matches(HighlightItem.Type.REGULAR, line, user)) {
+        if (!item.matches(HighlightItem.Type.REGULAR, line, user, tags)) {
             return null;
         }
         //---------------------------------------
