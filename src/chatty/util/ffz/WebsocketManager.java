@@ -10,6 +10,7 @@ import chatty.util.UrlRequest.FullResult;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.settings.Settings;
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -116,11 +117,31 @@ public class WebsocketManager {
     }
     
     private static String[] getServers() {
-        return new String[] {
-            "catbag.frankerfacez.com",
-            "andknuckles.frankerfacez.com",
-            "tuturu.frankerfacez.com"
-        };
+        String main = "socket.frankerfacez.com";
+        try {
+            InetAddress[] servers = InetAddress.getAllByName(main);
+            String[] result = new String[servers.length];
+            for (int i = 0; i < servers.length; i++) {
+                String host = servers[i].getCanonicalHostName();
+                /**
+                 * Check that it's not an IP (not ideal, but should be ok), and
+                 * fall back to the main host if needed. It needs the hostname
+                 * for SSL host verification (which can be turned off, but I'd
+                 * rather try it like this for now).
+                 */
+                if (host.contains("frankerfacez.com")) {
+                    result[i] = host;
+                } else {
+                    result[i] = main;
+                }
+            }
+            return result;
+        } catch (Exception ex) {
+            LOGGER.warning("Failed to resolve socket.frankerfacez.com (using host directly)");
+            return new String[]{
+                main
+            };
+        }
     }
     
     /**
