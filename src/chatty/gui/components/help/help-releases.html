@@ -61,7 +61,45 @@
         <a name="0.10">Version 0.10</a> <a name="latest">(This one!)</a> (2019-??-??)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Coming soon</p>
+    <p>Work in progress</p>
+    <pre>
+### Chat
+- Added various timestamp customization settings (font, color, format)
+- Added support for emotes modified by channel points
+- Added initial support for messages highlighted by channel points
+  - Automatically highlighted (can be turned off in the Highlights settings)
+  - Special badge added (can be turned off by adding a Custom Badge of the same
+    type with no image)
+  - Added matching prefix "config:hl"
+
+### Emotes
+- Added image to Emote tooltips
+- Implemented new Twitchemotes.com API for more up-to-date data and reduced
+  memory usage
+
+### Other
+- Changed matching behavior (Highlights, Ignore, etc.) for prefixes that make no
+  sense in the context to not match (e.g. "user:" on an info message)
+- TAB Completion: Always include current channel name
+- Change "/host" command to host current channel if no argument provided
+- Show favorited channels with star in Live Streams list (and optional sorted
+  first)
+- Added setting to show on single-click on Tray Icon (otherwise usually
+  double-click, platform dependent)
+- User Dialog: Allow smaller minimal size, more flexible sizing
+- User Dialog: Added shortcut setting for ban reasons
+- Changed notification border color for dark notification backgrounds
+- Added Custom Command function "$replace()"
+- Added "$vip" to Custom Usercolors/Badges
+- Improved debug output
+- Updated translations
+
+### Bugfixes
+- Always show Live Streams list scrollbar to avoid bug
+- Fixed TAB Completion not working in some cases
+- Fixed error related to TAB Completion
+- Various small bugfixes
+    </pre>
     
     <h2>
         <a name="0.9.7">Version 0.9.7</a> (2019-07-15)

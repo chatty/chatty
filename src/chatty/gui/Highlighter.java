@@ -589,7 +589,7 @@ public class Highlighter {
         private void parseBadges(List<String> list) {
             List<BadgeType> badges = new ArrayList<>();
             list.forEach(part -> {
-                if (part.startsWith("b") && part.length() > 2) {
+                if (part.startsWith("b|") && part.length() > 2) {
                     badges.add(BadgeType.parse(part.substring(2)));
                 }
             });
@@ -622,7 +622,7 @@ public class Highlighter {
         private void parseTags(List<String> list) {
             List<Pair<String, Pattern>> items = new ArrayList<>();
             list.forEach(part -> {
-                if (part.startsWith("t") && part.length() > 2) {
+                if (part.startsWith("t|") && part.length() > 2) {
                     String tag = part.substring(2);
                     String[] split = tag.split("=", 2);
                     if (split.length == 2) {

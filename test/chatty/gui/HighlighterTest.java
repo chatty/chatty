@@ -147,6 +147,14 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "hmm dum dum dumdidum"));
         assertFalse(highlighter.check(user, "Dum"));
         
+        update("reg:\"abc\"");
+        assertTrue(highlighter.check(user, "test \"abc\" test"));
+        assertFalse(highlighter.check(user, "test abc test"));
+        
+        update("reg:\\\\");
+        assertTrue(highlighter.check(user, "test\\test"));
+        assertFalse(highlighter.check(user, "test abc test"));
+        
         update("re*:dumdi|dum");
         assertTrue(highlighter.check(user, "dumdi"));
         assertTrue(highlighter.check(user, "dum"));
