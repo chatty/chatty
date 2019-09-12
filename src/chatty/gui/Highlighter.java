@@ -8,7 +8,9 @@ import chatty.Logging;
 import chatty.User;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
+import chatty.util.Pair;
 import chatty.util.StringUtil;
+import chatty.util.api.usericons.BadgeType;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -320,7 +322,7 @@ public class Highlighter {
                     return user != null && m.apply(user);
                 }
             };
-            items.add(item);
+            matchItems.add(item);
         }
         
         private void addChanItem(String info, Object infoData, Function<String, Boolean> m) {
@@ -331,7 +333,7 @@ public class Highlighter {
                     return channel != null && m.apply(channel);
                 }
             };
-            items.add(item);
+            matchItems.add(item);
         }
         
         private void addTagsItem(String info, Object infoData, Function<MsgTags, Boolean> m) {
@@ -342,7 +344,7 @@ public class Highlighter {
                     return tags != null && m.apply(tags);
                 }
             };
-            items.add(item);
+            matchItems.add(item);
         }
         
         /**
@@ -357,7 +359,8 @@ public class Highlighter {
             }
         };
         
-        private final List<Item> items = new ArrayList<>();
+        private final String raw;
+        private final List<Item> matchItems = new ArrayList<>();
         private Pattern pattern;
         private Color color;
         private Color backgroundColor;
@@ -405,6 +408,7 @@ public class Highlighter {
         }
         
         public HighlightItem(String item) {
+            raw = item;
             prepare(item);
         }
         
@@ -418,70 +422,127 @@ public class Highlighter {
             item = item.trim();
             if (!findPatternPrefixAndCompile(item)) {
                 // If not a text matching prefix, search for other prefixes
+                
+                //--------------------------
+                // User prefixes
+                //--------------------------
                 if (item.startsWith("cat:")) {
-                    String category = parsePrefix(item, "cat:");
-                    addUserItem("Addressbook Category", category, user -> {
-                        return user.hasCategory(category);
+                    List<String> categories = parseStringListPrefix(item, "cat:", s -> s);
+                    addUserItem("Any of Addressbook Categories", categories, user -> {
+                        for (String category : categories) {
+                            if (user.hasCategory(category)) {
+                                return true;
+                            }
+                        }
+                        return false;
                     });
                 }
                 else if (item.startsWith("!cat:")) {
-                    String category = parsePrefix(item, "!cat:");
-                    addUserItem("Not Addressbook Category", category, user -> !user.hasCategory(category));
+                    List<String> categories = parseStringListPrefix(item, "!cat:", s -> s);
+                    addUserItem("Not any of Addressbook Categories", categories, user -> {
+                        for (String category : categories) {
+                            if (!user.hasCategory(category)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
                 }
                 else if (item.startsWith("user:")) {
                     Pattern p = compilePattern(Pattern.quote(parsePrefix(item, "user:").toLowerCase(Locale.ENGLISH)));
-                    addUserItem("Username", p, user -> p.matcher(user.getName()).matches());
+                    addUserItem("Username", p, user -> {
+                        return p.matcher(user.getName()).matches();
+                    });
                 }
                 else if (item.startsWith("reuser:")) {
                     Pattern p = compilePattern(parsePrefix(item, "reuser:").toLowerCase(Locale.ENGLISH));
-                    addUserItem("Username (Regex)", p, user -> p.matcher(user.getName()).matches());
+                    addUserItem("Username (Regex)", p, user -> {
+                        return p.matcher(user.getName()).matches();
+                    });
                 }
+                else if (item.startsWith("status:")) {
+                    Set<Status> s = parseStatus(parsePrefix(item, "status:"));
+                    addUserItem("User Status", s, user -> {
+                        return checkStatus(user, s, true);
+                    });
+                }
+                else if (item.startsWith("!status:")) {
+                    Set<Status> s = parseStatus(parsePrefix(item, "!status:"));
+                    addUserItem("Not User Status", s, user -> {
+                        return checkStatus(user, s, false);
+                    });
+                }
+                //--------------------------
+                // Channel Prefixes
+                //--------------------------
                 else if (item.startsWith("chan:")) {
                     List<String> chans = parseStringListPrefix(item, "chan:",
-                            c -> Helper.toChannel(c));
-                    addChanItem("One of channels", chans, chan -> chans.contains(chan));
+                                                               c -> Helper.toChannel(c));
+                    addChanItem("One of channels", chans, chan -> {
+                        return chans.contains(chan);
+                    });
                 }
                 else if (item.startsWith("!chan:")) {
                     List<String> chans = parseStringListPrefix(item, "!chan:",
-                            c -> Helper.toChannel(c));
-                    addChanItem("Not one of channels", chans, chan -> !chans.contains(chan));
+                                                               c -> Helper.toChannel(c));
+                    addChanItem("Not one of channels", chans, chan -> {
+                        return !chans.contains(chan);
+                    });
                 }
                 else if (item.startsWith("chanCat:")) {
-                    String cat = parsePrefix(item, "chanCat:");
-                    items.add(new Item("Channel Addressbook Category", cat) {
+                    List<String> cats = parseStringListPrefix(item, "chanCat:", s -> s);
+                    matchItems.add(new Item("Channel Addressbook Category", cats) {
 
                         @Override
                         public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
-                            return channel != null && ab != null && ab.hasCategory(channel, cat);
+                            if (channel == null || ab == null) {
+                                return false;
+                            }
+                            for (String cat : cats) {
+                                if (ab.hasCategory(channel, cat)) {
+                                    return true;
+                                }
+                            }
+                            return false;
                         }
                     });
                 }
                 else if (item.startsWith("!chanCat:")) {
-                    String cat = parsePrefix(item, "!chanCat:");
-                    items.add(new Item("Not Channel Addressbook Category", cat) {
+                    List<String> cats = parseStringListPrefix(item, "!chanCat:", s -> s);
+                    matchItems.add(new Item("Not Channel Addressbook Category", cats) {
 
                         @Override
                         public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
-                            return channel != null && ab != null && !ab.hasCategory(channel, cat);
+                            if (channel == null || ab == null) {
+                                return false;
+                            }
+                            for (String cat : cats) {
+                                if (!ab.hasCategory(channel, cat)) {
+                                    return true;
+                                }
+                            }
+                            return false;
                         }
                     });
                 }
+                //--------------------------
+                // Behaviour Prefixes
+                //--------------------------
                 else if (item.startsWith("color:")) {
                     color = HtmlColors.decode(parsePrefix(item, "color:"));
                 }
                 else if (item.startsWith("bgcolor:")) {
                     backgroundColor = HtmlColors.decode(parsePrefix(item, "bgcolor:"));
                 }
-                else if (item.startsWith("status:")) {
-                    Set<Status> s = parseStatus(parsePrefix(item, "status:"));
-                    addUserItem("User Status", s, user -> checkStatus(user, s, true));
+                else if (item.startsWith("replacement:")) {
+                    replacement = parsePrefix(item, "replacement:");
                 }
-                else if (item.startsWith("!status:")) {
-                    Set<Status> s = parseStatus(parsePrefix(item, "!status:"));
-                    addUserItem("Not User Status", s, user -> checkStatus(user, s, false));
-                }
+                //--------------------------
+                // Mixed Prefixes
+                //--------------------------
                 else if (item.startsWith("config:")) {
-                    parseListPrefixSingle(item, "config:", part -> {
+                    List<String> list = parseStringListPrefix(item, "config:", s -> s);
+                    list.forEach(part -> {
                         if (part.equals("silent")) {
                             noSound = true;
                         }
@@ -495,58 +556,107 @@ public class Highlighter {
                             appliesToType = Type.ANY;
                         }
                         else if (part.equals("firstmsg")) {
-                            addUserItem("First Message of User", null, user -> user.getNumberOfMessages() == 0);
+                            addUserItem("First Message of User", null, user -> {
+                                return user.getNumberOfMessages() == 0;
+                            });
                         }
                         else if (part.equals("hl")) {
-                            addTagsItem("Highlighted by points", null, t -> t.isHighlightedMessage());
-                        }
-                        else if (part.startsWith("b") && part.length() > 2) {
-                            /**
-                             * TODO: Maybe turn this and tags into "OR"
-                             */
-                            String badge = part.substring(2);
-                            String[] split = badge.split("/");
-                            if (split.length == 1) {
-                                addUserItem("Twitch Badge", badge, user -> {
-                                    return user.hasTwitchBadge(badge);
-                                });
-                            } else {
-                                addUserItem("Twitch Badge", badge, user -> {
-                                    return user.hasTwitchBadge(split[0], split[1]);
-                                });
-                            }
-                        }
-                        else if (part.startsWith("t") && part.length() > 2) {
-                            String tag = part.substring(2);
-                            String[] split = tag.split("=", 2);
-                            if (split.length == 2) {
-                                String value = split[1];
-                                Pattern p;
-                                if (value.startsWith("reg:")) {
-                                    p = compilePattern(split[1].substring("reg:".length()));
-                                } else {
-                                    p = compilePattern(Pattern.quote(split[1]));
-                                }
-                                items.add(new Item("Message Tag", p) {
-
-                                    @Override
-                                    public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
-                                        return tags.containsKey(split[0]) && p.matcher(tags.get(split[0])).matches();
-                                    }
-                                });
-                            } else {
-                                items.add(NO_MATCH_ITEM);
-                            }
+                            addTagsItem("Highlighted by channel points", null, t -> {
+                                return t.isHighlightedMessage();
+                            });
                         }
                     });
+                    parseBadges(list);
+                    parseTags(list);
                 }
-                else if (item.startsWith("replacement:")) {
-                    replacement = parsePrefix(item, "replacement:");
-                }
+                //--------------------------
+                // No prefix
+                //--------------------------
                 else {
                     textWithoutPrefix = item;
                     pattern = compilePattern("(?iu)" + Pattern.quote(item));
                 }
+            }
+        }
+        
+        /**
+         * Receives all list items from a single "config:" prefix, which may or
+         * may not contain badge items. Only one of the resulting badge items
+         * has to match in the resulting match item.
+         * 
+         * @param list The "config:" prefix items
+         */
+        private void parseBadges(List<String> list) {
+            List<BadgeType> badges = new ArrayList<>();
+            list.forEach(part -> {
+                if (part.startsWith("b") && part.length() > 2) {
+                    badges.add(BadgeType.parse(part.substring(2)));
+                }
+            });
+            if (!badges.isEmpty()) {
+                addUserItem("Any of Twitch Badge", badges, user -> {
+                    for (BadgeType type : badges) {
+                        if (type.version == null) {
+                            if (user.hasTwitchBadge(type.id)) {
+                                return true;
+                            }
+                        }
+                        else {
+                            if (user.hasTwitchBadge(type.id, type.version)) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
+            }
+        }
+        
+        /**
+         * Receives all list items from a single "config:" prefix, which may or
+         * may not contain tag items. Only of of the resulting tag items has to
+         * match in the resulting match item.
+         * 
+         * @param list The "config:" prefix items
+         */
+        private void parseTags(List<String> list) {
+            List<Pair<String, Pattern>> items = new ArrayList<>();
+            list.forEach(part -> {
+                if (part.startsWith("t") && part.length() > 2) {
+                    String tag = part.substring(2);
+                    String[] split = tag.split("=", 2);
+                    if (split.length == 2) {
+                        String value = split[1];
+                        Pattern p;
+                        if (value.startsWith("reg:")) {
+                            p = compilePattern(split[1].substring("reg:".length()));
+                        }
+                        else {
+                            p = compilePattern(Pattern.quote(split[1]));
+                        }
+                        items.add(new Pair(split[0], p));
+                    }
+                    else {
+                        items.add(new Pair(split[0], null));
+                    }
+                }
+            });
+            if (!items.isEmpty()) {
+                addTagsItem("Any of Message Tags", items, tags -> {
+                    for (Pair<String, Pattern> item : items) {
+                        if (tags.containsKey(item.key)) {
+                            if (item.value != null) {
+                                if (item.value.matcher(tags.get(item.key)).matches()) {
+                                    return true;
+                                }
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                });
             }
         }
         
@@ -619,7 +729,8 @@ public class Highlighter {
         }
         
         /**
-         * Split input by comma and send each item to the given consumer.
+         * Split input by comma and send each non-empty item to the given
+         * consumer.
          * 
          * Since StringUtil.split() is used, quoting and escaping can be used
          * for ignoring commas.
@@ -878,9 +989,10 @@ public class Highlighter {
                 tags = MsgTags.EMPTY;
             }
             
-            for (Item item : items) {
+//            System.out.println(raw);
+            for (Item item : matchItems) {
                 boolean match = item.matches(channel, ab, user, tags);
-                System.out.println(item);
+//                System.out.println(item);
                 if (!match) {
                     return false;
                 }

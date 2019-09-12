@@ -10,7 +10,7 @@
         | <a href="#Chat_Colors">Chat Colors</a>
         | <a href="#Message_Colors">Message Colors</a>
         | <a href="#Usercolors">Usercolors</a>
-        | <a href="#Usericons">Usericons</a>
+        | <a href="#Usericons">Badges</a>
         | <a href="#Emoticons">Emoticons</a>
         | <a href="#Fonts">Fonts</a>
         | <a href="#Chat">Chat</a>
@@ -167,12 +167,12 @@
     
     
     <h2>
-        <a name="Usericons">Usericons</a>
+        <a name="Usericons">Badges</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <h3>Usericon Settings</h3>
+    <h3>Badge Settings</h3>
     <ul>
-        <li><strong>Show Usericons</strong>: Shows badges as images instead of
+        <li><strong>Show Badges</strong>: Shows badges as images instead of
         just text</li>
         <li><strong>Enable Custom Usericons</strong>: Use the custom icons
         defined in the table below</li>
@@ -802,11 +802,32 @@
     </ul>
     
     <h3><a name="Highlight_Meta_Matching">Meta Prefixes (Matching)</a></h3>
-    <p>The following prefix don't match on the text itself, but define other
+    <p>The following prefixes don't match on the text itself, but define other
         things that should or should not trigger a Highlight. You can place one
         or several of these prefixes before the search text (separated by
         spaces):
-        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
+        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search&nbsp;text&gt;</code></p>
+    
+    <p>Notes:</p>
+    <ul>
+        <li>When specifying several prefixes, all of them have to match in order
+            for the Highlight to trigger.</li>
+        <li>The same prefix can appear several times with different values (e.g.
+            <code>cat:category1 cat:category2</code>).</li>
+        <li>Prefixes can normally not contain spaces (it wouldn't be clear
+            whether the space is part of the prefix value or a separator between
+            prefixes), however you can enclose the prefix value (or part of it)
+            in quotes or escape each space with a backlash. Example:
+            <code>replacement:"text&nbsp;with&nbsp;space"</code> or
+            <code>replacement:text\ with\ space</code></li>
+        <li>Quotes and backslashes have to be escaped when intended to be used literally (<code>\"</code> or <code>\\</code>).</li>
+        <li>When a prefix can have several values, they must be comma-separated
+            (without spaces). Example: <code>cat:category1,category2</code>.
+            Commas in list values can be quoted or escaped as well for them to
+            be used literally instead of as a separator.</li>
+    </ul>
+    
+    <p>Possible matching prefixes:</p>
     <ul>
         <li><code>user:</code> to specify one exact username (case-insensitive)
             which should highlight only if this user send the message, doesn't
@@ -815,20 +836,24 @@
             Behaves like the <code>regm:</code>/<code>re:</code> prefix, in that
             it always tries to match the entire username. Example:
             <code>reuser:(?i)a.*</code> would match all names starting with "a".</li>
-        <li><code>cat:</code> to specify a category the user who send the message
-        should be in (as defined in the <a href="help.html#addressbook">Addressbook</a>).</li>
-        <li><code>!cat:</code> to specify a category the user who send the message
-        can NOT be in.</li>
-        <li><code>chan:</code> to specify one or more channels the message has
-        to be send in to match (several channels are specified as comma-separated
-        list, without spaces).</li>
-        <li><code>!chan:</code> to specify one or more channels the message must
-        NOT be send in to match.</li>
-        <li><code>chanCat:</code> to specify one category the channel the message
-        was send in has to be in (as defined in the <a href="help.html#addressbook">Addressbook</a>
-        with the name of the channel, including leading #).</li>
-        <li><code>!chanCat:</code> to specify one category the channel the message
-        was send in can NOT be in.</li>
+        <li><code>cat:</code> - One or several (comma separated) <a href="help.html#addressbook">Addressbook</a>
+            categories. The user who send the message must be in at least on of them.
+            Example: <code>cat:friends,family</code></li>
+        <li><code>!cat:</code> - One or several Addressbook categories.
+            The user who send the message must <em>not</em> be in at least one of them.</li>
+        <li><code>chan:</code> - One or several channels the message must
+            have been sent in. Example: <code>chan:joshimuz,tirean</code></li>
+        <li><code>!chan:</code> - One or several channels the message must
+            <em>not</em> have been sent in.</li>
+        <li><code>chanCat:</code> - One or several <a href="help.html#addressbook">Addressbook</a>
+            categories. The channel the message was send in must be in at least
+            one of those categories (added to the Addressbook with the name of
+            the channel, including leading #).</li>
+        <li><code>!chanCat:</code> - One or several Addressbook categories. The
+            channel the message was send in must <em>not</em> be in at least one
+            of them. Example: <code>!chanCat:modding,important</code> (if
+            channel has both, the match fails), <code>!chanCat:modding !chanCat:important</code>
+            (if channel has one or both, the match fails)</li>
         <li><code>status:</code> to specify that the user has to have one of the
             given status codes (case-sensitive):
             <ul>
@@ -845,8 +870,10 @@
                     (so Broadcaster/Moderator/Global Moderator/Admin/Staff combined)</li>
                 <li><code>v</code> VIP</li>
             </ul>
-            For example: <code>status:st</code> matches
-        all subscriber and turbo users.</li>
+            For example: <code>status:sv</code> matches users that are either a
+            subscriber or a VIP (or both). <code>status:s&nbsp;status:v</code>
+            matches users that are <em>both</em> a subscriber and VIP at the
+            same time.</li>
         <li><code>!status:</code> to specify that the user must NOT have any of
             the given status codes (see <code>status:</code> for codes). For example:
             <code>!status:stM</code> matches all 'normal' users that have no
@@ -860,6 +887,16 @@
                     messages instead of regular user messages</li>
                 <li><code>config:any</code> - This item applies to both info
                     messages and regular user messages</li>
+                <li><code>config:hl</code> - Restrict matching to user messages
+                    highlighted by using channel points</li>
+                <li><code>config:b|id/version</code> - Match a Twitch Badge
+                    (version optional, if several are specified in the same
+                    <code>config:</code> prefix, only one has to match).</li>
+                <li><code>config:t|key=value</code> or <code>config:t|key=reg:value</code> -
+                    Match a message tag (value optional, if several are
+                    specified in the same <code>config:</code> prefix, only one
+                    has to match), prefix value with <code>reg:</code> to use
+                    regex matching on the value.</li>
             </ul>
         </li>
     </ul>
@@ -870,6 +907,8 @@
         prefixes before the search text (separated by spaces):
         <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
 
+    <p>See <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> for quoting/escaping.</p>
+    
     <ul>
         <li><code>color:</code> to specify a color other than the default
             Highlight color for displaying this Highlight (HTML Color Codes as
