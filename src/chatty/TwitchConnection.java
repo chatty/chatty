@@ -8,6 +8,7 @@ import chatty.ChannelStateManager.ChannelStateListener;
 import chatty.util.BotNameManager;
 import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
+import chatty.util.api.Emoticons;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1259,7 +1260,6 @@ public class TwitchConnection {
         }
         
         private void updateUserstate(String channel, MsgTags tags) {
-            String emotesets = tags.get("emote-sets");
             if (channel != null) {
                 /**
                  * Update state for the local user in the given channel, also
@@ -1268,7 +1268,6 @@ public class TwitchConnection {
                  */
                 User user = localUserJoined(channel);
                 updateUserFromTags(user, tags);
-                user.setEmoteSets(emotesets);
             } else {
                 /**
                  * Update all existing users with the local name, assuming that
@@ -1276,7 +1275,6 @@ public class TwitchConnection {
                  */
                 for (User user : users.getUsersByName(username)) {
                     updateUserFromTags(user, tags);
-                    user.setEmoteSets(emotesets);
                 }
             }
 
@@ -1288,14 +1286,13 @@ public class TwitchConnection {
              * 
              * This may be updated with local and global info, however only the
              * global info is used to initialize newly created local users.
-             * 
-             * The special user is also used to get the emotesets the local user
-             * has access to in other areas of the program like the Emotes
-             * Dialog.
              */
-            users.specialUser.setEmoteSets(emotesets);
-            listener.onSpecialUserUpdated();
             updateUserFromTags(users.specialUser, tags);
+            
+            //--------------------------
+            // Emotesets
+            //--------------------------
+            listener.onEmotesets(Emoticons.parseEmotesets(tags.get("emote-sets")));
         }
         
         @Override
@@ -1521,7 +1518,7 @@ public class TwitchConnection {
 
         void onConnectionStateChanged(int state);
         
-        void onSpecialUserUpdated();
+        void onEmotesets(Set<String> emotesets);
 
         void onConnectError(String message);
         

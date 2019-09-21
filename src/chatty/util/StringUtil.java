@@ -4,6 +4,8 @@ package chatty.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -388,6 +390,26 @@ public class StringUtil {
         // Add last
         result.add(b.toString());
         return result;
+    }
+    
+    public static final NullComparator NULL_COMPARATOR = new NullComparator();
+    
+    private static class NullComparator implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            if (o1 == null) {
+                return 1;
+            }
+            if (o2 == null) {
+                return -1;
+            }
+            return o1.compareTo(o2);
+        }
+
     }
     
     public static final void main(String[] args) {

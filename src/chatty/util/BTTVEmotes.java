@@ -267,7 +267,7 @@ public class BTTVEmotes {
                         // This also includes "night"
                         return false;
                     } else {
-                        builder.setEmoteset(((Number) emoticon_set).intValue());
+                        builder.setEmoteset(String.valueOf(((Number) emoticon_set).intValue()));
                         return true;
                     }
                 }

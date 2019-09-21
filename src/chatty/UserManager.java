@@ -242,10 +242,10 @@ public class UserManager {
                 user.setAdmin(specialUser.isAdmin());
                 user.setStaff(specialUser.isStaff());
                 user.setTurbo(specialUser.hasTurbo());
+                user.setLocalUser(true);
                 if (!specialUser.hasDefaultColor()) {
                     user.setColor(specialUser.getPlainColor());
                 }
-                user.setEmoteSets(specialUser.getEmoteSet());
                 if (specialUser.hasDisplayNickSet()) {
                     user.setDisplayNick(specialUser.getDisplayNick());
                 }

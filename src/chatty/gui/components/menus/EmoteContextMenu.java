@@ -99,7 +99,8 @@ public class EmoteContextMenu extends ContextMenu {
         addSeparator();
         addItem("ignoreEmote", Language.getString("emoteCm.ignore"));
         if (emote.subType != Emoticon.SubType.CHEER
-                && (emote.emoteSet > -1 || emote.type != Emoticon.Type.TWITCH)) {
+                && ((emote.emoteset != null && !emote.emoteset.isEmpty())
+                || emote.type != Emoticon.Type.TWITCH)) {
             if (!emote.hasStreamRestrictions()) {
                 if (emoteManager.isFavorite(emote)) {
                     addItem("unfavoriteEmote", Language.getString("emoteCm.unfavorite"));

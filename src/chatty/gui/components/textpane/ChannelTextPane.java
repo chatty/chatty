@@ -23,7 +23,6 @@ import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
-import chatty.util.TwitchEmotes.Emoteset;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -2399,10 +2398,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
         }
         
-        // Emoteset based
-        for (Integer set : user.getEmoteSet()) {
-            HashSet<Emoticon> emoticons = main.emoticons.getEmoticons(set);
-            findEmoticons(emoticons, text, ranges, rangesStyle);
+        if (user.isLocalUser()) {
+            for (String set : main.emoticons.getLocalEmotesets()) {
+                HashSet<Emoticon> emoticons = main.emoticons.getEmoticonsBySet(set);
+                findEmoticons(emoticons, text, ranges, rangesStyle);
+            }
         }
         
         // Global emotes
@@ -2414,7 +2414,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         findEmoticons(emoticons, text, ranges, rangesStyle);
         
         // Channel based (may also have a emoteset restriction)
-        HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticons(user.getStream());
+        HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
         findEmoticons(user, channelEmotes, text, ranges, rangesStyle);
     }
     
@@ -3771,7 +3771,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);
             emoteStyle.addAttribute(Attribute.IMAGE_ID, idCounter.getAndIncrement());
             emoteStyle.addAttribute(Attribute.ANIMATED, emoticon.isAnimated());
-            Emoticons.addInfo(main.emoticons.getEmotesetInfo(), emoticon);
             return emoteStyle;
         }
         

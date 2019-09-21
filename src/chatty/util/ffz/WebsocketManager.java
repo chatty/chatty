@@ -318,7 +318,8 @@ public class WebsocketManager {
         EmoticonUpdate update = new EmoticonUpdate(result,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.EVENT,
-                room);
+                room,
+                null);
         listener.channelEmoticonsReceived(update);
     }
     
@@ -332,7 +333,8 @@ public class WebsocketManager {
         EmoticonUpdate update = new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.EVENT,
-                room);
+                room,
+                null);
         listener.channelEmoticonsReceived(update);
     }
     

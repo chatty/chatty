@@ -3,7 +3,6 @@ package chatty.util.api;
 
 import chatty.Helper;
 import chatty.util.StringUtil;
-import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamTagManager.StreamTagListener;
@@ -39,7 +38,6 @@ public class TwitchApi {
     private final TwitchApiResultListener resultListener;
     
     protected final StreamInfoManager streamInfoManager;
-    protected final EmoticonManager emoticonManager;
     protected final EmoticonManager2 emoticonManager2;
     protected final CheerEmoticonManager cheersManager;
     protected final CheerEmoticonManager2 cheersManager2;
@@ -60,7 +58,6 @@ public class TwitchApi {
             StreamInfoListener streamInfoListener) {
         this.resultListener = apiResultListener;
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
-        emoticonManager = new EmoticonManager(apiResultListener);
         cheersManager = new CheerEmoticonManager(apiResultListener);
         cheersManager2 = new CheerEmoticonManager2(this, resultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
@@ -78,32 +75,29 @@ public class TwitchApi {
     // Chat / Emoticons
     //=================
     
-    public void getEmotesBySets(Integer... emotesets) {
+    public void getEmotesBySets(String... emotesets) {
         getEmotesBySets(new HashSet<>(Arrays.asList(emotesets)));
     }
     
-    public void getEmotesBySets(Set<Integer> emotesets) {
+    public void getEmotesBySets(Set<String> emotesets) {
         emoticonManager2.addEmotesets(emotesets);
     }
     
+    public void getUserEmotes(String userId) {
+        requests.requestUserEmotes(userId);
+    }
+    
+    @Deprecated
     public void getEmotesByStreams(String... streams) {
-        emoticonManager2.addStreams(new HashSet<>(Arrays.asList(streams)));
+        // Not usable anymore, since stream -> set isn't available like before anymore
     }
     
     public void refreshEmotes() {
         emoticonManager2.refresh();
     }
     
-    public void refreshEmotesOld() {
-        requests.requestEmoticons(true);
-    }
-    
     public void requestEmotesNow() {
         emoticonManager2.requestNow();
-    }
-    
-    public void setEmotesetInfo(EmotesetInfo info) {
-        emoticonManager2.setEmotesetInfo(info);
     }
     
     public void getGlobalBadges(boolean forceRefresh) {

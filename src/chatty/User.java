@@ -12,13 +12,11 @@ import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Represents a single user on a specific channel.
@@ -26,10 +24,6 @@ import java.util.regex.Pattern;
  * @author tduva
  */
 public class User implements Comparable {
-    
-    private static final Pattern SPLIT_EMOTESET = Pattern.compile("[^0-9]");
-    
-    private static final Set<Integer> EMPTY_EMOTESETS = new HashSet<>();
     
     private static final NamedColor[] defaultColors = {
         new NamedColor("Red", 255, 0, 0),
@@ -108,18 +102,10 @@ public class User implements Comparable {
     private boolean hasCorrectedColor;
     private boolean hasCustomColor;
     
-    //===========
-    // Emoticons
-    //===========
-    /**
-     * Current emotesets. Set gets modified. Only the local User should have
-     * this set nowadays, so by default no value.
-     */
-    private Set<Integer> emoteSets;
-    
     //========
     // Status
     //========
+    private boolean localUser;
     private boolean online;
     private boolean isModerator;
     private boolean isBroadcaster;
@@ -807,6 +793,10 @@ public class User implements Comparable {
         }
     }
     
+    public synchronized boolean isLocalUser() {
+        return localUser;
+    }
+    
     /**
      * Returns true if this user has channel moderator rights, which includes
      * either being a Moderator or the Broadcaster.
@@ -875,6 +865,14 @@ public class User implements Comparable {
     
     public synchronized boolean isVip() {
         return isVip;
+    }
+    
+    public synchronized boolean setLocalUser(boolean localUser) {
+        if (this.localUser != localUser) {
+            this.localUser = localUser;
+            return true;
+        }
+        return false;
     }
     
     public synchronized boolean setModerator(boolean mod) {
@@ -976,62 +974,6 @@ public class User implements Comparable {
             return "@"+result;
         }
         return result;
-    }
-    
-    /**
-     * Sets the set of emoticons available for this user.
-     * 
-     * Splits at any character that is not a number, but usually it should
-     * be a string like: [1,5,39]
-     * 
-     * @param newEmoteSets 
-     */
-    public synchronized void setEmoteSets(String newEmoteSets) {
-        if (emoteSets == null) {
-            emoteSets = new HashSet<>();
-        }
-        emoteSets.clear();
-        if (newEmoteSets == null) {
-            return;
-        }
-        String[] split = SPLIT_EMOTESET.split(newEmoteSets);
-        for (String emoteSet : split) {
-            if (!emoteSet.isEmpty()) {
-                try {
-                    emoteSets.add(Integer.parseInt(emoteSet));
-                } catch (NumberFormatException ex) {
-                    // Do nothing, invalid emoteset, just don't add it
-                }
-            }
-        }
-    }
-    
-    /**
-     * Set new emotesets.
-     * 
-     * @param newEmotesets Non-null Set of emotesets, may be empty
-     */
-    public synchronized void setEmoteSets(Set<Integer> newEmotesets) {
-        if (emoteSets == null) {
-            emoteSets = new HashSet<>();
-        }
-        emoteSets.clear();
-        emoteSets.addAll(newEmotesets);
-    }
-    
-    /**
-     * Gets a Set of Integer containing the emotesets available to this user.
-     * Defensive copying because it might be iterated over while being modified
-     * concurrently. The resulting Set must not be modified, since it could also
-     * be the shared empty Set.
-     * 
-     * @return 
-     */
-    public synchronized Set<Integer> getEmoteSet() {
-        if (emoteSets == null || emoteSets.isEmpty()) {
-            return EMPTY_EMOTESETS;
-        }
-        return new HashSet<>(emoteSets);
     }
     
     public synchronized int getActivityScore() {

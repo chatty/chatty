@@ -268,7 +268,7 @@ public class FrankerFaceZ {
         EmoticonUpdate emotesUpdate;
         if (type == Type.FEATURE_FRIDAY) {
             emotesUpdate = new EmoticonUpdate(emotes, Emoticon.Type.FFZ,
-                     Emoticon.SubType.FEATURE_FRIDAY, null);
+                     Emoticon.SubType.FEATURE_FRIDAY, null, null);
         } else {
             emotesUpdate = new EmoticonUpdate(emotes);
         }
@@ -338,6 +338,7 @@ public class FrankerFaceZ {
         listener.channelEmoticonsReceived(new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.FEATURE_FRIDAY,
+                null,
                 null));
     }
 

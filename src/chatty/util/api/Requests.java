@@ -536,34 +536,14 @@ public class Requests {
         }
     }
     
-    /**
-     * Request to get the emoticons list from the API. If the list is already
-     * available in a local file and is recent, that one is used. Otherwise
-     * a request is issued and the emoticons are received and parsed when that
-     * request is answered.
-     *
-     * @param forcedUpdate
-     */
-    public void requestEmoticons(boolean forcedUpdate) {
-            String url = "https://api.twitch.tv/kraken/chat/emoticon_images";
-            //url = "http://127.0.0.1/twitch/emoticons";
-            if (attemptRequest(url)) {
-                TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-                execute(request, r -> {
-                    api.emoticonManager.dataReceived(r.text, forcedUpdate);
-                });
-            }
-            //requestResult(REQUEST_TYPE_EMOTICONS,"")
-    }
-    
-    public void requestEmotesets(Set<Integer> emotesets) {
+    public void requestEmotesets(Set<String> emotesets) {
         if (emotesets != null && !emotesets.isEmpty()) {
             String emotesetsParam = StringUtil.join(emotesets, ",");
             String url = "https://api.twitch.tv/kraken/chat/emoticon_images?emotesets="+emotesetsParam;
             if (attemptRequest(url)) {
                 TwitchApiRequest request = new TwitchApiRequest(url, "v5");
                 execute(request, r -> {
-                    Set<Emoticon> result = EmoticonManager.parseEmoticonSets(r.text);
+                    EmoticonUpdate result = EmoticonParsing.parseEmoticonSets(r.text, EmoticonUpdate.Source.OTHER);
                     if (result != null) {
                         listener.receivedEmoticons(result);
                     } else {
@@ -574,6 +554,23 @@ public class Requests {
         }
         
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
+    }
+    
+    public void requestUserEmotes(String userId) {
+        String url = "https://api.twitch.tv/kraken/users/"+userId+"/emotes";
+        if (attemptRequest(url)) {
+            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            request.setToken(api.defaultToken);
+            execute(request, r -> {
+                EmoticonUpdate result = EmoticonParsing.parseEmoticonSets(r.text, EmoticonUpdate.Source.USER_EMOTES);
+                if (result != null) {
+                    listener.receivedEmoticons(result);
+                    if (result.setsToRemove != null) {
+                        api.emoticonManager2.addRequested(result.setsToRemove);
+                    }
+                }
+            });
+        }
     }
     
     public void requestCheerEmoticons(String channelId, String stream) {

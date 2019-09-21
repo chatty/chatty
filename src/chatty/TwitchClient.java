@@ -41,14 +41,12 @@ import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
-import chatty.util.TwitchEmotes;
-import chatty.util.TwitchEmotes.EmotesetInfo;
-import chatty.util.TwitchEmotes.TwitchEmotesListener;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChatInfo;
 import chatty.util.api.CheerEmoticon;
+import chatty.util.api.EmotesetManager;
 import chatty.util.api.EmoticonSizeCache;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
@@ -122,7 +120,7 @@ public class TwitchClient {
     public final chatty.util.api.pubsub.Manager pubsub;
     private final PubSubResults pubsubListener = new PubSubResults();
     
-    public final TwitchEmotes twitchemotes;
+    public final EmotesetManager emotesetManager;
     
     public final BTTVEmotes bttvEmotes;
     
@@ -228,7 +226,6 @@ public class TwitchClient {
         createTestUser("tduva", "");
         
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
-        twitchemotes = new TwitchEmotes(new TwitchemotesListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener());
         TwitchEmotesApi.api.setTwitchApi(api);
         
@@ -298,12 +295,12 @@ public class TwitchClient {
         LOGGER.info("Create GUI..");
         g = new MainGui(this);
         g.loadSettings();
+        emotesetManager = new EmotesetManager(api, g, settings);
         g.showGui();
         
         autoModCommandHelper = new AutoModCommandHelper(g, api);
         
         if (Chatty.DEBUG) {
-            getSpecialUser().setEmoteSets("130,4280,33,42,19194");
             Room testRoom =  Room.createRegular("");
             g.addUser(new User("josh", testRoom));
             g.addUser(new User("joshua", testRoom));
@@ -388,6 +385,9 @@ public class TwitchClient {
         
         // Output any cached warning messages
         warning(null);
+        
+        // Request some stuff
+        api.getEmotesBySets("0");
         
         // Before checkNewVersion(), so "updateAvailable" is already updated
         checkForVersionChange();
@@ -491,7 +491,6 @@ public class TwitchClient {
         //testUser.setTurbo(true);
         //testUser.setModerator(true);
         //testUser.setSubscriber(true);
-        testUser.setEmoteSets("4280");
         //testUser.setAdmin(true);
         //testUser.setStaff(true);
         //testUser.setBroadcaster(true);
@@ -1277,12 +1276,8 @@ public class TwitchClient {
         } else if (command.equals("settestuser")) {
             String[] split = parameter.split(" ");
             createTestUser(split[0], split[1]);
-        } else if (command.equals("setemoteset")) {
-            testUser.setEmoteSets(parameter);
-        } else if (command.equals("setemoteset2")) {
-            getSpecialUser().setEmoteSets(parameter);
         } else if (command.equals("getemoteset")) {
-            g.printLine(g.emoticons.getEmoticons(Integer.parseInt(parameter)).toString());
+            g.printLine(g.emoticons.getEmoticonsBySet(parameter).toString());
         } else if (command.equals("testcolor")) {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
@@ -1887,8 +1882,6 @@ public class TwitchClient {
             refreshRequests.add("emoticons");
             //Emoticons.clearCache(Emoticon.Type.TWITCH);
             api.refreshEmotes();
-        } else if (parameter.equals("emoticons_old")) {
-            api.refreshEmotesOld();
         } else if (parameter.equals("bits")) {
             g.printLine("Refreshing bits..");
             refreshRequests.add("bits");
@@ -1920,10 +1913,6 @@ public class TwitchClient {
             refreshRequests.add("bttvemotes");
             bttvEmotes.requestEmotes("$global$", true);
             bttvEmotes.requestEmotes(channel, true);
-        } else if (parameter.equals("emotesets")) {
-            g.printLine("Refreshing emoteset information..");
-            refreshRequests.add("emotesets");
-            twitchemotes.refresh();
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
         }
@@ -1933,25 +1922,29 @@ public class TwitchClient {
         return c.getSpecialUser();
     }
     
+    public Set<String> getEmotesets() {
+        return emotesetManager.getEmotesets();
+    }
+    
     /**
      * Outputs the emotesets for the local user. This might not work correctly
      * if the user is changed or the emotesets change during the session.
      */
     private void commandMyEmotes() {
-        Set<Integer> emotesets = getSpecialUser().getEmoteSet();
+        Set<String> emotesets = getEmotesets();
         if (emotesets.isEmpty()) {
             g.printLine("No subscriber emotes found. (Only works if you joined"
                     + " any channel before.)");
         } else {
             StringBuilder b = new StringBuilder("Your subemotes: ");
             String sep = "";
-            for (Integer emoteset : emotesets) {
+            for (String emoteset : emotesets) {
                 b.append(sep);
                 if (Emoticons.isTurboEmoteset(emoteset)) {
                     b.append("Turbo/Prime emotes");
                 } else {
                     String sep2 = "";
-                    for (Emoticon emote : g.emoticons.getEmoticons(emoteset)) {
+                    for (Emoticon emote : g.emoticons.getEmoticonsBySet(emoteset)) {
                         b.append(sep2);
                         b.append(emote.code);
                         sep2 = ", ";
@@ -1971,7 +1964,7 @@ public class TwitchClient {
             output = Emoticons.filterByType(g.emoticons.getGlobalTwitchEmotes(), Emoticon.Type.FFZ);
         } else {
             b.append("This channel's FFZ emotes: ");
-            Set<Emoticon> emotes = g.emoticons.getEmoticons(Helper.toStream(channel));
+            Set<Emoticon> emotes = g.emoticons.getEmoticonsByStream(Helper.toStream(channel));
             output = Emoticons.filterByType(emotes, Emoticon.Type.FFZ);
         }
         if (output.isEmpty()) {
@@ -2117,8 +2110,18 @@ public class TwitchClient {
     private class TwitchApiResults implements TwitchApiResultListener {
         
         @Override
-        public void receivedEmoticons(Set<Emoticon> emoticons) {
-            g.addEmoticons(emoticons);
+        public void receivedEmoticons(EmoticonUpdate update) {
+            g.updateEmoticons(update);
+            
+            // After adding emotes, update sets
+            if (update.source == EmoticonUpdate.Source.USER_EMOTES
+                    && update.setsToRemove != null) {
+                // setsToRemove contains all sets (only for USER_EMOTES)
+                // This may also update EmoteDialog etc.
+                emotesetManager.setEmotesets(update.setsToRemove);
+            }
+            
+            // Other stuff
             if (refreshRequests.contains("emoticons")) {
                 g.printLine("Emoticons list updated.");
                 refreshRequests.remove("emoticons");
@@ -2579,20 +2582,6 @@ public class TwitchClient {
         
     }
     
-    private class TwitchemotesListener implements TwitchEmotesListener {
-
-        @Override
-        public void emotesetsReceived(EmotesetInfo info) {
-            if (refreshRequests.contains("emotesets")) {
-                g.printLine("Emoteset information updated.");
-                refreshRequests.remove("emotesets");
-            }
-            g.setEmotesets(info);
-            api.setEmotesetInfo(info);
-        }
-        
-    }
-    
     /**
      * Only used for testing. You have to restart Chatty for the spam protection
      * in the connectin to change.
@@ -2861,12 +2850,10 @@ public class TwitchClient {
         public void onConnectionStateChanged(int state) {
             g.updateState(true);
         }
-
+        
         @Override
-        public void onSpecialUserUpdated() {
-            g.updateEmotesDialog();
-            g.updateEmoteNames();
-            api.getEmotesBySets(getSpecialUser().getEmoteSet());
+        public void onEmotesets(Set<String> emotesets) {
+            emotesetManager.setIrcEmotesets(emotesets);
         }
 
         @Override

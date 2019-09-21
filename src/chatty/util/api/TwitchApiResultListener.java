@@ -13,7 +13,7 @@ import java.util.Set;
  * @author tduva
  */
 public interface TwitchApiResultListener {
-    void receivedEmoticons(Set<Emoticon> emoticons);
+    void receivedEmoticons(EmoticonUpdate emoteUpdate);
     void receivedCheerEmoticons(Set<CheerEmoticon> emoticons);
     void receivedUsericons(List<Usericon> icons);
     void tokenVerified(String token, TokenInfo tokenInfo);

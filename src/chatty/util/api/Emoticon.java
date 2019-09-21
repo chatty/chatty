@@ -49,10 +49,17 @@ public class Emoticon {
     
     private static final Logger LOGGER = Logger.getLogger(Emoticon.class.getName());
     
-    public static final int SET_GLOBAL = 0;
-    public static final int SET_UNDEFINED = -1;
-    public static final int SET_UNKNOWN = -2;
-    public static final int ID_UNDEFINED = -1;
+    public static final String SET_GLOBAL = "0";
+    
+    /**
+     * Undefined means an emoteset is not defined for this emote at all.
+     */
+    public static final String SET_NONE = null;
+    
+    /**
+     * Unknown means that an emoteset may be required, but it's not known.
+     */
+    public static final String SET_UNKNOWN = "";
     
     public static enum Type {
         TWITCH("Twitch"), FFZ("FFZ"), BTTV("BTTV"), CUSTOM("Custom"),
@@ -100,7 +107,7 @@ public class Emoticon {
     public final Type type;
     public final SubType subType;
     public final String code;
-    public final int emoteSet;
+    public final String emoteset;
     private final Set<String> streamRestrictions;
     public final String url;
     public final boolean literal;
@@ -142,7 +149,7 @@ public class Emoticon {
         private String emotesetInfo;
         private Set<String> streamRestrictions;
         private Set<String> infos;
-        private int emoteset = SET_UNDEFINED;
+        private String emoteset = SET_NONE;
         private String stringId = null;
         private String stringIdAlias = null;
         private String creator;
@@ -170,7 +177,7 @@ public class Emoticon {
             return this;
         }
         
-        public Builder setEmoteset(int emoteset) {
+        public Builder setEmoteset(String emoteset) {
             this.emoteset = emoteset;
             return this;
         }
@@ -296,7 +303,7 @@ public class Emoticon {
         this.code = code;
 
         this.type = builder.type;
-        this.emoteSet = builder.emoteset;
+        this.emoteset = builder.emoteset;
         this.url = Helper.checkHttpUrl(builder.url);
         this.urlX2 = Helper.checkHttpUrl(builder.urlX2);
         
@@ -458,11 +465,11 @@ public class Emoticon {
     }
     
     public boolean hasGlobalEmoteset() {
-        return isGlobalEmoteset(emoteSet);
+        return isGlobalEmoteset(emoteset);
     }
     
-    public static boolean isGlobalEmoteset(int emoteset) {
-        return emoteset == SET_GLOBAL || emoteset == SET_UNDEFINED;
+    public static boolean isGlobalEmoteset(String emoteset) {
+        return emoteset == null || emoteset.equals(SET_GLOBAL);
     }
     
     /**
@@ -873,10 +880,6 @@ public class Emoticon {
         if (user == null) {
             return true;
         }
-        if (emoteSet > Emoticon.SET_GLOBAL
-                && !user.getEmoteSet().contains(emoteSet)) {
-            return false;
-        }
         if (hasStreamRestrictions()
                 && !streamRestrictionContains(user.getStream())) {
             return false;
@@ -906,7 +909,7 @@ public class Emoticon {
         if (!Objects.equals(this.code, other.code)) {
             return false;
         }
-        if (this.emoteSet != other.emoteSet) {
+        if (!Objects.equals(this.emoteset, other.emoteset)) {
             return false;
         }
         if (!Objects.equals(this.streamRestrictions, other.streamRestrictions)) {
@@ -917,12 +920,12 @@ public class Emoticon {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 59 * hash + Objects.hashCode(this.type);
-        hash = 59 * hash + Objects.hashCode(this.subType);
-        hash = 59 * hash + Objects.hashCode(this.code);
-        hash = 59 * hash + this.emoteSet;
-        hash = 59 * hash + Objects.hashCode(this.streamRestrictions);
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.type);
+        hash = 17 * hash + Objects.hashCode(this.subType);
+        hash = 17 * hash + Objects.hashCode(this.code);
+        hash = 17 * hash + Objects.hashCode(this.emoteset);
+        hash = 17 * hash + Objects.hashCode(this.streamRestrictions);
         return hash;
     }
 

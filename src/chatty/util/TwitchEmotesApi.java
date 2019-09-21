@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -36,17 +37,17 @@ public class TwitchEmotesApi {
     public static final TwitchEmotesApi api = new TwitchEmotesApi();
     private TwitchApi twitchApi;
     
-    private final CachedBulkManager<Integer, EmotesetInfo> byId;
+    private final CachedBulkManager<String, EmotesetInfo> byId;
     private final CachedBulkManager<String, Set<EmotesetInfo>> byStream;
-    private final CachedBulkManager<Integer, EmotesetInfo> bySet;
+    private final CachedBulkManager<String, EmotesetInfo> bySet;
     
     public TwitchEmotesApi() {
-        byId = new CachedBulkManager<>(new CachedBulkManager.Requester<Integer, EmotesetInfo>() {
+        byId = new CachedBulkManager<>(new CachedBulkManager.Requester<String, EmotesetInfo>() {
 
             @Override
-            public void request(CachedBulkManager<Integer, EmotesetInfo> manager, Set<Integer> asap, Set<Integer> normal, Set<Integer> backlog) {
+            public void request(CachedBulkManager<String, EmotesetInfo> manager, Set<String> asap, Set<String> normal, Set<String> backlog) {
                 Debugging.println("emoteinfo", "byId: %s %s %s", asap, normal, backlog);
-                Set<Integer> toRequest = manager.makeAndSetRequested(asap, normal, backlog, 50);
+                Set<String> toRequest = manager.makeAndSetRequested(asap, normal, backlog, 50);
                 
                 String url = "https://api.twitchemotes.com/api/v4/emotes?id="+StringUtil.join(toRequest, ",");
                 UrlRequest request = new UrlRequest(url);
@@ -63,11 +64,11 @@ public class TwitchEmotesApi {
                     } else if (result == null) {
                         manager.setError(toRequest);
                     } else {
-                        Map<Integer, EmotesetInfo> emotes = parseById(result);
+                        Map<String, EmotesetInfo> emotes = parseById(result);
                         if (emotes == null) {
                             manager.setError(toRequest);
                         } else {
-                            Set<Integer> notFound = new HashSet<>(toRequest);
+                            Set<String> notFound = new HashSet<>(toRequest);
                             notFound.removeAll(emotes.keySet());
                             manager.setNotFound(notFound);
                             manager.setResult(emotes);
@@ -106,7 +107,7 @@ public class TwitchEmotesApi {
                     } else if (result == null) {
                         manager.setError(stream);
                     } else {
-                        Map<Integer, EmotesetInfo> emotes = parseByStream(result);
+                        Map<String, EmotesetInfo> emotes = parseByStream(result);
                         if (emotes == null) {
                             manager.setError(stream);
                         } else {
@@ -125,12 +126,12 @@ public class TwitchEmotesApi {
             }
         }, CachedBulkManager.DAEMON);
         
-        bySet = new CachedBulkManager<>(new CachedBulkManager.Requester<Integer, EmotesetInfo>() {
+        bySet = new CachedBulkManager<>(new CachedBulkManager.Requester<String, EmotesetInfo>() {
 
             @Override
-            public void request(CachedBulkManager<Integer, EmotesetInfo> manager, Set<Integer> asap, Set<Integer> normal, Set<Integer> backlog) {
+            public void request(CachedBulkManager<String, EmotesetInfo> manager, Set<String> asap, Set<String> normal, Set<String> backlog) {
                 Debugging.println("emoteinfo", "bySet: %s %s %s", asap, normal, backlog);
-                Set<Integer> toRequest = manager.makeAndSetRequested(asap, normal, backlog, 100);
+                Set<String> toRequest = manager.makeAndSetRequested(asap, normal, backlog, 100);
                 
                 String url = "https://api.twitchemotes.com/api/v4/sets?id="+StringUtil.join(toRequest, ",");
                 UrlRequest request = new UrlRequest(url);
@@ -141,11 +142,11 @@ public class TwitchEmotesApi {
                     } else if (result == null) {
                         manager.setError(toRequest);
                     } else {
-                        Map<Integer, EmotesetInfo> sets = parseBySet(result);
+                        Map<String, EmotesetInfo> sets = parseBySet(result);
                         if (sets == null) {
                             manager.setError(toRequest);
                         } else {
-                            Set<Integer> notFound = new HashSet<>(toRequest);
+                            Set<String> notFound = new HashSet<>(toRequest);
                             notFound.removeAll(sets.keySet());
                             manager.setNotFound(notFound);
                             
@@ -196,21 +197,23 @@ public class TwitchEmotesApi {
         if (emote.hasGlobalEmoteset()) {
             return null;
         }
-        if (emote.emoteSet > Emoticon.SET_GLOBAL) {
-            info = bySet.get(emote.emoteSet);
+        if (emote.emoteset != null && !emote.emoteset.isEmpty()) {
+            info = bySet.get(emote.emoteset);
             if (info != null) {
                 return info;
             }
         }
-        int numericId = getNumericEmoteId(emote.stringId);
+        
+        // Extract the number part (for modified emotes)
+        long numericId = getNumericEmoteId(emote.stringId);
         if (numericId == -1) {
             return null;
         }
         info = byId.getOrQuerySingle(unique, result -> {
             if (listener != null) {
-                listener.accept(result.get(numericId));
+                listener.accept(result.get(String.valueOf(numericId)));
             }
-        }, ASAP, numericId);
+        }, ASAP, String.valueOf(numericId));
         return info;
     }
     
@@ -276,15 +279,15 @@ public class TwitchEmotesApi {
      * @param emotesets
      * @return The result, if already cached, or null
      */
-    public Map<Integer, EmotesetInfo> requestBySets(Consumer<Map<Integer, EmotesetInfo>> listener, Set<Integer> emotesets) {
-        Set<Integer> modifiedSets = new HashSet<>(emotesets);
-        modifiedSets.remove(0);
+    public Map<String, EmotesetInfo> requestBySets(Consumer<Map<String, EmotesetInfo>> listener, Set<String> emotesets) {
+        Set<String> modifiedSets = new HashSet<>(emotesets);
+        modifiedSets.remove("0");
         if (modifiedSets.isEmpty()) {
             return null;
         }
         
         // Get or request
-        Result<Integer, EmotesetInfo> result = bySet.getOrQuery(BY_SETS_UNIQUE, result2 -> {
+        Result<String, EmotesetInfo> result = bySet.getOrQuery(BY_SETS_UNIQUE, result2 -> {
             listener.accept(result2.getResults());
         }, RETRY, modifiedSets);
         if (result != null) {
@@ -293,7 +296,7 @@ public class TwitchEmotesApi {
         return null;
     }
     
-    public EmotesetInfo getBySet(int emoteset) {
+    public EmotesetInfo getBySet(String emoteset) {
         return bySet.get(emoteset);
     }
     
@@ -305,7 +308,7 @@ public class TwitchEmotesApi {
      * @param emotesets
      * @return true if all emotesets ids are in accessTo, false otherwise
      */
-    public static boolean hasAccessTo(Set<Integer> accessTo, Set<EmotesetInfo> emotesets) {
+    public static boolean hasAccessTo(Set<String> accessTo, Set<EmotesetInfo> emotesets) {
         for (EmotesetInfo set : emotesets) {
             if (!accessTo.contains(set.emoteset_id)) {
                 return false;
@@ -336,19 +339,19 @@ public class TwitchEmotesApi {
      * @param info The EmotesetInfo for the emote (optional)
      * @return 
      */
-    public static int getSet(Emoticon emote, EmotesetInfo info) {
-        int emoteset = emote.emoteSet;
-        if (emoteset == Emoticon.SET_UNKNOWN && info != null) {
+    public static String getSet(Emoticon emote, EmotesetInfo info) {
+        String emoteset = emote.emoteset;
+        if (emoteset != null && emoteset.equals(Emoticon.SET_UNKNOWN) && info != null) {
             emoteset = info.emoteset_id;
         }
         return emoteset;
     }
     
-    public static int getNumericEmoteId(String id) {
+    public static long getNumericEmoteId(String id) {
         try {
             Matcher m = Pattern.compile("^([0-9]+)(_.*)?$").matcher(id);
             if (m.find()) {
-                return Integer.parseInt(m.group(1));
+                return Long.parseLong(m.group(1));
             }
         } catch (Exception ex) {
             // Do nothing
@@ -383,7 +386,7 @@ public class TwitchEmotesApi {
      * @return A non-null string
      */
     public static String getEmoteType(Emoticon emote, EmotesetInfo info, boolean includeStream) {
-        int emoteset = getSet(emote, info);
+        String emoteset = getSet(emote, info);
         String modified = isModified(emote) ? " [modified]" : "";
         if (emote.hasGlobalEmoteset()) {
             return "Twitch Global"+modified;
@@ -406,20 +409,21 @@ public class TwitchEmotesApi {
         System.out.println(byId.debug());
     }
     
-    private static Map<Integer, EmotesetInfo> parseById(String input) {
+    private static Map<String, EmotesetInfo> parseById(String input) {
         try {
-            Map<Integer, EmotesetInfo> result = new HashMap<>();
+            Map<String, EmotesetInfo> result = new HashMap<>();
             JSONParser parser = new JSONParser();
             JSONArray array = (JSONArray)parser.parse(input);
             for (Object o : array) {
                 if (o instanceof JSONObject) {
                     JSONObject item = (JSONObject)o;
-                    int id = JSONUtil.getInteger(item, "id", -1);
-                    int emoteset = JSONUtil.getInteger(item, "emoticon_set", Emoticon.SET_UNKNOWN);
+                    long id = JSONUtil.getLong(item, "id", -1);
+                    long numericSet = JSONUtil.getLong(item, "emoticon_set", -1);
                     String channel_id = JSONUtil.getString(item, "channel_id");
                     String channel_name = JSONUtil.getString(item, "channel_name");
-                    if (id != -1 && emoteset != -1) {
-                        result.put(id, new EmotesetInfo(emoteset, channel_name, channel_id, null));
+                    if (id != -1 && numericSet != -1) {
+                        String set = String.valueOf(numericSet);
+                        result.put(String.valueOf(id), new EmotesetInfo(set, channel_name, channel_id, null));
                     }
                 }
             }
@@ -429,23 +433,24 @@ public class TwitchEmotesApi {
         }
     }
     
-    private static Map<Integer, EmotesetInfo> parseByStream(String input) {
+    private static Map<String, EmotesetInfo> parseByStream(String input) {
         try {
-            Map<Integer, EmotesetInfo> result = new HashMap<>();
+            Map<String, EmotesetInfo> result = new HashMap<>();
             JSONParser parser = new JSONParser();
             JSONObject data = (JSONObject)parser.parse(input);
             String channel_id = JSONUtil.getString(data, "channel_id");
             String channel_name = JSONUtil.getString(data, "channel_name");
-            Map<Integer, String> plans = getPlans(data);
+            Map<String, String> plans = getPlans(data);
             
             JSONArray emotes = (JSONArray)data.get("emotes");
             for (Object o : emotes) {
                 if (o instanceof JSONObject) {
                     JSONObject item = (JSONObject)o;
-                    int id = JSONUtil.getInteger(item, "id", -1);
-                    int emoteset = JSONUtil.getInteger(item, "emoticon_set", -1);
-                    if (id != -1 && emoteset != -1) {
-                        result.put(id, new EmotesetInfo(emoteset, channel_name, channel_id, plans.get(emoteset)));
+                    long id = JSONUtil.getLong(item, "id", -1);
+                    long numericSet = JSONUtil.getLong(item, "emoticon_set", -1);
+                    if (id != -1 && numericSet != -1) {
+                        String set = String.valueOf(numericSet);
+                        result.put(String.valueOf(id), new EmotesetInfo(set, channel_name, channel_id, plans.get(set)));
                     }
                 }
             }
@@ -455,14 +460,14 @@ public class TwitchEmotesApi {
         }
     }
     
-    private static Map<Integer, String> getPlans(JSONObject data) {
-        Map<Integer, String> result = new HashMap<>();
+    private static Map<String, String> getPlans(JSONObject data) {
+        Map<String, String> result = new HashMap<>();
         JSONObject plans = (JSONObject) data.get("plans");
         try {
             for (Object o : plans.entrySet()) {
                 Map.Entry<String, String> entry = (Map.Entry<String, String>) o;
                 if (entry.getKey() != null && entry.getValue() != null) {
-                    int emoteset = Integer.parseInt(entry.getValue());
+                    String emoteset = entry.getValue();
                     String plan = entry.getKey();
                     result.put(emoteset, plan);
                 }
@@ -473,19 +478,20 @@ public class TwitchEmotesApi {
         return result;
     }
     
-    private static Map<Integer, EmotesetInfo> parseBySet(String input) {
+    private static Map<String, EmotesetInfo> parseBySet(String input) {
         try {
-            Map<Integer, EmotesetInfo> result = new HashMap<>();
+            Map<String, EmotesetInfo> result = new HashMap<>();
             JSONParser parser = new JSONParser();
             JSONArray array = (JSONArray)parser.parse(input);
             for (Object o : array) {
                 if (o instanceof JSONObject) {
                     JSONObject item = (JSONObject)o;
-                    int emoteset = JSONUtil.parseInteger(item, "set_id", -1);
+                    long numericSet = JSONUtil.parseLong(item, "set_id", -1);
                     String channel_id = JSONUtil.getString(item, "channel_id");
                     String channel_name = JSONUtil.getString(item, "channel_name");
-                    if (emoteset != -1) {
-                        result.put(emoteset, new EmotesetInfo(emoteset, channel_name, channel_id, null));
+                    if (numericSet != -1) {
+                        String set = String.valueOf(numericSet);
+                        result.put(set, new EmotesetInfo(set, channel_name, channel_id, null));
                     }
                 }
             }
@@ -532,12 +538,12 @@ public class TwitchEmotesApi {
     
     public static class EmotesetInfo {
 
-        public final int emoteset_id;
+        public final String emoteset_id;
         public final String product;
         public final String stream_name;
         public final String stream_id;
 
-        public EmotesetInfo(int emoteset_id, String stream_name, String stream_id, String product) {
+        public EmotesetInfo(String emoteset_id, String stream_name, String stream_id, String product) {
             this.emoteset_id = emoteset_id;
             this.product = product;
             this.stream_name = stream_name;
@@ -546,9 +552,9 @@ public class TwitchEmotesApi {
 
         @Override
         public String toString() {
-            return String.format("%d(%s,%s,%s)", emoteset_id, stream_name, stream_id, product);
+            return String.format("%s(%s,%s,%s)", emoteset_id, stream_name, stream_id, product);
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -558,7 +564,7 @@ public class TwitchEmotesApi {
                 return false;
             }
             final EmotesetInfo other = (EmotesetInfo) obj;
-            if (this.emoteset_id != other.emoteset_id) {
+            if (!Objects.equals(this.emoteset_id, other.emoteset_id)) {
                 return false;
             }
             return true;
@@ -566,8 +572,8 @@ public class TwitchEmotesApi {
 
         @Override
         public int hashCode() {
-            int hash = 5;
-            hash = 41 * hash + this.emoteset_id;
+            int hash = 7;
+            hash = 41 * hash + Objects.hashCode(this.emoteset_id);
             return hash;
         }
         

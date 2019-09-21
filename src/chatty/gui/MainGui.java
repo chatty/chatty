@@ -67,7 +67,6 @@ import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationWindowManager;
 import chatty.lang.Language;
-import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.TwitchApi.RequestResultCode;
@@ -324,12 +323,10 @@ public class MainGui extends JFrame implements Runnable {
         
         // Load some stuff
         client.api.setUserId(client.settings.getString("username"), client.settings.getString("userid"));
-        client.api.getEmotesBySets(0);
         //client.api.requestCheerEmoticons(false);
         // TEST
 //        client.api.getUserIdAsap(null, "m_tt");
 //        client.api.getCheers("m_tt", false);
-        client.twitchemotes.load();
         if (client.settings.getBoolean("bttvEmotes")) {
             client.bttvEmotes.requestEmotes("$global$", false);
         }
@@ -969,7 +966,7 @@ public class MainGui extends JFrame implements Runnable {
         
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
-        client.api.getEmotesBySets(emoticons.getFavoritesEmotesets());
+        client.api.getEmotesBySets(emoticons.getFavoritesNonGlobalEmotesets());
         emoticons.loadCustomEmotes();
         emoticons.addEmoji(client.settings.getString("emoji"));
         emoticons.setCheerState(client.settings.getString("cheersType"));
@@ -993,6 +990,8 @@ public class MainGui extends JFrame implements Runnable {
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
         
         Sound.setDeviceName(client.settings.getString("soundDevice"));
+        
+        updateTokenScopes();
     }
     
     private static final String[] menuBooleanSettings = new String[]{
@@ -2528,7 +2527,7 @@ public class MainGui extends JFrame implements Runnable {
     
     private void openEmotesDialog(String channel) {
         windowStateManager.setWindowPosition(emotesDialog, getActiveWindow());
-        emotesDialog.showDialog(client.getSpecialUser().getEmoteSet(), channel);
+        emotesDialog.showDialog(client.getEmotesets(), channel);
         // Focus inputbox to be able to keep writing
         channels.setInitialFocus();
     }
@@ -3879,14 +3878,20 @@ public class MainGui extends JFrame implements Runnable {
         streamChat.setSize(width, height);
     }
     
-    public void updateEmotesDialog() {
+    public void updateEmotesDialog(Set<String> emotesets) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                emotesDialog.updateEmotesets(client.getSpecialUser().getEmoteSet());
+                emotesDialog.updateEmotesets(emotesets);
             }
         });
+    }
+    
+    public void refreshEmotes(String type) {
+        if (type.equals("user")) {
+            client.emotesetManager.requestUserEmotes();
+        }
     }
     
     public void updateEmoticons(final EmoticonUpdate update) {
@@ -3917,17 +3922,6 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 emoticons.setCheerEmotes(emotes);
-            }
-        });
-    }
-    
-    public void setEmotesets(final EmotesetInfo info) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                emoticons.setEmotesetInfo(info);
-                emotesDialog.update();
             }
         });
     }
@@ -4150,6 +4144,7 @@ public class MainGui extends JFrame implements Runnable {
                 scopes.contains(TokenInfo.Scope.EDITOR.scope),
                 scopes.contains(TokenInfo.Scope.EDIT_BROADCAST.scope),
                 scopes.contains(TokenInfo.Scope.COMMERICALS.scope));
+        emotesDialog.setUserEmotes(scopes.contains(TokenInfo.Scope.SUBSCRIPTIONS.scope));
     }
     
     public void showTokenWarning() {
@@ -4575,12 +4570,12 @@ public class MainGui extends JFrame implements Runnable {
         return client.customCommands.getCommandNames();
     }
     
-    public void updateEmoteNames() {
+    public void updateEmoteNames(Set<String> emotesets) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                emoticons.updateLocalEmotes(client.getSpecialUser().getEmoteSet());
+                emoticons.updateLocalEmotes(emotesets);
             }
         });
     }

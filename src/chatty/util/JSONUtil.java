@@ -68,6 +68,14 @@ public class JSONUtil {
         }
     }
     
+    public static long parseLong(JSONObject data, Object key, long errorValue) {
+        try {
+            return Long.parseLong((String)data.get(key));
+        } catch (Exception ex) {
+            return errorValue;
+        }
+    }
+    
     public static long getLong(JSONObject data, Object key, long errorValue) {
         Object value = data.get(key);
         if (value != null && value instanceof Number) {
