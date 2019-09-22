@@ -5,6 +5,7 @@ import static chatty.util.CachedBulkManager.*;
 import chatty.util.CachedBulkManager.Requester;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -322,12 +323,11 @@ public class CacheBulkManagerTest {
                 {"c", null}
             },
             {
-                {"b", "r.b"},
+                {"b", null},
                 {"c", null}
             },
             {
-                {"b", "r.b"},
-                {"c", null}
+                {"b", null},
             }
         });
         
@@ -355,8 +355,131 @@ public class CacheBulkManagerTest {
         assertEquals(m.pendingRequests(), 1);
         m.setError("b", "c");
         requester.requestCount(3);
+        listener.calledCount(2);
+        m.setNotFound("b");
         listener.calledCount(3);
-        assertEquals(m.pendingRequests(), 0);
+        assertEquals(m.pendingRequests(), 1);
+    }
+    
+    @Test
+    public void testReplace() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a", "b"}, {}, {}, {"a", "b"}
+            },
+            {
+                {}, {"b", "c"}, {}, {"b", "c"}
+            }
+        });
+        MyResultListener listenerA = makeListener(new String[][][]{
+            {
+                {"nope", "nope"},
+            },
+        });
+        MyResultListener listenerB = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+                {"b", "r.b"},
+            },
+        });
+        
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON | ASAP);
+        m.query(m, listenerA, NONE, "a", "b");
+        m.query(m, listenerB, NONE, "a", "b");
+        m.setResult("a", "r.a");
+        m.setResult("b", "r.b");
+        listenerA.calledCount(0);
+        listenerB.calledCount(1);
+        requester.requestCount(1);
+    }
+    
+    @Test
+    public void testNoReplace() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a", "b"}, {}, {}, {"a", "b"}
+            },
+            {
+                {}, {"b", "c"}, {}, {"b", "c"}
+            }
+        });
+        MyResultListener listenerA = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+                {"b", "r.b"},
+            },
+        });
+        MyResultListener listenerB = makeListener(new String[][][]{
+            {
+                {"nope", "nope"},
+            },
+        });
+        
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON | ASAP);
+        m.query(m, listenerA, NO_REPLACE, "a", "b");
+        m.query(m, listenerB, NO_REPLACE, "a", "b");
+        m.setResult("a", "r.a");
+        m.setResult("b", "r.b");
+        listenerA.calledCount(1);
+        listenerB.calledCount(0);
+        requester.requestCount(1);
+    }
+    
+    private static class CustomObject {
+        
+        public final String key;
+        public final String someValue;
+        
+        public CustomObject(String key, String someValue) {
+            this.key = key;
+            this.someValue = someValue;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CustomObject other = (CustomObject) obj;
+            if (!Objects.equals(this.key, other.key)) {
+                return false;
+            }
+            return true;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 79 * hash + Objects.hashCode(this.key);
+            return hash;
+        }
+        
+    }
+    
+    /**
+     * An object as key that equals on part of the object properties.
+     */
+    @Test
+    public void testCustomObject() {
+        Requester<CustomObject, String> requester = new Requester<CustomObject, String>() {
+
+            @Override
+            public void request(CachedBulkManager<CustomObject, String> manager, Set<CustomObject> asap, Set<CustomObject> normal, Set<CustomObject> backlog) {
+                Set<CustomObject> keys = manager.makeAndSetRequested(asap, normal, backlog, 100);
+                for (CustomObject key : keys) {
+                    assertNotNull(key.someValue);
+                }
+            }
+        };
+        CachedBulkManager<CustomObject, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.getOrQuery(null, null, NONE, new CustomObject("a", "stuff"));
+        m.setResult(new CustomObject("b", null), "r.b");
+        assertEquals(m.get(new CustomObject("a", null)), null);
+        m.setResult(new CustomObject("a", null), "r.a");
+        assertEquals(m.get(new CustomObject("a", null)), "r.a");
     }
     
     @Test

@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.CachedBulkManager;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
@@ -47,6 +48,7 @@ public class TwitchApi {
     protected final UserIDs userIDs;
     protected final ChannelInfoManager channelInfoManager;
     protected final StreamTagManager communitiesManager;
+    protected final CachedBulkManager<Req, Boolean> m;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -68,8 +70,64 @@ public class TwitchApi {
         userIDs = new UserIDs(this);
         communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
+        m = new CachedBulkManager<>(new CachedBulkManager.Requester<Req, Boolean>() {
+
+            @Override
+            public void request(CachedBulkManager<Req, Boolean> manager, Set<Req> asap, Set<Req> normal, Set<Req> backlog) {
+                Set<Req> requests = manager.makeAndSetRequested(asap, normal, backlog, 1);
+                Req req = requests.iterator().next();
+                if (req.request != null) {
+                    req.request.run();
+                }
+            }
+        }, CachedBulkManager.NONE);
     }
     
+    private static class Req {
+        
+        public final String key;
+        public final Runnable request;
+        
+        public Req(String key, Runnable request) {
+            this.key = key;
+            this.request = request;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Req other = (Req) obj;
+            if (!Objects.equals(this.key, other.key)) {
+                return false;
+            }
+            return true;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + Objects.hashCode(this.key);
+            return hash;
+        }
+        
+    }
+    
+    protected void setReceived(String key) {
+        m.setResult(new Req(key, null), Boolean.TRUE);
+    }
+    
+    protected void setError(String key) {
+        m.setError(new Req(key, null));
+    }
+    
+    protected void setNotFound(String key) {
+        m.setNotFound(new Req(key, null));
+    }
     
     //=================
     // Chat / Emoticons
@@ -83,8 +141,15 @@ public class TwitchApi {
         emoticonManager2.addEmotesets(emotesets);
     }
     
+    private static final Object USER_EMOTES_UNIQUE = new Object();
+    
     public void getUserEmotes(String userId) {
-        requests.requestUserEmotes(userId);
+        m.query(USER_EMOTES_UNIQUE,
+                null,
+                CachedBulkManager.ASAP | CachedBulkManager.WAIT | CachedBulkManager.REFRESH,
+                new Req("userEmotes", () -> {
+                    requests.requestUserEmotes(userId);
+                }));
     }
     
     @Deprecated

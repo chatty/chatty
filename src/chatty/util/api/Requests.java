@@ -565,9 +565,16 @@ public class Requests {
                 EmoticonUpdate result = EmoticonParsing.parseEmoticonSets(r.text, EmoticonUpdate.Source.USER_EMOTES);
                 if (result != null) {
                     listener.receivedEmoticons(result);
+                    api.setReceived("userEmotes");
                     if (result.setsToRemove != null) {
                         api.emoticonManager2.addRequested(result.setsToRemove);
                     }
+                }
+                else if (r.responseCode == 404) {
+                    api.setNotFound("userEmotes");
+                }
+                else {
+                    api.setError("userEmotes");
                 }
             });
         }

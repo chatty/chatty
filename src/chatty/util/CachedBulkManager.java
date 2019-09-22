@@ -81,14 +81,11 @@ public class CachedBulkManager<Key,Item> {
     public static final int WAIT = 4;
     
     /**
-     * All keys are re-requested once for this query. Previously errored keys
-     * are re-requested without an error delay. The query result is returned and
-     * the query removed as soon as all keys have been requested while this
-     * query was present. The result may contain old cached values if an error
-     * occured.
+     * Keys in this query are removed from the cache and the result for this
+     * query only returned when all keys have had a result.
      * 
-     * TODO: Maybe this should be changed to clearly return an error when one
-     * occured
+     * TODO: Could be problematic together with other requests, since some state
+     * such as notFound or occured errors is not removed.
      */
     public static final int REFRESH = 8;
     
@@ -111,6 +108,11 @@ public class CachedBulkManager<Key,Item> {
      * several keys is set in bulk or one by one.
      */
     public static final int PARTIAL = 64;
+    
+    /**
+     * Don't replace query when using a unique object.
+     */
+    public static final int NO_REPLACE = 128;
     
     //-------
     // State
@@ -186,7 +188,15 @@ public class CachedBulkManager<Key,Item> {
             if (option(query, UNIQUE) && queries.containsValue(query)) {
                 return null;
             }
+            if (option(query, NO_REPLACE) && queries.containsKey(unique)) {
+                return null;
+            }
             queries.put(unique, query);
+            if (option(query, REFRESH)) {
+                for (Key key : query.keys) {
+                    cache.remove(key);
+                }
+            }
         }
         checkDoneQueries();
         
@@ -331,8 +341,8 @@ public class CachedBulkManager<Key,Item> {
     
     public String debug() {
         synchronized(LOCK) {
-            return String.format("requests: %d requests2: %d pending: %d",
-                    0, queries.size(), requestPending.size());
+            return String.format("requests: %d pending: %d",
+                    queries.size(), requestPending.size());
         }
     }
     
@@ -363,6 +373,16 @@ public class CachedBulkManager<Key,Item> {
         setRequested(Arrays.asList(keys));
     }
 
+    /**
+     * From the given sets, add at most {@code limit} items to be requested, and
+     * immediatelly set requested as well.
+     * 
+     * @param asap
+     * @param normal
+     * @param backlog
+     * @param limit
+     * @return 
+     */
     public Set<Key> makeAndSetRequested(Set<Key> asap, Set<Key> normal, Set<Key> backlog, int limit) {
         Set<Key> toRequest = new HashSet<>();
         MiscUtil.addLimited(asap, toRequest, limit);
@@ -438,7 +458,7 @@ public class CachedBulkManager<Key,Item> {
     private long errorDelay(Key key, Query r) {
         int errors = errorCount.getOrDefault(key, 0);
         int base = option(r, ASAP) ? 2 : 10;
-        return (long)Math.min(base * Math.pow(errors, 4), 1800);
+        return (long)Math.min(base * Math.pow(errors, 10), 1800);
     }
     
     //===================
@@ -502,21 +522,22 @@ public class CachedBulkManager<Key,Item> {
             Map<Key, Item> results = new HashMap<>();
             Set<Key> waitErrors = new HashSet<>();
             for (Key k : q.keys) {
-                if (option(q, REFRESH)) {
-                    if (q.isResponseReceived(k)) {
-                        results.put(k, cache.get(k));
+                if (option(q, REFRESH) && !q.isResponseReceived(k)) {
+                    continue;
+                }
+
+                if (cache.containsKey(k)) {
+                    results.put(k, cache.get(k));
+                }
+                else if (notFound.contains(k)) {
+                    results.put(k, null);
+                }
+                else if (secondsPassed(lastError, k) < errorDelay(k, q)) {
+                    if (option(q, RETRY) || option(q, WAIT)) {
+                        waitErrors.add(k);
                     }
-                } else {
-                    if (cache.containsKey(k)) {
-                        results.put(k, cache.get(k));
-                    } else if (notFound.contains(k)) {
+                    else {
                         results.put(k, null);
-                    } else if (secondsPassed(lastError, k) < errorDelay(k, q)) {
-                        if (option(q, RETRY) || option(q, WAIT)) {
-                            waitErrors.add(k);
-                        } else {
-                            results.put(k, null);
-                        }
                     }
                 }
             }

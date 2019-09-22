@@ -109,6 +109,9 @@ public class RawMessageTest {
         if (type.equals("hl")) {
             return "@badge-info=subscriber/19;badges=subscriber/12,premium/1;color=;display-name=Test;emotes=300737210:11-18/300737204:20-27;flags=;id=123;mod=0;msg-id=highlighted-message;room-id=123;subscriber=1;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hello chat itmejpM1 itmejpM3 , just testing this highlight popup to see how glitzy this post will get";
         }
+        if (type.equals("creward")) {
+            return "@badge-info=;badges=vip/1,premium/1;color=#0000FF;custom-reward-id=r3ward-1d;display-name=Test;emotes=;flags=;id=123;mod=0;room-id=123;subscriber=0;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Message text";
+        }
         return null;
     }
     
