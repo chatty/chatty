@@ -107,7 +107,6 @@ public class HighlightSettings extends SettingsPanel {
         base.add(highlightMatchesAll, gbc);
         
         gbc = d.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST);
-        gbc.insets = settingInsets;
         JCheckBox highlightByPoints = d.addSimpleBooleanSetting("highlightByPoints");
         base.add(highlightByPoints, gbc);
         

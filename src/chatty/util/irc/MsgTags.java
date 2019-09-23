@@ -32,6 +32,14 @@ public class MsgTags extends IrcMsgTags {
         return isValue("msg-id", "highlighted-message");
     }
     
+    public boolean isCustomReward() {
+        return containsKey("custom-reward-id");
+    }
+    
+    public String getCustomRewardId() {
+        return get("custom-reward-id");
+    }
+    
     //================
     // Factory Methods
     //================

@@ -52,7 +52,7 @@ public class InfoMessage {
     public List<Match> highlightMatches;
     
     public InfoMessage(Type msgType, String text) {
-        this(msgType, text, null);
+        this(msgType, text, MsgTags.EMPTY);
     }
     
     public InfoMessage(Type msgType, String text, MsgTags tags) {

@@ -2728,10 +2728,18 @@ public class TwitchClient {
 
         @Override
         public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
-            g.printMessage(user, text, action, tags);
-            if (!action) {
-                addressbookCommands(user.getChannel(), user, text);
-                modCommandAddStreamHighlight(user, text, tags);
+            if (tags.isCustomReward()) {
+                String rewardInfo = (String)settings.mapGet("rewards", tags.getCustomRewardId());
+                String info = String.format(user.getDisplayNick() + " redeemed a custom reward (%s)",
+                                            rewardInfo != null ? rewardInfo : "unknown");
+                g.printUsernotice("Points", user, info, text, tags);
+            }
+            else {
+                g.printMessage(user, text, action, tags);
+                if (!action) {
+                    addressbookCommands(user.getChannel(), user, text);
+                    modCommandAddStreamHighlight(user, text, tags);
+                }
             }
         }
 
@@ -2922,8 +2930,8 @@ public class TwitchClient {
         }
 
         @Override
-        public void onSubscriberNotification(User user, String text, String message, int months, String emotes) {
-            g.printSubscriberMessage(user, text, message, emotes);
+        public void onSubscriberNotification(User user, String text, String message, int months, MsgTags tags) {
+            g.printSubscriberMessage(user, text, message, tags);
             
             // May be using dummy User if from twitchnotify that doesn't contain a propery name tag
             if (user.getName().isEmpty()) {
@@ -2950,8 +2958,8 @@ public class TwitchClient {
         }
         
         @Override
-        public void onUsernotice(String type, User user, String text, String message, String emotes) {
-            g.printUsernotice(type, user, text, message, emotes);
+        public void onUsernotice(String type, User user, String text, String message, MsgTags tags) {
+            g.printUsernotice(type, user, text, message, tags);
         }
 
         @Override

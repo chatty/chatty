@@ -139,8 +139,8 @@ public class MsgColorManager {
         return getColor(HighlightItem.Type.REGULAR, user, text, user.getChannel(), tags, user.getAddressbook());
     }
     
-    public synchronized ColorItem getInfoColor(String text, String channel, Addressbook ab) {
-        return getColor(HighlightItem.Type.INFO, null, text, channel, MsgTags.EMPTY, ab);
+    public synchronized ColorItem getInfoColor(String text, String channel, Addressbook ab, User user, MsgTags tags) {
+        return getColor(HighlightItem.Type.INFO, user, text, channel, tags, ab);
     }
     
 }

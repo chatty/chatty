@@ -1020,7 +1020,7 @@ public class TwitchConnection {
                 }
                 if (outputDirectly) {
                     flush();
-                    listener.onSubscriberNotification(user, text, message, months, emotes);
+                    listener.onSubscriberNotification(user, text, message, months, tags);
                     return;
                 }
                 if (gifter != user || !subPlan.equals(plan)) {
@@ -1092,7 +1092,6 @@ public class TwitchConnection {
             }
             String login = tags.get("login");
             String text = StringUtil.removeLinebreakCharacters(tags.get("system-msg"));
-            String emotes = tags.get("emotes");
             int months = tags.getInteger("msg-param-cumulative-months", -1);
             if (months == -1) {
                 months = tags.getInteger("msg-param-months", -1);
@@ -1106,25 +1105,25 @@ public class TwitchConnection {
                 if (months > 1 && !text.matches(".*\\b"+months+"\\b.*")) {
                     text += " They've subscribed for "+months+" months!";
                 }
-                listener.onSubscriberNotification(user, text, message, months, emotes);
+                listener.onSubscriberNotification(user, text, message, months, tags);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
-                listener.onUsernotice("Charity", user, text, message, emotes);
+                listener.onUsernotice("Charity", user, text, message, tags);
             } else if (tags.isValue("msg-id", "raid")) {
-                listener.onUsernotice("Raid", user, text, message, emotes);
+                listener.onUsernotice("Raid", user, text, message, tags);
             } else if (text.equals("reward") && !message.isEmpty()) {
                 // For Bits reward text has "reward" and message what should be in text
-                listener.onUsernotice("Usernotice", user, message, null, emotes);
+                listener.onUsernotice("Usernotice", user, message, null, tags);
             } else if (tags.isValueOf("msg-id", "bitsbadgetier")
                     && text.equals("bits badge tier notification")
                     && tags.hasInteger("msg-param-threshold")) {
                 text = String.format("%s just earned a new %,d Bits badge!",
                         user.getDisplayNick(),
                         tags.getInteger("msg-param-threshold", -1));
-                listener.onUsernotice("Usernotice", user, text, null, emotes);
+                listener.onUsernotice("Usernotice", user, text, null, tags);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this
-                listener.onUsernotice("Usernotice", user, text, message, emotes);
+                listener.onUsernotice("Usernotice", user, text, message, tags);
             }
         }
 
@@ -1543,9 +1542,9 @@ public class TwitchConnection {
          * @param months The number of subscribed months (may be -1 if invalid)
          * @param emotes The emotes tag, yet to be parsed (may be null)
          */
-        void onSubscriberNotification(User user, String text, String message, int months, String emotes);
+        void onSubscriberNotification(User user, String text, String message, int months, MsgTags tags);
         
-        void onUsernotice(String type, User user, String text, String message, String emotes);
+        void onUsernotice(String type, User user, String text, String message, MsgTags tags);
         
         void onSpecialMessage(String name, String message);
         

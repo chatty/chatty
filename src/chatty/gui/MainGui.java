@@ -2890,11 +2890,6 @@ public class MainGui extends JFrame implements Runnable {
                         && !client.settings.listContains("noHighlightUsers", user.getName())) {
                     highlighted = checkMsg(highlighter, "highlight", text, user, tags, isOwnMessage);
                 }
-                if (!highlighted) {
-                    highlighted = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");
-                    // Irregular highlight, so reset last match
-                    highlighter.resetLastMatchVariables();
-                }
                 
                 TagEmotes tagEmotes = Emoticons.parseEmotesTag(tags.getRawEmotes());
                 
@@ -2957,6 +2952,10 @@ public class MainGui extends JFrame implements Runnable {
                     message.pointsHl = tags.isHighlightedMessage();
                     
                     // Custom color
+                    if (tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints")) {
+                        message.color = HtmlColors.decode(client.settings.getString("highlightColor"));
+                        message.backgroundColor = HtmlColors.decode(client.settings.getString("highlightBackgroundColor"));
+                    }
                     if (highlighted) {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
@@ -2995,10 +2994,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printSubscriberMessage(final User user, final String text,
-            final String message, final String emotes) {
+            final String message, final MsgTags tags) {
         SwingUtilities.invokeLater(() -> {
-            Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-            SubscriberMessage m = new SubscriberMessage(user, text, message, tagEmotes);
+            SubscriberMessage m = new SubscriberMessage(user, text, message, tags);
 
             boolean printed = printUsernotice(m);
             if (printed) {
@@ -3008,10 +3006,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printUsernotice(final String type, final User user, final String text,
-            final String message, final String emotes) {
+            final String message, final MsgTags tags) {
         SwingUtilities.invokeLater(() -> {
-            Emoticons.TagEmotes tagEmotes = Emoticons.parseEmotesTag(emotes);
-            UserNotice m = new UserNotice(type, user, text, message, tagEmotes);
+            UserNotice m = new UserNotice(type, user, text, message, tags);
             printUsernotice(m);
         });
     }
@@ -3070,9 +3067,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private boolean checkInfoMsg(Highlighter hl, String setting, String text,
-            String channel, Addressbook ab) {
-        return checkHighlight(HighlightItem.Type.INFO, text, channel, ab, null,
-                null, hl, setting, false);
+            User user, MsgTags tags, String channel, Addressbook ab) {
+        return checkHighlight(HighlightItem.Type.INFO, text, channel, ab, user,
+                tags, hl, setting, false);
     }
     
     protected void ignoredMessagesCount(String channel, String message) {
@@ -3224,13 +3221,18 @@ public class MainGui extends JFrame implements Runnable {
      * @return 
      */
     private boolean printInfo(Channel channel, InfoMessage message) {
-        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, channel.getChannel(), client.addressbook);
+        User user = null;
+        if (message instanceof UserNotice) {
+            user = ((UserNotice)message).user;
+        }
+        MsgTags tags = message.tags;
+        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, user, tags, channel.getChannel(), client.addressbook);
         if (!ignored) {
             //----------------
             // Output Message
             //----------------
             if (!message.isHidden()) {
-                boolean highlighted = checkInfoMsg(highlighter, "highlight", message.text, channel.getChannel(), client.addressbook);
+                boolean highlighted = checkInfoMsg(highlighter, "highlight", message.text, user, tags, channel.getChannel(), client.addressbook);
                 if (highlighted) {
                     message.highlighted = true;
                     message.highlightMatches = highlighter.getLastTextMatches();
@@ -3251,7 +3253,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
                     ColorItem colorItem = msgColorManager.getInfoColor(
-                            message.text, channel.getChannel(), client.addressbook);
+                            message.text, channel.getChannel(), client.addressbook, user, tags);
                     if (!colorItem.isEmpty()) {
                         message.color = colorItem.getForegroundIfEnabled();
                         message.bgColor = colorItem.getBackgroundIfEnabled();

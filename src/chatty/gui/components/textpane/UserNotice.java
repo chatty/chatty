@@ -4,6 +4,7 @@ package chatty.gui.components.textpane;
 import chatty.User;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticons;
+import chatty.util.irc.MsgTags;
 
 /**
  *
@@ -18,12 +19,12 @@ public class UserNotice extends InfoMessage {
     public final String infoText;
     
     public UserNotice(String type, User user, String infoText, String message,
-            Emoticons.TagEmotes emotes) {
-        super(Type.INFO, makeFullText(type, infoText, message));
+            MsgTags tags) {
+        super(Type.INFO, makeFullText(type, infoText, message), tags);
         this.type = type;
         this.user = user;
         this.attachedMessage = message;
-        this.emotes = emotes;
+        this.emotes = Emoticons.parseEmotesTag(tags.getRawEmotes());
         this.infoText = infoText;
     }
     
