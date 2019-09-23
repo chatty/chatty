@@ -575,22 +575,33 @@ public class EmotesDialog extends JDialog {
         
         @Override
         public int compare(Emoticon o1, Emoticon o2) {
-            int compareEmoteset = 0;
-            // Try emoteset length (amount of digits)
-            if (o1.emoteset != null && o2.emoteset != null) {
-                compareEmoteset = o1.emoteset.length() - o2.emoteset.length();
-            }
-            if (compareEmoteset != 0) {
-                return compareEmoteset;
-            }
-            // Try emoteset lexicographically
-            compareEmoteset = Objects.compare(o1.emoteset, o2.emoteset, StringUtil.NULL_COMPARATOR);
+            int compareEmoteset = SORT_EMOTESETS.compare(o1.emoteset, o2.emoteset);
             if (compareEmoteset != 0) {
                 return compareEmoteset;
             }
             // Emoteset equal, just leaves the emote code
             return o1.code.compareToIgnoreCase(o2.code);
         }
+    }
+    
+    private static final Comparator<String> SORT_EMOTESETS = new SortEmotesets();
+    
+    private static class SortEmotesets implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            int compareEmoteset = 0;
+            // Try emoteset length (amount of digits)
+            if (o1 != null && o2 != null) {
+                compareEmoteset = o1.length() - o2.length();
+            }
+            if (compareEmoteset != 0) {
+                return compareEmoteset;
+            }
+            // Try emoteset lexicographically
+            return Objects.compare(o1, o2, StringUtil.NULL_COMPARATOR);
+        }
+        
     }
     
     //==============
@@ -886,7 +897,7 @@ public class EmotesDialog extends JDialog {
             Set<String> turboEmotes = new HashSet<>();
             Map<String, Set<EmotesetInfo>> perStream = new HashMap<>();
             Map<String, Set<EmotesetInfo>> perInfo = new HashMap<>();
-            Set<String> unknownEmotesets = new HashSet<>();
+            List<String> unknownEmotesets = new ArrayList<>();
             Set<String> unknownEmotesetsSingle = new HashSet<>();
             for (String emoteset : localUserEmotesets) {
                 if (Emoticons.isTurboEmoteset(emoteset)) {
@@ -940,6 +951,7 @@ public class EmotesDialog extends JDialog {
                 addEmotes(info, perInfo.get(info));
             }
             
+            Collections.sort(unknownEmotesets, SORT_EMOTESETS);
             for (String emoteset : unknownEmotesets) {
                 addEmotes(emoteset);
             }
