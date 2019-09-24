@@ -451,6 +451,8 @@ public class EmotesDialog extends JDialog {
     
     public void setUserEmotes(boolean access) {
         userEmotesAccess = access;
+        // Not ideal, but better than nothing
+        setUpdated(UPDATE_EMOTESET_CHANGED);
         updateRefreshButton();
     }
 
@@ -482,6 +484,11 @@ public class EmotesDialog extends JDialog {
         }
         boolean enabled = currentPanel.label.equals(MY_EMOTES) && userEmotesAccess;
         refreshButton.setEnabled(enabled);
+        if (enabled) {
+            refreshButton.setToolTipText(Language.getString("emotesDialog.refresh"));
+        } else {
+            refreshButton.setToolTipText(Language.getString("emotesDialog.refreshInactive"));
+        }
     }
     
     private void showPanelByName(String name) {
@@ -883,6 +890,10 @@ public class EmotesDialog extends JDialog {
 
         private void updateEmotes2(Map<String, EmotesetInfo> emotesetInfo) {
             reset();
+            if (!userEmotesAccess) {
+                int width = (int)(EmotesDialog.this.getPreferredSize().width * 0.8);
+                addSubtitle("<html><body style='width:"+width+";text-align:center;'>"+Language.getString("emotesDialog.subEmotesAccess"), false);
+            }
             if (localUserEmotesets.isEmpty() || (localUserEmotesets.size() == 1 
                     && localUserEmotesets.iterator().next().equals(Emoticon.SET_GLOBAL))) {
                 addTitle(Language.getString("emotesDialog.noSubemotes"));

@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.10-b3)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.10-b4)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -62,10 +62,9 @@
                 <ul class="menu">
                     <li><a href="help-settings.html">Settings Help</a></li>
                     <li><a href="help-setting_commands.html">Setting commands</a></li>
-                    <li><a href="#settingFiles">Setting files</a></li>
+                    <li><a href="help-guide_folders.html">Settings and other files</a></li>
                     <li><a href="#launch">Launch options</a></li>
                     <li><a href="help-addressbook.html">Addressbook</a></li>
-                    <li><a href="help-guide_folders.html">Chatty Directories and Files</a></li>
                     <li><a href="help-custom_commands.html">Custom Commands</a></li>
                 </ul>
                 
@@ -220,6 +219,7 @@
     
     <h3><a name="commands-gui">GUI commands:</a></h3>
     <ul>
+        <li><code>/popoutchannel</code> - Opens current the channel in a popout</li>
         <li><code>/echo &lt;text&gt;</code> - Outputs the given text as a info message</li>
         <li><code>/copy</code> - Copies the given text to the clipboard</li>
         <li><code>/settings</code>, <code>/livestreams</code>, <code>/channeladmin</code>,
@@ -342,6 +342,10 @@
         <dd>Gives you access to use the context menu (right-click) entries
             <code>Miscellaneous - Follow/Unfollow Channel</code> and use the
             <code>/follow</code> and <code>/unfollow</code> commands.</dd>
+        
+        <dt><code>Your Subscriptions</code></dt>
+        <dd>Enables more accurate display or your emotes (for "Extra - Emotes
+            Dialog", TAB Completion and when sending a message).</dd>
     </dl>
     
     <p>Once requested from Twitch, the login data is stored locally on your
@@ -1490,32 +1494,13 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <a name="settings">Setting commands</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p><em>This has been moved to it's <a href="help-setting_commands.html">own page</a></em></p>
+    <div class="moreInfo">Go to: <a href="help-setting_commands.html">Setting Commands</a></div>
     
     <h2>
         <a name="settingFiles">Setting files</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>Settings are loaded from files when Chatty is started and saved into files
-        once it is closed. By default these files are saved in a subfolder
-        <code>.chatty</code> of your user directory. You can also use the
-        <code>-cd</code> commandline parameter to use the current working
-    directory instead. You can find out which folder is used by entering the
-    <code>/dir</code> command.</p>
-    <p>Since Version 0.4 of Chatty, the settings are no longer saved in a single
-        <code>settings</code>-file, but instead several files:</p>
-    <ul>
-        <li><code>login</code>: Contains the login data, including the access
-        token, which should be kept confidential.</li>
-        <li><code>favoritesAndHistory</code>: Contains channel history and
-        favorites, as well as game favorites.</li>
-        <li><code>settings</code>: The main file, which contains all customizations
-        made to Chatty that should not be confidential or private.</li>
-        <li><code>statusPresets</code>: Contains status (title/game) presets
-        from the Admin Dialog.</li>
-    </ul>
-    
-    <div class="moreInfo">More information: <a href="help-guide_folders.html">Chatty directories and files</a></div>
+    <div class="moreInfo">Go to: <a href="help-guide_folders.html">Chatty directories and files</a></div>
     
     <h2>
         <a name="contact">Contact</a>
@@ -1539,7 +1524,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <a name="about">About/License</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p><em>Moved to <a href="help-about.html">About page</a>.</em></p>
+    <div class="moreInfo">Go to: <a href="help-about.html">About page</a></div>
 </body>
 </html>
 

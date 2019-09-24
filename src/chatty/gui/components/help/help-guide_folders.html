@@ -23,33 +23,33 @@
         </style>
 <body>
     <div id="backlink"><a href="help.html">Back to main help page</a></div>
-    <h1><a name="top">Guide: Chatty directories and files</a></h1>
+    <h1><a name="top">Guide: Settings and other files</a></h1>
     <p>
-        <a href="#files">Files/Directory structure</a> |
+        <a href="#files">Files / Directory structure</a> |
         <a href="#backup">Backup</a>
     </p>
     <p>Learn what directories and files Chatty creates/uses.</p>
 
-    <h2><a name="files">Files/Directory structure</a></h2>
+    <h2><a name="files">Files / Directory structure</a></h2>
     <h3>Settings Directory</h3>
         <p>The settings directory by default is in your user home directory in a
-        subfolder called <code>.chatty</code>. If you use the <code>-cd</code>
-    commandline parameter, then the settings directory is the current Working
-    Directory.</p>
+            subdirectory called <code>.chatty</code>. You can enter the command
+            <code>/dir</code> to display and <code>/openDir</code> to open the
+            settings directory that Chatty currently uses.</p>
 
-        <p>You can use commandline parameters by <a href="help-guide_create_shortcut.html">creating a shortcut</a> and setting the
-        target to something like <code>javaw.exe -jar "D:\Chatty\Chatty.jar" -cd</code>.</p>
+        <p>You can change the settings directory via different ways:</p>
         
-        <p>Alternatively, the <code>-d</code> parameter allows you to specify
-            a settings directory directly: <code>javaw -jar "D:\Chatty\Chatty.jar" -d D:\program settings\Chatty</code>
-        </p>
+        <ul>
+            <li>The <code>-cd</code> launch option changes the settings
+                directory to the current <a href="#wdir">working directory</a>.</li>
+            <li>The <code>-d &lt;dir&gt;</code> launch option changes the settings
+                directory to the specified directory (which must already exist).
+                Example: <code>-d D:\program settings\Chatty</code> (no quotes)</li>
+        </ul>
         
-        <p><em>Note:</em> You need to edit the path to the <code>Chatty.jar</code>
-            to where you actually have it on your computer. Also if you specify
-            a custom settings directory you must create it manually before using it.</p>
-    
-    <p>Use the command <code>/dir</code> to display and <code>/openDir</code> to
-        open the Settings Directory.</p>
+        <p>You can use launch options by adding them to <a href="help-guide_create_shortcut.html">a shortcut</a>
+            or (if you're using the standalone version) by adding it to the <a href="help-standalone.html#cfg-launch">Chatty.cfg</a>.</p>
+        
     <table class="filesT">
         <tr>
             <td>&lt;settings directory&gt;</td>
@@ -57,7 +57,7 @@
         </tr>
         <tr>
             <td>|-- backup</td>
-            <td class="fileCommentFolder">[Folder]</td>
+            <td class="fileCommentFolder">[Directory]</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- backup_x_&lt;filename&gt;</td>
@@ -68,57 +68,67 @@
             <td class="fileComment">Backups meta (last backup, numbering)</td>
         </tr>
         <tr>
-            <td>|-- cache</td>
-            <td class="fileCommentFolder">[Folder]</td>
+            <td>|</td>
+            <td></td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- &lt;various cache files&gt;</td>
+            <td>|-- cache</td>
+            <td class="fileCommentFolder">[Directory]</td>
+        </tr>
+        <tr>
+            <td>|&nbsp; &nbsp;|- &lt;cache files&gt;</td>
             <td class="fileComment">Cached emotes/image files</td>
         </tr>
         <tr>
+            <td>|</td>
+            <td></td>
+        </tr>
+        <tr>
             <td>|-- debuglogs</td>
-            <td class="fileCommentFolder">[Folder] Files intended to be read
-                by the user</td>
+            <td class="fileCommentFolder">[Directory]</td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- debug_session.log.x</td>
-            <td class="fileComment">Last session debug log (overwritten every run)</td>
+            <td>|&nbsp; &nbsp;|- &lt;debug files&gt;</td>
+            <td class="fileComment">See <a href="help-report_issue.html#log">Debug Log</a></td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- debugx.log.x</td>
-            <td class="fileComment">Rotating debug log</td>
-        </tr>
-        <tr>
-            <td>|&nbsp; &nbsp;|- debug_ircx.log.x</td>
-            <td class="fileComment">Rotating raw IRC log (only if enabled)</td>
+            <td>|</td>
+            <td></td>
         </tr>
         <tr>
             <td>|-- exported</td>
-            <td class="fileCommentFolder">[Folder] Files intended to be read
-                by the user</td>
+            <td class="fileCommentFolder">[Directory]</td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- stream_highlights.txt</td>
-            <td class="fileComment">Recorded stream highlights</td>
+            <td>|&nbsp;&nbsp;&nbsp;|-&nbsp;stream_highlights.txt</td>
+            <td class="fileComment">Recorded <a href="help.html#streamhighlights">stream highlights</a></td>
+        </tr>
+        <tr>
+            <td>|</td>
+            <td></td>
         </tr>
         <tr>
             <td>|-- logs</td>
-            <td class="fileCommentFolder">[Folder]</td>
+            <td class="fileCommentFolder">[Directory]</td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- &lt;channel&gt;.log</td>
+            <td>|&nbsp; &nbsp;|- &lt;log files&gt;</td>
             <td class="fileComment">Chat log files</td>
         </tr>
         <tr>
+            <td>|</td>
+            <td></td>
+        </tr>
+        <tr>
             <td>|- addressbook</td>
-            <td class="fileComment">[Settings] Addressbook entries</td>
+            <td class="fileComment">[Settings] <a href="help-addressbook.html">Addressbook</a> entries</td>
         </tr>
         <tr>
             <td>|- login</td>
             <td class="fileComment">[Settings] Your login data (keep this secure)</td>
         </tr>
         <tr>
-            <td>|- favoritesAndHistory</td>
+            <td>|- <span class="del">favoritesAndHistory</span></td>
             <td class="fileComment">[Settings] Channel History/Favorites [deprecated]</td>
         </tr>
         <tr>
@@ -126,7 +136,7 @@
             <td class="fileComment">[Settings] Main Settings File</td>
         </tr>
         <tr>
-            <td>|- statusPresets</td>
+            <td>|- <span class="del">statusPresets</span></td>
             <td class="fileComment">[Settings] Stream Title/Game presets (Admin Dialog) [deprecated]</td>
         </tr>
         

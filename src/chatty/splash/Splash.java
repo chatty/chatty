@@ -30,7 +30,10 @@ public class Splash {
     private static String[] getThings() {
         return new String[]{
             "Happy Birthday, Broughy!",
+            "Top 5 is always possible",
             "When's True 100%+?",
+            "Oh hey, thanks!",
+            "Carl Carl, dude dude, man!",
             "Jaffa Kree!",
             "Java is an island as well!",
             "And we're walking..",
@@ -45,21 +48,27 @@ public class Splash {
             "I've heard if both ways",
             "🐣",
             "Igniting the midnight petroleum!",
+            "Tea, Earl Grey, Hot",
+            "There's coffee in that nebula!",
             "70k lines of code!",
             "Free and open-source!",
             "Batteries not included",
             "Made with your support!",
             "Guten Morgen!",
+            "Have a nice day!",
             "Wind's howling.",
             "Rac + <Shift-Tab>",
             "Alternating backgrounds!",
             "Right-click on all the things!",
+            "Click on username to moderate",
+            "'View - Channel Admin' to set your stream title",
             "Splash screen!",
             "Pop goes the weasel!",
             ":)",
             "Donaudampfschiffahrtsgesellschaftskapitän",
             "Schleyfsteyn!",
-            "Never dig below your feet!"
+            "Never dig below your feet!",
+            "Kohle, Kohle, Kohle 🎵",
         };
     }
     
