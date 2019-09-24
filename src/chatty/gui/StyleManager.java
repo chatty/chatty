@@ -74,6 +74,7 @@ public class StyleManager implements StyleServer {
     private Color inputBackgroundColor;
     private Color inputForegroundColor;
     private Color highlightColor;
+    private Color highlightBackgroundColor;
     private Color searchResultColor;
     private Color searchResultColor2;
     private Color infoColor;
@@ -108,6 +109,9 @@ public class StyleManager implements StyleServer {
         inputBackgroundColor = makeColor("inputBackgroundColor");
         inputForegroundColor = makeColor("inputForegroundColor");
         highlightColor = makeColor("highlightColor");
+        highlightBackgroundColor = settings.getBoolean("highlightBackground")
+                                   ? makeColor("highlightBackgroundColor", null)
+                                   : null;
         searchResultColor = makeColor("searchResultColor");
         searchResultColor2 = makeColor("searchResultColor2");
         infoColor = makeColor("infoColor");
@@ -183,12 +187,16 @@ public class StyleManager implements StyleServer {
         paragraphStyle.addAttribute(Attribute.PARAGRAPH_SPACING, settings.getLong("paragraphSpacing"));
         
         MyStyleConstants.setBackground2(paragraphStyle,
-                settings.getBoolean("alternateBackground") ? makeColor("backgroundColor2", null) : null);
-        MyStyleConstants.setHighlightBackground(paragraphStyle,
-                settings.getBoolean("highlightBackground") ? makeColor("highlightBackgroundColor", null) : null);
+                settings.getBoolean("alternateBackground")
+                ? makeColor("backgroundColor2", null)
+                : null);
+        MyStyleConstants.setHighlightBackground(paragraphStyle, highlightBackgroundColor);
         MyStyleConstants.setSeparatorColor(paragraphStyle,
-                settings.getBoolean("messageSeparator") ? makeColor("separatorColor", null) : null);
-        MyStyleConstants.setFontHeight(paragraphStyle, dummyComponent.getFontMetrics(new Font(fontFamily, Font.PLAIN, fontSize)).getHeight());
+                settings.getBoolean("messageSeparator")
+                ? makeColor("separatorColor", null)
+                : null);
+        MyStyleConstants.setFontHeight(paragraphStyle,
+                dummyComponent.getFontMetrics(new Font(fontFamily, Font.PLAIN, fontSize)).getHeight());
         MyStyleConstants.setHighlightMatchesEnabled(paragraphStyle, settings.getBoolean("highlightMatches"));
         
         other = new SimpleAttributeSet();
@@ -246,7 +254,7 @@ public class StyleManager implements StyleServer {
     }
     
     private Color makeColor(String setting, Color defaultColor) {
-        return HtmlColors.decode(settings.getString(setting),defaultColor);
+        return HtmlColors.decode(settings.getString(setting), defaultColor);
     }
 
     @Override
@@ -303,6 +311,10 @@ public class StyleManager implements StyleServer {
                 return searchResultColor2;
             case "info":
                 return infoColor;
+            case "highlight":
+                return highlightColor;
+            case "highlightBackground":
+                return highlightBackgroundColor;
         }
         return foregroundColor;
     }

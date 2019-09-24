@@ -2953,8 +2953,8 @@ public class MainGui extends JFrame implements Runnable {
                     
                     // Custom color
                     if (tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints")) {
-                        message.color = HtmlColors.decode(client.settings.getString("highlightColor"));
-                        message.backgroundColor = HtmlColors.decode(client.settings.getString("highlightBackgroundColor"));
+                        message.color = styleManager.getColor("highlight");
+                        message.backgroundColor = styleManager.getColor("highlightBackground");
                     }
                     if (highlighted) {
                         message.color = highlighter.getLastMatchColor();
