@@ -1060,9 +1060,28 @@ public class EmotesDialog extends JDialog {
             if (sets != null && !sets.isEmpty()) {
                 boolean streamMatches = stream != null && stream.equals(sets.iterator().next().stream_name);
                 if (streamMatches) {
-                    if (addEmotes(Language.getString("emotesDialog.subemotes", stream), sets)) {
-                        if (!TwitchEmotesApi.hasAccessTo(localUserEmotesets, sets)) {
-                            addSubtitle(Language.getString("emotesDialog.subscriptionRequired2"), true);
+                    // Split subemotes with and without access
+                    Set<EmotesetInfo> withAccess = new HashSet<>();
+                    Set<EmotesetInfo> noAccess = new HashSet<>();
+                    for (EmotesetInfo set : sets) {
+                        if (localUserEmotesets.contains(set.emoteset_id)) {
+                            withAccess.add(set);
+                        } else {
+                            noAccess.add(set);
+                        }
+                    }
+                    if (!withAccess.isEmpty()) {
+                        addEmotes(Language.getString("emotesDialog.subemotes", stream), withAccess);
+                    }
+                    if (!noAccess.isEmpty()) {
+                        if (addEmotes(Language.getString("emotesDialog.subemotes", stream), noAccess)) {
+                            if (withAccess.isEmpty()) {
+                                // No subscription active
+                                addSubtitle(Language.getString("emotesDialog.subscriptionRequired2"), true);
+                            } else {
+                                // Subscription active, but not high enough tier
+                                addSubtitle(Language.getString("emotesDialog.subscriptionRequired3"), true);
+                            }
                         }
                     }
                     relayout();
