@@ -2284,6 +2284,10 @@ public class MainGui extends JFrame implements Runnable {
         } else if (command.equals("channelinfo")) {
             openChannelInfoDialog();
         } else if (command.equals("userinfo")) {
+            parameter = StringUtil.trim(parameter);
+            if (StringUtil.isNullOrEmpty(parameter)) {
+                parameter = client.settings.getString("username");
+            }
             User user = client.getExistingUser(channel, parameter);
             if (user != null) {
                 openUserInfoDialog(user, null, null);
@@ -2896,8 +2900,6 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if highlighted, without printing message
                 if (highlighted) {
                     highlightMatches = highlighter.getLastTextMatches();
-                    highlightedMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bits, whisper, highlightMatches);
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(chan);
                     } else {
@@ -2952,30 +2954,33 @@ public class MainGui extends JFrame implements Runnable {
                     message.pointsHl = tags.isHighlightedMessage();
                     
                     // Custom color
-                    if (tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints")) {
-                        message.color = styleManager.getColor("highlight");
-                        message.backgroundColor = styleManager.getColor("highlightBackground");
-                    }
+                    boolean hlByPoints = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");
                     if (highlighted) {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
                     }
-                    if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
+                    if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
                         ColorItem colorItem = msgColorManager.getMsgColor(user, text, tags);
                         if (!colorItem.isEmpty()) {
                             message.color = colorItem.getForegroundIfEnabled();
                             message.backgroundColor = colorItem.getBackgroundIfEnabled();
                         }
                     }
-
+                    
                     message.whisper = whisper;
                     message.action = action;
-                    if (highlighted) {
-                        message.highlighted = highlighted;
+                    if (highlighted || hlByPoints) {
+                        // Only set message.highlighted instead of highlighted
+                        // if hlByPoints, since that would affect other stuff as
+                        // well
+                        message.highlighted = true;
                     } else if (ignored && ignoreMode == IgnoredMessages.MODE_COMPACT) {
                         message.ignored_compact = true;
                     }
                     chan.printMessage(message);
+                    if (highlighted) {
+                        highlightedMessages.addMessage(channel, message);
+                    }
                     if (client.settings.listContains("streamChatChannels", channel)) {
                         streamChat.printMessage(message);
                     }
@@ -3238,7 +3243,6 @@ public class MainGui extends JFrame implements Runnable {
                     message.highlightMatches = highlighter.getLastTextMatches();
                     message.color = highlighter.getLastMatchColor();
                     message.bgColor = highlighter.getLastMatchBackgroundColor();
-                    highlightedMessages.addInfoMessage(channel.getChannel(), message.text);
 
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(channel);
@@ -3258,6 +3262,10 @@ public class MainGui extends JFrame implements Runnable {
                         message.color = colorItem.getForegroundIfEnabled();
                         message.bgColor = colorItem.getBackgroundIfEnabled();
                     }
+                }
+                // After colors and everything is set
+                if (highlighted) {
+                    highlightedMessages.addInfoMessage(channel.getChannel(), message);
                 }
             }
             channel.printInfoMessage(message);

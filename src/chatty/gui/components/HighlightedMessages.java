@@ -10,20 +10,27 @@ import chatty.gui.StyleServer;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
+import chatty.gui.components.textpane.InfoMessage;
+import chatty.gui.components.textpane.MyStyleConstants;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
+import chatty.util.colors.ColorCorrector;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 
 /**
  * Window showing all highlighted (or ignored) messages.
@@ -69,7 +76,56 @@ public class HighlightedMessages extends JDialog {
         
         this.addComponentListener(new MyVisibleListener());
         
-        messages = new TextPane(owner, styleServer);
+        /**
+         * Modify a couple of things to remove highlight foreground/background.
+         */
+        StyleServer modifiedStyleServer = new StyleServer() {
+
+            @Override
+            public Color getColor(String type) {
+                if (type.equals("highlight")) {
+                    return styleServer.getColor("foreground");
+                }
+                else if (type.equals("highlightBackground")) {
+                    return styleServer.getColor("background");
+                }
+                return styleServer.getColor(type);
+            }
+
+            @Override
+            public MutableAttributeSet getStyle() {
+                return styleServer.getStyle();
+            }
+
+            @Override
+            public MutableAttributeSet getStyle(String type) {
+                if (type.equals("highlight")) {
+                    return getStyle();
+                }
+                if (type.equals("paragraph")) {
+                    MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
+                    MyStyleConstants.setHighlightBackground(attr, null);
+                    return attr;
+                }
+                return styleServer.getStyle(type);
+            }
+
+            @Override
+            public Font getFont(String type) {
+                return styleServer.getFont(type);
+            }
+
+            @Override
+            public SimpleDateFormat getTimestampFormat() {
+                return styleServer.getTimestampFormat();
+            }
+
+            @Override
+            public ColorCorrector getColorCorrector() {
+                return styleServer.getColorCorrector();
+            }
+        };
+        messages = new TextPane(owner, modifiedStyleServer);
         messages.setContextMenuListener(new MyContextMenuListener());
         //messages.setLineWrap(true);
         //messages.setWrapStyleWord(true);
@@ -85,12 +141,22 @@ public class HighlightedMessages extends JDialog {
         pack();
     }
     
+    public void addMessage(String channel, UserMessage message) {
+        messageAdded(channel);
+        messages.printMessage(message);
+    }
+    
     public void addMessage(String channel, User user, String text, boolean action,
             TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches) {
         messageAdded(channel);
         UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null);
         message.whisper = whisper;
         messages.printMessage(message);
+    }
+    
+    public void addInfoMessage(String channel, InfoMessage message) {
+        messageAdded(channel);
+        messages.printInfoMessage(message);
     }
     
     public void addInfoMessage(String channel, String text) {
