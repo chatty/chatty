@@ -1,6 +1,9 @@
 
 package chatty.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -410,6 +413,24 @@ public class StringUtil {
             return o1.compareTo(o2);
         }
 
+    }
+    
+    public static String stringFromInputStream(InputStream inputStream) {
+        return stringFromInputStream(inputStream, "UTF-8");
+    }
+    
+    public static String stringFromInputStream(InputStream inputStream, String charset) {
+        try (InputStream input = inputStream) {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = input.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            return result.toString(charset);
+        } catch (IOException ex) {
+            return null;
+        }
     }
     
     public static final void main(String[] args) {

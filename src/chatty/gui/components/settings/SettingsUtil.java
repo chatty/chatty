@@ -42,4 +42,33 @@ public class SettingsUtil {
         return result;
     }
     
+    /**
+     * Remove sections in the input (usually HTML), based on the given type.
+     *
+     * <p>
+     * Sections to remove must be enclosed in one of the two ways:
+     * <ul>
+     * <li>{@code <!--#START:<type>#-->} to {@code <!--#END:<type>#-->} (all
+     * sections that don't match the given type are removed)
+     * <li>{@code <!--#START:!<type>#-->} to {@code <!--#END:!<type>#-->} (all
+     * sections that match the given type are removed)
+     * </ul>
+     * <p>
+     * Not necessarily designed for overlapping or inside of eachother sections,
+     * but those could still work to some extend.
+     *
+     * @param input The text to modify
+     * @param type The type
+     * @return The modified text
+     */
+    public static String removeHtmlConditions(String input, String type) {
+        input = input.replaceAll(String.format(
+                "(?s)<!--#START:(?!%1$s(?!\\w+))\\w+#-->(.*?)<!--#END:(?!%1$s(?!\\w+))\\w+#-->",
+                type), "");
+        input = input.replaceAll(String.format(
+                "(?s)<!--#START:!%1$s#-->(.*?)<!--#END:!%1$s#-->",
+                type), "");
+        return input;
+    }
+    
 }
