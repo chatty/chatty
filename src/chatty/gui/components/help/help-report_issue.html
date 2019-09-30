@@ -59,32 +59,21 @@
     
     <h3>Debug log files</h3>
     <p>The debug log files are located in the settings directory, in the
-        subfolder <code>debuglogs</code>. While Chatty is running you can use
-        the command <code>/opendir</code> to open the settings directory in the
-        file browser, then open <code>debuglogs</code>.</p>
+        subdirectory <code>debuglogs</code>. While Chatty is running you can use
+        the command <code>/openDebugDir</code> to open it directly (or
+        <code>/showDebugDir</code> to output it's path).</p>
 
     <p>There are two kinds of debug files:</p>
     <ul>
-        <li>The <code>debug.log</code> which is overwritten everytime you start
-            Chatty. It may also have a number at the end (like <code>debug.log.1</code>)
-            if Java couldn't open the usual <code>debug.log</code>.</li>
-        <li>Several files (<code>debug0.log, debug1.log, ..</code>), whereas
-        one of them is written to at a time, and then switched to the next when
-        a certain filesize is reached, rotating between a certain number of files.
-        Those files are not overwritten when Chatty is started, but instead new data is appended.</li>
+        <li>Several files (<code>debug0.log, debug1.log, ..</code>), switching
+            when a certain filesize is reached. These files are not overwritten
+            when Chatty is started, so it's usually a good way to find older
+            logs.</li>
+        <li>The <code>debug_session.log</code> which is overwritten everytime
+            you start Chatty. This could be good if you haven't restarted Chatty
+            yet.</li>
+        
     </ul>
-    <p>So to find possibly relevant data:</p>
-    <ol>
-        <li>If you haven't started Chatty again after the error occured, check
-            the <code>debug.log</code> first.</li>
-        <li>Otherwise check if one of the <code>debug0.log, debug1.log, ..</code>
-            files could contain the necessary information, based on the last
-        modification dates.
-        <ul>
-            <li>Even if the error is already some time back, it <em>may</em> still
-            be in there, depending on how much data has been added in the meantime.</li>
-        </ul></li>
-    </ol>
 </body>
 </html>
     

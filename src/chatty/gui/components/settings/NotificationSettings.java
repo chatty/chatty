@@ -237,6 +237,12 @@ public class NotificationSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 4, 2, 1);
         soundSettings.add(devicePanel, gbc);
         
+        //--------------------------
+        // Info
+        //--------------------------
+        soundSettings.add(new JLabel("Wav files that probably work are 8 to 48kHz and 8 or 16 bit."),
+                d.makeGbc(0, 6, 2, 1));
+        
         //======
         // Tabs
         //======
