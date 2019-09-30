@@ -81,7 +81,7 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
      * @param value The value to add to the list
      */
     public void add(E value) {
-        Entry entry = new Entry<>(value, String.valueOf(value));
+        Entry<E> entry = new Entry<>(value, String.valueOf(value));
         addItem(entry);
     }
     

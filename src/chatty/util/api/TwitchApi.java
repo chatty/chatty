@@ -152,11 +152,6 @@ public class TwitchApi {
                 }));
     }
     
-    @Deprecated
-    public void getEmotesByStreams(String... streams) {
-        // Not usable anymore, since stream -> set isn't available like before anymore
-    }
-    
     public void refreshEmotes() {
         emoticonManager2.refresh();
     }

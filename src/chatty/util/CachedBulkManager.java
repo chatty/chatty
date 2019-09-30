@@ -121,7 +121,7 @@ public class CachedBulkManager<Key,Item> {
     private final Options options;
 
     // Queries
-    private final Map<Object, Query<Key>> queries = new HashMap<>();
+    private final Map<Object, Query<Key, Item>> queries = new HashMap<>();
     
     // Requesting
     private final Requester<Key, Item> requester;
@@ -152,8 +152,8 @@ public class CachedBulkManager<Key,Item> {
     //=============
     // Add Queries
     //=============
-    
-    public void query(ResultListener<Key, Item> listener, int settings, Key... keys) {
+    @SafeVarargs
+    public final void query(ResultListener<Key, Item> listener, int settings, Key... keys) {
         query(listener, settings, Arrays.asList(keys));
     }
     
@@ -161,7 +161,8 @@ public class CachedBulkManager<Key,Item> {
         return query(null, listener, settings, keys);
     }
     
-    public void query(Object unique, ResultListener<Key, Item> listener, int settings, Key... keys) {
+    @SafeVarargs
+    public final void query(Object unique, ResultListener<Key, Item> listener, int settings, Key... keys) {
         query(unique, listener, settings, Arrays.asList(keys));
     }
     
@@ -183,7 +184,7 @@ public class CachedBulkManager<Key,Item> {
         if (unique == null) {
             unique = new Object();
         }
-        Query<Key> query = new Query<>(listener, settings, keys);
+        Query<Key, Item> query = new Query<>(listener, settings, keys);
         synchronized(LOCK) {
             if (option(query, UNIQUE) && queries.containsValue(query)) {
                 return null;
@@ -212,7 +213,7 @@ public class CachedBulkManager<Key,Item> {
      * @param request
      * @return
      */
-    private boolean doImmediately(Query request) {
+    private boolean doImmediately(Query<Key, Item> request) {
         synchronized (LOCK) {
             return option(request, ASAP)
                     && queries.containsValue(request);
@@ -244,13 +245,14 @@ public class CachedBulkManager<Key,Item> {
         return getOrQuerySingle(null, listener, settings, key);
     }
     
-    public Result<Key, Item> getOrQuery(Object unique, ResultListener<Key, Item> listener, int settings, Key... keys) {
+    @SafeVarargs
+    public final Result<Key, Item> getOrQuery(Object unique, ResultListener<Key, Item> listener, int settings, Key... keys) {
         return getOrQuery(unique, listener, settings, Arrays.asList(keys));
     }
     
     public Result<Key, Item> getOrQuery(Object unique, ResultListener<Key, Item> listener, int settings, Collection<Key> keys) {
-        Query request = new Query(listener, settings, keys);
-        Result result = getResult(request);
+        Query<Key, Item> request = new Query<>(listener, settings, keys);
+        Result<Key, Item> result = getResult(request);
         if (result == null || !result.hasAllKeys) {
             query(unique, listener, settings, keys);
         }
@@ -261,7 +263,8 @@ public class CachedBulkManager<Key,Item> {
     // Request results
     //=================
     
-    public void setError(Key... keys) {
+    @SafeVarargs
+    public final void setError(Key... keys) {
         setError(Arrays.asList(keys));
     }
     
@@ -277,7 +280,8 @@ public class CachedBulkManager<Key,Item> {
         checkDoneQueries();
     }
     
-    public void setNotFound(Key... keys) {
+    @SafeVarargs
+    public final void setNotFound(Key... keys) {
         setNotFound(Arrays.asList(keys));
     }
     
@@ -330,7 +334,7 @@ public class CachedBulkManager<Key,Item> {
      */
     private void setResponseReceived(Key key) {
         requestPending.remove(key);
-        for (Query r : queries.values()) {
+        for (Query<Key, Item> r : queries.values()) {
             r.responseReceived(key);
         }
     }
@@ -369,7 +373,8 @@ public class CachedBulkManager<Key,Item> {
         }
     }
 
-    public void setRequested(Key... keys) {
+    @SafeVarargs
+    public final void setRequested(Key... keys) {
         setRequested(Arrays.asList(keys));
     }
 
@@ -409,7 +414,7 @@ public class CachedBulkManager<Key,Item> {
         Set<Key> backlog = new HashSet<>();
         
         synchronized(LOCK) {
-            for (Query<Key> request : queries.values()) {
+            for (Query<Key, Item> request : queries.values()) {
                 addKeys(request, asap, normal, backlog);
             }
             // Remove duplicates
@@ -427,7 +432,7 @@ public class CachedBulkManager<Key,Item> {
         requestingInProgress = false;
     }
     
-    private void addKeys(Query<Key> query, Set<Key> asap, Set<Key> normal, Set<Key> backlog) {
+    private void addKeys(Query<Key, Item> query, Set<Key> asap, Set<Key> normal, Set<Key> backlog) {
         for (Key key : query.keys) {
             if (!requestPending.containsKey(key)
                     && !query.isAccepted(key)) {
@@ -444,7 +449,7 @@ public class CachedBulkManager<Key,Item> {
         }
     }
     
-    private boolean checkError(Key key, Query q) {
+    private boolean checkError(Key key, Query<Key, Item> q) {
         if (option(q, REFRESH) && !q.isResponseReceived(key)) {
             return true;
         }
@@ -455,7 +460,7 @@ public class CachedBulkManager<Key,Item> {
         return true;
     }
     
-    private long errorDelay(Key key, Query r) {
+    private long errorDelay(Key key, Query<Key, Item> r) {
         int errors = errorCount.getOrDefault(key, 0);
         int base = option(r, ASAP) ? 2 : 10;
         return (long)Math.min(base * Math.pow(errors, 10), 1800);
@@ -503,10 +508,10 @@ public class CachedBulkManager<Key,Item> {
      */
     private Collection<Result<Key, Item>> getDoneQueries2() {
         Collection<Result<Key, Item>> results = new ArrayList<>();
-        Iterator<Map.Entry<Object, Query<Key>>> it = queries.entrySet().iterator();
+        Iterator<Map.Entry<Object, Query<Key, Item>>> it = queries.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<Object, Query<Key>> entry = it.next();
-            Result requestResult = getResult(entry.getValue());
+            Map.Entry<Object, Query<Key, Item>> entry = it.next();
+            Result<Key, Item> requestResult = getResult(entry.getValue());
             if (requestResult != null) {
                 results.add(requestResult);
                 if (requestResult.hasAllKeys) {
@@ -517,7 +522,7 @@ public class CachedBulkManager<Key,Item> {
         return results;
     }
     
-    private Result<Key, Item> getResult(Query<Key> q) {
+    private Result<Key, Item> getResult(Query<Key, Item> q) {
         synchronized(LOCK) {
             Map<Key, Item> results = new HashMap<>();
             Set<Key> waitErrors = new HashSet<>();
@@ -557,7 +562,7 @@ public class CachedBulkManager<Key,Item> {
             boolean partial = option(q, PARTIAL) || option(q, RETRY);
             boolean enoughKeys = option(q, PARTIAL) || hasAllKeysOrErrors;
             if (hasAllKeys || (partial && results.size() > 0 && enoughKeys)) {
-                Result result = new Result<>(results, q, hasAllKeys);
+                Result<Key, Item> result = new Result<>(results, q, hasAllKeys);
                 if (!q.sameResult(result)) {
                     q.setResult(result);
                     return result;
@@ -571,7 +576,7 @@ public class CachedBulkManager<Key,Item> {
     // Helper functions
     //==================
     
-    private boolean option(Query r, int option) {
+    private boolean option(Query<Key, Item> r, int option) {
         return r.options.contains(option) || options.contains(option);
     }
     
@@ -588,10 +593,6 @@ public class CachedBulkManager<Key,Item> {
             return Long.MAX_VALUE;
         }
         return TimeUnit.MILLISECONDS.toSeconds(MiscUtil.ems() - map.get(key));
-    }
-    
-    private boolean acceptError(Query request, Key key) {
-        return secondsPassed(lastError, key) < 300 && !option(request, RETRY);
     }
     
     
@@ -634,11 +635,11 @@ public class CachedBulkManager<Key,Item> {
     
     public static class Result<Key, Item> {
         
-        private final Query<Key> query;
+        private final Query<Key, Item> query;
         private final Map<Key, Item> results;
         private final boolean hasAllKeys;
         
-        private Result(Map<Key, Item> results, Query<Key> query, boolean hasAllKeys) {
+        private Result(Map<Key, Item> results, Query<Key, Item> query, boolean hasAllKeys) {
             this.results = new HashMap<>(results);
             this.hasAllKeys = hasAllKeys;
             this.query = query;
@@ -744,16 +745,16 @@ public class CachedBulkManager<Key,Item> {
         
     }
     
-    private static class Query<Key> {
+    private static class Query<Key, Item> {
         
         public final Options options;
-        public final ResultListener resultListener;
+        public final ResultListener<Key, Item> resultListener;
         public final Set<Key> keys;
         private final Set<Key> accepted = new HashSet<>();
         private final Set<Key> responseReceived = new HashSet<>();
-        private Result result;
+        private Result<Key, Item> result;
         
-        Query(ResultListener resultListener, int settings, Collection<Key> keys) {
+        Query(ResultListener<Key, Item> resultListener, int settings, Collection<Key> keys) {
             this.options = new Options(settings);
             Set<Key> set = new HashSet<>(keys);
             this.keys = Collections.unmodifiableSet(set);
@@ -778,15 +779,15 @@ public class CachedBulkManager<Key,Item> {
             return responseReceived.contains(key);
         }
         
-        public void setResult(Result result) {
+        public void setResult(Result<Key, Item> result) {
             this.result = result;
         }
         
-        public Result getResult() {
+        public Result<Key, Item> getResult() {
             return this.result;
         }
         
-        public boolean sameResult(Result result) {
+        public boolean sameResult(Result<Key, Item> result) {
             return Objects.equals(this.result, result);
         }
         
@@ -803,7 +804,7 @@ public class CachedBulkManager<Key,Item> {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final Query<?> other = (Query<?>) obj;
+            final Query<?, ?> other = (Query<?, ?>) obj;
             if (!Objects.equals(this.options, other.options)) {
                 return false;
             }

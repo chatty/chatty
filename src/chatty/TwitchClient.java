@@ -717,7 +717,7 @@ public class TwitchClient {
             settings.setString("channel", channel);
         }
         api.requestUserId(Helper.toStream(autojoin));
-        api.getEmotesByStreams(Helper.toStream(autojoin));
+//        api.getEmotesByStreams(Helper.toStream(autojoin)); // Removed
         c.connect(server, ports, name, password, autojoin);
         return true;
     }
@@ -2558,7 +2558,7 @@ public class TwitchClient {
         if (settings.getBoolean("bttvEmotes")) {
             bttvEmotes.requestEmotes(channel, false);
         }
-        api.getEmotesByStreams(Helper.toStream(channel));
+//        api.getEmotesByStreams(Helper.toStream(channel)); // Removed
     }
     
     private class EmoteListener implements EmoticonListener {
@@ -2730,7 +2730,8 @@ public class TwitchClient {
         public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
             if (tags.isCustomReward()) {
                 String rewardInfo = (String)settings.mapGet("rewards", tags.getCustomRewardId());
-                String info = String.format(user.getDisplayNick() + " redeemed a custom reward (%s)",
+                String info = String.format("%s redeemed a custom reward (%s)",
+                                            user.getDisplayNick(),
                                             rewardInfo != null ? rewardInfo : "unknown");
                 g.printUsernotice("Points", user, info, text, tags);
             }

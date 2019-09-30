@@ -10,8 +10,8 @@ import javax.swing.AbstractListModel;
  * 
  * @author tduva
  */
-public class UserlistModel<T extends Comparable> extends AbstractListModel {
-
+public class UserlistModel<T extends Comparable<T>> extends AbstractListModel<T> {
+    
     ArrayList<T> data = new ArrayList<>();
 
     public ArrayList<T> getData() {

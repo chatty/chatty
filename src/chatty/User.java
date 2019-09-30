@@ -23,7 +23,7 @@ import java.util.Set;
  * 
  * @author tduva
  */
-public class User implements Comparable {
+public class User implements Comparable<User> {
     
     private static final NamedColor[] defaultColors = {
         new NamedColor("Red", 255, 0, 0),
@@ -727,12 +727,7 @@ public class User implements Comparable {
     }
 
     @Override
-    public synchronized int compareTo(Object o) {
-        if (!(o instanceof User)) {
-            return 0;
-        }
-        User u = (User)o;
-        
+    public synchronized int compareTo(User u) {
         int broadcaster = 16;
         int admin = 8;
         int moderator = 4;

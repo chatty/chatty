@@ -425,8 +425,8 @@ public class HotkeyManager {
      * @param hotkey
      * @return 
      */
-    private List hotkeyToList(Hotkey hotkey) {
-        List l = new ArrayList();
+    private List<Object> hotkeyToList(Hotkey hotkey) {
+        List<Object> l = new ArrayList<>();
         l.add(hotkey.actionId);
         l.add(hotkey.keyStroke.toString());
         l.add(hotkey.type.id);

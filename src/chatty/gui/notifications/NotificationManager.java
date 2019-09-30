@@ -66,7 +66,7 @@ public class NotificationManager {
     }
     
     private void saveToSettings() {
-        List<List> entriesToSave = new ArrayList<>();
+        List<List<Object>> entriesToSave = new ArrayList<>();
         for (Notification p : properties) {
             entriesToSave.add(p.toList());
         }
@@ -74,9 +74,9 @@ public class NotificationManager {
     }
     
     private synchronized void loadFromSettings() {
-        List<List> entriesToLoad = settings.getList(SETTING_NAME);
+        List<List<Object>> entriesToLoad = settings.getList(SETTING_NAME);
         properties.clear();
-        for (List l : entriesToLoad) {
+        for (List<Object> l : entriesToLoad) {
             Notification p = Notification.fromList(l);
             if (p != null) {
                 properties.add(p);

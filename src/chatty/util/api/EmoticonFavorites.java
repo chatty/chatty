@@ -150,8 +150,8 @@ public class EmoticonFavorites {
      * @return The created list
      * @see listToFavorite(List)
      */
-    private List favoriteToList(Favorite f) {
-        List list = new ArrayList();
+    private List<Object> favoriteToList(Favorite f) {
+        List<Object> list = new ArrayList<>();
         list.add(f.code);
         list.add(f.emoteset);
         list.add(0); // In case loaded in older version where this is expeceted
@@ -166,7 +166,8 @@ public class EmoticonFavorites {
      * @param twitchEmotesById All Twitch emotes currently loaded
      * @param more
      */
-    public void find(Map<String, Emoticon> twitchEmotesById,
+    @SafeVarargs
+    public final void find(Map<String, Emoticon> twitchEmotesById,
             Set<Emoticon>... more) {
         if (favoritesNotFound.isEmpty()) {
             return;

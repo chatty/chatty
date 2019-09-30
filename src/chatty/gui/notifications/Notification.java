@@ -295,8 +295,8 @@ public class Notification {
         return matcher == null ? "" : matcher;
     }
     
-    public List toList() {
-        List result = new ArrayList<>();
+    public List<Object> toList() {
+        List<Object> result = new ArrayList<>();
         result.add(type.name());
         result.add(desktopState.id);
         result.add(soundState.id);
@@ -313,7 +313,7 @@ public class Notification {
         return result;
     }
     
-    public static Notification fromList(List list) {
+    public static Notification fromList(List<Object> list) {
         try {
             Type type = Type.valueOf((String)list.get(0));
             State desktopState = State.getTypeFromId(((Number)list.get(1)).intValue());

@@ -76,8 +76,8 @@ public class TableEditor<T> extends JPanel {
     
     private final JTextField filterInput = new JTextField();
     
-    private TableEditorListener listener;
-    private TableContextMenu contextMenu;
+    private TableEditorListener<T> listener;
+    private TableContextMenu<T> contextMenu;
 
     /**
      * 
