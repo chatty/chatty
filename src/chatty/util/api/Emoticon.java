@@ -876,9 +876,13 @@ public class Emoticon {
         return height;
     }
     
-    public boolean matchesUser(User user) {
+    public boolean matchesUser(User user, Set<String> accessToSets) {
         if (user == null) {
             return true;
+        }
+        if (!hasGlobalEmoteset()
+                && (accessToSets == null || !accessToSets.contains(emoteset))) {
+            return false;
         }
         if (hasStreamRestrictions()
                 && !streamRestrictionContains(user.getStream())) {
