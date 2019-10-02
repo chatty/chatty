@@ -10,11 +10,15 @@ import com.jtattoo.plaf.luna.LunaLookAndFeel;
 import com.jtattoo.plaf.mint.MintLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
 import java.awt.Window;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
@@ -118,12 +122,13 @@ public class LaF {
                         MetalLookAndFeel.setCurrentTheme(new OceanTheme());
                 }
             }
-
+            
             LOGGER.info("[LAF] Set " + lafCode + "/" + theme + " [" + laf + "]");
             UIManager.setLookAndFeel(laf);
             lafClass = laf;
+            modifyDefaults(UIManager.getLookAndFeelDefaults());
         } catch (Exception ex) {
-            LOGGER.warning("Failed setting LAF: "+ex);
+            LOGGER.warning("[LAF] Failed setting LAF: "+ex);
         }
         
         // Tab rows not overlaying eachother
@@ -136,6 +141,34 @@ public class LaF {
         } else {
             linkColor = "#0000FF";
             isDarkTheme = false;
+        }
+    }
+    
+    private static void modifyDefaults(UIDefaults defaults) {
+        try {
+            if (lafClass.equals(UIManager.getSystemLookAndFeelClassName())) {
+                Object font = UIManager.getLookAndFeelDefaults().get("TextField.font");
+                UIManager.getLookAndFeelDefaults().put("TextArea.font", font);
+                LOGGER.info("[LAF] Changed TextArea.font to "+font);
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("[LAF] Failed to change TextArea.font: "+ex);
+        }
+        
+        int fontScale = (int)settings.getLong("lafFontScale");
+        if (fontScale != 100 && fontScale >= 10 && fontScale <= 200) {
+            LOGGER.info("[LAF] Applying font scale "+fontScale);
+            // Make a copy to prevent concurrent modification bug
+            // https://bugs.openjdk.java.net/browse/JDK-6893623
+            Set<Object> keys = new HashSet<>(defaults.keySet());
+            for (Object key : keys) {
+                Object value = defaults.get(key);
+                if (value instanceof FontUIResource) {
+                    FontUIResource font = (FontUIResource) value;
+                    font = new FontUIResource(font.getFamily(), font.getStyle(), (int) (font.getSize() * (fontScale/100.0)));
+                    defaults.put(key, font);
+                }
+            }
         }
     }
     

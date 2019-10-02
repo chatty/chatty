@@ -180,7 +180,7 @@ public class About extends JFrame implements ActionListener {
 
         pack();
         
-        CachedManager m = new CachedManager("patreon", 60*60*24*3, "Patreon") {
+        CachedManager m = new CachedManager(Chatty.getCacheDirectory()+"patreon", 60*60*24*3, "Patreon") {
             
             @Override
             public boolean handleData(String data) {

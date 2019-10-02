@@ -60,7 +60,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
             "logPath", "logTimestamp", "logSplit", "logSubdirectories",
             "tabsPlacement", "tabsLayout", "logLockFiles",
-            "laf", "lafTheme", "language"
+            "laf", "lafTheme", "lafFontScale", "language"
     ));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(

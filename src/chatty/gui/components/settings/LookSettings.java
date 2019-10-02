@@ -24,6 +24,7 @@ public class LookSettings extends SettingsPanel {
     protected LookSettings(SettingsDialog d) {
 
         JPanel lafSettingsPanel = addTitledPanel(Language.getString("settings.section.lookandfeel"), 0);
+        JPanel fontScalePanel = addTitledPanel("Font Scale (experimental)", 1);
         
         GridBagConstraints gbc;
         
@@ -64,6 +65,18 @@ public class LookSettings extends SettingsPanel {
             LaF.updateLookAndFeel();
             d.pack();
         });
+        
+        Map<Long, String> fontScaleOptions = new LinkedHashMap<>();
+        fontScaleOptions.put((long)80, "0.8");
+        fontScaleOptions.put((long)90, "0.9");
+        fontScaleOptions.put((long)100, "Default");
+        fontScaleOptions.put((long)110, "1.1");
+        fontScaleOptions.put((long)120, "1.2");
+        fontScaleOptions.put((long)130, "1.3");
+        fontScaleOptions.put((long)140, "1.4");
+        fontScaleOptions.put((long)150, "1.5");
+        ComboLongSetting fontScale = new ComboLongSetting(fontScaleOptions);
+        d.addLongSetting("lafFontScale", fontScale);
 
         gbc = d.makeGbc(0, 0, 1, 1);
         lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.lookandfeel")), gbc);
@@ -91,6 +104,20 @@ public class LookSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 2, 5, 1);
         lafSettingsPanel.add(info, gbc);
         
+        
+        //--------------------------
+        // Font Scale
+        //--------------------------
+        gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+        fontScalePanel.add(new JLabel("Font Scale:"), gbc);
+        
+        gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
+        fontScalePanel.add(fontScale, gbc);
+        
+        gbc = d.makeGbc(0, 2, 2, 1, GridBagConstraints.CENTER);
+        fontScalePanel.add(new JLabel(SettingConstants.HTML_PREFIX
+                + "Some things may not look correct. Restart of Chatty required!"),
+                gbc);
     }
     
 }

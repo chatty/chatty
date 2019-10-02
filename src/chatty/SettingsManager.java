@@ -171,6 +171,7 @@ public class SettingsManager {
         settings.addString("laf","default");
         settings.addString("lafTheme","Default");
         settings.addMap("lafCustomTheme", new HashMap<>(), Setting.STRING);
+        settings.addLong("lafFontScale", 100);
         
         settings.addString("language", "");
         
