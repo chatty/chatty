@@ -5,6 +5,7 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
+import chatty.util.commands.Parameters;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -798,6 +799,26 @@ public class Helper {
             }
         }
         return result;
+    }
+    
+    public static void addUserParameters(User user, String msgId, String autoModMsgId, Parameters parameters) {
+        parameters.put("nick", user.getRegularDisplayNick());
+        if (msgId != null) {
+            parameters.put("msg-id", msgId);
+            parameters.put("msg", user.getMessageText(msgId));
+        }
+        if (autoModMsgId != null) {
+            parameters.put("automod-msg-id", autoModMsgId);
+            String autoModMsg = user.getAutoModMessageText(autoModMsgId);
+            if (autoModMsg != null) {
+                parameters.put("msg", autoModMsg);
+            }
+        }
+        parameters.put("user-id", user.getId());
+        parameters.put("twitch-badge-info", user.getTwitchBadges().toString());
+        parameters.put("display-nick", user.getDisplayNick());
+        parameters.put("custom-nick", user.getCustomNick());
+        parameters.put("full-nick", user.getFullNick());
     }
     
 }

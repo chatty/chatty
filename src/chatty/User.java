@@ -478,6 +478,26 @@ public class User implements Comparable<User> {
         return msg != null ? msg.text : null;
     }
     
+    public synchronized AutoModMessage getAutoModMessage(String msgId) {
+        if (msgId == null) {
+            return null;
+        }
+        for (Message msg : lines) {
+            if (msg instanceof AutoModMessage) {
+                AutoModMessage autoModMsg = (AutoModMessage) msg;
+                if (msgId.equals(autoModMsg.id)) {
+                    return autoModMsg;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public String getAutoModMessageText(String msgId) {
+        AutoModMessage msg = getAutoModMessage(msgId);
+        return msg != null ? msg.message : null;
+    }
+    
     public synchronized int clearMessagesIfInactive(long duration) {
         if (!lines.isEmpty()
                 && System.currentTimeMillis() - getLastLineTime() >= duration) {

@@ -1,6 +1,7 @@
 
 package chatty.gui.components.userinfo;
 
+import chatty.Helper;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
@@ -256,17 +257,13 @@ public class UserInfo extends JDialog {
             reason = " " + reason;
         }
         Parameters parameters = Parameters.create(nick + reason);
-        parameters.put("nick", user.getRegularDisplayNick());
+        Helper.addUserParameters(user, getMsgId(), getAutoModMsgId(), parameters);
         parameters.put("reason", reason);
-        parameters.put("msg", getMsg());
-        parameters.put("msg-id", getMsgId());
         parameters.put("target-msg-id", getTargetMsgId());
-        parameters.put("automod-msg-id", getAutoModMsgId());
         parameters.put("followage", infoPanel.getFollowAge());
         parameters.put("followdate", infoPanel.getFollowDate());
         parameters.put("accountage", infoPanel.getAccountAge());
         parameters.put("accountdate", infoPanel.getAccountDate());
-        parameters.put("user-id", user.getId());
         return parameters;
     }
     

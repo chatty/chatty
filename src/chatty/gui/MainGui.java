@@ -1654,9 +1654,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.startsWith("command")) {
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());
-                parameters.put("nick", user.getName());
-                parameters.put("msg", user.getMessageText(msgId));
-                parameters.put("msg-id", msgId);
+                Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
                 parameters.put("automod-msg-id", autoModMsgId);
                 customCommand(user.getRoom(), e, parameters);
             } else if (cmd.equals("copyNick")) {
@@ -2167,7 +2165,7 @@ public class MainGui extends JFrame implements Runnable {
             if (e.isControlDown() && command.length() > 1) {
                 CustomCommand customCommand;
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());
-                parameters.put("msg-id", msgId);
+                Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
                 if (command.contains(" ")) {
                     // Assume that something containing a space is direct Custom Command
                     customCommand = CustomCommand.parse(command);

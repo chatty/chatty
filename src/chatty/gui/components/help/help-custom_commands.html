@@ -232,9 +232,18 @@
         </tr>
         <!-- User Context Menu -->
         <tr>
-            <td rowspan="4">User Context Menu</td>
+            <td rowspan="7">User Context Menu</td>
             <td><code>1</code>, <code>nick</code></td>
             <td>Name of the user</td>
+        </tr>
+        <tr>
+            <td><code>display-nick</code>, <code>custom-nick</code>,
+                <code>full-nick</code></td>
+            <td>Variations of the name of the user. <code>display-nick</code>
+                may contain spaces for some users. <code>custom-nick</code> may
+                also be the <a href="help.html#customNames">Custom Name</a> you
+                set, <code>full-nick</code> is what is displayed in the userlist
+                (includes status symbols)</td>
         </tr>
         <tr>
             <td><code>msg</code></td>
@@ -254,11 +263,19 @@
                 approving or denying the message (when opened by clicking on
                 an appropriate message in chat)</td>
         </tr>
+        <tr>
+            <td><code>user-id</code></td>
+            <td>The Twitch ID of the user</td>
+        </tr>
+        <tr>
+            <td><code>twitch-badge-info</code></td>
+            <td>Textual info of the user's Twitch badges (may change)</td>
+        </tr>
         <!-- User Dialog -->
         <tr>
-            <td rowspan="8">User Dialog</td>
-            <td><code>1</code>, <code>nick</code></td>
-            <td>Name of the user</td>
+            <td rowspan="6">User Dialog</td>
+            <td><em>All from User Context Menu</em></td>
+            <td>See above</td>
         </tr>
         <tr>
             <td><code>2-</code>, <code>reason</code></td>
@@ -281,10 +298,6 @@
             <td>Message id of the selected message filtered by AutoMod, for
                 approving or denying the message (when opened by clicking on
                 an appropriate message in chat)</td>
-        </tr>
-        <tr>
-            <td><code>user-id</code></td>
-            <td>The Twitch ID of the user</td>
         </tr>
         <tr>
             <td><code>followage</code> /
