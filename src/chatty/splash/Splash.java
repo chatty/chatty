@@ -30,7 +30,7 @@ public class Splash {
     private static String[] getThings() {
         return new String[]{
             "Happy Birthday, Broughy!",
-            "Top 5 is always possible",
+            "Top 5 is always possible!",
             "When's True 100%+?",
             "Oh hey, thanks!",
             "Carl Carl, dude dude, man!",
