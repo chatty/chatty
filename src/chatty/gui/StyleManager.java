@@ -258,11 +258,6 @@ public class StyleManager implements StyleServer {
     }
 
     @Override
-    public MutableAttributeSet getStyle() {
-        return getStyle("regular");
-    }
-
-    @Override
     public MutableAttributeSet getStyle(String type) {
 //        System.out.println(timestampStyle);
         switch (type) {

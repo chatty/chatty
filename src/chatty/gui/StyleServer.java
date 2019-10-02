@@ -14,7 +14,6 @@ import javax.swing.text.MutableAttributeSet;
  */
 public interface StyleServer {
     public Color getColor(String type);
-    public MutableAttributeSet getStyle();
     public MutableAttributeSet getStyle(String type);
     public Font getFont(String type);
     public SimpleDateFormat getTimestampFormat();

@@ -815,7 +815,9 @@ public class Helper {
             }
         }
         parameters.put("user-id", user.getId());
-        parameters.put("twitch-badge-info", user.getTwitchBadges().toString());
+        if (user.getTwitchBadges() != null) {
+            parameters.put("twitch-badge-info", user.getTwitchBadges().toString());
+        }
         parameters.put("display-nick", user.getDisplayNick());
         parameters.put("custom-nick", user.getCustomNick());
         parameters.put("full-nick", user.getFullNick());

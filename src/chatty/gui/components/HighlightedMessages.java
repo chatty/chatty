@@ -93,14 +93,9 @@ public class HighlightedMessages extends JDialog {
             }
 
             @Override
-            public MutableAttributeSet getStyle() {
-                return styleServer.getStyle();
-            }
-
-            @Override
             public MutableAttributeSet getStyle(String type) {
                 if (type.equals("highlight")) {
-                    return getStyle();
+                    return getStyle("standard");
                 }
                 if (type.equals("paragraph")) {
                     MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
