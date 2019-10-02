@@ -116,7 +116,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private Channel channel;
 
     protected LinkController linkController = new LinkController();
-    private static StyleServer styleServer;
+    private final StyleServer styleServer;
     
     private final RingBuffer<MentionCheck> lastUsers = new RingBuffer<>(300);
     
@@ -180,7 +180,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     public ChannelTextPane(MainGui main, StyleServer styleServer, boolean special, boolean startAtBottom) {
         lineSelection = new LineSelection(main.getUserListener());
-        ChannelTextPane.styleServer = styleServer;
+        this.styleServer = styleServer;
         this.main = main;
         this.setBackground(BACKGROUND_COLOR);
         this.addMouseListener(linkController);

@@ -264,23 +264,24 @@ public class StyleManager implements StyleServer {
 
     @Override
     public MutableAttributeSet getStyle(String type) {
+//        System.out.println(timestampStyle);
         switch (type) {
             case "special":
-                return specialStyle;
+                return new SimpleAttributeSet(specialStyle);
             case "standard":
-                return standardStyle;
+                return new SimpleAttributeSet(standardStyle);
             case "timestamp":
-                return timestampStyle;
+                return new SimpleAttributeSet(timestampStyle);
             case "info":
-                return infoStyle;
+                return new SimpleAttributeSet(infoStyle);
             case "highlight":
-                return highlightStyle;
+                return new SimpleAttributeSet(highlightStyle);
             case "paragraph":
-                return paragraphStyle;
+                return new SimpleAttributeSet(paragraphStyle);
             case "settings":
-                return other;
+                return new SimpleAttributeSet(other);
         }
-        return baseStyle;
+        return new SimpleAttributeSet(baseStyle);
     }
 
     @Override
