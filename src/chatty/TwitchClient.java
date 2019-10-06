@@ -194,7 +194,6 @@ public class TwitchClient {
         LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
                 +" [Settings Directory] "+Chatty.getUserDataDirectory()
                 +" [Classpath] "+System.getProperty("java.class.path"));
-        LOGGER.info("Retina Display: "+GuiUtil.hasRetinaDisplay());
         
         settings = new Settings(Chatty.getUserDataDirectory()+"settings");
         // Settings
@@ -433,11 +432,14 @@ public class TwitchClient {
     private void initDxSettings() {
         try {
             Boolean d3d = !settings.getBoolean("nod3d");
-            System.setProperty("sun.java2d.d3d", d3d.toString());
             Boolean ddraw = settings.getBoolean("noddraw");
+            LOGGER.info(String.format("d3d: %s (%s) / noddraw: %s (%s) / opengl: (%s) / retina: %s",
+                    d3d, System.getProperty("sun.java2d.d3d"),
+                    ddraw, System.getProperty("sun.java2d.noddraw"),
+                    System.getProperty("sun.java2d.opengl"),
+                    GuiUtil.hasRetinaDisplay()));
+            System.setProperty("sun.java2d.d3d", d3d.toString());
             System.setProperty("sun.java2d.noddraw", ddraw.toString());
-            //System.out.println(System.getProperty("sun.java2d.opengl"));
-            LOGGER.info("Drawing settings: d3d: "+d3d+" / noddraw: "+ddraw);
         } catch (SecurityException ex) {
             LOGGER.warning("Error setting drawing settings: "+ex.getLocalizedMessage());
         }

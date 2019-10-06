@@ -116,7 +116,8 @@ public class LookSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 2, 2, 1, GridBagConstraints.CENTER);
         fontScalePanel.add(new JLabel(SettingConstants.HTML_PREFIX
-                + "Some things may not look correct. Restart of Chatty required!"),
+                + "Some things may not look correct. Restart of Chatty required "
+                + "after changing setting."),
                 gbc);
     }
     

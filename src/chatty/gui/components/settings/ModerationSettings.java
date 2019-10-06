@@ -41,7 +41,7 @@ public class ModerationSettings extends SettingsPanel {
                 + "You can also set a custom hotkey to open dialogs (go "
                 + "to <code>Hotkeys</code> settings, add a new item and select "
                 + "<code>Dialog: AutoMod Dialog</code> as action)."),
-                d.makeGbc(1, 6, 2, 1, GridBagConstraints.EAST));
+                d.makeGbc(1, 6, 2, 1, GridBagConstraints.CENTER));
         
         
         JPanel userInfo = addTitledPanel(Language.getString("settings.section.userDialog"), 1);

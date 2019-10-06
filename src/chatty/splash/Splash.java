@@ -34,6 +34,7 @@ public class Splash {
             "When's True 100%+?",
             "Oh hey, thanks!",
             "Carl Carl, dude dude, man!",
+            "Old Reece still got it cracking.",
             "Jaffa Kree!",
             "Java is an island as well!",
             "And we're walking..",

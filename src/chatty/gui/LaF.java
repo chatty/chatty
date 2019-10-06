@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.settings.Settings;
 import com.jtattoo.plaf.aero.AeroLookAndFeel;
 import com.jtattoo.plaf.fast.FastLookAndFeel;
@@ -9,15 +10,18 @@ import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
 import com.jtattoo.plaf.luna.LunaLookAndFeel;
 import com.jtattoo.plaf.mint.MintLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
+import java.awt.Color;
 import java.awt.Window;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -127,6 +131,11 @@ public class LaF {
             UIManager.setLookAndFeel(laf);
             lafClass = laf;
             modifyDefaults(UIManager.getLookAndFeelDefaults());
+            /**
+             * After setting color setting the LaF again seemed different than
+             * not doing it. This should probably be investigated further.
+             */
+//            UIManager.setLookAndFeel(laf);
         } catch (Exception ex) {
             LOGGER.warning("[LAF] Failed setting LAF: "+ex);
         }
@@ -149,6 +158,7 @@ public class LaF {
             if (lafClass.equals(UIManager.getSystemLookAndFeelClassName())) {
                 Object font = UIManager.getLookAndFeelDefaults().get("TextField.font");
                 UIManager.getLookAndFeelDefaults().put("TextArea.font", font);
+                UIManager.getDefaults().put("TextArea.font", font);
                 LOGGER.info("[LAF] Changed TextArea.font to "+font);
             }
         } catch (Exception ex) {
@@ -158,16 +168,50 @@ public class LaF {
         int fontScale = (int)settings.getLong("lafFontScale");
         if (fontScale != 100 && fontScale >= 10 && fontScale <= 200) {
             LOGGER.info("[LAF] Applying font scale "+fontScale);
-            // Make a copy to prevent concurrent modification bug
-            // https://bugs.openjdk.java.net/browse/JDK-6893623
-            Set<Object> keys = new HashSet<>(defaults.keySet());
-            for (Object key : keys) {
-                Object value = defaults.get(key);
-                if (value instanceof FontUIResource) {
-                    FontUIResource font = (FontUIResource) value;
-                    font = new FontUIResource(font.getFamily(), font.getStyle(), (int) (font.getSize() * (fontScale/100.0)));
-                    defaults.put(key, font);
+            modifyDefaults((k, v) -> {
+                if (v instanceof FontUIResource) {
+                    FontUIResource font = (FontUIResource) v;
+                    return new FontUIResource(font.getFamily(), font.getStyle(), (int) (font.getSize() * (fontScale/100.0)));
                 }
+                return null;
+            });
+        }
+        /**
+         * Just some experimenting. Setting colors automatically like this looks
+         * kind of bad, although with some more logic (e.g. calculating shadows
+         * correctly) it might be better. Still, it didn't seem to set
+         * everything, some stuff might be textures or set differently somehow.
+         */
+//        modifyDefaults((k, v) -> {
+//            if (v instanceof ColorUIResource) {
+//                ColorUIResource color = (ColorUIResource) v;
+//                int lightness = ColorCorrectionNew.getLightness(color);
+//                lightness = Math.abs(lightness - 255);
+//                lightness = Math.min(lightness, 230);
+//                lightness = Math.max(lightness, 30);
+//                Color modifiedColor = ColorCorrectionNew.toLightness(color, lightness);
+//                return new ColorUIResource(modifiedColor);
+//            }
+//            return null;
+//        });
+    }
+    
+    private static void modifyDefaults(BiFunction<Object, Object, Object> modify) {
+        UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+        // Make a copy to prevent concurrent modification bug
+        // https://bugs.openjdk.java.net/browse/JDK-6893623
+        Set<Object> keys = new HashSet<>(defaults.keySet());
+        for (Object key : keys) {
+            Object value = defaults.get(key);
+            Object result = modify.apply(key, value);
+            if (result != null) {
+                defaults.put(key, result);
+                /**
+                 * Set this as well, just in case. This doesn't get reset when
+                 * the LaF is set, but normally that shouldn't happen except
+                 * through this, but idk.
+                 */
+                UIManager.getDefaults().put(key, result);
             }
         }
     }

@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 
@@ -27,7 +28,7 @@ import javax.swing.Timer;
  */
 public class SearchDialog extends JDialog {
     
-    private static final Color COLOR_NORMAL = Color.WHITE;
+    private static final Color COLOR_NORMAL = new JLabel().getBackground();
     private static final Color COLOR_NO_RESULT = new Color(255,165,80);
     
     private static final int NO_RESULT_COLOR_TIME = 1000;
