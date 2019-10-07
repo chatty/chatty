@@ -130,7 +130,7 @@ public class LaF {
             LOGGER.info("[LAF] Set " + lafCode + "/" + theme + " [" + laf + "]");
             UIManager.setLookAndFeel(laf);
             lafClass = laf;
-            modifyDefaults(UIManager.getLookAndFeelDefaults());
+            modifyDefaults();
             /**
              * After setting color setting the LaF again seemed different than
              * not doing it. This should probably be investigated further.
@@ -153,7 +153,7 @@ public class LaF {
         }
     }
     
-    private static void modifyDefaults(UIDefaults defaults) {
+    private static void modifyDefaults() {
         try {
             if (lafClass.equals(UIManager.getSystemLookAndFeelClassName())) {
                 Object font = UIManager.getLookAndFeelDefaults().get("TextField.font");

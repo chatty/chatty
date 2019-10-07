@@ -58,46 +58,72 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.10">Version 0.10</a> <a name="latest">(This one!)</a> (2019-??-??)
+        <a name="0.10">Version 0.10</a> <a name="latest">(This one!)</a> (2019-10-07)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Work in progress</p>
+    <p>This update adds limited support for the new channel points feature (more
+        might be possible if and when Twitch releases an official API for it).</p>
+    
+    <p>It also contains some Emote-related changes improving the Emote Dialog,
+        emote information and memory usage. In regards to customization, you can
+        now separately change the color and font of the chat timestamp and
+        favorite channels to show up differently in the Live Streams window.</p>
+    
     <pre>
-### Chat
-- Added various timestamp customization settings (font, color, format)
-- Added support for emotes modified by channel points
+### New Twitch features
+- Added support for receiving emotes modified by channel points (showing in
+  Emotes Dialog/sent messages isn't possible right now due to lack of API data)
 - Added initial support for messages highlighted by channel points
-  - Automatically highlighted (can be turned off in the Highlights settings)
+  - Shown in Highlight colors (can be turned off in the Highlight settings)
   - Special badge added (can be turned off by adding a Custom Badge of the same
     type with no image)
-  - Added matching prefix "config:hl"
+  - Added matching prefix "config:hl" (e.g. for Highlight or Msg. Colors list)
+- Added initial support for displaying custom reward messages in chat (very
+  limited due to lack of Twitch API data)
+
+### Chat
+- Added various timestamp customization settings (font, color, format)
+- Changed behavior of matching prefixes (Highlights, Ignore, etc.)
+  - Prefixes that that don't fit the context (e.g. "user:" on an info messages)
+    now make the match fail
+  - Can now specify the same prefix more than once (e.g. "status:s status:v")
+  - Added some additional prefix options
+- Improved Highlighted Messages window output (colors, more things clickable)
 
 ### Emotes
 - Added image to Emote tooltips
 - Implemented new Twitchemotes.com API for more up-to-date data and reduced
   memory usage
+- Implemented a different Twitch API for more correct emotes display in
+  "My Emotes" and sent messages (mostly for "special" emotes)
+- Some Emotes Dialog improvements
+
+### Commands
+- Added Custom Command function "$replace()"
+- Added some User related Custom Command parameters
+- Changed command "/host" to host current channel if no argument provided
+- Changed command "/userinfo" to trim input and default to local user
+
+### User Dialog
+- Allow smaller minimal size, more flexible sizing
+- Added shortcut setting for ban reasons (Settings -> Moderation)
 
 ### Other
-- Changed matching behavior (Highlights, Ignore, etc.) for prefixes that make no
-  sense in the context to not match (e.g. "user:" on an info message)
-- TAB Completion: Always include current channel name
-- Change "/host" command to host current channel if no argument provided
-- Show favorited channels with star in Live Streams list (and optional sorted
-  first)
-- Added setting to show on single-click on Tray Icon (otherwise usually
-  double-click, platform dependent)
-- User Dialog: Allow smaller minimal size, more flexible sizing
-- User Dialog: Added shortcut setting for ban reasons
+- Live Streams window: Mark Favorited Channels with star and (optionally) sorted
+  first (context menu -> "Sort by" and "Miscellaneous" for options)
+- Added experimental app-wide font scale setting (Settings -> Look)
+- Changed a default font on System-Look&amp;Feel
+- Added "$vip" to Custom Usercolors / Badges
 - Changed notification border color for dark notification backgrounds
-- Added Custom Command function "$replace()"
-- Added "$vip" to Custom Usercolors/Badges
-- Improved debug output
-- Updated translations
+- TAB Completion: Always include current channel name
+- Tray Icon: Added setting to show Chatty with single-click
+- Updated translations / help
 
 ### Bugfixes
-- Always show Live Streams list scrollbar to avoid bug
+- Always show Live Streams window scrollbar, as an error workaround
 - Fixed TAB Completion not working in some cases
 - Fixed error related to TAB Completion
+- Fixed Search dialog background color
 - Various small bugfixes
     </pre>
     
