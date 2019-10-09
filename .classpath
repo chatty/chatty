@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="lib" path="assets/lib/jintellitype-1.3.8.jar"/>
+	<classpathentry kind="lib" path="assets/lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="assets/lib/JTattoo-1.6.11.jar"/>
+	<classpathentry kind="lib" path="assets/lib/src/tyrus-standalone-client-1.13.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="assets/lib/src/tyrus-standalone-client-1.13.1-sources.jar"/>
+	<classpathentry kind="lib" path="assets/lib/txtmark-0.13.jar"/>
+	<classpathentry kind="lib" path="assets/lib/tyrus-standalone-client-1.13.1.jar"/>
+	<classpathentry kind="lib" path="gradle/wrapper/gradle-wrapper.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

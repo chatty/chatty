@@ -10,3 +10,4 @@ META-INF/
 .gradle
 .nb-gradle
 build.xml
+/bin/
