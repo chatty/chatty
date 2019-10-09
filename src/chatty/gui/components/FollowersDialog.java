@@ -144,8 +144,10 @@ public class FollowersDialog extends JDialog {
         table = new JTable(followers);
         table.setShowGrid(false);
         table.setTableHeader(null);
+        // Note: Column widths are adjusted when data is loaded
         table.getColumnModel().getColumn(0).setCellRenderer(new MyRenderer(MyRenderer.Type.NAME));
         table.getColumnModel().getColumn(1).setCellRenderer(new MyRenderer(MyRenderer.Type.TIME));
+        table.getColumnModel().getColumn(2).setCellRenderer(new MyRenderer(MyRenderer.Type.USER_TIME));
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFont(table.getFont().deriveFont(Font.BOLD));
         table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight()+2);
@@ -240,18 +242,23 @@ public class FollowersDialog extends JDialog {
             mainContextMenu.show(e.getComponent(), e.getX(), e.getY());
         }
     }
+    
+    private void adjustColumnSize() {
+        adjustColumnSize(1);
+        adjustColumnSize(2);
+    }
 
     /**
      * Adjust the width of the time column to fit the current times.
      */
-    private void adjustColumnSize() {
+    private void adjustColumnSize(int column) {
         int width = 0;
         for (int row = 0; row < table.getRowCount(); row++) {
-            TableCellRenderer renderer = table.getCellRenderer(row, 1);
-            Component comp = table.prepareRenderer(renderer, row, 1);
+            TableCellRenderer renderer = table.getCellRenderer(row, column);
+            Component comp = table.prepareRenderer(renderer, row, column);
             width = Math.max(comp.getPreferredSize().width, width);
         }
-        setColumnWidth(1, width, width, width);
+        setColumnWidth(column, width, width, width);
     }
 
     /**
@@ -459,7 +466,7 @@ public class FollowersDialog extends JDialog {
         private final Type type;
         
         public enum Type {
-            NAME, TIME
+            NAME, TIME, USER_TIME
         }
         
         public MyRenderer(Type type) {
@@ -488,13 +495,24 @@ public class FollowersDialog extends JDialog {
                 if (f.name.equalsIgnoreCase(f.display_name)) {
                     setText(f.display_name);
                     setToolTipText(f.display_name);
-                } else {
-                    setText(f.display_name+" ("+f.name+")");
-                    setToolTipText(f.display_name+" ("+f.name+")");
                 }
-            } else {
+                else {
+                    setText(f.display_name + " (" + f.name + ")");
+                    setToolTipText(f.display_name + " (" + f.name + ")");
+                }
+            }
+            else if (type == Type.TIME) {
                 setText(DateTime.agoSingleVerbose(f.follow_time));
-                setToolTipText(DateTime.formatFullDatetime(f.follow_time));
+                setToolTipText("Followed "+DateTime.formatFullDatetime(f.follow_time));
+            }
+            else if (type == Type.USER_TIME) {
+                if (f.user_created_time != -1) {
+                    setText("("+DateTime.agoSingleVerbose(f.user_created_time)+")");
+                    setToolTipText("Registered "+DateTime.formatFullDatetime(f.user_created_time));
+                } else {
+                    setText("(n/a)");
+                    setToolTipText("Time when user registered not available");
+                }
             }
 
             // Colors
@@ -631,7 +649,7 @@ public class FollowersDialog extends JDialog {
     private class MyListTableModel extends ListTableModel<Follower> {
 
         public MyListTableModel() {
-            super(new String[]{"Name","Followed"});
+            super(new String[]{"Name","Followed","User Created"});
         }
 
         /**

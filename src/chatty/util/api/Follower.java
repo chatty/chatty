@@ -39,6 +39,8 @@ public class Follower {
     
     public final long created_time = System.currentTimeMillis();
     
+    public final long user_created_time;
+    
     /**
      * Creates a new Follower item.
      * 
@@ -47,13 +49,14 @@ public class Follower {
      * @param refollow Whether it was detected as a refollow
      * @param newFollower Whether it is a new follower in this request
      */
-    public Follower(Type type, String name, String display_name, long time, boolean refollow, boolean newFollower) {
+    public Follower(Type type, String name, String display_name, long time, long userTime, boolean refollow, boolean newFollower) {
         this.type = type;
         this.name = name;
         this.display_name = display_name;
         this.follow_time = time;
         this.refollow = refollow;
         this.newFollower = newFollower;
+        this.user_created_time = userTime;
     }
     
     @Override
