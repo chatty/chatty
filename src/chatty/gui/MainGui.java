@@ -266,7 +266,7 @@ public class MainGui extends JFrame implements Runnable {
                 this, client.api, contextMenuListener);
         
         // Tray/Notifications
-        trayIcon = new TrayIconManager(createImage("app_main_16.png"));
+        trayIcon = new TrayIconManager();
         trayIcon.addActionListener(new TrayMenuListener());
         if (client.settings.getBoolean("trayIconAlways")) {
             trayIcon.setIconVisible(true);
