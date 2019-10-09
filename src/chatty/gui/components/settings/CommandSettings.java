@@ -111,7 +111,7 @@ public class CommandSettings extends SettingsPanel {
                 }, null, d.settings, null);
                 dialog.setUserDefinedButtonsDef(value);
                 GuiUtil.setLocationRelativeTo(dialog, parent);
-                dialog.show(component, user, "abc", null, null);
+                dialog.show(component, user, "s0m3-msg-1d", null, null);
                 return null;
             }
             
@@ -131,7 +131,7 @@ public class CommandSettings extends SettingsPanel {
                         ), false, null);
                     }
                 }
-                user.addMessage("Note that some replacements may not work in this test dialog.", false, "abc");
+                user.addMessage("Note that some replacements may not work in this test dialog.", false, "s0m3-msg-1d");
             }
             
         };
