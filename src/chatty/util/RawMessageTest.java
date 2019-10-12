@@ -46,6 +46,9 @@ public class RawMessageTest {
             // With months in system-msg (theoretically)
             return "@badges=moderator/1,subscriber/36,turbo/1;color=#0000FF;display-name=USER;emotes=;flags=;id=1234;login=user;mod=1;msg-id=resub;msg-param-cumulative-months=45;msg-param-cumulative-tenure-months=45;msg-param-months=0;msg-param-should-share-streak-tenure=false;msg-param-should-share-streak=0;msg-param-sub-plan-name=CHANNEL\\sSub;msg-param-sub-plan=Prime;room-id=123;subscriber=1;system-msg=USER\\sSubscribed\\swith\\sTwitch\\sPrime.\\sThey've\\ssubscribed\\sfor\\s45\\smonthss!;turbo=1;user-id=123;user-type=mod :tmi.twitch.tv USERNOTICE "+channel+" :Abc";
         }
+        if (type.equals("subextend")) {
+            return "@badge-info=subscriber/1;badges=staff/1,subscriber/0,premium/1;color=;display-name=Test;emotes=;flags=;id=abc;login=test;mod=0;msg-id=extendsub;msg-param-sub-benefit-end-month=4;msg-param-sub-plan=1000;msg-param-cumulative-months=16;room-id=123;subscriber=1;system-msg=Test\\sextended\\stheir\\sTier\\s1\\ssubscription\\sthrough\\sApril!;tmi-sent-ts=123;user-id=123;user-type=staff :tmi.twitch.tv USERNOTICE "+channel;
+        }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }

@@ -897,13 +897,14 @@ public class TwitchConnection {
             if (user.setTurbo(turbo)) {
                 changed = true;
             }
-            if (user.setSubscriber(badges.containsKey("subscriber"))) {
+            boolean subscriber = badges.containsKey("subscriber") || badges.containsKey("founder");
+            if (user.setSubscriber(subscriber)) {
                 changed = true;
             }
             if (user.setVip(badges.containsKey("vip"))) {
                 changed = true;
             }
-            if (user.setModerator(badges.containsKey("moderator") || tags.isTrue("mod"))) {
+            if (user.setModerator(badges.containsKey("moderator"))) {
                 changed = true;
             }
             if (user.setAdmin(badges.containsKey("admin"))) {
