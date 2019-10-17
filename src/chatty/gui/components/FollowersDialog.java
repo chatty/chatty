@@ -4,15 +4,18 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
+import chatty.gui.LaF;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamsContextMenu;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
+import chatty.util.colors.ColorCorrectionNew;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -31,11 +34,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -148,6 +153,8 @@ public class FollowersDialog extends JDialog {
         table.getColumnModel().getColumn(0).setCellRenderer(new MyRenderer(MyRenderer.Type.NAME));
         table.getColumnModel().getColumn(1).setCellRenderer(new MyRenderer(MyRenderer.Type.TIME));
         table.getColumnModel().getColumn(2).setCellRenderer(new MyRenderer(MyRenderer.Type.USER_TIME));
+        int nameMinWidth = table.getFontMetrics(table.getFont()).stringWidth("reasonblylong");
+        table.getColumnModel().getColumn(0).setMinWidth(nameMinWidth);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFont(table.getFont().deriveFont(Font.BOLD));
         table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight()+2);
@@ -355,6 +362,9 @@ public class FollowersDialog extends JDialog {
      * @param info The FollowerInfo to set
      */
     public void setFollowerInfo(FollowerInfo info) {
+        if (Debugging.isEnabled("followerTest")) {
+            info = createTestFollowerInfo();
+        }
         if (info.stream.equals(stream)) {
             loading = false;
             if (!info.requestError &&
@@ -455,13 +465,20 @@ public class FollowersDialog extends JDialog {
      * depending on the type set (but same background colors).
      */
     private static class MyRenderer extends DefaultTableCellRenderer {
-
-        private static final Color BG_COLOR_NEW = new Color(255,245,210);
-        private static final Color BG_COLOR_RECENT = new Color(255,250,240);
-        private static final Color BG_COLOR_HOUR = new Color(245,245,245);
         
-        private static final Color COLOR_OLDER_THAN_WEEK = new Color(180, 180, 180);
-        private static final Color COLOR_OLDER_THAN_DAY = new Color(120, 120, 120);
+        private static final Color BG_COLOR_NEW = LaF.isDarkTheme() ? new Color(114, 0, 0) : new Color(255,245,210);
+        private static final Color BG_COLOR_RECENT;
+        
+        private static final Color COLOR_OLDER_THAN_WEEK;
+        private static final Color COLOR_OLDER_THAN_DAY;
+        
+        static {
+            JTable table = new JTable();
+            BG_COLOR_RECENT = ColorCorrectionNew.offset(table.getBackground(), 0.96f);
+            
+            COLOR_OLDER_THAN_WEEK = ColorCorrectionNew.offset(table.getForeground(), 0.6f);
+            COLOR_OLDER_THAN_DAY = ColorCorrectionNew.offset(table.getForeground(), 0.78f);
+        }
         
         private final Type type;
         
@@ -526,10 +543,8 @@ public class FollowersDialog extends JDialog {
                 long ago = (System.currentTimeMillis() - f.follow_time) / 1000;
                 if (f.newFollower) {
                     setBackground(BG_COLOR_NEW);
-                } else if (ago < 15 * 60) {
-                    setBackground(BG_COLOR_RECENT);
                 } else if (ago < 60 * 60) {
-                    setBackground(BG_COLOR_HOUR);
+                    setBackground(BG_COLOR_RECENT);
                 } else {
                     setBackground(table.getBackground());
                 }
@@ -538,6 +553,15 @@ public class FollowersDialog extends JDialog {
                     if (ago > 60 * 60 * 24 * 7) {
                         setForeground(COLOR_OLDER_THAN_WEEK);
                     } else if (ago > 60 * 60 * 24) {
+                        setForeground(COLOR_OLDER_THAN_DAY);
+                    }
+                }
+                // Set foreground for registered time
+                if (type == Type.USER_TIME && f.user_created_time != -1) {
+                    long registeredAgo = (System.currentTimeMillis() - f.user_created_time) / 1000;
+                    if (registeredAgo >= 60 * 60 * 24 * 7) {
+                        setForeground(COLOR_OLDER_THAN_WEEK);
+                    } else if (registeredAgo >= 60 * 60 * 24) {
                         setForeground(COLOR_OLDER_THAN_DAY);
                     }
                 }
@@ -684,6 +708,41 @@ public class FollowersDialog extends JDialog {
             }
         }
         
+    }
+    
+    private FollowerInfo createTestFollowerInfo() {
+        List<Follower> test = new ArrayList<>();
+        test.add(createTestFollower(stream, 30, 24*60, true));
+        test.add(createTestFollower(stream, 80, 24*1087, true));
+        test.add(createTestFollower(stream, 90, 1, true));
+        test.add(createTestFollower(stream, 120, 10, false));
+        test.add(createTestFollower(stream, 180, 24*12, false));
+        test.add(createTestFollower(stream, 680, 36, false));
+        test.add(createTestFollower(stream, 980, 24*5, false));
+        test.add(createTestFollower(stream, 1800, 24*800, false));
+        test.add(createTestFollower(stream, 1900, 24*500, false));
+        test.add(createTestFollower(stream, 2900, 24*500, false));
+        test.add(createTestFollower(stream, 60*60, 24*321, false));
+        test.add(createTestFollower(stream, 60*60, 24*1234, false));
+        test.add(createTestFollower(stream, 60*60, 391, false));
+        test.add(createTestFollower(stream, 60*60*2, 60, false));
+        test.add(createTestFollower(stream, 60*60*3, 24*123, false));
+        test.add(createTestFollower(stream, 60*60*3, 24*5, false));
+        test.add(createTestFollower(stream, 60*60*24*2, 24*1, false));
+        test.add(createTestFollower(stream, 60*60*24*3, 24*234, false));
+        test.add(createTestFollower(stream, 60*60*24*8, 24*12, false));
+        test.add(createTestFollower(stream, 60*60*24*90, 24*800, false));
+        test.add(createTestFollower(stream, 60*60*24*90, 24*12544, false));
+        test.add(createTestFollower(stream, 60*60*24*180, 24*900, false));
+        test.add(createTestFollower(stream, 60*60*24*180, 24*900, false));
+        test.add(createTestFollower(stream, 60*60*24*180, 24*900, false));
+        test.add(createTestFollower(stream, 60*60*24*180, 24*900, false));
+        return new FollowerInfo(Follower.Type.FOLLOWER, stream, test, 1338);
+    }
+    
+    private static Follower createTestFollower(String name, long timeOffset, long userOffset, boolean newFollower) {
+        boolean refollow = ThreadLocalRandom.current().nextInt(20) == 0;
+        return new Follower(Follower.Type.FOLLOWER, name, name, System.currentTimeMillis() - timeOffset*1000, System.currentTimeMillis() - userOffset*60*60*1000, refollow, newFollower);
     }
     
 }
