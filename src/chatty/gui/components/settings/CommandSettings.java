@@ -30,9 +30,7 @@ import javax.swing.JPanel;
 public class CommandSettings extends SettingsPanel {
     
     private static String getInfo(String type) {
-        String info = INFO_HEADER
-                +StringUtil.stringFromInputStream(CommandSettings.class.getResourceAsStream("info-menu.html"));
-        return SettingsUtil.removeHtmlConditions(info, type);
+        return INFO_HEADER+SettingsUtil.getInfo("info-menu.html", type);
     }
     
     private static final String INFO_HEADER = "<html>"
@@ -46,7 +44,7 @@ public class CommandSettings extends SettingsPanel {
             + "<body style='width:300px;font-weight:normal;'>";
     
     private static final String INFO_COMMANDS = INFO_HEADER
-            +StringUtil.stringFromInputStream(CommandSettings.class.getResourceAsStream("info-commands.html"));
+            +SettingsUtil.getInfo("info-commands.html", null);
     
     public CommandSettings(SettingsDialog d) {
         super(true);

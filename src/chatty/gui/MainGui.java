@@ -273,7 +273,7 @@ public class MainGui extends JFrame implements Runnable {
         }
         notificationWindowManager = new NotificationWindowManager<>(this);
         notificationWindowManager.setNotificationActionListener(new MyNotificationActionListener());
-        notificationManager = new NotificationManager(this, client.settings, client.addressbook);
+        notificationManager = new NotificationManager(this, client.settings, client.addressbook, client.channelFavorites);
 
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
@@ -2786,7 +2786,7 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void showTestNotification(final String channel) {
+    public void showTestNotification(final String channel, String title, String text) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -2795,7 +2795,9 @@ public class MainGui extends JFrame implements Runnable {
                     showNotification("[Test] It works!",
                             "Now you have your notifications Josh.. Kappa",
                             Color.BLACK, Color.WHITE, channel);
-                } else if (channel == null) {
+                } else if (title != null && text != null) {
+                    showNotification(title, text, Color.BLACK, Color.WHITE, null);
+                } else if (StringUtil.isNullOrEmpty(channel)) {
                     showNotification("[Test] It works!",
                             "This is where the text goes.",
                             Color.BLACK, Color.WHITE, null);

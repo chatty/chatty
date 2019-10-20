@@ -3,6 +3,7 @@ package chatty;
 
 import chatty.util.DateTime;
 import chatty.util.Debugging;
+import chatty.util.ElapsedTime;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
@@ -81,7 +82,7 @@ public class Chatty {
     /**
      * When this program was started
      */
-    public static final long STARTED_TIME = System.currentTimeMillis();
+    private static final ElapsedTime UPTIME = new ElapsedTime(true);
 
     /**
      * Custom Settings directory, either the current working directory if the
@@ -266,7 +267,15 @@ public class Chatty {
     }
     
     public static String uptime() {
-        return DateTime.ago(STARTED_TIME);
+        return DateTime.duration(UPTIME.millisElapsedSync());
+    }
+    
+    public static long uptimeMillis() {
+        return UPTIME.millisElapsedSync();
+    }
+    
+    public static long uptimeSeconds() {
+        return UPTIME.secondsElapsedSync();
     }
     
     public static String[] getArgs() {

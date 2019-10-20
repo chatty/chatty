@@ -1207,7 +1207,16 @@ public class TwitchClient {
             commandOpenStreamHighlights(room);
         }
         else if (command.equals("testnotification")) {
-            g.showTestNotification(parameter);
+            if (parameter == null) {
+                parameter = "";
+            }
+            String[] split = parameter.split("\\|\\|", 2);
+            if (split.length == 2) {
+                g.showTestNotification(null, split[0], split[1]);
+            }
+            else {
+                g.showTestNotification(parameter, null, null);
+            }
         }
         else if (command.equals("clearchat")) {
             g.clearChat();

@@ -20,7 +20,7 @@ import javax.swing.event.ChangeListener;
  */
 public class EditorStringSetting extends JPanel implements StringSetting {
 
-    private final Editor editor;
+    private final StringEditor editor;
     private final JTextField preview;
     private final JButton editButton;
     
@@ -36,13 +36,24 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     public EditorStringSetting(Window parent, final String title, int size,
             boolean allowEmpty, boolean allowLinebreaks, String defaultInfo,
             Editor.Tester tester) {
-        setLayout(new BorderLayout(2, 0));
+        this(parent, title, size, createEditor(parent, allowEmpty, allowLinebreaks, tester));
         this.info = defaultInfo;
-        
-        editor = new Editor(parent);
+    }
+    
+    private static Editor createEditor(Window parent, boolean allowEmpty,
+                                       boolean allowLinebreaks, Editor.Tester tester) {
+        Editor editor = new Editor(parent);
         editor.setAllowEmpty(allowEmpty);
         editor.setAllowLinebreaks(allowLinebreaks);
         editor.setTester(tester);
+        return editor;
+    }
+    
+    public EditorStringSetting(Window parent, final String title, int size,
+                               StringEditor editor) {
+        this.editor = editor;
+        
+        setLayout(new BorderLayout(2, 0));
         
         preview = new JTextField(size);
         preview.setEditable(false);
@@ -62,10 +73,6 @@ public class EditorStringSetting extends JPanel implements StringSetting {
         
         add(preview, BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
-    }
-    
-    public void setFormatter(DataFormatter<String> formatter) {
-        editor.setFormatter(formatter);
     }
     
     public void setChangeListener(ChangeListener listener) {

@@ -104,7 +104,7 @@ public class Splash {
     }
     
     private static void drawOnSplashscreen(final Point location) {
-        System.out.println(System.currentTimeMillis()-Chatty.STARTED_TIME);
+        System.out.println(Chatty.uptimeMillis());
         final SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash != null) {
             // Native

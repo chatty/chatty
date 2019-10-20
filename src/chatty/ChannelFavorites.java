@@ -118,6 +118,19 @@ public class ChannelFavorites {
         return result;
     }
     
+    public synchronized boolean isFavorite(String channel) {
+        channel = Helper.toChannel(channel);
+        if (channel == null) {
+            return false;
+        }
+        for (Favorite f : data.values()) {
+            if (f.isFavorite && f.getChannel().equals(channel)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     //===========
     // Favorites
     //===========

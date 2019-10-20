@@ -82,6 +82,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final MutableAttributeSet blacklistAttr = new SimpleAttributeSet();
     
     private boolean editingBlacklistItem;
+    private boolean allowEmpty;
     private String result;
     private ActionListener addToBlacklistListener;
     
@@ -276,6 +277,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateMatches(doc);
         updateSaveButton();
         updateTestText();
+//        System.out.println(highlightItem.getMatchInfo());
     }
     
     private void updateBlacklistItem() {
@@ -372,6 +374,10 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateEditIndicator();
     }
     
+    public void setAllowEmpty(boolean allowEmpty) {
+        this.allowEmpty = allowEmpty;
+    }
+    
     private void updateEditIndicator() {
         if (editingBlacklistItem) {
             blacklistValue.setBorder(EDITING_BORDER);
@@ -399,7 +405,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (editingBlacklistItem) {
             okButton.setEnabled(blacklistItem != null && !blacklistItem.hasError());
         } else {
-            okButton.setEnabled(highlightItem != null && !highlightItem.hasError());
+            okButton.setEnabled((highlightItem != null && !highlightItem.hasError()) || allowEmpty);
         }
     }
 
@@ -424,6 +430,10 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateTestText();
         revalidate();
         pack();
+        // Caused issues for Notification editor for some reason
+        SwingUtilities.invokeLater(() -> {
+            setMinimumSize(getPreferredSize());
+        });
         setMinimumSize(getPreferredSize());
         setLocationRelativeTo(getParent());
         setVisible(true);
