@@ -3,11 +3,14 @@ package chatty.gui.components;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
+import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamsContextMenu;
+import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.settings.ListTableModel;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
@@ -89,6 +92,7 @@ public class FollowersDialog extends JDialog {
     private final JLabel loadInfo = new JLabel();
     
     private final TwitchApi api;
+    private final MainGui main;
     private final Type type;
     private final ContextMenuListener contextMenuListener;
     
@@ -119,12 +123,13 @@ public class FollowersDialog extends JDialog {
      */
     private long lastUpdated = -1;
 
-    public FollowersDialog(Type type, Window owner, final TwitchApi api,
+    public FollowersDialog(Type type, MainGui owner, final TwitchApi api,
             ContextMenuListener contextMenuListener) {
         super(owner);
         
         this.contextMenuListener = contextMenuListener;
         this.type = type;
+        this.main = owner;
         this.api = api;
         
         // Layout
@@ -191,6 +196,20 @@ public class FollowersDialog extends JDialog {
                 selectClicked(e);
                 openContextMenu(e);
             }
+            
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int selectedRow = table.getSelectedRow();
+                    if (selectedRow != -1) {
+                        Follower follower = followers.get(selectedRow);
+                        User user = main.getUser(Helper.toChannel(stream), follower.name);
+                        contextMenuListener.userMenuItemClicked(
+                                new ActionEvent(this, ActionEvent.ACTION_FIRST, "userinfo"),
+                                user, null, null);
+                    }
+                }
+            }
         });
         // Add to content pane, seems to work better than adding to "this"
         getContentPane().addMouseListener(new MouseAdapter() {
@@ -237,7 +256,12 @@ public class FollowersDialog extends JDialog {
                 Follower selected = followers.get(selectedRow);
                 streams.add(StringUtil.toLowerCase(selected.name));
             }
-            if (!streams.isEmpty()) {
+            if (streams.size() == 1) {
+                User user = main.getUser(Helper.toChannel(stream), streams.iterator().next());
+                ContextMenu m = new UserContextMenu(user, null, null, contextMenuListener);
+                m.show(table, e.getX(), e.getY());
+            }
+            else if (!streams.isEmpty()) {
                 ContextMenu m = new StreamsContextMenu(streams, contextMenuListener);
                 m.show(table, e.getX(), e.getY());
             }
@@ -511,11 +535,11 @@ public class FollowersDialog extends JDialog {
             if (type == Type.NAME) {
                 if (f.name.equalsIgnoreCase(f.display_name)) {
                     setText(f.display_name);
-                    setToolTipText(f.display_name);
+                    setToolTipText(null);
                 }
                 else {
                     setText(f.display_name + " (" + f.name + ")");
-                    setToolTipText(f.display_name + " (" + f.name + ")");
+                    setToolTipText(f.name);
                 }
             }
             else if (type == Type.TIME) {

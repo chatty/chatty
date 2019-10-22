@@ -3565,6 +3565,10 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public User getUser(String channel, String name) {
+        return client.getUser(channel, name);
+    }
+    
     public void reconnect() {
         client.commandReconnect();
     }
