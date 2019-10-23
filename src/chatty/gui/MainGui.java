@@ -3188,7 +3188,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (room == null) {
+                if (room == null || room == Room.EMPTY) {
                     printLine(line);
                 } else {
                     printInfo(channels.getChannel(room), InfoMessage.createInfo(line, tags));
