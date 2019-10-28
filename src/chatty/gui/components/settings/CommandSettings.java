@@ -134,33 +134,33 @@ public class CommandSettings extends SettingsPanel {
             
         };
         
-        gbc = d.makeGbc(0, 0, 1, 1);
+        gbc = d.makeGbc(0, 2, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("User Context Menu:"), gbc);
+        menus.add(d.createLabel("userContextMenu"), gbc);
         
-        gbc = d.makeGbc(1, 0, 1, 1);
+        gbc = d.makeGbc(1, 2, 1, 1);
         EditorStringSetting userContextMenu = d.addEditorStringSetting(
                 "userContextMenu", 20, true, "Edit User Context Menu:", true,
                 getInfo("userMenu"), menuTester);
         userContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(userContextMenu, gbc);
         
-        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc = d.makeGbc(0, 0, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("Channel Context Menu:"), gbc);
+        menus.add(d.createLabel("channelContextMenu"), gbc);
         
-        gbc = d.makeGbc(1, 1, 1, 1);
+        gbc = d.makeGbc(1, 0, 1, 1);
         EditorStringSetting channelContextMenu = d.addEditorStringSetting(
                 "channelContextMenu", 20, true, "Edit Channel Context Menu", true,
                 getInfo("channelMenu"), menuTester);
         channelContextMenu.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(channelContextMenu, gbc);
         
-        gbc = d.makeGbc(0, 2, 1, 1);
+        gbc = d.makeGbc(0, 1, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("Streams Context Menu:"), gbc);
+        menus.add(d.createLabel("streamsContextMenu"), gbc);
         
-        gbc = d.makeGbc(1, 2, 1, 1);
+        gbc = d.makeGbc(1, 1, 1, 1);
         EditorStringSetting streamsContextMenu = d.addEditorStringSetting(
                 "streamsContextMenu", 20, true, "Edit Streams Context Menu", true,
                 getInfo("streamsMenu"), menuTester);
@@ -169,7 +169,7 @@ public class CommandSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0, 3, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("User Dialog Buttons:"), gbc);
+        menus.add(d.createLabel("timeoutButtons"), gbc);
         
         gbc = d.makeGbc(1, 3, 1, 1);
         EditorStringSetting userDialogButtons = d.addEditorStringSetting(

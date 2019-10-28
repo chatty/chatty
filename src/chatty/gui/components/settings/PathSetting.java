@@ -26,7 +26,8 @@ import javax.swing.JTextField;
  */
 public class PathSetting extends JPanel implements StringSetting {
 
-    private final JTextField display = new JTextField();
+    // Set size so that it doesn't use content size (can still grow larger)
+    private final JTextField display = new JTextField(20);
     private final JButton changeButton = new JButton(Language.getString("settings.chooseFolder.button.change"));
     private final JButton resetButton = new JButton(Language.getString("settings.chooseFolder.button.default"));
     private final JButton openButton = new JButton(Language.getString("settings.chooseFolder.button.open"));

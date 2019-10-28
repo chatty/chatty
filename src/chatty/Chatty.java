@@ -92,6 +92,8 @@ public class Chatty {
     
     private static String invalidSettingsDir = null;
     
+    private static String settingsDirInfo = null;
+    
     private static String[] args;
     
     /**
@@ -121,12 +123,14 @@ public class Chatty {
         
         if (parsedArgs.containsKey("cd")) {
             settingsDir = System.getProperty("user.dir");
+            settingsDirInfo = "-cd";
         }
         if (parsedArgs.containsKey("d")) {
             String dir = parsedArgs.get("d");
             File file = new File(dir).getAbsoluteFile();
             if (file.isDirectory()) {
                 settingsDir = file.toString();
+                settingsDirInfo = "-d";
             } else {
                 invalidSettingsDir = file.toString();
             }
@@ -221,6 +225,10 @@ public class Chatty {
      */
     public static String getInvalidSettingsDirectory() {
         return invalidSettingsDir;
+    }
+    
+    public static String getSettingsDirectoryInfo() {
+        return settingsDirInfo;
     }
     
     public static String getExportDirectory() {

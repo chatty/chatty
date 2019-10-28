@@ -1,12 +1,16 @@
 
 package chatty.gui.components.settings;
 
+import chatty.Chatty;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.MiscUtil;
 import java.awt.GridBagConstraints;
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -21,6 +25,7 @@ public class MainSettings extends SettingsPanel {
 
         JPanel startSettingsPanel = addTitledPanel(Language.getString("settings.section.startup"), 0);
         JPanel languagePanel = addTitledPanel(Language.getString("settings.section.language"), 1);
+        JPanel dirPanel = addTitledPanel(Language.getString("settings.section.directory"), 2);
         
         GridBagConstraints gbc;
         
@@ -74,6 +79,43 @@ public class MainSettings extends SettingsPanel {
                 + "[url:https://chatty.github.io/localization.html the website].",
                 d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
+        
+        //==========================
+        // Directory
+        //==========================
+        String dirInfo = Language.getString("settings.directory.default");
+        if (Chatty.getSettingsDirectoryInfo() != null) {
+            dirInfo = Language.getString("settings.directory.argument", Chatty.getSettingsDirectoryInfo());
+        }
+        
+        dirPanel.add(new JLabel(Language.getString("settings.directory.info", dirInfo)),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        JTextField dir = new JTextField(Chatty.getUserDataDirectory(), 30);
+        dir.setEditable(false);
+        gbc = d.makeGbc(0, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        dirPanel.add(dir, gbc);
+        
+        JButton openDirButton = new JButton(Language.getString("settings.chooseFolder.button.open"));
+        openDirButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        openDirButton.addActionListener(e -> {
+            MiscUtil.openFolder(new File(Chatty.getUserDataDirectory()), this);
+        });
+        dirPanel.add(openDirButton, d.makeGbc(1, 1, 1, 1));
+        
+        if (Chatty.getInvalidSettingsDirectory() != null) {
+            dirPanel.add(new JLabel(Language.getString("settings.directory.invalid")),
+                    d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+            
+            JTextField invalidDir = new JTextField(Chatty.getInvalidSettingsDirectory(), 30);
+            invalidDir.setEditable(false);
+            gbc = d.makeGbc(0, 3, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            dirPanel.add(invalidDir, gbc);
+        }
     }
     
     public static Map<String, String> getLanguageOptions() {
