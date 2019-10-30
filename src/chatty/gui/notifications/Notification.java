@@ -10,12 +10,10 @@ import chatty.util.StringUtil;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -29,6 +27,7 @@ public class Notification {
 
     public enum Type {
         
+        // Type constants must not be renamed, since they are used in setting
         STREAM_STATUS("Stream Status", createStreamStatusSubtypes()),
         HIGHLIGHT("Highlights", createMessageSubtypes()),
         MESSAGE("Chat Message", createMessageSubtypes()),
@@ -41,29 +40,53 @@ public class Notification {
         AUTOMOD("AutoMod Message");
         
         public final String label;
-        public final Map<String, String> subTypes;
+        public final List<TypeOption> options;
         
-        Type(String name, Map<String, String> subTypes) {
+        Type(String name, List<TypeOption> options) {
             this.label = name;
-            this.subTypes = Collections.unmodifiableMap(subTypes);
+            options.add(TypeOption.HIDE_ON_START);
+            this.options = Collections.unmodifiableList(options);
         }
         
         Type(String name) {
-            this(name, new HashMap<>());
+            this(name, new ArrayList<>());
         }
         
-        private static Map<String, String> createStreamStatusSubtypes() {
-            Map<String, String> result = new LinkedHashMap<>();
-            result.put("noOffline", "Not when: 'Stream offline'");
-            return result;
+        private static List<TypeOption> createStreamStatusSubtypes() {
+            return new ArrayList<>(Arrays.asList(
+                    TypeOption.NOW_LIVE,
+                    TypeOption.NEW_STREAM,
+                    TypeOption.LIVE,
+                    TypeOption.NO_UPTIME,
+                    TypeOption.FAV_CHAN));
         }
         
-        private static Map<String, String> createMessageSubtypes() {
-            Map<String, String> result = new LinkedHashMap<>();
-            result.put("own", "Trigger on own messages as well");
-            result.put("bits", "Trigger only on messages containing bits");
-            return result;
+        private static List<TypeOption> createMessageSubtypes() {
+            return new ArrayList<>(Arrays.asList(
+                    TypeOption.OWN_MSG,
+                    TypeOption.CONTAINS_BITS,
+                    TypeOption.FAV_CHAN));
         }
+    }
+    
+    public enum TypeOption {
+        
+        // Ids must not be renamed, since they are used in setting
+        NO_UPTIME("noUptime"),
+        NEW_STREAM("justLive"),
+        NOW_LIVE("nowLive"),
+        HIDE_ON_START("hideOnStart"),
+        LIVE("noOffline"),
+        OWN_MSG("own"),
+        FAV_CHAN("fav"),
+        CONTAINS_BITS("bits");
+        
+        public String id;
+        
+        TypeOption(String id) {
+            this.id = id;
+        }
+        
     }
     
     public enum State {
@@ -279,8 +302,8 @@ public class Notification {
         return channel != null;
     }
 
-    public boolean hasOption(String option) {
-        return options.contains(option);
+    public boolean hasOption(TypeOption option) {
+        return options.contains(option.id);
     }
     
     public boolean hasMatcher() {

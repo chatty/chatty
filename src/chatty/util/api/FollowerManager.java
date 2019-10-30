@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.DateTime;
+import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.Follower.Type;
 import java.util.ArrayList;
@@ -206,7 +207,7 @@ public class FollowerManager {
         }
         if (responseCode == 404) {
             listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.NOT_FOUND, null);
-            cachedSingle.get(stream).put(username, new Follower(type, username, null, -1, false, false));
+            cachedSingle.get(stream).put(username, new Follower(type, username, null, -1, -1, false, false));
         } else {
             // Parsing adds to alreadyFollowed automatically
             Follower result = parseFollowerSingle(stream, username, json);
@@ -268,8 +269,13 @@ public class FollowerManager {
             JSONObject user = (JSONObject)data.get("user");
             String display_name = (String)user.get("display_name");
             String name = (String)user.get("name");
+            String userCreatedString = JSONUtil.getString(user, "created_at");
+            long userCreated = -1;
+            if (userCreatedString != null) {
+                userCreated = DateTime.parseDatetime(userCreatedString);
+            }
             
-            return createFollowerItem(stream, name, display_name, time);
+            return createFollowerItem(stream, name, display_name, time, userCreated);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing entry of "+type+": "+o+" ["+ex+"]");
         }
@@ -288,7 +294,7 @@ public class FollowerManager {
             String created_at = (String)data.get("created_at");
             long time = DateTime.parseDatetime(created_at);
 
-            return createFollowerItem(stream, user, user, time);
+            return createFollowerItem(stream, user, user, time, -1);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing entry of "+type+" for user "+user+": "+json+" ["+ex+"]");
         }
@@ -304,7 +310,7 @@ public class FollowerManager {
      * @param time
      * @return 
      */
-    private Follower createFollowerItem(String stream, String name, String display_name, long time) {
+    private Follower createFollowerItem(String stream, String name, String display_name, long time, long userTime) {
         if (name == null) {
             return null;
         }
@@ -334,7 +340,7 @@ public class FollowerManager {
         if (!requested.contains(stream)) {
             newFollow = false;
         }
-        Follower newEntry = new Follower(type, name, display_name, time, refollow, newFollow);
+        Follower newEntry = new Follower(type, name, display_name, time, userTime, refollow, newFollow);
         if (existingEntry == null) {
             alreadyFollowed.get(stream).put(name, newEntry);
         }

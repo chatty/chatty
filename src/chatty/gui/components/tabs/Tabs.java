@@ -43,7 +43,20 @@ public class Tabs extends JPanel {
         ALPHABETIC
     }
     
-    private final JTabbedPane tabs = new DraggableTabbedPane();
+    private final JTabbedPane tabs = new DraggableTabbedPane() {
+
+        // Use customized UI to disable switching tab rows for some Look&Feel
+        @Override
+        public void updateUI() {
+            TabbedPaneUI customizedUi = LaF.getTabbedPaneUI();
+            if (customizedUi != null) {
+                setUI(customizedUi);
+            }
+            else {
+                super.updateUI();
+            }
+        }
+    };
     private Component firstComp;
     
     private boolean mouseWheelScrolling = true;
@@ -55,11 +68,6 @@ public class Tabs extends JPanel {
     
     public Tabs() {
         setLayout(new BorderLayout());
-        // Use customized UI to disable switching tab rows for some Look&Feel
-        TabbedPaneUI customizedUi = LaF.getTabbedPaneUI();
-        if (customizedUi != null) {
-            tabs.setUI(customizedUi);
-        }
         tabs.setOpaque(false);
         tabs.addMouseWheelListener(new MouseWheelListener() {
 

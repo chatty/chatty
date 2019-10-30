@@ -266,14 +266,14 @@ public class MainGui extends JFrame implements Runnable {
                 this, client.api, contextMenuListener);
         
         // Tray/Notifications
-        trayIcon = new TrayIconManager(createImage("app_main_16.png"));
+        trayIcon = new TrayIconManager();
         trayIcon.addActionListener(new TrayMenuListener());
         if (client.settings.getBoolean("trayIconAlways")) {
             trayIcon.setIconVisible(true);
         }
         notificationWindowManager = new NotificationWindowManager<>(this);
         notificationWindowManager.setNotificationActionListener(new MyNotificationActionListener());
-        notificationManager = new NotificationManager(this, client.settings, client.addressbook);
+        notificationManager = new NotificationManager(this, client.settings, client.addressbook, client.channelFavorites);
 
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
@@ -2535,13 +2535,13 @@ public class MainGui extends JFrame implements Runnable {
     
     private void openEmotesDialogChannelEmotes(String channel) {
         client.requestChannelEmotes(channel);
-        openEmotesDialog(null);
+        openEmotesDialog();
         emotesDialog.setTempStream(channel);
         emotesDialog.showChannelEmotes();
     }
     
     private void openEmotesDialogEmoteDetails(Emoticon emote) {
-        openEmotesDialog(null);
+        openEmotesDialog();
         emotesDialog.showEmoteDetails(emote);
     }
     
@@ -2786,7 +2786,7 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void showTestNotification(final String channel) {
+    public void showTestNotification(final String channel, String title, String text) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -2795,7 +2795,9 @@ public class MainGui extends JFrame implements Runnable {
                     showNotification("[Test] It works!",
                             "Now you have your notifications Josh.. Kappa",
                             Color.BLACK, Color.WHITE, channel);
-                } else if (channel == null) {
+                } else if (title != null && text != null) {
+                    showNotification(title, text, Color.BLACK, Color.WHITE, null);
+                } else if (StringUtil.isNullOrEmpty(channel)) {
                     showNotification("[Test] It works!",
                             "This is where the text goes.",
                             Color.BLACK, Color.WHITE, null);
@@ -3186,7 +3188,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (room == null) {
+                if (room == null || room == Room.EMPTY) {
                     printLine(line);
                 } else {
                     printInfo(channels.getChannel(room), InfoMessage.createInfo(line, tags));
@@ -3561,6 +3563,10 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
         });
+    }
+    
+    public User getUser(String channel, String name) {
+        return client.getUser(channel, name);
     }
     
     public void reconnect() {

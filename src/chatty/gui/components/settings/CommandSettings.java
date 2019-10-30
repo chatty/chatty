@@ -30,9 +30,7 @@ import javax.swing.JPanel;
 public class CommandSettings extends SettingsPanel {
     
     private static String getInfo(String type) {
-        String info = INFO_HEADER
-                +StringUtil.stringFromInputStream(CommandSettings.class.getResourceAsStream("info-menu.html"));
-        return SettingsUtil.removeHtmlConditions(info, type);
+        return INFO_HEADER+SettingsUtil.getInfo("info-menu.html", type);
     }
     
     private static final String INFO_HEADER = "<html>"
@@ -46,7 +44,7 @@ public class CommandSettings extends SettingsPanel {
             + "<body style='width:300px;font-weight:normal;'>";
     
     private static final String INFO_COMMANDS = INFO_HEADER
-            +StringUtil.stringFromInputStream(CommandSettings.class.getResourceAsStream("info-commands.html"));
+            +SettingsUtil.getInfo("info-commands.html", null);
     
     public CommandSettings(SettingsDialog d) {
         super(true);
@@ -111,7 +109,7 @@ public class CommandSettings extends SettingsPanel {
                 }, null, d.settings, null);
                 dialog.setUserDefinedButtonsDef(value);
                 GuiUtil.setLocationRelativeTo(dialog, parent);
-                dialog.show(component, user, "abc", null, null);
+                dialog.show(component, user, "s0m3-msg-1d", null, null);
                 return null;
             }
             
@@ -131,7 +129,7 @@ public class CommandSettings extends SettingsPanel {
                         ), false, null);
                     }
                 }
-                user.addMessage("Note that some replacements may not work in this test dialog.", false, "abc");
+                user.addMessage("Note that some replacements may not work in this test dialog.", false, "s0m3-msg-1d");
             }
             
         };

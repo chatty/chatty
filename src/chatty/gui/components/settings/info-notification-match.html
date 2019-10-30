@@ -1,0 +1,21 @@
+<p>This allows you to match on the notification text, using the same format as for
+    [help-settings:Highlight Highlights] (although some prefixes will have no effect).</p>
+
+<!--#START:STREAM_STATUS#-->
+<p>Example for Stream Status:</p>
+
+<dl>
+    <dt><code>[VOD] The Last Of Us | Next Stream: Friday (The Last of Us)</code> (stream title and game)</dt>
+    <dd><code>start:[VOD]</code> - matches</dd>
+    <dd><code>(the last of us)</code> - matches</dd>
+    <dd><code>(league of legends)</code> - doesn't match</dd>
+</dl>
+<!--#END:STREAM_STATUS#-->
+<!--#START:SUBSCRIBER#-->
+<p>Example for Subscriber:</p>
+
+<dl>
+    <dt><code>USERNAME subscribed for 4 months in a row! &#91;Hi strimmer&#93;</code> (in this case with an attached message)</dt>
+    <dd><code>in a row</code> - matches</dd>
+</dl>
+<!--#END:SUBSCRIBER#-->

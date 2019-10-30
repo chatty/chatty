@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 /**
@@ -431,6 +432,13 @@ public class StringUtil {
         } catch (IOException ex) {
             return null;
         }
+    }
+    
+    public static String randomString(String[] input) {
+        if (input.length == 0) {
+            return null;
+        }
+        return input[ThreadLocalRandom.current().nextInt(input.length)];
     }
     
     public static final void main(String[] args) {

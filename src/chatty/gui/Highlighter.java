@@ -920,6 +920,19 @@ public class Highlighter {
             return null;
         }
         
+        public String getMatchInfo() {
+            StringBuilder result = new StringBuilder();
+            result.append("Applies to: ").append(appliesToType).append("\n");
+            if (pattern != null) {
+                result.append("Match tex: ").append(pattern).append("\n");
+            }
+            for (Item item : matchItems) {
+                result.append(item.toString());
+                result.append("\n");
+            }
+            return result.toString();
+        }
+        
         public boolean matchesAny(String text, Blacklist blacklist) {
             return matches(Type.ANY, text, blacklist, null);
         }

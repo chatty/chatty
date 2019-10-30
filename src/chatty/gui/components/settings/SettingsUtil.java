@@ -71,4 +71,12 @@ public class SettingsUtil {
         return input;
     }
     
+    public static String getInfo(String file, String type) {
+        String html = StringUtil.stringFromInputStream(SettingsUtil.class.getResourceAsStream(file));
+        if (type != null) {
+            return removeHtmlConditions(html, type);
+        }
+        return html;
+    }
+    
 }

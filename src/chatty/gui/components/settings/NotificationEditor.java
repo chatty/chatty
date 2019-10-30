@@ -4,15 +4,20 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.components.LinkLabelListener;
+import static chatty.gui.components.settings.NotificationSettings.l;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.Notification.State;
+import chatty.gui.notifications.Notification.TypeOption;
 import chatty.gui.notifications.Notification.Type;
 import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationWindow;
+import chatty.lang.Language;
 import chatty.util.Sound;
+import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -96,7 +101,7 @@ class NotificationEditor extends TableEditor<Notification> {
     private static class MyTableModel extends ListTableModel<Notification> {
 
         public MyTableModel() {
-            super(new String[]{"Event","Notification","Sound"});
+            super(new String[]{l("column.event"), l("column.notification"), l("column.sound")});
         }
         
         @Override
@@ -234,6 +239,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final JButton playSound;
 
         // State
+        private JLabel description;
         private Notification current;
         private Path soundsPath;
         private boolean save;
@@ -246,7 +252,6 @@ class NotificationEditor extends TableEditor<Notification> {
             dialog.setModal(true);
             
             type = new GenericComboSetting<>(typeNames);
-            type.setToolTipText("Choosing a type other than Addon replaces the corresponding default icon.");
             type.addItemListener(new ItemListener() {
 
                 @Override
@@ -293,24 +298,15 @@ class NotificationEditor extends TableEditor<Notification> {
             optionsAssoc = new HashMap<>();
             
             channel = new SimpleStringSetting(20, true);
-            matcher = new EditorStringSetting(dialog,
-                    "Match Notification Text",
-                    20, true, false, "",
-                    new Editor.Tester() {
-
-                        @Override
-                        public String test(Window parent, Component component, int x, int y, String value) {
-                            HighlighterTester tester = new HighlighterTester(parent, false);
-                            return tester.showDialog("Match Notification Text", value, null);
-                        }
-                    }
-            );
+            HighlighterTester matcherEditor = new HighlighterTester(dialog, false);
+            matcherEditor.setAllowEmpty(true);
+            matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, matcherEditor);
             
-            optionsPanel.add(new JLabel("Channel:"), GuiUtil.makeGbc(0, 1, 1, 1));
-            optionsPanel.add(channel, GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
-            optionsPanel.add(new JLabel("Match:"), GuiUtil.makeGbc(0, 2, 1, 1));
-            optionsPanel.add(matcher, GuiUtil.makeGbc(1, 2, 1, 1));
-            optionsPanel.add(options, GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+            optionsPanel.add(new JLabel("Channel:"), GuiUtil.makeGbc(0, 2, 1, 1));
+            optionsPanel.add(channel, GuiUtil.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+            optionsPanel.add(new JLabel("Match:"), GuiUtil.makeGbc(0, 3, 1, 1));
+            optionsPanel.add(matcher, GuiUtil.makeGbc(1, 3, 1, 1));
+            optionsPanel.add(options, GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
             
             colorChooser = new ColorChooser(dialog);
             foregroundColor = new ColorSetting(ColorSetting.FOREGROUND, null, "Foreground", "Foreground", colorChooser);
@@ -361,6 +357,10 @@ class NotificationEditor extends TableEditor<Notification> {
             
             gbc = GuiUtil.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST);
             optionsPanel.add(type, gbc);
+            
+            description = new JLabel();
+            gbc = GuiUtil.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST);
+            optionsPanel.add(description, gbc);
             
             //-----------------------
             // Notification Settings
@@ -495,51 +495,48 @@ class NotificationEditor extends TableEditor<Notification> {
         }
         
         private void updateSubTypes() {
-            updateMatcherHelp();
+            updateHelp();
             
             Type t = this.type.getSettingValue();
             options.removeAll();
             optionsAssoc.clear();
-            for (String type : t.subTypes.keySet()) {
-                JCheckBox checkbox = new JCheckBox(t.subTypes.get(type));
-                checkbox.setName(type);
+            for (TypeOption option : t.options) {
+                String label = Language.getString("notification.typeOption."+option.id);
+                String tip = Language.getString("notification.typeOption."+option.id+".tip", false);
+                JCheckBox checkbox = new JCheckBox(label);
+                if (tip != null) {
+                    checkbox.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
+                }
+                checkbox.setName(option.id);
                 if (current != null) {
-                    checkbox.setSelected(current.options.contains(type));
+                    checkbox.setSelected(current.options.contains(option.id));
                 }
                 options.add(checkbox);
-                optionsAssoc.put(type, checkbox);
+                optionsAssoc.put(option.id, checkbox);
             }
-            options.setVisible(!t.subTypes.isEmpty());
+            options.setVisible(!t.options.isEmpty());
             updateSize();
         }
         
-        private void updateMatcherHelp() {
-            matcher.setInfo(MATCHER_HELP
-                    +"Example for "+type.getSettingValue().label+":<br />"
-                    +getMatcherHelp());
-        }
-        
-        private String getMatcherHelp() {
-            switch (type.getSettingValue()) {
-                case STREAM_STATUS:
-                    return "<code>[VOD] The Last Of Us | Next Stream: Friday (The Last of Us)</code>";
-                case SUBSCRIBER:
-                    return "<code>USERNAME subscribed for 4 months in a row! &#91;Hi strimmer&#93;</code> (in this case with an attached message)";
-                case MESSAGE:
-                case HIGHLIGHT:
-                case WHISPER:
-                    return "<code>you have so much ammo PogChamp</code> (the message text)";
-                default:
-                    return "&lt;None available&gt;";
+        private void updateHelp() {
+            String eventId = StringUtil.toLowerCase(type.getSettingValue().name());
+            String eventDescription = Language.getString("notification.type."+eventId+".tip", false);
+            if (eventDescription != null) {
+                description.setVisible(true);
+                description.setText("<html><body style='width:"+matcher.getPreferredSize().width+"'>"+eventDescription);
+            } else {
+                description.setVisible(false);
             }
+            matcher.setInfo(SettingConstants.HTML_PREFIX
+                    +SettingsUtil.getInfo("info-notification-match.html", type.getSettingValue().name()));
         }
         
         private List<String> getSubTypes() {
             List<String> result = new ArrayList<>();
-            for (String type : optionsAssoc.keySet()) {
-                JCheckBox cb = optionsAssoc.get(type);
+            for (String option : optionsAssoc.keySet()) {
+                JCheckBox cb = optionsAssoc.get(option);
                 if (cb.isSelected()) {
-                    result.add(type);
+                    result.add(option);
                 }
             }
             return result;
