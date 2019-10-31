@@ -113,6 +113,30 @@ public class Language {
     }
     
     /**
+     * Gets the String with the given key for the current language. This "Null"
+     * variant of the method returns null for invalid keys.
+     * 
+     * @param key The key as defined in the properties files
+     * @return The language specific String, or null if none could be found
+     */
+    public synchronized static String getStringNull(String key) {
+        return getString(key, false);
+    }
+    
+    /**
+     * Gets the String with the given key for the current language. Provide
+     * arguments for any replacements present in the String. This "Null" variant
+     * of the method returns null for invalid keys.
+     * 
+     * @param key The key as defined in the properties files
+     * @param arguments One or more arguments, depending on the String value
+     * @return The language specific String, or null if none could be found
+     */
+    public synchronized static String getStringNull(String key, Object... arguments) {
+        return getString(key, false, arguments);
+    }
+    
+    /**
      * Gets the String with the given key for the current language. Provide
      * arguments for any replacements present in the String.
      * 

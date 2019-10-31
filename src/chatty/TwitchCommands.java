@@ -48,7 +48,7 @@ public class TwitchCommands {
         "unban", "untimeout", "delete", "clear",
         "followers", "followersoff", "subscribers", "subscribersoff", "slow", "slowoff",
         "emoteonly", "emoteonlyoff", "r9kbeta", "r9kbetaoff",
-        "vip", "unvip", "vips", "mod", "unmod", "mods",
+        "vip", "unvip", "vips", "mod", "unmod", "mods", "commercial",
         "host", "unhost",
         "color"
     }));
@@ -87,7 +87,10 @@ public class TwitchCommands {
             // Simple commands that don't require any special handling for
             // decent output
             if (onChannel(channel, true)) {
-                String message = Language.getString("chat.twitchcommands."+command, false);
+                parameter = StringUtil.trim(parameter);
+                // Get custom message for this command, if available
+                String message = Language.getStringNull("chat.twitchcommands."+command,
+                        !StringUtil.isNullOrEmpty(parameter) ? parameter : "default");
                 if (parameter == null || parameter.trim().isEmpty()
                         || NO_PARAMETER_COMMANDS.contains(command)) {
                     // No parameter
