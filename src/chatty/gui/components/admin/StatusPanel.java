@@ -358,16 +358,20 @@ public class StatusPanel extends JPanel {
             statusPutResult = Language.getString("admin.infoUpdated");
         } else {
             if (result == TwitchApi.RequestResultCode.ACCESS_DENIED) {
-                statusPutResult = "Changing info: Access denied";
+                statusPutResult = "Update: Access denied/Failed";
+                int over = status.getText().length() - 140;
+                if (over > 0) {
+                    statusPutResult = "Update: Failed (Title "+over+" characters too long?)";
+                }
                 updated.setText("Error: Access denied");
             } else if (result == TwitchApi.RequestResultCode.FAILED) {
-                statusPutResult = "Changing info: Unknown error";
+                statusPutResult = "Update: Unknown error";
                 updated.setText("Error: Unknown error");
             } else if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
-                statusPutResult = "Changing info: Channel not found.";
+                statusPutResult = "Update: Channel not found.";
                 updated.setText("Error: Channel not found.");
             } else if (result == TwitchApi.RequestResultCode.INVALID_STREAM_STATUS) {
-                statusPutResult = "Changing info: Invalid title/game (possibly bad language)";
+                statusPutResult = "Update: Invalid title/game (possibly bad language)";
                 updated.setText("Error: Invalid title/game");
             }
         }
