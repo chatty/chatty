@@ -517,7 +517,21 @@ public class GuiUtil {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), DefaultEditorKit.selectAllAction);
     }
     
-    public static void showCommandNotification(String commandText, String title,
+    /**
+     * Executes a process with the given commandText, with some parameters
+     * replaced. The resulting command will be split into arguments by spaces,
+     * although sections can be quoted to group them together. Escaped quotes
+     * (\") are ignored.
+     * 
+     * If the commandText isn't a valid CustomCommand, nothing will be executed.
+     * 
+     * @param commandText A command in CustomCommand format
+     * @param title The title of the notification
+     * @param message The message of the notification
+     * @param channel The associated channel (may be null)
+     * @return A result message intended for output to the user while testing
+     */
+    public static String showCommandNotification(String commandText, String title,
             String message, String channel) {
         CustomCommand command = CustomCommand.parse(commandText);
 
@@ -525,8 +539,16 @@ public class GuiUtil {
         param.put("title", title.replace("\"", "\\\""));
         param.put("message", message.replace("\"", "\\\""));
         param.put("channel", channel);
-
-        ProcessManager.execute(command.replace(param), "Notification");
+        param.put("chan", channel);
+        
+        if (command.hasError()) {
+            LOGGER.warning("Notification command error: "+command.getSingleLineError());
+            return "Error: "+command.getSingleLineError();
+        } else {
+            String resultCommand = command.replace(param);
+            ProcessManager.execute(resultCommand, "Notification");
+            return "Running: "+resultCommand;
+        }
     }
     
     /**

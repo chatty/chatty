@@ -169,9 +169,10 @@ public class NotificationSettings extends SettingsPanel {
 
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
-                GuiUtil.showCommandNotification(value, "Example Title",
+                String result = GuiUtil.showCommandNotification(value, "Example Title",
                         "Example \"message\" for this test notification",
                         "#example_channel");
+                JOptionPane.showMessageDialog(component, result);
                 return null;
             }
         });
