@@ -5,8 +5,7 @@ import chatty.util.colors.HtmlColors;
 import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import chatty.gui.components.textpane.ChannelTextPane.Setting;
 import chatty.gui.components.textpane.MyStyleConstants;
-import chatty.util.MiscUtil;
-import chatty.util.colors.ColorCorrectionNew;
+import chatty.util.DateTime;
 import chatty.util.colors.ColorCorrector;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -19,9 +18,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.*;
 
 /**
@@ -321,7 +317,7 @@ public class StyleManager implements StyleServer {
         String timezone = settings.getString("timestampTimezone");
         if (!timestamp.equals("off")) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat(timestamp);
+                SimpleDateFormat sdf = DateTime.createSdfAmPm(timestamp);
                 if (!timezone.isEmpty() && !timezone.equalsIgnoreCase("local")) {
                     sdf.setTimeZone(TimeZone.getTimeZone(timezone));
                 }

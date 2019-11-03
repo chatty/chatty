@@ -272,7 +272,8 @@ public class MessageSettings extends SettingsPanel {
             add(saveButton, gbc);
             add(after, gbc);
             add(new JLabel(SettingConstants.HTML_PREFIX
-                    +Language.getString("settings.otherMessageSettings.customizeTimestamp.info")),
+                    +Language.getString("settings.otherMessageSettings.customizeTimestamp.info")
+                    +"<br /><br />Append <code>'a:AM/PM'</code> (including quotes) to customize AM/PM."),
                     GuiUtil.makeGbc(0, 3, 4, 1, GridBagConstraints.CENTER));
             gbc = GuiUtil.makeGbc(0, 4, 3, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -316,6 +317,7 @@ public class MessageSettings extends SettingsPanel {
         private void valueChanged() {
             fillFromValue();
             updatePreview();
+            pack();
         }
         
         private void formChanged() {
@@ -326,7 +328,7 @@ public class MessageSettings extends SettingsPanel {
         
         private void updatePreview() {
             try {
-                SimpleDateFormat format = new SimpleDateFormat(value.getText());
+                SimpleDateFormat format = DateTime.createSdfAmPm(value.getText());
                 preview.setText(DateTime.format(System.currentTimeMillis(), format));
             } catch (Exception ex) {
                 preview.setText("Invalid format");

@@ -561,13 +561,14 @@ public class Helper {
     }
     
     public static String systemInfo() {
-        return String.format("Java: %s (%s / %s) OS: %s (%s/%s)",
+        return String.format("Java: %s (%s / %s) OS: %s (%s/%s) Locale: %s",
                 System.getProperty("java.version"),
                 System.getProperty("java.vendor"),
                 System.getProperty("java.home"),
                 System.getProperty("os.name"),
                 System.getProperty("os.version"),
-                System.getProperty("os.arch"));
+                System.getProperty("os.arch"),
+                Locale.getDefault());
     }
     
     /**

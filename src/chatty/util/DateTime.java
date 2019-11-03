@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.MonthDay;
@@ -14,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Stuff to do with dates/time.
@@ -334,6 +337,23 @@ public class DateTime {
     public static long parseDatetime(String time) {
         OffsetDateTime odt = OffsetDateTime.parse(time);
         return odt.toInstant().toEpochMilli();
+    }
+    
+    private static final Pattern AM_PM_CUSTOM = Pattern.compile("'a:(.*?)\\/(.*?)'");
+    
+    public static SimpleDateFormat createSdfAmPm(String format) {
+        Matcher m = AM_PM_CUSTOM.matcher(format);
+        if (m.find()) {
+            String[] amPm = new String[]{m.group(1), m.group(2)};
+            format = m.replaceAll("");
+            
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            DateFormatSymbols symbols = sdf.getDateFormatSymbols();
+            symbols.setAmPmStrings(amPm);
+            sdf.setDateFormatSymbols(symbols);
+            return sdf;
+        }
+        return new SimpleDateFormat(format);
     }
     
     public static final void main(String[] args) {
