@@ -123,7 +123,7 @@ public class UserInfoManager {
         }
     }
     
-    public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
+    public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername, boolean keepPosition) {
         UserInfo dialogToShow = getBestByUser(user);
         if (dialogToShow == null) {
             dialogToShow = getFirstUnpinned();
@@ -134,7 +134,7 @@ public class UserInfoManager {
             dialogs.add(dialogToShow);
             main.setWindowAttached(dialogToShow, true);
         }
-        if (settings.getBoolean("openUserDialogByMouse") && !dialogToShow.isPinned()) {
+        if (settings.getBoolean("openUserDialogByMouse") && !dialogToShow.isPinned() && !keepPosition) {
             GuiUtil.setLocationToMouse(dialogToShow);
         }
         saveLocationAndSize(dialogToShow);

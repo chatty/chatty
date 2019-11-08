@@ -286,6 +286,10 @@ public class User implements Comparable<User> {
         return numberOfMessages;
     }
     
+    public synchronized int getNumberOfLines() {
+        return numberOfLines;
+    }
+    
     public synchronized int getMaxNumberOfLines() {
         return MAXLINES;
     }

@@ -1,11 +1,14 @@
 
 package chatty.gui.components.menus;
 
+import chatty.TwitchClient;
 import chatty.User;
 import chatty.lang.Language;
+import chatty.util.UserRoom;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +26,9 @@ public class UserContextMenu extends ContextMenu {
     private final String autoModMsgId;
     
     private static final String MISC_MENU = Language.getString("userCm.menu.misc");
+    private static final String ROOMS_MENU = Language.getString("userCm.menu.openIn");
+    
+    public static TwitchClient client;
     
     public UserContextMenu(User user, String msgId, String autoModMsgId,
             ContextMenuListener listener) {
@@ -32,6 +38,30 @@ public class UserContextMenu extends ContextMenu {
         this.autoModMsgId = autoModMsgId;
         
         addItem("userinfo", Language.getString("userCm.user", user.getDisplayNick()));
+        if (client != null) {
+            List<UserRoom> rooms = client.getOpenUserRooms(user);
+            Collections.sort(rooms);
+            if (rooms.isEmpty()) {
+                addItem("", "No rooms", ROOMS_MENU);
+            }
+            else {
+                for (UserRoom userRoom : rooms) {
+                    String label;
+                    if (userRoom.user != null && userRoom.user.getNumberOfLines() > 0) {
+                        label = String.format("%s (%s)",
+                                userRoom.room.getDisplayName(),
+                                userRoom.user.getNumberOfLines());
+                    }
+                    else {
+                        label = userRoom.room.getDisplayName();
+                    }
+                    if (user.getRoom().equals(userRoom.room)) {
+                        label = ">"+label;
+                    }
+                    addItem("userinfo."+userRoom.room.getChannel(), label, ROOMS_MENU);
+                }
+            }
+        }
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();

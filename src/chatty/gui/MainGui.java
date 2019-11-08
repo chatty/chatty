@@ -1627,6 +1627,10 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("userinfo")) {
                 openUserInfoDialog(user, msgId, autoModMsgId);
             }
+            else if (cmd.startsWith("userinfo.")) {
+                String chan = cmd.substring(9);
+                openUserInfoDialog(client.getUser(chan, user.getName()), null, null, true);
+            }
             else if (cmd.equals("addressbookEdit")) {
                 openAddressbook(user.getName());
             }
@@ -2414,8 +2418,18 @@ public class MainGui extends JFrame implements Runnable {
      * @param msgId 
      */
     public void openUserInfoDialog(User user, String msgId, String autoModMsgId) {
+        openUserInfoDialog(user, msgId, autoModMsgId, false);
+    }
+    
+    /**
+     * Only call out of the EDT.
+     * 
+     * @param user
+     * @param msgId 
+     */
+    public void openUserInfoDialog(User user, String msgId, String autoModMsgId, boolean keepPosition) {
         windowStateManager.setWindowPosition(userInfoDialog.getDummyWindow(), getActiveWindow());
-        userInfoDialog.show(getActiveWindow(), user, msgId, autoModMsgId, client.getUsername());
+        userInfoDialog.show(getActiveWindow(), user, msgId, autoModMsgId, client.getUsername(), keepPosition);
     }
     
     private void openChannelInfoDialog() {

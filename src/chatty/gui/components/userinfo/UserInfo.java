@@ -4,7 +4,6 @@ package chatty.gui.components.userinfo;
 import chatty.Helper;
 import chatty.User;
 import chatty.gui.GuiUtil;
-import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
@@ -109,6 +108,9 @@ public class UserInfo extends JDialog {
         
         GridBagConstraints gbc;
         
+        //==========================
+        // Top Panel
+        //==========================
         JPanel topPanel = new JPanel(new GridBagLayout());
 
         gbc = makeGbc(0,0,3,1);
@@ -120,13 +122,10 @@ public class UserInfo extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         singleMessage.setToolTipText("When doing a ban/timeout only remove a single message of that user [S to toggle]");
         //add(singleMessage, gbc);
-
-        gbc = makeGbc(2,1,1,1);
-        gbc.insets = new Insets(2, 8, 2, 8);
-        gbc.anchor = GridBagConstraints.EAST;
-        pinnedDialog.setToolTipText(Language.getString("userDialog.setting.pin.tip"));
-        topPanel.add(pinnedDialog, gbc);
         
+        //--------------------------
+        // Second row
+        //--------------------------
         JComboBox<String> reasons = new JComboBox<>();
         reasons.addItem("-- Select Ban/Timeout Reason --");
         reasons.addItem("No CatBag posted");
@@ -136,11 +135,21 @@ public class UserInfo extends JDialog {
         gbc.insets = new Insets(2, 8, 5, 7);
         gbc.anchor = GridBagConstraints.WEST;
         topPanel.add(banReasons, gbc);
+
+        gbc = makeGbc(2, 1, 1, 1);
+        gbc.insets = new Insets(2, 8, 2, 8);
+        gbc.anchor = GridBagConstraints.EAST;
+        pinnedDialog.setToolTipText(Language.getString("userDialog.setting.pin.tip"));
+        topPanel.add(pinnedDialog, gbc);
         
+        // Add to dialog
         gbc = makeGbc(0, 0, 3, 1);
         gbc.insets = new Insets(0, 0, 0, 0);
         add(topPanel, gbc);
         
+        //==========================
+        // Message log
+        //==========================
         pastMessages.setRows(4);
         pastMessages.setPreferredSize(pastMessages.getPreferredSize());
         JScrollPane scrollPane = new JScrollPane(pastMessages);

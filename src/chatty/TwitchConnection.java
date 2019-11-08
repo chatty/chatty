@@ -205,6 +205,19 @@ public class TwitchConnection {
         }
     }
     
+    public Set<Room> getOpenRooms() {
+        Set<String> chans = getOpenChannels();
+        Set<Room> result = new HashSet<>();
+        for (String chan : chans) {
+            result.add(rooms.getRoom(chan));
+        }
+        return result;
+    }
+    
+    public Room getRoomByChannel(String channel) {
+        return rooms.getRoom(channel);
+    }
+    
     /**
      * Gets the reconnection delay based on the number of attempts.
      * 

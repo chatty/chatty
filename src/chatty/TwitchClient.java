@@ -21,6 +21,7 @@ import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
+import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.gui.components.updating.Stuff;
 import chatty.splash.Splash;
@@ -42,6 +43,7 @@ import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi;
+import chatty.util.UserRoom;
 import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChatInfo;
@@ -422,6 +424,8 @@ public class TwitchClient {
         if (Chatty.DEBUG) {
             //textInput(Room.EMPTY, "/test3");
         }
+        
+        UserContextMenu.client = this;
     }
     
 
@@ -3023,6 +3027,27 @@ public class TwitchClient {
     
     public Collection<String> getOpenChannels() {
         return c.getOpenChannels();
+    }
+    
+    public Collection<Room> getOpenRooms() {
+        return c.getOpenRooms();
+    }
+    
+    /**
+     * Get the currently open rooms, with a User object of the same username
+     * attached to each room, if it already exists.
+     *
+     * @param user
+     * @return A new List containing UserRoom objects of currently open rooms
+     */
+    public List<UserRoom> getOpenUserRooms(User user) {
+        List<UserRoom> result = new ArrayList<>();
+        Collection<Room> rooms = getOpenRooms();
+        for (Room room : rooms) {
+            User roomUser = c.getExistingUser(room.getChannel(), user.getName());
+            result.add(new UserRoom(room, roomUser));
+        }
+        return result;
     }
     
     private class ChannelStateUpdater implements ChannelStateListener {
