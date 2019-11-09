@@ -457,6 +457,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
              */
             userStyle = styles.user(message.user, style);
             userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
+            lastUsers.add(new MentionCheck(message.user));
         }
         
         String text = message.infoText;

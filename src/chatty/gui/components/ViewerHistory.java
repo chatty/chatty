@@ -235,6 +235,7 @@ public class ViewerHistory extends JComponent {
         MyMouseListener mouseListener = new MyMouseListener();
         addMouseListener(mouseListener);
         addMouseMotionListener(mouseListener);
+        setOpaque(false);
     }
     
     public void setListener(ViewerHistoryListener listener) {
@@ -265,10 +266,6 @@ public class ViewerHistory extends JComponent {
     @Override
     public void paintComponent(Graphics g) {
         locations.clear();
-        
-        // Background
-        g.setColor(background_color);
-        g.fillRect(0,0,getWidth(),getHeight());
         
         // This color is used for everything until drawing the points
         g.setColor(foreground_color);
@@ -717,16 +714,6 @@ public class ViewerHistory extends JComponent {
      */
     public void setForegroundColor(Color color) {
         foreground_color = color;
-        repaint();
-    }
-    
-    /**
-     * Set a new background color and repaint.
-     * 
-     * @param color 
-     */
-    public void setBackgroundColor(Color color) {
-        background_color = color;
         repaint();
     }
     
