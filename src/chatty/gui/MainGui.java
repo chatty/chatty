@@ -32,6 +32,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.Match;
+import chatty.gui.LaF.LaFSettings;
 import chatty.gui.colors.ColorItem;
 import chatty.gui.colors.MsgColorItem;
 import chatty.gui.colors.MsgColorManager;
@@ -105,14 +106,6 @@ import javax.swing.event.MenuListener;
  * @author tduva
  */
 public class MainGui extends JFrame implements Runnable { 
-    
-    public static final Color COLOR_NEW_MESSAGE = new Color(200,0,0);
-    public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE = new Color(255,80,0);
-    
-    // For the JTattoo dark LaF the color has to be light enough to not get a
-    // white outline
-    public static final Color COLOR_NEW_MESSAGE_DARK = new Color(255,80,80);
-    public static final Color COLOR_NEW_HIGHLIGHTED_MESSAGE_DARK = new Color(255,180,40);
     
     public final Emoticons emoticons = new Emoticons();
     
@@ -1396,6 +1389,8 @@ public class MainGui extends JFrame implements Runnable {
                 openHelp("help-livestreamer.html", ref);
             } else if (type.equals("help-whisper")) {
                 openHelp("help-whisper.html", ref);
+            } else if (type.equals("help-laf")) {
+                openHelp("help-laf.html", ref);
             } else if (type.equals("url")) {
                 UrlOpener.openUrlPrompt(MainGui.this, ref);
             } else if (type.equals("update")) {
@@ -4236,7 +4231,7 @@ public class MainGui extends JFrame implements Runnable {
     public ChannelInfo getCachedChannelInfo(String channel, String id) {
         return client.api.getCachedChannelInfo(channel, id);
     }
-
+    
     public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {
         return client.api.getSingeFollower(stream, streamId, user, userId, refresh);
     }
@@ -4397,7 +4392,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateLaF() {
-        LaF.setLookAndFeel(client.settings.getString("laf"), client.settings.getString("lafTheme"));
+        LaF.setLookAndFeel(LaFSettings.fromSettings(client.settings));
         LaF.updateLookAndFeel();
     }
 
@@ -4552,8 +4547,7 @@ public class MainGui extends JFrame implements Runnable {
             else if (setting.equals("ignoredEmotes")) {
                 emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
             }
-            else if (setting.equals("laf") || setting.equals("lafTheme")
-                    || setting.equals("lafCustomTheme")) {
+            else if (LaF.shouldUpdate(setting)) {
                 updateLaF();
             }
         }

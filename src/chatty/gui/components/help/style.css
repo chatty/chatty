@@ -67,24 +67,25 @@ td {
 }
 
 table.settings {
-    border-collapse: collapse;
     margin-top: 10px;
+    background-color: #BBBBBB;
 }
 table.settings td {
-    padding: 3px;
+    padding: 4px;
     margin: 0;
-    border: 1px solid #DDDDDD;
+    border: 0;
+    background-color: #FDFDFD;
 }
 table.settings th {
-    padding: 0;
+    padding: 4px;
     margin: 0;
-    border-bottom: 1px solid #000;
+    background-color: #EDEDED;
 }
 .setting {
     font-family: monospace;
 }
-.settingExclusive {
-    background-color: #EEEEEE;
+table.settings tr.settingExclusive td {
+    
 }
 .settingNoCommandEdit {
     color: #999999;

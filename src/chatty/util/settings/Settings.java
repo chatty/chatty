@@ -774,10 +774,12 @@ public class Settings {
         }
         if (isListSetting(setting)) {
             listClear(setting);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' is now empty.";
         }
         if (isMapSetting(setting)) {
             mapClear(setting);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' is now empty.";
         }
         return settingInvalidMessage(setting);

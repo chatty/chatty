@@ -20,6 +20,7 @@ import chatty.util.api.TwitchApi;
 import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
+import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
@@ -288,8 +289,7 @@ public class TwitchClient {
         streamStatusWriter.setEnabled(settings.getBoolean("enableStatusWriter"));
         settings.addSettingChangeListener(streamStatusWriter);
         
-        LaF.setSettings(settings);
-        LaF.setLookAndFeel(settings.getString("laf"), settings.getString("lafTheme"));
+        LaF.setLookAndFeel(LaFSettings.fromSettings(settings));
         GuiUtil.addMacKeyboardActions();
         
         // Create GUI

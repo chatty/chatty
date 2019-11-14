@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+    <title>Chatty Help - Look & Feel</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <style>
+        table.settings th {
+            text-align: left;
+        }
+        
+        table.settings td.note {
+            border: 0;
+        }
+        
+    </style>
+    <body>
+        <h1>Look & Feel</h1>
+        <p>A Java Look & Feel affects the colors/style (look) of the entire
+            program as well as some of the behavior/shortcuts (feel). Various
+            different Look & Feel can be selected in the Settings under "Look"
+            (additional chat-specific customization is possible on some subpages
+            such as "Chat Colors" or "Font").</p>
+        
+        <p><em>Note:</em> Changing Look & Feel properties can cause some slight
+            GUI issues, so a restart of Chatty is recommended to complete your
+            changes.</p>
+        
+        <h2><a name="custom">Custom Properties</a></h2>
+        <p>The JTattoo Look & Feel (HiFi, Noire, Minte, Graphite, Aero, Fast, Luna)
+            allow you to use these properties, which overwrite their default
+            values. There are also <a href="#chatty">a few properties</a> that
+            can have an effect in every Look & Feel. They can be changed using
+            <a href="help-setting_commands.html">setting commands</a>:</p>
+        
+        <ul>
+            <li><code>/set lafCustomTheme &lt;property&gt; &lt;value&gt;</code> - set one property value</li>
+            <li><code>/remove lafCustomTheme &lt;property&gt;</code> - remove one property</li>
+            <li><code>/clearSetting lafCustomTheme</code> - remove all properties</li>
+        </ul>
+        
+        <p><em>Tip:</em> Enter <code>/set lafc</code> + <kbd>TAB</kbd> to
+            autocomplete setting name.</p>
+        
+        <p>The following list may not contain all properties. Some more may be
+            listed <a href="http://www.jtattoo.net/ThemeProps.html">here</a>,
+            although that list is likely also not complete. Chatty also has some
+            new properties added.</p>
+        
+        <p>Not all properties work the same for all Look & Feel and the
+            documentation on that isn't complete, so you'll just have to try
+            around a bit.</p>
+        
+        <ul>
+            <li>Colors must be given as "red green blue", e.g.
+                <code>/set lafCustomTheme selectionBackgroundColorLight 255 60 0</code></li>
+            <li>Settings that have <code>[Light/Dark]</code> have a top and bottom
+            color for gradients. For example for <code>buttonColor[Light/Dark]</code>
+            you can set both <code>buttonColorLight</code> and
+            <code>buttonColorDark</code> (to the same if you don't want a gradient).</li>
+            <li>Settings that say <code>on/off</code> are enabled when set to
+            <code>on</code> and disabled otherwise on any other value</li>
+        </ul>
+        
+        <table class="settings" cellspacing="1">
+            <tr>
+                <th colspan="4">Window Properties</th>
+            </tr>
+            <tr>
+                <td>windowTitleForegroundColor</td>
+                <td>text</td>
+                <td>Active window title</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowTitleBackgroundColor</td>
+                <td>bg</td>
+                <td></td>
+                <td>Fast only?</td>
+            </tr>
+            <tr>
+                <td>windowTitleColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Active window title/Dark for window frame</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowInactiveTitleForegroundColor</td>
+                <td>text</td>
+                <td>Inactive window title</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowInactiveTitleBackgroundColor</td>
+                <td>bg</td>
+                <td></td>
+                <td>Fast only?</td>
+            </tr>
+            <tr>
+                <td>windowInactiveTitleColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Inactive window title/Dark for window frame</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowIconColor</td>
+                <td>fg</td>
+                <td>Window icons (minimize/close/..)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowIconShadowColor</td>
+                <td>fg</td>
+                <td>^ Shadow</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowIconRolloverColor</td>
+                <td>fg</td>
+                <td>^ Mouseover</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowBorderColor</td>
+                <td>border</td>
+                <td>Outer (active) window border</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>windowInactiveBorderColor</td>
+                <td>border</td>
+                <td>Outer (inactive) window border</td>
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">General Properties</th>
+            </tr>
+            <tr>
+                <td>foregroundColor</td>
+                <td>text</td>
+                <td>Most text</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>backgroundColor</td>
+                <td>bg</td>
+                <td>Many backgrounds</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>frameColor</td>
+                <td>fg</td>
+                <td>Some frames around GUI elements (like scrollpane, edit box)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>frameColor2</td>
+                <td>fg</td>
+                <td>^ Secondary color (bottom/right), if applicable</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>controlForegroundColor</td>
+                <td>fg</td>
+                <td>Various GUI elements (e.g. tabs)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>controlColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>controlHighlightColor</td>
+                <td>fg</td>
+                <td>Table header?</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>controlShadowColor</td>
+                <td>fg</td>
+                <td>Table header?</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>controlDarkShadowColor</td>
+                <td>fg</td>
+                <td>Tabs Shadow/outline</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>inactiveColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>^ When inactive window</td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>disabledBackgroundColor</td>
+                <td>bg</td>
+                <td>For disabled GUI elements ("greyed out")</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>disabledForegrundColor</td>
+                <td>text</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>focusColor</td>
+                <td>fg</td>
+                <td>Focused GUI element dashed line (like button)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>focusCellColor</td>
+                <td>fg</td>
+                <td>Focused Tree item border</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>gridColor</td>
+                <td>fg</td>
+                <td>Table grid</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>tabSelectionForegroundColor</td>
+                <td>text</td>
+                <td>Selected tab</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>textShadow</td>
+                <td>fg</td>
+                <td>on/off</td>
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Menu Properties</th>
+            </tr>
+            <tr>
+                <td>menuForegroundColor</td>
+                <td>text</td>
+                <td>Menu/Context Menu</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>menuBackgroundColor</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>menuColor[Light/Dark]</td>
+                <td>bg</td>
+                <td></td>
+                <td>Not for HiFi/Noire</td>
+            </tr>
+            <tr>
+                <td>menuSelectionForegroundColor</td>
+                <td>text</td>
+                <td>Menu/Context Menu mouseover</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>menuSelectionBackgroundColor</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>menuSelectionBackgroundColor[Light/Dark]</td>
+                <td>bg</td>
+                <td></td>
+                <td>Graphite</td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Button Properties</th>
+            </tr>
+            <tr>
+                <td>buttonForegroundColor</td>
+                <td>text</td>
+                <td>Button</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>buttonColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Button</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>rolloverForegroundColor</td>
+                <td>text</td>
+                <td>Button/Tab mouseover</td>
+                <td>HiFi/Noire not for Tab</td>
+            </tr>
+            <tr>
+                <td>rolloverColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Button/Tab mouseover</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>pressedForegroundColor</td>
+                <td>text</td>
+                <td>Button pressed</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>pressedBackgroundColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Button pressed</td>
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Input Properties</th>
+            </tr>
+            <tr>
+                <td>inputForegroundColor</td>
+                <td>text</td>
+                <td>Input like textfields, comboboxes, lists..</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>inputBackgroundColor</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>selectionForegroundColor</td>
+                <td>text</td>
+                <td>Selected text/list entries</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>selectionBackgroundColor</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>selectionBackgroundColor[Light/Dark]</td>
+                <td>bg</td>
+                <td>Selected tab</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="4" class="note">(Note: The chat inputbox colors are changed in the "Chat Colors" settings)</td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Tooltip Properties</th>
+            </tr>
+            <tr>
+                <td>tooltipForegroundColor</td>
+                <td>text</td>
+                <td>Tooltips</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>tooltipBackgroundColor</td>
+                <td>bg</td>
+                <td>^</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>tooltipShadowSize</td>
+                <td></td>
+                <td>number</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>tooltipCastShadow</td>
+                <td></td>
+                <td>on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>tooltipBorderSize</td>
+                <td></td>
+                <td>number</td>
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Other Properties</th>
+            </tr>
+            <tr>
+                <td>macStyleWindowDecoration</td>
+                <td></td>
+                <td>on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>macStyleScrollBar</td>
+                <td></td>
+                <td>More minimalistic scrollbar, on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>linuxStyleScrollBar</td>
+                <td></td>
+                <td>on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>centerWindowTitle</td>
+                <td></td>
+                <td>on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>menuOpaque</td>
+                <td></td>
+                <td>Non-transparent menus, on/off</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>drawSquareButtons</td>
+                <td></td>
+                <td>Don't draw rounded buttons</td>
+                <td>Not all LaF</td>
+            </tr>
+            <tr>
+                <td>flatColors</td>
+                <td></td>
+                <td>Use some inactive window colors for the Noir Look&amp;Feel, on/off</td>
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4"><a name="chatty">Chatty Properties (any Look & Feel)</a></th>
+            </tr>
+            <tr>
+                <td>cTabForegroundHighlight</td>
+                <td>text</td>
+                <td>Tab color when a message was highlighted in the channel</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>cTabForegroundUnread</td>
+                <td>text</td>
+                <td>Tab color when messages have been received since last having
+                    it open
+                <td></td>
+            </tr>
+            <!-- ########################### -->
+            <tr>
+                <th colspan="4">Not used in Chatty or not sure what it is</th>
+            </tr>
+            <tr>
+                <td>tabAreaBackgroundColor</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>toolbarForegroundColor</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>toolbarBackgroundColor</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>toolbarColorLight</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>toolbarColorDark</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>desktopColor</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
+import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
@@ -69,6 +70,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private boolean restartRequired = false;
     private boolean reconnectRequired = false;
+    protected boolean lafPreviewed;
     private Dimension autoSetSize;
     
     private static final String RESTART_REQUIRED_INFO = "<html><body style='width: 280px'>"
@@ -216,7 +218,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         selection.setSelectionRow(0);
         selection.setBorder(BorderFactory.createEtchedBorder());
         JScrollPane selectionScroll = new JScrollPane(selection);
-        selectionScroll.setBorder(null);
+        selectionScroll.setBorder(BorderFactory.createEmptyBorder());
         selectionScroll.setMinimumSize(selectionScroll.getPreferredSize());
 
         gbc = makeGbc(0,0,1,1);
@@ -233,7 +235,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
             @Override
             public void add(Component comp, Object constraints) {
                 JScrollPane scroll = new JScrollPane(comp);
-                scroll.setBorder(null);
+                // Set to empty instead of null, so it's not overridden when changing LaF
+                scroll.setBorder(BorderFactory.createEmptyBorder());
                 super.add(scroll, constraints);
             }
             
@@ -369,6 +372,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             GuiUtil.setLocationRelativeTo(this, owner);
             autoSetSize = getSize(autoSetSize);
         }
+        lafPreviewed = false;
         setVisible(true);
     }
     
@@ -563,7 +567,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     private void changed(String settingName) {
-        if (restartRequiredDef.contains(settingName)) {
+        if (restartRequiredDef.contains(settingName) || lafPreviewed) {
             restartRequired = true;
             reconnectRequired = false;
         }
@@ -689,7 +693,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return null;
     }
     
-    protected ComboStringSetting addComboStringSetting(String name, boolean editable, String[] choices) {
+    protected ComboStringSetting addComboStringSetting(String name, boolean editable, String... choices) {
         Map<String, String> localizedChoices = new LinkedHashMap<>();
         for (String choice : choices) {
             String label = Language.getString("settings.string."+name+".option."+choice, false);
@@ -761,7 +765,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
      * @param name The name of the setting
      * @return The value of the setting or null if it doesn't exist
      */
-    protected String getStringSetting(String name) {
+    public String getStringSetting(String name) {
         if (stringSettings.containsKey(name)) {
             return stringSettings.get(name).getSettingValue();
         }
@@ -822,7 +826,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
      * @param name
      * @return 
      */
-    protected Long getLongSetting(String name) {
+    public Long getLongSetting(String name) {
         if (longSettings.containsKey(name)) {
             return longSettings.get(name).getSettingValue();
         }
@@ -926,9 +930,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private void cancel() {
         Sound.setDeviceName(settings.getString("soundDevice"));
-        if (!settings.getString("laf").equals(stringSettings.get("laf").getSettingValue())
-                || !settings.getString("lafTheme").equals(stringSettings.get("lafTheme").getSettingValue())) {
-            LaF.setLookAndFeel(settings.getString("laf"), settings.getString("lafTheme"));
+        if (lafPreviewed) {
+            LaF.setLookAndFeel(LaFSettings.fromSettings(settings));
             LaF.updateLookAndFeel();
         }
         close();

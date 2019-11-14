@@ -1,7 +1,11 @@
 
 package chatty.gui;
 
+import chatty.gui.LaFCustomDefaults.UIResourceMatteBorder;
+import chatty.gui.components.settings.SettingsDialog;
+import chatty.util.StringUtil;
 import chatty.util.colors.ColorCorrectionNew;
+import chatty.util.colors.HtmlColors;
 import chatty.util.settings.Settings;
 import com.jtattoo.plaf.aero.AeroLookAndFeel;
 import com.jtattoo.plaf.fast.FastLookAndFeel;
@@ -11,19 +15,14 @@ import com.jtattoo.plaf.luna.LunaLookAndFeel;
 import com.jtattoo.plaf.mint.MintLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
 import java.awt.Color;
-import java.awt.Window;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.plaf.ColorUIResource;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.FontUIResource;
-import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
 
@@ -35,24 +34,94 @@ public class LaF {
     
     private static final Logger LOGGER = Logger.getLogger(LaF.class.getName());
     
-    private static Settings settings;
+    private static LaFSettings settings;
     private static String linkColor = "#0000FF";
     private static boolean isDarkTheme;
     private static String lafClass;
-    
-    public static void setSettings(Settings settings) {
-        LaF.settings = settings;
-    }
+    private static Color tabForegroundUnread = new Color(200,0,0);
+    private static Color tabForegroundHighlight = new Color(255,80,0);
     
     public static String getLinkColor() {
         return linkColor;
+    }
+    
+    public static Color getTabForegroundUnread() {
+        return tabForegroundUnread;
+    }
+    
+    public static Color getTabForegroundHighlight() {
+        return tabForegroundHighlight;
     }
     
     public static boolean isDarkTheme() {
         return isDarkTheme;
     }
     
-    public static void setLookAndFeel(String lafCode, String theme) {
+    public static boolean shouldUpdate(String settingName) {
+        List<String> settingNames = Arrays.asList(new String[]{
+            "laf", "lafTheme", "lafScroll", "lafForeground", "lafBackground", "lafStyle", "lafCustomTheme", "lafGradient"});
+        return settingNames.contains(settingName);
+    }
+    
+    public static class LaFSettings {
+        
+        public final String lafCode;
+        public final String theme;
+        public final int fontScale;
+        public final Map<String, String> custom;
+        public final Color bg;
+        public final Color fg;
+        public final String style;
+        public final int gradient;
+        public final String scroll;
+        
+        public LaFSettings(String lafCode, String theme, int fontScale,
+                           Map<String, String> custom, Color fg, Color bg,
+                           String style, int gradient, String scroll) {
+            this.lafCode = lafCode;
+            this.theme = theme;
+            this.fontScale = fontScale;
+            this.custom = custom;
+            this.fg = fg;
+            this.bg = bg;
+            this.style = style;
+            this.gradient = gradient;
+            this.scroll = scroll;
+        }
+        
+        public static LaFSettings fromSettings(Settings settings) {
+            String lafCode = settings.getString("laf");
+            String lafTheme = settings.getString("lafTheme");
+            int lafFontScale = (int)settings.getLong("lafFontScale");
+            Color bg = HtmlColors.decode(settings.getString("lafBackground"), Color.BLACK);
+            Color fg = HtmlColors.decode(settings.getString("lafForeground"), Color.WHITE);
+            String style = settings.getString("lafStyle");
+            int gradient = (int)(settings.getLong("lafGradient"));
+            String scroll = settings.getString("lafScroll");
+            Map<String, String> custom = settings.getMap("lafCustomTheme");
+            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll);
+        }
+        
+        public static LaFSettings fromSettingsDialog(SettingsDialog d, Settings settings) {
+            String lafCode = d.getStringSetting("laf");
+            String lafTheme = d.getStringSetting("lafTheme");
+            int lafFontScale = ((Number)d.getLongSetting("lafFontScale")).intValue();
+            Color bg = HtmlColors.decode(d.getStringSetting("lafBackground"), Color.BLACK);
+            Color fg = HtmlColors.decode(d.getStringSetting("lafForeground"), Color.WHITE);
+            String style = d.getStringSetting("lafStyle");
+            int gradient = ((Number)(d.getLongSetting("lafGradient"))).intValue();
+            String scroll = d.getStringSetting("lafScroll");
+            Map<String, String> custom = settings.getMap("lafCustomTheme");
+            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll);
+        }
+        
+    }
+    
+    public static void setLookAndFeel(LaFSettings settings) {
+        LaFUtil.resetDefaults();
+        LaF.settings = settings;
+        String lafCode = settings.lafCode;
+        String theme = settings.theme;
         try {
             String laf = null;
             if (lafCode.startsWith(":")) {
@@ -91,6 +160,12 @@ public class LaF {
                         //p.put("backgroundColorLight", "0 0 0");
                         HiFiLookAndFeel.setCurrentTheme(addCustom(p2));
                         break;
+                    case "hifiCustom":
+                        laf = "com.jtattoo.plaf.hifi.HiFiLookAndFeel";
+                        Properties p4 = prepareTheme(HiFiLookAndFeel.getThemeProperties(theme));
+                        customColors(p4);
+                        HiFiLookAndFeel.setCurrentTheme(addCustom(p4));
+                        break;
                     case "mint":
                         laf = "com.jtattoo.plaf.mint.MintLookAndFeel";
                         MintLookAndFeel.setCurrentTheme(
@@ -121,6 +196,14 @@ public class LaF {
                         LunaLookAndFeel.setCurrentTheme(addCustom(prepareTheme(
                                 LunaLookAndFeel.getThemeProperties(theme))));
                         break;
+                    case "nimbus":
+                        for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                            if ("Nimbus".equals(info.getName())) {
+                                laf = info.getClassName();
+                                break;
+                            }
+                        }
+                        break;
                     default:
                         laf = UIManager.getCrossPlatformLookAndFeelClassName();
                         MetalLookAndFeel.setCurrentTheme(new OceanTheme());
@@ -131,29 +214,33 @@ public class LaF {
             UIManager.setLookAndFeel(laf);
             lafClass = laf;
             modifyDefaults();
-            /**
-             * After setting color setting the LaF again seemed different than
-             * not doing it. This should probably be investigated further.
-             */
-//            UIManager.setLookAndFeel(laf);
         } catch (Exception ex) {
             LOGGER.warning("[LAF] Failed setting LAF: "+ex);
         }
         
-        // Tab rows not overlaying eachother
-        UIManager.getDefaults().put("TabbedPane.tabRunOverlay", 0);
-        
-        if (lafCode.equals("hifi") || lafCode.equals("hifi2")
-                || lafCode.equals("noire")) {
+        // Set some settings not directly used by the LAF, but based on LAF.
+        if (lafCode.startsWith("hifi") || lafCode.equals("noire")) {
             linkColor = "#EEEEEE";
+            tabForegroundHighlight = new Color(255,180,40);
+            tabForegroundUnread = new Color(255,80,80);
             isDarkTheme = true;
         } else {
             linkColor = "#0000FF";
             isDarkTheme = false;
         }
+        loadOtherCustom();
     }
     
     private static void modifyDefaults() {
+        //--------------------------
+        // Simple overrides
+        //--------------------------
+        // Tab rows not overlaying eachother
+        LaFUtil.putDefault("TabbedPane.tabRunOverlay", 0);
+        
+        //--------------------------
+        // Special font override
+        //--------------------------
         try {
             if (lafClass.equals(UIManager.getSystemLookAndFeelClassName())) {
                 Object font = UIManager.getLookAndFeelDefaults().get("TextField.font");
@@ -165,82 +252,80 @@ public class LaF {
             LOGGER.warning("[LAF] Failed to change TextArea.font: "+ex);
         }
         
-        int fontScale = (int)settings.getLong("lafFontScale");
+        //--------------------------
+        // Font size
+        //--------------------------
+        int fontScale = settings.fontScale;
         if (fontScale != 100 && fontScale >= 10 && fontScale <= 200) {
             LOGGER.info("[LAF] Applying font scale "+fontScale);
-            modifyDefaults((k, v) -> {
+            LaFUtil.modifyDefaults((k, v) -> {
                 if (v instanceof FontUIResource) {
                     FontUIResource font = (FontUIResource) v;
-                    return new FontUIResource(font.getFamily(), font.getStyle(), (int) (font.getSize() * (fontScale/100.0)));
+                    int step = (fontScale - 100) / 10;
+                    int fontSize = font.getSize() + step;
+//                    System.out.println(font.getSize()+" => "+fontSize);
+                    return new FontUIResource(font.getFamily(), font.getStyle(), fontSize);
                 }
                 return null;
             });
         }
-        /**
-         * Just some experimenting. Setting colors automatically like this looks
-         * kind of bad, although with some more logic (e.g. calculating shadows
-         * correctly) it might be better. Still, it didn't seem to set
-         * everything, some stuff might be textures or set differently somehow.
-         */
-//        modifyDefaults((k, v) -> {
-//            if (v instanceof ColorUIResource) {
-//                ColorUIResource color = (ColorUIResource) v;
-//                int lightness = ColorCorrectionNew.getLightness(color);
-//                lightness = Math.abs(lightness - 255);
-//                lightness = Math.min(lightness, 230);
-//                lightness = Math.max(lightness, 30);
-//                Color modifiedColor = ColorCorrectionNew.toLightness(color, lightness);
-//                return new ColorUIResource(modifiedColor);
-//            }
-//            return null;
-//        });
-    }
-    
-    private static void modifyDefaults(BiFunction<Object, Object, Object> modify) {
-        UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-        // Make a copy to prevent concurrent modification bug
-        // https://bugs.openjdk.java.net/browse/JDK-6893623
-        Set<Object> keys = new HashSet<>(defaults.keySet());
-        for (Object key : keys) {
-            Object value = defaults.get(key);
-            Object result = modify.apply(key, value);
-            if (result != null) {
-                defaults.put(key, result);
-                /**
-                 * Set this as well, just in case. This doesn't get reset when
-                 * the LaF is set, but normally that shouldn't happen except
-                 * through this, but idk.
-                 */
-                UIManager.getDefaults().put(key, result);
+        
+        // Maybe add an option for this sometime
+//            modifyDefaults((k, v) -> {
+//                if (v instanceof FontUIResource) {
+//                    FontUIResource font = (FontUIResource) v;
+//                    return new FontUIResource(font.getFamily(), Font.PLAIN, font.getSize());
+//                }
+//                return null;
+//            });
+        
+        //--------------------------
+        // Scrollbar
+        //--------------------------
+        if (!StringUtil.isNullOrEmpty(settings.scroll)) {
+            switch (settings.scroll) {
+                case "tiny":
+                    LaFUtil.putDefault("ScrollBar.width", 8);
+                    break;
+                case "smaller":
+                    LaFUtil.putDefault("ScrollBar.width", 10);
+                    break;
+                case "small":
+                    LaFUtil.putDefault("ScrollBar.width", 15);
+                    break;
+            }
+        }
+        
+        //--------------------------
+        // Custom
+        //--------------------------
+        // User-defined overrides last
+        for (Map.Entry<String, String> entry : settings.custom.entrySet()) {
+            if (entry.getKey().startsWith("$")) {
+                String key = entry.getKey().substring(1);
+                try {
+                    Object value = LaFCustomDefaults.fromString(entry.getValue());
+                    if (!key.isEmpty() && value != null) {
+                        LaFUtil.putDefault(key, value);
+                    }
+                }
+                catch (Exception ex) {
+                    LOGGER.warning("[LAF] Invalid custom: " + entry);
+                }
             }
         }
     }
-    
-    /**
-     * Return a customized UI that disables switching tab rows, based on the
-     * current Look&Feel.
-     * 
-     * @return A customized UI, or null if no customized UI should be used
-     */
-    public static TabbedPaneUI getTabbedPaneUI() {
-        if (lafClass == null) {
-            return null;
-        }
-        if (lafClass.equals("com.jtattoo.plaf.hifi.HiFiLookAndFeel")
-                || lafClass.equals("com.jtattoo.plaf.noire.NoireLookAndFeel")) {
-            // Both of these share the same class for tabs
-            return new com.jtattoo.plaf.hifi.HiFiTabbedPaneUI() {
-
-                @Override
-                protected boolean shouldRotateTabRuns(int i) {
-                    return false;
-                }
-
-            };
-        }
-        return null;
+        
+    public static void updateLookAndFeel() {
+        LaFUtil.updateLookAndFeel();
     }
     
+    /**
+     * Prepare a JTattoo theme.
+     * 
+     * @param properties
+     * @return 
+     */
     private static Properties prepareTheme(Properties properties) {
         if (properties == null) {
             properties = new Properties();
@@ -249,25 +334,239 @@ public class LaF {
         }
         properties.put("logoString", "");
         properties.put("backgroundPattern", "off");
+        if (!StringUtil.isNullOrEmpty(settings.scroll)) {
+            switch (settings.scroll) {
+                case "tiny":
+                case "smaller":
+                    properties.put("macStyleScrollBar", "on");
+                    break;
+            }
+        }
         return properties;
     }
     
+    /**
+     * Add custom properties to a JTattoo theme.
+     * 
+     * @param properties
+     * @return 
+     */
     private static Properties addCustom(Properties properties) {
-        if (settings != null) {
-            Map<String, String> map = settings.getMap("lafCustomTheme");
-            if (!map.isEmpty()) {
-                properties.putAll(map);
-                LOGGER.info("[LAF] Set Custom: "+map);
-            }
+        if (!settings.custom.isEmpty()) {
+            properties.putAll(settings.custom);
+            LOGGER.info("[LAF] Set Custom: " + settings.custom);
         }
         return properties;
     }
     
-    public static void updateLookAndFeel() {
-        for (Window w : Window.getWindows()) {
-            if (w.isDisplayable()) {
-                SwingUtilities.updateComponentTreeUI(w);
-            }
+    /**
+     * Load custom properties that aren't directly used by a LAF.
+     */
+    private static void loadOtherCustom() {
+        if (settings != null) {
+            tabForegroundHighlight = loadCustomColor("cTabForegroundHighlight", tabForegroundHighlight);
+            tabForegroundUnread = loadCustomColor("cTabForegroundUnread", tabForegroundUnread);
         }
     }
+    
+    /**
+     * Get a color from custom properties.
+     * 
+     * @param properties
+     * @param key
+     * @param defaultValue
+     * @return 
+     */
+    private static Color loadCustomColor(String key, Color defaultValue) {
+        String value = settings.custom.get(key);
+        if (value != null) {
+            return LaFUtil.parseColor(value, defaultValue);
+        }
+        return defaultValue;
+    }
+    
+    /**
+     * Colors for "hifiCustom" JTattoo LaF.
+     * 
+     * @param p 
+     */
+    private static void customColors(Properties p) {
+        if (settings == null) {
+            return;
+        }
+        Color bg = settings.bg;
+        Color fg = settings.fg;
+        float gradient = (float)(settings.gradient / 100.0);
+        
+        float titleBgC = 0;
+        float inactiveTitleBgC = 0;
+        float activeGradient = 0;
+        float frame = -0.63f;
+        float frame2 = -0.45f;
+        float controlBgChange = 0.03f;
+        float buttonBgChange = 0.03f;
+        float menu = 0f;
+        int tabSeparatorStyle = 0;
+        
+        boolean minimalistic = false;
+        
+        Color lighterFg = changeColor(fg, 0.3f);
+        Color activeTitleFg = changeColor(lighterFg, 0f);
+        Color inactiveTitleFg = changeColor(fg, -0.3f);
+        
+        switch (settings.style) {
+            case "classic":
+                titleBgC = -0.05f;
+                inactiveTitleBgC = -0.12f;
+                activeGradient = 0.12f;
+                inactiveTitleFg = fg;
+                menu = -0.1f;
+                activeTitleFg = changeColor(fg, 0.7f);
+                controlBgChange = -0.1f;
+                buttonBgChange = 0f;
+                tabSeparatorStyle = 1;
+                break;
+            case "classicStrong":
+                titleBgC = -0.2f;
+                inactiveTitleBgC = -0.40f;
+                activeGradient = 0.12f;
+                inactiveTitleFg = fg;
+                menu = -0.18f;
+                activeTitleFg = changeColor(fg, 0.7f);
+                frame = -0.7f;
+                frame2 = -0.6f;
+                controlBgChange = -0.3f;
+                buttonBgChange = -0.05f;
+                break;
+            case "regular":
+                titleBgC = -0.1f;
+                inactiveTitleBgC = -0.1f;
+                break;
+            case "regularStrong":
+                titleBgC = -0.2f;
+                inactiveTitleBgC = -0.2f;
+                controlBgChange = -0.1f;
+                break;
+            case "simple":
+                buttonBgChange = 0f;
+                break;
+            case "sleek":
+                buttonBgChange = 0f;
+                menu = 0.06f;
+                minimalistic = true;
+                break;
+            case "minimal":
+                buttonBgChange = 0f;
+                minimalistic = true;
+                break;
+        }
+        
+        // Window
+        Color titleBg = changeColor(bg, titleBgC);
+        Color inactiveTitleBg = changeColor(bg, inactiveTitleBgC);
+        setColor(p, "windowInactiveTitleForegroundColor", inactiveTitleFg);
+        setColorG(p, "windowInactiveTitleColor", inactiveTitleBg, 1, gradient);
+        setColor(p, "windowTitleForegroundColor", activeTitleFg);
+        setColorG(p, "windowTitleColor", titleBg, 1, gradient + activeGradient);
+        setColor(p, "windowIconColor", inactiveTitleFg);
+        setColor(p, "windowIconRolloverColor", activeTitleFg);
+        
+        // Window Border
+        setColor(p, "windowBorderColor", ColorCorrectionNew.makeDarker(bg, 0.6f));
+        setColor(p, "windowInactiveBorderColor", ColorCorrectionNew.makeDarker(bg, 0.6f));
+        
+        // Some frames (like scrollpane, tabpane and more)
+        if (minimalistic) {
+            LaFUtil.putDefault("ScrollPane.border", LaFCustomDefaults.EMPTY_BORDER);
+            LaFUtil.putDefault("TextField.border", LaFCustomDefaults.EMPTY_BORDER);
+        }
+        if (settings.style.equals("simple")) {
+            LaFUtil.putDefault("TextField.border", new UIResourceMatteBorder(0, 1, 1, 1, changeColor(bg, frame)));
+        }
+        setColor(p, "frameColor", changeColor(bg, frame));
+        setColor(p, "frameColor2", changeColor(bg, frame2));
+        
+        // General
+        setColor(p, "foregroundColor", fg, 1f);
+        setColor(p, "backgroundColor", bg);
+        
+        // "Greyed out" GUI elements
+        setColor(p, "disabledBackgroundColor", bg, 0.95f);
+        setColor(p, "disabledForegrundColor", fg, 0.8f);
+        
+        // Menu
+        setColor(p, "menuForegroundColor", lighterFg);
+        setColor(p, "menuBackgroundColor", changeColor(bg, menu));
+        setColor(p, "menuSelectionForegroundColor", changeColor(lighterFg, 0.4f));
+        setColor(p, "menuSelectionBackgroundColor", bg, 0.8f);
+        
+        Color controlColor = changeColor(bg, controlBgChange);
+        Color buttonColor = changeColor(bg, buttonBgChange);
+        // Buttons
+        setColorG(p, "buttonColor", buttonColor, 1, gradient);
+        setColor(p, "buttonForegroundColor", lighterFg);
+        setColorG(p, "pressedBackgroundColor", fg, 0.25f, gradient);
+        
+        // Buttons/Tabs
+        setColor(p, "rolloverForegroundColor", changeColor(lighterFg, 0.4f));
+        setColorG(p, "rolloverColor", changeColor(controlColor, 0.1f), 1f, gradient*1.4f);
+        
+        // Input
+        setColor(p, "inputForegroundColor", fg, 1f);
+        setColor(p, "selectionBackgroundColor", bg, 0.8f);
+        Color inputBg = ColorCorrectionNew.offset(bg, 0.92f);
+        setColor(p, "inputBackgroundColor", inputBg);
+        setColor(p, "focusBackgroundColor", inputBg);
+        
+        // Tabs and other
+        setColor(p, "controlForegroundColor", lighterFg);
+        setColorG(p, "controlColor", controlColor, 1f, gradient*1.05f);
+        setColorG(p, "inactiveColor", controlColor, 1f, gradient*1.05f);
+        setColor(p, "tabAreaBackgroundColor", bg);
+        setColorG(p, "selectionBackgroundColor", changeColor(controlColor, 0.15f), 1f, gradient*1.7f);
+        p.put("tabSeparatorStyle", String.valueOf(tabSeparatorStyle));
+    }
+    
+    private static void setColor(Properties p, String property, Color base, float offset) {
+        setColor(p, property, ColorCorrectionNew.offset(base, offset));
+    }
+    
+    private static void setColorG(Properties p, String property, Color base, float offset, float offsetG) {
+        Color offsetBase = ColorCorrectionNew.offset(base, offset);
+        setColorG(p, property,
+                changeColor(offsetBase, offsetG * 0.55f),
+                changeColor(offsetBase, -offsetG * 0.4f));
+//        setColorG(p, property, ColorCorrectionNew.makeBrighter(offsetBase, offsetG), offsetBase);
+    }
+    
+    private static void setColor(Properties p, String property, Color color) {
+        p.put(property, String.format("%d %d %d", color.getRed(), color.getGreen(), color.getBlue()));
+    }
+    
+    private static void setColorG(Properties p, String property, Color cl, Color cd) {
+        p.put(property+"Light", String.format("%d %d %d", cl.getRed(), cl.getGreen(), cl.getBlue()));
+        p.put(property+"Dark", String.format("%d %d %d", cd.getRed(), cd.getGreen(), cd.getBlue()));
+    }
+    
+    /**
+     * An explicit -change (darker) or +change (brighter), independant of what
+     * the color currently is.
+     * 
+     * @param color
+     * @param change
+     * @return 
+     */
+    private static Color changeColor(Color color, float change) {
+        if (change > 1) {
+            change = 1;
+        }
+        if (change < -1) {
+            change = -1;
+        }
+        if (change < 0) {
+            return ColorCorrectionNew.makeDarker(color, 1 - Math.abs(change));
+        }
+        return ColorCorrectionNew.makeBrighter(color, change);
+    }
+    
 }

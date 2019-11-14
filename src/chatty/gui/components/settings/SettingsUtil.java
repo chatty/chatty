@@ -4,7 +4,9 @@ package chatty.gui.components.settings;
 import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.util.function.Function;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 /**
@@ -22,6 +24,18 @@ public class SettingsUtil {
         control.addPropertyChangeListener("enabled", e -> {
             for (Component sub : subs) {
                 sub.setEnabled(control.isSelected() && control.isEnabled());
+            }
+        });
+        for (Component sub : subs) {
+            sub.setEnabled(false);
+        }
+    }
+    
+    public static void addSubsettings(ComboStringSetting control, Function<String, Boolean> req, Component... subs) {
+        control.addItemListener(e -> {
+            String selected = control.getSettingValue();
+            for (Component sub : subs) {
+                sub.setEnabled(req.apply(selected));
             }
         });
         for (Component sub : subs) {

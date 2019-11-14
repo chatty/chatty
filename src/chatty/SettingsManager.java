@@ -172,7 +172,11 @@ public class SettingsManager {
         settings.addString("lafTheme","Default");
         settings.addMap("lafCustomTheme", new HashMap<>(), Setting.STRING);
         settings.addLong("lafFontScale", 100);
-        
+        settings.addString("lafForeground", "#B4BEB9");
+        settings.addString("lafBackground", "#323433");
+        settings.addLong("lafGradient", 5);
+        settings.addString("lafStyle", "regular");
+        settings.addString("lafScroll", "default");
         settings.addString("language", "");
         
         settings.addLong("dialogFontSize", -1);
