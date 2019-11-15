@@ -52,14 +52,14 @@ public class TwitchConnection {
     /**
      * How many times to try to reconnect
      */
-    private long maxReconnectionAttempts = 40;
+    private long maxReconnectionAttempts = -1;
     
     /**
      * The time in seconds between reconnection attempts. The first entry is the
      * time for the first attempt, second entry for the second attempt and so
      * on. The last entry is used for all further attempts.
      */
-    private final static int[] RECONNECTION_DELAY = new int[]{1, 5, 5, 10, 10, 60};
+    private final static int[] RECONNECTION_DELAY = new int[]{1, 5, 5, 10, 10, 60, 120};
 
     private volatile Timer reconnectionTimer;
 

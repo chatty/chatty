@@ -139,7 +139,7 @@ public class SettingsManager {
         settings.addBoolean("membershipEnabled", true);
         settings.addString("pubsub", "wss://pubsub-edge.twitch.tv");
         
-        settings.addLong("maxReconnectionAttempts", 40);
+        settings.addLong("maxReconnectionAttempts", -1);
 
         // Auto-join channels
         settings.addString("channel", "");
