@@ -96,7 +96,7 @@ public class TwitchClient {
      * added.
      */
     public static final String REQUEST_TOKEN_URL = ""
-            + "https://api.twitch.tv/kraken/oauth2/authorize"
+            + "https://id.twitch.tv/oauth2/authorize"
             + "?response_type=token"
             + "&client_id="+Chatty.CLIENT_ID
             + "&redirect_uri="+Chatty.REDIRECT_URI
