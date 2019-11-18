@@ -97,6 +97,7 @@ public class LookSettings extends SettingsPanel {
         
         ComboStringSetting lafScroll = d.addComboStringSetting("lafScroll", false, "default", "small", "smaller", "tiny");
         ComboLongSetting lafGradient = d.addComboLongSetting("lafGradient", 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50);
+        ComboLongSetting lafVariant = d.addComboLongSetting("lafVariant", 0, 1, 2, 3, 4);
         ComboStringSetting lafStyle = d.addComboStringSetting("lafStyle", false,
                 "classic", "classicStrong", "regular", "regularStrong", "simple", "sleek", "minimal");
         
@@ -155,22 +156,29 @@ public class LookSettings extends SettingsPanel {
         lafSettingsPanel.add(lafStyle, gbc);
         
         // Colors
-        gbc = d.makeGbc(0, 9, 1, 1, GridBagConstraints.EAST);
+        gbc = d.makeGbc(0, 10, 1, 1, GridBagConstraints.EAST);
         lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.colors")), gbc);
-        
-        gbc = d.makeGbc(1, 9, 3, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        lafSettingsPanel.add(foregroundColor, gbc);
         
         gbc = d.makeGbc(1, 10, 3, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        lafSettingsPanel.add(foregroundColor, gbc);
+        
+        gbc = d.makeGbc(1, 11, 3, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         lafSettingsPanel.add(backgroundColor, gbc);
         
+        // Variant
+        gbc = d.makeGbc(0, 9, 1, 1, GridBagConstraints.EAST);
+        lafSettingsPanel.add(d.createLabel("lafVariant"), gbc);
+        
+        gbc = d.makeGbc(1, 9, 1, 1, GridBagConstraints.WEST);
+        lafSettingsPanel.add(lafVariant, gbc);
+        
         // Gradient
-        gbc = d.makeGbc(2, 8, 1, 1);
+        gbc = d.makeGbc(2, 9, 1, 1);
         lafSettingsPanel.add(d.createLabel("lafGradient"), gbc);
         
-        gbc = d.makeGbc(3, 8, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(3, 9, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafGradient, gbc);
 
         SettingsUtil.addSubsettings(laf, s -> s.equals("hifiCustom"), foregroundColor, backgroundColor, lafGradient, lafStyle);

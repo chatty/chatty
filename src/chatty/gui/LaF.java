@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.border.Border;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.OceanTheme;
@@ -40,6 +41,7 @@ public class LaF {
     private static String lafClass;
     private static Color tabForegroundUnread = new Color(200,0,0);
     private static Color tabForegroundHighlight = new Color(255,80,0);
+    private static Border inputBorder;
     
     public static String getLinkColor() {
         return linkColor;
@@ -57,9 +59,14 @@ public class LaF {
         return isDarkTheme;
     }
     
+    public static Border getInputBorder() {
+        return inputBorder;
+    }
+    
     public static boolean shouldUpdate(String settingName) {
         List<String> settingNames = Arrays.asList(new String[]{
-            "laf", "lafTheme", "lafScroll", "lafForeground", "lafBackground", "lafStyle", "lafCustomTheme", "lafGradient"});
+            "laf", "lafTheme", "lafScroll", "lafForeground", "lafBackground",
+            "lafStyle", "lafCustomTheme", "lafGradient", "lafVariant"});
         return settingNames.contains(settingName);
     }
     
@@ -74,10 +81,11 @@ public class LaF {
         public final String style;
         public final int gradient;
         public final String scroll;
+        public final int variant;
         
         public LaFSettings(String lafCode, String theme, int fontScale,
                            Map<String, String> custom, Color fg, Color bg,
-                           String style, int gradient, String scroll) {
+                           String style, int gradient, String scroll, int variant) {
             this.lafCode = lafCode;
             this.theme = theme;
             this.fontScale = fontScale;
@@ -87,6 +95,7 @@ public class LaF {
             this.style = style;
             this.gradient = gradient;
             this.scroll = scroll;
+            this.variant = variant;
         }
         
         public static LaFSettings fromSettings(Settings settings) {
@@ -97,9 +106,10 @@ public class LaF {
             Color fg = HtmlColors.decode(settings.getString("lafForeground"), Color.WHITE);
             String style = settings.getString("lafStyle");
             int gradient = (int)(settings.getLong("lafGradient"));
+            int variant = (int)(settings.getLong("lafVariant"));
             String scroll = settings.getString("lafScroll");
             Map<String, String> custom = settings.getMap("lafCustomTheme");
-            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll);
+            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll, variant);
         }
         
         public static LaFSettings fromSettingsDialog(SettingsDialog d, Settings settings) {
@@ -110,15 +120,17 @@ public class LaF {
             Color fg = HtmlColors.decode(d.getStringSetting("lafForeground"), Color.WHITE);
             String style = d.getStringSetting("lafStyle");
             int gradient = ((Number)(d.getLongSetting("lafGradient"))).intValue();
+            int variant = ((Number)(d.getLongSetting("lafVariant"))).intValue();
             String scroll = d.getStringSetting("lafScroll");
             Map<String, String> custom = settings.getMap("lafCustomTheme");
-            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll);
+            return new LaFSettings(lafCode, lafTheme, lafFontScale, custom, fg, bg, style, gradient, scroll, variant);
         }
         
     }
     
     public static void setLookAndFeel(LaFSettings settings) {
         LaFUtil.resetDefaults();
+        inputBorder = null;
         LaF.settings = settings;
         String lafCode = settings.lafCode;
         String theme = settings.theme;
@@ -366,6 +378,12 @@ public class LaF {
         if (settings != null) {
             tabForegroundHighlight = loadCustomColor("cTabForegroundHighlight", tabForegroundHighlight);
             tabForegroundUnread = loadCustomColor("cTabForegroundUnread", tabForegroundUnread);
+            if (settings.custom.containsKey("cInputBorder")) {
+                Object border = LaFCustomDefaults.fromString(settings.custom.get("cInputBorder"));
+                if (border instanceof Border) {
+                    inputBorder = (Border)border;
+                }
+            }
         }
     }
     
@@ -398,19 +416,37 @@ public class LaF {
         Color fg = settings.fg;
         float gradient = (float)(settings.gradient / 100.0);
         
+        float contrast = 1f;
+        switch (settings.variant) {
+            case 1:
+                contrast = 0.5f;
+                break;
+            case 2:
+                contrast = 1.5f;
+                break;
+            case 3:
+                contrast = 2f;
+                break;
+            case 4:
+                contrast = 2.5f;
+                break;
+        }
+        float contrastLight = (float)(contrast + (1 - contrast)*0.5);
+        float contrastLighter = (float)(contrast + (1 - contrast)*0.7);
+        
         float titleBgC = 0;
         float inactiveTitleBgC = 0;
         float activeGradient = 0;
-        float frame = -0.63f;
-        float frame2 = -0.45f;
-        float controlBgChange = 0.03f;
-        float buttonBgChange = 0.03f;
-        float menu = 0f;
+        float frameFgC = -0.63f;
+        float frame2FgC = -0.45f;
+        float controlBgC = 0.03f;
+        float buttonBgC = 0.03f;
+        float menuBgC = 0f;
         int tabSeparatorStyle = 0;
         
         boolean minimalistic = false;
         
-        Color lighterFg = changeColor(fg, 0.3f);
+        Color lighterFg = changeColor(fg, 0.3f * contrastLight);
         Color activeTitleFg = changeColor(lighterFg, 0f);
         Color inactiveTitleFg = changeColor(fg, -0.3f);
         
@@ -420,10 +456,10 @@ public class LaF {
                 inactiveTitleBgC = -0.12f;
                 activeGradient = 0.12f;
                 inactiveTitleFg = fg;
-                menu = -0.1f;
+                menuBgC = -0.1f;
                 activeTitleFg = changeColor(fg, 0.7f);
-                controlBgChange = -0.1f;
-                buttonBgChange = 0f;
+                controlBgC = -0.1f;
+                buttonBgC = 0f;
                 tabSeparatorStyle = 1;
                 break;
             case "classicStrong":
@@ -431,108 +467,125 @@ public class LaF {
                 inactiveTitleBgC = -0.40f;
                 activeGradient = 0.12f;
                 inactiveTitleFg = fg;
-                menu = -0.18f;
+                menuBgC = -0.18f;
                 activeTitleFg = changeColor(fg, 0.7f);
-                frame = -0.7f;
-                frame2 = -0.6f;
-                controlBgChange = -0.3f;
-                buttonBgChange = -0.05f;
+                frameFgC = -0.7f;
+                frame2FgC = -0.6f;
+                controlBgC = -0.3f;
+                buttonBgC = -0.05f;
                 break;
             case "regular":
                 titleBgC = -0.1f;
                 inactiveTitleBgC = -0.1f;
+                if (settings.variant > 2) {
+                    controlBgC = -0.02f;
+                    contrast -= 0.5f;
+                }
                 break;
             case "regularStrong":
                 titleBgC = -0.2f;
                 inactiveTitleBgC = -0.2f;
-                controlBgChange = -0.1f;
+                controlBgC = -0.1f;
                 break;
             case "simple":
-                buttonBgChange = 0f;
+                buttonBgC = 0f;
                 break;
             case "sleek":
-                buttonBgChange = 0f;
-                menu = 0.06f;
+                buttonBgC = 0f;
+                menuBgC = 0.05f;
                 minimalistic = true;
                 break;
             case "minimal":
-                buttonBgChange = 0f;
+                buttonBgC = 0f;
                 minimalistic = true;
                 break;
         }
+        
+        titleBgC *= contrast;
+        inactiveTitleBgC *= contrast;
+        activeGradient *= contrast;
+        frameFgC *= contrastLight;
+        frame2FgC *= contrastLight;
+        controlBgC *= contrastLight;
+        buttonBgC *= contrast;
+        menuBgC *= contrastLight;
         
         // Window
         Color titleBg = changeColor(bg, titleBgC);
         Color inactiveTitleBg = changeColor(bg, inactiveTitleBgC);
         setColor(p, "windowInactiveTitleForegroundColor", inactiveTitleFg);
-        setColorG(p, "windowInactiveTitleColor", inactiveTitleBg, 1, gradient);
+        setColorG(p, "windowInactiveTitleColor", inactiveTitleBg, 0, gradient);
         setColor(p, "windowTitleForegroundColor", activeTitleFg);
-        setColorG(p, "windowTitleColor", titleBg, 1, gradient + activeGradient);
+        setColorG(p, "windowTitleColor", titleBg, 0, gradient + activeGradient);
+        if (minimalistic) {
+            setColor(p, "windowInnerBorderColor", bg);
+            setColor(p, "windowInactiveInnerBorderColor", bg);
+        }
         setColor(p, "windowIconColor", inactiveTitleFg);
         setColor(p, "windowIconRolloverColor", activeTitleFg);
         
         // Window Border
-        setColor(p, "windowBorderColor", ColorCorrectionNew.makeDarker(bg, 0.6f));
-        setColor(p, "windowInactiveBorderColor", ColorCorrectionNew.makeDarker(bg, 0.6f));
+        setColor(p, "windowBorderColor", bg, -0.4f * contrastLight);
+        setColor(p, "windowInactiveBorderColor", bg, -0.4f * contrastLight);
         
         // Some frames (like scrollpane, tabpane and more)
         if (minimalistic) {
             LaFUtil.putDefault("ScrollPane.border", LaFCustomDefaults.EMPTY_BORDER);
-            LaFUtil.putDefault("TextField.border", LaFCustomDefaults.EMPTY_BORDER);
+            inputBorder = (Border)LaFCustomDefaults.fromString("border(1)");
         }
         if (settings.style.equals("simple")) {
-            LaFUtil.putDefault("TextField.border", new UIResourceMatteBorder(0, 1, 1, 1, changeColor(bg, frame)));
+            inputBorder = new UIResourceMatteBorder(0, 1, 1, 1, changeColor(bg, frameFgC));
         }
-        setColor(p, "frameColor", changeColor(bg, frame));
-        setColor(p, "frameColor2", changeColor(bg, frame2));
+        setColor(p, "frameColor", bg, frameFgC);
+        setColor(p, "frameColor2", bg, frame2FgC);
         
         // General
-        setColor(p, "foregroundColor", fg, 1f);
+        setColor(p, "foregroundColor", fg, 0);
         setColor(p, "backgroundColor", bg);
         
         // "Greyed out" GUI elements
-        setColor(p, "disabledBackgroundColor", bg, 0.95f);
-        setColor(p, "disabledForegrundColor", fg, 0.8f);
+        setColor(p, "disabledBackgroundColor", bg, -0.04f);
+        setColor(p, "disabledForegroundColor", fg, -0.4f);
         
         // Menu
         setColor(p, "menuForegroundColor", lighterFg);
-        setColor(p, "menuBackgroundColor", changeColor(bg, menu));
-        setColor(p, "menuSelectionForegroundColor", changeColor(lighterFg, 0.4f));
-        setColor(p, "menuSelectionBackgroundColor", bg, 0.8f);
+        setColor(p, "menuBackgroundColor", bg, menuBgC);
+        setColor(p, "menuSelectionForegroundColor", lighterFg, 0.4f * contrastLight);
+        setColor(p, "menuSelectionBackgroundColor", bg, 0.2f * contrastLight);
         
-        Color controlColor = changeColor(bg, controlBgChange);
-        Color buttonColor = changeColor(bg, buttonBgChange);
+        Color controlColor = changeColor(bg, controlBgC);
+        Color buttonColor = changeColor(bg, buttonBgC);
         // Buttons
-        setColorG(p, "buttonColor", buttonColor, 1, gradient);
+        setColorG(p, "buttonColor", buttonColor, 0, gradient);
         setColor(p, "buttonForegroundColor", lighterFg);
-        setColorG(p, "pressedBackgroundColor", fg, 0.25f, gradient);
+        setColorG(p, "pressedBackgroundColor", buttonColor, 0.05f, gradient);
         
         // Buttons/Tabs
-        setColor(p, "rolloverForegroundColor", changeColor(lighterFg, 0.4f));
-        setColorG(p, "rolloverColor", changeColor(controlColor, 0.1f), 1f, gradient*1.4f);
+        setColor(p, "rolloverForegroundColor", lighterFg, 0.4f * contrastLight);
+        setColorG(p, "rolloverColor", controlColor, 0.1f * contrastLight, gradient*1.4f);
         
         // Input
-        setColor(p, "inputForegroundColor", fg, 1f);
-        setColor(p, "selectionBackgroundColor", bg, 0.8f);
-        Color inputBg = ColorCorrectionNew.offset(bg, 0.92f);
+        setColor(p, "inputForegroundColor", fg, 0f);
+        setColor(p, "selectionBackgroundColor", bg, 0.2f);
+        Color inputBg = changeColor(bg, 0.07f * contrastLight);
         setColor(p, "inputBackgroundColor", inputBg);
         setColor(p, "focusBackgroundColor", inputBg);
         
         // Tabs and other
         setColor(p, "controlForegroundColor", lighterFg);
-        setColorG(p, "controlColor", controlColor, 1f, gradient*1.05f);
-        setColorG(p, "inactiveColor", controlColor, 1f, gradient*1.05f);
+        setColorG(p, "controlColor", controlColor, 0, gradient*1.05f);
+        setColorG(p, "inactiveColor", controlColor, 0, gradient*1.05f);
         setColor(p, "tabAreaBackgroundColor", bg);
-        setColorG(p, "selectionBackgroundColor", changeColor(controlColor, 0.15f), 1f, gradient*1.7f);
+        setColorG(p, "selectionBackgroundColor", changeColor(controlColor, 0.15f * contrastLighter), 0, gradient*1.7f);
         p.put("tabSeparatorStyle", String.valueOf(tabSeparatorStyle));
     }
     
     private static void setColor(Properties p, String property, Color base, float offset) {
-        setColor(p, property, ColorCorrectionNew.offset(base, offset));
+        setColor(p, property, changeColor(base, offset));
     }
     
     private static void setColorG(Properties p, String property, Color base, float offset, float offsetG) {
-        Color offsetBase = ColorCorrectionNew.offset(base, offset);
+        Color offsetBase = changeColor(base, offset);
         setColorG(p, property,
                 changeColor(offsetBase, offsetG * 0.55f),
                 changeColor(offsetBase, -offsetG * 0.4f));

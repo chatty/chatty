@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.gui.LaF;
 import chatty.gui.components.completion.AutoCompletion;
 import chatty.gui.components.completion.AutoCompletionServer;
 import chatty.util.colors.ColorCorrectionNew;
@@ -82,7 +83,12 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
     @Override
     public void updateUI() {
         super.updateUI();
-        setBorder(UIManager.getBorder("TextField.border"));
+        if (LaF.getInputBorder() != null) {
+            setBorder(LaF.getInputBorder());
+        }
+        else {
+            setBorder(UIManager.getBorder("TextField.border"));
+        }
     }
     
     @Override

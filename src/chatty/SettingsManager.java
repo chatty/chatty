@@ -175,6 +175,7 @@ public class SettingsManager {
         settings.addString("lafForeground", "#B4BEB9");
         settings.addString("lafBackground", "#323433");
         settings.addLong("lafGradient", 5);
+        settings.addLong("lafVariant", 0);
         settings.addString("lafStyle", "regular");
         settings.addString("lafScroll", "default");
         settings.addString("language", "");
