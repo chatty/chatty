@@ -21,7 +21,8 @@ public class TokenInfo {
         COMMERICALS("channel_commercial", "commercials"),
         SUBSCRIBERS("channel_subscriptions", "subscribers"),
         FOLLOW("user_follows_edit", "follow"),
-        SUBSCRIPTIONS("user_subscriptions", "subscriptions");
+        SUBSCRIPTIONS("user_subscriptions", "subscriptions"),
+        CHAN_MOD("channel:moderate", "chanMod");
         
         public String scope;
         public String label;
