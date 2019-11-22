@@ -78,6 +78,8 @@ public class StringUtilTest {
     public void testSplit() {
         assertEquals(StringUtil.split(null, 'a', 10), null);
         testSplit2(',', 0, "", "");
+        testSplit2(',', 0, "a\\,b,c", "a,b", "c");
+        testSplit2(',', 0, "a\\\\,b,c", "a\\", "b", "c");
         testSplit2(',', 0, "abc", "abc");
         testSplit2(',', 0, "\\abc", "abc");
         testSplit2(',', 0, "\\\\abc", "\\abc");
@@ -93,8 +95,30 @@ public class StringUtilTest {
         testSplit2(',', 2, "a\\,b,c", "a,b", "c");
         testSplit2(',', 0, "t|test=abc\\,lol", "t|test=abc,lol");
         
+        // Double quotes
+        testSplit2(',', 0, "''", "");
+        testSplit2(',', 0, "\\''", "'");
+        
+        // Test quote == escape
+        testSplit2Same(',', 0, "'a,b',c", "a,b", "c");
+        testSplit2Same(',', 0, "'a,b'',c", "a,b',c");
+        testSplit2Same(',', 0, "''", "'");
+        testSplit2Same(',', 0, "'''", "'");
+        testSplit2Same(',', 0, "''''", "''");
+        testSplit2Same(',', 0, "''a,b',c,d", "'a", "b,c,d");
+        testSplit2Same(',', 0, "''a,b,',c,d", "'a", "b", ",c,d");
+        testSplit2Same(',', 0, "'a,b''',c", "a,b'", "c");
+        
+        // First split by space, then by comma (test not removing quote/escape)
+        testSplit2(',', 0, StringUtil.split("a,b,'c d' e", ' ', '\'', '\\', 2, 0).get(0), "a", "b", "c d");
+        testSplit2(',', 0, StringUtil.split("a,b,c\\ d e", ' ', '\'', '\\', 2, 0).get(0), "a", "b", "c d");
+        testSplit2(',', '\'', '\'', 0, 1, StringUtil.split("a,b,'c'' d' e", ' ', '\'', '\'', 2, 0).get(0), "a", "b", "c' d");
+        testSplit2(',', '\'', '\'', 0, 1, StringUtil.split("''a,b,'c d,e'", ' ', '\'', '\'', 2, 0).get(0), "'a", "b", "c d,e");
+        testSplit2(',', '\'', '\'', 0, 1, StringUtil.split("''a,b,'''c'' d,e'", ' ', '\'', '\'', 2, 0).get(0), "'a", "b", "'c' d,e");
+        
+        // Various configurations
         testSplit2(',', '#', '#', 2, 1, "a,b,c", "a", "b,c");
-        testSplit2(',', '#', '#', 2, 1, "a#,b,c", "a,b", "c");
+        testSplit2(',', '#', '#', 2, 1, "a#,b,c", "a,b,c");
         testSplit2(' ', '-', '$', 2, 1, "abc- -123 -b c-", "abc 123", "-b c-");
         testSplit2(' ', '-', '$', 2, 1, "abc- $-123 -b c-", "abc -123 b", "c-");
         testSplit2(' ', '-', '$', 2, 1, "abc$ 123 -b c-", "abc 123", "-b c-");
@@ -102,6 +126,8 @@ public class StringUtilTest {
         testSplit2(' ', '-', '$', 0, 1, "abc$ 123 -b c-", "abc 123", "b c");
         testSplit2(' ', '-', '$', 2, 2, "abc$ 123 -b c-", "abc 123", "b c");
         testSplit2(' ', '-', '$', 2, 0, "abc$ 123 -b c-", "abc$ 123", "-b c-");
+        testSplit2(' ', '-', '-', 0, 0, "abc 123 -b c-", "abc", "123", "-b c-");
+        testSplit2(' ', '-', '-', 0, 0, "abc 123 -b-- c-", "abc", "123", "-b-- c-");
         testSplit2(' ', '-', '$', 0, 0, "abc$ 123 -b c-", "abc$ 123", "-b c-");
     }
     
@@ -109,8 +135,12 @@ public class StringUtilTest {
         testSplit2(split, '\'', '\\', limit, 1, input, result);
     }
     
+    private static void testSplit2Same(char split, int limit, String input, String... result) {
+        testSplit2(split, '\'', '\'', limit, 1, input, result);
+    }
+    
     private static void testSplit2(char split, char quote, char escape, int limit, int remove, String input, String... result) {
-        assertEquals(StringUtil.split(input, split, quote, escape, limit, remove), Arrays.asList(result));
+        assertEquals(Arrays.asList(result), StringUtil.split(input, split, quote, escape, limit, remove));
     }
     
 }

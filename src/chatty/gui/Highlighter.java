@@ -282,7 +282,15 @@ public class Highlighter {
     public static class HighlightItem {
         
         public enum Type {
-            REGULAR, INFO, ANY
+            REGULAR("Regular chat messages"),
+            INFO("Info messages"),
+            ANY("Any type of message");
+            
+            public final String description;
+            
+            Type(String description) {
+                this.description = description;
+            }
         }
         
         private static abstract class Item {
@@ -311,14 +319,14 @@ public class Highlighter {
                 return info;
             }
             
-            abstract public boolean matches(String channel, Addressbook ab, User user, MsgTags tags);
+            abstract public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags);
         }
         
         private void addUserItem(String info, Object infoData, Function<User, Boolean> m) {
             Item item = new Item(info, infoData) {
 
                 @Override
-                public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                     return user != null && m.apply(user);
                 }
             };
@@ -329,7 +337,7 @@ public class Highlighter {
             Item item = new Item(info, infoData) {
 
                 @Override
-                public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                     return channel != null && m.apply(channel);
                 }
             };
@@ -340,7 +348,7 @@ public class Highlighter {
             Item item = new Item(info, infoData) {
 
                 @Override
-                public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                     return tags != null && m.apply(tags);
                 }
             };
@@ -354,7 +362,7 @@ public class Highlighter {
         private static final Item NO_MATCH_ITEM = new Item("Never Match", null) {
 
             @Override
-            public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+            public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                 return false;
             }
         };
@@ -362,6 +370,7 @@ public class Highlighter {
         private final String raw;
         private final List<Item> matchItems = new ArrayList<>();
         private Pattern pattern;
+        private List<HighlightItem> localBlacklistItems;
         private Color color;
         private Color backgroundColor;
         private boolean noNotification;
@@ -369,9 +378,12 @@ public class Highlighter {
         private Type appliesToType = Type.REGULAR;
         // Replacement string for filtering parts of a message
         private String replacement;
+        private Item failedItem;
         
         private String error;
+        private boolean patternWarning;
         private String textWithoutPrefix = "";
+        private String mainPrefix;
         
         private enum Status {
             MOD("m"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
@@ -405,6 +417,7 @@ public class Highlighter {
             addPatternPrefix(text -> "\\b"+Pattern.quote(text)+"\\b", "wcs:");
             addPatternPrefix(text -> Pattern.quote(text), "cs:");
             addPatternPrefix(text -> "(?iu)^"+Pattern.quote(text), "start:");
+            addPatternPrefix(text -> "(?iu)" + Pattern.quote(text), "text:");
         }
         
         public HighlightItem(String item) {
@@ -494,7 +507,7 @@ public class Highlighter {
                     matchItems.add(new Item("Channel Addressbook Category", cats) {
 
                         @Override
-                        public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                             if (channel == null || ab == null) {
                                 return false;
                             }
@@ -512,7 +525,7 @@ public class Highlighter {
                     matchItems.add(new Item("Not Channel Addressbook Category", cats) {
 
                         @Override
-                        public boolean matches(String channel, Addressbook ab, User user, MsgTags tags) {
+                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
                             if (channel == null || ab == null) {
                                 return false;
                             }
@@ -565,9 +578,42 @@ public class Highlighter {
                                 return t.isHighlightedMessage();
                             });
                         }
+                        else if (part.equals("url")) {
+                            matchItems.add(new Item("Contains URL", null) {
+                                
+                                @Override
+                                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
+                                    return matchesPattern(text, Helper.getUrlPattern(), blacklist);
+                                }
+                            });
+                        }
                     });
                     parseBadges(list);
                     parseTags(list);
+                }
+                else if (item.startsWith("blacklist:")) {
+                    List<String> list = parseStringListPrefix(item, "blacklist:", s -> s);
+                    List<HighlightItem> blItems = new ArrayList<>();
+                    for (String entry : list) {
+                        HighlightItem hlItem = new HighlightItem(entry);
+                        if (!hlItem.hasError()) {
+                            blItems.add(hlItem);
+                            if (hlItem.patternThrowsError()) {
+                                patternWarning = true;
+                            }
+                        }
+                        else {
+                            error = hlItem.getError();
+                        }
+                    }
+                    if (!blItems.isEmpty()) {
+                        if (localBlacklistItems == null) {
+                            localBlacklistItems = blItems;
+                        }
+                        else {
+                            localBlacklistItems.addAll(blItems);
+                        }
+                    }
                 }
                 //--------------------------
                 // No prefix
@@ -693,7 +739,7 @@ public class Highlighter {
          * @return The value of the prefix
          */
         private String parsePrefix(String item, String prefix) {
-            List<String> split = StringUtil.split(item, ' ', 2);
+            List<String> split = StringUtil.split(item, ' ', '"', '"', 2, 1);
             if (split.size() == 2) {
                 prepare(split.get(1));
             }
@@ -707,7 +753,7 @@ public class Highlighter {
              * same "level" of quote/escape characters for different "levels" of
              * parsing, but it should work well enough for this.
              */
-            List<String> split = StringUtil.split(item, ' ', 2, 0);
+            List<String> split = StringUtil.split(item, ' ', '"', '"', 2, 0);
             if (split.size() == 2) {
                 prepare(split.get(1));
             }
@@ -739,7 +785,7 @@ public class Highlighter {
          * @param p The consumer
          */
         private static void parseList(String list, Consumer<String> p) {
-            List<String> split = StringUtil.split(list, ',', 0);
+            List<String> split = StringUtil.split(list, ',', '"', '"', 0, 1);
             for (String part : split) {
                 if (!part.isEmpty()) {
                     p.accept(part);
@@ -757,13 +803,62 @@ public class Highlighter {
         private boolean findPatternPrefixAndCompile(String input) {
             for (String prefix : patternPrefixes.keySet()) {
                 // Check for prefix and that there is more text after it
-                if (input.startsWith(prefix) && input.length() > prefix.length()) {
-                    String withoutPrefix = input.substring(prefix.length());
-                    String pattern = patternPrefixes.get(prefix).apply(withoutPrefix);
-                    textWithoutPrefix = withoutPrefix;
-                    this.pattern = compilePattern(pattern);
+                if (findAdditionalPatternPrefix(input, "+", prefix)) {
                     return true;
                 }
+                else if (findAdditionalPatternPrefix(input, "+!", prefix)) {
+                    return true;
+                }
+                else if (findAdditionalPatternPrefix(input, "!", prefix)) {
+                    return true;
+                }
+                else if (input.startsWith(prefix) && input.length() > prefix.length()) {
+                    String withoutPrefix = input.substring(prefix.length());
+                    String completePattern = patternPrefixes.get(prefix).apply(withoutPrefix);
+                    textWithoutPrefix = withoutPrefix;
+                    mainPrefix = prefix;
+                    this.pattern = compilePattern(completePattern);
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private boolean findAdditionalPatternPrefix(String input, String type, String prefix) {
+            String fullPrefix = type+prefix;
+            if (input.startsWith(fullPrefix) && input.length() > fullPrefix.length()) {
+                String value;
+                if (type.startsWith("+")) {
+                    // Also continues parsing other prefixes
+                    value = parsePrefix(input, fullPrefix);
+                }
+                else {
+                    // Take entire remaining text
+                    value = input.substring(fullPrefix.length());
+                    mainPrefix = fullPrefix;
+                }
+                String completePattern = patternPrefixes.get(prefix).apply(value);
+                Pattern compiled = compilePattern(completePattern);
+                if (type.equals("+")) {
+                    matchItems.add(new Item("Additional regex (" + prefix.substring(0, prefix.length() - 1) + ")", compiled) {
+
+                        @Override
+                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
+                            return matchesPattern(text, compiled, blacklist);
+                        }
+                    });
+                }
+                else {
+                    matchItems.add(new Item("Not matching regex (" + prefix.substring(0, prefix.length() - 1) + ")", compiled) {
+
+                        @Override
+                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, MsgTags tags) {
+                            return !matchesPattern(text, compiled, null);
+                        }
+                    });
+                }
+                
+                return true;
             }
             return false;
         }
@@ -782,7 +877,11 @@ public class Highlighter {
 
         private Pattern compilePattern(String patternString) {
             try {
-                return Pattern.compile(patternString);
+                Pattern pattern = Pattern.compile(patternString);
+                if (patternThrowsError(pattern)) {
+                    patternWarning = true;
+                }
+                return pattern;
             } catch (PatternSyntaxException ex) {
                 error = ex.getDescription();
                 LOGGER.warning("Invalid regex: " + ex);
@@ -798,7 +897,7 @@ public class Highlighter {
          * @param blacklist The blacklist for the same input text
          * @return true if matches taking account the blacklist, false otherwise
          */
-        private boolean matchesPattern(String text, Blacklist blacklist) {
+        private boolean matchesPattern(String text, Pattern pattern, Blacklist blacklist) {
             if (pattern == null) {
                 return true;
             }
@@ -838,6 +937,8 @@ public class Highlighter {
                  *   at chatty.gui.Highlighter$HighlightItem.matchesPattern(Highlighter.java:526)
                  * 
                  * Possibly related: https://stackoverflow.com/q/16008974
+                 * 
+                 * Example for problematic item: "reg:(?i)(.)\1{2,}"
                  */
                 if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
                     /**
@@ -893,7 +994,7 @@ public class Highlighter {
          * 
          * @return true if an error is thrown on the test text, false otherwise
          */
-        public boolean patternThrowsError() {
+        private static boolean patternThrowsError(Pattern pattern) {
             if (pattern != null) {
                 try {
                     pattern.matcher("💕💕💕").find();
@@ -904,8 +1005,12 @@ public class Highlighter {
             return false;
         }
         
+        public boolean patternThrowsError() {
+            return patternWarning;
+        }
+        
         /**
-         * Get the text part of this item, without any prefixes.
+         * Get the main text part of this item, without any prefixes.
          * 
          * @return The text, may be empty
          */
@@ -913,24 +1018,44 @@ public class Highlighter {
             return textWithoutPrefix;
         }
         
-        public String getPatternText() {
-            if (pattern != null) {
-                return pattern.pattern();
-            }
-            return null;
+        /**
+         * Get the main prefix for this item (such as "reg:" or "!reg:"). Could
+         * be null.
+         * 
+         * @return 
+         */
+        public String getMainPrefix() {
+            return mainPrefix;
         }
         
         public String getMatchInfo() {
             StringBuilder result = new StringBuilder();
-            result.append("Applies to: ").append(appliesToType).append("\n");
+            result.append("Applies to: ").append(appliesToType.description).append("\n");
             if (pattern != null) {
-                result.append("Match tex: ").append(pattern).append("\n");
+                result.append("Main regex: ").append(pattern).append("\n");
+                addPatternWarning(result, pattern);
             }
             for (Item item : matchItems) {
                 result.append(item.toString());
                 result.append("\n");
+                addPatternWarning(result, item.infoData);
+            }
+            if (localBlacklistItems != null) {
+                result.append("Local blacklist:\n");
+                for (HighlightItem item : localBlacklistItems) {
+                    result.append("-- ").append(item.pattern).append("\n");
+                    addPatternWarning(result, item.pattern);
+                }
             }
             return result.toString();
+        }
+        
+        private static void addPatternWarning(StringBuilder b, Object pattern) {
+            if (pattern instanceof Pattern) {
+                if (patternThrowsError((Pattern) pattern)) {
+                    b.append("-- [!] The above regex may throw an error on some texts (due to a bug in the Java Regex implementation).\n");
+                }
+            }
         }
         
         public boolean matchesAny(String text, Blacklist blacklist) {
@@ -972,6 +1097,11 @@ public class Highlighter {
          */
         public boolean matches(Type type, String text, Blacklist blacklist,
                 String channel, Addressbook ab, User user, MsgTags tags) {
+            failedItem = null;
+            
+            if (localBlacklistItems != null) {
+                blacklist = Blacklist.addMatches(blacklist, text, localBlacklistItems);
+            }
             //------
             // Type
             //------
@@ -983,7 +1113,7 @@ public class Highlighter {
             //------
             // Text
             //------
-            if (pattern != null && !matchesPattern(text, blacklist)) {
+            if (pattern != null && !matchesPattern(text, pattern, blacklist)) {
                 return false;
             }
             
@@ -1004,9 +1134,10 @@ public class Highlighter {
             
 //            System.out.println(raw);
             for (Item item : matchItems) {
-                boolean match = item.matches(channel, ab, user, tags);
+                boolean match = item.matches(text, blacklist, channel, ab, user, tags);
 //                System.out.println(item);
                 if (!match) {
+                    failedItem = item;
                     return false;
                 }
             }
@@ -1100,6 +1231,13 @@ public class Highlighter {
             return noSound;
         }
         
+        public String getFailedReason() {
+            if (failedItem != null) {
+                return failedItem.toString();
+            }
+            return null;
+        }
+        
         public boolean hasError() {
             return error != null;
         }
@@ -1144,6 +1282,10 @@ public class Highlighter {
             }
         }
         
+        public Blacklist(Collection<Match> blacklisted) {
+            this.blacklisted = blacklisted;
+        }
+        
         public boolean isBlacklisted(int start, int end) {
             for (Match section : blacklisted) {
                 if (section == null || section.spans(start, end)) {
@@ -1156,6 +1298,32 @@ public class Highlighter {
         @Override
         public String toString() {
             return blacklisted.toString();
+        }
+        
+        /**
+         * Add text matches (and only text matches) from the given HighlightItem
+         * objects to the given Blacklist's matches, as a new Blacklist.
+         * 
+         * @param blacklist The Blacklist to take existing matches from (can be
+         * null)
+         * @param text The text to check against
+         * @param items The HighlightItem objects to get more text matches from
+         * @return A new Blacklist with the previous and new matches (if any)
+         */
+        public static Blacklist addMatches(Blacklist blacklist,
+                                           String text,
+                                           Collection<HighlightItem> items) {
+            Collection<Match> matches = new ArrayList<>();
+            if (blacklist != null) {
+                matches.addAll(blacklist.blacklisted);
+            }
+            if (items != null) {
+                for (HighlightItem item : items) {
+                    List<Match> m = item.getTextMatches(text);
+                    matches.addAll(m);
+                }
+            }
+            return new Blacklist(matches);
         }
 
     }

@@ -378,6 +378,13 @@ public class Helper {
         return HTMLSPECIALCHARS_ENCODE.replace(s);
     }
     
+    public static String prepareForHtml(String s) {
+        if (s == null) {
+            return null;
+        }
+        return htmlspecialchars_encode(s).replaceAll(" ", "&nbsp;").replaceAll("\n", "<br />");
+    }
+    
     private static final Pattern EMOJI_VARIATION_SELECTOR = Pattern.compile("[\uFE0E\uFE0F]");
     
     /**

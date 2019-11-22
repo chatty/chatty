@@ -1,0 +1,59 @@
+Matches text anywhere in the message (case insensitive). For example
+<code>Bets open</code> would match 'Bets open' or 'BETS OPEN'.
+
+<p>[help-settings:Highlight_Matching Text Matching Prefixes] can be put in front
+    of the match text (anything after the prefix will be interpreted as text):</p>
+<ul style='margin-left:30px'>
+    <li><code>text:Bets open</code> - Same as using no prefix, but can be useful
+        if it could be a prefix, like <code>text:start:abc</code> (matches 'start:abc')</li>
+    <li><code>cs:Bets open</code> - Case-sensitive match</li>
+    <li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>
+    <li><code>wcs:Clip</code> - Same, but case-sensitive</li>
+    <li><code>start:!slot</code> - Message beginning with '!slot'</li>
+    <li><code>reg:(?i)^!\\w+$</code> - Regular expression, anywhere</li>
+</ul>
+[help-settings:Highlight_Meta_Matching Meta Prefixes] can be put in front of
+Text Matching Prefixes and eachother (separated by a space). They can restrict
+by user, channel, message type and more.
+<br />
+<!--#START:highlight#-->
+<dl>
+    <dt><code>user:botimuz cs:Bets open</code></dt>
+    <dd>Matches the user Botimuz saying 'Bets open' (case sensitive)</dd>
+    <dt><code>config:info [Notification]</code></dt>
+    <dd>Matches info messages containing '[Notification]', so all 
+        sub notifications</dd>
+</dl>
+<!--#END:highlight#-->
+
+<!--#START:filter#-->
+Examples:
+<dl>
+    <dt><code>user:Nightbot replacement:H: reg:Hours Watched:\\s</code></dt>
+    <dd>Replace 'Hours Watched: ' with 'H:' (in messages by Nightbot).</dd>
+    <dt><code>reg:^Stream Schedule:.*</code></dt>
+    <dd>Filter messages starting with 'Stream Schedule', default replacement ('..').</dd>
+    <dt><code>replacement:Schedule reg:^Stream Schedule:.*</code></dt>
+    <dd>Same as previous, but replace with 'Schedule'.</dd>
+</dl>
+<em>Note:</em> This only filters the parts of the message that 
+are matched. To ignore a message entirely use the Ignore feature.
+<br /><em>Note:</em> This only works for regular chat messages.
+<!--#END:filter#-->
+
+<!--#START:ignore#-->
+Example: <code>chan:joshimuz start:!bet</code>
+<!--#END:ignore#-->
+
+<!--#START:msgColors#-->
+Examples:
+<dl>
+    <dt><code>user:botimuz</code></dt>
+    <dd>Match all regular messages by user 'Botimuz'</dd>
+    <dt><code>config:info [Notification]</code></dt>
+    <dd>Match all info messages containing '[Notification]', so 
+        basicially all subscriber notifications</dd>
+</dl>
+<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the 
+    default color will be used.</p>
+<!--#END:msgColors#-->

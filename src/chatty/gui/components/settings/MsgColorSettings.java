@@ -21,18 +21,6 @@ public class MsgColorSettings extends SettingsPanel {
             + "Customize message colors based on Highlighting rules. "
             + "[help:Message_Colors More information..]";
     
-    private static final String INFO = HighlightSettings.INFO
-            + "Examples:"
-            + "<dl>"
-            + "<dt><code>user:botimuz</code></dt>"
-            + "<dd>Match all regular messages by user 'Botimuz'</dd>"
-            + "<dt><code>config:info [Notification]</code></dt>"
-            + "<dd>Match all info messages containing '[Notification]', so "
-            + "basicially all subscriber notifications</dd>"
-            + "</dl>"
-            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the "
-            + "default color will be used.</p>";
-    
     private final ItemColorEditor<MsgColorItem> data;
     
     public MsgColorSettings(SettingsDialog d) {
@@ -55,7 +43,7 @@ public class MsgColorSettings extends SettingsPanel {
                     return new MsgColorItem(id,
                             foreground, foregroundEnabled,
                             background, backgroundEnabled);
-                }, true, new LinkLabel(INFO, d.getLinkLabelListener()));
+                }, true, new LinkLabel(HighlightSettings.getMatchingHelp("msgColors"), d.getLinkLabelListener()));
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;

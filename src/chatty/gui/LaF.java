@@ -586,9 +586,11 @@ public class LaF {
     
     private static void setColorG(Properties p, String property, Color base, float offset, float offsetG) {
         Color offsetBase = changeColor(base, offset);
+        // For gradient, make color both a bit darker and lighter
         setColorG(p, property,
                 changeColor(offsetBase, offsetG * 0.55f),
                 changeColor(offsetBase, -offsetG * 0.4f));
+        // For testing
 //        setColorG(p, property, ColorCorrectionNew.makeBrighter(offsetBase, offsetG), offsetBase);
     }
     

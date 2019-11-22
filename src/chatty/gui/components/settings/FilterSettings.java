@@ -13,20 +13,6 @@ import javax.swing.JPanel;
  */
 public class FilterSettings extends SettingsPanel {
     
-    private static final String INFO = HighlightSettings.INFO
-            + "Examples:"
-            + "<dl>"
-            + "<dt><code>user:Nightbot replacement:H: reg:Hours Watched:\\s</code></dt>"
-            + "<dd>Replace 'Hours Watched: ' with 'H:' (in messages by Nightbot).</dd>"
-            + "<dt><code>reg:^Stream Schedule:.*</code></dt>"
-            + "<dd>Filter messages starting with 'Stream Schedule', default replacement ('..').</dd>"
-            + "<dt><code>replacement:Schedule reg:^Stream Schedule:.*</code></dt>"
-            + "<dd>Same as previous, but replace with 'Schedule'.</dd>"
-            + "</dl>"
-            + "<em>Note:</em> This only filters the parts of the message that "
-            + "are matched. To ignore a message entirely use the Ignore feature."
-            + "<br /><em>Note:</em> This only works for regular chat messages.";
-    
     public FilterSettings(SettingsDialog d) {
         super(true);
         
@@ -43,7 +29,7 @@ public class FilterSettings extends SettingsPanel {
         gbc = d.makeGbc(0,1,1,1);
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("filter", "Filter", 220, 250, true, true);
-        items.setInfo(INFO);
+        items.setInfo(HighlightSettings.getMatchingHelp("filter"));
         HighlighterTester tester = new HighlighterTester(d, false);
         tester.setLinkLabelListener(d.getLinkLabelListener());
         items.setInfoLinkLabelListener(d.getLinkLabelListener());

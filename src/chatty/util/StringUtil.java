@@ -322,6 +322,10 @@ public class StringUtil {
      * {@code escape} character aren't checked for the {@code splitAt}
      * character.
      * <p>
+     * If the quote and escape characters are equal, escaping is no longer
+     * possible, only quoting, except for a quote escaping itself (double
+     * quotes) to insert a literal quote.
+     * <p>
      * Whether quote/escape characters are removed from the result can be
      * controlled by the {@code remove} value:
      * <ul>
@@ -350,6 +354,7 @@ public class StringUtil {
         StringBuilder b = new StringBuilder();
         boolean quoted = false;
         boolean escaped = false;
+        int consecQuotes = 0;
         limit = Math.abs(limit);
         if (limit == 0) {
             limit = Integer.MAX_VALUE;
@@ -357,13 +362,20 @@ public class StringUtil {
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
             
+            if (c == quote) {
+                consecQuotes++;
+            }
+            else {
+                consecQuotes = 0;
+            }
+            
             // Add one escaped character
             if (escaped) {
                 b.append(c);
                 escaped = false;
             }
             // Next character escaped
-            else if (c == escape) {
+            else if (c == escape && escape != quote) {
                 escaped = true;
                 if (remove == 0) {
                     b.append(c);
@@ -372,7 +384,7 @@ public class StringUtil {
             // Begin and end quoted section
             else if (c == quote) {
                 quoted = !quoted;
-                if (remove == 0) {
+                if (remove == 0 || (escape == quote && consecQuotes % 2 == 0)) {
                     b.append(c);
                 }
             }

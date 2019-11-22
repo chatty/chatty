@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
@@ -10,11 +11,13 @@ import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
 import chatty.util.irc.MsgTags;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
@@ -24,13 +27,19 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,8 +70,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
             + "strike-through), that if added to the Highlight Blacklist "
             + "will prevent whatever it matches from triggering Highlights.";
     
-    private final static String TOOLTIP_PREFIX = "<html><body style='font-family:Monospaced'>Full pattern: ";
-    
     private final static String TEST_PRESET = "Enter test text.";
     private final static String TEST_PRESET_EXAMPLE = TEST_PRESET+" Example: ";
     
@@ -75,6 +82,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final DefaultStyledDocument doc = new DefaultStyledDocument();
     private final JLabel testResult = new JLabel("Abc");
     private final LinkLabel infoText = new LinkLabel("", null);
+    private final JTextArea parseResult = new JTextArea();
+    private final JTabbedPane tabs = new JTabbedPane();
     
     private final MutableAttributeSet matchAttr1 = new SimpleAttributeSet();
     private final MutableAttributeSet matchAttr2 = new SimpleAttributeSet();
@@ -178,9 +187,27 @@ public class HighlighterTester extends JDialog implements StringEditor {
         add(cancelButton,
                 GuiUtil.makeGbc(2, 6, 1, 1, GridBagConstraints.EAST));
         
+        JPanel parseResultPanel = new JPanel(new BorderLayout());
+        JLabel parseResultInfo = new JLabel(HighlightSettings.INFO_HEADER
+                + "This shows what requirements for a match Chatty has found "
+                + "in what you entered (each line's condition has to be "
+                + "satisified for a successful match).");
+        parseResultInfo.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        parseResultPanel.add(parseResultInfo,
+                BorderLayout.NORTH);
+        parseResultPanel.add(new JScrollPane(parseResult),
+                BorderLayout.CENTER);
+        parseResult.setFont(new Font(Font.MONOSPACED, 0, parseResult.getFont().getSize()));
+        parseResult.setEditable(false);
+        parseResult.setLineWrap(true);
+        parseResult.setWrapStyleWord(true);
+        
+        tabs.add("Help", infoText);
+        tabs.add("Parse Result", parseResultPanel);
+        
         gbc = GuiUtil.makeGbc(0, 7, 3, 1, GridBagConstraints.CENTER);
         gbc.insets = new Insets(10, 5, 5, 5);
-        add(infoText, gbc);
+        add(tabs, gbc);
         
         okButton.addActionListener(e -> {
             result = editingBlacklistItem ? blacklistValue.getText() : itemValue.getText();
@@ -268,11 +295,10 @@ public class HighlighterTester extends JDialog implements StringEditor {
         String value = itemValue.getText();
         if (value.isEmpty()) {
             highlightItem = null;
-            itemValue.setToolTipText(null);
         } else {
             highlightItem = new HighlightItem(value);
-            itemValue.setToolTipText(TOOLTIP_PREFIX+highlightItem.getPatternText());
         }
+        updateParseResult();
         updateInfoText();
         updateMatches(doc);
         updateSaveButton();
@@ -285,16 +311,49 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (value.isEmpty()) {
             blacklistItem = null;
             addToBlacklistButton.setEnabled(false);
-            blacklistValue.setToolTipText(null);
         } else {
             blacklistItem = new HighlightItem(value);
             addToBlacklistButton.setEnabled(!blacklistItem.hasError());
-            blacklistValue.setToolTipText(TOOLTIP_PREFIX+blacklistItem.getPatternText());
         }
+        updateParseResult();
         updateInfoText();
         updateMatches(doc);
         updateSaveButton();
         updateTestText();
+    }
+        
+    public void updateParseResult() {
+        String text = "";
+        boolean warningIcon = false;
+        if (highlightItem != null) {
+            if (highlightItem.patternThrowsError()) {
+                warningIcon = true;
+            }
+            if (highlightItem.getMainPrefix() == null
+                    && highlightItem.getTextWithoutPrefix().matches("^\\+?!?\\w+:.*")) {
+                text += "[!] The beginning of the text has the format of a prefix "
+                        + "(even though it's not one as of yet), so to keep it safe for "
+                        + "the future, it is "
+                        + "recommended to prefix 'text:' (or another Text Matching "
+                        + "Prefix) to indicate no more prefixes are to come:\n\n"
+                        + " text:" + highlightItem.getTextWithoutPrefix() + "\n\n";
+                warningIcon = true;
+            }
+        }
+        if (warningIcon) {
+            int size = tabs.getFontMetrics(tabs.getFont()).getHeight();
+            tabs.setIconAt(1, GuiUtil.getScaledIcon(UIManager.getIcon("OptionPane.warningIcon"), size, size));
+        }
+        else {
+            tabs.setIconAt(1, null);
+        }
+        if (highlightItem != null) {
+            text += highlightItem.getMatchInfo();
+        }
+        if (blacklistItem != null) {
+            text += "\n### Blacklist ###\n"+blacklistItem.getMatchInfo();
+        }
+        parseResult.setText(text);
     }
     
     private void updateInfoText() {
@@ -306,15 +365,19 @@ public class HighlighterTester extends JDialog implements StringEditor {
                     null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
-            testResult.setText("No pattern.");
+            testResult.setText("Empty item.");
         } else if (highlightItem.hasError()) {
-            testResult.setText("Invalid pattern: "+highlightItem.getError());
-        } else if (highlightItem.patternThrowsError()) {
-            testResult.setText("Item may cause errors (see help, 'Text Matching Prefixes')");
+            testResult.setText("Invalid regex: "+highlightItem.getError());
         } else if (highlightItem.matchesAny(testInput.getText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
-            testResult.setText("No match.");
+            String failedReason = highlightItem.getFailedReason();
+            if (failedReason == null) {
+                testResult.setText("No match.");
+            }
+            else {
+                testResult.setText("No match. ["+failedReason+"]");
+            }
         }
         if (blacklistItem != null && blacklistItem.hasError()) {
             testResult.setText("Invalid blacklist pattern: "+blacklistItem.getError());
@@ -419,7 +482,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
         setTitle(title);
         this.result = null;
         infoText.setText(info);
-        infoText.setVisible(info != null);
         if (editingBlacklistItem) {
             blacklistValue.setText(preset);
         } else {

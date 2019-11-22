@@ -768,6 +768,10 @@
         the search text to modify the matching behaviour: <code>[text-prefix:]&lt;search&nbsp;text&gt;</code></p>
     
     <ul>
+        <li><code>text:</code> is the same as without a prefix, but can be useful
+            to make sure the text isn't interpreted as a prefix, for example
+            <code>text:start:Let's go</code> would match <code>start:Let's go</code>
+            anywhere in the message (case insensitive).</li>
         <li><code>cs:</code> makes it case-sensitive, so <code>cs:test</code>
             matches <code>test</code> but not <code>Test</code>.</li>
         <li><code>w:</code> matches at word boundaries, e.g. <code>w:anna</code>
@@ -804,6 +808,19 @@
         </li>
     </ul>
     
+    <p>All Text Matching Prefixes can be inverted (matches when it doesn't find
+        the search text) by prepending an exclamation mark, for example: <code>!start:!bet all</code>.
+        See the <a href="#Highlight_Prefix-blacklist"><code>blacklist:</code> Prefix description</a>
+        for further information on the differences between blacklisting and
+        negated matches.</p>
+    
+    <p>Additionally, several Text Matching Prefixes can be specified by prepending
+        a plus sign. In this case the value cannot contain spaces or must be
+        quoted. Example: <code>+!start:"!bet all" regi:Regular search text</code></p>
+    
+    <p>Only the main search text (no prefix or using any of the non-modified
+        Text Matching Prefixes) will mark Highlight matches in chat.</p>
+    
     <h3><a name="Highlight_Meta_Matching">Meta Prefixes (Matching)</a></h3>
     <p>The following prefixes don't match on the text itself, but define other
         things that should or should not trigger a Highlight. You can place one
@@ -820,14 +837,13 @@
         <li>Prefixes can normally not contain spaces (it wouldn't be clear
             whether the space is part of the prefix value or a separator between
             prefixes), however you can enclose the prefix value (or part of it)
-            in quotes or escape each space with a backlash. Example:
-            <code>replacement:"text&nbsp;with&nbsp;space"</code> or
-            <code>replacement:text\ with\ space</code></li>
-        <li>Quotes and backslashes have to be escaped when intended to be used literally (<code>\"</code> or <code>\\</code>).</li>
+            in quotes. Two quotes can be used to add a literal quote. Example:
+            <code>replacement:"text&nbsp;with&nbsp;""space"""</code> (meaning
+            the value is <code>text&nbsp;with&nbsp;"space"</code>)</li>
         <li>When a prefix can have several values, they must be comma-separated
             (without spaces). Example: <code>cat:category1,category2</code>.
-            Commas in list values can be quoted or escaped as well for them to
-            be used literally instead of as a separator.</li>
+            Commas in list values can be quoted as well for them to be used
+            literally instead of as a separator.</li>
     </ul>
     
     <p>Possible matching prefixes:</p>
@@ -900,8 +916,27 @@
                     specified in the same <code>config:</code> prefix, only one
                     has to match), prefix value with <code>reg:</code> to use
                     regex matching on the value.</li>
+                <li><code>config:url</code> - Message must contain a URL (same
+                    as what is made clickable)</li>
             </ul>
         </li>
+        <li><a name="Highlight_Prefix-blacklist"><code>blacklist:</code></a> to specify one or more text patterns
+            (separated by comma) that will prevent the overall match if they
+            encompass the entire text match. Example: <code>blacklist:"!bet all" start:!bet</code>
+            will match all messages starting with <code>!bet</code> but will not
+            match <code>!bet all</code>. Can use any regular Text Matching Prefix.<br /><br />
+            This is of course similiar to using a negated text match, like
+            <code>+!text:"!bet all" start:!bet</code>, however the blacklist is
+            "passive", so while <code>+!text:"!bet all"</code> will match only
+            if <code>!bet all</code> is not present anywhere, <code>blacklist:"!bet all"</code>
+            (by itself) will <em>always</em> match because it is not actually
+            a requirement itself, it just modifies text matching requirements,
+            so technicially there is no requirement for a match.<br /><br />
+            Additionally, a negated match like <code>+!text:!cheesecake reg:^!\w+</code>
+            will prevent the match if <code>!cheesecake</code> appears anywhere
+            in the message, while <code>blacklist:!cheesecake reg:^!\w+</code>
+            will only prevent the match when it fully encompasses the regular
+            text match, so only when the message starts with <code>!cheesecake</code>.</li>
     </ul>
     
     <h3><a name="Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a></h3>
@@ -910,7 +945,7 @@
         prefixes before the search text (separated by spaces):
         <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
 
-    <p>See <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> for quoting/escaping.</p>
+    <p>See <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> notes for quoting special characters.</p>
     
     <ul>
         <li><code>color:</code> to specify a color other than the default

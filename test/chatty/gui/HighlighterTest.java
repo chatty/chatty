@@ -709,6 +709,88 @@ public class HighlighterTest {
     }
     
     @Test
+    public void testBlacklistPrefix() {
+        update();
+        updateBlacklist();
+        
+        update("blacklist:\"!bet all\" start:!bet");
+        assertFalse(highlighter.check(user, "!be"));
+        assertTrue(highlighter.check(user, "!bet"));
+        assertTrue(highlighter.check(user, "!bet 100"));
+        assertFalse(highlighter.check(user, "!bet all"));
+        assertFalse(highlighter.check(user, "!bet all2"));
+        assertFalse(highlighter.check(user, " !bet all"));
+        assertFalse(highlighter.check(user, " !bet"));
+        
+        update("blacklist:regi:[a-z]+ w:cake");
+        assertFalse(highlighter.check(user, "!bet"));
+        assertFalse(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+        assertFalse(highlighter.check(user, "Cake"));
+        
+        update("blacklist:reg:[a-z]+ w:cake");
+        assertFalse(highlighter.check(user, "!bet"));
+        assertFalse(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+        assertTrue(highlighter.check(user, "Cake"));
+        
+        update("blacklist:cheesecake cake");
+        assertTrue(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+        
+        update("blacklist:applepie blacklist:cheesecake cake");
+        assertTrue(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+        
+        update("blacklist:cheesecake blacklist:applepie cake");
+        assertTrue(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+    }
+    
+    @Test
+    public void testNegated() {
+        updateBlacklist();
+        
+        update("!start:!bet all");
+        assertTrue(highlighter.check(user, "!bet"));
+        assertFalse(highlighter.check(user, "!bet all"));
+        assertFalse(highlighter.check(user, "!bet alll"));
+        
+        update("!w:Testi");
+        assertTrue(highlighter.check(user, "Test"));
+        assertFalse(highlighter.check(user, "Testi"));
+        assertTrue(highlighter.check(user, "Testii"));
+    }
+    
+    @Test
+    public void testAdditional() {
+        updateBlacklist();
+        
+        update("+wcs:Test Abc");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertTrue(highlighter.check(user, "Test abc"));
+        assertTrue(highlighter.check(user, "Test Afewfawef Abc"));
+        assertFalse(highlighter.check(user, "Test"));
+        assertFalse(highlighter.check(user, "test Abc"));
+        assertTrue(highlighter.check(user, "jfpoeajwf Test iojiofawefabc"));
+        
+        update("+wcs:\"Test Abc\"");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertFalse(highlighter.check(user, "Test abc"));
+        assertFalse(highlighter.check(user, "Test Afewfawef Abc"));
+        assertFalse(highlighter.check(user, "Test"));
+        assertFalse(highlighter.check(user, "test Abc"));
+        assertFalse(highlighter.check(user, "jfpoeajwf Test iojiofawefabc"));
+        
+        update("+!w:Testi w:Abc");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertTrue(highlighter.check(user, "Testii Abc"));
+        assertFalse(highlighter.check(user, "Testi Abc"));
+        assertFalse(highlighter.check(user, "Testi"));
+        assertFalse(highlighter.check(user, "Testi Abcd"));
+    }
+    
+    @Test
     public void testNew() {
         update();
         updateBlacklist();
@@ -847,21 +929,21 @@ public class HighlighterTest {
         assertFalse(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("color", "#123456")));
         
         // New list parsing/adding space
-        update("config:t|test=abc\\,lol");
+        update("config:t|test=\"abc,lol\"");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc,lol")));
         update("config:t|test=\"a,b,c\",!notify");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "a,b,c")));
         update("config:t|test=\"abc lol\"");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc lol")));
-        update("config:t|test=reg:abc\\ lol");
+        update("config:t|test=reg:abc\" \"lol");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc lol")));
-        update("config:t|test=reg:abc\\ \\\\w{2\\,3}");
+        update("config:t|test=reg:\"abc \\w{2,3}\"");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc lol")));
         assertFalse(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc rofl")));
         assertFalse(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abclol")));
-        update("config:t|test=reg:\"abc \\\\w{2,3}\"");
+        update("config:t|test=reg:\"abc \\w{2,3}\"");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc lol")));
-        update("config:t|test=abc\\\\slol");
+        update("config:t|test=abc\\slol");
         assertTrue(highlighter.check(Type.REGULAR, "", null, ab, user, MsgTags.create("test", "abc\\slol")));
     }
     

@@ -23,33 +23,11 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  */
 public class HighlightSettings extends SettingsPanel {
     
-    public static final String INFO = "<html><body style='width:300px;font-weight:normal;'>"
-            + "Message matching examples (see [help-settings:Highlight_Matching help] for more):"
-            + "<ul style='margin-left:30px'>"
-            + "<li><code>Bets open</code> - 'Bets open' anywhere in the message"
-            + "<li><code>cs:Bets open</code> - Same, but case-sensitive</li>"
-            + "<li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>"
-            + "<li><code>wcs:Clip</code> - Same, but case-sensitive</li>"
-            + "<li><code>start:!slot</code> - Message beginning with '!slot'</li>"
-            + "<li><code>reg:(?i)^!\\w+$</code> - Regular expression, anywhere</li>"
-            + "</ul>"
-            + "Meta prefixes (in front of text matching):"
-            + "<ul style='margin-left:30px'>"
-            + "<li><code>chan:joshimuz</code> - Restrict to channel 'joshimuz'</li>"
-            + "<li><code>user:Elorie</code> - Restrict to user 'Elorie'</li>"
-            + "<li><code>cat:vip</code> - Restrict to users in Addressbook category 'vip'</li>"
-            + "<li><code>config:info</code> - Match info messages</li>"
-            + "</ul>";
+    public static final String INFO_HEADER = "<html><body style='width:350px;font-weight:normal;'>";
     
-    private static final String INFO_HIGHLIGHTS = INFO
-            +"Examples: "
-            + "<dl>"
-            + "<dt><code>user:botimuz cs:Bets open</code></dt>"
-            + "<dd>Matches the user Botimuz saying 'Bets open' (case sensitive)</dd>"
-            + "<dt><code>config:info [Notification]</code></dt>"
-            + "<dd>Matches info messages containing '[Notification]', so all "
-            + "sub notifications</dd>"
-            + "</dl>";
+    public static String getMatchingHelp(String type) {
+        return INFO_HEADER+SettingsUtil.getInfo("info-matching.html", type);
+    }
     
     private final NoHighlightUsers noHighlightUsers;
     private final HighlightBlacklist highlightBlacklist;
@@ -113,7 +91,7 @@ public class HighlightSettings extends SettingsPanel {
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
-        items.setInfo(INFO_HIGHLIGHTS);
+        items.setInfo(getMatchingHelp("highlight"));
         HighlighterTester tester = new HighlighterTester(d, true);
         tester.setAddToBlacklistListener(e -> {
             highlightBlacklist.addItem(e.getActionCommand());
@@ -238,7 +216,7 @@ public class HighlightSettings extends SettingsPanel {
             gbc.weightx = 1;
             gbc.weighty = 1;
             setting = d.addListSetting("highlightBlacklist", "Blacklist", 100, 250, false, true);
-            setting.setInfo(INFO);
+            setting.setInfo(getMatchingHelp("highlightBlacklist"));
             setting.setDataFormatter(input -> input.trim());
             HighlighterTester tester = new HighlighterTester(d, true);
             tester.setEditingBlacklistItem(true);
