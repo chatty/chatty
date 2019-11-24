@@ -83,40 +83,7 @@ public class MessageSettings extends SettingsPanel {
         // Other Settings (Panel)
         //========================
         // Timestamp
-        JPanel timestampPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        
-        timestampPanel.add(new JLabel(Language.getString("settings.otherMessageSettings.timestamp")));
-
-        final Map<String,String> timestampOptions = new LinkedHashMap<>();
-        timestampOptions.put("off", "Off");
-        timestampOptions.put("", "Empty (Space)");
-        addTimestampFormat(timestampOptions, "[HH:mm:ss]");
-        addTimestampFormat(timestampOptions, "[HH:mm]");
-        addTimestampFormat(timestampOptions, "HH:mm:ss");
-        addTimestampFormat(timestampOptions, "HH:mm");
-        ComboStringSetting combo = new ComboStringSetting(timestampOptions);
-        combo.setEditable(false);
-        d.addStringSetting("timestamp", combo);
-        timestampPanel.add(combo,
-                d.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST));
-        
-        JButton editTimestampButton = new JButton(Language.getString("dialog.button.customize"));
-        editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-        GuiUtil.matchHeight(editTimestampButton, combo);
-        editTimestampButton.addActionListener(e -> {
-            TimestampEditor editor = new TimestampEditor(d);
-            String preset = combo.getSettingValue();
-            if (preset.equals("off") || preset.isEmpty()) {
-                preset = "[HH:mm:ss]";
-            }
-            String result = editor.showDialog(preset);
-            if (result != null) {
-                combo.setSettingValue(result);
-            }
-        });
-        timestampPanel.add(editTimestampButton);
-
-        otherSettingsPanel.add(timestampPanel, d.makeGbc(0, 0, 4, 1, GridBagConstraints.WEST));
+        otherSettingsPanel.add(createTimestampPanel(d, "timestamp"), d.makeGbc(0, 0, 4, 1, GridBagConstraints.WEST));
         
         // More
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
@@ -145,8 +112,42 @@ public class MessageSettings extends SettingsPanel {
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
                 "printStreamStatus"),
                 d.makeGbc(0, 3, 4, 1, GridBagConstraints.WEST));
-
+    }
+    
+    public static JPanel createTimestampPanel(SettingsDialog d, String setting) {
+        JPanel timestampPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         
+        timestampPanel.add(new JLabel(Language.getString("settings.otherMessageSettings.timestamp")));
+
+        final Map<String,String> timestampOptions = new LinkedHashMap<>();
+        timestampOptions.put("off", "Off");
+        timestampOptions.put("", "Empty (Space)");
+        addTimestampFormat(timestampOptions, "[HH:mm:ss]");
+        addTimestampFormat(timestampOptions, "[HH:mm]");
+        addTimestampFormat(timestampOptions, "HH:mm:ss");
+        addTimestampFormat(timestampOptions, "HH:mm");
+        ComboStringSetting combo = new ComboStringSetting(timestampOptions);
+        combo.setEditable(false);
+        d.addStringSetting(setting, combo);
+        timestampPanel.add(combo,
+                d.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST));
+        
+        JButton editTimestampButton = new JButton(Language.getString("dialog.button.customize"));
+        editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.matchHeight(editTimestampButton, combo);
+        editTimestampButton.addActionListener(e -> {
+            TimestampEditor editor = new TimestampEditor(d);
+            String preset = combo.getSettingValue();
+            if (preset.equals("off") || preset.isEmpty()) {
+                preset = "[HH:mm:ss]";
+            }
+            String result = editor.showDialog(preset);
+            if (result != null) {
+                combo.setSettingValue(result);
+            }
+        });
+        timestampPanel.add(editTimestampButton);
+        return timestampPanel;
     }
     
     public static void addTimestampFormat(Map<String, String> timestampOptions, String format) {

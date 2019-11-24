@@ -57,21 +57,24 @@ public class ModerationSettings extends SettingsPanel {
         userInfo.add(d.addSimpleBooleanSetting(
                 "reuseUserDialog"),
                 d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
+        
+        userInfo.add(MessageSettings.createTimestampPanel(d, "userDialogTimestamp"),
+                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
 
         userInfo.add(new JLabel(Language.getString("settings.long.clearUserMessages.label")),
-                d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST));
+                d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
         userInfo.add(d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}),
-                d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
         
         HotkeyTextField banReasonsHotkey = new HotkeyTextField(12, null);
         d.addStringSetting("banReasonsHotkey", banReasonsHotkey);
         userInfo.add(d.createLabel("banReasonsHotkey"),
-                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST));
         userInfo.add(banReasonsHotkey,
-                d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 5, 1, 1, GridBagConstraints.WEST));
         
         userInfo.add(d.createLabel("banReasonsInfo", true),
-                d.makeGbc(0, 5, 2, 1));
+                d.makeGbc(0, 6, 2, 1));
     }
     
 }

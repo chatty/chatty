@@ -18,6 +18,7 @@ import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class UserInfoManager {
     
     private String buttonsDef;
     private float fontSize;
+    private SimpleDateFormat timestampFormat;
     
     public UserInfoManager(final MainGui owner, Settings settings,
             final ContextMenuListener contextMenuListener) {
@@ -182,6 +184,7 @@ public class UserInfoManager {
         UserInfo dialog = new UserInfo(main, userInfoListener, userInfoRequester, settings, contextMenuListener);
         dialog.setUserDefinedButtonsDef(buttonsDef);
         dialog.setFontSize(fontSize);
+        dialog.setTimestampFormat(timestampFormat);
         return dialog;
     }
     
@@ -248,6 +251,13 @@ public class UserInfoManager {
         if (dialog != null) {
             dummyWindow.setLocation(dialog.getLocation());
             dummyWindow.setSize(dialog.getSize());
+        }
+    }
+
+    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+        this.timestampFormat = timestampFormat;
+        for (UserInfo dialog : dialogs) {
+            dialog.setTimestampFormat(timestampFormat);
         }
     }
     

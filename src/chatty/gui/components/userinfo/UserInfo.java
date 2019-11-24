@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.Set;
 import javax.swing.*;
@@ -32,7 +33,7 @@ import javax.swing.*;
 public class UserInfo extends JDialog {
 
     private static final String SINGLE_MESSAGE_CHECK = "Remove only selected message";
-    
+
     public enum Action {
         NONE, TIMEOUT, MOD, UNMOD, COMMAND
     }
@@ -343,6 +344,15 @@ public class UserInfo extends JDialog {
         banReasons.updateHotkey();
     }
     
+    private void updateMessages() {
+        pastMessages.update(currentUser, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
+    }
+    
+    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+        pastMessages.setTimestampFormat(timestampFormat);
+        updateMessages();
+    }
+    
     protected void finishDialog() {
         setMinimumSize(getPreferredSize());
     }
@@ -371,7 +381,7 @@ public class UserInfo extends JDialog {
                 +displayNickInfo
                 +" / "+user.getRoom().getDisplayName()
                 +" "+categoriesString);
-        pastMessages.update(user, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
+        updateMessages();
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
         updateButtons();

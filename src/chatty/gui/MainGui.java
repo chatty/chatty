@@ -970,6 +970,7 @@ public class MainGui extends JFrame implements Runnable {
             client.api.checkToken();
         }
         
+        userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
         
         hotkeyManager.setGlobalHotkeysEnabled(client.settings.getBoolean("globalHotkeysEnabled"));
@@ -4479,6 +4480,8 @@ public class MainGui extends JFrame implements Runnable {
                     emoticons.setCheerBackground(HtmlColors.decode((String)value));
                 } else if (setting.equals("soundDevice")) {
                     Sound.setDeviceName((String)value);
+                } else if (setting.equals("userDialogTimestamp")) {
+                    userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
                 }
             }
             if (type == Setting.LIST) {

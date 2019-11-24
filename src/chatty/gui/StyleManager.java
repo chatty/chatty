@@ -313,7 +313,11 @@ public class StyleManager implements StyleServer {
     
     @Override
     public SimpleDateFormat getTimestampFormat() {
-        String timestamp = settings.getString("timestamp");
+        return makeTimestampFormat("timestamp", null);
+    }
+    
+    public SimpleDateFormat makeTimestampFormat(String setting, SimpleDateFormat defaultValue) {
+        String timestamp = settings.getString(setting);
         String timezone = settings.getString("timestampTimezone");
         if (!timestamp.equals("off")) {
             try {
@@ -326,7 +330,7 @@ public class StyleManager implements StyleServer {
                 LOGGER.warning("Invalid timestamp: "+timestamp);
             }
         }
-        return null;
+        return defaultValue;
     }
 
     @Override
