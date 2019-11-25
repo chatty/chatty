@@ -101,6 +101,7 @@ External Libraries
   * Files under `assets/lib/`: `JTattoo-*.jar`, `JTattoo-*-sources.zip`
   * Website: <http://www.jtattoo.net>
   * License: GPLv2 or later (see <https://www.gnu.org/licenses/gpl-2.0.txt>)
+  * Based on v1.6.12 with some modifications by tduva
 
 * Tyrus:
   * Files under `assets/lib/`: `tyrus-standalone-client-*.jar`
