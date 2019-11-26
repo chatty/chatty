@@ -187,11 +187,15 @@ public class HighlighterTester extends JDialog implements StringEditor {
         add(cancelButton,
                 GuiUtil.makeGbc(2, 6, 1, 1, GridBagConstraints.EAST));
         
+        JPanel helpPanel = new JPanel();
+        helpPanel.add(infoText);
+        
         JPanel parseResultPanel = new JPanel(new BorderLayout());
         JLabel parseResultInfo = new JLabel(HighlightSettings.INFO_HEADER
                 + "This shows what requirements for a match Chatty has found "
                 + "in what you entered (each line's condition has to be "
-                + "satisified for a successful match).");
+                + "satisified for a successful match, although for testing here "
+                + "non-text matching prefixes are ignored).");
         parseResultInfo.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         parseResultPanel.add(parseResultInfo,
                 BorderLayout.NORTH);
@@ -202,7 +206,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         parseResult.setLineWrap(true);
         parseResult.setWrapStyleWord(true);
         
-        tabs.add("Help", infoText);
+        tabs.add("Help", helpPanel);
         tabs.add("Parse Result", parseResultPanel);
         
         gbc = GuiUtil.makeGbc(0, 7, 3, 1, GridBagConstraints.CENTER);
@@ -368,7 +372,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             testResult.setText("Empty item.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Invalid regex: "+highlightItem.getError());
-        } else if (highlightItem.matchesAny(testInput.getText(), blacklist)) {
+        } else if (highlightItem.matchesTest(testInput.getText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
             String failedReason = highlightItem.getFailedReason();
@@ -376,7 +380,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 testResult.setText("No match.");
             }
             else {
-                testResult.setText("No match. ["+failedReason+"]");
+                testResult.setText("No match, due to: "+failedReason);
             }
         }
         if (blacklistItem != null && blacklistItem.hasError()) {
