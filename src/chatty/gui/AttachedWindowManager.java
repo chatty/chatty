@@ -24,6 +24,8 @@ public class AttachedWindowManager {
     private final Component owner;
     private final Set<Point> ignoreOnce = new HashSet<>();
     
+    private int width;
+    private int height;
     private int x;
     private int y;
     
@@ -43,6 +45,12 @@ public class AttachedWindowManager {
             
             @Override
             public void componentMoved(ComponentEvent e) {
+                int newWidth = e.getComponent().getWidth();
+                int newHeight = e.getComponent().getHeight();
+                boolean sizeChanged = newWidth != width || newHeight != height;
+                width = newWidth;
+                height = newHeight;
+                
                 int newX = e.getComponent().getX();
                 int newY = e.getComponent().getY();
                 int movedX = newX - x;
@@ -52,6 +60,9 @@ public class AttachedWindowManager {
                 
                 if (ignoreOnce.contains(e.getComponent().getLocation(temp))) {
                     ignoreOnce.remove(temp);
+                    return;
+                }
+                if (sizeChanged) {
                     return;
                 }
                 if (!enabled) {
