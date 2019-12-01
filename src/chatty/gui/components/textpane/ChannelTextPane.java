@@ -2640,6 +2640,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     public static Element getLastLine(Document doc) {
         return doc.getDefaultRootElement().getElement(doc.getDefaultRootElement().getElementCount() - 1);
     }
+    
+    /**
+     * Split up long sections of text by newline to prevent lag. This is not a
+     * hard limit, sections may be a bit longer.
+     *
+     * This should be way longer than any regular chat message, since putting
+     * newlines in messages can cause issues (especially for applying custom
+     * line-based attributes) and looks kind of weird.
+     *
+     * This can mostly happen with some info messages (like really long /mods
+     * output).
+     */
+    private final int MAX_TEXT_LENGTH = 2000;
+    private int lengthSinceNewline = 0;
 
     /**
      * Prints the given text in the given style. Runs the function that actually
@@ -2652,17 +2666,39 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         try {
             String newline = "";
             if (newlineRequired) {
+                lengthSinceNewline = 0;
                 newline = "\n";
                 newlineRequired = false;
                 clearSomeChat();
             }
-            //System.out.println("1:"+doc.getLength());
-            doc.insertString(doc.getLength(), newline+text, style);
-            //System.out.println("2:"+doc.getLength());
-            //this.getHighlighter().addHighlight(doc.getLength(), 10, null);
-            // TODO: check how this works
-            doc.setParagraphAttributes(doc.getLength(), 1, styles.paragraph(), true);
-            scrollDownIfNecessary();
+            /**
+             * Split up long sections by a newline. See MAX_TEXT_LENGTH.
+             */
+            lengthSinceNewline += text.length();
+            if (lengthSinceNewline > MAX_TEXT_LENGTH) {
+                // How much is the current text above limit
+                int breakTarget = MAX_TEXT_LENGTH - (lengthSinceNewline - text.length());
+                // Prefer breaking at space, if within reasonable range
+                int firstSpace = text.indexOf(' ', breakTarget);
+                if (firstSpace != -1 && firstSpace - breakTarget < MAX_TEXT_LENGTH / 20) {
+                    breakTarget = firstSpace;
+                }
+                String part = text.substring(0, breakTarget);
+                String remaining = text.substring(breakTarget);
+                doc.insertString(doc.getLength(), newline+part, style);
+                doc.setParagraphAttributes(doc.getLength(), 1, styles.paragraph(), true);
+                newlineRequired = true;
+                print(remaining, style);
+            }
+            else {
+                //System.out.println("1:"+doc.getLength());
+                doc.insertString(doc.getLength(), newline+text, style);
+                //System.out.println("2:"+doc.getLength());
+                //this.getHighlighter().addHighlight(doc.getLength(), 10, null);
+                // TODO: check how this works
+                doc.setParagraphAttributes(doc.getLength(), 1, styles.paragraph(), true);
+                scrollDownIfNecessary();
+            }
         } catch (BadLocationException e) {
             System.err.println("BadLocationException");
         }
