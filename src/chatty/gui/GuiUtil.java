@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
@@ -48,6 +49,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -516,6 +518,37 @@ public class GuiUtil {
 
         // Other actions
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), DefaultEditorKit.selectAllAction);
+    }
+    
+    private static class TextContextMenu extends JPopupMenu {
+        
+        public TextContextMenu() {
+            add(new DefaultEditorKit.CopyAction(), Language.getString("textCm.copy"), KeyEvent.VK_C);
+            add(new DefaultEditorKit.CutAction(), Language.getString("textCm.cut"), KeyEvent.VK_X);
+            add(new DefaultEditorKit.PasteAction(), Language.getString("textCm.paste"), KeyEvent.VK_P);
+        }
+        
+        private void add(Action action, String name, int key) {
+            action.putValue(Action.NAME, name);
+            action.putValue(Action.MNEMONIC_KEY, key);
+            add(action);
+        }
+        
+    }
+    
+    private static TextContextMenu textContextMenu;
+    
+    /**
+     * Sets copy/cut/paste context menu to the text component. Menu is created
+     * when this is first called and shared between all following calls.
+     * 
+     * @param c The text component
+     */
+    public static void installTextContextMenu(JTextComponent c) {
+        if (textContextMenu == null) {
+            textContextMenu = new TextContextMenu();
+        }
+        c.setComponentPopupMenu(textContextMenu);
     }
     
     /**

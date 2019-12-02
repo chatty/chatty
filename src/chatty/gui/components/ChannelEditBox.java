@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.components.completion.AutoCompletion;
 import chatty.gui.components.completion.AutoCompletionServer;
@@ -19,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -74,6 +74,7 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
                 selection = getSelectedText() != null;
             }
         });
+        GuiUtil.installTextContextMenu(this);
     }
     
     /**

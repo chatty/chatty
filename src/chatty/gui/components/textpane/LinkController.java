@@ -11,6 +11,7 @@ import chatty.gui.components.menus.ChannelContextMenu;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.menus.UrlContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.menus.UsericonContextMenu;
@@ -337,6 +338,11 @@ public class LinkController extends MouseAdapter {
         return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLACEMENT_FOR));
     }
     
+    private String getSelectedText(MouseEvent e) {
+        JTextPane text = (JTextPane) e.getSource();
+        return text.getSelectedText();
+    }
+    
     public static Element getElement(MouseEvent e) {
         JTextPane text = (JTextPane) e.getSource();
         Point mouseLocation = new Point(e.getX(), e.getY());
@@ -384,6 +390,7 @@ public class LinkController extends MouseAdapter {
         if (element == null) {
             return;
         }
+        String selectedText = getSelectedText(e);
         User user = getUser(element);
         if (user == null) {
             user = getMention(element);
@@ -392,7 +399,10 @@ public class LinkController extends MouseAdapter {
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
         JPopupMenu m = null;
-        if (user != null) {
+        if (selectedText != null) {
+            m = new TextSelectionMenu(selectedText);
+        }
+        else if (user != null) {
             m = new UserContextMenu(user, getMsgId(element),
                     getAutoModMsgId(element), contextMenuListener);
         }
