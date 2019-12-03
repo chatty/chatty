@@ -35,7 +35,6 @@ public class CommandSettings extends SettingsPanel {
     
     private static final String INFO_HEADER = "<html>"
             + "<style type='text/css'>"
-            + "code { background: white; color: black; }"
             + "p { margin: 2px; }"
             + "dt { margin-top: 8px; }"
             + "dd { margin-left: 10px; margin-top: 4px; }"

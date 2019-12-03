@@ -18,7 +18,6 @@ import javax.swing.text.html.HTMLDocument;
  */
 public class LinkLabel extends JEditorPane {
     
-    private static final JLabel label = new JLabel();
     private LinkLabelListener listener;
     
     public LinkLabel(String text, LinkLabelListener listener) {
@@ -27,22 +26,6 @@ public class LinkLabel extends JEditorPane {
         setOpaque(false);
         setContentType("text/html");
         setText(text);
-        
-        // Set the font based on a JLabel
-        this.setFont(label.getFont());
-        Font font = label.getFont();
-        String bold = font.getStyle() == Font.BOLD ? "bold" : "normal";
-        String color = HtmlColors.getColorString(label.getForeground());
-        String fontRule = "body { "
-                + "font-family: "+font.getFamily()+";"
-                + "font-size: "+font.getSize()+";"
-                + "font-weight: "+bold+";"
-                + "color: "+color+";"
-                + "}"
-                + "a {"
-                + "color: "+LaF.getLinkColor()+";"
-                + "}";
-        ((HTMLDocument)getDocument()).getStyleSheet().addRule(fontRule);
         
         // Link Listener
         this.addHyperlinkListener(new HyperlinkListener() {
@@ -54,6 +37,40 @@ public class LinkLabel extends JEditorPane {
                 }
             }
         });
+        setStyle();
+    }
+    
+    private void setStyle() {
+        if (getDocument() == null || !(getDocument() instanceof HTMLDocument)) {
+            return;
+        }
+        JLabel label = new JLabel();
+        // Set the font based on a JLabel
+        this.setFont(label.getFont());
+        Font font = label.getFont();
+        String bold = font.getStyle() == Font.BOLD ? "bold" : "normal";
+        String color = HtmlColors.getColorString(label.getForeground());
+        String codeColors = "code { background: white; color: black; }";
+        if (LaF.isDarkTheme()) {
+            codeColors = "code { background: #444444; color: white; }";
+        }
+        String fontRule = "body { "
+                + "font-family: "+font.getFamily()+";"
+                + "font-size: "+font.getSize()+";"
+                + "font-weight: "+bold+";"
+                + "color: "+color+";"
+                + "}"
+                + "a {"
+                + "color: "+LaF.getLinkColor()+";"
+                + "}"
+                + codeColors;
+        ((HTMLDocument)getDocument()).getStyleSheet().addRule(fontRule);
+    }
+    
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        setStyle();
     }
     
     /**
