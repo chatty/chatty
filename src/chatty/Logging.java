@@ -72,17 +72,17 @@ public class Logging {
         }
         
         // Add handler for the GUI (display errors, log into debug window)
-        Logger.getLogger("").addHandler(new Handler() {
+        Handler guiHandler = new Handler() {
 
             @Override
             public void publish(LogRecord record) {
                 if (record.getLevel() != USERINFO) {
                     client.debug(record.getMessage());
                     // WebsocketClient/WebsocketManager
-                    if (record.getSourceClassName().startsWith("chatty.util.ffz.Websocket")) {
+                    if (record.getMessage().startsWith("[FFZ-WS]")) {
                         client.debugFFZ(record.getMessage());
                     }
-                    if (record.getSourceClassName().startsWith("chatty.util.api.pubsub.")) {
+                    if (record.getMessage().startsWith("[PubSub]")) {
                         client.debugPubSub(record.getMessage());
                     }
                 }
@@ -104,7 +104,9 @@ public class Logging {
             @Override
             public void close() throws SecurityException {
             }
-        });
+        };
+        guiHandler.setLevel(Level.INFO);
+        Logger.getLogger("").addHandler(guiHandler);
     }
     
     /**

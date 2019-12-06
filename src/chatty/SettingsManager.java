@@ -389,6 +389,7 @@ public class SettingsManager {
         settings.addBoolean("titleLongerUptime", true);
         settings.addBoolean("titleShowViewerCount", true);
         settings.addBoolean("titleShowChannelState", true);
+        settings.addBoolean("titleConnections", true);
         settings.addString("titleAddition", "");
 
         // Tabs

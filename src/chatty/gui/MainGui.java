@@ -992,7 +992,7 @@ public class MainGui extends JFrame implements Runnable {
         "showJoinsParts", "ontop", "showModMessages", "attachedWindows",
         "simpleTitle", "globalHotkeysEnabled", "mainResizable", "streamChatResizable",
         "titleShowUptime", "titleShowViewerCount", "titleShowChannelState",
-        "titleLongerUptime"
+        "titleLongerUptime", "titleConnections"
     };
     
     /**
@@ -3795,13 +3795,19 @@ public class MainGui extends JFrame implements Runnable {
 
             String title = stateText;
 
+            String secondaryConnectionsStatus = "";
+            if (client.settings.getBoolean("titleConnections")) {
+                secondaryConnectionsStatus = client.getSecondaryConnectionsStatus();
+            }
+            if (!secondaryConnectionsStatus.isEmpty()) {
+                secondaryConnectionsStatus = " [" + secondaryConnectionsStatus + "]";
+            }
+            
             // Stream Info
             if (!channelName.isEmpty()) {
                 boolean hideCounts = !client.settings.getBoolean("titleShowViewerCount");
                 String chanNameText = channelName;
-                if (client.isWhisperAvailable()) {
-                    chanNameText += " [W]";
-                }
+                chanNameText += secondaryConnectionsStatus;
                 if (!title.isEmpty()) {
                     title += " - ";
                 }
@@ -3861,8 +3867,8 @@ public class MainGui extends JFrame implements Runnable {
                     title += chanState;
                     title += topic;
                 }
-            } else if (client.isWhisperAvailable()) {
-                title += " [W]";
+            } else {
+                title += secondaryConnectionsStatus;
             }
 
             title += " - Chatty";

@@ -4,6 +4,9 @@ package chatty.util.api.pubsub;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
+import chatty.util.jws.JWSClient;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,8 +29,9 @@ public class Manager {
     
     private final TwitchApi api;
     
-    private final Client c;
+    private volatile JWSClient c;
     private final String server;
+    private final PubSubListener listener;
 
     /**
      * Storage of user ids for easier lookup to turn an id into a channel name.
@@ -49,42 +53,7 @@ public class Manager {
     public Manager(String server, final PubSubListener listener, TwitchApi api) {
         this.api = api;
         this.server = server;
-        c = new Client(new Client.MessageHandler() {
-
-            @Override
-            public void handleReceived(String received) {
-                listener.info("<< "+StringUtil.trim(received));
-                Message message = Message.fromJson(received, userIds);
-                if (message.data instanceof ModeratorActionData) {
-                    ModeratorActionData data = (ModeratorActionData)message.data;
-                    if (data.type == ModeratorActionData.Type.UNMODDED) {
-                        unlistenModLog(data.stream);
-                    }
-                }
-                if (message.type.equals("MESSAGE")) {
-                    listener.messageReceived(message);
-                }
-                if (message.error != null && !message.error.isEmpty()) {
-                    LOGGER.warning("[PubSub] Errror: "+message);
-                }
-            }
-
-            @Override
-            public void handleSent(String sent) {
-                listener.info(">> "+Helper.removeToken(token, sent));
-            }
-
-            @Override
-            public void handleConnect() {
-                startPinging();
-                sendAllTopics();
-            }
-
-            @Override
-            public void handleDisconnect() {
-                
-            }
-        });
+        this.listener = listener;
     }
     
     private void sendAllTopics() {
@@ -108,6 +77,9 @@ public class Manager {
      * @return 
      */
     public String getStatus() {
+        if (c == null) {
+            return "Not connected";
+        }
         return c.getStatus();
     }
     
@@ -213,7 +185,7 @@ public class Manager {
         data.put("auth_token", token);
         connect();
         LOGGER.info("[PubSub] "+(listen ? "LISTEN" : "UNLISTEN")+" ModLog "+userId);
-        c.send(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));
+        c.sendMessage(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));
     }
     
     private void startPinging() {
@@ -234,12 +206,15 @@ public class Manager {
 
                     @Override
                     public void run() {
-                        if (System.currentTimeMillis() - c.getLastMessageReceived() > 15*1000) {
+                        if (c == null) {
+                            return;
+                        }
+                        if (c.getLastReceivedSecondsAgo() > 15) {
                             /**
                              * Checking 10s after PING was send if there was a
                              * message received in the last 15s.
                              */
-                            c.reconnect();
+                            c.forceReconnect();
                         }
                     }
                 }, 10*1000);
@@ -248,7 +223,9 @@ public class Manager {
     }
     
     private void sendPing() {
-        c.send(Helper.createOutgoingMessage("PING", null, null));
+        if (c != null) {
+            c.sendMessage(Helper.createOutgoingMessage("PING", null, null));
+        }
     }
     
     private boolean hasServer() {
@@ -256,21 +233,71 @@ public class Manager {
     }
     
     public void connect() {
-        if (hasServer()) {
-            c.connect(server);
+        if (hasServer() && c == null) {
+            try {
+                c = new JWSClient(new URI(server), new chatty.util.jws.MessageHandler() {
+                    
+                    @Override
+                    public void handleReceived(String received) {
+                        listener.info("--> " + StringUtil.trim(received));
+                        Message message = Message.fromJson(received, userIds);
+                        if (message.data instanceof ModeratorActionData) {
+                            ModeratorActionData data = (ModeratorActionData) message.data;
+                            if (data.type == ModeratorActionData.Type.UNMODDED) {
+                                unlistenModLog(data.stream);
+                            }
+                        }
+                        if (message.type.equals("MESSAGE")) {
+                            listener.messageReceived(message);
+                        }
+                        if (message.error != null && !message.error.isEmpty()) {
+                            LOGGER.warning("[PubSub] Errror: " + message);
+                        }
+                    }
+                    
+                    @Override
+                    public void handleSent(String sent) {
+                        listener.info("<-- " + Helper.removeToken(token, sent));
+                    }
+                    
+                    @Override
+                    public void handleDisconnect() {
+                        
+                    }
+                    
+                    @Override
+                    public void handleConnect(JWSClient c) {
+                        startPinging();
+                        sendAllTopics();
+                    }
+                });
+            }
+            catch (URISyntaxException ex) {
+                LOGGER.warning("[PubSub] Invalid server: "+server);
+            }
+            c.setDebugPrefix("[PubSub] ");
+            c.init();
         }
     }
     
     public void disconnect() {
-        c.disconnect();
+        if (c != null) {
+            c.disconnect();
+        }
     }
     
     public void checkConnection() {
         sendPing();
     }
     
+    public boolean isConnected() {
+        return c != null && c.isOpen();
+    }
+    
     public void reconnect() {
-        c.reconnect();
+        if (c != null) {
+            c.reconnect();
+        }
     }
     
 }

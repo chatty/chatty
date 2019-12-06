@@ -6,6 +6,7 @@ import chatty.Room;
 import chatty.lang.Language;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.gui.components.settings.SettingsUtil;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -119,6 +120,7 @@ public class MainMenu extends JMenuBar {
         addCheckboxItemSetting(titleOptions, "titleLongerUptime");
         addCheckboxItemSetting(titleOptions, "titleShowChannelState");
         addCheckboxItemSetting(titleOptions, "titleShowViewerCount");
+        addCheckboxItemSetting(titleOptions, "titleConnections");
         titleOptions.addSeparator();
         addCheckboxItemSetting(titleOptions, "simpleTitle");
         
@@ -282,7 +284,12 @@ public class MainMenu extends JMenuBar {
      * @return 
      */
     public final JMenuItem addCheckboxItemSetting(JMenu menu, String key) {
-        return addCheckboxItem(menu, key, Language.getString("menubar.setting."+key));
+        JMenuItem item = addCheckboxItem(menu, key, Language.getString("menubar.setting."+key));
+        String tooltip = Language.getStringNull("menubar.setting."+key+".tip");
+        if (tooltip != null) {
+            item.setToolTipText(SettingsUtil.addTooltipLinebreaks(tooltip));
+        }
+        return item;
     }
     
     /**

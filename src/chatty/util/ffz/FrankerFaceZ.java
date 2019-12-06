@@ -75,6 +75,10 @@ public class FrankerFaceZ {
         return ws.getStatus();
     }
     
+    public boolean isWsConnected() {
+        return ws.isConnected();
+    }
+    
     public void joined(String room) {
         room = Helper.toStream(room);
         ws.addRoom(room);
