@@ -209,8 +209,8 @@ public class MainMenu extends JMenuBar {
         setIcon(helpItem, "help-browser.png");
         help.addSeparator();
         addItem(help,"dialog.updates");
-        help.addSeparator();
-        addItem(help,"news","Announcements");
+        //help.addSeparator();
+        //addItem(help,"news","Announcements");
         
         
         add(main);

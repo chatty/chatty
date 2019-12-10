@@ -138,7 +138,7 @@ public class MainGui extends JFrame implements Runnable {
     private SRL srl;
     private LivestreamerDialog livestreamerDialog;
     private UpdateDialog updateDialog;
-    private NewsDialog newsDialog;
+    //private NewsDialog newsDialog;
     private EmotesDialog emotesDialog;
     private FollowersDialog followerDialog;
     private FollowersDialog subscribersDialog;
@@ -288,7 +288,7 @@ public class MainGui extends JFrame implements Runnable {
         srl = new SRL(this, client.speedrunsLive, contextMenuListener);
         livestreamerDialog = new LivestreamerDialog(this, linkLabelListener, client.settings);
         updateDialog = new UpdateDialog(this, linkLabelListener, client.settings,() -> exit());
-        newsDialog = new NewsDialog(this, client.settings);
+        //newsDialog = new NewsDialog(this, client.settings);
         
         client.settings.addSettingChangeListener(new MySettingChangeListener());
         client.settings.addSettingsListener(new MySettingsListener());
@@ -842,7 +842,7 @@ public class MainGui extends JFrame implements Runnable {
                 // it can be centered on it correctly, if that is necessary
                 reopenWindows();
                 
-                newsDialog.autoRequestNews(true);
+                //newsDialog.autoRequestNews(true);
                 
                 client.init();
             }
@@ -1400,7 +1400,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             } else if (type.equals("announcement")) {
                 if (ref.equals("show")) {
-                    newsDialog.showDialog();
+                    //newsDialog.showDialog();
                 }
             }
         }
@@ -1478,7 +1478,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("about")) {
                 openHelp("");
             } else if (cmd.equals("news")) {
-                newsDialog.showDialog();
+                //newsDialog.showDialog();
             } else if (cmd.equals("settings")) {
                 getSettingsDialog().showSettings();
             } else if (cmd.equals("saveSettings")) {
