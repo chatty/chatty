@@ -13,11 +13,15 @@ import chatty.gui.StyleServer;
 import chatty.gui.UrlOpener;
 import chatty.gui.MainGui;
 import chatty.User;
+import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.components.Channel;
 import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.emoji.EmojiUtil;
+import chatty.util.ChattyMisc;
+import chatty.util.ChattyMisc.CombinedEmotesInfo;
+import chatty.util.CombinedEmoticon;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
@@ -2418,6 +2422,66 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         // Channel based (may also have a emoteset restriction)
         HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
         findEmoticons(user, channelEmotes, text, ranges, rangesStyle);
+        
+        // Special Combined Emotes
+        CombinedEmotesInfo cei = ChattyMisc.getCombinedEmotesInfo();
+        if (!cei.isEmpty()) {
+            int baseStart = -1;
+            int lastEnd = -1;
+            Map<Integer, Integer> changes = new HashMap<>();
+            Map<Integer, MutableAttributeSet> styleChanges = new HashMap<>();
+            java.util.List<Emoticon> emotes = new ArrayList<>();
+            Iterator<Entry<Integer, Integer>> rangesIt = ranges.entrySet().iterator();
+            // Go through all parts with a special style
+            while (rangesIt.hasNext()) {
+                Entry<Integer, Integer> range = rangesIt.next();
+                int start = range.getKey();
+                int end = range.getValue();
+                MutableAttributeSet style = rangesStyle.get(start);
+                EmoticonImage image = (EmoticonImage) style.getAttribute(Attribute.EMOTICON);
+                // Only affect emotes that aren't GIFs
+                if (image != null && !image.isAnimated()) {
+                    // Check for emote that can overlay over another one, and
+                    // that there is an emote to modify directly before that
+                    if (cei.containsCode(image.getEmoticon().code)
+                            && !emotes.isEmpty()
+                            && lastEnd + 2 == start) {
+                        // Extend original emote to span to the end of this one
+                        changes.put(baseStart, end);
+                        rangesIt.remove();
+                    }
+                    else {
+                        // This isn't an overlay emote, so check if a previous
+                        // combined emote still needs to be created
+                        if (emotes.size() > 1) {
+                            Emoticon emote = main.emoticons.getCombinedEmote(emotes);
+                            styleChanges.put(baseStart, styles.emoticon(emote));
+                        }
+                        // Always reset when it's not an overlay emote
+                        emotes.clear();
+                        baseStart = start;
+                    }
+                    // Add all emotes, if this is not an overlay emote it will
+                    // start empty (and only add each emote only once)
+                    if (!emotes.contains(image.getEmoticon())) {
+                        emotes.add(image.getEmoticon());
+                    }
+                    lastEnd = end;
+                }
+            }
+            // Finish any remaining changes
+            if (emotes.size() > 1) {
+                Emoticon emote = main.emoticons.getCombinedEmote(emotes);
+                styleChanges.put(baseStart, styles.emoticon(emote));
+            }
+            // Apply changes (except removing entries, which is already done)
+            for (Entry<Integer, Integer> entry : changes.entrySet()) {
+                ranges.put(entry.getKey(), entry.getValue());
+            }
+            for (Entry<Integer, MutableAttributeSet> entry : styleChanges.entrySet()) {
+                rangesStyle.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
     
     /**

@@ -11,6 +11,7 @@ import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -34,9 +35,15 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -47,6 +54,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -345,14 +353,26 @@ public class GuiUtil {
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame dialog = new JFrame();
-            dialog.setSize(100, 100);
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            JButton button = new JButton("Shake");
-            button.addActionListener(e -> shake(dialog, 2, 2));
-            dialog.add(button);
-            dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            try {
+                JFrame dialog = new JFrame();
+                dialog.setSize(100, 100);
+                dialog.setLocationRelativeTo(null);
+                dialog.setVisible(true);
+                JButton button = new JButton("Shake");
+                ImageIcon a = new ImageIcon(new URL("https://cdn.betterttv.net/emote/58487cc6f52be01a7ee5f205/1x"));
+                ImageIcon b = new ImageIcon(new URL("https://static-cdn.jtvnw.net/emoticons/v1/123171/1.0"));
+                button.addActionListener(e -> shake(dialog, 2, 2));
+                dialog.add(button, BorderLayout.NORTH);
+                LinkedHashMap<ImageIcon, Integer> map = new LinkedHashMap<>();
+                map.put(b, 0);
+                map.put(a, -8);
+                Debugging.command("overlayframe");
+                dialog.add(new JLabel("text", overlay(map), 0), BorderLayout.CENTER);
+                dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            }
+            catch (MalformedURLException ex) {
+                Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
     
@@ -736,6 +756,53 @@ public class GuiUtil {
         icon.paintIcon(null, g, 0, 0);
         g.dispose();
         return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
+    }
+    
+    public static ImageIcon overlay(LinkedHashMap<ImageIcon, Integer> overlay) {
+        if (overlay == null || overlay.isEmpty()) {
+            return null;
+        }
+        if (overlay.size() == 1) {
+            return overlay.entrySet().iterator().next().getKey();
+        }
+        ImageIcon base = null;
+        int width = 0;
+        int height = 0;
+        int oh = 0;
+        Iterator<Map.Entry<ImageIcon, Integer>> it = overlay.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<ImageIcon, Integer> entry = it.next();
+            ImageIcon icon = entry.getKey();
+            if (base == null) {
+                base = entry.getKey();
+            }
+            width = Integer.max(width, icon.getIconWidth());
+            height = Integer.max(height, icon.getIconHeight());
+            int offset = Math.abs((int)(entry.getValue()/100.0*icon.getIconHeight()));
+            int inclOffset = icon.getIconHeight()+offset;
+            if (inclOffset > height) {
+                oh += inclOffset - height;
+                height = inclOffset;
+            }
+        }
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        Iterator<Map.Entry<ImageIcon, Integer>> it2 = overlay.entrySet().iterator();
+        while (it2.hasNext()) {
+            Map.Entry<ImageIcon, Integer> entry = it2.next();
+            ImageIcon icon = entry.getKey();
+            int offset = (int)(entry.getValue()/100.0*icon.getIconHeight());
+            g.drawImage(icon.getImage(),
+                    (width - icon.getIconWidth()) / 2,
+                    (height - icon.getIconHeight()) / 2 + offset + oh,
+                    null);
+        }
+        if (Debugging.isEnabled("overlayframe")) {
+            g.setColor(Color.BLACK);
+            g.drawRect(0, 0, width - 1, height - 1);
+        }
+        g.dispose();
+        return new ImageIcon(img);
     }
     
 }

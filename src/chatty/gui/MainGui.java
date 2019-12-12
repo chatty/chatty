@@ -324,6 +324,7 @@ public class MainGui extends JFrame implements Runnable {
             client.bttvEmotes.requestEmotes("$global$", false);
         }
         OtherBadges.requestBadges(r -> client.usericonManager.setThirdPartyIcons(r), false);
+        ChattyMisc.request();
         
         // Window states
         windowStateManager = new WindowStateManager(this, client.settings);

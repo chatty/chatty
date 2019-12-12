@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
+import chatty.util.CombinedEmoticon;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -127,6 +128,8 @@ public class Emoticons {
      * Emoticons restricted to a channel (FrankerFaceZ/BTTV).
      */
     private final HashMap<String,HashSet<Emoticon>> streamEmoticons = new HashMap<>();
+    
+    private final Map<String, Emoticon> combinedEmotes = new HashMap<>();
     
     //===============
     // Usable Emotes
@@ -431,6 +434,18 @@ public class Emoticons {
             result = EMPTY_SET;
         }
         return result;
+    }
+    
+    public Emoticon getCombinedEmote(List<Emoticon> emotes) {
+        emotes = new ArrayList<>(emotes);
+        String code = CombinedEmoticon.getCode(emotes);
+        Emoticon emote = combinedEmotes.get(code);
+        if (emote != null) {
+            return emote;
+        }
+        emote = CombinedEmoticon.create(emotes, code);
+        combinedEmotes.put(code, emote);
+        return emote;
     }
     
     public Collection<Emoticon> getLocalTwitchEmotes() {
