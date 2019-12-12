@@ -59,6 +59,7 @@ public class ChattyMisc {
 //        result.put("TopHat", -16);
 //        result.put("SantaHat", -16);
         ///TEST
+        LOGGER.info(String.format("Found %d combined emotes", result.size()));
         combinedEmotesInfo = new CombinedEmotesInfo(result);
     }
     

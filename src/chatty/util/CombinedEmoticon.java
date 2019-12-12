@@ -62,6 +62,7 @@ public class CombinedEmoticon extends Emoticon {
         b.setAnimated(base.isAnimated());
         b.setX2Url(base.urlX2);
         b.setSubType(base.subType);
+        b.addInfo("Special Combined Emote");
         return new CombinedEmoticon(b, emotes);
     }
     
