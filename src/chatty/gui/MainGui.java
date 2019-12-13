@@ -38,7 +38,6 @@ import chatty.gui.colors.MsgColorItem;
 import chatty.gui.colors.MsgColorManager;
 import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.AutoModDialog;
-import chatty.gui.components.ChatRulesDialog;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
 import chatty.gui.components.FollowersDialog;
@@ -145,7 +144,6 @@ public class MainGui extends JFrame implements Runnable {
     private StreamChat streamChat;
     private ModerationLog moderationLog;
     private AutoModDialog autoModDialog;
-    private ChatRulesDialog chatRulesDialog;
     
     // Helpers
     private final Highlighter highlighter = new Highlighter();
@@ -298,9 +296,6 @@ public class MainGui extends JFrame implements Runnable {
         
         moderationLog = new ModerationLog(this);
         autoModDialog = new AutoModDialog(this, client.api, client);
-        
-        chatRulesDialog = new ChatRulesDialog(this);
-        channels.setOnceOffEditListener(chatRulesDialog);
         
         //this.getContentPane().setBackground(new Color(0,0,0,0));
 
@@ -506,15 +501,6 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleChannelAdminDialog();
-            }
-        });
-        
-        addMenuAction("dialog.chatRules", "Dialog: Chat Rules (toggle)",
-                KeyEvent.VK_UNDEFINED, new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                toggleChatRules();
             }
         });
         
@@ -1767,9 +1753,6 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.equals("channelAdmin")) {
                 openChannelAdminDialog(channel.getStreamName());
             }
-            else if (cmd.equals("chatRules")) {
-                openChatRules(channel.getChannel());
-            }
             else if (cmd.equals("closeChannel")) {
                 client.closeChannel(channel.getChannel());
             }
@@ -2316,11 +2299,7 @@ public class MainGui extends JFrame implements Runnable {
         } else if (command.equals("opensubscribers")) {
             openSubscriberDialog();
         } else if (command.equals("openrules")) {
-            if (parameter != null) {
-                openChatRules("#"+parameter);
-            } else {
-                openChatRules();
-            }
+            // Chat rules API removed, but keep this for now
         } else if (command.equals("openstreamchat")) {
             openStreamChat();
         } else if (command.equals("clearstreamchat")) {
@@ -2612,20 +2591,6 @@ public class MainGui extends JFrame implements Runnable {
     private void toggleAutoModDialog() {
         if (!closeDialog(autoModDialog)) {
             openAutoModDialog();
-        }
-    }
-    
-    private void openChatRules() {
-        openChatRules(channels.getLastActiveChannel().getChannel());
-    }
-    
-    private void openChatRules(String channel) {
-        chatRulesDialog.showRules(channel);
-    }
-    
-    private void toggleChatRules() {
-        if (!closeDialog(chatRulesDialog)) {
-            openChatRules();
         }
     }
     
@@ -4244,24 +4209,6 @@ public class MainGui extends JFrame implements Runnable {
         return client.api.getSingeFollower(stream, streamId, user, userId, refresh);
     }
 
-    public void getChatInfo(String stream) {
-        client.api.getChatInfo(stream);
-    }
-    
-    /**
-     * 
-     * @param info Can be null in an error occured
-     */
-    public void setChatInfo(final ChatInfo info) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                chatRulesDialog.setChatInfo(info);
-            }
-        });
-    }
-    
     public String getActiveStream() {
         return channels.getActiveChannel().getStreamName();
     }

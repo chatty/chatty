@@ -207,10 +207,6 @@ public class TwitchApi {
             }, stream);
         }
     }
-
-    public void getChatInfo(String stream) {
-        requests.requestChatInfo(stream);
-    }
     
     public void getFollowers(String stream) {
         followerManager.request(stream);

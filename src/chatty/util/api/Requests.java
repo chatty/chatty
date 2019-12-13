@@ -503,19 +503,6 @@ public class Requests {
     // Chat / Emoticons
     //=================
     
-    public void requestChatInfo(String stream) {
-        if (!Helper.isValidStream(stream)) {
-            return;
-        }
-        String url = "https://api.twitch.tv/api/channels/"+stream+"/chat_properties";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, null);
-            execute(request, r -> {
-                listener.receivedChatInfo(ChatInfo.decode(stream, r.text));
-            });
-        }
-    }
-    
     protected void requestGlobalBadges() {
         String url = "https://badges.twitch.tv/v1/badges/global/display?language=en";
         if (attemptRequest(url)) {

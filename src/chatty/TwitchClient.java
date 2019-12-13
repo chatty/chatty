@@ -47,7 +47,6 @@ import chatty.util.TwitchEmotesApi;
 import chatty.util.UserRoom;
 import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
-import chatty.util.api.ChatInfo;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.EmotesetManager;
 import chatty.util.api.EmoticonSizeCache;
@@ -2258,11 +2257,6 @@ public class TwitchClient {
         @Override
         public void followResult(String message) {
             g.printSystem(message);
-        }
-
-        @Override
-        public void receivedChatInfo(ChatInfo chatInfo) {
-            g.setChatInfo(chatInfo);
         }
 
         @Override

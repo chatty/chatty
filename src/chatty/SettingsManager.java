@@ -596,6 +596,7 @@ public class SettingsManager {
         settings.addString("cmTemplate", "{user}: {message}");
         settings.addBoolean("cmHighlightedOnly", false);
 
+        // Chat rules API removed, but keep this for now
         settings.addBoolean("rulesAutoShow", true);
         settings.addList("rulesShown", new HashSet(), Setting.STRING);
 
