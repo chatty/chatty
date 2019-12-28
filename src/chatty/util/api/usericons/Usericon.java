@@ -206,6 +206,7 @@ public class Usericon implements Comparable {
     public final String restrictionValue;
     
     public final Set<String> usernames;
+    public final Set<String> userids;
     
     public final boolean stop;
     public final boolean first;
@@ -259,6 +260,7 @@ public class Usericon implements Comparable {
         // Usernames Restriction
         //-----------------------
         this.usernames = builder.usernames;
+        this.userids = builder.userids;
 
         //----------------------
         // Image/Image Location
@@ -493,6 +495,7 @@ public class Usericon implements Comparable {
         private String metaDescription = "";
         private String metaUrl = "";
         private Set<String> usernames;
+        private Set<String> userids;
         private String position;
 
         public Builder(Usericon.Type type, int source) {
@@ -595,7 +598,16 @@ public class Usericon implements Comparable {
         }
         
         public Builder setUsernames(Collection<String> usernames) {
-            this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
+            if (usernames != null) {
+                this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
+            }
+            return this;
+        }
+        
+        public Builder setUserids(Collection<String> userids) {
+            if (userids != null) {
+                this.userids = Collections.unmodifiableSet(new HashSet<>(userids));
+            }
             return this;
         }
         

@@ -83,11 +83,18 @@ public class OtherBadges {
             for (Object obj : (JSONArray) data.get("usernames")) {
                 usernames.add((String) obj);
             }
+            Set<String> userids = new HashSet<>();
+            if (data.containsKey("userids")) {
+                for (Object obj : (JSONArray) data.get("userids")) {
+                    userids.add((String) obj);
+                }
+            }
             if (Chatty.DEBUG) {
-                //usernames.add("tduva");
+//                usernames.add("tduva");
+//                userids.add("36194025");
             }
 
-            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames, position);
+            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames, userids, position);
             return icon;
         } catch (Exception ex) {
             LOGGER.warning("Error parsing third-party badge: " + ex);

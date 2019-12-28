@@ -365,12 +365,20 @@ public class UsericonManager {
                 }
             }
         }
-        // Only check if restriction to usernames is set
-        if (icon.usernames != null) {
-            if (!icon.usernames.contains(user.getName())) {
+        // Username/id restriction (can fail only if non-null)
+        boolean usernameR = icon.usernames == null || (user.getName() != null && icon.usernames.contains(user.getName()));
+        boolean useridR = icon.userids == null || (user.getId() != null  && icon.userids.contains(user.getId()));
+        if (icon.usernames != null && icon.userids != null) {
+            // Both are set, so either one may match to not fail
+            if (!usernameR && !useridR) {
                 return false;
             }
         }
+        else if (!usernameR || !useridR) {
+            // Only one set, which also failed
+            return false;
+        }
+        
         // Now check for the other restriction
         if (icon.restriction == null) {
             return true;
