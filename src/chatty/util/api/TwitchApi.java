@@ -80,7 +80,7 @@ public class TwitchApi {
                     req.request.run();
                 }
             }
-        }, CachedBulkManager.NONE);
+        }, "[Api] ", CachedBulkManager.NONE);
     }
     
     private static class Req {

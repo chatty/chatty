@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -119,6 +120,7 @@ public class CachedBulkManager<Key,Item> {
     //-------
     // Global options
     private final Options options;
+    private final String debugPrefix;
 
     // Queries
     private final Map<Object, Query<Key, Item>> queries = new HashMap<>();
@@ -136,10 +138,15 @@ public class CachedBulkManager<Key,Item> {
     private final Set<Key> notFound = new HashSet<>();
     
     public CachedBulkManager(Requester<Key, Item> requester, int settings) {
+        this(requester, "Default", settings);
+    }
+    
+    public CachedBulkManager(Requester<Key, Item> requester, String debugPrefix, int settings) {
         this.requester = requester;
         this.options = new Options(settings);
+        this.debugPrefix = debugPrefix;
         int timerDelay = 10*1000;
-        Timer timer = new Timer("CachedBulkManager", options.contains(DAEMON));
+        Timer timer = new Timer("CachedBulkManager."+debugPrefix, options.contains(DAEMON));
         timer.schedule(new TimerTask() {
 
             @Override
@@ -217,6 +224,23 @@ public class CachedBulkManager<Key,Item> {
         synchronized (LOCK) {
             return option(request, ASAP)
                     && queries.containsValue(request);
+        }
+    }
+    
+    /**
+     * Check if any of the current queries contains the given Key.
+     * 
+     * @param key
+     * @return 
+     */
+    public boolean hasQueryKey(Key key) {
+        synchronized (LOCK) {
+            for (Query q : queries.values()) {
+                if (q.keys.contains(key)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
     
@@ -455,6 +479,8 @@ public class CachedBulkManager<Key,Item> {
         }
         if (lastError.containsKey(key)) {
             long delay = errorDelay(key, q);
+            delay += ThreadLocalRandom.current().nextInt((int)(delay*0.05)+1);
+            Debugging.println("cbm", "%sError delay: %d > %d (%s)", debugPrefix, secondsPassed(lastError, key), delay, key);
             return secondsPassed(lastError, key) > delay;
         }
         return true;
@@ -463,7 +489,7 @@ public class CachedBulkManager<Key,Item> {
     private long errorDelay(Key key, Query<Key, Item> r) {
         int errors = errorCount.getOrDefault(key, 0);
         int base = option(r, ASAP) ? 2 : 10;
-        return (long)Math.min(base * Math.pow(errors, 10), 1800);
+        return (long)Math.min(base * Math.pow(10, errors), 1800);
     }
     
     //===================

@@ -76,7 +76,7 @@ public class TwitchEmotesApi {
                     }
                 });
             }
-        }, CachedBulkManager.DAEMON);
+        }, "[ById] ", CachedBulkManager.DAEMON);
         
         byStream = new CachedBulkManager<>(new CachedBulkManager.Requester<String, Set<EmotesetInfo>>() {
 
@@ -124,7 +124,7 @@ public class TwitchEmotesApi {
                     }
                 });
             }
-        }, CachedBulkManager.DAEMON);
+        }, "[ByStream] ", CachedBulkManager.DAEMON);
         
         bySet = new CachedBulkManager<>(new CachedBulkManager.Requester<String, EmotesetInfo>() {
 
@@ -166,7 +166,7 @@ public class TwitchEmotesApi {
                     }
                 });
             }
-        }, CachedBulkManager.DAEMON);
+        }, "[BySet] ", CachedBulkManager.DAEMON);
     }
     
     public void setTwitchApi(TwitchApi api) {

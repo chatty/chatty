@@ -3,6 +3,7 @@ package chatty.util;
 
 import chatty.Chatty;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -130,6 +131,9 @@ public class UrlRequest {
                     (encoding != null ? ", " + encoding : ""),
                     url));
         } catch (IOException ex) {
+            if (ex instanceof FileNotFoundException) {
+                result.responseCode = 404;
+            }
             LOGGER.warning(String.format("!%s (%s): %s",
                     label, ex, url));
         } finally {

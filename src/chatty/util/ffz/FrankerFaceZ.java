@@ -2,6 +2,7 @@
 package chatty.util.ffz;
 
 import chatty.Helper;
+import chatty.util.RetryManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
@@ -30,19 +31,6 @@ public class FrankerFaceZ {
     
     // State
     private boolean botNamesRequested;
-    
-    /**
-     * The channels that have already been requested in this session.
-     */
-    private final Set<String> alreadyRequested
-            = Collections.synchronizedSet(new HashSet<String>());
-    
-    /**
-     * The channels whose request is currently pending. Channels get removed
-     * from here again once the request result is received.
-     */
-    private final Set<String> requestPending
-            = Collections.synchronizedSet(new HashSet<String>());
 
     /**
      * Feature Friday
@@ -177,19 +165,29 @@ public class FrankerFaceZ {
     private synchronized void request(final Type type, final String stream,
             String id, boolean forcedUpdate) {
         final String url = getUrl(type, id);
-        if (requestPending.contains(url)
-                || (alreadyRequested.contains(url) && !forcedUpdate)) {
-            return;
+        if (forcedUpdate) {
+            requestNow(type, stream, id, url);
         }
-        alreadyRequested.add(url);
-        requestPending.add(url);
-        
+        else {
+            RetryManager.getInstance().retry(url, k -> requestNow(type, stream, id, url));
+        }
+    }
+    
+    private void requestNow(final Type type, final String stream, String id, String url) {
         // Create request and run it in a separate thread
         UrlRequest request = new UrlRequest();
         request.setLabel("FFZ/"+stream);
         request.setUrl(url);
         request.async((result, responseCode) -> {
-            requestPending.remove(url);
+            if (Integer.toString(responseCode).startsWith("4")) {
+                RetryManager.getInstance().setNotFound(url);
+            }
+            else if (responseCode != 200 && result == null) {
+                RetryManager.getInstance().setError(url);
+            }
+            else {
+                RetryManager.getInstance().setSuccess(url);
+            }
             parseResult(type, stream, id, result);
         });
     }
