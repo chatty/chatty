@@ -11,16 +11,16 @@ import org.json.simple.parser.ParseException;
  * @author tduva
  */
 public class MessageData {
-    
+
     public final long created_at = System.currentTimeMillis();
     public final String topic;
     public final String message;
-    
+
     public MessageData(String topic, String message) {
         this.topic = topic;
         this.message = message;
     }
-    
+
     public static MessageData decode(JSONObject data, Map<String, String> userIds) throws ParseException {
         if (data == null) {
             return null;
@@ -30,7 +30,13 @@ public class MessageData {
         if (topic.startsWith("chat_moderator_actions")) {
             return ModeratorActionData.decode(topic, message, userIds);
         }
+        else if (topic.startsWith("channel-points-channel-v1")) {
+            UserinfoMessageData result = UserinfoMessageData.decode(topic, message, userIds);
+            if (result != null) {
+                return result;
+            }
+        }
         return new MessageData(topic, message);
     }
-    
+
 }

@@ -1,6 +1,7 @@
 
 package chatty.util.irc;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -40,6 +41,10 @@ public class MsgTags extends IrcMsgTags {
         return get("custom-reward-id");
     }
     
+    public boolean isFromPubSub() {
+        return isValue("chatty-source", "pubsub");
+    }
+    
     //================
     // Factory Methods
     //================
@@ -66,6 +71,21 @@ public class MsgTags extends IrcMsgTags {
      */
     public static MsgTags create(String... args) {
         return new MsgTags(createTags(args));
+    }
+    
+    /**
+     * Merges the key/value pairs of the two MsgTags objects. If a key appears
+     * in both of them, the value in the first object will be used.
+     * 
+     * @param a
+     * @param b
+     * @return 
+     */
+    public static MsgTags merge(MsgTags a, MsgTags b) {
+        Map<String, String> result = new HashMap<>();
+        b.fill(result);
+        a.fill(result);
+        return new MsgTags(result);
     }
     
 }

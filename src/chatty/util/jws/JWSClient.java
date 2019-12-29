@@ -138,7 +138,8 @@ public class JWSClient implements MessageHandler {
     }
     
     /**
-     * Prepare connection and connect.
+     * Prepare connection and connect. Intended to be used once, although it
+     * would probably work if properly disconnected.
      */
     public void init() {
         startConsumer();
@@ -281,7 +282,7 @@ public class JWSClient implements MessageHandler {
      * Disconnect in order to reconnect.
      */
     public void reconnect() {
-        if (c.isOpen()) {
+        if (!c.isOpen()) {
             return;
         }
         LOGGER.info(debugPrefix+"Closing connection for reconnect");
@@ -298,7 +299,7 @@ public class JWSClient implements MessageHandler {
      * it's unlikely that a close packet will actually go through.
      */
     public void forceReconnect() {
-        if (c.isOpen()) {
+        if (!c.isOpen()) {
             return;
         }
         LOGGER.info(debugPrefix+"Forcing connection close for reconnect");

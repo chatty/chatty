@@ -1,11 +1,14 @@
 
 package chatty;
 
+import chatty.gui.MainGui;
+import chatty.gui.components.textpane.UserNotice;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import chatty.util.commands.Parameters;
+import chatty.util.irc.MsgTags;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -829,6 +832,51 @@ public class Helper {
         parameters.put("display-nick", user.getDisplayNick());
         parameters.put("custom-nick", user.getCustomNick());
         parameters.put("full-nick", user.getFullNick());
+    }
+    
+    private static final Map<UserNotice, javax.swing.Timer> pointsMerge = new HashMap<>();
+    
+    /**
+     * Must be run in EDT.
+     * 
+     * @param newNotice
+     * @param g 
+     */
+    public static void pointsMerge(UserNotice newNotice, MainGui g) {
+        UserNotice result = findPointsMerge(newNotice);
+        if (result == null) {
+            javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
+                pointsMerge.remove(newNotice);
+                g.printUsernotice(newNotice.type, newNotice.user, newNotice.infoText, newNotice.attachedMessage, newNotice.tags);
+            });
+            timer.setRepeats(false);
+            pointsMerge.put(newNotice, timer);
+            timer.start();
+        }
+        else {
+            g.printUsernotice(result.type, result.user, result.infoText, result.attachedMessage, result.tags);
+        }
+    }
+    
+    private static UserNotice findPointsMerge(UserNotice newNotice) {
+        UserNotice found = null;
+        for (Map.Entry<UserNotice, javax.swing.Timer> entry : pointsMerge.entrySet()) {
+            UserNotice stored = entry.getKey();
+            // Attached messages seem to be trimmed depending on source
+            boolean sameAttachedMsg = Objects.equals(
+                    StringUtil.trim(stored.attachedMessage),
+                    StringUtil.trim(newNotice.attachedMessage));
+            if (stored.user.sameUser(newNotice.user) && sameAttachedMsg) {
+                found = stored;
+                entry.getValue().stop();
+            }
+        }
+        if (found != null) {
+            pointsMerge.remove(found);
+            UserNotice main = found.tags.isFromPubSub() ? found : newNotice;
+            return new UserNotice(main, MsgTags.merge(found.tags, newNotice.tags));
+        }
+        return null;
     }
     
 }

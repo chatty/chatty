@@ -65,4 +65,12 @@ public class MsgTagsTest {
         assertEquals(tags1, tags1Reparsed);
     }
     
+    @Test
+    public void testMerge() {
+        MsgTags tags1 = MsgTags.create("a", "1", "b", "2");
+        MsgTags tags2 = MsgTags.create("b", "3", "c", "4");
+        assertEquals(MsgTags.create("a", "1", "b", "2", "c", "4"), MsgTags.merge(tags1, tags2));
+        assertEquals(MsgTags.create("a", "1", "b", "3", "c", "4"), MsgTags.merge(tags2, tags1));
+    }
+    
 }

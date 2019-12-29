@@ -816,6 +816,10 @@ public class User implements Comparable<User> {
         return localUser;
     }
     
+    public synchronized boolean sameUser(User user) {
+        return user != null && user.getChannel().equals(getChannel()) && user.getName().equals(nick);
+    }
+    
     /**
      * Returns true if this user has channel moderator rights, which includes
      * either being a Moderator or the Broadcaster.

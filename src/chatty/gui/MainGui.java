@@ -2985,6 +2985,18 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void printPointsNotice(final User user, final String text, final String message, final MsgTags tags) {
+        SwingUtilities.invokeLater(() -> {
+            UserNotice m = new UserNotice("Points", user, text, message, tags);
+            if (message != null) {
+                Helper.pointsMerge(m, this);
+            }
+            else {
+                printUsernotice(m);
+            }
+        });
+    }
+    
     public void printUsernotice(final String type, final User user, final String text,
             final String message, final MsgTags tags) {
         SwingUtilities.invokeLater(() -> {

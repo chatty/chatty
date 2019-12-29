@@ -28,6 +28,17 @@ public class UserNotice extends InfoMessage {
         this.infoText = infoText;
     }
     
+    /**
+     * Create a new UserNotice similiar to the given one, but with different
+     * tags.
+     *
+     * @param other
+     * @param tags 
+     */
+    public UserNotice(UserNotice other, MsgTags tags) {
+        this(other.type, other.user, other.infoText, other.attachedMessage, tags);
+    }
+    
     private static String makeFullText(String type, String text, String message) {
         if (StringUtil.isNullOrEmpty(message)) {
             return String.format("[%s] %s", type, text);
