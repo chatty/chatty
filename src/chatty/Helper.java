@@ -864,8 +864,8 @@ public class Helper {
             UserNotice stored = entry.getKey();
             // Attached messages seem to be trimmed depending on source
             boolean sameAttachedMsg = Objects.equals(
-                    StringUtil.trim(stored.attachedMessage),
-                    StringUtil.trim(newNotice.attachedMessage));
+                    StringUtil.trimAll(stored.attachedMessage),
+                    StringUtil.trimAll(newNotice.attachedMessage));
             if (stored.user.sameUser(newNotice.user) && sameAttachedMsg) {
                 found = stored;
                 entry.getValue().stop();
@@ -873,8 +873,10 @@ public class Helper {
         }
         if (found != null) {
             pointsMerge.remove(found);
-            UserNotice main = found.tags.isFromPubSub() ? found : newNotice;
-            return new UserNotice(main, MsgTags.merge(found.tags, newNotice.tags));
+            UserNotice ps = found.tags.isFromPubSub() ? found : newNotice;
+            UserNotice irc = found.tags.isFromPubSub() ? newNotice : found;
+            // Use irc msg, since that would also have the emote tags
+            return new UserNotice(ps.type, ps.user, ps.infoText, irc.attachedMessage, MsgTags.merge(found.tags, newNotice.tags));
         }
         return null;
     }
