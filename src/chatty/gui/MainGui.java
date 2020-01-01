@@ -2026,11 +2026,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (e.getActionCommand().equals("ffzlink")) {
                 url = TwitchUrl.makeFFZUrl();
             } else if (e.getActionCommand().equals("emoteId")) {
-                if (emote.type == Emoticon.Type.FFZ) {
-                    url = TwitchUrl.makeFFZEmoteUrl(emote.stringId);
-                } else if (emote.type == Emoticon.Type.TWITCH) {
-                    url = TwitchUrl.makeTwitchemotesUrl(emote.stringId);
-                }
+                url = TwitchUrl.makeEmoteUrl(emote.type, emote.stringId);
             } else if (e.getActionCommand().equals("emoteCreator")) {
                 if (emote.type == Emoticon.Type.FFZ) {
                     url = TwitchUrl.makeFFZUserUrl(emote.creator);

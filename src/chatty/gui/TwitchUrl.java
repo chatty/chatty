@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.util.StringUtil;
+import chatty.util.api.Emoticon;
 import java.awt.Component;
 import java.util.Collection;
 import java.util.Iterator;
@@ -73,10 +74,6 @@ public class TwitchUrl {
         return "https://frankerfacez.com";
     }
     
-    public static String makeFFZEmoteUrl(String id) {
-        return "https://www.frankerfacez.com/emoticons/"+id;
-    }
-    
     public static String makeFFZUserUrl(String user) {
         return "https://www.frankerfacez.com/emoticons/user/"+StringUtil.toLowerCase(user);
     }
@@ -85,8 +82,13 @@ public class TwitchUrl {
         return "https://www.nightdev.com/betterttv/";
     }
     
-    public static String makeTwitchemotesUrl(String id) {
-        return "https://twitchemotes.com/emote/"+id;
+    public static String makeEmoteUrl(Emoticon.Type type, String id) {
+        switch (type) {
+            case FFZ: return "https://www.frankerfacez.com/emoticons/"+id;
+            case TWITCH: return "https://twitchemotes.com/emote/"+id;
+            case BTTV: return "https://betterttv.com/emotes/"+id;
+        }
+        return null;
     }
     
     public static final String MULTITWITCH = "http://multitwitch.tv/";

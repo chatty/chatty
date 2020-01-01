@@ -45,8 +45,9 @@ public class EmoteContextMenu extends ContextMenu {
             }
         }
         addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
-        if (emote.type == Emoticon.Type.TWITCH || emote.type == Emoticon.Type.FFZ) {
-            addItem("emoteId", "ID: "+emote.stringId, ICON_WEB);
+        if (emote.type == Emoticon.Type.TWITCH || emote.type == Emoticon.Type.FFZ
+                || emote.type == Emoticon.Type.BTTV) {
+            addItem("emoteId", "ID: "+StringUtil.shortenTo(emote.stringId, 14), ICON_WEB);
         }
         
         // Non-Twitch Emote Information
