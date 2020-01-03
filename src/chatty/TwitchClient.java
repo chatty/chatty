@@ -22,6 +22,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.gui.components.updating.Stuff;
@@ -1298,8 +1299,11 @@ public class TwitchClient {
             testUser.setColor(parameter);
         } else if (command.equals("testupdatenotification")) {
             g.setUpdateAvailable("[test]", null);
-        } else if (command.equals("testannouncement")) {
-            g.setAnnouncementAvailable(Boolean.parseBoolean(parameter));
+        } else if (command.equals("testnewevent")) {
+            g.setSystemEventCount(Integer.valueOf(parameter));
+        } else if (command.equals("addevent")) {
+            String[] split = parameter.split(" ", 3);
+            EventLog.addSystemEvent(split[0], split[1], split[2]);
         } else if (command.equals("removechan")) {
             g.removeChannel(parameter);
         } else if (command.equals("tt")) {
@@ -2681,13 +2685,20 @@ public class TwitchClient {
                     user.getName(),
                     c.getUsername(),
                     user.getStream());
-            if (settings.listContains("scopes", TokenInfo.Scope.CHAN_MOD.scope)
-                    && user.hasChannelModeratorRights()
+            if (user.hasChannelModeratorRights()
                     && user.getName().equals(c.getUsername())
                     && user.getStream() != null) {
-                Debugging.println("pubsub", "Listen");
-                pubsub.setLocalUsername(c.getUsername());
-                pubsub.listenModLog(user.getStream(), settings.getString("token"));
+                if (settings.listContains("scopes", TokenInfo.Scope.CHAN_MOD.scope)) {
+                    Debugging.println("pubsub", "Listen");
+                    pubsub.setLocalUsername(c.getUsername());
+                    pubsub.listenModLog(user.getStream(), settings.getString("token"));
+                }
+                else {
+                    EventLog.addSystemEvent("access.modlog", "Moderation Log Access",
+                            "The moderation log (and some related features) now "
+                            + "require the \"Moderate Channel\" access. Go to "
+                            + "\"Main - Login..\" to view and upgrade your access.");
+                }
             }
         }
         

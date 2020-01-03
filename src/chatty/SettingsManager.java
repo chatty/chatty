@@ -464,6 +464,7 @@ public class SettingsManager {
         settings.addBoolean("tips", true);
         settings.addLong("lastTip", 0);
         
+        settings.addList("readEvents", new ArrayList<>(), Setting.STRING);
 
         //=====================
         // Basic Chat Behaviour

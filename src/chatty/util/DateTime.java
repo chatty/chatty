@@ -153,6 +153,13 @@ public class DateTime {
         return DateTime.ago(time, 0, 1, 0);
     }
     
+    public static String agoSingleCompactAboveMinute(long time) {
+        if (System.currentTimeMillis() - time > 60*1000) {
+            return DateTime.ago(time, 0, 1, 0);
+        }
+        return "now";
+    }
+    
     public static String agoSingleVerbose(long time) {
         return duration(System.currentTimeMillis() - time, 1, 0,
                 Formatting.VERBOSE);

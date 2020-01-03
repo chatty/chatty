@@ -758,6 +758,15 @@ public class GuiUtil {
         return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
     }
     
+    public static ImageIcon getIcon(Object o, String name) {
+        return new ImageIcon(Toolkit.getDefaultToolkit().createImage(o.getClass().getResource(name)));
+    }
+    
+    public static ImageIcon createEmptyIcon(int width, int height) {
+        BufferedImage res = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        return new ImageIcon(res);
+    }
+    
     public static ImageIcon overlay(LinkedHashMap<ImageIcon, Integer> overlay) {
         if (overlay == null || overlay.isEmpty()) {
             return null;

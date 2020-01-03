@@ -4,33 +4,34 @@ package chatty.gui;
 import chatty.Chatty;
 import chatty.Room;
 import chatty.lang.Language;
-import chatty.gui.components.LinkLabel;
-import chatty.gui.components.LinkLabelListener;
 import chatty.gui.components.settings.SettingsUtil;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.event.MenuListener;
@@ -55,24 +56,21 @@ public class MainMenu extends JMenuBar {
     
     private final ItemListener itemListener;
     private final ActionListener actionListener;
-    private final LinkLabelListener linkLabelListener;
     
     // Set here because it is used more than once
     private final String IGNORED_LABEL = Language.getString("menubar.dialog.ignoredMessages");
     private final String HIGHLIGHTS_LABEL = Language.getString("menubar.dialog.highlightedMessages");
     
-    private final Notification notification = new Notification();
+    private final NotifyIcons notifyIcons = new NotifyIcons();
     
     /**
      * Stores all the menu items associated with a key
      */
     private final HashMap<String,JMenuItem> menuItems = new HashMap<>();
     
-    public MainMenu(ActionListener actionListener, ItemListener itemListener,
-            LinkLabelListener linkLabelListener) {
+    public MainMenu(ActionListener actionListener, ItemListener itemListener) {
         this.itemListener = itemListener;
         this.actionListener = actionListener;
-        this.linkLabelListener = linkLabelListener;
         
         //this.setBackground(Color.black);
         //this.setForeground(Color.white);
@@ -138,6 +136,8 @@ public class MainMenu extends JMenuBar {
         view.addSeparator();
         highlights = addItem(view,"dialog.highlightedMessages",HIGHLIGHTS_LABEL);
         ignored = addItem(view,"dialog.ignoredMessages",IGNORED_LABEL);
+        view.addSeparator();
+        addItem(view, "dialog.eventLog");
         view.addSeparator();
         addItem(view, "dialog.search");
         
@@ -207,7 +207,7 @@ public class MainMenu extends JMenuBar {
         helpItem.setAccelerator(KeyStroke.getKeyStroke("F1"));
         setIcon(helpItem, "help-browser.png");
         help.addSeparator();
-        addItem(help,"dialog.updates");
+        addItem(help, "dialog.updates");
         //help.addSeparator();
         //addItem(help,"news","Announcements");
         
@@ -336,6 +336,10 @@ public class MainMenu extends JMenuBar {
         item.setIcon(new ImageIcon(MainMenu.class.getResource(name)));
     }
     
+    //==========================
+    // Update menu entries
+    //==========================
+    
     /**
      * Updates the labels for the highlights/ignored messages menu entries.
      * 
@@ -410,145 +414,164 @@ public class MainMenu extends JMenuBar {
         repaint();
     }
     
+    //==========================
+    // Notifications
+    //==========================
+    
     public void setUpdateNotification(boolean enabled) {
-        notification.setUpdateNotification(enabled);
+        notifyIcons.addItem("update", 1, "Update", "download.png", unused -> {
+            String id = "dialog.updates";
+            menuItems.get(id).getAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, id));
+        });
     }
     
-    public void setAnnouncementNotification(boolean enabled) {
-        notification.setAnnouncementNotification(enabled);
-    }
-
-    private class Notification {
-        
-        private static final String MESSAGE_BASE = "<html>"
-            + "<body style='text-align: right;padding-right:5px;'>";
-        
-        /**
-         * Stores whether the notification label has been added to the layout
-         * yet, so it's guaranteed to be only added once.
-         */
-        private boolean addedLabelToLayout;
-        
-        /**
-         * Store whether the notification is currently set to the smaller
-         * version, so it doesn't constantly change unless necessary.
-         */
-        private boolean updateMessageSmaller;
-
-        private String message;
-        private String shortMessage;
-        private Dimension preferredSize = new Dimension();
-        private LinkLabel notification;
-        private boolean updateNotificationEnabled;
-        private boolean announcementNotificationEnabled;
-        
-//        private Timer flashTimer;
-//        private int flashCount;
-
-        public void setUpdateNotification(boolean enabled) {
-            if (updateNotificationEnabled != enabled) {
-                updateNotificationEnabled = enabled;
-                setNotification();
-            }
-        }
-
-        public void setAnnouncementNotification(boolean enabled) {
-            if (announcementNotificationEnabled != enabled) {
-                announcementNotificationEnabled = enabled;
-                setNotification();
-            }
-        }
-
-        private void makeText() {
-            message = MESSAGE_BASE;
-            shortMessage = MESSAGE_BASE;
-            if (announcementNotificationEnabled) {
-                message += "[announcement:show Announcement]";
-                shortMessage += "[announcement:show News]";
-            }
-            if (updateNotificationEnabled) {
-                if (announcementNotificationEnabled) {
-                    message += "&nbsp;|&nbsp;";
-                    shortMessage += "&nbsp;|&nbsp;";
-                }
-                message += "[update:show Update&nbsp;available!]";
-                shortMessage += "[update:show Update!]";
-            }
-        }
-        
-        private void setNotification() {
-            makeText();
-            if (!addedLabelToLayout) {
-                addNotificationToLayout();
-                addedLabelToLayout = true;
-            }
-            
-            // Save preferred size of regular version to compare to in listener
-            notification.setText(message);
-            preferredSize = notification.getPreferredSize();
-            
-            // This needs to be improved/tested more first
-//            if (announcementNotificationEnabled || updateNotificationEnabled) {
-//                flashCount = 9;
-//
-//                if (flashTimer != null) {
-//                    flashTimer.stop();
-//                    flashTimer = null;
-//                }
-//                flashTimer = new Timer(500, new ActionListener() {
-//
-//                    @Override
-//                    public void actionPerformed(ActionEvent e) {
-//                        System.out.println(flashCount);
-//                        if (flashCount % 2 == 0) {
-//                            notification.addRule("a { color: blue; }");
-//                        } else {
-//                            notification.addRule("a { color: red; }");
-//
-//                        }
-//                        if (flashCount == 0) {
-//                            flashTimer.stop();
-//                            System.out.println("Stop");
-//                        } else {
-//                            flashCount--;
-//                        }
-//                    }
-//                });
-//                flashTimer.setRepeats(true);
-//                flashTimer.start();
-//            }
-        }
-
-        private void addNotificationToLayout() {
-            notification = new LinkLabel("", linkLabelListener);
-            
-            /**
-             * Add listener to change notification text to a shorter version
-             * when less space is available ("Update available!" -> "Update!").
-             */
-            notification.addComponentListener(new ComponentAdapter() {
-
-                @Override
-                public void componentResized(ComponentEvent e) {
-                    Dimension actualSize = e.getComponent().getSize();
-                    if (actualSize.width < preferredSize.width + 10) {
-                        if (!updateMessageSmaller) {
-                            notification.setText(shortMessage);
-                            updateMessageSmaller = true;
-                            //System.out.println("made smaller");
-                        }
-                    } else {
-                        if (updateMessageSmaller) {
-                            notification.setText(message);
-                            updateMessageSmaller = false;
-                            //System.out.println("made bigger again");
-                        }
-                    }
-                }
+    public void setSystemEventCount(int count) {
+        if (count > 0) {
+            notifyIcons.addItem("chattyInfo", 0, String.valueOf(count), "warning.png", id -> {
+                actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, "dialog.chattyInfo"));
             });
+        }
+        else {
+            notifyIcons.removeItem("chattyInfo");
+        }
+    }
+    
+    private class NotifyIcons {
+        
+        /**
+         * Associates an item id with a label.
+         */
+        private final Map<String, JLabel> current = new HashMap<>();
+        
+        /**
+         * Stores the target position for an added label.
+         */
+        private final Map<JLabel, Integer> targetPositions = new HashMap<>();
+        
+        /**
+         * Stores whether a label is currently flashing.
+         */
+        private final Map<JLabel, Boolean> flashing = new HashMap<>();
+        
+        /**
+         * For aligning to the right.
+         */
+        private final Component glue = Box.createHorizontalGlue();
+        
+        /**
+         * Add a notification item. If an item with the same id already exists
+         * it's text will be updated.
+         * 
+         * @param id Item id, also sent to the consumer
+         * @param pos The position compared to other items (not other components
+         * in general)
+         * @param text The text after the icon
+         * @param imageFile The icon file name
+         * @param consumer Called when a click on this item occurs
+         */
+        public void addItem(String id, int pos, String text, String imageFile, Consumer<String> consumer) {
+            JLabel label = current.get(id);
+            if (label == null) {
+                label = new JLabel();
+                int iconSize = getGraphics().getFontMetrics(label.getFont()).getHeight();
+                ImageIcon icon = GuiUtil.getScaledIcon(GuiUtil.getIcon(this, imageFile), iconSize, iconSize);
+                label.setIcon(icon);
+                label.setIconTextGap(0);
+                label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 4));
+                label.setToolTipText(Language.getStringNull("menubar.notification."+id));
+                label.addMouseListener(new MouseAdapter() {
 
-            add(notification);
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        consumer.accept(id);
+                    }
+
+                });
+                if (current.isEmpty()) {
+                    add(glue);
+                }
+                add(label, findInsertionPos(pos));
+                current.put(id, label);
+                targetPositions.put(label, pos);
+                revalidate();
+                repaint();
+            }
+            if (!label.getText().equals(text)) {
+                flash(label);
+            }
+            label.setText(text);
+        }
+        
+        /**
+         * Find the index where an element with the given targetPos should be
+         * inserted.
+         * 
+         * @param targetPos The position relative to other already added
+         * components
+         * @return The index where the component should be inserted
+         */
+        private int findInsertionPos(int targetPos) {
+            for (int i = 0;i < getComponentCount(); i++) {
+                Component c = getComponent(i);
+                Integer cPos = targetPositions.get(c);
+                if (cPos != null && targetPos <= cPos) {
+                    return i;
+                }
+            }
+            return getComponentCount();
+        }
+        
+        /**
+         * Flash the icon of the given label for a few seconds, if it's not
+         * already flashing.
+         * 
+         * @param label 
+         */
+        private void flash(JLabel label) {
+            Icon icon = label.getIcon();
+            if (icon != null && !flashing.containsKey(label)) {
+                flashing.put(label, Boolean.TRUE);
+                ImageIcon grayIcon = GuiUtil.createEmptyIcon(icon.getIconWidth(), icon.getIconHeight());
+                Timer timer = new Timer(450, e -> {
+                    if (label.getIcon() == icon) {
+                        label.setIcon(grayIcon);
+                    }
+                    else {
+                        label.setIcon(icon);
+                    }
+                });
+                timer.setRepeats(true);
+                timer.start();
+                Timer timer2 = new Timer(3000, e-> {
+                    timer.stop();
+                    label.setIcon(icon);
+                    flashing.remove(label);
+                });
+                timer2.setRepeats(false);
+                timer2.start();
+            }
+        }
+        
+        /**
+         * Remove the item with the given id, if it exists.
+         * 
+         * @param id The item id
+         */
+        public void removeItem(String id) {
+            JLabel label = current.get(id);
+            if (label != null) {
+                remove(label);
+                current.remove(id);
+                targetPositions.remove(label);
+                if (current.isEmpty()) {
+                    remove(glue);
+                }
+                revalidate();
+                repaint();
+            }
         }
         
     }
+
 }

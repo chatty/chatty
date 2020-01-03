@@ -40,11 +40,11 @@ import chatty.gui.components.AddressbookDialog;
 import chatty.gui.components.AutoModDialog;
 import chatty.gui.components.EmotesDialog;
 import chatty.gui.components.ErrorMessage;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.gui.components.FollowersDialog;
 import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.LivestreamerDialog;
 import chatty.gui.components.ModerationLog;
-import chatty.gui.components.NewsDialog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
@@ -144,6 +144,7 @@ public class MainGui extends JFrame implements Runnable {
     private StreamChat streamChat;
     private ModerationLog moderationLog;
     private AutoModDialog autoModDialog;
+    private EventLog eventLog;
     
     // Helpers
     private final Highlighter highlighter = new Highlighter();
@@ -296,6 +297,8 @@ public class MainGui extends JFrame implements Runnable {
         
         moderationLog = new ModerationLog(this);
         autoModDialog = new AutoModDialog(this, client.api, client);
+        eventLog = new EventLog(this);
+        EventLog.setMain(eventLog);
         
         //this.getContentPane().setBackground(new Color(0,0,0,0));
 
@@ -303,7 +306,7 @@ public class MainGui extends JFrame implements Runnable {
         
         // Main Menu
         MainMenuListener menuListener = new MainMenuListener();
-        menu = new MainMenu(menuListener,menuListener, linkLabelListener);
+        menu = new MainMenu(menuListener, menuListener);
         setJMenuBar(menu);
 
         addListeners();
@@ -337,6 +340,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.addWindow(streamChat, "streamChat", true, true);
         windowStateManager.addWindow(userInfoDialog.getDummyWindow(), "userInfo", true, false);
         windowStateManager.addWindow(autoModDialog, "autoMod", true, true);
+        windowStateManager.addWindow(eventLog, "eventLog", true, true);
         
         if (System.getProperty("java.version").equals("1.8.0_161")
                 || System.getProperty("java.version").equals("1.8.0_162")) {
@@ -501,6 +505,15 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 toggleChannelAdminDialog();
+            }
+        });
+        
+        addMenuAction("dialog.eventLog", "Dialog: Event log (toggle)",
+                KeyEvent.VK_A, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleEventLog();
             }
         });
         
@@ -1510,6 +1523,8 @@ public class MainGui extends JFrame implements Runnable {
                 client.joinChannel(channel);
             } else if (cmd.equals("refreshRooms")) {
                 loadRooms(true);
+            } else if (cmd.equals("dialog.chattyInfo")) {
+                openEventLog(1);
             }
         }
 
@@ -2442,6 +2457,24 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
+    private void openEventLog(int tab) {
+        windowStateManager.setWindowPosition(eventLog);
+        eventLog.setVisible(true);
+        if (tab > -1) {
+            eventLog.setTab(tab);
+        }
+    }
+    
+    private void toggleEventLog() {
+        if (!closeDialog(eventLog)) {
+            openEventLog(-1);
+        }
+    }
+    
+    public void setSystemEventCount(int count) {
+        menu.setSystemEventCount(count);
+    }
+    
     private void openHelp(String ref) {
         openHelp(null, ref, false);
     }
@@ -2756,6 +2789,9 @@ public class MainGui extends JFrame implements Runnable {
             GuiUtil.showCommandNotification(client.settings.getString("nCommand"),
                     title, message, channel);
         }
+        eventLog.add(new chatty.gui.components.eventlog.Event(
+                chatty.gui.components.eventlog.Event.Type.NOTIFICATION,
+                null, title, message, foreground, background));
     }
     
     public void showTestNotification(final String channel, String title, String text) {
@@ -3567,10 +3603,6 @@ public class MainGui extends JFrame implements Runnable {
                 updateDialog.showDialog();
             }
         });
-    }
-    
-    public void setAnnouncementAvailable(boolean enabled) {
-        menu.setAnnouncementNotification(enabled);
     }
     
     public void showSettings() {
