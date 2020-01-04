@@ -83,6 +83,8 @@ public class Chatty {
      * When this program was started
      */
     private static final ElapsedTime UPTIME = new ElapsedTime(true);
+    
+    private static final long STARTED_TIME = System.currentTimeMillis();
 
     /**
      * Custom Settings directory, either the current working directory if the
@@ -284,6 +286,17 @@ public class Chatty {
     
     public static long uptimeSeconds() {
         return UPTIME.secondsElapsedSync();
+    }
+    
+    /**
+     * The time in milliseconds when Chatty was started. For uptime using one of
+     * the uptime functions is probably preferable, since they aren't influenced
+     * by system time changes.
+     *
+     * @return 
+     */
+    public static long startedTime() {
+        return STARTED_TIME;
     }
     
     public static String[] getArgs() {

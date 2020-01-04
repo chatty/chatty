@@ -5,6 +5,8 @@ import chatty.gui.MainGui;
 import chatty.lang.Language;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -25,6 +27,7 @@ public class EventLog extends JDialog {
     private final EventList systemList;
     private final JTabbedPane tabs;
     private final JButton systemMarkRead;
+    private final Set<String> sessionReadEvents = new HashSet<>();
     
     public EventLog(MainGui g) {
         super(g);
@@ -53,11 +56,18 @@ public class EventLog extends JDialog {
         tabs.addTab("Chatty Info", systemPanel);
         
         systemMarkRead.addActionListener(e -> {
-            if (g.getSettings().getList("readEvents").isEmpty()) {
+            if (g.getSettings().getList("readEvents").isEmpty()
+                    && sessionReadEvents.isEmpty()) {
                 JOptionPane.showMessageDialog(this, Language.getString("eventLog.firstMarkReadNote"));
             }
             for (String id : systemList.getEventIds()) {
-                g.getSettings().setAdd("readEvents", id);
+                // Some events should only be marked as read per session
+                if (id.startsWith("session.")) {
+                    sessionReadEvents.add(id);
+                }
+                else {
+                    g.getSettings().setAdd("readEvents", id);
+                }
             }
             updateEventState();
         });
@@ -88,7 +98,8 @@ public class EventLog extends JDialog {
     }
     
     protected boolean isReadEvent(String id) {
-        return id != null && g.getSettings().listContains("readEvents", id);
+        return id != null && (g.getSettings().listContains("readEvents", id)
+                || sessionReadEvents.contains(id));
     }
     
     private void updateEventState() {

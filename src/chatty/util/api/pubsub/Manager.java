@@ -1,6 +1,8 @@
 
 package chatty.util.api.pubsub;
 
+import chatty.Chatty;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
@@ -199,7 +201,17 @@ public class Manager {
         Debugging.println("pubsub", "[PubSub] Send: %s, Pending: %s",
                 readyTopics, pendingTopics);
         for (String topic : readyTopics) {
-            c.addTopic(topic, token);
+            boolean success = c.addTopic(topic, token);
+            if (!success) {
+                // Prefixed with "session" so it can create a notification again
+                // next session, even if marked as read
+                EventLog.addSystemEvent("session.pubsub.maxtopics",
+                        "Too many channels",
+                        "The amount of channels you have joined (especially "
+                        + "where you are a moderator) will cause some features "
+                                + "to not fully work, such as displaying Mod "
+                                + "Actions, AutoMod and others.");
+            }
         }
     }
     
