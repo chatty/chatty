@@ -43,6 +43,14 @@ public class RetryManager {
         return INSTANCE;
     }
     
+    /**
+     * For now, this is not being used but instead a request made directly in
+     * case of forced refresh, which has the advantage of being pretty simple,
+     * but the disadvantage of making another request even in the case when a
+     * request is already pending. But when it is only manually triggered it
+     * shouldn't be too bad. Still, looking into this again sometime may make
+     * sense.
+     */
 //    /**
 //     * Execute the function once, even if the same key already had a success or
 //     * not found result. The function must always call one of the result methods

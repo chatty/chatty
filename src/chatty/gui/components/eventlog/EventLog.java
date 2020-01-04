@@ -74,9 +74,10 @@ public class EventLog extends JDialog {
         
         add(tabs, BorderLayout.CENTER);
         
-        for (int i=0;i<100;i++) {
-            systemList.addEvent(new Event(Event.Type.SYSTEM, null, "Test "+i, "Note: You can also open the Event Log through the 'View'-menu. "+i, null, null));
-        }
+        // TEST
+//        for (int i=0;i<100;i++) {
+//            systemList.addEvent(new Event(Event.Type.SYSTEM, null, "Test "+i, "Note: You can also open the Event Log through the 'View'-menu. "+i, null, null));
+//        }
         
         setSize(300, 400);
     }
