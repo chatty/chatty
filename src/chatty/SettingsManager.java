@@ -557,7 +557,7 @@ public class SettingsManager {
         settings.addString("logPath", "");
         settings.addString("logSplit", "never");
         settings.addBoolean("logSubdirectories", false);
-        settings.addString("logTimestamp", "[HH:mm:ss]");
+        settings.addString("logTimestamp", "[yyyy-MM-dd HH:mm:ss]");
         settings.addBoolean("logLockFiles", true);
         
         // TAB Completion
