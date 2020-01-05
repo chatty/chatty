@@ -577,18 +577,6 @@ public class Requests {
         }
     }
     
-    public void requestRooms(String channelId, String stream) {
-        String url = "https://api.twitch.tv/kraken/chat/"+channelId+"/rooms";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(api.defaultToken);
-            execute(request, r -> {
-                RoomsInfo result = Parsing.parseRoomsInfo(stream, r.text);
-                listener.roomsInfo(result);
-            });
-        }
-    }
-    
     //===================
     // Management Methods
     //===================

@@ -44,6 +44,4 @@ public interface TwitchApiResultListener {
     void followResult(String message);
     
     void autoModResult(String result, String msgId);
-    
-    void roomsInfo(RoomsInfo info);
 }

@@ -2,7 +2,6 @@
 package chatty.gui;
 
 import chatty.Chatty;
-import chatty.Room;
 import chatty.lang.Language;
 import chatty.gui.components.settings.SettingsUtil;
 import java.awt.Component;
@@ -13,14 +12,11 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -149,8 +145,6 @@ public class MainMenu extends JMenuBar {
         addItem(channels, "dialog.addressbook");
         channels.addSeparator();
         addItem(channels, "dialog.joinChannel");
-        channels.addSeparator();
-        setRooms(null);
         
         //-----
         // SRL
@@ -391,27 +385,6 @@ public class MainMenu extends JMenuBar {
                 addItem(srlStreams, "srlRace4"+chan, chan);
             }
         }
-    }
-    
-    private final Set<JMenuItem> roomItems = new HashSet<>();
-    
-    public void setRooms(Collection<Room> rooms) {
-        for (JMenuItem item : roomItems) {
-            channels.remove(item);
-        }
-        roomItems.clear();
-        if (rooms == null || rooms.isEmpty()) {
-            JMenuItem item = addItem(channels, "", Language.getString("menubar.rooms.none"));
-            item.setEnabled(false);
-            roomItems.add(item);
-        } else {
-            for (Room room : rooms) {
-                roomItems.add(addItem(channels, "room:" + room.getChannel(), room.getDisplayName()));
-            }
-        }
-        roomItems.add(addItem(channels, "refreshRooms", Language.getString("menubar.rooms.reload")));
-        revalidate();
-        repaint();
     }
     
     //==========================

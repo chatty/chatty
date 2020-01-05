@@ -55,7 +55,6 @@ import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
-import chatty.util.api.RoomsInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.StreamTagManager.StreamTag;
@@ -271,7 +270,7 @@ public class TwitchClient {
         spamProtection = new SpamProtection();
         spamProtection.setLinesPerSeconds(settings.getString("spamProtection"));
         
-        roomManager = new RoomManager(api, new MyRoomUpdatedListener());
+        roomManager = new RoomManager(new MyRoomUpdatedListener());
         channelFavorites = new ChannelFavorites(settings, roomManager);
         
         c = new TwitchConnection(new Messages(), settings, "main", roomManager);
@@ -2287,12 +2286,6 @@ public class TwitchClient {
             g.setCheerEmotes(emoticons);
         }
 
-        @Override
-        public void roomsInfo(RoomsInfo info) {
-            g.setRooms(info);
-            roomManager.addRoomsInfo(info);
-        }
-
         
     }
 
@@ -2726,7 +2719,6 @@ public class TwitchClient {
             api.getGlobalBadges(false);
             String stream = user.getStream();
             if (Helper.isValidStream(stream)) {
-                roomManager.getRoomsInfo(user.getOwnerChannel(), false);
                 api.getRoomBadges(stream, false);
                 api.getCheers(stream, false);
                 requestChannelEmotes(stream);
@@ -2929,6 +2921,8 @@ public class TwitchClient {
                 }
             } else if (error == TwitchConnection.JoinError.INVALID_NAME) {
                 g.printLine(Language.getString("chat.joinError.invalid", errorChannel));
+            } else if (error == TwitchConnection.JoinError.ROOM) {
+                g.printLine(Language.getString("chat.joinError.rooms", errorChannel));
             }
         }
 

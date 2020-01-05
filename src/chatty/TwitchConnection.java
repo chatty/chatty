@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 public class TwitchConnection {
     
     public enum JoinError {
-        NOT_REGISTERED, ALREADY_JOINED, INVALID_NAME
+        NOT_REGISTERED, ALREADY_JOINED, INVALID_NAME, ROOM
     }
     
     private static final Logger LOGGER = Logger.getLogger(TwitchConnection.class.getName());
@@ -533,16 +533,22 @@ public class TwitchConnection {
     public void joinChannels(Set<String> channels) {
         Set<String> valid = new LinkedHashSet<>();
         Set<String> invalid = new LinkedHashSet<>();
+        Set<String> rooms = new LinkedHashSet<>();
         for (String channel : channels) {
             String checkedChannel = Helper.toValidChannel(channel);
             if (checkedChannel == null) {
                 invalid.add(channel);
+            } else if (checkedChannel.startsWith("#chatrooms:")) {
+                rooms.add(channel);
             } else {
                 valid.add(checkedChannel);
             }
         }
         for (String channel : invalid) {
             listener.onJoinError(channels, channel, JoinError.INVALID_NAME);
+        }
+        for (String channel : rooms) {
+            listener.onJoinError(channels, channel, JoinError.ROOM);
         }
         joinValidChannels(valid);
     }
