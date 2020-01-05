@@ -2697,7 +2697,8 @@ public class TwitchClient {
                     EventLog.addSystemEvent("access.modlog", "Moderation Log Access",
                             "The moderation log (and some related features) now "
                             + "require the \"Moderate Channel\" access. Go to "
-                            + "\"Main - Login..\" to view and upgrade your access.");
+                            + "\"Main - Login..\" to view and upgrade your access. "
+                            + "Restart Chatty afterwards.");
                 }
             }
         }

@@ -69,12 +69,15 @@ public class TokenDialog extends JDialog {
         add(accessLabel, makeGridBagConstraints(0,2,1,1,GridBagConstraints.WEST));
         
         access = new JPanel();
-        access.setLayout(new BoxLayout(access, BoxLayout.PAGE_AXIS));
+        access.setLayout(new GridBagLayout());
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.anchor = GridBagConstraints.WEST;
         for (TokenInfo.Scope scope : TokenInfo.Scope.values()) {
             JLabel label = new JLabel(scope.label);
             label.setToolTipText(scope.description);
             accessScopes.put(scope.scope, label);
-            access.add(label);
+            gbc2.gridy++;
+            access.add(label, gbc2);
         }
         gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.CENTER,new Insets(0,5,5,5));
         add(access, gbc);
