@@ -4,6 +4,7 @@ package chatty.util.commands;
 import chatty.Helper;
 import chatty.Room;
 import chatty.TwitchClient;
+import chatty.User;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
@@ -65,6 +66,8 @@ public class CustomCommands {
         Set<String> chans = new HashSet<>();
         client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
         parameters.put("chans", StringUtil.join(chans, " "));
+        if (client.getExistingUser(room.getChannel(), client.getUsername()).hasChannelModeratorRights())
+            parameters.put("mod","true");
         if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {
             System.out.println("request");
             String stream = Helper.toValidStream(room.getStream());
