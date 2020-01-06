@@ -23,7 +23,7 @@ public class LookSettings extends SettingsPanel {
 
         JPanel lafSettingsPanel = addTitledPanel(Language.getString("settings.section.lookandfeel"), 1);
         JPanel fontScalePanel = addTitledPanel("Font Scale (experimental)", 2);
-        JPanel previewPanel = addTitledPanel("Preview", 3);
+        JPanel previewPanel = addTitledPanel(Language.getString("settings.section.preview"), 3);
         
         GridBagConstraints gbc;
         
@@ -80,8 +80,16 @@ public class LookSettings extends SettingsPanel {
         // LaF Settings
         //==========================
         ColorChooser colorChooser = new ColorChooser(d);
-        ColorSetting foregroundColor = new ColorSetting(ColorSetting.FOREGROUND, "lafBackground", "Foreground", "Foreground", colorChooser);
-        ColorSetting backgroundColor = new ColorSetting(ColorSetting.BACKGROUND, "lafForeground", "Background", "Background", colorChooser);
+        ColorSetting foregroundColor = new ColorSetting(ColorSetting.FOREGROUND,
+                "lafBackground",
+                Language.getString("settings.general.foreground"),
+                Language.getString("settings.general.foreground"),
+                colorChooser);
+        ColorSetting backgroundColor = new ColorSetting(ColorSetting.BACKGROUND,
+                "lafForeground",
+                Language.getString("settings.general.background"),
+                Language.getString("settings.general.background"),
+                colorChooser);
         ColorSettingListener colorChangeListener = new ColorSettingListener() {
 
             @Override
@@ -202,8 +210,7 @@ public class LookSettings extends SettingsPanel {
         // Preview
         //==========================
         gbc = d.makeGbc(0, 1, 1, 1);
-        previewPanel.add(new JLabel(SettingConstants.HTML_PREFIX+"Preview the current settings on this page. "
-                + "A restart of Chatty is required for some things to show up correctly after changing settings."), gbc);
+        previewPanel.add(new JLabel(SettingConstants.HTML_PREFIX+Language.getString("settings.laf.previewInfo")), gbc);
         
         gbc = d.makeGbc(0, 4, 1, 1);
         previewPanel.add(lafPreviewButton, gbc);

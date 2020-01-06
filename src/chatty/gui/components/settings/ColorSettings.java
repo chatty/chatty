@@ -60,7 +60,7 @@ public class ColorSettings extends SettingsPanel {
                 "separatorColor",
                 ColorSetting.FOREGROUND,
                 "backgroundColor",
-                "Message Separator",
+                Language.getString("settings.colors.messageSeparator"),
                 3, 0);
 
         ColorSetting highlightBackgroundColor = addColorSetting(

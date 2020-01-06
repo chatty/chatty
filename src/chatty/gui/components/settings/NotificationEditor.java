@@ -309,8 +309,16 @@ class NotificationEditor extends TableEditor<Notification> {
             optionsPanel.add(options, GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
             
             colorChooser = new ColorChooser(dialog);
-            foregroundColor = new ColorSetting(ColorSetting.FOREGROUND, null, "Foreground", "Foreground", colorChooser);
-            backgroundColor = new ColorSetting(ColorSetting.BACKGROUND, null, "Background", "Background", colorChooser);
+            foregroundColor = new ColorSetting(ColorSetting.FOREGROUND,
+                    null,
+                    Language.getString("settings.general.foreground"),
+                    Language.getString("settings.general.foreground"),
+                    colorChooser);
+            backgroundColor = new ColorSetting(ColorSetting.BACKGROUND,
+                    null,
+                    Language.getString("settings.general.background"),
+                    Language.getString("settings.general.background"),
+                    colorChooser);
             ColorSettingListener colorChangeListener = new ColorSettingListener() {
 
                 @Override
