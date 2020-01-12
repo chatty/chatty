@@ -65,6 +65,7 @@ public class ContextMenuHelper {
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
+        m.addItem("streamChat", "Chat", streamSubmenu);
         m.addSeparator(streamSubmenu);
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
         m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);

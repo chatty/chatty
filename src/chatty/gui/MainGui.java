@@ -1896,7 +1896,8 @@ public class MainGui extends JFrame implements Runnable {
                 firstStream = streams.iterator().next();
             }
             if (cmd.equals("stream") || cmd.equals("streamPopout")
-                    || cmd.equals("streamPopoutOld") || cmd.equals("profile")) {
+                    || cmd.equals("streamPopoutOld") || cmd.equals("profile")
+                    || cmd.equals("streamChat")) {
                 List<String> urls = new ArrayList<>();
                 for (String stream : streams) {
                     String url;
@@ -1909,6 +1910,9 @@ public class MainGui extends JFrame implements Runnable {
                             break;
                         case "streamPopout":
                             url = TwitchUrl.makeTwitchPlayerUrl(stream);
+                            break;
+                        case "streamChat":
+                            url = TwitchUrl.makeTwitchChatUrl(stream);
                             break;
                         default:
                             url = TwitchUrl.makeTwitchStreamUrl(stream, true);

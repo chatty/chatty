@@ -66,6 +66,10 @@ public class TwitchUrl {
         return "https://player.twitch.tv/?channel="+StringUtil.toLowerCase(channel);
     }
     
+    public static String makeTwitchChatUrl(String channel) {
+        return "https://www.twitch.tv/popout/"+StringUtil.toLowerCase(channel)+"/chat?popout=";
+    }
+    
     public static String makeTwitchTurboUrl() {
         return "https://twitch.tv/turbo";
     }
