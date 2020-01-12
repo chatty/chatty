@@ -42,7 +42,7 @@ License Information
 Chatty, as a whole, is released under the GPLv3 or later (see included
 `LICENSE` file).
 
-    Copyright (C) 2017-2018  tduva and contributors
+    Copyright (C) 2017-2020  tduva and contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -103,11 +103,12 @@ External Libraries
   * License: GPLv2 or later (see <https://www.gnu.org/licenses/gpl-2.0.txt>)
   * Based on v1.6.12 with some modifications by tduva
 
-* Tyrus:
-  * Files under `assets/lib/`: `tyrus-standalone-client-*.jar`
-  * Website: <https://tyrus-project.github.io/>
-  * License: "CDDL 1.1" and "GPL 2 with CPE"
-	(see <https://tyrus.java.net/license.html>)
+* Java-Websocket:
+  * Files under `assets/lib/`: `JavaWebsocket-*.jar`
+  * Website: <https://github.com/TooTallNate/Java-WebSocket>
+  * License: "MIT"
+	(see <https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE>)
+  * Requires SLF4J (http://www.slf4j.org/, MIT, `slf4j-*.jar`)
 
 * Txtmark
   * Files under `assets/lib/`: `txtmark-0.13.jar`, `txtmark-txtmark-0.13.zip`
