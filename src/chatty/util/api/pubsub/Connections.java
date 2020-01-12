@@ -74,6 +74,9 @@ public class Connections {
     }
     
     public synchronized boolean isConnected() {
+        if (connections.isEmpty()) {
+            return false;
+        }
         for (PubSub c : connections) {
             if (!c.isOpen()) {
                 return false;
