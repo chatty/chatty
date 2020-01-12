@@ -50,7 +50,8 @@ public class EventLog extends JDialog {
 //        tabs.addTab("Notifications", scroll1);
         JPanel systemPanel = new JPanel();
         systemPanel.setLayout(new BorderLayout());
-        systemMarkRead = new JButton("Mark all as read");
+        systemMarkRead = new JButton(Language.getString("eventLog.button.markAllAsRead"));
+        systemMarkRead.setToolTipText(Language.getString("eventLog.button.markAllAsRead.tip"));
         systemPanel.add(systemMarkRead, BorderLayout.SOUTH);
         systemPanel.add(scroll2, BorderLayout.CENTER);
         tabs.addTab("Chatty Info", systemPanel);
@@ -126,6 +127,16 @@ public class EventLog extends JDialog {
     }
     
     private static EventLog main;
+    
+    public static void addSystemEvent(String id) {
+        String title = Language.getString("eventLog.entry."+id+".title");
+        String text = Language.getString("eventLog.entry."+id+".text");
+        String origText = Language.getBundleForLanguage("en").getString("eventLog.entry."+id+".text");
+        if (!origText.equals(text)) {
+            text += "\n[English Original: "+origText+"]";
+        }
+        addSystemEvent(id, title, text);
+    }
     
     public static void addSystemEvent(String id, String title, String text) {
         if (main != null) {

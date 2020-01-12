@@ -177,20 +177,15 @@
     <ul>
         <li><strong>Show Badges</strong>: Shows badges as images instead of
         just text</li>
-        <li><strong>Enable Custom Usericons</strong>: Use the custom icons
+        <li><strong>Enable Custom Badges</strong>: Use the custom icons
         defined in the table below</li>
-        <li><strong>Enable Bot Badge</strong>: Enables showing of the bot badge
+        <li><strong>Show Bot Badge</strong>: Enables showing of the bot badge
         for known bots. Chatty shows a single bot badge for all known bots. The
         list of bot names comes from different sources: The <code>botNames</code>
-        setting, the BTTV API and the FFZ API.
-        <ul>
-            <li><strong>BTTV</strong>: Use botnames from the BTTV API</li>
-            <li><strong>FFZ</strong>: Use botnames from the FFZ API</li>
-        </ul>
-        </li>
+        setting, the BTTV API and the FFZ API. (See also: <a href="help-setting_commands.html#bots">Setting Commands</a>)</li>
     </ul>
     
-    <h3><a name="CustomUsericons">Custom Usericons</a></h3>
+    <h3><a name="CustomUsericons">Custom Badges</a></h3>
     <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
         or replace the default icons (all other Types).</p>
     <p>The order of the entries can matter, they are looked at from the top:</p>
@@ -204,7 +199,7 @@
             matches is used.</li>
     </ul>
     
-    <h3>Custom Usericon Properties</h3>
+    <h3>Custom Badges Properties</h3>
     <dl class="dl-settings">
         <dt>Type</dt>
         <dd>A type of <code>Addon</code> will add an additional badge. All
@@ -304,7 +299,7 @@
             you can specify the new badge id/version yourself.</dd>
         
         <dd><em>Note:</em> The order of Addon-badges relative to eachother is
-            determined by the order they are added to the Custom Usericon table.</dd>
+            determined by the order they are added to the Custom Badges table.</dd>
         
         <dt>Image File</dt>
         <dd>The image to use. Must be a <code>.png</code> and is recommended to
@@ -316,7 +311,7 @@
             it and rescan to update the list.</dd>
         <dd>The <em>special image file name</em> <code>$default</code> will use
             the default image file, that would be shown without defining
-            Custom Usericons. This can be useful if you e.g. want to replace all
+            Custom Badges. This can be useful if you e.g. want to replace all
             Badge Types, except for one, so you can define that one to use the
             default.</dd>
         <dd><em>Tip:</em> You should also be able to manually enter the full

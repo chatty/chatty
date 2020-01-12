@@ -20,6 +20,8 @@ public class Language {
     
     private static final Logger LOGGER = Logger.getLogger(Language.class.getName());
 
+    private static final boolean DEBUG = false;
+    
     private static ResourceBundle strings;
     
     /**
@@ -92,7 +94,13 @@ public class Language {
                 LOGGER.warning("Missing string key: "+key);
                 return "?";
             }
+            if (DEBUG) {
+                return "{"+key+"}";
+            }
             return null;
+        }
+        if (DEBUG) {
+            return "["+strings.getString(key)+"]";
         }
         return strings.getString(key);
     }
@@ -159,7 +167,13 @@ public class Language {
                 LOGGER.warning("Missing string key: "+key);
                 return "?";
             }
+            if (DEBUG) {
+                return "{"+key+"}";
+            }
             return null;
+        }
+        if (DEBUG) {
+            return "["+MessageFormat.format(strings.getString(key), arguments)+"]";
         }
         return MessageFormat.format(strings.getString(key), arguments);
     }

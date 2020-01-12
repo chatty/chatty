@@ -1,6 +1,7 @@
 
 package chatty.gui.components.eventlog;
 
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import java.awt.Color;
 import java.awt.Component;
@@ -193,6 +194,9 @@ public class EventList extends JList<Event> {
             Event event = (Event)value;
             
             if (event.id != null && !main.isReadEvent(event.id)) {
+                title.setText(String.format("(%s) %s",
+                        Language.getString("eventLog.new"),
+                        event.title));
                 title.setText("(New) "+event.title);
             }
             else {

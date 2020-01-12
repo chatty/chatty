@@ -2687,11 +2687,7 @@ public class TwitchClient {
                     pubsub.listenModLog(user.getStream(), settings.getString("token"));
                 }
                 else {
-                    EventLog.addSystemEvent("access.modlog", "Moderation Log Access",
-                            "The moderation log (and some related features) now "
-                            + "require the \"Moderate Channel\" access. Go to "
-                            + "\"Main - Login..\" to view and upgrade your access. "
-                            + "Restart Chatty afterwards.");
+                    EventLog.addSystemEvent("access.modlog");
                 }
             }
         }

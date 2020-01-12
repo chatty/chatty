@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.lang.Language;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,10 +32,10 @@ public class TrayIconManager {
             tray = SystemTray.getSystemTray();
             
             popup = new PopupMenu();
-            MenuItem showItem = new MenuItem("Show");
+            MenuItem showItem = new MenuItem(Language.getString("trayCm.show"));
             showItem.setActionCommand("show");
             popup.add(showItem);
-            MenuItem exitItem = new MenuItem("Exit");
+            MenuItem exitItem = new MenuItem(Language.getString("trayCm.exit"));
             exitItem.setActionCommand("exit");
             popup.add(exitItem);
 
