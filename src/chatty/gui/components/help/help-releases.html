@@ -59,10 +59,77 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.10">Version 0.11</a> <a name="latest">(This one!)</a> (2019-??-??)
+        <a name="0.10">Version 0.11</a> <a name="latest">(This one!)</a> (2020-01-14)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Work in progress</p>
+    <p>The new "Look" settings now contain more customization options, including
+        the "HiFi Custom" Look &amp; Feel, which allows setting a custom
+        foreground and background color and various other styling options. Also
+        contains a link to documentation for more advanced usage now.</p>
+    
+    <p><em>Note:</em> The Moderation Log (and related features) now require the
+        "Moderate Channel" access. View and change your access under "Main - Login..".
+        Restart Chatty after changing to ensure everything updated.</p>
+    
+    <pre>
+### Customization / GUI Improvements
+- Added more Look customization
+- Added more Notification options
+- Added more information to Stream Status Notification
+- Added setting to customize User Dialog timestamp
+- Added timestamp custom AM/PM formatting
+- Added Copy/Cut/Paste context menus in some places
+- Improved various Settings Dialog sections
+
+### Moderating / Broadcasting
+- Added "Open in.." menu to User Context Menu (open in other channel)
+- Added account register time to Followers/Subscribers list
+- Open User Dialog and User Context Menu from Followers/Subscribers list
+- Admin Dialog: Added warning if title may be too long
+- Added /commerical command
+
+### Text Matching (Highlight, Ignore, Msg. Colors, ..)
+- Removed escape char `\` from meta prefixes (so writing regex doesn't require
+  escaping backslashes, now only quoting possible, e.g. `+start:"!bet top5"`)
+- Added prefixes `blacklist:` (blacklist per item) and `text:`
+- Added negated variants for text matching prefixes (such as `!start:`)
+- Now supprting several text matching prefixes per item (prefix prefix with +),
+  like `+start:!set w:bet` (starts with "!set" and contains the word "bet")
+- Added "config:url" to require a URL to be in the text (same URL detection as
+  clickable URLs in chat)
+- Improved setting editor (shows more information, works better for testing)
+
+### Twitch Features
+- Removed Chat Rules dialog (Twitch removed the API)
+- Removed Rooms support (Twitch discontinued Rooms)
+- Show more detailed Points Redemption messages in your own channel (if you have
+  allowed proper access, see "Main - Login..")
+- Recognize founders as subscribers
+
+### Third-Party Features
+- Added limited support for seasonal combined emotes (such as "Kappa TopHat"),
+  doesn't work in combination with animated emotes
+- Changed to BTTV v3 API
+
+## Other Changes
+- Switched to another Websocket library, in an attempt to improve connection
+  reliability for PubSub (Moderation Log) and FFZ-WS
+- Added PubSub/FFZ-WS connection status to title
+- Updated notifications in menubar, show some additional warning messages
+- Mentions: Recognize users from user-related info messages
+- Changed reconnecting timing a bit
+- Updated translations (Thanks to contributors!)
+- Updated help
+
+### Bugfixes
+- Fixed removed custom names sometimes not updating immediately
+- Fixed Emote Dialog sometimes not updating to current channel
+- Fixed /echo causing an empty TAB to open when used before connecting
+- Added "chan" parameter as was documented to Notification OS Command
+- Fixed some command TAB Completion case issues
+- Fixed some updating GUI issues related to changing Look and Feel settings
+- Changed to new Twitch Authentication URL
+    </pre>
     
     <h2>
         <a name="0.10">Version 0.10</a> (2019-10-07)
