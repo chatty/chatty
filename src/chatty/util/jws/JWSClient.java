@@ -35,7 +35,7 @@ public class JWSClient implements MessageHandler {
     private final WebSocketClient c;
     private final TimedCounter reconnectCounter = new TimedCounter(TimeUnit.MINUTES.toMillis(30));
     private final ElapsedTime lastReceivedMessage = new ElapsedTime();
-    private final ElapsedTime connectedSince = new ElapsedTime();
+    private final ElapsedTime lastConnectionAttempt = new ElapsedTime();
     private final ElapsedTime lastActivity = new ElapsedTime();
     private final MessageHandler handler;
     
@@ -78,7 +78,6 @@ public class JWSClient implements MessageHandler {
                         handshakedata.getHttpStatusMessage(),
                         getSocket().getRemoteSocketAddress(),
                         getDraft()));
-                connectedSince.setSync();
                 received.add(new Received(Received.Type.OPEN, null));
             }
             
@@ -104,7 +103,7 @@ public class JWSClient implements MessageHandler {
             @Override
             public void onClose(int code, String reason, boolean remote) {
                 LOGGER.warning(String.format(debugPrefix+"Connection closed after %s (%s/%s)%s",
-                        DateTime.duration(connectedSince.millisElapsedSync()),
+                        DateTime.duration(lastConnectionAttempt.millisElapsedSync()),
                         code,
                         reason,
                         remote ? " by remote host" : ""));
@@ -129,7 +128,7 @@ public class JWSClient implements MessageHandler {
                     public void run() {
                         LOGGER.info(debugPrefix+"Trying to reconnect to "+c.getURI());
                         // For better debug output on failing to reconnect
-                        connectedSince.setSync();
+                        lastConnectionAttempt.setSync();
                         reconnect();
                     }
                 }, interval*1000);
@@ -144,6 +143,7 @@ public class JWSClient implements MessageHandler {
     public void init() {
         startConsumer();
         LOGGER.info(debugPrefix+"Trying to connect to "+c.getURI());
+        lastConnectionAttempt.setSync();
         c.connect();
     }
     
@@ -219,12 +219,13 @@ public class JWSClient implements MessageHandler {
     }
     
     /**
-     * How long ago the current connection was established.
+     * How long ago the last connection was attemped. Check {@link isOpen()} for
+     * whether the connection is actually currently open.
      * 
      * @return 
      */
-    public long getConnectedSeconds() {
-        return connectedSince.secondsElapsedSync();
+    public long getConnectionSeconds() {
+        return lastConnectionAttempt.secondsElapsedSync();
     }
     
     /**
@@ -239,7 +240,7 @@ public class JWSClient implements MessageHandler {
         return String.format("Connected to %s (%s) since %s (last message received %s ago, last activity %s ago)",
                 c.getURI(),
                 c.getRemoteSocketAddress(),
-                DateTime.duration(connectedSince.millisElapsedSync()),
+                DateTime.duration(lastConnectionAttempt.millisElapsedSync()),
                 DateTime.duration(lastReceivedMessage.millisElapsedSync()),
                 DateTime.duration(lastActivity.millisElapsedSync()));
     }
