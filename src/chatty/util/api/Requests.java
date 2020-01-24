@@ -134,6 +134,7 @@ public class Requests {
         String url = "https://api.twitch.tv/kraken/streams/"+userId;
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+            request.setToken(api.getToken());
             execute(request, r -> {
                 api.streamInfoManager.requestResult(r.text, r.responseCode, stream);
             });
@@ -155,6 +156,7 @@ public class Requests {
         String url = "https://api.twitch.tv/kraken/streams?offset=0&limit=100&channel=" + streamsString;
         //url = "http://127.0.0.1/twitch/streams";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        request.setToken(api.getToken());
         execute(request, r -> {
             api.streamInfoManager.requestResultStreams(r.text, r.responseCode, expected);
         });
