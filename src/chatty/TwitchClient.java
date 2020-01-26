@@ -208,6 +208,8 @@ public class TwitchClient {
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
         
+        Helper.setDefaultTimezone(settings.getString("timezone"));
+        
         addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
             Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
         addressbook.loadFromFile();

@@ -179,6 +179,7 @@ public class SettingsManager {
         settings.addString("lafStyle", "regular");
         settings.addString("lafScroll", "default");
         settings.addString("language", "");
+        settings.addString("timezone", "");
         
         settings.addLong("dialogFontSize", -1);
 

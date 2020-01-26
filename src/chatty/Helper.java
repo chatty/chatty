@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.gui.MainGui;
+import chatty.gui.components.settings.MainSettings;
 import chatty.gui.components.textpane.UserNotice;
 import chatty.lang.Language;
 import chatty.util.DateTime;
@@ -879,6 +880,15 @@ public class Helper {
             return new UserNotice(ps.type, ps.user, ps.infoText, irc.attachedMessage, MsgTags.merge(found.tags, newNotice.tags));
         }
         return null;
+    }
+    
+    public static void setDefaultTimezone(String input) {
+        if (!StringUtil.isNullOrEmpty(input)) {
+            MainSettings.DEFAULT_TIMEZONE = TimeZone.getDefault();
+            TimeZone tz = TimeZone.getTimeZone(input);
+            TimeZone.setDefault(tz);
+            LOGGER.info(String.format("[Timezone] Set to %s [%s]", tz.getDisplayName(), input));
+        }
     }
     
 }

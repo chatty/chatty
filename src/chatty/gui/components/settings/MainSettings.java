@@ -6,14 +6,26 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.MiscUtil;
+import chatty.util.StringUtil;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Window;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 
 /**
  *
@@ -80,6 +92,16 @@ public class MainSettings extends SettingsPanel {
                 d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
         
+        languagePanel.add(d.createLabel("timezone"),
+                d.makeGbc(0, 2, 1, 1));
+        TimezoneSetting timezoneSetting = new TimezoneSetting(d);
+        d.addStringSetting("timezone", timezoneSetting);
+        gbc = d.makeGbc(1, 2, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        languagePanel.add(timezoneSetting,
+                gbc);
+        
         //==========================
         // Directory
         //==========================
@@ -135,6 +157,115 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("es", "Spanish / Español");
         languageOptions.put("tr", "Turkish / Türk");
         return languageOptions;
+    }
+    
+    /**
+     * Unchanged default, should be set before it is being changed.
+     */
+    public static TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
+    
+    private static class TimezoneSetting extends JPanel implements StringSetting {
+        
+        private final JTextField display;
+        
+        private String value;
+        
+        TimezoneSetting(Window parent) {
+            setLayout(new GridBagLayout());
+            display = new JTextField(20);
+            display.setEditable(false);
+            
+            JButton changeButton = new JButton(Language.getString("dialog.button.change"));
+            changeButton.addActionListener(e -> {
+                change(parent);
+            });
+            
+            GridBagConstraints gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            add(display, gbc);
+            gbc = GuiUtil.makeGbc(1, 0, 1, 1);
+            add(changeButton, gbc);
+        }
+        
+        private void change(Window parent) {
+            JDialog dialog = new JDialog(parent);
+            dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            dialog.setModal(true);
+            dialog.setLayout(new GridBagLayout());
+            dialog.setResizable(false);
+            Map<String, String> options = new LinkedHashMap<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date now = new Date();
+            List<TimeZone> timezones = new ArrayList<>();
+            for (String id : TimeZone.getAvailableIDs()) {
+                TimeZone tz = TimeZone.getTimeZone(id);
+                timezones.add(tz);
+            }
+            Collections.sort(timezones, new Comparator<TimeZone>() {
+
+                @Override
+                public int compare(TimeZone o1, TimeZone o2) {
+                    return o1.getOffset(System.currentTimeMillis()) - o2.getOffset(System.currentTimeMillis());
+                }
+            });
+            options.put("", String.format("%s [%s]",
+                     format(DEFAULT_TIMEZONE, sdf, now),
+                     Language.getString("status.default")));
+            for (TimeZone tz : timezones) {
+                options.put(tz.getID(), format(tz, sdf, now));
+            }
+            ComboStringSetting list = new ComboStringSetting(options);
+            list.setSettingValue(value);
+            
+            JButton save = new JButton(Language.getString("dialog.button.save"));
+            save.addActionListener(e -> {
+                setSettingValue(list.getSettingValue());
+                dialog.setVisible(false);
+            });
+            
+            JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
+            cancel.addActionListener(e -> {
+                dialog.setVisible(false);
+            });
+            
+            dialog.add(list, GuiUtil.makeGbc(0, 0, 2, 1));
+            dialog.add(save, GuiUtil.makeGbc(0, 1, 1, 1));
+            dialog.add(cancel, GuiUtil.makeGbc(1, 1, 1, 1));
+            
+            dialog.pack();
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        }
+        
+        private String format(TimeZone tz, SimpleDateFormat sdf, Date date) {
+            sdf.setTimeZone(tz);
+            return String.format("[%s] %s (%s)",
+                        sdf.format(date),
+                        tz.getID(),
+                        tz.getDisplayName(false, TimeZone.SHORT));
+        }
+
+        @Override
+        public String getSettingValue() {
+            return value;
+        }
+
+        @Override
+        public void setSettingValue(String value) {
+            this.value = value;
+            TimeZone tz = DEFAULT_TIMEZONE;
+            String def = " ["+Language.getString("status.default")+"]";
+            if (!StringUtil.isNullOrEmpty(value)) {
+                tz = TimeZone.getTimeZone(value);
+                def = "";
+            }
+            display.setText(String.format("%s (%s)%s",
+                        tz.getID(),
+                        tz.getDisplayName(false, TimeZone.SHORT),
+                        def));
+        }
+        
     }
   
 }
