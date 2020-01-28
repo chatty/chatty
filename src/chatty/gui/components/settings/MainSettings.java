@@ -176,6 +176,7 @@ public class MainSettings extends SettingsPanel {
             display.setEditable(false);
             
             JButton changeButton = new JButton(Language.getString("dialog.button.change"));
+            changeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
             changeButton.addActionListener(e -> {
                 change(parent);
             });
