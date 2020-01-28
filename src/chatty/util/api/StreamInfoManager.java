@@ -367,23 +367,28 @@ public class StreamInfoManager {
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(json);
-
-            JSONObject stream = (JSONObject) root.get("stream");
-
-            if (stream == null) {
+            
+            /**
+             * See Requests.requestStreamInfoById().
+             */
+            JSONArray streams = (JSONArray) root.get("streams");
+            if (streams.size() == 0) {
                 streamInfo.setOffline();
-            } else {
+            }
+            else {
+                JSONObject stream = (JSONObject) streams.get(0);
+
                 StreamInfo result = parseStream(stream, false);
                 if (result == null || result != streamInfo) {
                     LOGGER.warning("Error parsing stream ("
-                            +streamInfo.getStream()+"): "+json);
+                            + streamInfo.getStream() + "): " + json);
                     streamInfo.setUpdateFailed();
                 }
             }
         }
-        catch (ParseException ex) {
+        catch (Exception ex) {
             streamInfo.setUpdateFailed();
-            LOGGER.warning("Error parsing stream info: "+ex.getLocalizedMessage());
+            LOGGER.warning("Error parsing stream info: "+ex);
         }
         
     }

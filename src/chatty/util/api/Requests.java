@@ -105,7 +105,7 @@ public class Requests {
         if (nextUrl != null) {
             url = nextUrl;
         } else {
-            url = "https://api.twitch.tv/kraken/streams/followed?limit="
+            url = "https://api.twitch.tv/kraken/streams/followed?stream_type=all&limit="
                     + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=0";
         }
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
@@ -131,7 +131,12 @@ public class Requests {
     }
     
     private void requestStreamInfoById(String stream, String userId) {
-        String url = "https://api.twitch.tv/kraken/streams/"+userId;
+        /**
+         * Switched to /streams?channel= request since it didn't have the
+         * viewercount bug with stream_type=all. Added stream_type=all since
+         * live VODs weren't contained anymore.
+         */
+        String url = "https://api.twitch.tv/kraken/streams/?channel="+userId+"&stream_type=all";
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             request.setToken(api.getToken());
@@ -153,7 +158,7 @@ public class Requests {
     
     private void requestStreamsInfoById(Collection<String> ids, Set<StreamInfo> expected) {
         String streamsString = StringUtil.join(ids, ",");
-        String url = "https://api.twitch.tv/kraken/streams?offset=0&limit=100&channel=" + streamsString;
+        String url = "https://api.twitch.tv/kraken/streams?stream_type=all&offset=0&limit=100&channel=" + streamsString;
         //url = "http://127.0.0.1/twitch/streams";
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         request.setToken(api.getToken());
