@@ -2811,12 +2811,12 @@ public class MainGui extends JFrame implements Runnable {
                 Channel chan;
                 String channel = user.getChannel();
                 boolean whisper = false;
-                int origBits = tags.getBits();
+                int bitsAmount = tags.getBits();
                 
                 // Disable Cheer emotes altogether if disabled in the settings
-                int bits = origBits;
+                int bitsForEmotes = bitsAmount;
                 if (client.settings.getString("cheersType").equals("none")) {
-                    bits = 0;
+                    bitsForEmotes = 0;
                 }
                 
                 /**
@@ -2848,6 +2848,7 @@ public class MainGui extends JFrame implements Runnable {
                 boolean ignored = checkMsg(ignoreList, "ignore", text, user, tags, isOwnMessage) || ignoredUser;
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
+                    client.chatLog.bits(chan.getFilename(), user, bitsAmount);
                     client.chatLog.message(chan.getFilename(), user, text, action);
                 }
                 
@@ -2871,13 +2872,13 @@ public class MainGui extends JFrame implements Runnable {
                     notificationManager.highlight(user, text, tags,
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound(),
-                            isOwnMessage, whisper, origBits > 0);
+                            isOwnMessage, whisper, bitsAmount > 0);
                 } else if (!ignored) {
                     if (whisper) {
                         notificationManager.whisper(user, text, isOwnMessage);
                     } else {
                         notificationManager.message(user, text, tags, isOwnMessage,
-                                origBits > 0);
+                                bitsAmount > 0);
                     }
                     if (!isOwnMessage) {
                         channels.setChannelNewMessage(chan);
@@ -2893,7 +2894,7 @@ public class MainGui extends JFrame implements Runnable {
                         ignoreMatches = ignoreList.getLastTextMatches();
                     }
                     ignoredMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bits, whisper, ignoreMatches);
+                            tagEmotes, bitsForEmotes, whisper, ignoreMatches);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -2910,7 +2911,7 @@ public class MainGui extends JFrame implements Runnable {
                     boolean hasReplacements = checkMsg(filter, "filter", text, user, tags, isOwnMessage);
 
                     // Print message, but determine how exactly
-                    UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bits,
+                    UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bitsForEmotes,
                             highlightMatches,
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null);

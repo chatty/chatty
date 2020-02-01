@@ -123,6 +123,8 @@ public class LogSettings extends SettingsPanel {
                 d.makeGbcCloser(0, 9, 1, 1, GridBagConstraints.WEST));
         typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
                 d.makeGbcCloser(0, 10, 1, 1, GridBagConstraints.WEST));
+        typesPanel.add(d.addSimpleBooleanSetting("logBits"),
+                d.makeGbcCloser(0, 11, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         
