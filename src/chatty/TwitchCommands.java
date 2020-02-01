@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.UrlOpener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -120,6 +121,14 @@ public class TwitchCommands {
         }
         else if (command.equals("unraid")) {
             commandUnraid(channel);
+        }
+        else if (command.equals("requests")) {
+            if (Helper.isRegularChannelStrict(channel)) {
+                UrlOpener.openUrl("https://www.twitch.tv/popout/"+Helper.toStream(channel)+"/reward-queue");
+            }
+            else {
+                printLine(channel, "Invalid channel to open reward queue for");
+            }
         }
         else {
             return false;
