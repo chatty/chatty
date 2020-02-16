@@ -214,11 +214,12 @@ public class StreamInfo {
             }
             recheckOffline = -1;
 
-            if (getLastOnlineAgoSecs() > MAX_PICNIC_LENGTH) {
+            if (getLastOnlineAgoSecs() > MAX_PICNIC_LENGTH
+                    || startedAtWithPicnic == -1) {
                 /**
-                 * Only update online time with PICNICs when offline time was
-                 * long enough (of course also depends on what stream data
-                 * Chatty has).
+                 * Only update (as in no more different PICNIC time from regular
+                 * uptime) when offline for long enough or previous value was
+                 * not valid.
                  */
                 this.startedAtWithPicnic = startedAt;
             }

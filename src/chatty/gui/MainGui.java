@@ -3799,7 +3799,8 @@ public class MainGui extends JFrame implements Runnable {
                     if (streamInfo.getOnline()) {
                         
                         String uptime = "";
-                        if (client.settings.getBoolean("titleShowUptime")) {
+                        if (client.settings.getBoolean("titleShowUptime")
+                                && streamInfo.getTimeStartedWithPicnic() != -1) {
                             if (client.settings.getBoolean("titleLongerUptime")) {
                                 uptime = DateTime.agoUptimeCompact2(
                                     streamInfo.getTimeStartedWithPicnic());

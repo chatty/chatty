@@ -391,11 +391,20 @@ public class LiveStreamsList extends JList<StreamInfo> {
             }
             
             // Add Borders
-            String title = String.format("%s%s (%s | %s)",
-                    info.getStreamTypeString(),
-                    info.getCapitalizedName(),
-                    Helper.formatViewerCount(info.getViewers()),
-                    DateTime.agoUptimeCompact(info.getTimeStartedWithPicnic()));
+            String title;
+            if (info.getTimeStartedWithPicnic() != -1) {
+                title = String.format("%s%s (%s | %s)",
+                        info.getStreamTypeString(),
+                        info.getCapitalizedName(),
+                        Helper.formatViewerCount(info.getViewers()),
+                        DateTime.agoUptimeCompact(info.getTimeStartedWithPicnic()));
+            }
+            else {
+                title = String.format("%s%s (%s)",
+                        info.getStreamTypeString(),
+                        info.getCapitalizedName(),
+                        Helper.formatViewerCount(info.getViewers()));
+            }
             Border titleBaseBorder = isSelected ? TITLE_SELECTED : TITLE;
             if (info.getStatusChangeTimeAgo() < STREAMINFO_NEW_TIME) {
                 titleBaseBorder = TITLE_NEW;

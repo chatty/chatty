@@ -461,6 +461,12 @@ public class StreamInfoManager {
             return -1;
         }
     }
+    
+    /**
+     * If uptime is greater than 10 years, it's probably not valid. Streams that
+     * just started appear to sometimes return a wrong start time.
+     */
+    private static final long VALID_UPTIME_LIMIT = 10*365*24*60*60*1000;
 
     /**
      * Parse a stream object into a StreamInfo object. This gets the name of the
@@ -486,7 +492,6 @@ public class StreamInfoManager {
         StreamType streamType;
         long timeStarted = -1;
         String userId = null;
-        List<String> community_ids;
         boolean noChannelObject = false;
         try {
             // Get stream data
@@ -544,6 +549,10 @@ public class StreamInfoManager {
         // Try to parse created_at
         try {
             timeStarted = DateTime.parseDatetime((String) stream.get("created_at"));
+            if (timeStarted + VALID_UPTIME_LIMIT < System.currentTimeMillis()) {
+                LOGGER.warning("Warning: Stream created_at for "+name+" seems invalid ("+stream.get("created_at")+")");
+                timeStarted = -1;
+            }
         } catch (Exception ex) {
             LOGGER.warning("Warning parsing StreamInfo: could not parse created_at ("+ex+")");
         }
