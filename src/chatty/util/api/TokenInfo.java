@@ -53,6 +53,14 @@ public class TokenInfo {
         this.name = name;
         this.userId = userId;
         valid = true;
+        /**
+         * Accept new chat scopes as well. Adding old "chat_login" scope for
+         * them, which is checked for. Kind of a hack, but should work well
+         * enough.
+         */
+        if (scopes.contains("chat:read") && scopes.contains("chat:edit")) {
+            scopes.add("chat_login");
+        }
         this.scopes = new HashSet<>(scopes);
     }
     
