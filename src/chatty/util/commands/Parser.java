@@ -185,6 +185,9 @@ public class Parser {
         else if (type.equals("replace")) {
             return replace(isRequired);
         }
+        else if (type.equals("is")) {
+            return is(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -355,6 +358,13 @@ public class Parser {
         }
         expect(")");
         return new Replace(item, search, replace, isRequired, type);
+    }
+    
+    private Item is(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        expect(")");
+        return new Is(item, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

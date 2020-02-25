@@ -366,7 +366,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             // Match ANY type, same as the other matching in this (ignoring
             // non-text prefixes)
             blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, testInput.getText(), null,
-                    null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
+                    null, null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
             testResult.setText("Empty item.");

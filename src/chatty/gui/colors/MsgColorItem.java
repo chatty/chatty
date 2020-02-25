@@ -25,8 +25,8 @@ public class MsgColorItem extends ColorItem {
     }
     
     public boolean matches(HighlightItem.Type type, String text, String channel,
-            Addressbook ab, User user, MsgTags tags) {
-        return search.matches(type, text, null, channel, ab, user, tags);
+            Addressbook ab, User user, User localUser, MsgTags tags) {
+        return search.matches(type, text, null, channel, ab, user, localUser, tags);
     }
     
 }

@@ -92,7 +92,7 @@ public class NotificationManager {
     }
     
     public void streamInfoChanged(String channel, StreamInfo info) {
-        check(Type.STREAM_STATUS, "#"+info.getStream(), null, null, n -> {
+        check(Type.STREAM_STATUS, "#"+info.getStream(), null, null, null, n -> {
             boolean liveReq = !n.hasOption(TypeOption.LIVE) || info.getOnline();
             boolean newReq = !n.hasOption(TypeOption.NEW_STREAM) || info.getTimeStartedWithPicnicAgo() < 15*60*1000;
             boolean nowLiveReq = !n.hasOption(TypeOption.NOW_LIVE) || info.getPrevLastOnlineAgoSecs() > 15*60;
@@ -109,7 +109,7 @@ public class NotificationManager {
                 MsgTags tags = MsgTags.create(
                         "title", title,
                         "game", info.getGame());
-                if (n.matches(info.getFullStatus(), channel, ab, null, tags)) {
+                if (n.matches(info.getFullStatus(), channel, ab, null, null, tags)) {
                     return new NotificationData(title, info.getFullStatus());
                 }
             }
@@ -117,10 +117,10 @@ public class NotificationManager {
         });
     }
     
-    public void highlight(User user, String message, MsgTags tags, boolean noNotify,
+    public void highlight(User user, User localUser, String message, MsgTags tags, boolean noNotify,
             boolean noSound, boolean isOwnMessage, boolean isWhisper,
             boolean hasBits) {
-        check(null, user.getChannel(), user, message, tags, noNotify, noSound, n -> {
+        check(null, user.getChannel(), user, localUser, message, tags, noNotify, noSound, n -> {
             if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
@@ -153,9 +153,9 @@ public class NotificationManager {
      * @param noSound 
      */
     public void infoHighlight(Room room, String message, boolean noNotify,
-            boolean noSound) {
+            boolean noSound, User localUser) {
         String channel = room != null ? room.getChannel() : null;
-        check(null, channel, null, message, MsgTags.EMPTY, noNotify, noSound,  n -> {
+        check(null, channel, null, localUser, message, MsgTags.EMPTY, noNotify, noSound,  n -> {
             boolean hasChannel = channel != null && !channel.isEmpty();
             if (n.type == Type.HIGHLIGHT) {
                 String title;
@@ -186,9 +186,9 @@ public class NotificationManager {
      * @param room May be null or empty
      * @param text 
      */
-    public void info(Room room, String text) {
+    public void info(Room room, String text, User localUser) {
         String channel = room != null ? room.getChannel() : null;
-        check(Type.INFO, channel, null, text, n -> {
+        check(Type.INFO, channel, null, localUser, text, n -> {
             String title;
             if (channel == null || channel.isEmpty()) {
                 title = "[Info]";
@@ -199,9 +199,9 @@ public class NotificationManager {
         });
     }
     
-    public void message(User user, String message, MsgTags tags,
+    public void message(User user, User localUser, String message, MsgTags tags,
             boolean isOwnMessage, boolean hasBits) {
-        check(Type.MESSAGE, user.getChannel(), user, message, tags, n -> {
+        check(Type.MESSAGE, user.getChannel(), user, localUser, message, tags, n -> {
             if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
@@ -214,8 +214,8 @@ public class NotificationManager {
         });
     }
     
-    public void whisper(User user, String message, boolean isOwnMessage) {
-        check(Type.WHISPER, null, user, message, n -> {
+    public void whisper(User user, User localUser, String message, boolean isOwnMessage) {
+        check(Type.WHISPER, null, user, localUser, message, n -> {
             if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
@@ -226,7 +226,7 @@ public class NotificationManager {
     }
     
     public void userJoined(User user) {
-        check(Type.JOIN, user.getChannel(), user, user.getName(), n -> {
+        check(Type.JOIN, user.getChannel(), user, null, user.getName(), n -> {
             String title = String.format("[Join] %s in %s",
                     getDisplayName(user), user.getChannel());
             return new NotificationData(title, "");
@@ -234,7 +234,7 @@ public class NotificationManager {
     }
     
     public void userLeft(User user) {
-        check(Type.PART, user.getChannel(), user, user.getName(), n -> {
+        check(Type.PART, user.getChannel(), user, null, user.getName(), n -> {
             String title = String.format("[Part] %s in %s",
                     getDisplayName(user), user.getChannel());
             return new NotificationData(title, "");
@@ -257,14 +257,14 @@ public class NotificationManager {
         });
     }
     
-    public void newSubscriber(User user, String systemMsg, String message) {
+    public void newSubscriber(User user, User localUser, String systemMsg, String message) {
         final String text;
         if (message != null && !message.isEmpty()) {
             text = systemMsg + " [" + message + "]";
         } else {
             text = systemMsg;
         }
-        check(Type.SUBSCRIBER, user.getChannel(), user, text, c -> {
+        check(Type.SUBSCRIBER, user.getChannel(), user, localUser, text, c -> {
             String title = String.format("[Subscriber] %s in %s",
                     user.getDisplayNick(),
                     user.getChannel());
@@ -297,20 +297,20 @@ public class NotificationManager {
     }
     
     private void check(Type type, String channel, NotificationChecker c) {
-        check(type, channel, null, null, MsgTags.EMPTY, false, false, c);
+        check(type, channel, null, null, null, MsgTags.EMPTY, false, false, c);
     }
     
-    private void check(Type type, String channel, User user, String message,
+    private void check(Type type, String channel, User user, User localUser, String message,
             NotificationChecker c) {
-        check(type, channel, user, message, MsgTags.EMPTY, false, false, c);
+        check(type, channel, user, localUser, message, MsgTags.EMPTY, false, false, c);
     }
     
-    private void check(Type type, String channel, User user, String message,
+    private void check(Type type, String channel, User user, User localUser, String message,
             MsgTags tags, NotificationChecker c) {
-        check(type, channel, user, message, tags, false, false, c);
+        check(type, channel, user, localUser, message, tags, false, false, c);
     }
     
-    private void check(Type type, String channel, User user,
+    private void check(Type type, String channel, User user, User localUser,
             String message, MsgTags tags, boolean noNotify, boolean noSound,
             NotificationChecker c) {
         boolean shown = false;
@@ -319,7 +319,7 @@ public class NotificationManager {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
-                    && n.matches(message, channel, ab, user, tags)
+                    && n.matches(message, channel, ab, user, localUser, tags)
                     && (!n.hasOption(TypeOption.FAV_CHAN) || channelFavorites.isFavorite(channel))
                     && !hideOnStart(n)) {
                 

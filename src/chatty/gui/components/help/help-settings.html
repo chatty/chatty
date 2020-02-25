@@ -892,6 +892,13 @@
             the given status codes (see <code>status:</code> for codes). For example:
             <code>!status:stM</code> matches all 'normal' users that have no
             badge by default (NOT a Subscriber, Turbo User or any kind of Moderator).</li>
+        <li><code>mystatus:</code> / <code>!mystatus</code> for the same as
+            <code>status:</code> / <code>!status:</code>, except for yourself.
+            Example: <code>mystatus:bm</code> to match only when you are the
+            broadcaster or a moderator. Note that your user status is only
+            updated on channel join and when sending a message, so e.g. if you
+            get modded while already in the channel it will not be recognized
+            until after you have sent a message.</li>
         <li><code>config:</code> to specify on or more options (separated by comma, no spaces):
             <ul>
                 <li><code>config:firstmsg</code> - Restrict matching to the

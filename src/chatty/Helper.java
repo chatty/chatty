@@ -833,6 +833,7 @@ public class Helper {
         parameters.put("display-nick", user.getDisplayNick());
         parameters.put("custom-nick", user.getCustomNick());
         parameters.put("full-nick", user.getFullNick());
+        parameters.putObject("user", user);
     }
     
     private static final Map<UserNotice, javax.swing.Timer> pointsMerge = new HashMap<>();

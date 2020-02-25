@@ -16,6 +16,7 @@ public class Parameters {
 
     private final Map<String, String> parameters;
     private String[] args;
+    private final Map<String, Object> objectParameters = new HashMap<>();
 
     public Parameters(Map<String, String> parameters) {
         this.parameters = parameters;
@@ -24,6 +25,10 @@ public class Parameters {
 
     public synchronized String get(String key) {
         return parameters.get(key);
+    }
+    
+    public synchronized Object getObject(String key) {
+        return objectParameters.get(key);
     }
     
     /**
@@ -39,6 +44,12 @@ public class Parameters {
             if (key.equals("args")) {
                 updateArgs();
             }
+        }
+    }
+    
+    public synchronized void putObject(String key, Object value) {
+        if (key != null && value != null) {
+            objectParameters.put(key, value);
         }
     }
     

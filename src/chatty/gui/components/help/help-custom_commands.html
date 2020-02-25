@@ -372,6 +372,16 @@
             <code>cheese cake</code> turns into an an empty string, since the
             optional <code>[output if not]</code> has not been specified.</dd>
         
+        <dt><code>$is(&lt;match input&gt;)</code></dt>
+        <dd>Outputs <code>true</code> if the match succeeds, nothing otherwise.
+            The <code>match input</code> is in the <a href="help-settings.html#Highlight_Matching">Highlight</a>
+            format, although what can actually be matched against depends on
+            where the command is ran from, for example the user or message text
+            is only available from the User Dialog or User Context Menu.</dd>
+        <dd><em>Example:</em> <code>$if($is(mystatus:bm),I'm a mod,Not a mod)</code>
+            will output <code>I'm a mod</code> in channels where you are the
+            broadcaster or a moderator, <code>Not a mod</code> otherwise.</dd>
+        
         <dt><code>$join(&lt;identifier&gt;,&lt;separator&gt;)</code></dt>
         <dd>Joins together the arguments the identifier refers to, using the
             given separator.</dd>

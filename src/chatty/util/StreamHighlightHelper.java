@@ -86,7 +86,7 @@ public class StreamHighlightHelper {
             return null;
         }
         HighlightItem item = new Highlighter.HighlightItem(match);
-        if (!item.matches(HighlightItem.Type.REGULAR, line, user, tags)) {
+        if (!item.matches(HighlightItem.Type.REGULAR, line, user, null, tags)) {
             return null;
         }
         //---------------------------------------

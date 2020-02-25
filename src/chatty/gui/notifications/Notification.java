@@ -291,11 +291,11 @@ public class Notification {
         return channel.equalsIgnoreCase(this.channel);
     }
     
-    public boolean matches(String text, String channel, Addressbook ab, User user, MsgTags tags) {
+    public boolean matches(String text, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, tags);
+        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, localUser, tags);
     }
     
     public boolean hasChannel() {

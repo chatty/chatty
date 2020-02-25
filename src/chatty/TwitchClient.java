@@ -582,6 +582,10 @@ public class TwitchClient {
         return c.getExistingUser(channel, name);
     }
     
+    public User getLocalUser(String channel) {
+        return c.getExistingUser(channel, c.getUsername());
+    }
+    
     public void clearUserList() {
         c.setAllOffline();
         g.clearUsers(null);
