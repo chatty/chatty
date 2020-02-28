@@ -56,5 +56,9 @@ public class ContextMenuAdapter implements ContextMenuListener {
     @Override
     public void channelMenuItemClicked(ActionEvent e, Channel channel) {
     }
+
+    @Override
+    public void textMenuItemClick(ActionEvent e, String selected) {
+    }
     
 }

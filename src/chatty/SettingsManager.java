@@ -306,6 +306,8 @@ public class SettingsManager {
         settings.addString("userContextMenu", "");
         settings.addString("channelContextMenu", "");
         settings.addString("streamsContextMenu", "");
+        settings.addString("textContextMenu", "-\n" +
+                "Translate=/openUrlPrompt https://translate.google.com/#view=home&op=translate&sl=auto&tl=en&text=$$urlencode($(msg))");
         
         settings.addBoolean("closeUserDialogOnAction", true);
         settings.addBoolean("openUserDialogByMouse", true);

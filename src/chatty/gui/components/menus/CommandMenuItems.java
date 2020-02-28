@@ -21,7 +21,7 @@ public class CommandMenuItems {
     private static final Logger LOGGER = Logger.getLogger(CommandMenuItems.class.getName());
 
     public enum MenuType {
-        USER, CHANNEL, STREAMS
+        USER, CHANNEL, STREAMS, TEXT
     }
     
     private static final Map<MenuType, List<CommandMenuItem>> commands = new HashMap<>();

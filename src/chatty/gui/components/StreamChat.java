@@ -137,6 +137,11 @@ public class StreamChat extends JDialog {
         public void channelMenuItemClicked(ActionEvent e, Channel channel) {
             contextMenuListener.channelMenuItemClicked(e, channel);
         }
+
+        @Override
+        public void textMenuItemClick(ActionEvent e, String selected) {
+            contextMenuListener.textMenuItemClick(e, selected);
+        }
     }
     
 }

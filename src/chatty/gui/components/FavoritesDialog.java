@@ -10,6 +10,7 @@ import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.lang.Language;
 import chatty.gui.components.menus.RoomsContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.util.BitEncoder;
 import chatty.util.DateTime;
 import java.awt.GridBagConstraints;
@@ -103,6 +104,7 @@ public class FavoritesDialog extends JDialog {
             }
         });
         GuiUtil.installLengthLimitDocumentFilter(input, 8000, false);
+        TextSelectionMenu.install(input);
         
         // Table
         data = new MyTableModel();

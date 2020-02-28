@@ -9,6 +9,7 @@ import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
@@ -108,6 +109,7 @@ public final class Channel extends JPanel {
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
         GuiUtil.installLengthLimitDocumentFilter(input, 500, false);
+        TextSelectionMenu.install(input);
 
         // Add components
         add(mainPane, BorderLayout.CENTER);

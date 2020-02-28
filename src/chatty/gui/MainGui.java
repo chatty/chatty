@@ -54,6 +54,7 @@ import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.AutoModMessage;
@@ -225,6 +226,7 @@ public class MainGui extends JFrame implements Runnable {
         setWindowIcons();
         
         actionListener = new MyActionListener();
+        TextSelectionMenu.listener = contextMenuListener;
         
         // Error/debug stuff
         debugWindow = new DebugWindow(new DebugCheckboxListener());
@@ -1032,6 +1034,8 @@ public class MainGui extends JFrame implements Runnable {
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.CHANNEL, client.settings.getString("channelContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.STREAMS, client.settings.getString("streamsContextMenu"));
+        CommandMenuItems.setCommands(CommandMenuItems.MenuType.TEXT, client.settings.getString("textContextMenu"));
+        TextSelectionMenu.update();
         ContextMenuHelper.livestreamerQualities = client.settings.getString("livestreamerQualities");
         ContextMenuHelper.enableLivestreamer = client.settings.getBoolean("livestreamer");
         ContextMenuHelper.settings = client.settings;
@@ -2064,12 +2068,22 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         
+        @Override
+        public void textMenuItemClick(ActionEvent e, String selected) {
+            if (e.getActionCommand().startsWith("command")) {
+                Room room = channels.getLastActiveChannel().getRoom();
+                Parameters parameters = Parameters.create(selected);
+                parameters.put("msg", selected);
+                customCommand(room, e, parameters);
+            }
+        }
+        
         private void customCommand(Room room, ActionEvent e, Parameters parameters) {
             CommandActionEvent ce = (CommandActionEvent)e;
             CustomCommand command = ce.getCommand();
             client.anonCustomCommand(room, command, parameters);
         }
-        
+
     }
 
     private class ChannelChangeListener implements ChangeListener {
@@ -4495,7 +4509,8 @@ public class MainGui extends JFrame implements Runnable {
             if (setting.equals("channelContextMenu")
                     || setting.equals("userContextMenu")
                     || setting.equals("livestreamerQualities")
-                    || setting.equals("streamsContextMenu")) {
+                    || setting.equals("streamsContextMenu")
+                    || setting.equals("textContextMenu")) {
                 updateCustomContextMenuEntries();
             }
             else if (setting.equals("chatScrollbarAlways") || setting.equals("userlistWidth")) {

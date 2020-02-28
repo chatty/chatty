@@ -177,6 +177,16 @@ public class CommandSettings extends SettingsPanel {
         userDialogButtons.setLinkLabelListener(d.getLinkLabelListener());
         menus.add(userDialogButtons, gbc);
         
+        gbc = d.makeGbc(0, 4, 1, 1);
+        gbc.anchor = GridBagConstraints.EAST;
+        menus.add(d.createLabel("textContextMenu"), gbc);
+        
+        gbc = d.makeGbc(1, 4, 1, 1);
+        EditorStringSetting textContextMenu = d.addEditorStringSetting(
+                "textContextMenu", 20, true, "Edit Text Selection Context Menu", true,
+                getInfo("textMenu"), menuTester);
+        textContextMenu.setLinkLabelListener(d.getLinkLabelListener());
+        menus.add(textContextMenu, gbc);
     }
     
     public static void showCommandInfoPopup(Component parent, CustomCommand command) {
