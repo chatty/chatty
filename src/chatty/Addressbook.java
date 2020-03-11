@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -724,6 +725,54 @@ public class Addressbook {
     }
     
     /**
+     * Clears all entries and sets the given ones.
+     * 
+     * @param newEntries 
+     */
+    public synchronized void setEntries(Collection<AddressbookEntry> newEntries) {
+        entries.clear();
+        for (AddressbookEntry entry : newEntries) {
+            entries.put(entry.getName(), entry);
+        }
+        scanCategories();
+    }
+    
+    public static class AddressbookParsedEntries {
+        
+        public final List<AddressbookEntry> validEntries;
+        public final List<String> invalidEntries;
+        public final List<String> duplicateEntries;
+        
+        public AddressbookParsedEntries(List<AddressbookEntry> validEntries,
+                                        List<String> invalidEntries,
+                                        List<String> duplicateNames) {
+            this.validEntries = validEntries;
+            this.invalidEntries = invalidEntries;
+            this.duplicateEntries = duplicateNames;
+        }
+    }
+    
+    public static AddressbookParsedEntries getParsedEntries(String input) {
+        List<String> duplicateNames = new ArrayList<>();
+        Map<String, AddressbookEntry> validEntries = new HashMap<>();
+        List<String> invalidEntries = new ArrayList<>();
+        String[] split = StringUtil.splitLines(input);
+        for (String line : split) {
+            AddressbookEntry entry = Addressbook.parseLine(line);
+            if (entry != null) {
+                AddressbookEntry alreadyAddedEntry = validEntries.put(entry.getName(), entry);
+                if (alreadyAddedEntry != null) {
+                    duplicateNames.add(alreadyAddedEntry.getName());
+                }
+            }
+            else if (!line.trim().isEmpty()) {
+                invalidEntries.add(line);
+            }
+        }
+        return new AddressbookParsedEntries(new ArrayList<>(validEntries.values()), invalidEntries, duplicateNames);
+    }
+    
+    /**
      * Parses a single line from the addressbook file and turns it into an
      * <tt>AddresssbookEntry</tt>-object.
      * 
@@ -731,7 +780,7 @@ public class Addressbook {
      * @return The <tt>AddressbookEntry</tt> object or <tt>null</tt> if it
      * wasn't a valid line.
      */
-    private AddressbookEntry parseLine(String line) {
+    public static AddressbookEntry parseLine(String line) {
         if (line == null || line.isEmpty()) {
             return null;
         }
@@ -788,7 +837,7 @@ public class Addressbook {
      * @param entry The <tt>AddressbookEntry</tt>.
      * @return A line in the form "<tt>name cat1,cat2</tt>".
      */
-    private String makeLine(AddressbookEntry entry) {
+    public static String makeLine(AddressbookEntry entry) {
         return entry.getName()+" "+getStringFromCategories(entry.getCategories());
     }
     

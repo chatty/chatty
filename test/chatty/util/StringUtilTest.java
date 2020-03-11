@@ -4,6 +4,7 @@ package chatty.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -57,7 +58,11 @@ public class StringUtilTest {
         assertEquals(StringUtil.join(list, ", ", 1), "b, c");
         assertEquals(StringUtil.join(list, ", ", 0, 2), "a, b");
         assertEquals(StringUtil.join(list, ", ", -1, 2), "a, b");
+        assertEquals(StringUtil.join(list, ", ", -10, 2), "a, b");
         assertEquals(StringUtil.join(list, ", ", 1, 2), "b");
+        assertEquals(StringUtil.join(list, ", ", 10, 2), "");
+        assertEquals(StringUtil.join(list, "-", 0, 100), "a-b-c");
+        assertEquals(StringUtil.join(list, ", ", 2), "c");
         assertEquals(StringUtil.join(list, ", ", 3), "");
         list.add(" d");
         assertEquals(StringUtil.join(list, ", "), "a, b, c,  d");
@@ -141,6 +146,15 @@ public class StringUtilTest {
     
     private static void testSplit2(char split, char quote, char escape, int limit, int remove, String input, String... result) {
         assertEquals(Arrays.asList(result), StringUtil.split(input, split, quote, escape, limit, remove));
+    }
+    
+    @Test
+    public void testSplitLines() {
+        assertArrayEquals(StringUtil.splitLines("a"), new String[]{"a"});
+        assertArrayEquals(StringUtil.splitLines("a\nb"), new String[]{"a","b"});
+        assertArrayEquals(StringUtil.splitLines("a\rb"), new String[]{"a","b"});
+        assertArrayEquals(StringUtil.splitLines("a\r\nb"), new String[]{"a","b"});
+        assertArrayEquals(StringUtil.splitLines("a\n\rb"), new String[]{"a","","b"}); // Invalid linebreak
     }
     
 }

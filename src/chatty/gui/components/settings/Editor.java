@@ -345,7 +345,23 @@ public class Editor implements StringEditor {
         }
     }
     
+    /**
+     * Test a String value. This could for example show a popup containing
+     * information about the given value (whether it parses correctly, it's
+     * resulting properties) or another GUI element that represents the given
+     * value in some way.
+     */
     public interface Tester {
+        
+        /**
+         * 
+         * @param parent The parent window
+         * @param component The component that triggered the tester
+         * @param x 
+         * @param y 
+         * @param value The value to test
+         * @return Changed value or null to keep it the same
+         */
         public String test(Window parent, Component component, int x, int y, String value);
     }
 

@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -30,6 +31,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -74,11 +76,14 @@ public class TableEditor<T> extends JPanel {
     private final JButton moveUp = new JButton();
     private final JButton moveDown = new JButton();
     private final JButton refresh = new JButton();
+    private final JButton editAll = new JButton();
     
     private final JTextField filterInput = new JTextField();
     
     private TableEditorListener<T> listener;
     private TableContextMenu<T> contextMenu;
+    private TableEditorEditAllHandler<T> editAllHandler;
+    private StringEditor allEditor;
 
     /**
      * 
@@ -170,11 +175,12 @@ public class TableEditor<T> extends JPanel {
         configureButton(moveUp, "go-up.png", "Move selected item up");
         configureButton(moveDown, "go-down.png", "Move selected item down");
         configureButton(refresh, "view-refresh.png", "Refresh data");
+        configureButton(editAll, "edit-all.png", Language.getString("settings.listSelector.button.editAll.tip"));
         
         // Layout
         setLayout(new GridBagLayout());
         GridBagConstraints gbc;
-        gbc = makeGbc(0, 0, 2, 7);
+        gbc = makeGbc(0, 0, 2, 8);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -183,13 +189,13 @@ public class TableEditor<T> extends JPanel {
         // Filter
         
         if (sortingMode == SORTING_MODE_SORTED) {
-            gbc = makeGbc(0, 7, 1, 1);
+            gbc = makeGbc(0, 8, 1, 1);
             gbc.insets = new Insets(0,2,0,1);
             JLabel filterInputLabel = new JLabel("Filter: ");
             filterInputLabel.setLabelFor(filterInput);
             add(filterInputLabel, gbc);
             
-            gbc = makeGbc(1, 7, 1, 1);
+            gbc = makeGbc(1, 8, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             add(filterInput, gbc);
@@ -234,6 +240,10 @@ public class TableEditor<T> extends JPanel {
             gbc = makeGbc(2, 5, 1, 1);
             add(refresh, gbc);
         }
+        
+        gbc = makeGbc(2, 6, 1, 1);
+        add(editAll, gbc);
+        editAll.setVisible(false);
         
         updateButtons();
     }
@@ -321,6 +331,16 @@ public class TableEditor<T> extends JPanel {
      */
     public final void setTableEditorListener(TableEditorListener<T> listener) {
         this.listener = listener;
+    }
+    
+    /**
+     * Setting a handler enables the "Edit all entries"-button.
+     * 
+     * @param handler 
+     */
+    public final void setTableEditorEditAllHandler(TableEditorEditAllHandler<T> handler) {
+        this.editAllHandler = handler;
+        editAll.setVisible(handler != null);
     }
     
     @Override
@@ -431,6 +451,7 @@ public class TableEditor<T> extends JPanel {
             moveUp.setEnabled(false);
             moveDown.setEnabled(false);
         }
+        editAll.setEnabled(!currentlyFiltering);
     }
     
     /**
@@ -623,6 +644,36 @@ public class TableEditor<T> extends JPanel {
         }
     }
     
+    protected void editAll() {
+        if (editAllHandler == null) {
+            return;
+        }
+        String preset = editAllHandler.toString(data.getData());
+        if (allEditor == null) {
+            allEditor = editAllHandler.getEditor();
+        }
+        // Create default if none provided
+        if (allEditor == null) {
+            Editor defaultEditor = new Editor(SwingUtilities.getWindowAncestor(this));
+            defaultEditor.setAllowLinebreaks(true);
+            defaultEditor.setAllowEmpty(true);
+            allEditor = defaultEditor;
+        }
+        String result = allEditor.showDialog(editAllHandler.getEditorTitle(), preset, editAllHandler.getEditorHelp());
+        if (result != null) {
+            List<T> changedEntries = editAllHandler.toData(result);
+            if (changedEntries != null) {
+                if (listener != null) {
+                    listener.allItemsChanged(changedEntries);
+                }
+                data.setData(changedEntries);
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Input invalid, no entries changed");
+            }
+        }
+    }
+    
     /**
      * Convert a view index to model index.
      *
@@ -669,6 +720,8 @@ public class TableEditor<T> extends JPanel {
                 if (listener != null) {
                     listener.refreshData();
                 }
+            } else if (e.getSource() == editAll) {
+                editAll();
             }
         }
     }
@@ -757,10 +810,65 @@ public class TableEditor<T> extends JPanel {
          */
         public void itemEdited(T oldItem, T newItem);
         
+        public void allItemsChanged(List<T> newItems);
+        
         /**
          * Called when the user requested the data in the table to be refreshed.
          */
         public void refreshData();
+    }
+    
+    /**
+     * Used for the "Edit all entries"-button, to transform the current entries
+     * into a String and back.
+     * 
+     * @param <T> 
+     */
+    public static interface TableEditorEditAllHandler<T> {
+        
+        /**
+         * Turn the given entries into a String.
+         * 
+         * @param data The entries
+         * @return A non-null String that represents the entries, and that will
+         * construct equal entries when given to {@link toData(String)}
+         */
+        public String toString(List<T> data);
+        
+        /**
+         * Turn the given String into entries.
+         * 
+         * @param input A string containing the information needed to construct
+         * entries
+         * @return A list of entries, or null if the input is invalid, which
+         * means the table entries will not be changed
+         */
+        public List<T> toData(String input);
+        
+        /**
+         * Optionally create a StringEditor, so it can be configured as needed.
+         * If none is provided, a default one will be created. The editor will
+         * be created and cached when it is first used.
+         * 
+         * @return A StringEditor, or null
+         */
+        public StringEditor getEditor();
+        
+        /**
+         * Get the title/description of the action being performed in the
+         * editor.
+         * 
+         * @return 
+         */
+        public String getEditorTitle();
+        
+        /**
+         * Get the help being displayed in the editor.
+         * 
+         * @return 
+         */
+        public String getEditorHelp();
+        
     }
     
     private void search(char input) {
