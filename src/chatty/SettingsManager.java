@@ -415,6 +415,9 @@ public class SettingsManager {
         settings.addBoolean("liveStreamsSortingFav", true);
         settings.addLong("historyRange", 0);
         settings.addBoolean("historyVerticalZoom", false);
+        
+        settings.addBoolean("followersCompact", false);
+        settings.addBoolean("followersReg", true);
 
         //=======
         // Sounds

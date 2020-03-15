@@ -26,7 +26,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -98,6 +97,9 @@ public class FollowersDialog extends JDialog {
     
     private final MyContextMenu mainContextMenu = new MyContextMenu();
     
+    private final MyRenderer timeRenderer = new MyRenderer(MyRenderer.Type.TIME);
+    private final MyRenderer timeRenderer2 = new MyRenderer(MyRenderer.Type.USER_TIME);
+    
     /**
      * What stream the dialog was opened for.
      */
@@ -122,6 +124,10 @@ public class FollowersDialog extends JDialog {
      * When the data was last updated.
      */
     private long lastUpdated = -1;
+    
+    private boolean compactMode;
+    
+    private boolean showRegistered;
 
     public FollowersDialog(Type type, MainGui owner, final TwitchApi api,
             ContextMenuListener contextMenuListener) {
@@ -156,8 +162,8 @@ public class FollowersDialog extends JDialog {
         table.setTableHeader(null);
         // Note: Column widths are adjusted when data is loaded
         table.getColumnModel().getColumn(0).setCellRenderer(new MyRenderer(MyRenderer.Type.NAME));
-        table.getColumnModel().getColumn(1).setCellRenderer(new MyRenderer(MyRenderer.Type.TIME));
-        table.getColumnModel().getColumn(2).setCellRenderer(new MyRenderer(MyRenderer.Type.USER_TIME));
+        table.getColumnModel().getColumn(1).setCellRenderer(timeRenderer);
+        table.getColumnModel().getColumn(2).setCellRenderer(timeRenderer2);
         int nameMinWidth = table.getFontMetrics(table.getFont()).stringWidth("reasonblylong");
         table.getColumnModel().getColumn(0).setMinWidth(nameMinWidth);
         table.setIntercellSpacing(new Dimension(0, 0));
@@ -229,6 +235,43 @@ public class FollowersDialog extends JDialog {
         setSize(300,400);
     }
     
+    public void setCompactMode(boolean compactMode) {
+        this.compactMode = compactMode;
+        timeRenderer.setCompactMode(compactMode);
+        timeRenderer2.setCompactMode(compactMode);
+        updateColumnsAfterSettingChange();
+    }
+    
+    private TableColumn regColumn;
+    
+    public void setShowRegistered(boolean show) {
+        this.showRegistered = show;
+        if (!show) {
+            if (regColumn == null) {
+                TableColumn column = table.getColumnModel().getColumn(2);
+                table.removeColumn(column);
+                regColumn = column;
+            }
+        }
+        else {
+            if (regColumn != null) {
+                table.addColumn(regColumn);
+                regColumn = null;
+            }
+        }
+        updateColumnsAfterSettingChange();
+    }
+    
+    private void updateColumnsAfterSettingChange() {
+        adjustColumnSize();
+        if (currentInfo != null) {
+            // Reset data for proper resizing
+            FollowerInfo current = currentInfo;
+            setFollowerInfo(new FollowerInfo(Follower.Type.FOLLOWER, stream, ""));
+            setFollowerInfo(current);
+        }
+    }
+    
     /**
      * Select the row the mouse cursor is over, except if it is already over an
      * selected row, in which case it just keeps the current selection.
@@ -256,13 +299,18 @@ public class FollowersDialog extends JDialog {
                 Follower selected = followers.get(selectedRow);
                 streams.add(StringUtil.toLowerCase(selected.name));
             }
+            ContextMenu m = null;
             if (streams.size() == 1) {
                 User user = main.getUser(Helper.toChannel(stream), streams.iterator().next());
-                ContextMenu m = new UserContextMenu(user, null, null, contextMenuListener);
-                m.show(table, e.getX(), e.getY());
+                m = new UserContextMenu(user, null, null, contextMenuListener);
             }
             else if (!streams.isEmpty()) {
-                ContextMenu m = new StreamsContextMenu(streams, contextMenuListener);
+                m = new StreamsContextMenu(streams, contextMenuListener);
+            }
+            if (m != null) {
+                m.addSeparator();
+                m.addCheckboxItem("toggleBoolean_followersCompact", "Compact Mode", compactMode);
+                m.addCheckboxItem("toggleBoolean_followersReg", "Show Registered", showRegistered);
                 m.show(table, e.getX(), e.getY());
             }
         }
@@ -276,7 +324,9 @@ public class FollowersDialog extends JDialog {
     
     private void adjustColumnSize() {
         adjustColumnSize(1);
-        adjustColumnSize(2);
+        if (showRegistered) {
+            adjustColumnSize(2);
+        }
     }
 
     /**
@@ -510,9 +560,15 @@ public class FollowersDialog extends JDialog {
             NAME, TIME, USER_TIME
         }
         
+        private boolean compactMode;
+        
         public MyRenderer(Type type) {
             this.type = type;
             setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        }
+        
+        public void setCompactMode(boolean compactMode) {
+            this.compactMode = compactMode;
         }
         
         @Override
@@ -543,12 +599,22 @@ public class FollowersDialog extends JDialog {
                 }
             }
             else if (type == Type.TIME) {
-                setText(DateTime.agoSingleVerbose(f.follow_time));
-                setToolTipText("Followed "+DateTime.formatFullDatetime(f.follow_time));
+                if (compactMode) {
+                    setText(DateTime.agoSingleCompact(f.follow_time));
+                }
+                else {
+                    setText(DateTime.agoSingleVerbose(f.follow_time));
+                }
+                setToolTipText(DateTime.formatFullDatetime(f.follow_time));
             }
             else if (type == Type.USER_TIME) {
                 if (f.user_created_time != -1) {
-                    setText("("+DateTime.agoSingleVerbose(f.user_created_time)+")");
+                    if (compactMode) {
+                        setText("("+DateTime.agoSingleCompact(f.user_created_time)+")");
+                    }
+                    else {
+                        setText("("+DateTime.agoSingleVerbose(f.user_created_time)+")");
+                    }
                     setToolTipText("Registered "+DateTime.formatFullDatetime(f.user_created_time));
                 } else {
                     setText("(n/a)");

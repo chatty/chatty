@@ -930,6 +930,7 @@ public class MainGui extends JFrame implements Runnable {
         userInfoDialog.setUserDefinedButtonsDef(client.settings.getString("timeoutButtons"));
         debugWindow.getLogIrcCheckBox().setSelected(client.settings.getBoolean("debugLogIrc"));
         updateLiveStreamsDialog(); 
+        updateFollowerDialogs();
         
         // Set window maximized state
         if (client.settings.getBoolean("maximized")) {
@@ -1220,6 +1221,13 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.getString("liveStreamsSorting"),
                 client.settings.getBoolean("liveStreamsSortingFav")
         );
+    }
+    
+    private void updateFollowerDialogs() {
+        followerDialog.setCompactMode(client.settings.getBoolean("followersCompact"));
+        subscribersDialog.setCompactMode(client.settings.getBoolean("followersCompact"));
+        followerDialog.setShowRegistered(client.settings.getBoolean("followersReg"));
+        subscribersDialog.setShowRegistered(client.settings.getBoolean("followersReg"));
     }
     
     private void updateHistoryRange() {
@@ -1983,6 +1991,10 @@ public class MainGui extends JFrame implements Runnable {
                  * single joined room.
                  */
                 customCommand(channels.getLastActiveChannel().getRoom(), e, Parameters.create(StringUtil.join(streams, " ")));
+            } else if (cmd.startsWith("toggleBoolean_")) {
+                // Added here so it can be triggered from various menus
+                String setting = cmd.substring("toggleBoolean_".length());
+                client.settings.setBoolean(setting, !client.settings.getBoolean(setting));
             }
         }
 
@@ -4475,6 +4487,9 @@ public class MainGui extends JFrame implements Runnable {
             if (setting.equals("liveStreamsSorting")
                     || setting.equals("liveStreamsSortingFav")) {
                 updateLiveStreamsDialog();
+            }
+            if (setting.equals("followersCompact") || setting.equals("followersReg")) {
+                updateFollowerDialogs();
             }
             if (setting.equals("historyRange")) {
                 updateHistoryRange();

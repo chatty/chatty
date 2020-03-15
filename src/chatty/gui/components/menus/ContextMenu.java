@@ -103,15 +103,15 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         }
     }
     
-    protected JMenuItem addItem(String action, String text) {
+    public JMenuItem addItem(String action, String text) {
         return addItem(action, text, -1, null, null);
     }
 
-    protected JMenuItem addItem(String action, String text, ImageIcon icon) {
+    public JMenuItem addItem(String action, String text, ImageIcon icon) {
         return addItem(action, text, -1, null, icon);
     }
 
-    protected JMenuItem addItem(String action, String text, String parent) {
+    public JMenuItem addItem(String action, String text, String parent) {
         return addItem(action, text, -1, parent, null);
     }
 
@@ -143,11 +143,11 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         return e;
     }
     
-    protected void addCheckboxItem(String action, String text, boolean selected) {
+    public void addCheckboxItem(String action, String text, boolean selected) {
         items.put(action, add(makeCheckboxItem(action, text, selected)));
     }
     
-    protected void addCheckboxItem(String action, String text, String parent, boolean selected) {
+    public void addCheckboxItem(String action, String text, String parent, boolean selected) {
         if (parent != null) {
             JMenuItem item = makeCheckboxItem(action, text, selected);
             getSubmenu(parent).add(item);
