@@ -50,7 +50,7 @@ public class MsgColorManagerTest {
     
     private void testLoadingAndSaving(String[] testData, MsgColorItem[] expectedData) {
         // Define settings
-        Settings settings = new Settings(null);
+        Settings settings = new Settings(null, null);
         settings.addList("msgColors", new LinkedList(), Setting.STRING);
         settings.putList("msgColors", Arrays.asList(testData));
         

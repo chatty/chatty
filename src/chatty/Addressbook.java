@@ -5,6 +5,7 @@ import chatty.util.FileWatcher;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
+import chatty.util.settings.SettingsListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,9 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -38,6 +37,8 @@ public class Addressbook {
     private static final Logger LOGGER = Logger.getLogger(Addressbook.class.getName());
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
+    
+    private static final String SETTING_NAME = "abEntries";
     
     private final Settings settings;
     
@@ -65,15 +66,17 @@ public class Addressbook {
      */
     private final String importFileName;
     
-    /**
-     * Whether the Addressbook was already saved this session.
-     */
-    private boolean saved;
-    
     public Addressbook(String fileName, String importFilename, Settings settings) {
         this.fileName = fileName;
         this.importFileName = importFilename;
         this.settings = settings;
+        settings.addSettingsListener(new SettingsListener() {
+
+            @Override
+            public void aboutToSaveSettings(Settings settings) {
+                saveToSettings();
+            }
+        });
     }
     
     /**
@@ -724,6 +727,54 @@ public class Addressbook {
         scanCategories();
     }
     
+    public synchronized boolean loadFromSettings() {
+        if (!settings.isValueSet(SETTING_NAME)) {
+            LOGGER.info("Didn't load addressbook from settings");
+            return false;
+        }
+        entries.clear();
+        List values = settings.getList(SETTING_NAME);
+        for (Object item : values) {
+            if (item instanceof List) {
+                AddressbookEntry entry = listToEntry((List)item);
+                if (entry != null) {
+                    entries.put(entry.getName(), entry);
+                }
+            }
+        }
+        LOGGER.info(String.format("Read %d addressbook entries from settings",
+                entries.size()));
+        scanCategories();
+        return true;
+    }
+    
+    private static AddressbookEntry listToEntry(List list) {
+        if (list.size() > 1) {
+            if (list.get(0) instanceof String && list.get(1) instanceof List) {
+                String name = (String)list.get(0);
+                Set<String> cats = new HashSet<>();
+                for (Object catObject : (List)list.get(1)) {
+                    if (catObject instanceof String) {
+                        cats.add((String)catObject);
+                    }
+                }
+                return new AddressbookEntry(name, cats);
+            }
+        }
+        return null;
+    }
+    
+    private synchronized void saveToSettings() {
+        List<Object> result = new ArrayList<>();
+        for (AddressbookEntry entry : entries.values()) {
+            List<Object> entryList = new ArrayList<>();
+            entryList.add(entry.getName());
+            entryList.add(new ArrayList<>(entry.getCategories()));
+            result.add(entryList);
+        }
+        settings.putList(SETTING_NAME, result);
+    }
+    
     /**
      * Clears all entries and sets the given ones.
      * 
@@ -795,12 +846,6 @@ public class Addressbook {
             return new AddressbookEntry(name, categories);
         }
         return null;
-    }
-    
-    public synchronized void saveToFileOnce() {
-        if (!saved) {
-            saveToFile();
-        }
     }
     
     private void saveOnChange() {

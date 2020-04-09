@@ -22,7 +22,7 @@ public class UsericonManagerTest {
     
     @Test
     public void test() {
-        Settings settings = new Settings(null);
+        Settings settings = new Settings(null, null);
         settings.addBoolean("ffzModIcon", false);
         settings.addBoolean("customUsericonsEnabled", false);
         settings.addList("customUsericons", new ArrayList<>(), Setting.LIST);

@@ -34,7 +34,7 @@ public class HighlighterTest {
     @BeforeClass
     public static void setUpClass() {
         highlighter = new Highlighter();
-        Settings settings = new Settings("");
+        Settings settings = new Settings("", null);
         settings.addBoolean("abSaveOnChange", false);
         ab = new Addressbook(null, null, settings);
         user.setAddressbook(ab);

@@ -10,6 +10,7 @@ import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import chatty.util.commands.Parameters;
 import chatty.util.irc.MsgTags;
+import chatty.util.settings.FileManager.SaveResult;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -890,6 +891,58 @@ public class Helper {
             TimeZone.setDefault(tz);
             LOGGER.info(String.format("[Timezone] Set to %s [%s]", tz.getDisplayName(), input));
         }
+    }
+    
+    public static String getErrorMessageWithCause(Throwable ex) {
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            return String.format("%s [%s]",
+                    getErrorMessageCompact(ex),
+                    getErrorMessageCompact(cause));
+        }
+        return getErrorMessageCompact(ex);
+    }
+    
+    public static String getErrorMessageCompact(Throwable ex) {
+        if (ex.getLocalizedMessage() != null) {
+            return ex.getClass().getSimpleName()+": "+ex.getLocalizedMessage();
+        }
+        return ex.getClass().getSimpleName();
+    }
+    
+    public static String makeSaveResultInfo(List<SaveResult> result) {
+        StringBuilder b = new StringBuilder();
+        for (SaveResult r : result) {
+            if (r == null) {
+                continue;
+            }
+            if (r.written || r.backupWritten || r.writeError != null || r.backupError != null || r.removed) {
+                b.append("[").append(r.id).append("]\n");
+            }
+            
+            if (r.written) {
+                b.append(String.format("* File written to %s\n",
+                        r.filePath));
+            }
+            else if (r.writeError != null) {
+                b.append(String.format("* Writing failed: %s\n",
+                        getErrorMessageCompact(r.writeError)));
+            }
+            
+            if (r.backupWritten) {
+                b.append(String.format("* Backup written to %s\n",
+                        r.backupPath));
+            }
+            else if (r.writeError != null) {
+                b.append(String.format("* Backup failed: %s\n",
+                        getErrorMessageCompact(r.backupError)));
+            }
+            
+            if (r.removed) {
+                b.append("* Removed unused file\n");
+            }
+        }
+        return b.toString();
     }
     
 }

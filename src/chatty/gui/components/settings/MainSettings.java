@@ -37,7 +37,7 @@ public class MainSettings extends SettingsPanel {
 
         JPanel startSettingsPanel = addTitledPanel(Language.getString("settings.section.startup"), 0);
         JPanel languagePanel = addTitledPanel(Language.getString("settings.section.language"), 1);
-        JPanel dirPanel = addTitledPanel(Language.getString("settings.section.directory"), 2);
+        JPanel dirPanel = addTitledPanel(Language.getString("settings.section.settings"), 2);
         
         GridBagConstraints gbc;
         
@@ -103,7 +103,7 @@ public class MainSettings extends SettingsPanel {
                 gbc);
         
         //==========================
-        // Directory
+        // Settings
         //==========================
         String dirInfo = Language.getString("settings.directory.default");
         if (Chatty.getSettingsDirectoryInfo() != null) {
@@ -138,6 +138,17 @@ public class MainSettings extends SettingsPanel {
             gbc.weightx = 1;
             dirPanel.add(invalidDir, gbc);
         }
+
+        JButton openBackupButton = new JButton(Language.getString("settings.backup.button.open"));
+        openBackupButton.addActionListener(e -> {
+            BackupManager mg = new BackupManager(d, d.settings.getFileManager());
+            mg.setModal(true);
+            mg.pack();
+            mg.setLocationRelativeTo(d);
+            mg.open();
+        });
+        gbc = d.makeGbc(0, 4, 2, 1);
+        dirPanel.add(openBackupButton, gbc);
     }
     
     public static Map<String, String> getLanguageOptions() {

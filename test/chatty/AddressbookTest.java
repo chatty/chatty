@@ -34,7 +34,7 @@ public class AddressbookTest {
     
     @Before
     public void setUp() {
-        Settings settings = new Settings("");
+        Settings settings = new Settings("", null);
         settings.addBoolean("abSaveOnChange", false);
         ab = new Addressbook("addressbookTest", "addressbookTestImport", settings);
     }

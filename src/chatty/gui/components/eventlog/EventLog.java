@@ -5,6 +5,7 @@ import chatty.gui.MainGui;
 import chatty.lang.Language;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JButton;
@@ -80,7 +81,7 @@ public class EventLog extends JDialog {
 //            systemList.addEvent(new Event(Event.Type.SYSTEM, null, "Test "+i, "Note: You can also open the Event Log through the 'View'-menu. "+i, null, null));
 //        }
         
-        setSize(300, 400);
+        setSize(460, 400);
     }
     
     public void setVisible(boolean visible) {
@@ -128,10 +129,18 @@ public class EventLog extends JDialog {
     
     private static EventLog main;
     
-    public static void addSystemEvent(String id) {
-        String title = Language.getString("eventLog.entry."+id+".title");
-        String text = Language.getString("eventLog.entry."+id+".text");
-        String origText = Language.getBundleForLanguage("en").getString("eventLog.entry."+id+".text");
+    public static void addSystemEvent(String id, Object... arguments) {
+        String stringId = id;
+        if (id.startsWith("session.")) {
+            stringId = id.substring("session.".length());
+        }
+        String title = Language.getString("eventLog.entry."+stringId+".title");
+        String text = Language.getString("eventLog.entry."+stringId+".text");
+        String origText = Language.getBundleForLanguage("en").getString("eventLog.entry."+stringId+".text");
+        if (arguments.length > 0) {
+            text = MessageFormat.format(text, arguments);
+            origText = MessageFormat.format(origText, arguments);
+        }
         if (!origText.equals(text)) {
             text += "\n[English Original: "+origText+"]";
         }

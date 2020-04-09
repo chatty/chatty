@@ -427,7 +427,7 @@ public class StringUtil {
     }
     
     public static final NullComparator NULL_COMPARATOR = new NullComparator();
-    
+
     private static class NullComparator implements Comparator<String> {
 
         @Override
@@ -469,6 +469,13 @@ public class StringUtil {
             return null;
         }
         return input[ThreadLocalRandom.current().nextInt(input.length)];
+    }
+    
+    public static int getLength(String content) {
+        if (content == null) {
+            return 0;
+        }
+        return content.length();
     }
     
     public static final void main(String[] args) {

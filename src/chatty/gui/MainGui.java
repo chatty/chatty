@@ -76,6 +76,7 @@ import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.irc.MsgTags;
+import chatty.util.settings.FileManager;
 import chatty.util.settings.Setting;
 import chatty.util.settings.SettingChangeListener;
 import chatty.util.settings.Settings;
@@ -1494,13 +1495,21 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("settings")) {
                 getSettingsDialog().showSettings();
             } else if (cmd.equals("saveSettings")) {
-                int result = JOptionPane.showConfirmDialog(MainGui.this,
-                        "This manually saves settings to file.\n" +
-                        "Settings are also automatically saved when you exit Chatty.",
-                        "Save Settings to file",
-                        JOptionPane.OK_CANCEL_OPTION);
+                int result = JOptionPane.showOptionDialog(MainGui.this,
+                        Language.getString("saveSettings.text"),
+                        Language.getString("saveSettings.title"),
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE, null,
+                        new String[]{
+                            Language.getString("dialog.button.save"),
+                            Language.getString("dialog.button.cancel")
+                        }, null);
                 if (result == 0) {
-                    client.saveSettings(false);
+                    List<FileManager.SaveResult> saveResult = client.saveSettings(false, true);
+                    JOptionPane.showMessageDialog(MainGui.this,
+                            Helper.makeSaveResultInfo(saveResult),
+                            Language.getString("saveSettings.title"),
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
             } else if (cmd.equals("website")) {
                 UrlOpener.openUrlPrompt(MainGui.this, Chatty.WEBSITE, true);
