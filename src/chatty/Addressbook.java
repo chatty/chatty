@@ -870,7 +870,6 @@ public class Addressbook {
                 }
             }
             MiscUtil.moveFile(tempFile, file);
-            saved = true;
         } catch (IOException ex) {
             LOGGER.warning("Error writing addressbook: " + ex);
         }

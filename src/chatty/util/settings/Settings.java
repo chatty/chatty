@@ -3,6 +3,7 @@ package chatty.util.settings;
 
 import chatty.Logging;
 import chatty.util.settings.FileManager.SaveResult;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.*;
@@ -918,6 +919,9 @@ public class Settings {
 
     /**
      * Loads the settings from a JSON file.
+     * 
+     * @return true if the loading succeeded or the file didn't exist, false
+     * otherwise (the file not existing isn't really an error)
      */
     public boolean loadSettingsFromJson() {
         synchronized(LOCK) {
@@ -931,44 +935,36 @@ public class Settings {
         }
     }
     
-    private boolean loadSettingsFromJson(String fileName) {
-        LOGGER.info("Loading settings from file: "+fileName);
+    /**
+     * Load settings from the given file id (as known in fileManager).
+     * 
+     * @param fileId
+     * @return true if the loading succeeded or the file didn't exist, false
+     * otherwise (the file not existing isn't really an error)
+     */
+    private boolean loadSettingsFromJson(String fileId) {
+        LOGGER.info("Loading settings from file: "+fileId);
         try {
-            String input = fileManager.load(fileName);
+            String input = fileManager.load(fileId);
             try {
                 settingsFromJson(input);
             }
             catch (ParseException ex) {
-                logParseError(fileName, input, ex);
+                logParseError(fileId, input, ex);
                 return false;
             }
         }
-        catch (IOException ex) {
+        catch (FileNotFoundException ex) {
             LOGGER.warning("Error loading settings from file: "+ex);
         }
+        catch (IOException ex) {
+            LOGGER.warning("Error loading settings from file: "+ex);
+            return false;
+        }
         return true;
-        // TODO: Finish loading
-        
-//        Path file = Paths.get(fileName);
-//        
-//        try (BufferedReader reader = Files.newBufferedReader(file, CHARSET)) {
-//            String input = reader.readLine();
-//            if (input != null) {
-//                try {
-//                    settingsFromJson(input);
-//                } catch (ParseException ex) {
-//                    logParseError(fileName, input, ex);
-//                }
-//            } else {
-//                LOGGER.warning("Settings file empty: "+fileName);
-//                LOGGER.log(Logging.USERINFO, "Settings file empty, using default settings ("+fileName+")");
-//            }
-//        } catch (IOException ex) {
-//            LOGGER.warning("Error loading settings from file: "+ex);
-//        }
     }
     
-    private static void logParseError(String fileName, String input, ParseException ex) {
+    private static void logParseError(String fileId, String input, ParseException ex) {
         int pos = ex.getPosition();
         int start = pos - 10;
         int end = pos + 10;
@@ -977,7 +973,7 @@ public class Settings {
         String excerpt = input.substring(start, pos) + "@" + input.substring(pos, end);
         LOGGER.warning("Error parsing settings: " + ex + "[" + excerpt + "]");
         LOGGER.log(Logging.USERINFO, String.format("Settings file corrupt, using default settings (%s) [%s]",
-                fileName,
+                fileId,
                 excerpt));
     }
     

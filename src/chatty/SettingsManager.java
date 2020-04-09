@@ -33,7 +33,6 @@ public class SettingsManager {
     private static final Logger LOGGER = Logger.getLogger(SettingsManager.class.getName());
     
     public final Settings settings;
-//    private final BackupManager backup;
     public final FileManager fileManager;
     
     private final List<DefaultHotkey> defaultHotkeys = new ArrayList<>();

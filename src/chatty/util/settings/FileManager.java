@@ -98,7 +98,6 @@ public class FileManager {
         }
         catch (IOException ex) {
             result.setWriteError(ex);
-//            throw new FileSaveError(id+"("+StringUtil.getLength(content)+")", ex);
         }
 
         if (fileSettings.backupEnabled && content != null) {
@@ -109,7 +108,6 @@ public class FileManager {
             }
             catch (IOException ex) {
                 result.setBackupError(ex);
-//                throw new BackupSaveError(id+"("+StringUtil.getLength(content)+")", ex);
             }
         }
         return result.make();
@@ -285,26 +283,6 @@ public class FileManager {
             return Long.parseLong(m.group(1));
         }
         return -1;
-    }
-    
-//    private FileInfo getFileInfo(Path path, FileContentInfoProvider infoProvider) {
-//        Files.walkFileTree(path, null, maxDepth, null)
-//    }
-    
-    public static class FileSaveError extends IOException {
-        
-        public FileSaveError(String id, Throwable cause) {
-            super(id, cause);
-        }
-        
-    }
-    
-    public static class BackupSaveError extends IOException {
-        
-        public BackupSaveError(String id, Throwable cause) {
-            super(id, cause);
-        }
-        
     }
     
     public static class FileSettings {
