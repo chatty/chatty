@@ -649,6 +649,7 @@ public class SettingsManager {
         settings.addString("streamHighlightMatch", "status:bm");
         settings.addString("streamHighlightChannel", "");
         settings.addBoolean("streamHighlightChannelRespond", false);
+        settings.addString("streamHighlightResponseMsg", "Added stream $(added) for $(chan) [$(uptime)] $(comment)");
         settings.addBoolean("streamHighlightMarker", true);
 
         // Stream Status Writer

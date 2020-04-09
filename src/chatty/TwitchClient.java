@@ -1872,7 +1872,7 @@ public class TwitchClient {
     }
     
     public void commandAddStreamHighlight(Room room, String parameter) {
-        g.printLine(room, streamHighlights.addHighlight(room.getOwnerChannel(), parameter));
+        g.printLine(room, streamHighlights.addHighlight(room.getOwnerChannel(), parameter, null));
     }
     
     public void commandOpenStreamHighlights(Room room) {

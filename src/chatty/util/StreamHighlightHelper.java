@@ -9,6 +9,8 @@ import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.io.BufferedWriter;
@@ -93,7 +95,7 @@ public class StreamHighlightHelper {
         // All challenges successfully completed
         //---------------------------------------
         String comment = line.substring(command.length()).trim();
-        return addHighlight(channel, "["+user.getDisplayNick()+"] "+comment);
+        return addHighlight(channel, "["+user.getDisplayNick()+"] "+comment, user);
     }
     
     /**
@@ -104,9 +106,10 @@ public class StreamHighlightHelper {
      * 
      * @param channel The channel to add the highlight for
      * @param comment The comment to add (can be null or empty for no comment)
+     * @param chatUser The user that executed the chat command (or null)
      * @return A textual response to adding the highlight
      */
-    public String addHighlight(String channel, String comment) {
+    public String addHighlight(String channel, String comment, User chatUser) {
         if (channel == null || channel.isEmpty() || !Helper.isRegularChannel(channel)) {
             return "Failed adding stream highlight (no channel).";
         }
@@ -147,8 +150,22 @@ public class StreamHighlightHelper {
                 if (!comment.isEmpty()) {
                     shortComment = "(" + StringUtil.shortenTo(comment, 30) + ")";
                 }
-                return "Added stream highlight"+(createdMarker ? "/marker" : "")
-                        +" for " + channel + " [" + streamTime + "] " + shortComment;
+                String template = settings.getString("streamHighlightResponseMsg");
+                CustomCommand cc = CustomCommand.parse(template);
+                if (cc.hasError() || StringUtil.trim(template).isEmpty()) {
+                    cc = CustomCommand.parse(settings.getStringDefault("streamHighlightResponseMsg"));
+                }
+                Parameters params = Parameters.create("");
+                params.put("added", "highlight"+(createdMarker ? "/marker" : ""));
+                params.put("chan", channel);
+                params.put("uptime", streamTime);
+                params.put("comment", shortComment);
+                params.put("fullcomment", comment.isEmpty() ? "" : "("+comment+")");
+                if (chatUser != null) {
+                    params.put("chatuser", chatUser.getRegularDisplayNick());
+                    params.putObject("user", chatUser);
+                }
+                return cc.replace(params);
             }
             return "Failed adding stream highlight (write error)."+(createdMarker ? " (Created Stream Marker)" : "");
         }

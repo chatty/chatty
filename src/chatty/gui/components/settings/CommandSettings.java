@@ -193,7 +193,8 @@ public class CommandSettings extends SettingsPanel {
         String message = "<p style='font-family:sans-serif;'>This shows how the "
                 + "parser understands the part to be executed. It may not be "
                 + "very obvious what it means, but it can be helpful for "
-                + "debugging.</p><br />";
+                + "debugging. If no error is shown here, it's at least formally "
+                + "correct.</p><br />";
         if (command == null) {
             message += "No command.";
         } else if (command.hasError()) {
