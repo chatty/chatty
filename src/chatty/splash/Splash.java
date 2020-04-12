@@ -36,6 +36,7 @@ public class Splash {
             "Carl Carl, dude dude, man!",
             "Old Reece still got it cracking.",
             "Jaffa Kree!",
+            "What fate Omoroca?",
             "Java is an island as well!",
             "And we're walking..",
             "Let's make life take the lemons back!",
@@ -46,7 +47,7 @@ public class Splash {
             "The hypnotic tick-tack of stilettos on virtual cobble",
             "Do you get to the cloud district often?",
             "Getting into the Swing of things..",
-            "I've heard if both ways",
+            "I've heard it both ways",
             "🐣",
             "Igniting the midnight petroleum!",
             "Tea, Earl Grey, Hot",
@@ -70,6 +71,7 @@ public class Splash {
             "Schleyfsteyn!",
             "Never dig below your feet!",
             "Kohle, Kohle, Kohle 🎵",
+            "Remember the Cant!",
         };
     }
     
