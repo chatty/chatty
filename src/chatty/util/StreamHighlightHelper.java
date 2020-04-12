@@ -150,11 +150,8 @@ public class StreamHighlightHelper {
                 if (!comment.isEmpty()) {
                     shortComment = "(" + StringUtil.shortenTo(comment, 30) + ")";
                 }
-                String template = settings.getString("streamHighlightResponseMsg");
-                CustomCommand cc = CustomCommand.parse(template);
-                if (cc.hasError() || StringUtil.trim(template).isEmpty()) {
-                    cc = CustomCommand.parse(settings.getStringDefault("streamHighlightResponseMsg"));
-                }
+                
+                // Parameters
                 Parameters params = Parameters.create("");
                 params.put("added", "highlight"+(createdMarker ? "/marker" : ""));
                 params.put("chan", channel);
@@ -165,7 +162,16 @@ public class StreamHighlightHelper {
                     params.put("chatuser", chatUser.getRegularDisplayNick());
                     params.putObject("user", chatUser);
                 }
-                return cc.replace(params);
+                
+                // Command
+                String template = settings.getString("streamHighlightResponseMsg");
+                CustomCommand cc = CustomCommand.parse(template);
+                String result = cc.replace(params);
+                if (StringUtil.isNullOrEmpty(StringUtil.trim(result))) {
+                    // Use default in case of error or empty command
+                    result = CustomCommand.parse(settings.getStringDefault("streamHighlightResponseMsg")).replace(params);
+                }
+                return result;
             }
             return "Failed adding stream highlight (write error)."+(createdMarker ? " (Created Stream Marker)" : "");
         }
