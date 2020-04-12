@@ -315,6 +315,7 @@ public class SettingsManager {
         commandsDefault.add("/slap /me slaps $$1- around a bit with a large trout");
         commandsDefault.add("/permit !permit $$1");
         settings.addList("commands", commandsDefault, Setting.STRING);
+        settings.addMap("var", new HashMap(), Setting.STRING);
 
         // Menu Entries
         settings.addString("timeoutButtons","/Ban[B], /Unban[U], 5s[1], 2m[2], 10m[3], 30m[4], /ModUnmod"
