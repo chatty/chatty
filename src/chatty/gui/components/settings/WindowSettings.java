@@ -82,7 +82,10 @@ public class WindowSettings extends SettingsPanel {
                 d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("inputEnabled"),
-                d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));   
+                d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
+        
+        other.add(d.addComboLongSetting("inputFocus", 0, 1),
+                d.makeGbc(0, 7, 2, 1, GridBagConstraints.WEST));
         
         //--------
         // Popout

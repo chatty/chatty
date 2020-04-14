@@ -422,6 +422,19 @@ public class MainGui extends JFrame implements Runnable {
         MainWindowListener mainWindowListener = new MainWindowListener();
         addWindowStateListener(mainWindowListener);
         addWindowListener(mainWindowListener);
+        addWindowFocusListener(new WindowFocusListener() {
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                if (client.settings.getLong("inputFocus") == 1) {
+                    channels.setInitialFocus();
+                }
+            }
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+            }
+        });
         
         hotkeyManager.registerAction("custom.command", "Custom Command", new AbstractAction() {
 

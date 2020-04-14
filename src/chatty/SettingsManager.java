@@ -394,6 +394,7 @@ public class SettingsManager {
         settings.addBoolean("mainResizable", true);
         settings.addBoolean("splash", true);
         settings.addBoolean("hideStreamsOnMinimize", true);
+        settings.addLong("inputFocus", 0);
         
         // Tray
         settings.addBoolean("closeToTray", false);
