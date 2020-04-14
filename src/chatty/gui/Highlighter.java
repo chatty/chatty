@@ -407,6 +407,8 @@ public class Highlighter {
         private String textWithoutPrefix = "";
         private String mainPrefix;
         
+        private boolean invalidRegexLog;
+        
         private enum Status {
             MOD("m"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
             TURBO("t"), ANY_MOD("M"), GLOBAL_MOD("g"), BOT("r"), VIP("v");
@@ -442,9 +444,23 @@ public class Highlighter {
             addPatternPrefix(text -> "(?iu)" + Pattern.quote(text), "text:");
         }
         
-        public HighlightItem(String item) {
+        /**
+         * Create a new item to match messages against.
+         * 
+         * @param item The string containing the match requirements
+         * @param invalidRegexLog Whether to add invalid regex warnings to the
+         * debug log (this can be useful to disable for editing regex, where it
+         * might otherwise spam a lot of debug messages)
+         */
+        public HighlightItem(String item, boolean invalidRegexLog) {
             raw = item;
+            this.invalidRegexLog = invalidRegexLog;
             prepare(item);
+        }
+        
+        public HighlightItem(String item) {
+            // By default, log invalid regex warnings
+            this(item, true);
         }
         
         /**
@@ -629,7 +645,7 @@ public class Highlighter {
                     List<String> list = parseStringListPrefix(item, "blacklist:", s -> s);
                     List<HighlightItem> blItems = new ArrayList<>();
                     for (String entry : list) {
-                        HighlightItem hlItem = new HighlightItem(entry);
+                        HighlightItem hlItem = new HighlightItem(entry, invalidRegexLog);
                         if (!hlItem.hasError()) {
                             blItems.add(hlItem);
                             if (hlItem.patternThrowsError()) {
@@ -918,7 +934,9 @@ public class Highlighter {
                 return pattern;
             } catch (PatternSyntaxException ex) {
                 error = ex.getDescription();
-                LOGGER.warning("Invalid regex: " + ex);
+                if (invalidRegexLog) {
+                    LOGGER.warning("Invalid regex: " + ex);
+                }
                 return NO_MATCH;
             }
         }

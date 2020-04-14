@@ -300,7 +300,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (value.isEmpty()) {
             highlightItem = null;
         } else {
-            highlightItem = new HighlightItem(value);
+            highlightItem = new HighlightItem(value, false);
         }
         updateParseResult();
         updateInfoText();
@@ -316,7 +316,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             blacklistItem = null;
             addToBlacklistButton.setEnabled(false);
         } else {
-            blacklistItem = new HighlightItem(value);
+            blacklistItem = new HighlightItem(value, false);
             addToBlacklistButton.setEnabled(!blacklistItem.hasError());
         }
         updateParseResult();
