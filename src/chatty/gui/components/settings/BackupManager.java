@@ -6,14 +6,15 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.settings.FileManager;
 import chatty.util.settings.FileManager.FileInfo;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -22,7 +23,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
  *
@@ -55,26 +59,40 @@ public class BackupManager extends JDialog {
                 FileInfo info = data.getRowData(convertRowIndexToModel(row));
                 column = convertColumnIndexToModel(column);
                 switch (column) {
-                    case 0: return info.getFile().toString();
-                    case 1: return String.format("%d bytes",
-                            info.getSize());
-                    case 2: return String.format("Modified: %s",
-                            DateTime.formatFullDatetime(info.getModifiedTime()));
-                    case 3: return info.getInfo();
+                    case 0:
+                        return info.getFile().toString();
+                    case 1:
+                        return String.format("%d bytes",
+                                info.getSize());
+                    case 2:
+                        return String.format("Modified: %s",
+                                DateTime.formatFullDatetime(info.getModifiedTime()));
+                    case 3:
+                        return String.format("Backup Created: %s",
+                                DateTime.formatFullDatetime(info.getCreated()));
+                    case 4:
+                        return info.getInfo();
                 }
                 return null;
             }
             
         };
-        table.getColumnModel().getColumn(0).setPreferredWidth(200);
-        table.getColumnModel().getColumn(1).setPreferredWidth(40);
-        table.getColumnModel().getColumn(2).setPreferredWidth(80);
-        table.getColumnModel().getColumn(3).setPreferredWidth(420);
+        FontMetrics measure = new JLabel().getFontMetrics(table.getFont());
+        table.getColumnModel().getColumn(0).setPreferredWidth(measure.stringWidth("auto_1586904521__settings")+20);
+        table.getColumnModel().getColumn(1).setPreferredWidth(measure.stringWidth("12345")+10);
+        table.getColumnModel().getColumn(2).setPreferredWidth(measure.stringWidth("12 hours ago")+10);
+        table.getColumnModel().getColumn(3).setPreferredWidth(measure.stringWidth("12 hours ago")+10);
+        table.getColumnModel().getColumn(4).setPreferredWidth(420);
+        table.getColumnModel().getColumn(2).setCellRenderer(new AgoRenderer());
+        table.getColumnModel().getColumn(3).setCellRenderer(new AgoRenderer());
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getSelectionModel().addListSelectionListener(e -> {
             update();
         });
         table.setAutoCreateRowSorter(true);
+        table.getRowSorter().setSortKeys(Arrays.asList(new RowSorter.SortKey[]{
+            new RowSorter.SortKey(2, SortOrder.DESCENDING),
+            new RowSorter.SortKey(3, SortOrder.DESCENDING)}));
         
         GridBagConstraints gbc = GuiUtil.makeGbc(0, 0, 1, 1);
         
@@ -151,7 +169,7 @@ public class BackupManager extends JDialog {
     
     private static class MyTableModel extends AbstractTableModel {
         
-        private final String[] COLUMNS = {"Filename", "Size", "Modified", "Info"};
+        private final String[] COLUMNS = {"Filename", "Size", "Modified", "Created", "Info"};
         
         private final List<FileInfo> data = new ArrayList<>();
         
@@ -186,12 +204,27 @@ public class BackupManager extends JDialog {
             switch (columnIndex) {
                 case 0: return info.getFile().getFileName();
                 case 1: return info.getSize();
-                case 2: return DateTime.agoText(info.getModifiedTime());
-                case 3: return info.getInfo();
+                case 2: return info.getModifiedTime();
+                case 3: return info.getCreated();
+                case 4: return info.getInfo();
                 default: return null;
             }
         }
 
+    }
+    
+    private static class AgoRenderer extends DefaultTableCellRenderer {
+        
+        @Override
+        protected void setValue(Object value) {
+            if (value instanceof Long) {
+                setText(DateTime.agoText((Long)value));
+            }
+            else {
+                setText("");
+            }
+        }
+        
     }
     
 }

@@ -50,6 +50,8 @@ public class FileManager {
     private final Path basePath;
     private final Path backupPath;
     
+    private boolean savingPaused;
+    
     public FileManager(Path basePath, Path backupPath) {
         this.basePath = basePath;
         this.backupPath = backupPath;
@@ -61,9 +63,18 @@ public class FileManager {
         files.put(id, settings);
     }
     
+    public synchronized void setSavingPaused(boolean paused) {
+        this.savingPaused = paused;
+        LOGGER.info("Saving paused: "+paused);
+    }
+    
     public synchronized SaveResult save(String id, String content, boolean force) {
         SaveResult.Builder result = new SaveResult.Builder(id);
         FileSettings fileSettings = files.get(id);
+        if (savingPaused) {
+            result.setCancelled(CancelReason.SAVING_PAUSED);
+            return result.make();
+        }
         if (fileSettings == null) {
             LOGGER.warning("[Save] Invalid file id: "+id);
             result.setCancelled(CancelReason.INVALID_ID);
@@ -218,6 +229,12 @@ public class FileManager {
         }
     }
     
+    /**
+     * Return a list of backup files, sorted by oldest first.
+     * 
+     * @return
+     * @throws IOException 
+     */
     public synchronized List<FileInfo> getFileInfo() throws IOException {
         List<FileInfo> result = new ArrayList<>();
         Set<FileVisitOption> options = new HashSet<>();
@@ -247,13 +264,19 @@ public class FileManager {
             
         });
         Collections.sort(result, (a, b) -> {
-            if (a.modifiedTime == b.modifiedTime) {
-                return 0;
-            }
-            if (a.modifiedTime < b.modifiedTime) {
+            if (a.modifiedTime > b.modifiedTime) {
                 return 1;
             }
-            return -1;
+            if (a.modifiedTime < b.modifiedTime) {
+                return -1;
+            }
+            if (a.timestamp > b.timestamp) {
+                return 1;
+            }
+            if (a.timestamp < b.timestamp) {
+                return -1;
+            }
+            return 0;
         });
         return result;
     }
@@ -350,6 +373,18 @@ public class FileManager {
             return timestamp;
         }
         
+        /**
+         * Session backups are created/modified at the same time. Other backups
+         * are copied, so they retain their original modified time, but have
+         * an additional created timestamp added in the name.
+         * 
+         * @return The timestamp, in milliseconds, when the backup was created
+         * (written or copied)
+         */
+        public long getCreated() {
+            return timestamp == -1 ? modifiedTime : timestamp*1000;
+        }
+        
         @Override
         public String toString() {
             return String.format("[%s] Mod:%s Bu:%s valid: %s (%s)",
@@ -367,7 +402,7 @@ public class FileManager {
     public static class SaveResult {
         
         public enum CancelReason {
-            BACKUP_LOADED, INVALID_ID, KNOWN_CONTENT
+            BACKUP_LOADED, INVALID_ID, KNOWN_CONTENT, SAVING_PAUSED
         }
         
         private static class Builder {

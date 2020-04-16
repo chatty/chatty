@@ -7,6 +7,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
+import chatty.util.settings.FileManager;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
@@ -141,11 +142,18 @@ public class MainSettings extends SettingsPanel {
 
         JButton openBackupButton = new JButton(Language.getString("settings.backup.button.open"));
         openBackupButton.addActionListener(e -> {
-            BackupManager mg = new BackupManager(d, d.settings.getFileManager());
+            FileManager fm = d.settings.getFileManager();
+            BackupManager mg = new BackupManager(d, fm);
             mg.setModal(true);
             mg.pack();
             mg.setLocationRelativeTo(d);
+            /**
+             * Pause saving because session backup shouldn't be changed while
+             * viewing backups
+             */
+            fm.setSavingPaused(true);
             mg.open();
+            fm.setSavingPaused(false);
         });
         gbc = d.makeGbc(0, 4, 2, 1);
         dirPanel.add(openBackupButton, gbc);
