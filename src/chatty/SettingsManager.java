@@ -116,7 +116,7 @@ public class SettingsManager {
         
         // Backup
         settings.addLong("backupDelay", 1);
-        settings.addLong("backupCount", 5);
+        settings.addLong("backupCount", 10);
 
         // Version/News
         settings.addLong("versionLastChecked", 0);

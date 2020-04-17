@@ -183,12 +183,19 @@ public class FileManager {
     }
     
     public synchronized void backup(long backupDelay, int keepCount) throws IOException {
+        if (keepCount <= 0) {
+            return;
+        }
         //--------------------------
         // Check current backups
         //--------------------------
         List<FileInfo> backupFiles = getFileInfo();
         long latestTimestamp = 0;
-        int toDelete = backupFiles.size() - keepCount;
+        /**
+         * In case the settings didn't load properly, it shouldn't delete many
+         * backups if the user had it higher than default.
+         */
+        int toDelete = Math.min(backupFiles.size() - keepCount, 2);
         for (FileInfo file : backupFiles) {
             // Doesn't apply to "session" backups, since they don't contain a timestamp
             if (file.timestamp > latestTimestamp) {
@@ -197,16 +204,20 @@ public class FileManager {
             if (file.timestamp != -1 && toDelete > 0) {
                 try {
                     Files.deleteIfExists(file.file);
-                    LOGGER.info("Deleted old backup: "+file.file);
+                    LOGGER.info("[Backup] Deleted old backup: "+file.file);
                     toDelete--;
                 }
                 catch (IOException ex) {
-                    LOGGER.warning("Failed to delete backup: " + ex);
+                    LOGGER.warning("[Backup] Failed to delete backup: " + ex);
                 }
             }
         }
         // Perform backup if enough time has passed since newest backup file with timestamp
-        LOGGER.info("Latest backup performed "+DateTime.formatFullDatetime(latestTimestamp*1000));
+        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Keep: %d",
+                DateTime.formatFullDatetime(latestTimestamp*1000),
+                DateTime.duration(backupDelay*1000, 1, 0),
+                backupFiles.size(),
+                keepCount));
         if (System.currentTimeMillis()/1000 - latestTimestamp > backupDelay) {
             doBackup();
         }
@@ -220,10 +231,10 @@ public class FileManager {
                 if (info.isValid) {
                     Path backupTarget = backupPath.resolve(BACKUP_PREFIX+(System.currentTimeMillis()/1000)+"__" + file.path.getFileName());
                     Files.copy(file.path, backupTarget, REPLACE_EXISTING);
-                    LOGGER.info("Backup performed: "+backupTarget);
+                    LOGGER.info("[Backup] Backup performed: "+backupTarget);
                 }
                 else {
-                    LOGGER.info("Didn't perform backup (invalid content): "+file.path);
+                    LOGGER.info("[Backup] Didn't perform backup (invalid content): "+file.path);
                 }
             }
         }

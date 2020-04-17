@@ -112,10 +112,10 @@ public class UserContextMenu extends ContextMenu {
             // Add "add" or "edit" buttons depending on whether the user is
             // already in the addressbook
             if (userCategories != null) {
-                addItem("addressbookEdit", "Edit", submenu);
-                addItem("addressbookRemove", "Remove", submenu);
+                addItem("addressbookEdit", Language.getString("dialog.button.edit"), submenu);
+                addItem("addressbookRemove", Language.getString("dialog.button.remove"), submenu);
             } else {
-                addItem("addressbookEdit", "Add", submenu);
+                addItem("addressbookEdit", Language.getString("dialog.button.add"), submenu);
             }
         }
 
