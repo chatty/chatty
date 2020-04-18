@@ -4458,13 +4458,15 @@ public class MainGui extends JFrame implements Runnable {
             }
 
             if (StyleManager.settingNames.contains(setting)) {
-                styleManager.refresh();
-                channels.refreshStyles();
-                highlightedMessages.refreshStyles();
-                ignoredMessages.refreshStyles();
-                streamChat.refreshStyles();
-                //menu.setForeground(styleManager.getColor("foreground"));
-                //menu.setBackground(styleManager.getColor("background"));
+                BatchAction.queue(styleManager, () -> {
+                    styleManager.refresh();
+                    channels.refreshStyles();
+                    highlightedMessages.refreshStyles();
+                    ignoredMessages.refreshStyles();
+                    streamChat.refreshStyles();
+                    //menu.setForeground(styleManager.getColor("foreground"));
+                    //menu.setBackground(styleManager.getColor("background"));
+                });
             }
             if (setting.equals("displayNamesModeUserlist")) {
                 channels.updateUserlistSettings();
@@ -4488,7 +4490,9 @@ public class MainGui extends JFrame implements Runnable {
             }
             if (type == Setting.LIST) {
                 if (setting.equals("highlight") || setting.equals("highlightBlacklist")) {
-                    updateHighlight();
+                    BatchAction.queue(highlighter, () -> {
+                        updateHighlight();
+                    });
                 } else if (setting.equals("ignore")) {
                     updateIgnore();
                 } else if (setting.equals("filter")) {

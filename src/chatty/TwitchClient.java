@@ -204,10 +204,10 @@ public class TwitchClient {
         settings = settingsManager.settings;
         settingsManager.defineSettings();
         settingsManager.loadSettingsFromFile();
-        settingsManager.backupFiles();
         settingsManager.loadCommandLineSettings(args);
         settingsManager.overrideSettings();
         settingsManager.debugSettings();
+        settingsManager.backupFiles();
         settingsManager.startAutoSave(this);
         
         Helper.setDefaultTimezone(settings.getString("timezone"));

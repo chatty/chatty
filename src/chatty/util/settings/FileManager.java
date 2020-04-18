@@ -1,12 +1,9 @@
 
 package chatty.util.settings;
 
-import chatty.gui.components.settings.BackupManager;
 import chatty.util.DateTime;
 import chatty.util.MiscUtil;
-import chatty.util.StringUtil;
 import chatty.util.settings.FileManager.SaveResult.CancelReason;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -21,7 +18,6 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +29,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Load and save a pre-defined set of files, with convenience features such as
+ * only write if content changed and backups.
+ * 
+ * There are two types of backups: The session backup is written at the same
+ * time a file is saved. Other backups are created when the backup method is
+ * called.
+ * 
  * @author tduva
  */
 public class FileManager {
@@ -63,6 +65,11 @@ public class FileManager {
         files.put(id, settings);
     }
     
+    /**
+     * If set to true, don't attempt to save settings.
+     * 
+     * @param paused 
+     */
     public synchronized void setSavingPaused(boolean paused) {
         this.savingPaused = paused;
         LOGGER.info("Saving paused: "+paused);
@@ -124,6 +131,14 @@ public class FileManager {
         return result.make();
     }
     
+    /**
+     * Load the contents from the file with the given id.
+     * 
+     * @param id
+     * @return The file contents, or null if a file with the given id doesn't
+     * exist
+     * @throws IOException 
+     */
     public synchronized String load(String id) throws IOException {
         FileSettings fileSettings = files.get(id);
         if (fileSettings == null) {
@@ -161,6 +176,13 @@ public class FileManager {
         }
     }
     
+    /**
+     * Remove the given file.
+     * 
+     * @param file
+     * @return true if the file was removed, false if it didn't exist or an
+     * error occured
+     */
     private boolean removeFile(Path file) {
         try {
             Files.delete(file);
@@ -182,6 +204,15 @@ public class FileManager {
         backupLoaded.add(info.settings.id);
     }
     
+    /**
+     * Perform a backup depending on the given settings.
+     * 
+     * @param backupDelay How many seconds between backups, based on the latest
+     * created backup
+     * @param keepCount How many backup files to keep, others may be deleted
+     * @throws IOException If an error occured reading current backups or
+     * creating the new backup
+     */
     public synchronized void backup(long backupDelay, int keepCount) throws IOException {
         if (keepCount <= 0) {
             return;
