@@ -42,36 +42,44 @@ public class BatchAction {
      * @param runnable What to execute
      */
     public static void queue(Object id, long delay, boolean edt, boolean overwrite, Runnable runnable) {
+        boolean scheduleTask = prepare(id, overwrite, runnable);
+        if (scheduleTask) {
+            timer.schedule(new TimerTask() {
+
+                @Override
+                public void run() {
+                    Runnable r;
+                    synchronized (queued) {
+                        r = queued.remove(id);
+                    }
+                    if (r != null) {
+                        if (edt) {
+                            SwingUtilities.invokeLater(() -> {
+                                r.run();
+                            });
+                        }
+                        else {
+                            r.run();
+                        }
+                    }
+                }
+            }, delay);
+        }
+    }
+    
+    private static boolean prepare(Object id, boolean overwrite, Runnable runnable) {
         synchronized (queued) {
             if (!queued.containsKey(id)) {
                 if (timer == null) {
                     timer = new Timer("BatchAction", true);
                 }
                 queued.put(id, runnable);
-                timer.schedule(new TimerTask() {
-
-                    @Override
-                    public void run() {
-                        Runnable r;
-                        synchronized (queued) {
-                            r = queued.remove(id);
-                        }
-                        if (r != null) {
-                            if (edt) {
-                                SwingUtilities.invokeLater(() -> {
-                                    r.run();
-                                });
-                            }
-                            else {
-                                r.run();
-                            }
-                        }
-                    }
-                }, delay);
+                return true;
             }
             else if (overwrite) {
                 queued.put(id, runnable);
             }
+            return false;
         }
     }
     
