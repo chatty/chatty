@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.MiscUtil;
 import chatty.util.settings.FileManager;
 import chatty.util.settings.FileManager.FileInfo;
 import java.awt.Dimension;
@@ -12,7 +13,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +41,8 @@ public class BackupManager extends JDialog {
     private final MyTableModel data;
     private final FileManager fileManager;
     private final JButton loadButton;
+    private final JButton deleteButton;
+    private final JButton openDirButton;
     private final JTextArea infoText;
     
     public BackupManager(Window parent, FileManager fileManager) {
@@ -78,7 +83,7 @@ public class BackupManager extends JDialog {
             
         };
         FontMetrics measure = new JLabel().getFontMetrics(table.getFont());
-        table.getColumnModel().getColumn(0).setPreferredWidth(measure.stringWidth("auto_1586904521__settings")+20);
+        table.getColumnModel().getColumn(0).setPreferredWidth(measure.stringWidth("manual_1586904521__settings")+20);
         table.getColumnModel().getColumn(1).setPreferredWidth(measure.stringWidth("12345")+10);
         table.getColumnModel().getColumn(2).setPreferredWidth(measure.stringWidth("12 hours ago")+10);
         table.getColumnModel().getColumn(3).setPreferredWidth(measure.stringWidth("12 hours ago")+10);
@@ -94,11 +99,11 @@ public class BackupManager extends JDialog {
             new RowSorter.SortKey(2, SortOrder.DESCENDING),
             new RowSorter.SortKey(3, SortOrder.DESCENDING)}));
         
-        GridBagConstraints gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+        GridBagConstraints gbc = GuiUtil.makeGbc(0, 0, 3, 1);
         
         add(new JLabel("<html><body width='600px'>"+SettingsUtil.getInfo("info-backup.html", null)), gbc);
         
-        gbc = GuiUtil.makeGbc(0, 1, 1, 1);
+        gbc = GuiUtil.makeGbc(0, 1, 3, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 0.8;
@@ -106,18 +111,34 @@ public class BackupManager extends JDialog {
         tableScroll.setPreferredSize(new Dimension(table.getPreferredSize().width, 200));
         add(tableScroll, gbc);
         
+        openDirButton = new JButton("Open Backup Directory");
+        openDirButton.addActionListener(e -> {
+            MiscUtil.openFolder(fileManager.getBackupPath().toFile(), this);
+        });
+        gbc = GuiUtil.makeGbc(0, 2, 1, 1);
+        gbc.weightx = 2.0;
+        gbc.anchor = GridBagConstraints.WEST;
+        add(openDirButton, gbc);
+        
+        deleteButton = new JButton("Delete Selected Backup");
+        deleteButton.addActionListener(e -> {
+            deleteBackup();
+        });
+        gbc = GuiUtil.makeGbc(2, 2, 1, 1);
+        add(deleteButton, gbc);
+        
         loadButton = new JButton("Load Selected Backup");
         loadButton.addActionListener(e -> {
             loadBackup();
         });
-        gbc = GuiUtil.makeGbc(0, 2, 1, 1);
+        gbc = GuiUtil.makeGbc(1, 2, 1, 1);
         add(loadButton, gbc);
         
         infoText = new JTextArea();
         infoText.setEditable(false);
         infoText.setRows(5);
         infoText.setMinimumSize(infoText.getPreferredSize());
-        gbc = GuiUtil.makeGbc(0, 3, 1, 1);
+        gbc = GuiUtil.makeGbc(0, 3, 3, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 0.4;
@@ -127,6 +148,7 @@ public class BackupManager extends JDialog {
     private void update() {
         FileInfo selected = getSelected();
         loadButton.setEnabled(selected != null);
+        deleteButton.setEnabled(selected != null);
         if (selected != null) {
             infoText.setText(String.format("The following file will be copied when loading the backup:\n[From]\n %s\n[To]\n %s",
                     selected.getFile(), selected.getSettings().path));
@@ -139,6 +161,25 @@ public class BackupManager extends JDialog {
             return data.getRowData(table.convertRowIndexToModel(selected));
         }
         return null;
+    }
+    
+    private void deleteBackup() {
+        FileInfo selected = getSelected();
+        if (selected != null) {
+            try {
+                int selectedRow = table.getSelectedRow();
+                Files.delete(selected.getFile());
+                infoText.setText(String.format("Deleted %s",
+                        selected.getFile()));
+                refreshList();
+                // List data is reset, so set selection again
+                table.getSelectionModel().setSelectionInterval(0,
+                        selectedRow < table.getRowCount() ? selectedRow : table.getRowCount() - 1);
+            }
+            catch (IOException ex) {
+                infoText.setText("Error deleting backup: "+ex);
+            }
+        }
     }
     
     private void loadBackup() {
@@ -155,13 +196,17 @@ public class BackupManager extends JDialog {
         }
     }
     
-    public void open() {
+    private void refreshList() {
         try {
-            data.setData(fileManager.getFileInfo());
+            data.setData(fileManager.getBackupFileInfo().getList());
         }
         catch (IOException ex) {
             infoText.setText("Error loading list: "+ex);
         }
+    }
+    
+    public void open() {
+        refreshList();
         update();
         pack();
         setVisible(true);

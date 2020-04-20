@@ -39,7 +39,8 @@
             settings directory that Chatty currently uses.</p>
         
         <p>If you want to replace, copy or delete setting files in any way, make
-            sure to close Chatty before doing so.</p>
+            sure to close Chatty before doing so (the files may be overwritten
+            at any time while Chatty is running).</p>
 
         <p>You can change the settings directory via different ways:</p>
         
@@ -64,12 +65,16 @@
             <td class="fileCommentFolder">[Directory]</td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- backup_x_&lt;filename&gt;</td>
-            <td class="fileComment">Setting backups</td>
+            <td>|&nbsp; &nbsp;|- auto_*</td>
+            <td class="fileComment">Automatic setting <a href="#backup">backups</a></td>
         </tr>
         <tr>
-            <td>|&nbsp; &nbsp;|- backup_meta</td>
-            <td class="fileComment">Backups meta (last backup, numbering)</td>
+            <td>|&nbsp; &nbsp;|- manual_*</td>
+            <td class="fileComment">Manual setting backups</td>
+        </tr>
+        <tr>
+            <td>|&nbsp; &nbsp;|- <span class="del">backup_*</span></td>
+            <td class="fileComment">Old backups (no longer used)</td>
         </tr>
         <tr>
             <td>|</td>
@@ -124,8 +129,8 @@
             <td></td>
         </tr>
         <tr>
-            <td>|- addressbook</td>
-            <td class="fileComment">[Settings] <a href="help-addressbook.html">Addressbook</a> entries</td>
+            <td>|- <span class="del">addressbook</span></td>
+            <td class="fileComment">[Settings] <a href="help-addressbook.html">Addressbook</a> entries [deprecated]</td>
         </tr>
         <tr>
             <td>|- login</td>
@@ -147,7 +152,9 @@
     </table>
     
     <p><em>Note:</em> <code>favoritesAndHistory</code> and <code>statusPresets</code>
-        have been merged into <code>settings</code> as of v0.9.1.</p>
+        have been merged into <code>settings</code> as of v0.9.1.
+        The <code>addressbook</code> has been merged into <code>settings</code>
+        as of v0.12 (but may still be written to under some circumstances).</p>
     
     <h3><a name="wdir">Working Directory</a></h3>
     <p>This directory is associated with Chatty when you start it. This is
@@ -209,62 +216,36 @@
     </ul>
     
     <h2><a name="backup">Backup</a></h2>
-    <p>Chatty performs an automatic backup (enabled by default) everytime it is
-    started (if at least the number of days as defined in the settings have passed,
-    by default one). It copies the setting files (except login) to the backup folder
-    in the settings directory, increasing the numbering of the files with every
-    backup. It only makes as many backups as defined in the settings and then
-    starts over with the first number, rotating the files.</p>
-
-    <p>This is supposed to make recovery of settings easier in case they are not
-        read or written correctly and thus lost (which shouldn't usually
-        happen). In that case you can manually copy/rename the lost files from
-        a backup (just looks for the most recent one based on the change date
-        that looks fine).</p>
+    <p>Setting backups can provide a way to recover your settings if the
+        setting weren't written or loaded properly or to reset your settings
+        to a previous state.</p>
     
-    <p><em>If some settings are important to you this can help, but you
-            shouldn't rely on it. Always make your own backups, best on a
-            different device!</em></p>
-            
-            <h3>Restore backup</h3>
-            <p>If you lost your setting files (or some of them) but still have
-                a backup, you can manually copy the backup to restore it.</p>
-            <ol>
-                <li>Prepare & Locate Backup Folder
-                    <ul>
-                        <li>Enter <code>/openBackupDir</code> to open the Backup folder
-                    (or enter <code>/showBackupDir</code> and navigate to the Backup folder
-                    manually).</li>
-                        <li>There should be several files in the format <code>backup_x_&lt;name&gt;</code>,
-                    these represent the separate batches of backups.</li>
-                        <li>After that, make sure Chatty is not running. Settings are saved when
-                    Chatty is closed, so if you change setting files manually
-                    while it is running your manual changes would just be
-                    overwritten once you close Chatty.</li>
-                    </ul>
-                </li>
-                <li>Find latest backup and rename
-                    <ul>
-                        <li>Sort the files by modification date in your file browser and
-                    choose the latest batch that seems like it might work (e.g.
-                    files that are not 0KB, although the addressbook might be if
-                    you never used it).</li>
-                        <li>Rename the files you want to restore from <code>backup_x_&lt;name&gt;</code>
-                    to <code>&lt;name&gt;</code> (for example <code>backup_2_settings</code>
-                    to <code>settings</code>). You can ignore the <code>backup_meta</code> file.</li>
-                        
-                    </ul>
-                </li>
-                <li>Move renamed files
-                    <ul>
-                        <li>Copy or move the renamed files to the parent folder (the one
-                    you get from <code>/dir</code> or <code>/openDir</code> commands),
-                    overwriting any existing setting files.</li>
-                    </ul>
-                </li>
-                <li>After you are done, start Chatty again and the settings
-                    should be restored.</li>
-            </ol>
+    <p>Chatty can perform these types of backups:</p>
+    <ul>
+        <li>Session backup: A copy of the currenty written settings, which is
+            mostly intended as a fallback if the main settings file cannot be
+            written. This changes often, so loading it only makes sense
+            immediately after starting Chatty, before settings are saved again.</li>
+        <li>Backup on start: A copy of the settings file, made when Chatty is
+            started. By default a backup is made no more often than one day
+            apart and only a limited number of backups are kept.</li>
+        <li>Manual backup: You can create a manual backup via "Main - Save..".
+            Manual backups are never automatically deleted.</li>
+    </ul>
+    <p><em>Note:</em> The <code>login</code> settings file is not backed up.
+    For a safer backup, make your own backups on a different
+        device.</p>
+    
+    <p>To load an automatic backup go to "Main - Settings - Main - View Backups"
+        and follow the instructions. If you want to restore a manual backup you made of the
+        <code>settings</code> file, simply overwrite the current <code>settings</code>
+        file while Chatty is not running.</p>
+    
+    <p>You can view the backup directory directly by entering <code>/openBackupDir</code>
+        or <code>/showBackupDir</code> into the Chatty inputbox. Note that files
+        in the backup directory starting with <code>auto_</code> may be automatically
+        deleted.</p>
+
 </body>
 </html>
 

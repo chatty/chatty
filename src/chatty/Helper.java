@@ -912,14 +912,12 @@ public class Helper {
     
     public static String makeSaveResultInfo(List<SaveResult> result) {
         StringBuilder b = new StringBuilder();
+        int index = 0;
         for (SaveResult r : result) {
             if (r == null) {
                 continue;
             }
-            if (r.written || r.backupWritten || r.writeError != null || r.backupError != null || r.removed) {
-                b.append("[").append(r.id).append("]\n");
-            }
-            
+            // Regular
             if (r.written) {
                 b.append(String.format("* File written to %s\n",
                         r.filePath));
@@ -929,6 +927,7 @@ public class Helper {
                         getErrorMessageCompact(r.writeError)));
             }
             
+            // Backup
             if (r.backupWritten) {
                 b.append(String.format("* Backup written to %s\n",
                         r.backupPath));
@@ -937,9 +936,19 @@ public class Helper {
                 b.append(String.format("* Backup failed: %s\n",
                         getErrorMessageCompact(r.backupError)));
             }
+            else if (r.cancelReason == SaveResult.CancelReason.INVALID_CONTENT) {
+                b.append("* Backup failed: Invalid content\n");
+            }
             
+            // Removed deprecated
             if (r.removed) {
                 b.append("* Removed unused file\n");
+            }
+            
+            // If anything was appended for this file, add header
+            if (b.length() > index) {
+                b.insert(index, String.format("[%s]\n", r.id));
+                index = b.length();
             }
         }
         return b.toString();

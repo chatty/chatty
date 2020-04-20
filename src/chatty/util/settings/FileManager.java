@@ -42,7 +42,8 @@ public class FileManager {
     
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
     
-    private static final String BACKUP_PREFIX = "auto_";
+    private static final String MANUAL_BACKUP_PREFIX = "manual_";
+    private static final String AUTO_BACKUP_PREFIX = "auto_";
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
     
@@ -120,7 +121,7 @@ public class FileManager {
 
         if (fileSettings.backupEnabled && content != null) {
             try {
-                Path backupTarget = backupPath.resolve(BACKUP_PREFIX+"session__" + fileSettings.path.getFileName());
+                Path backupTarget = backupPath.resolve(AUTO_BACKUP_PREFIX+"session__" + fileSettings.path.getFileName());
                 saveToFile(backupTarget, content);
                 result.setBackupWritten(backupTarget);
             }
@@ -220,18 +221,15 @@ public class FileManager {
         //--------------------------
         // Check current backups
         //--------------------------
-        List<FileInfo> backupFiles = getFileInfo();
-        long latestTimestamp = 0;
+        FileInfos backupFiles = getBackupFileInfo();
+        long latestTimestamp = backupFiles.getLatestTimestamp(AUTO_BACKUP_PREFIX);
+        List<FileInfo> autoFiles = backupFiles.filter(AUTO_BACKUP_PREFIX);
         /**
          * In case the settings didn't load properly, it shouldn't delete many
          * backups if the user had it higher than default.
          */
-        int toDelete = Math.min(backupFiles.size() - keepCount, 2);
-        for (FileInfo file : backupFiles) {
-            // Doesn't apply to "session" backups, since they don't contain a timestamp
-            if (file.timestamp > latestTimestamp) {
-                latestTimestamp = file.timestamp;
-            }
+        int toDelete = Math.min(autoFiles.size() - keepCount, 2);
+        for (FileInfo file : autoFiles) {
             if (file.timestamp != -1 && toDelete > 0) {
                 try {
                     Files.deleteIfExists(file.file);
@@ -244,31 +242,70 @@ public class FileManager {
             }
         }
         // Perform backup if enough time has passed since newest backup file with timestamp
-        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Keep: %d",
+        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Auto: %d Keep: %d",
                 DateTime.formatFullDatetime(latestTimestamp*1000),
                 DateTime.duration(backupDelay*1000, 1, 0),
-                backupFiles.size(),
+                backupFiles.count(),
+                autoFiles.size(),
                 keepCount));
         if (System.currentTimeMillis()/1000 - latestTimestamp > backupDelay) {
-            doBackup();
+            doBackup(AUTO_BACKUP_PREFIX);
         }
     }
     
-    private void doBackup() throws IOException {
+    public List<SaveResult> manualBackup() {
+        return doBackup(MANUAL_BACKUP_PREFIX);
+    }
+    
+    /**
+     * Backup all enabled files.
+     * 
+     * @param prefix The backup file prefix to use
+     * @return List of files, with cancel reason or backup save state set
+     */
+    private List<SaveResult> doBackup(String prefix) {
+        List<SaveResult> result = new ArrayList<>();
         for (FileSettings file : files.values()) {
-            if (file.backupEnabled && Files.exists(file.path)) {
-                String content = loadFromFile(file.path);
-                FileContentInfo info = file.infoProvider.getInfo(content);
-                if (info.isValid) {
-                    Path backupTarget = backupPath.resolve(BACKUP_PREFIX+(System.currentTimeMillis()/1000)+"__" + file.path.getFileName());
-                    Files.copy(file.path, backupTarget, REPLACE_EXISTING);
-                    LOGGER.info("[Backup] Backup performed: "+backupTarget);
-                }
-                else {
-                    LOGGER.info("[Backup] Didn't perform backup (invalid content): "+file.path);
-                }
-            }
+            result.add(doBackup(file, prefix));
         }
+        return result;
+    }
+    
+    /**
+     * Perform backup for a single file, if enabled.
+     * 
+     * @param file The file settings
+     * @param prefix The backup file prefix to use
+     * @return Result with cancel reason or backup save state set
+     */
+    private SaveResult doBackup(FileSettings file, String prefix) {
+        SaveResult.Builder fileResult = new SaveResult.Builder(file.id);
+        if (!file.backupEnabled) {
+            fileResult.setCancelled(CancelReason.INVALID);
+            return fileResult.make();
+        }
+        try {
+            String content = loadFromFile(file.path);
+            FileContentInfo info = file.infoProvider.getInfo(content);
+            if (!info.isValid) {
+                LOGGER.info("[Backup] Didn't perform backup (invalid content): " + file.path);
+                fileResult.setCancelled(CancelReason.INVALID_CONTENT);
+                return fileResult.make();
+            }
+            Path backupTarget = backupPath.resolve(prefix + (System.currentTimeMillis() / 1000) + "__" + file.path.getFileName());
+            Files.copy(file.path, backupTarget, REPLACE_EXISTING);
+            LOGGER.info("[Backup] Backup performed: " + backupTarget);
+            fileResult.setBackupWritten(backupTarget);
+        }
+        catch (IOException ex) {
+            fileResult.setBackupError(ex);
+            LOGGER.warning("[Backup] Failed: "+ex);
+        }
+        return fileResult.make();
+    }
+    
+    public synchronized Path getBackupPath() {
+        return backupPath;
     }
     
     /**
@@ -277,7 +314,7 @@ public class FileManager {
      * @return
      * @throws IOException 
      */
-    public synchronized List<FileInfo> getFileInfo() throws IOException {
+    public synchronized FileInfos getBackupFileInfo() throws IOException {
         List<FileInfo> result = new ArrayList<>();
         Set<FileVisitOption> options = new HashSet<>();
         options.add(FileVisitOption.FOLLOW_LINKS);
@@ -287,7 +324,7 @@ public class FileManager {
                     throws IOException {
                 String fileName = file.getFileName().toString();
                 String origFileName = getOrigFileName(fileName);
-                if (fileName.startsWith(BACKUP_PREFIX) && origFileName != null) {
+                if (hasValidPrefix(fileName) && origFileName != null) {
                     FileSettings s = getFileSettingsByName(origFileName);
                     if (s != null) {
 //                        System.out.println(file+" -> "+origFileName+" "+DateTime.agoText(attrs.lastModifiedTime().toMillis()));
@@ -320,7 +357,7 @@ public class FileManager {
             }
             return 0;
         });
-        return result;
+        return new FileInfos(result);
     }
     
     private FileSettings getFileSettingsByName(String fileName) {
@@ -332,6 +369,10 @@ public class FileManager {
         return null;
     }
     
+    private boolean hasValidPrefix(String fileName) {
+        return fileName.startsWith(MANUAL_BACKUP_PREFIX) || fileName.startsWith(AUTO_BACKUP_PREFIX);
+    }
+    
     private static String getOrigFileName(String fileName) {
         int index = fileName.indexOf("__");
         if (index == -1 || index+2 == fileName.length()) {
@@ -340,7 +381,8 @@ public class FileManager {
         return fileName.substring(index+2);
     }
     
-    private static final Pattern FIND_TIMESTAMP = Pattern.compile(BACKUP_PREFIX+"([0-9]+)__.+");
+    // TODO: For manual backups? (They should usually be written at the same time)
+    private static final Pattern FIND_TIMESTAMP = Pattern.compile(AUTO_BACKUP_PREFIX+"([0-9]+)__.+");
     
     private static long getTimestamp(String fileName) {
         Matcher m = FIND_TIMESTAMP.matcher(fileName);
@@ -363,6 +405,52 @@ public class FileManager {
             this.path = path;
             this.backupEnabled = backupEnabled;
             this.infoProvider = infoProvider;
+        }
+        
+    }
+    
+    public static class FileInfos {
+        
+        private final List<FileInfo> data;
+        
+        public FileInfos(List<FileInfo> data) {
+            this.data = data;
+        }
+        
+        public List<FileInfo> getList() {
+            return new ArrayList<>(data);
+        }
+        
+        public long getLatestTimestamp(String prefix) {
+            long latestTimestamp = 0;
+            for (FileInfo file : data) {
+                if (file.timestamp > latestTimestamp
+                        && file.nameStartsWith(prefix)) {
+                    latestTimestamp = file.timestamp;
+                }
+            }
+            return latestTimestamp;
+        }
+        
+        /**
+         * Get a list of only files with the given prefix, keeping the original
+         * sorting.
+         *
+         * @param prefix
+         * @return 
+         */
+        public List<FileInfo> filter(String prefix) {
+            List<FileInfo> result = new ArrayList<>();
+            for (FileInfo file : data) {
+                if (file.nameStartsWith(prefix)) {
+                    result.add(file);
+                }
+            }
+            return result;
+        }
+        
+        public int count() {
+            return data.size();
         }
         
     }
@@ -401,6 +489,10 @@ public class FileManager {
         
         public Path getFile() {
             return file;
+        }
+        
+        public boolean nameStartsWith(String prefix) {
+            return file.getFileName().toString().startsWith(prefix);
         }
         
         public long getModifiedTime() {
@@ -444,7 +536,7 @@ public class FileManager {
     public static class SaveResult {
         
         public enum CancelReason {
-            BACKUP_LOADED, INVALID_ID, KNOWN_CONTENT, SAVING_PAUSED
+            BACKUP_LOADED, INVALID_ID, KNOWN_CONTENT, SAVING_PAUSED, INVALID_CONTENT, INVALID
         }
         
         private static class Builder {

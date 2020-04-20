@@ -1509,18 +1509,27 @@ public class MainGui extends JFrame implements Runnable {
                 getSettingsDialog().showSettings();
             } else if (cmd.equals("saveSettings")) {
                 int result = JOptionPane.showOptionDialog(MainGui.this,
-                        Language.getString("saveSettings.text"),
+                        Language.getString("saveSettings.text")+"\n\n"+Language.getString("saveSettings.textBackup"),
                         Language.getString("saveSettings.title"),
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE, null,
                         new String[]{
                             Language.getString("dialog.button.save"),
+                            Language.getString("saveSettings.saveAndBackup"),
                             Language.getString("dialog.button.cancel")
                         }, null);
                 if (result == 0) {
                     List<FileManager.SaveResult> saveResult = client.saveSettings(false, true);
                     JOptionPane.showMessageDialog(MainGui.this,
                             Helper.makeSaveResultInfo(saveResult),
+                            Language.getString("saveSettings.title"),
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+                else if (result == 1) {
+                    List<FileManager.SaveResult> saveResult = client.saveSettings(false, true);
+                    List<FileManager.SaveResult> backupResult = client.manualBackup();
+                    JOptionPane.showMessageDialog(MainGui.this,
+                            Helper.makeSaveResultInfo(saveResult)+"\nManual Backup:\n"+Helper.makeSaveResultInfo(backupResult),
                             Language.getString("saveSettings.title"),
                             JOptionPane.INFORMATION_MESSAGE);
                 }

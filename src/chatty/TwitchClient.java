@@ -80,7 +80,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -2665,6 +2664,10 @@ public class TwitchClient {
             return settings.saveSettingsToJson(force);
         }
         return null;
+    }
+    
+    public List<FileManager.SaveResult> manualBackup() {
+        return settingsManager.fileManager.manualBackup();
     }
     
     private class SettingSaveListener implements SettingsListener {
