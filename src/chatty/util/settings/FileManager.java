@@ -44,6 +44,7 @@ public class FileManager {
     
     private static final String MANUAL_BACKUP_PREFIX = "manual_";
     private static final String AUTO_BACKUP_PREFIX = "auto_";
+    private static final String SESSION_BACKUP_PREFIX = "session_";
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
     
@@ -121,7 +122,7 @@ public class FileManager {
 
         if (fileSettings.backupEnabled && content != null) {
             try {
-                Path backupTarget = backupPath.resolve(AUTO_BACKUP_PREFIX+"session__" + fileSettings.path.getFileName());
+                Path backupTarget = backupPath.resolve(SESSION_BACKUP_PREFIX+"_" + fileSettings.path.getFileName());
                 saveToFile(backupTarget, content);
                 result.setBackupWritten(backupTarget);
             }
@@ -224,6 +225,17 @@ public class FileManager {
         FileInfos backupFiles = getBackupFileInfo();
         long latestTimestamp = backupFiles.getLatestTimestamp(AUTO_BACKUP_PREFIX);
         List<FileInfo> autoFiles = backupFiles.filter(AUTO_BACKUP_PREFIX);
+        
+        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Auto: %d Keep: %d",
+                DateTime.formatFullDatetime(latestTimestamp*1000),
+                DateTime.duration(backupDelay*1000, 1, 0),
+                backupFiles.count(),
+                autoFiles.size(),
+                keepCount));
+        
+        //--------------------------
+        // Delete files
+        //--------------------------
         /**
          * In case the settings didn't load properly, it shouldn't delete many
          * backups if the user had it higher than default.
@@ -241,13 +253,11 @@ public class FileManager {
                 }
             }
         }
+        
+        //--------------------------
+        // Create new backup
+        //--------------------------
         // Perform backup if enough time has passed since newest backup file with timestamp
-        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Auto: %d Keep: %d",
-                DateTime.formatFullDatetime(latestTimestamp*1000),
-                DateTime.duration(backupDelay*1000, 1, 0),
-                backupFiles.count(),
-                autoFiles.size(),
-                keepCount));
         if (System.currentTimeMillis()/1000 - latestTimestamp > backupDelay) {
             doBackup(AUTO_BACKUP_PREFIX);
         }
@@ -369,8 +379,16 @@ public class FileManager {
         return null;
     }
     
+    /**
+     * Prefix a filename must have to be considered any kind of backup file.
+     * 
+     * @param fileName
+     * @return 
+     */
     private boolean hasValidPrefix(String fileName) {
-        return fileName.startsWith(MANUAL_BACKUP_PREFIX) || fileName.startsWith(AUTO_BACKUP_PREFIX);
+        return fileName.startsWith(MANUAL_BACKUP_PREFIX)
+                || fileName.startsWith(AUTO_BACKUP_PREFIX)
+                || fileName.startsWith(SESSION_BACKUP_PREFIX);
     }
     
     private static String getOrigFileName(String fileName) {

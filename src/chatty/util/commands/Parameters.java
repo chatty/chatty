@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * Allows adding values for use in Custom Commands replacements.
+ * 
  * @author tduva
  */
 public class Parameters {
@@ -23,17 +24,29 @@ public class Parameters {
         updateArgs();
     }
 
+    /**
+     * Get a parameter with the given key. The key should be all-lowercase.
+     * 
+     * @param key
+     * @return The value associated with the key, or null if none exists
+     */
     public synchronized String get(String key) {
         return parameters.get(key);
     }
     
+    /**
+     * Get an object parameter with the given key.
+     * 
+     * @param key
+     * @return The value associated with the key, or null if none exists
+     */
     public synchronized Object getObject(String key) {
         return objectParameters.get(key);
     }
     
     /**
-     * Set the parmaeter for the given key, if both key and value are non-null
-     * and the value is non-empty.
+     * Set the parameter for the given key, if both key and value are non-null
+     * and the value is non-empty. The key should be all-lowercase.
      * 
      * @param key
      * @param value 
@@ -47,6 +60,14 @@ public class Parameters {
         }
     }
     
+    /**
+     * Set the object parameter for the given key, if both key and value are
+     * non-null. Object parameters may be used by function replacements, but
+     * cannot be accessed directly.
+     *
+     * @param key
+     * @param value 
+     */
     public synchronized void putObject(String key, Object value) {
         if (key != null && value != null) {
             objectParameters.put(key, value);
@@ -54,7 +75,7 @@ public class Parameters {
     }
     
     /**
-     * Set different args, overwriting the old ones, even if args is null.
+     * Set new args, overwriting the old ones, even if args is null.
      * 
      * @param args 
      */
@@ -99,6 +120,13 @@ public class Parameters {
         return new HashSet<>(parameters.keySet());
     }
     
+    /**
+     * Create Parameters with an args String (which is split by space and can be
+     * accessed via the numeric replacements).
+     *
+     * @param args The args, can be null or empty
+     * @return
+     */
     public static Parameters create(String args) {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("args", args);

@@ -73,6 +73,10 @@
             <td class="fileComment">Manual setting backups</td>
         </tr>
         <tr>
+            <td>|&nbsp; &nbsp;|- session_*</td>
+            <td class="fileComment">Session setting backups</td>
+        </tr>
+        <tr>
             <td>|&nbsp; &nbsp;|- <span class="del">backup_*</span></td>
             <td class="fileComment">Old backups (no longer used)</td>
         </tr>
@@ -129,20 +133,21 @@
             <td></td>
         </tr>
         <tr>
+            <td>|- login</td>
+            <td class="fileComment">[Settings] Your login data (keep this secure)</td>
+        </tr>
+        
+        <tr>
+            <td>|- settings</td>
+            <td class="fileComment">[Settings] Main Settings File</td>
+        </tr>
+        <tr>
             <td>|- <span class="del">addressbook</span></td>
             <td class="fileComment">[Settings] <a href="help-addressbook.html">Addressbook</a> entries [deprecated]</td>
         </tr>
         <tr>
-            <td>|- login</td>
-            <td class="fileComment">[Settings] Your login data (keep this secure)</td>
-        </tr>
-        <tr>
             <td>|- <span class="del">favoritesAndHistory</span></td>
             <td class="fileComment">[Settings] Channel History/Favorites [deprecated]</td>
-        </tr>
-        <tr>
-            <td>|- settings</td>
-            <td class="fileComment">[Settings] Main Settings File</td>
         </tr>
         <tr>
             <td>|- <span class="del">statusPresets</span></td>
@@ -222,14 +227,14 @@
     
     <p>Chatty can perform these types of backups:</p>
     <ul>
-        <li>Session backup: A copy of the currenty written settings, which is
+        <li>Session backup (<code>session_*</code>): A copy of the currenty written settings, which is
             mostly intended as a fallback if the main settings file cannot be
             written. This changes often, so loading it only makes sense
             immediately after starting Chatty, before settings are saved again.</li>
-        <li>Backup on start: A copy of the settings file, made when Chatty is
+        <li>Backup on start (<code>auto_*</code>): A copy of the settings file, made when Chatty is
             started. By default a backup is made no more often than one day
             apart and only a limited number of backups are kept.</li>
-        <li>Manual backup: You can create a manual backup via "Main - Save..".
+        <li>Manual backup (<code>manual_*</code>): You can create a manual backup via "Main - Save..".
             Manual backups are never automatically deleted.</li>
     </ul>
     <p><em>Note:</em> The <code>login</code> settings file is not backed up.
