@@ -2652,16 +2652,18 @@ public class TwitchClient {
             settingsAlreadySavedOnExit = true;
         }
         
-        LOGGER.info("Saving settings..");
-        System.out.println("Saving settings..");
-        
         // Prepare saving settings
         if (g != null && g.guiCreated) {
             g.saveWindowStates();
         }
         // Actually write settings to file
         if (force || !settings.getBoolean("dontSaveSettings")) {
+            LOGGER.info("Saving settings..");
+            System.out.println("Saving settings..");
             return settings.saveSettingsToJson(force);
+        }
+        else {
+            LOGGER.info("Not saving settings (disabled)");
         }
         return null;
     }
