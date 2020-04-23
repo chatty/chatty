@@ -965,8 +965,9 @@ public class SettingsManager {
 
             @Override
             public void run() {
+                int delay = (int)settings.getLong("autoSaveSettings")*60;
                 //System.out.println(lastAutoSaved.secondsElapsedSync()+" "+(int)settings.getLong("autoSaveSettings")*60);
-                if (lastAutoSaved.secondsElapsedSync((int)settings.getLong("autoSaveSettings")*60)) {
+                if (delay > 0 && lastAutoSaved.secondsElapsedSync(delay)) {
                     lastAutoSaved.setSync();
                     List<FileManager.SaveResult> results = c.saveSettings(false, false);
                     if (results == null) {
