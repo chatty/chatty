@@ -154,7 +154,7 @@ public class Editor implements StringEditor {
      */
     public String showDialog(String title, String preset, String info) {
         input.setText(preset);
-        label.setText(title+":");
+        label.setText(title);
         this.info.setText(info);
         if (info == null) {
             this.info.setVisible(false);

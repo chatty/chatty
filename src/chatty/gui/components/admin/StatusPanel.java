@@ -1,11 +1,17 @@
 
 package chatty.gui.components.admin;
 
+import chatty.Helper;
+import chatty.Room;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import static chatty.gui.components.admin.AdminDialog.hideableLabel;
 import static chatty.gui.components.admin.AdminDialog.makeGbc;
+import chatty.gui.components.menus.CommandActionEvent;
+import chatty.gui.components.menus.CommandMenuItems;
+import chatty.gui.components.menus.ContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -13,20 +19,27 @@ import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamTagManager;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -277,6 +290,52 @@ public class StatusPanel extends JPanel {
         historyButton.addActionListener(actionListener);
         addToHistoryButton.addActionListener(actionListener);
         update.addActionListener(actionListener);
+        
+        addContextMenu(this);
+        addContextMenu(update);
+        addContextMenu(game);
+        addContextMenu(streamTags);
+        TextSelectionMenu.install(status);
+    }
+    
+    private void addContextMenu(JComponent comp) {
+        comp.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                openContextMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openContextMenu(e);
+            }
+            
+            private void openContextMenu(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    ContextMenu m = new ContextMenu() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            CommandActionEvent c = (CommandActionEvent)e;
+                            Parameters params = Parameters.create("");
+                            params.put("title", status.getText());
+                            params.put("game", game.getText());
+                            params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
+                                return ((StreamTag) o).getId();
+                            }));
+                            params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
+                                return ((StreamTag) o).getDisplayName();
+                            }));
+                            main.anonCustomCommand(Room.createRegular(Helper.toChannel(currentChannel)), c.getCommand(), params);
+                            addCurrentToHistory();
+                        }
+                    };
+                    CommandMenuItems.addCommands(CommandMenuItems.MenuType.ADMIN, m);
+                    m.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
+                }
+            }
+        });
     }
     
     public void changeChannel(String channel) {
@@ -387,6 +446,10 @@ public class StatusPanel extends JPanel {
      */
     protected void setPutResult(String result) {
         hideableLabel(putResult, result);
+    }
+    
+    protected void dialogOpened() {
+        setPutResult("");
     }
     
     /**

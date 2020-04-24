@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -54,8 +55,16 @@ public class StringUtil {
         return join(items, delimiter, -1, -1);
     }
     
+    public static String join(Collection<?> items, String delimiter, Function<Object, String> func) {
+        return join(items, delimiter, -1, -1, func);
+    }
+    
     public static String join(Collection<?> items, String delimiter, int start) {
         return join(items, delimiter, start, -1);
+    }
+    
+    public static String join(Collection<?> items, String delimiter, int start, int end) {
+        return join(items, delimiter, start, end, null);
     }
     
     /**
@@ -70,9 +79,10 @@ public class StringUtil {
      * negative values or values larger than the Collection will include all
      * items after the start (when start is 0, then this is the amount of items
      * included)
+     * @param func Transform an element to a String
      * @return The resulting String (never null)
      */
-    public static String join(Collection<?> items, String delimiter, int start, int end) {
+    public static String join(Collection<?> items, String delimiter, int start, int end, Function<Object, String> func) {
         if (items == null || items.isEmpty()) {
             return "";
         }
@@ -83,7 +93,7 @@ public class StringUtil {
         Iterator<?> it = items.iterator();
         int i = 0;
         while (it.hasNext()) {
-            String next = it.next().toString();
+            String next = func != null ? func.apply(it.next()) : it.next().toString();
             if (i >= start && i < end) {
                 b.append(next);
                 if (it.hasNext() && i+1 < end) {

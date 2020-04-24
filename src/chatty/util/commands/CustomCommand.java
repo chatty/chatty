@@ -16,27 +16,39 @@ public class CustomCommand {
     private final String name;
     private final String chan;
     private final Items items;
+    private final String raw;
     private final String error;
     private final String singleLineError;
 
-    private CustomCommand(String name, String chan, Items items) {
+    private CustomCommand(String name, String chan, Items items, String raw) {
         this.items = items;
         this.error = null;
         this.singleLineError = null;
         this.name = name;
         this.chan = chan;
+        this.raw = raw;
     }
 
-    private CustomCommand(String name, String chan, String error, String singleLineError) {
+    private CustomCommand(String name, String chan, String error, String singleLineError, String raw) {
         this.items = null;
         this.error = error;
         this.singleLineError = singleLineError;
         this.name = name;
         this.chan = chan;
+        this.raw = raw;
     }
     
     public String replace(Parameters parameters) {
         return items.replace(parameters);
+    }
+    
+    /**
+     * The raw input this command was created with.
+     * 
+     * @return 
+     */
+    public String getRaw() {
+        return raw;
     }
     
     @Override
@@ -133,12 +145,13 @@ public class CustomCommand {
     public static CustomCommand parse(String name, String chan, String input) {
         Parser parser = new Parser(input);
         try {
-            return new CustomCommand(name, chan, parser.parse());
+            return new CustomCommand(name, chan, parser.parse(), input);
         } catch (ParseException ex) {
             return new CustomCommand(
                     name, chan,
                     makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, false),
-                    makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, true)
+                    makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), input, true),
+                    input
             );
         }
     }

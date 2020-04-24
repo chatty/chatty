@@ -200,7 +200,7 @@ public class AdminDialog extends JDialog {
                 return;
             }
         }
-        statusPanel.setPutResult("");
+        statusPanel.dialogOpened();
         setChannel(channel);
         
         setVisible(true);

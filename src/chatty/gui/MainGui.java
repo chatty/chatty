@@ -1050,6 +1050,7 @@ public class MainGui extends JFrame implements Runnable {
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.STREAMS, client.settings.getString("streamsContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.TEXT, client.settings.getString("textContextMenu"));
+        CommandMenuItems.setCommands(CommandMenuItems.MenuType.ADMIN, client.settings.getString("adminContextMenu"));
         TextSelectionMenu.update();
         ContextMenuHelper.livestreamerQualities = client.settings.getString("livestreamerQualities");
         ContextMenuHelper.enableLivestreamer = client.settings.getBoolean("livestreamer");
@@ -4564,7 +4565,8 @@ public class MainGui extends JFrame implements Runnable {
                     || setting.equals("userContextMenu")
                     || setting.equals("livestreamerQualities")
                     || setting.equals("streamsContextMenu")
-                    || setting.equals("textContextMenu")) {
+                    || setting.equals("textContextMenu")
+                    || setting.equals("adminContextMenu")) {
                 updateCustomContextMenuEntries();
             }
             else if (setting.equals("chatScrollbarAlways") || setting.equals("userlistWidth")) {
