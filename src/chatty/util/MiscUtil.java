@@ -61,6 +61,31 @@ public class MiscUtil {
         return true;
     }
     
+    public static boolean openFile(String path, Component parent) {
+        try {
+            File file = new File(path);
+            Desktop.getDesktop().open(file);
+        } catch (Exception ex) {
+            if (parent != null) {
+                JOptionPane.showMessageDialog(parent, "Opening folder failed.\n"+ex.getLocalizedMessage());
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    public static boolean openFilePrompt(String path, Component parent) {
+        int chosenOption = JOptionPane.showOptionDialog(parent,
+                path,
+                "Open in default application?",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, new String[]{"Open File", "Cancel"}, 0);
+        if (chosenOption == 0) {
+            return openFile(path, parent);
+        }
+        return false;
+    }
+    
     /**
      * Parses the command line arguments from the main method into a Map.
      * Arguments that start with a dash "-" are interpreted as key, everything

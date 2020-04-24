@@ -2318,6 +2318,10 @@ public class MainGui extends JFrame implements Runnable {
             if (!UrlOpener.openUrlPrompt(getActiveWindow(), parameter, true)) {
                 printLine("Failed to open URL (none specified or invalid).");
             }
+        } else if (command.equals("openfile")) {
+            MiscUtil.openFile(parameter, getActiveWindow());
+        } else if (command.equals("openfileprompt")) {
+            MiscUtil.openFilePrompt(parameter, getActiveWindow());
         } else if (command.equals("openfollowers")) {
             openFollowerDialog();
         } else if (command.equals("opensubscribers")) {
