@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.gui.MainGui;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.util.HashSet;
@@ -76,6 +77,7 @@ public class EmotesetManager {
             return false;
         }
         if (!settings.listContains("scopes", "user_subscriptions")) {
+            EventLog.addSystemEvent("access.myemotes");
             return false;
         }
         api.getUserEmotes(userId);

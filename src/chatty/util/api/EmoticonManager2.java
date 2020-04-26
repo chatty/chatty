@@ -51,7 +51,7 @@ public class EmoticonManager2 {
     
     private long lastRequestTime;
     
-    private int retryBackoff = 20;
+    private int errorRetrySeconds = 20;
     
     public EmoticonManager2(TwitchApiResultListener listener, Requests requests) {
         this.requests = requests;
@@ -95,6 +95,9 @@ public class EmoticonManager2 {
      */
     public synchronized void addRequested(Set<String> emotesets) {
         requestedEmotesets.addAll(emotesets);
+        // Remove from error for now (they may be added again if requested for
+        // some reason, but at least now they shouldn't be done again)
+        erroredEmotesets.removeAll(emotesets);
     }
     
     public synchronized void requestNow() {
@@ -149,14 +152,12 @@ public class EmoticonManager2 {
     private synchronized void checkErrored() {
         if (!erroredEmotesets.isEmpty()) {
             long ago = System.currentTimeMillis() - lastRequestTime;
-            if (ago > 30*60*1000) {
-                retryBackoff = 20;
-            }
-            if (ago > retryBackoff*1000) {
+            if (ago > errorRetrySeconds*1000) {
                 LOGGER.info("Retrying requesting emotes: "+erroredEmotesets);
                 pendingEmotesets.addAll(erroredEmotesets);
                 erroredEmotesets.clear();
-                retryBackoff *= 4;
+                errorRetrySeconds *= 4;
+                errorRetrySeconds = Math.min(errorRetrySeconds, 60*60);
             }
         }
     }
