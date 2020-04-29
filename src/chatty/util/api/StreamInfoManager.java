@@ -175,6 +175,10 @@ public class StreamInfoManager {
         return cached;
     }
     
+    public synchronized StreamInfo getCachedStreamInfo(String stream) {
+        return cachedStreamInfo.get(StringUtil.toLowerCase(stream));
+    }
+    
     /**
      * Gets a StreamInfo object for the given stream name. Either returns the
      * already existing StreamInfo object for this stream or creates a new one.
@@ -493,6 +497,7 @@ public class StreamInfoManager {
         long timeStarted = -1;
         String userId = null;
         boolean noChannelObject = false;
+        String logo;
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewers");
@@ -532,6 +537,7 @@ public class StreamInfoManager {
                 LOGGER.warning("Error parsing StreamInfo: no channel object ("+name+")");
                 noChannelObject = true;
             }
+            logo = JSONUtil.getString(channel, "logo");
         } catch (ClassCastException ex) {
             LOGGER.warning("Error parsing StreamInfo: unpexected type");
             return null;
@@ -577,6 +583,9 @@ public class StreamInfoManager {
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);
+        }
+        if (logo != null) {
+            streamInfo.setLogo(logo);
         }
         
         // Community (if cached, will immediately set Community correct again

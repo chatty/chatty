@@ -8,6 +8,7 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
+import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -80,7 +81,7 @@ public class StreamChat extends JDialog {
             super(main, styleServer, true, startAtBottom);
             
             // Overriding constructor is required to set the custom context menu
-            linkController.setDefaultContextMenu(new HighlightsContextMenu());
+            linkController.setContextMenuCreator(() -> new StreamChatContextMenu());
         }
         
     }

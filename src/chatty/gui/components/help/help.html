@@ -985,31 +985,50 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <a href="#top" class="top">[back to menu]</a>
     </h2>
         <p>Stream Chat is a separate dialog, opened via the <code>/openStreamChat</code>
-            command or the <code>Extra</code> menu, that can have chat messages from one or several
-    channels redirected to it (only regular chat messages, so no JOINS/PARTS, info messages
-    and so on). It also can have a message timeout set, so messages will
-    disappear after a certain amount of seconds.</p>
+            command or the <code>Extra</code> menu, which is different from normal chats:</p>
         
-        <p>The idea is to capture Stream Chat to display chat on stream and
-        messages will only be displayed if the chat has been recently active. So
-        this doesn't really make a lot of sense for busier channels, unless you
-        simply prefer to only have regular messages or to have a separate dialog
-        for the capture.</p>
+        <ul>
+            <li>Can contain messages from one or several channels at once (only regular chat messages, no info messages)</li>
+            <li>Messages can be automatically removed after a certain time</li>
+        </ul>
         
         <h3>Getting started</h3>
-        <p>You need to add the channel which messages are redirected to the
-        Stream Chat dialog before anything will appear. The setting you are required
-        to change is <code>streamChatChannels</code>,
-        which is a list setting giving you different ways of editing it:</p>
+        <p>For chat messages to appear in the Stream Chat, you have to both
+            enable the channel and join the channel in Chatty normally.</p>
+        
+        <p>You can enable channels in the Stream Chat context menu (which will
+            offer to enable currently joined channels) or use the
+            following setting commands (channel all-lowercase):</p>
+        
         <ul>
             <li><code>/set streamChatChannels #&lt;channel&gt;</code> - To set
             the channel to only this one</li>
             <li><code>/add streamChatChannels #&lt;channel&gt;</code> - To add
-            a channel in addition to the ones already set</li>
+            a channel</li>
             <li><code>/remove streamChatChannels #&lt;channel&gt;</code> - To remove
-            a channel from the list</li>
+            a channel</li>
         </ul>
-        <p>Check out other <a href="help-setting_commands.html#streamchat">settings</a> that are also edited with setting commands.</p>
+        
+        <h3>Other settings</h3>
+        
+        <dl class="defList">
+            <dt><code>/set streamChatLogos &lt;size&gt;</code></dt>
+            <dd>Set the channel logo size (pixels). Set to <code>0</code> to disable.</dd>
+            <dd>Logos are only shown for channels that have been live during the
+                current session. Changes only affect new messages.</dd>
+            
+            <dt><code>/set streamChatMessageTimeout &lt;seconds&gt;</code></dt>
+            <dd>How long messages are displayed before they disappear. Set to
+                <code>-1</code> to disable.</dd>
+            
+            <dt><code>/set streamChatBottom &lt;0/1&gt;</code></dt>
+            <dd>Disable so messages start being inserted at the top.</dd>
+            <dd>Restart required to apply changes.</dd>
+            
+            <dt><code>/set streamChatResizable &lt;0/1&gt;</code></dt>
+            <dd>Whether Stream Chat dialog should be resizable.</dd>
+        </dl>
+        
         <p>In addition, make sure you have <code>Settings - Window - Restore dialogs</code>
             set to at least <code>Restore dialogs from last session</code> in order
             to keep the position/size of the Stream Chat dialog between sessions.</p>

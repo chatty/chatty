@@ -54,6 +54,7 @@ import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
+import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
@@ -297,6 +298,7 @@ public class MainGui extends JFrame implements Runnable {
         
         streamChat = new StreamChat(this, styleManager, contextMenuListener,
             client.settings.getBoolean("streamChatBottom"));
+        StreamChatContextMenu.client = client;
         
         moderationLog = new ModerationLog(this);
         autoModDialog = new AutoModDialog(this, client.api, client);
@@ -4500,6 +4502,8 @@ public class MainGui extends JFrame implements Runnable {
                     Sound.setDeviceName((String)value);
                 } else if (setting.equals("userDialogTimestamp")) {
                     userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
+                } else if (setting.equals("streamChatLogos")) {
+                    client.updateStreamChatLogos();
                 }
             }
             if (type == Setting.LIST) {
@@ -4513,6 +4517,8 @@ public class MainGui extends JFrame implements Runnable {
                     updateFilter();
                 } else if (setting.equals("hotkeys")) {
                     hotkeyManager.loadFromSettings(client.settings);
+                } else if (setting.equals("streamChatChannels")) {
+                    client.updateStreamChatLogos();
                 }
             }
             if (type == Setting.LONG) {

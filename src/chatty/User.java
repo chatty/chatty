@@ -197,10 +197,10 @@ public class User implements Comparable<User> {
         return twitchBadges != null && twitchBadges.containsKey(id) && twitchBadges.get(id).equals(version);
     }
     
-    public List<Usericon> getBadges(boolean botBadgeEnabled, boolean pointsHl) {
+    public List<Usericon> getBadges(boolean botBadgeEnabled, boolean pointsHl, boolean channelLogo) {
         Map<String, String> badges = getTwitchBadges();
         if (iconManager != null) {
-            return iconManager.getBadges(badges, this, botBadgeEnabled, pointsHl);
+            return iconManager.getBadges(badges, this, botBadgeEnabled, pointsHl, channelLogo);
         }
         return null;
     }

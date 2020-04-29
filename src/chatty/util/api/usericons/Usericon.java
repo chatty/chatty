@@ -6,7 +6,9 @@ import chatty.util.colors.HtmlColors;
 import chatty.util.ImageCache;
 import chatty.util.StringUtil;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Arrays;
@@ -62,6 +64,7 @@ public class Usericon implements Comparable {
         OTHER(12, "Other", "OTH", "'", null, null),
         VIP(13, "VIP", "VIP", "!", "vip", null),
         HL(14, "Highlighted by channel points", "HL", "'", null, null),
+        CHANNEL_LOGO(15, "Channel Logo", "CHL", null, null, null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -141,6 +144,11 @@ public class Usericon implements Comparable {
      * The URL the image is loaded from
      */
     public final URL url;
+    
+    /**
+     * If set, the image will be resized to this size
+     */
+    public final Dimension targetImageSize;
     
     /**
      * The restriction
@@ -266,6 +274,7 @@ public class Usericon implements Comparable {
         // Image/Image Location
         //----------------------
         this.url = builder.url;
+        this.targetImageSize = builder.targetImageSize;
         
         // If no url is set, assume that no image is supposed to be used
         if (builder.url == null) {
@@ -369,11 +378,18 @@ public class Usericon implements Comparable {
         }
         ImageIcon icon = ImageCache.getImage(url, "usericon", CACHE_TIME);
         if (icon != null) {
+            if (targetImageSize != null) {
+                icon.setImage(getScaledImage(icon.getImage(), targetImageSize.width, targetImageSize.height));
+            }
             return icon;
         } else {
             LOGGER.warning("Could not load icon: " + url);
         }
         return null;
+    }
+    
+    private Image getScaledImage(Image img, int w, int h) {
+        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
     }
     
     /**
@@ -497,6 +513,7 @@ public class Usericon implements Comparable {
         private Set<String> usernames;
         private Set<String> userids;
         private String position;
+        private Dimension targetImageSize;
 
         public Builder(Usericon.Type type, int source) {
             this.type = type;
@@ -613,6 +630,11 @@ public class Usericon implements Comparable {
         
         public Builder setPosition(String position) {
             this.position = position;
+            return this;
+        }
+        
+        public Builder setTargetImageSize(int width, int height) {
+            this.targetImageSize = new Dimension(width, height);
             return this;
         }
 

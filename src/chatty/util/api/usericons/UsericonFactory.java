@@ -117,6 +117,20 @@ public class UsericonFactory {
         return null;
     }
     
+    public static Usericon createChannelLogo(String channel, String url, int size) {
+        try {
+            Usericon.Builder b = new Usericon.Builder(Usericon.Type.CHANNEL_LOGO, Usericon.SOURCE_OTHER);
+            b.setChannel(channel);
+            b.setUrl(new URL(url));
+            b.setTargetImageSize(size, size);
+            return b.build();
+        }
+        catch (MalformedURLException ex) {
+            LOGGER.warning("Invalid icon url: " + url);
+        }
+        return null;
+    }
+    
     /**
      * Creates an icon based on a filename, which is resolved with the image
      * directory (if necessary). It also takes a restriction parameter and

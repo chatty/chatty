@@ -255,6 +255,16 @@ public class TwitchApi {
         return streamInfoManager.getStreamInfo(stream, streams);
     }
     
+    /**
+     * Only return already cached StreamInfo, never create a new one.
+     * 
+     * @param stream
+     * @return The StreamInfo object, or null if none exists
+     */
+    public StreamInfo getCachedStreamInfo(String stream) {
+        return streamInfoManager.getCachedStreamInfo(stream);
+    }
+    
     public void getFollowedStreams(String token) {
         streamInfoManager.getFollowedStreams(token);
     }

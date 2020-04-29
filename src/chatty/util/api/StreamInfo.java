@@ -39,6 +39,8 @@ public class StreamInfo {
      */
     private String display_name;
     
+    private String logo;
+    
     private String userId;
     
     /**
@@ -426,6 +428,14 @@ public class StreamInfo {
      */
     public boolean hasRegularDisplayName() {
         return !hasDisplayName() || capitalizedName != null;
+    }
+    
+    public synchronized void setLogo(String logo) {
+        this.logo = logo;
+    }
+    
+    public synchronized String getLogo() {
+        return logo;
     }
     
     public synchronized boolean setUserId(String userId) {

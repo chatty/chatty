@@ -222,7 +222,7 @@ public class HighlightedMessages extends JDialog {
         
         public TextPane(MainGui main, StyleServer styleServer) {
             super(main, styleServer);
-            linkController.setDefaultContextMenu(new HighlightsContextMenu());
+            linkController.setContextMenuCreator(() -> new HighlightsContextMenu());
         }
         
         public void clear() {

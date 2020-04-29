@@ -2361,6 +2361,29 @@ public class TwitchClient {
             g.webserverTokenReceived(token);
         }
     };
+    
+    /**
+     * Update the logo for all current Stream Chat channels, based on already
+     * available StreamInfo.
+     */
+    public void updateStreamChatLogos() {
+        for (Object chanObject : settings.getList("streamChatChannels")) {
+            String channel = (String) chanObject;
+            updateStreamChatLogo(channel, api.getCachedStreamInfo(Helper.toStream(channel)));
+        }
+    }
+    
+    /**
+     * Update the Stream Chat logo for the given channel.
+     * 
+     * @param channel The channel
+     * @param info The StreamInfo to get the logo from, may be null
+     */
+    public void updateStreamChatLogo(String channel, StreamInfo info) {
+        if (info != null && info.getLogo() != null && settings.listContains("streamChatChannels", channel)) {
+            usericonManager.updateChannelLogo(channel, info.getLogo(), settings.getString("streamChatLogos"));
+        }
+    }
 
     private class MyStreamInfoListener implements StreamInfoListener {
         
@@ -2394,6 +2417,7 @@ public class TwitchClient {
                         + "You may not be able to join this channel, but trying"
                         + " anyways. **");
             }
+            updateStreamChatLogo(channel, info);
         }
 
         /**

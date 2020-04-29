@@ -19,7 +19,6 @@ import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
 import chatty.util.Debugging;
-import chatty.util.ElapsedTime;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
@@ -92,7 +91,7 @@ public class LinkController extends MouseAdapter {
     
     private ContextMenuListener contextMenuListener;
     
-    private ContextMenu defaultContextMenu;
+    private Supplier<ContextMenu> defaultContextMenuCreator;
     
     private Channel channel;
     
@@ -141,9 +140,6 @@ public class LinkController extends MouseAdapter {
      */
     public void setContextMenuListener(ContextMenuListener listener) {
         contextMenuListener = listener;
-        if (defaultContextMenu != null) {
-            defaultContextMenu.addContextMenuListener(listener);
-        }
     }
     
     /**
@@ -152,9 +148,8 @@ public class LinkController extends MouseAdapter {
      * 
      * @param contextMenu 
      */
-    public void setDefaultContextMenu(ContextMenu contextMenu) {
-        defaultContextMenu = contextMenu;
-        contextMenu.addContextMenuListener(contextMenuListener);
+    public void setContextMenuCreator(Supplier<ContextMenu> contextMenu) {
+        defaultContextMenuCreator = contextMenu;
     }
     
     public void setChannel(Channel channel) {
@@ -417,12 +412,14 @@ public class LinkController extends MouseAdapter {
             m = new TextSelectionMenu((JTextComponent)e.getSource(), false);
         }
         else {
-            if (defaultContextMenu == null) {
+            if (defaultContextMenuCreator == null) {
                 if (channel != null) {
                     m = new ChannelContextMenu(contextMenuListener, channel);
                 }
             } else {
-                m = defaultContextMenu;
+                ContextMenu menu = defaultContextMenuCreator.get();
+                menu.addContextMenuListener(contextMenuListener);
+                m = menu;
             }
         }
         if (m != null) {
@@ -749,6 +746,8 @@ public class LinkController extends MouseAdapter {
         } else if (usericon.type == Usericon.Type.HL) {
             // Customize text since not really a badge
             info = POPUP_HTML_PREFIX+usericon.type.label;
+        } else if (usericon.type == Usericon.Type.CHANNEL_LOGO) {
+            info = POPUP_HTML_PREFIX+"Channel Logo: "+usericon.channel;
         } else {
             info = POPUP_HTML_PREFIX+"Badge: "+usericon.type.label;
         }

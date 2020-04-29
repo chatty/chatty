@@ -616,6 +616,8 @@ public class SettingsManager {
         settings.addList("streamChatChannels", new ArrayList(), Setting.STRING);
         settings.addBoolean("streamChatBottom", true);
         settings.addBoolean("streamChatResizable", true);
+        // Size (String in case <width>x<height> needs to be added later or something)
+        settings.addString("streamChatLogos", "22");
 
         // Whispering
         settings.addBoolean("whisperEnabled", false);
