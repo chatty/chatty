@@ -34,7 +34,7 @@ import javax.swing.event.ListSelectionListener;
 public class StatusHistoryDialog extends JDialog {
     
     private enum CloseAction {
-        CANCEL, USE_ALL, USE_TITLE, USE_GAME, USE_TAGS
+        CANCEL, USE_ALL, USE_TITLE, USE_GAME, USE_TAGS, USE_GAME_TAGS
     }
     
     private static final String INFO_TEXT = "<html><body style='width: 240px;text-align:center;'>"
@@ -206,6 +206,8 @@ public class StatusHistoryDialog extends JDialog {
                 return new StatusHistoryEntry(null, selected.game, null, -1, -1, false);
             } else if (closeAction == CloseAction.USE_TAGS) {
                 return new StatusHistoryEntry(null, null, selected.tags, -1, -1, false);
+            } else if (closeAction == CloseAction.USE_GAME_TAGS) {
+                return new StatusHistoryEntry(null, selected.game, selected.tags, -1, -1, false);
             } else if (closeAction == CloseAction.USE_ALL) {
                 return selected;
             }
@@ -307,6 +309,11 @@ public class StatusHistoryDialog extends JDialog {
         setVisible(false);
     }
     
+    private void useGameAndTags() {
+        closeAction = CloseAction.USE_GAME_TAGS;
+        setVisible(false);
+    }
+    
     /**
      * Action listener for normal buttons.
      */
@@ -350,6 +357,8 @@ public class StatusHistoryDialog extends JDialog {
             addItem("useTitle", Language.getString("admin.presets.cm.useTitleOnly"));
             addItem("useGame", Language.getString("admin.presets.cm.useGameOnly"));
             addItem("useTags", Language.getString("admin.presets.cm.useTagsOnly"));
+            addSeparator();
+            addItem("useGameTags", Language.getString("admin.presets.cm.useGameTagsOnly"));
         }
 
         @Override
@@ -362,6 +371,8 @@ public class StatusHistoryDialog extends JDialog {
                 useStatus();
             } else if (e.getActionCommand().equals("useTitle")) {
                 useTitle();
+            } else if (e.getActionCommand().equals("useGameTags")) {
+                useGameAndTags();
             } else if (e.getActionCommand().equals("useGame")) {
                 useGame();
             } else if (e.getActionCommand().equals("useTags")) {
