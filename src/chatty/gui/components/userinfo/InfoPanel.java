@@ -220,8 +220,8 @@ public class InfoPanel extends JPanel {
                     !StringUtil.isNullOrEmpty(info.description)
                             ? StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(info.description), 70, true)
                             : "No description",
-                    info.status,
-                    info.game,
+                    Helper.htmlspecialchars_encode(info.status),
+                    Helper.htmlspecialchars_encode(info.game),
                     Helper.formatViewerCount(info.views),
                     Helper.formatViewerCount(info.followers),
                     formatAgoTimeVerbose(info.createdAt),
