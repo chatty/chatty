@@ -3,7 +3,9 @@ package chatty.util.commands;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -161,6 +163,9 @@ public class Parser {
         else if (type.equals("ifeq")) {
             return ifEq(isRequired);
         }
+        else if (type.equals("switch")) {
+            return switchFunc(isRequired);
+        }
         else if (type.equals("lower")) {
             return lower(isRequired);
         }
@@ -190,6 +195,9 @@ public class Parser {
         }
         else if (type.equals("get")) {
             return get(isRequired);
+        }
+        else if (type.equals("calc")) {
+            return calc(isRequired);
         }
         else {
             error("Invalid function '"+type+"'", 0);
@@ -262,6 +270,33 @@ public class Parser {
         }
         expect(")");
         return new IfEq(identifier, isRequired, compare, output1, output2);
+    }
+    
+    private Item switchFunc(boolean isRequired) throws ParseException {
+        expect("(");
+        Item identifier = peekParam();
+        Item def = new Items();
+        expect(",");
+        Map<Item, Item> cases = new LinkedHashMap<>();
+        do {
+            Item key = parse("[,):]");
+            if (accept(":")) {
+                if (cases.containsKey(key)) {
+                    error("Duplicate case: "+key, 0);
+                }
+                cases.put(key, param());
+            }
+            else {
+                // Default case must be the last one
+                def = key;
+                break;
+            }
+        } while (accept(","));
+        expect(")");
+        if (cases.isEmpty()) {
+            error("No case found", -1);
+        }
+        return new Switch(identifier, cases, def, isRequired);
     }
     
     private Item join(boolean isRequired) throws ParseException {
@@ -379,6 +414,13 @@ public class Parser {
         }
         expect(")");
         return new Get(item, item2, isRequired);
+    }
+    
+    private Item calc(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        expect(")");
+        return new Calc(item, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

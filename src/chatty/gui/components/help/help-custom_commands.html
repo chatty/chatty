@@ -392,13 +392,20 @@
             with no parameters turns into <code>nope</code>, the optional <code>[output if not]</code> function parameter.</dd>
         
         <dt><code>$ifeq(&lt;identifier&gt;,&lt;comparison&gt;,&lt;output if equal&gt;,[output if not])</code></dt>
-        <dd>Similar to <code>$if</code>, but instead of just checking fot the
+        <dd>Similar to <code>$if</code>, but instead of just checking for the
             existence of a parameter it compares it to a given value
             (<code>&lt;comparison&gt;</code>).</dd>
         <dd><em>Example:</em> <code>$ifeq(1,cheesecake,yummy)</code> with parameters
             <code>cheesecake</code> turns into <code>yummy</code>, with parameters
             <code>cheese cake</code> turns into an an empty string, since the
             optional <code>[output if not]</code> has not been specified.</dd>
+        
+        <dt><code>$switch(&lt;identifier&gt;,&lt;case1&gt;:&lt;result1&gt;,..,[casen]:[resultn],[default])</code></dt>
+        <dd>Similiar to a switch statement in programming, or one or several <code>$ifeq()</code> functions.
+            Compares the value associated with the identifier with the case values and returns the following
+            result if it matches. If none of the case values match, it will return the default, or an empty value.</dd>
+        <dd><em>Example:</em> <code>/set fontSize $switch($get(fontSize),25:50,50:18,25)</code> when added
+            as a Custom Command alternates between font sizes 18, 25 and 50.</dd>
         
         <dt><code>$join(&lt;identifier&gt;,&lt;separator&gt;)</code></dt>
         <dd>Joins together the arguments the identifier refers to, using the
@@ -448,6 +455,13 @@
             number between 600 and 800.</dd>
         <dd><em>Example:</em> <code>$randum($$1)</code> chooses a random number
             between 0 and what is the first parameter.</dd>
+        
+        <dt><code>$calc(&lt;simple math expression&gt;)</code></dt>
+        <dd>Limited support for performing calculations.</dd>
+        <dd><em>Example:</em> <code>//echo $calc(2^3) $calc( (3+4\) / 2)</code>
+            when entered into the inputbox returns <code>8 3.5</code> (note the
+            parentheses in the second, as well as how the closing parenthesis
+            needs to be escaped).</dd>
         
         <dt><code>$urlencode(&lt;input&gt;)</code></dt>
         <dd>Uses <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLEncoder.html#encode-java.lang.String-java.lang.String-">UrlEncoder.encode()</a>
