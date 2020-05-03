@@ -8,6 +8,7 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Replacer;
 import chatty.util.StringUtil;
+import chatty.util.api.usericons.Usericon;
 import chatty.util.commands.Parameters;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.FileManager.SaveResult;
@@ -830,10 +831,20 @@ public class Helper {
         parameters.put("user-id", user.getId());
         if (user.getTwitchBadges() != null) {
             parameters.put("twitch-badge-info", user.getTwitchBadges().toString());
+            parameters.put("twitch-badges", Usericon.makeBadgeInfo(user.getTwitchBadges()));
         }
         parameters.put("display-nick", user.getDisplayNick());
         parameters.put("custom-nick", user.getCustomNick());
         parameters.put("full-nick", user.getFullNick());
+        if (!user.hasRegularDisplayNick()) {
+            parameters.put("display-nick2", user.getDisplayNick()+" ("+user.getRegularDisplayNick()+")");
+            parameters.put("full-nick2", user.getFullNick()+" ("+user.getRegularDisplayNick()+")");
+            parameters.put("special-nick", "true");
+        }
+        else {
+            parameters.put("display-nick2", user.getDisplayNick());
+            parameters.put("full-nick2", user.getFullNick());
+        }
         parameters.putObject("user", user);
     }
     

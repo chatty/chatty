@@ -2,14 +2,22 @@
 package chatty.gui.components.settings;
 
 import chatty.Chatty;
+import chatty.Helper;
+import chatty.Room;
+import chatty.User;
+import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.MessageSettings.addTimestampFormat;
 import chatty.lang.Language;
+import chatty.util.chatlog.ChatLog;
+import chatty.util.commands.CustomCommand;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.HashMap;
@@ -17,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -96,35 +105,113 @@ public class LogSettings extends SettingsPanel {
         
         JCheckBox logMessages = d.addSimpleBooleanSetting("logMessage");
         JCheckBox logIgnored = d.addSimpleBooleanSetting("logIgnored");
-        logIgnored.setEnabled(false);
-        logMessages.addItemListener(e -> {
-            logIgnored.setEnabled(logMessages.isSelected());
+        EditorStringSetting messageTemplate = d.addEditorStringSetting("logMessageTemplate", -1, true,
+                Language.getString("settings.boolean.logMessage.template"),
+                false,
+                SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-logmessagetemplate.html", null),
+                new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                CustomCommand command = CustomCommand.parse(value);
+                if (command.hasError()) {
+                    CommandSettings.showCommandInfoPopup(component, command);
+                }
+                else {
+                    // Regular
+                    User user = new User("testuser", "テストユーザー", Room.createRegular("#testchannel"));
+                    user.setId("123456");
+                    user.setSubscriber(true);
+                    Map<String, String> badges = new LinkedHashMap<>();
+                    badges.put("subscriber", "12");
+                    user.setTwitchBadges(badges);
+                    String normalResult = command.replace(ChatLog.messageParam(
+                            user,
+                            "Hello, good day! :)",
+                            false,
+                            d.settings,
+                            "[12:34:56]"));
+                    
+                    // Action
+                    String actionResult = command.replace(ChatLog.messageParam(
+                            user,
+                            "has arrived! ;)",
+                            true,
+                            d.settings,
+                            "[12:34:56]"));
+                    
+                    // More badges
+                    badges.clear();
+                    badges.put("vip", "1");
+                    badges.put("founder", "0");
+                    badges.put("premium", "1");
+                    user = new User("TestName", Room.createRegular("#testchannel"));
+                    user.setId("123457");
+                    user.setTwitchBadges(badges);
+                    user.setVip(true);
+                    user.setSubscriber(true);
+                    user.setTurbo(true);
+                    String badgesResult = command.replace(ChatLog.messageParam(
+                            user,
+                            "HeyGuys",
+                            false,
+                            d.settings,
+                            "[12:34:56]"));
+                    
+                    // No badges
+                    user = new User("testname", "TestName", Room.createRegular("#testchannel"));
+                    user.setId("123457");
+                    String noBadgesResult = command.replace(ChatLog.messageParam(
+                            user,
+                            "HeyGuys",
+                            false,
+                            d.settings,
+                            "[12:34:56]"));
+                    
+                    GuiUtil.showNonModalMessage(parent, "Example",
+                            String.format("Regular message:<br />%s<br /><br />"
+                                    + "Action message:<br />%s<br /><br />"
+                                    + "More badges, no localized name:<br />%s<br /><br />"
+                                    + "No badges:<br />%s<br /><br />"
+                                    + "(The timestamp may not represent your current log timestamp setting.)",
+                                    Helper.htmlspecialchars_encode(normalResult),
+                                    Helper.htmlspecialchars_encode(actionResult),
+                                    Helper.htmlspecialchars_encode(badgesResult),
+                                    Helper.htmlspecialchars_encode(noBadgesResult)),
+                            JOptionPane.INFORMATION_MESSAGE, true);
+                }
+                return null;
+            }
         });
+        
+        SettingsUtil.addSubsettings(logMessages, logIgnored, messageTemplate);
         
         typesPanel.add(logMessages,
                 d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
+        typesPanel.add(messageTemplate,
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         typesPanel.add(logIgnored,
-                d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logInfo"),
                 d.makeGbcCloser(0, 2, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logBan"),
+        typesPanel.add(d.addSimpleBooleanSetting("logInfo"),
                 d.makeGbcCloser(0, 3, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logDeleted"),
+        typesPanel.add(d.addSimpleBooleanSetting("logBan"),
                 d.makeGbcCloser(0, 4, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
+        typesPanel.add(d.addSimpleBooleanSetting("logDeleted"),
                 d.makeGbcCloser(0, 5, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
+        typesPanel.add(d.addSimpleBooleanSetting("logMod"),
                 d.makeGbcCloser(0, 6, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
+        typesPanel.add(d.addSimpleBooleanSetting("logJoinPart"),
                 d.makeGbcCloser(0, 7, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
+        typesPanel.add(d.addSimpleBooleanSetting("logSystem"),
                 d.makeGbcCloser(0, 8, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewerstats"),
                 d.makeGbcCloser(0, 9, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
+        typesPanel.add(d.addSimpleBooleanSetting("logViewercount"),
                 d.makeGbcCloser(0, 10, 1, 1, GridBagConstraints.WEST));
-        typesPanel.add(d.addSimpleBooleanSetting("logBits"),
+        typesPanel.add(d.addSimpleBooleanSetting("logModAction"),
                 d.makeGbcCloser(0, 11, 1, 1, GridBagConstraints.WEST));
+        typesPanel.add(d.addSimpleBooleanSetting("logBits"),
+                d.makeGbcCloser(0, 12, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         

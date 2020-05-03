@@ -10,6 +10,8 @@ import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -30,6 +32,7 @@ public class ChatLog {
     private static final Logger LOGGER = Logger.getLogger(ChatLog.class.getName());
     
     private SimpleDateFormat sdf;
+    private CustomCommand messageTemplate;
     
     private final Map<String, Compact> compactForChannels;
     
@@ -57,11 +60,17 @@ public class ChatLog {
         try {
             String timestamp = settings.getString("logTimestamp");
             if (!timestamp.equals("off")) {
-                sdf = new SimpleDateFormat(timestamp+" ");
+                sdf = new SimpleDateFormat(timestamp);
             }
         } catch (IllegalArgumentException ex) {
             sdf = null;
         }
+        CustomCommand c = CustomCommand.parse(settings.getString("logMessageTemplate"));
+        if (c.hasError()) {
+            LOGGER.warning("Error in logMessageTemplate: "+c.getSingleLineError());
+            c = CustomCommand.parse(settings.getStringDefault("logMessageTemplate"));
+        }
+        this.messageTemplate = c;
     }
     
     /**
@@ -102,21 +111,32 @@ public class ChatLog {
                     amount));
         }
     }
-
+    
     public void message(String channel, User user, String message, boolean action) {
         if (isSettingEnabled("logMessage") && isChanEnabled(channel)) {
-            String line;
-            String name = user.getFullNick();
-            if (!user.hasRegularDisplayNick()) {
-                name += " ("+user.getName()+")";
+            Parameters param = messageParam(
+                            user,
+                            message,
+                            action,
+                            settings,
+                            DateTime.currentTime(sdf));
+            String line = messageTemplate.replace(param);
+            if (line != null && !line.isEmpty()) {
+                writeLine(channel, line);
             }
-            if (action) {
-                line = timestamp()+"<"+name+">* "+message;
-            } else {
-                line = timestamp()+"<"+name+"> "+message;
-            }
-            writeLine(channel, line);
         }
+    }
+    
+    public static Parameters messageParam(User user, String message, boolean action, Settings settings, String timestamp) {
+        Parameters p = Parameters.create("");
+        Helper.addUserParameters(user, null, null, p);
+        p.put("msg", message);
+        if (action) {
+            p.put("action", "true");
+        }
+        p.put("timestamp", timestamp);
+        p.putObject("settings", settings);
+        return p;
     }
 
     public void info(String channel, String message) {
@@ -230,7 +250,7 @@ public class ChatLog {
         if (sdf == null) {
             return "";
         }
-        return DateTime.currentTime(sdf);
+        return DateTime.currentTime(sdf)+" ";
     }
     
     /**

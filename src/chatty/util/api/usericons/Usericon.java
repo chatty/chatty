@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -59,12 +60,13 @@ public class Usericon implements Comparable {
         GLOBAL_MOD(7, "Global Moderator", "GLM", "*", "global_mod", HtmlColors.decode("#0c6f20")),
         BOT(8, "Bot", "BOT", "^", null, null),
         TWITCH(9, "Twitch Badge", "TWB", null, null, null),
-        PRIME(10, "Prime", "TPR", "+", "premium", null),
+        PRIME(10, "Prime", "PRM", "+", "premium", null),
         BITS(11, "Bits", "BIT", "$", "bits", null),
         OTHER(12, "Other", "OTH", "'", null, null),
         VIP(13, "VIP", "VIP", "!", "vip", null),
         HL(14, "Highlighted by channel points", "HL", "'", null, null),
         CHANNEL_LOGO(15, "Channel Logo", "CHL", null, null, null),
+        FOUNDER(16, "Founder", "FND", "%", "founder", null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -493,6 +495,28 @@ public class Usericon implements Comparable {
             }
         }
         return null;
+    }
+    
+    public static String makeBadgeInfo(Map<String, String> badgesDef) {
+        StringBuilder b = new StringBuilder();
+        for (String id : badgesDef.keySet()) {
+            String value = badgesDef.get(id);
+            Type type = typeFromBadgeId(id);
+            if (type != null) {
+                if (b.length() > 0) {
+                    b.append("|");
+                }
+                b.append(type.shortLabel);
+                if (value != null && !value.equals("1")) {
+                    b.append("/").append(value);
+                }
+            }
+        }
+        if (b.length() > 0) {
+            b.insert(0, "[");
+            b.append("]");
+        }
+        return b.toString();
     }
     
     
