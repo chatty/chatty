@@ -1,6 +1,8 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
+import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -124,6 +126,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         } else {
             commands.put(item.getId(), item.getCommand());
             JMenuItem mItem = addItem(item.getId(), item.getLabel(), item.getPos(), item.getParent(), null);
+            mItem.setToolTipText(StringUtil.shortenTo("<html><body>Command: <code>"+Helper.htmlspecialchars_encode(item.getCommand().getRaw())+"</code>", 100));
             addKey(item, mItem);
         }
         return null;

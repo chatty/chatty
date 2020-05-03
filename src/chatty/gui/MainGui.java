@@ -352,7 +352,7 @@ public class MainGui extends JFrame implements Runnable {
             GuiUtil.installTextComponentFocusWorkaround();
         }
         
-        ToolTipManager.sharedInstance().setInitialDelay(300);
+        ToolTipManager.sharedInstance().setInitialDelay(555);
         ToolTipManager.sharedInstance().setDismissDelay(20*1000);
         
         guiCreated = true;
