@@ -38,7 +38,14 @@ public class Language {
     
     public static ResourceBundle getBundleForLanguage(String language) {
         Locale locale = parseLanguage(language);
-        return ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
+        try {
+            return ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
+        }
+        catch (UnsupportedOperationException ex) {
+            // If this exception occurs, it should mean that it's a named module
+            // and thus would be read as UTF-8 by default anyway
+            return ResourceBundle.getBundle("chatty.lang.Strings", locale);
+        }
     }
     
     public static Locale parseLanguage(String language) {
@@ -183,7 +190,12 @@ public class Language {
      */
     private static void loadIfNecessary() {
         if (strings == null) {
-            strings = ResourceBundle.getBundle("chatty.lang.Strings", CONTROL);
+            try {
+                strings = ResourceBundle.getBundle("chatty.lang.Strings", CONTROL);
+            }
+            catch (UnsupportedOperationException ex) {
+                strings = ResourceBundle.getBundle("chatty.lang.Strings");
+            }
         }
     }
     
