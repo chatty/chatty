@@ -249,7 +249,7 @@ public class LinkController extends MouseAdapter {
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
         if (emoteImage != null) {
-            popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p), emoteImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
             popup.show(textPane, element, p -> makeUsericonPopupText(usericon, p), usericon.image.getIconWidth());
         } else if (replacedText != null) {
@@ -541,6 +541,10 @@ public class LinkController extends MouseAdapter {
                 update();
             }
         }
+                
+        public boolean isCurrentElement(Element element) {
+            return this.element == element;
+        }
         
         /**
          * Reshow (if still visible), even without explicitly changing content.
@@ -680,13 +684,16 @@ public class LinkController extends MouseAdapter {
     
     private static final Object unique = new Object();
     
-    private static void makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage, MyPopup popup) {
+    private static void makeEmoticonPopupText(EmoticonImage emoticonImage, boolean showImage, MyPopup popup, Element element) {
         Debugging.println("emoteinfo", "makePopupText %s", emoticonImage.getEmoticon());
         Emoticon emote = emoticonImage.getEmoticon();
         EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, result -> {
             SwingUtilities.invokeLater(() -> {
                 Debugging.println("emoteinfo", "Request result: %s", result);
-                popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result, popup));
+                // The popup may be for a different element by now
+                if (popup.isCurrentElement(element)) {
+                    popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result, popup));
+                }
             });
         }, emote);
         popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, info, popup));
