@@ -37,6 +37,7 @@ public class ChatLog {
     private final Map<String, Compact> compactForChannels;
     
     private final Settings settings;
+    private final Path path;
     
     /**
      * Reference to the LogManager. This is null if the log path was invalid and
@@ -47,7 +48,7 @@ public class ChatLog {
     public ChatLog(Settings settings) {
         this.settings = settings;
 
-        Path path = getPath();
+        path = createPath();
         if (path == null) {
             log = null;
         } else {
@@ -80,7 +81,7 @@ public class ChatLog {
      * @return The Path to write the log files to, or null if the path could not
      * be created
      */
-    private Path getPath() {
+    private Path createPath() {
         String pathToUse = Chatty.getUserDataDirectory()+"logs";
         String customPath = settings.getString("logPath");
         if (!customPath.isEmpty()) {
@@ -92,6 +93,15 @@ public class ChatLog {
             LOGGER.warning("Invalid path for chatlog: "+pathToUse);
             return null;
         }
+    }
+    
+    /**
+     * The base log path. Could be null if creating the path failed.
+     * 
+     * @return The path, or null if no valid path is set
+     */
+    public Path getPath() {
+        return path;
     }
     
     public void start() {

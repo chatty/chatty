@@ -187,7 +187,7 @@ public class Logging {
 
                 @Override
                 public String format(LogRecord record) {
-                    return String.format("[%1$tT] %2$s\n",
+                    return String.format("[%1$tF %1$tT/%1$tL] %2$s\n",
                             new Date(record.getMillis()),
                             record.getMessage());
                 }

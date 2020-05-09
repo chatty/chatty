@@ -1008,6 +1008,22 @@ public class TwitchClient {
         else if (command.equals("opendebugdir")) {
             MiscUtil.openFolder(new File(Chatty.getDebugLogDirectory()), g);
         }
+        else if (command.equals("showlogdir")) {
+            if (chatLog.getPath() != null) {
+                g.printSystem("Chat Log Directory: "+chatLog.getPath().toAbsolutePath().toString());
+            }
+            else {
+                g.printSystem("Invalid Chat Log Directory");
+            }
+        }
+        else if (command.equals("openlogdir")) {
+            if (chatLog.getPath() != null) {
+                MiscUtil.openFolder(chatLog.getPath().toAbsolutePath().toFile(), g);
+            }
+            else {
+                g.printSystem("Invalid Chat Log Directory");
+            }
+        }
         else if (command.equals("showjavadir")) {
             g.printSystem("JRE directory: "+System.getProperty("java.home"));
         }
