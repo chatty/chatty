@@ -230,17 +230,24 @@ public class LaF {
             LOGGER.warning("[LAF] Failed setting LAF: "+ex);
         }
         
+        isDarkTheme = determineDarkTheme();
         // Set some settings not directly used by the LAF, but based on LAF.
-        if (lafCode.startsWith("hifi") || lafCode.equals("noire")) {
+        if (isDarkTheme) {
             linkColor = "#EEEEEE";
             tabForegroundHighlight = new Color(255,180,40);
             tabForegroundUnread = new Color(255,80,80);
-            isDarkTheme = true;
         } else {
             linkColor = "#0000FF";
-            isDarkTheme = false;
         }
         loadOtherCustom();
+    }
+    
+    private static boolean determineDarkTheme() {
+        Color color = UIManager.getColor("Panel.background");
+        if (color != null && ColorCorrectionNew.getLightness(color) < 128) {
+            return true;
+        }
+        return false;
     }
     
     private static void modifyDefaults() {
