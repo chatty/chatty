@@ -1211,6 +1211,11 @@ public class EmotesDialog extends JDialog {
             reset();
             
             Emoticon emote = detailsEmote;
+            if (emote == null) {
+                // This may happen when tab was switched, but a request result
+                // triggers this again
+                return;
+            }
             
             //--------------
             // EmotesetInfo
