@@ -17,6 +17,7 @@
     <h1><a name="top">Release Information</a></h1>
     
     <p>
+        <a href="#0.12">0.12</a> |
         <a href="#0.11">0.11</a> |
         <a href="#0.10">0.10</a> |
         <a href="#0.9.7">0.9.7</a> |
@@ -59,13 +60,74 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.10">Version 0.12</a> <a name="latest">(This one!)</a> (2020-??-??)
+        <a name="0.12">Version 0.12</a> <a name="latest">(This one!)</a> (2020-05-14)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>TBD (<a href="https://github.com/chatty/chatty/releases">Latest versions/changes</a>)</p>
+    <p>Settings are now also saved during the session, not just when closing
+        Chatty. This may help with some issues, for example by notifying the
+        user early about writing access issues.</p>
+    
+    <p>Also changed are setting backups (can now be accessed through the Settings
+        Dialog) and how the Addressbook is saved (no longer in the "addressbook" file).</p>
+    
+    <pre>
+### Settings Saving/Loading Changes
+- Settings are now saved while Chatty is running, and only if they changed
+- Improved "Main - Save.." option (for manually saving settings)
+- New backup system, including a GUI to view and load backups more easily
+  (Settings - Main - Settings Management)
+- Addressbook: Added "Edit all"-button to Addressbook dialog for bulk edits
+- Addressbook: Now saved in the "settings" instead of the "addressbook" file,
+  although the "addressbook" file is still written to if the setting
+  "abSaveOnChange" is enabled (but never read, except for the transition)
+
+### Settings
+- Stream Highlights: Added customizable template for the command reponse message
+- Followers/Subscribers Dialog: Added some settings to the context menu to
+  change the appearance of the list
+- Added setting to change the timezone used by Chatty
+- Chat Log: Added optional separate bits message
+- Chat Log: Added customizable template for logging regular chat messages
+- Added setting for input focus (Settings - Window) to test if it fixes issues
+
+### Custom Commands
+- Added identifier $(hostedChan) (the currently hosted channel, if any)
+- Added function $is() for Highlight format matching (e.g. "$is(mystatus:bm)")
+- Added function $calc() to perform simple calculations (e.g. "$calc(3*4)")
+- Added function $switch(), similar to a switch-statement in programming
+- Added function $get() to get setting values
+- Added "var" setting, which can be used like variables ("/set var foo bar" and
+  then "$get(var,foo)" returns "bar")
+- Added setting to add Custom Commands to Admin Dialog context menu
+- Added setting to add Custom Commands to text selection copy/paste context menu
+- Added tooltips for Custom Commands in context menus, showing the raw command
+
+### Utility Commands
+- Added "/showLogDir" and "/openLogDir" to show/open the Chat Log directory
+- Added "/openfile" and "/openfileprompt" to open a file in the default program
+- Added "/requests" command to open the reward queue in the default browser
+
+### Other Changes
+- Stream Chat: Added optional channel logo (if channel is live)
+- Stream Chat: Added context menu to more easily add/remove channels
+- Admin Dialog: Added Status Presets context menu entry to use only game/tags
+- Matching (Highlight etc.): Added "mystatus:" prefix to match against your own
+  user status (e.g. "mystatus:bm" for broadcaster or moderator)
+- Added notification about allowing "Your Subscriptions" access, so emotes are
+  loaded properly
+- Improved dark theme Look and Feel detection and Emotes Dialog background
+- Improved debug output
+- Updated help
+
+### Bugfixes
+- Fixed some types of streams not always showing up correctly
+- Fixed stream uptime sometimes appearing wrong
+- Fixed emote tooltip sometimes showing previously hovered emote's info
+- Fixed rare Emotes Dialog error
+    </pre>
     
     <h2>
-        <a name="0.10">Version 0.11</a> (2020-01-14)
+        <a name="0.11">Version 0.11</a> (2020-01-14)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <p>The new "Look" settings now contain more customization options, including

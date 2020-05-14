@@ -67,7 +67,7 @@ public class ChannelCompletion implements AutoCompletionServer {
         "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
         "follow", "unfollow", "ffzws", "followers", "followersoff",
         "setcolor", "untimeout", "userinfo", "joinHosted", "favorite", "unfavorite",
-        "popoutchannel"
+        "popoutchannel", "setSize"
     }));
 
     /**
