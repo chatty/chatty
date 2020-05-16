@@ -309,6 +309,9 @@ public class Settings {
         return ((Number)(get(setting, Setting.LONG))).longValue();
     }
 
+    public long getLongDefault(String settingName) {
+        return (Long)get(settingName, Setting.LONG, true);
+    }
 
     /**
      * Return a {@code HashMap} with a copy of the data of this setting.

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,6 +20,7 @@ public class StreamChatContextMenu extends ContextMenu {
     public static TwitchClient client;
     
     private static final String CHANNEL_SETTING = "streamChatChannels";
+    private static final String LOGO_SETTING = "streamChatLogos";
 
     public StreamChatContextMenu() {
         addItem("clearHighlights", Language.getString("highlightedDialog.cm.clear"));
@@ -35,6 +37,29 @@ public class StreamChatContextMenu extends ContextMenu {
         for (String chan : channels) {
             addCheckboxItem("toggleChannel."+chan, chan, "Enabled Channels", enabledChannels.contains(chan));
         }
+        
+        final String logoSubmenu = "Channel Logos";
+        int defaultSize = Integer.parseInt(client.settings.getStringDefault(LOGO_SETTING));
+        int currentSize = Integer.parseInt(client.settings.getString(LOGO_SETTING));
+        for (int i=30;i>10;i -= 2) {
+            String action = "logoSize"+i;
+            if (i == defaultSize) {
+                addRadioItem(action, i+"px (default)", logoSubmenu, logoSubmenu);
+            }
+            else {
+                addRadioItem(action, i+"px", logoSubmenu, logoSubmenu);
+            }
+            if (i == currentSize) {
+                getItem(action).setSelected(true);
+            }
+        }
+        addSeparator(logoSubmenu);
+        addRadioItem("logoOff", "Off", logoSubmenu, logoSubmenu);
+        if (currentSize == 0) {
+            getItem("logoOff").setSelected(true);
+        }
+        addSeparator(logoSubmenu);
+        addItem("logoReadme", "Readme", logoSubmenu);
     }
     
     private static void addChans(List<String> chans, Collection<String> add) {
@@ -57,6 +82,15 @@ public class StreamChatContextMenu extends ContextMenu {
                 client.settings.listRemove(CHANNEL_SETTING, channel);
             }
             client.settings.setSettingChanged(CHANNEL_SETTING);
+        }
+        else if (e.getActionCommand().startsWith("logoSize")) {
+            client.settings.setString(LOGO_SETTING, e.getActionCommand().substring("logoSize".length()));
+        }
+        else if (e.getActionCommand().equals("logoOff")) {
+            client.settings.setString(LOGO_SETTING, "0");
+        }
+        else if (e.getActionCommand().equals("logoReadme")) {
+            JOptionPane.showMessageDialog(this, "Note that the channel logos are only visible for channels that have been live this session.\nSetting changes only apply to new messages.");
         }
         for (ContextMenuListener l : getContextMenuListeners()) {
             l.menuItemClicked(e);
