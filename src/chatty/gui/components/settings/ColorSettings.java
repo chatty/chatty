@@ -38,7 +38,7 @@ public class ColorSettings extends SettingsPanel {
         colorsPanel = new JPanel(new GridBagLayout());
         
         GridBagConstraints gbc;
-
+        
         //----------------------------------------------
         // Color settings that require special handling
         //----------------------------------------------
@@ -48,14 +48,14 @@ public class ColorSettings extends SettingsPanel {
                 "foregroundColor",
                 Language.getString("settings.colors.background"),
                 0, 0);
-
+        
         ColorSetting backgroundColor2 = addColorSetting(
                 "backgroundColor2",
                 ColorSetting.BACKGROUND,
                 "foregroundColor",
                 Language.getString("settings.colors.background2"),
                 1, 0);
-
+        
         ColorSetting separatorColor = addColorSetting(
                 "separatorColor",
                 ColorSetting.FOREGROUND,
@@ -70,14 +70,14 @@ public class ColorSettings extends SettingsPanel {
                 Language.getString("settings.colors.highlightBackground"),
                 11, 0);
         highlightBackgroundColor.setEnabled(false);
-
+        
         ColorSetting highlightColor = addColorSetting(
                 "highlightColor",
                 ColorSetting.FOREGROUND,
                 "backgroundColor",
                 Language.getString("settings.colors.highlight"),
                 11, 1);
-
+        
         ColorSetting timestampColor = addColorSetting(
                 "timestampColor",
                 ColorSetting.FOREGROUND,
@@ -85,7 +85,7 @@ public class ColorSettings extends SettingsPanel {
                 Language.getString("settings.colors.timestamp"),
                 8, 0);
         switchOnHover(highlightBackgroundColor, "backgroundColor", "highlightBackgroundColor", "highlightBackground", timestampColor);
-
+        
         Map<String, String> timestampInheritOptions = new LinkedHashMap<>();
         timestampInheritOptions.put("off", "Off");
         for (int i=10;i<=100;i+=10) {
@@ -93,7 +93,7 @@ public class ColorSettings extends SettingsPanel {
         }
         ComboStringSetting timestampInheritSelection = new ComboStringSetting(timestampInheritOptions);
         d.addStringSetting("timestampColorInherit", timestampInheritSelection);
-
+        
         //------------------------------------------------
         // Boolean settings that require special handling
         //------------------------------------------------
@@ -238,7 +238,7 @@ public class ColorSettings extends SettingsPanel {
                     false, // highlightBackground
                     false, // timestampColorEnabled
                 });
-
+        
         presets.addPreset("Twitch",
                 new String[]{
                     "#EFEEF1", // backgroundColor
@@ -262,7 +262,7 @@ public class ColorSettings extends SettingsPanel {
                     true,  // highlightBackground
                     true, // timestampColorEnabled
                 });
-
+        
         presets.addPreset("Twitch Dark",
                 new String[]{
                     "#17141A", // backgroundColor
@@ -279,14 +279,14 @@ public class ColorSettings extends SettingsPanel {
                     "#7A4B00", // separatorColor
                     "#898395",  // timestampColor
                     "70", // timestampColorInherit
-                },
+                }, 
                 new Boolean[]{
                     true,  // alternateBackground
                     false, // messageSeparator
                     true,  // highlightBackground
                     true, // timestampColorEnabled
                 });
-
+        
         presets.addPreset("Theater",
                 new String[]{
                     "#0E0C13", // backgroundColor
@@ -303,14 +303,14 @@ public class ColorSettings extends SettingsPanel {
                     "#2D2D2D", // separatorColor
                     "#898395",  // timestampColor
                     "100", // timestampColorInherit
-                },
+                }, 
                 new Boolean[]{
                     false, // alternateBackground
                     false, // messageSeparator
                     false, // highlightBackground
                     true, // timestampColorEnabled
                 });
-
+        
         presets.addPreset("Dark Smooth",
                 new String[]{
                     "#323232", // backgroundColor
@@ -335,18 +335,28 @@ public class ColorSettings extends SettingsPanel {
                     true,  // timestampColorEnabled
                 });
 
-        presets.addPreset("Dark (dracul)",
-                new String[]{"#2B2B2B",
-                        "#629755",
-                        "#9876AA",
-                        "#A0A0A0",
-                        "#BC3F3C",
-                        "#2B2B2B",
-                        "#A9B7C6",
-                        "#155221",
-                        "#294436",
-                }, new Boolean[]{
-                        true, false, true, true,
+        presets.addPreset("Dark Dracul",
+                new String[]{
+                        "#2B2B2B",// backgroundColor
+                        "#629755",// foregroundColor
+                        "#9876AA",// infoColor
+                        "#A0A0A0",// compactColor
+                        "#BC3F3C", // highlightColor
+                        "#2B2B2B",// inputBackgroundColor
+                        "#A9B7C6", // inputForegroundColor
+                        "#155221", // searchResultColor
+                        "#294436", // searchResultColor2
+                        "#3B3B3B", // backgroundColor2
+                        "#5C0000", // highlightBackgroundColor
+                        "#DFDFDF", // separatorColor
+                        "#C5C5C5",  // timestampColor
+                        "40", // timestampColorInherit
+                },
+                new Boolean[]{
+                        true,  // alternateBackground
+                        false, // messageSeparator
+                        true,  // highlightBackground
+                        true,  // timestampColorEnabled
                 });
 
         presets.init();
@@ -354,7 +364,7 @@ public class ColorSettings extends SettingsPanel {
         //========
         // Layout
         //========
-
+        
         //------------------
         // Boolean Settings
         //------------------
@@ -364,14 +374,14 @@ public class ColorSettings extends SettingsPanel {
         gbc.insets = new Insets(-1,10,0,0);
         SettingsUtil.addSubsettings(alternateBackground, backgroundColor2);
         colorsPanel.add(alternateBackground, gbc);
-
+        
         // Message Separator boolean setting
         gbc = d.makeGbc(0, 4, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(-1,10,0,0);
         SettingsUtil.addSubsettings(messageSeparator, separatorColor);
         colorsPanel.add(messageSeparator, gbc);
-
+        
         // Highlight Background boolean setting
         gbc = d.makeGbc(0, 12, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
@@ -387,19 +397,19 @@ public class ColorSettings extends SettingsPanel {
             highlightBackgroundColor.setEnabled(highlightBackground.isSelected());
         });
         colorsPanel.add(highlightBackground, gbc);
-
+        
         // Timestamp boolean setting
         gbc = d.makeGbc(0, 9, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(-1,10,0,0);
         SettingsUtil.addSubsettings(timestampColorEnabled, timestampColor, timestampInheritSelection);
         colorsPanel.add(timestampColorEnabled, gbc);
-
+        
         gbc = d.makeGbc(1, 9, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(-1,10,0,0);
         colorsPanel.add(d.createPanel("timestampColorInherit", timestampInheritSelection), gbc);
-
+        
         //--------------------------
         // Background Switch Button
         //--------------------------
@@ -419,11 +429,11 @@ public class ColorSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 5, 2, 1);
         gbc.insets = new Insets(10, 0, 2, 0);
         colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.misc")), gbc);
-
+        
         gbc = d.makeGbc(0, 10, 2, 1);
         gbc.insets = new Insets(10, 0, 2, 0);
         colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.highlights")), gbc);
-
+        
         gbc = d.makeGbc(0, 13, 2, 1);
         gbc.insets = new Insets(10, 0, 2, 0);
         colorsPanel.add(new JLabel(Language.getString("settings.colors.heading.searchResult")), gbc);
@@ -433,7 +443,7 @@ public class ColorSettings extends SettingsPanel {
         //------------
         gbc = d.makeGbc(0, 0, 1, 1);
         mainPanel.add(presets, gbc);
-
+        
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -486,7 +496,7 @@ public class ColorSettings extends SettingsPanel {
     /**
      * Switch the base color of the given settings to tempSetting if the mouse
      * is hovered over hoverSetting.
-     *
+     * 
      * @param hoverSetting Setting to hover over
      * @param normalSetting Name of the default color setting
      * @param tempSetting Name of the color setting to switch to on hover
@@ -517,7 +527,7 @@ public class ColorSettings extends SettingsPanel {
 
         });
     }
-
+    
     /**
      * Listen for a color setting to be updated. Save the setting name so it's
      * clear which setting it was.
@@ -536,5 +546,5 @@ public class ColorSettings extends SettingsPanel {
         }
         
     }
-
+    
 }
