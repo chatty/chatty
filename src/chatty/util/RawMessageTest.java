@@ -109,6 +109,18 @@ public class RawMessageTest {
         if (type.equals("femote")) {
             return "@badge-info=subscriber/22;badges=subscriber/18;color=#420000;display-name=Test;emotes=300580752:0-7/300580752_HF:9-19;flags=;id=abc;mod=0;room-id=0;subscriber=1;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :cohhLick cohhLick_HF so tasty";
         }
+        if (type.equals("validemoterange")) {
+            return "@color=#420000;display-name=Test;emotes=425618:0-2;flags=;id=abc;mod=0;room-id=0;turbo=0;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :1234";
+        }
+        if (type.equals("invalidemoterange")) {
+            return "@color=#420000;display-name=Test;emotes=425618:1-4;flags=;id=abc;mod=0;room-id=0;turbo=0;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :1234";
+        }
+        if (type.equals("invalidemoterange2")) {
+            return "@color=#420000;display-name=Test;emotes=425618:0-4;flags=;id=abc;mod=0;room-id=0;turbo=0;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :1234";
+        }
+                if (type.equals("invalidemoterange3")) {
+            return "@color=#420000;display-name=Test;emotes=425618:0-5;flags=;id=abc;mod=0;room-id=0;turbo=0;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :1234";
+        }
         if (type.equals("hl")) {
             return "@badge-info=subscriber/19;badges=subscriber/12,premium/1;color=;display-name=Test;emotes=300737210:11-18/300737204:20-27;flags=;id=123;mod=0;msg-id=highlighted-message;room-id=123;subscriber=1;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hello chat itmejpM1 itmejpM3 , just testing this highlight popup to see how glitzy this post will get";
         }
