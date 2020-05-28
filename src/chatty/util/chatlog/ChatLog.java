@@ -129,7 +129,7 @@ public class ChatLog {
                             message,
                             action,
                             settings,
-                            DateTime.currentTime(sdf));
+                            sdf != null ? DateTime.currentTime(sdf) : "");
             String line = messageTemplate.replace(param);
             if (line != null && !line.isEmpty()) {
                 writeLine(channel, line);

@@ -575,7 +575,7 @@ public class SettingsManager {
         // Chat Logging
         settings.addString("logMode", "always");
         settings.addBoolean("logMessage", true);
-        settings.addString("logMessageTemplate", "$(timestamp) <$(full-nick2)>$if(action,*) $(msg)");
+        settings.addString("logMessageTemplate", "$if(timestamp,$(timestamp) )<$(full-nick2)>$if(action,*) $(msg)");
         settings.addBoolean("logMod", true);
         settings.addBoolean("logJoinPart", false);
         settings.addBoolean("logBan", true);
