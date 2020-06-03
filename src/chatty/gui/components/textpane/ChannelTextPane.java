@@ -622,7 +622,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private final java.util.List<ModLogInfo> cachedModLogInfo = new ArrayList<>();
     
     // Wait for an action to occur after the ModLog has come in (ms)
-    private static final int MOD_ACTION_WAIT = 500;
+    private static final int MOD_ACTION_WAIT = 1000;
     
     /**
      * Cached ModLog messages, for which there hasn't been found a matching
