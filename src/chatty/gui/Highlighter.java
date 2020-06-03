@@ -1025,7 +1025,17 @@ public class Highlighter {
             try {
                 Matcher m = pattern.matcher(text);
                 while (m.find()) {
-                    result.add(new Match(m.start(), m.end()));
+                    /**
+                     * Filter "reg:.*" (or probably similiar) would show empty
+                     * replacement if not preventing non-empty match.
+                     * 
+                     * Not sure if this changes anything in regards to other
+                     * matching, e.g. blacklist, although an empty match would
+                     * probably not make much sense anyway.
+                     */
+                    if (!m.group().isEmpty()) {
+                        result.add(new Match(m.start(), m.end()));
+                    }
                 }
             } catch (Exception ex) {
                 // See matchesPattern() for explanation
