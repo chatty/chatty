@@ -937,6 +937,9 @@ public class TwitchClient {
         commands.add("part", p -> {
             commandPartChannel(p.getChannel());
         }, "close");
+        commands.add("rejoin", p -> {
+            commandRejoinChannel(p.getChannel());
+        });
         commands.add("joinHosted", p -> {
             String hostedChan = getHostedChannel(p.getChannel());
             if (hostedChan == null) {
@@ -1753,6 +1756,14 @@ public class TwitchClient {
             g.printLine("No channel to leave.");
         } else {
             closeChannel(channel);
+        }
+    }
+    
+    private void commandRejoinChannel(String channel) {
+        if (channel == null || channel.isEmpty()) {
+            g.printLine("No channel to rejoin.");
+        } else {
+            c.rejoinChannel(channel);
         }
     }
 
@@ -2773,9 +2784,14 @@ public class TwitchClient {
         }
 
         @Override
-        public void onChannelLeft(Room room) {
+        public void onChannelLeft(Room room, boolean closeChannel) {
             chatLog.info(room.getFilename(), "You have left "+room.getDisplayName());
-            closeChannel(room.getChannel());
+            if (closeChannel) {
+                closeChannel(room.getChannel());
+            }
+            else {
+                g.printLine(room, Language.getString("chat.left", room));
+            }
         }
 
         @Override

@@ -275,6 +275,13 @@ public class TwitchConnection {
         users.setAllOffline();
     }
     
+    public void rejoinChannel(String channel) {
+        if (onChannel(channel)) {
+            irc.rejoinChannel.add(channel);
+            partChannel(channel);
+        }
+    }
+    
     public void partChannel(String channel) {
         if (onChannel(channel)) {
             irc.partChannel(channel);
@@ -593,8 +600,9 @@ public class TwitchConnection {
          * Channels that this connection has joined. This is per connection, so
          * the main and secondary connection have different data here.
          */
-        private final Set<String> joinedChannels = Collections.synchronizedSet(
-                new HashSet<String>());
+        private final Set<String> joinedChannels = Collections.synchronizedSet(new HashSet<>());
+        
+        private final Set<String> rejoinChannel = Collections.synchronizedSet(new HashSet<>());
         
         /**
          * The prefix used for debug messages, so it can be determined which
@@ -821,6 +829,7 @@ public class TwitchConnection {
                 return;
             }
             if (nick.equalsIgnoreCase(username)) {
+                boolean rejoin = false;
                 /**
                  * Local User Leaving Channel
                  */
@@ -830,12 +839,19 @@ public class TwitchConnection {
                 }
                 joinedChannels.remove(channel);
                 if (this == irc) {
-                    twitchCommands.clearModsAlreadyRequested(channel);
-                    // Remove users for this channel, clearing the userlist in the
-                    // GUI shouldn't be necessary if this channel is closed since
-                    // the GUI userlist is removed as well.
-                    users.clear(channel);
-                    listener.onChannelLeft(rooms.getRoom(channel));
+                    if (rejoinChannel.contains(channel)) {
+                        rejoinChannel.remove(channel);
+                        listener.onChannelLeft(rooms.getRoom(channel), false);
+                        rejoin = true;
+                    }
+                    else {
+                        twitchCommands.clearModsAlreadyRequested(channel);
+                        // Remove users for this channel, clearing the userlist in the
+                        // GUI shouldn't be necessary if this channel is closed since
+                        // the GUI userlist is removed as well.
+                        users.clear(channel);
+                        listener.onChannelLeft(rooms.getRoom(channel), true);
+                    }
                     channelStates.reset(channel);
                 }
                 // Leaving the channel on the userlist connection means
@@ -843,6 +859,9 @@ public class TwitchConnection {
                 // this channel.
                 userlistReceived.remove(channel);
                 debug("PARTED: "+channel);
+                if (rejoin) {
+                    joinChannel(channel);
+                }
             } else {
                 if (isChannelOpen(channel)) {
                     User user = userOffline(channel, nick);
@@ -1479,7 +1498,7 @@ public class TwitchConnection {
 
         void onChannelJoined(User user);
 
-        void onChannelLeft(Room room);
+        void onChannelLeft(Room room, boolean closeChannel);
 
         void onJoin(User user);
 
