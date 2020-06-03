@@ -176,6 +176,7 @@ public class TwitchClient {
     private final SettingsManager settingsManager;
     private final SpamProtection spamProtection;
     public final CustomCommands customCommands;
+    public final Commands commands = new Commands();
     
     private final StreamHighlightHelper streamHighlights;
     
@@ -391,6 +392,9 @@ public class TwitchClient {
         
         // Output any cached warning messages
         warning(null);
+        
+        addCommands();
+        g.addGuiCommands();
         
         // Request some stuff
         api.getEmotesBySets("0");
@@ -913,128 +917,111 @@ public class TwitchClient {
         return command(room, command, Parameters.create(parameter));
     }
     
-    /**
-     * Executes the command with the given name, which can be a built-in or
-     * Custom Command.
-     * 
-     * @param room The room context
-     * @param command The command name (no leading /)
-     * @param parameters The parameters, can not be null
-     * @return 
-     */
-    public boolean command(Room room, String command, Parameters parameters) {
-        String channel = room.getChannel();
-        // Args could be null
-        String parameter = parameters.getArgs();
-        command = StringUtil.toLowerCase(command);
+
+    private void addCommands() {
         
         //---------------
         // Connection/IRC
         //---------------
-        if (command.equals("quit")) {
-            c.quit();
-        }
-        else if (command.equals("server")) {
-            commandServer(parameter);
-        }
-        else if (command.equals("reconnect")) {
-            commandReconnect();
-        }
-        else if (command.equals("connection")) {
-            g.printLine(room, c.getConnectionInfo());
-        }
-        else if (command.equals("join")) {
-            commandJoinChannel(parameter);
-        }
-        else if (command.equals("part") || command.equals("close")) {
-            commandPartChannel(channel);
-        }
-        else if (command.equals("joinhosted")) {
-            String hostedChan = getHostedChannel(channel);
+        commands.add("quit", p -> c.quit());
+        commands.add("server", p -> {
+            commandServer(p.getArgs());
+        });
+        commands.add("reconnet", p -> commandReconnect());
+        commands.add("connection", p -> {
+            g.printLine(p.getRoom(), c.getConnectionInfo());
+        });
+        commands.add("join", p -> {
+            commandJoinChannel(p.getArgs());
+        });
+        commands.add("part", p -> {
+            commandPartChannel(p.getChannel());
+        }, "close");
+        commands.add("joinHosted", p -> {
+            String hostedChan = getHostedChannel(p.getChannel());
             if (hostedChan == null) {
                 g.printLine("No channel is currently being hosted.");
             } else {
                 joinChannel(hostedChan);
             }
-        }
-        else if (command.equals("raw")) {
-            if (parameter != null) {
-                c.sendRaw(parameter);
+        });
+        commands.add("raw", p -> {
+            if (p.hasArgs()) {
+                c.sendRaw(p.getArgs());
             }
-        }
-        else if (command.equals("me")) {
-            commandActionMessage(channel, parameter);
-        }
-        else if (command.equals("msg")) {
-            commandCustomMessage(parameter);
-        }
-        else if (command.equals("w")) {
-            w.whisperCommand(parameter, false);
-        }
-        else if (command.equals("changetoken")) {
-            g.changeToken(parameter);
-        }
-
+        });
+        commands.add("me", p -> {
+            commandActionMessage(p.getChannel(), p.getArgs());
+        });
+        commands.add("msg", p -> {
+            commandCustomMessage(p.getArgs());
+        });
+        commands.add("w", p -> {
+            w.whisperCommand(p.getArgs(), false);
+        });
+        commands.add("changetoken", p -> {
+            g.changeToken(p.getArgs());
+        });
         //------------
         // System/Util
         //------------
-        else if (command.equals("dir")) {
+        commands.add("dir", p -> {
             g.printSystem("Settings directory: '"+Chatty.getUserDataDirectory()+"'");
-        }
-        else if (command.equals("wdir")) {
+        });
+        commands.add("wdir", p -> {
             g.printSystem("Working directory: '"+Chatty.getWorkingDirectory()+"'");
-        }
-        else if (command.equals("opendir")) {
+        });
+        commands.add("opendir", p -> {
             MiscUtil.openFolder(new File(Chatty.getUserDataDirectory()), g);
-        }
-        else if (command.equals("openwdir")) {
+        });
+        commands.add("openwdir", p -> {
             MiscUtil.openFolder(new File(Chatty.getWorkingDirectory()), g);
-        }
-        else if (command.equals("showbackupdir")) {
+        });
+        commands.add("showBackupDir", p -> {
             g.printSystem("Backup directory: "+Chatty.getBackupDirectory());
-        }
-        else if (command.equals("openbackupdir")) {
+        });
+        commands.add("openBackupDir", p -> {
             MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
-        }
-        else if (command.equals("showtempdir")) {
+        });
+        commands.add("showTempDir", p -> {
             g.printSystem("System Temp directory: "+Chatty.getTempDirectory());
-        }
-        else if (command.equals("opentempdir")) {
+        });
+        commands.add("openTempDir", p -> {
             MiscUtil.openFolder(new File(Chatty.getTempDirectory()), g);
-        }
-        else if (command.equals("showdebugdir")) {
+        });
+        commands.add("showDebugDir", p -> {
             g.printSystem("Debug Log Directory: "+Chatty.getDebugLogDirectory());
-        }
-        else if (command.equals("opendebugdir")) {
+        });
+        commands.add("openDebugDir", p -> {
             MiscUtil.openFolder(new File(Chatty.getDebugLogDirectory()), g);
-        }
-        else if (command.equals("showlogdir")) {
+        });
+        commands.add("showLogDir", p -> {
             if (chatLog.getPath() != null) {
                 g.printSystem("Chat Log Directory: "+chatLog.getPath().toAbsolutePath().toString());
             }
             else {
                 g.printSystem("Invalid Chat Log Directory");
             }
-        }
-        else if (command.equals("openlogdir")) {
+        });
+        commands.add("openLogDir", p -> {
             if (chatLog.getPath() != null) {
                 MiscUtil.openFolder(chatLog.getPath().toAbsolutePath().toFile(), g);
             }
             else {
                 g.printSystem("Invalid Chat Log Directory");
             }
-        }
-        else if (command.equals("showjavadir")) {
+        });
+        commands.add("showJavaDir", p -> {
             g.printSystem("JRE directory: "+System.getProperty("java.home"));
-        }
-        else if (command.equals("openjavadir")) {
+        });
+        commands.add("openJavaDir", p -> {
             MiscUtil.openFolder(new File(System.getProperty("java.home")), g);
-        }
-        else if (command.equals("showfallbackfontdir")) {
+        });
+        commands.add("showFallbackFontDir", p -> {
             Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
             g.printSystem("Fallback font directory (may not exist yet): "+path);
-        }
-        else if (command.equals("openfallbackfontdir")) {
+        });
+        commands.add("openFallbackFontDir", p -> {
             Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
             if (Files.exists(path)) {
                 MiscUtil.openFolder(path.toFile(), g);
@@ -1043,132 +1030,119 @@ public class TwitchClient {
                 g.showPopupMessage("Fallback font folder does not exist. Create a folder called 'fallback' in '"+path+"'.");
                 MiscUtil.openFolder(path.toFile(), g);
             }
-        }
-        else if (command.equals("copy")) {
-            MiscUtil.copyToClipboard(parameter);
-        }
-        else if (command.equals("releaseinfo")) {
+        });
+        commands.add("copy", p -> {
+            MiscUtil.copyToClipboard(p.getArgs());
+        });
+        commands.add("releaseInfo", p -> {
             g.openReleaseInfo();
-        }
-        else if (command.equals("echo")) {
-            if (parameter != null) {
-                g.printLine(room, parameter);
+        });
+        commands.add("echo", p -> {
+            if (p.hasArgs()) {
+                g.printLine(p.getRoom(), p.getArgs());
             } else {
-                g.printLine(room, "Invalid parameters: /echo <message>");
+                g.printLine(p.getRoom(), "Invalid parameters: /echo <message>");
             }
-        }
-        else if (command.equals("echoall")) {
-            if (parameter != null) {
-                g.printLineAll(parameter);
+        });
+        commands.add("echoall", p -> {
+            if (p.hasArgs()) {
+                g.printLineAll(p.getArgs());
             } else {
                 g.printLine("Invalid parameters: /echoall <message>");
             }
-        }
-        else if (command.equals("uptime")) {
+        });
+        commands.add("uptime", p -> {
             g.printSystem("Chatty has been running for "+Chatty.uptime());
-        }
-        else if (command.equals("appinfo")) {
+        });
+        commands.add("appinfo", p -> {
             g.printSystem(LogUtil.getAppInfo()+" [Connection] "+c.getConnectionInfo());
-        }
+        });
         
         //-----------------------
         // Settings/Customization
         //-----------------------
-        else if (command.equals("set")) {
-            g.printSystem(settings.setTextual(parameter));
-        }
-        else if (command.equals("get")) {
-            g.printSystem(settings.getTextual(parameter));
-        }
-        else if (command.equals("clearsetting")) {
-            g.printSystem(settings.clearTextual(parameter));
-        }
-        else if (command.equals("reset")) {
-            g.printSystem(settings.resetTextual(parameter));
-        }
-        else if (command.equals("add")) {
-            g.printSystem(settings.addTextual(parameter));
-        }
-        else if (command.equals("remove")) {
-            g.printSystem(settings.removeTextual(parameter));
-        }
-        
-        else if (command.equals("setcolor")) {
-            if (parameter != null) {
-                g.setColor(parameter);
+        commands.add("set", p -> {
+            g.printSystem(settings.setTextual(p.getArgs()));
+        });
+        commands.add("get", p -> {
+            g.printSystem(settings.getTextual(p.getArgs()));
+        });
+        commands.add("clearsetting", p -> {
+            g.printSystem(settings.clearTextual(p.getArgs()));
+        });
+        commands.add("reset", p -> {
+            g.printSystem(settings.resetTextual(p.getArgs()));
+        });
+        commands.add("add", p -> {
+            g.printSystem(settings.addTextual(p.getArgs()));
+        });
+        commands.add("remove", p -> {
+            g.printSystem(settings.removeTextual(p.getArgs()));
+        });
+        commands.add("setcolor", p -> {
+            if (p.hasArgs()) {
+                g.setColor(p.getArgs());
             }
-        }
-        
-        else if (command.equals("setname")) {
-            g.printLine(customNames.commandSetCustomName(parameter));
-        }
-        else if (command.equals("resetname")) {
-            g.printLine(customNames.commandResetCustomname(parameter));
-        }
-        else if (command.equals("customcompletion")) {
-            commandCustomCompletion(parameter);
-        }
-
-        else if (command.equals("users") || command.equals("ab")) {
+        });
+        commands.add("setname", p -> {
+            g.printLine(customNames.commandSetCustomName(p.getArgs()));
+        });
+        commands.add("resetname", p -> {
+            g.printLine(customNames.commandResetCustomname(p.getArgs()));
+        });
+        commands.add("customCompletion", p -> {
+            commandCustomCompletion(p.getArgs());
+        });
+        commands.add("ab", p -> {
             g.printSystem("[Addressbook] "
-                    +addressbook.command(parameter != null ? parameter : ""));
-        }
-        else if (command.equals("abimport")) {
+                    +addressbook.command(p.hasArgs() ? p.getArgs() : ""));
+        }, "users");
+        commands.add("abimport", p -> {
             g.printSystem("[Addressbook] Importing from file..");
             addressbook.importFromFile();
-        }
+        });
         
         //-------
         // Ignore
         //-------
-        else if (command.equals("ignore")) {
-            commandSetIgnored(parameter, null, true);
-        }
-        else if (command.equals("unignore")) {
-            commandSetIgnored(parameter, null, false);
-        }
-        else if (command.equals("ignorechat")) {
-            commandSetIgnored(parameter, "chat", true);
-        }
-        else if (command.equals("unignorechat")) {
-            commandSetIgnored(parameter, "chat", false);
-        }
-        else if (command.equals("ignorewhisper")) {
-            commandSetIgnored(parameter, "whisper", true);
-        }
-        else if (command.equals("unignorewhisper")) {
-            commandSetIgnored(parameter, "whisper", false);
-        }
-        
+        commands.add("ignore", p -> {
+            commandSetIgnored(p.getArgs(), null, true);
+        });
+        commands.add("unIgnore", p -> {
+            commandSetIgnored(p.getArgs(), null, false);
+        });
+        commands.add("ignoreChat", p -> {
+            commandSetIgnored(p.getArgs(), "chat", true);
+        });
+        commands.add("unignoreChat", p -> {
+            commandSetIgnored(p.getArgs(), "chat", false);
+        });
+        commands.add("ignoreWhisper", p -> {
+            commandSetIgnored(p.getArgs(), "whisper", true);
+        });
+        commands.add("unignoreWhisper", p -> {
+            commandSetIgnored(p.getArgs(), "whisper", false);
+        });
         //--------------
         // Emotes/Images
         //--------------
-        else if (command.equals("myemotes")) {
-            commandMyEmotes();
-        }
-        else if (command.equals("emoteinfo")) {
-            g.printSystem(g.emoticons.getEmoteInfo(parameter));
-        }
-        else if (command.equals("ffz")) {
-            if (parameter != null && parameter.startsWith("following")) {
-                commandFFZFollowing(room.getOwnerChannel(), parameter);
+        commands.add("ffz", p -> {
+            if (p.hasArgs() && p.getArgs().startsWith("following")) {
+                commandFFZFollowing(p.getRoom().getOwnerChannel(), p.getArgs());
             } else {
-                commandFFZ(room.getOwnerChannel());
+                commandFFZ(p.getRoom().getOwnerChannel());
             }
-        }
-        else if (command.equals("ffzglobal")) {
-            commandFFZ(null);
-        }
-        else if (command.equals("ffzws")) {
+        });
+        commands.add("ffzws", p -> {
             g.printSystem("[FFZ-WS] Status: "+frankerFaceZ.getWsStatus());
-        }
-        else if (command.equals("pubsubstatus")) {
+        });
+        commands.add("pubsubstatus", p -> {
             g.printSystem("[PubSub] Status: "+pubsub.getStatus());
-        }
-        else if (command.equals("refresh")) {
-            commandRefresh(room.getOwnerChannel(), parameter);
-        }
-        else if (command.equals("clearimagecache")) {
+        });
+        commands.add("refresh", p -> {
+            commandRefresh(p.getRoom().getOwnerChannel(), p.getArgs());
+        });
+        commands.add("clearimagecache", p -> {
             g.printLine("Clearing image cache (this can take a few seconds)");
             int result = ImageCache.clearCache(null);
             if (result == -1) {
@@ -1177,108 +1151,124 @@ public class TwitchClient {
                 g.printLine(String.format("Deleted %d image cache files",
                         result));
             }
-        }
-        else if (command.equals("clearemotecache")) {
-            g.printLine("Clearing Emoticon image cache for type "+parameter+".");
-            int result = ImageCache.clearCache("emote_"+parameter);
+        });
+        commands.add("clearemotecache", p -> {
+            g.printLine("Clearing Emoticon image cache for type "+p.getArgs()+".");
+            int result = ImageCache.clearCache("emote_"+p.getArgs());
             if (result == -1) {
                 g.printLine("Failed clearing image cache.");
             } else {
                 g.printLine(String.format("Deleted %d image cache files",
                         result));
             }
-        }
+        });
         
         //------
         // Other
         //------
-        else if (command.equals("follow")) {
-            commandFollow(channel, parameter);
-        }
-        else if (command.equals("unfollow")) {
-            commandUnfollow(channel, parameter);
-        }
-        else if (command.equals("favorite")) {
+        commands.add("follow", p -> {
+            commandFollow(p.getChannel(), p.getArgs());
+        });
+        commands.add("unfollow", p -> {
+            commandUnfollow(p.getChannel(), p.getArgs());
+        });
+        commands.add("favorite", p -> {
             Favorite result;
-            if (parameter == null) {
-                result = channelFavorites.addFavorite(channel);
+            if (!p.hasArgs()) {
+                result = channelFavorites.addFavorite(p.getChannel());
             } else {
-                result = channelFavorites.addFavorite(parameter);
+                result = channelFavorites.addFavorite(p.getArgs());
             }
             if (result != null) {
                 g.printSystem("Added '"+result+"' to favorites");
             } else {
                 g.printSystem("Failed adding favorite");
             }
-        }
-        else if (command.equals("unfavorite")) {
+        });
+        commands.add("unfavorite", p -> {
             Favorite result;
-            if (parameter == null) {
-                result = channelFavorites.removeFavorite(channel);
+            if (!p.hasArgs()) {
+                result = channelFavorites.removeFavorite(p.getChannel());
             } else {
-                result = channelFavorites.removeFavorite(parameter);
+                result = channelFavorites.removeFavorite(p.getArgs());
             }
             if (result != null) {
                 g.printSystem("Removed '"+result+"' from favorites");
             } else {
                 g.printSystem("Failed removing favorite");
             }
-        }
-        else if (command.equals("automod_approve")) {
-            autoModCommandHelper.approve(channel, parameter);
-        }
-        else if (command.equals("automod_deny")) {
-            autoModCommandHelper.deny(channel, parameter);
-        }
-        else if (command.equals("marker")) {
-            commandAddStreamMarker(room, parameter);
-        }
-        else if (command.equals("addstreamhighlight")) {
-            commandAddStreamHighlight(room, parameter);
-        }
-        else if (command.equals("openstreamhighlights")) {
-            commandOpenStreamHighlights(room);
-        }
-        else if (command.equals("testnotification")) {
-            if (parameter == null) {
-                parameter = "";
+        });
+        commands.add("automod_approve", p -> {
+            autoModCommandHelper.approve(p.getChannel(), p.getArgs());
+        });
+        commands.add("automod_deny", p -> {
+            autoModCommandHelper.deny(p.getChannel(), p.getArgs());
+        });
+        commands.add("marker", p -> {
+            commandAddStreamMarker(p.getRoom(), p.getArgs());
+        });
+        commands.add("addStreamHighlight", p -> {
+            commandAddStreamHighlight(p.getRoom(), p.getArgs());
+        });
+        commands.add("openStreamHighlights", p -> {
+            commandOpenStreamHighlights(p.getRoom());
+        });
+        commands.add("testNotification", p -> {
+            String args = p.getArgs();
+            if (args == null) {
+                args = "";
             }
-            String[] split = parameter.split("\\|\\|", 2);
+            String[] split = args.split("\\|\\|", 2);
             if (split.length == 2) {
                 g.showTestNotification(null, split[0], split[1]);
             }
             else {
-                g.showTestNotification(parameter, null, null);
+                g.showTestNotification(args, null, null);
             }
-        }
-        else if (command.equals("clearchat")) {
+        });
+        commands.add("clearChat", p -> {
             g.clearChat();
-        }
-        else if (command.equals("resortuserlist")) {
-            g.resortUsers(room);
-        }
-        else if (command.equals("proc")) {
-            g.printSystem("[Proc] "+ProcessManager.command(parameter));
+        });
+        commands.add("resortUserlist", p -> {
+            g.resortUsers(p.getRoom());
+        });
+        commands.add("proc", p -> {
+            g.printSystem("[Proc] "+ProcessManager.command(p.getArgs()));
+        });
+        commands.add("chain", p -> {
+            List<String> commands = Helper.getChainedCommands(p.getArgs());
+            if (commands.isEmpty()) {
+                g.printSystem("No valid commands");
+            }
+            for (String chainedCommand : commands) {
+                textInput(p.getRoom(), chainedCommand, p.getParameters());
+            }
+        });
+    }
+        
+    /**
+     * Executes the command with the given name, which can be a built-in or
+     * Custom Command.
+     *
+     * @param room The room context
+     * @param command The command name (no leading /)
+     * @param parameters The parameters, can not be null
+     * @return
+     */
+    public boolean command(Room room, String command, Parameters parameters) {
+        String channel = room.getChannel();
+        // Args could be null
+        String parameter = parameters.getArgs();
+        command = StringUtil.toLowerCase(command);
+        
+        if (commands.performCommand(command, room, parameters)) {
+            // Already done if true
         }
         
         else if (c.command(channel, command, parameter, null)) {
             // Already done if true
         }
         
-        else if (g.commandGui(channel, command, parameter)) {
-            // Already done if true :P
-        }
-        
-        else if (command.equals("chain")) {
-            List<String> commands = Helper.getChainedCommands(parameter);
-            if (commands.isEmpty()) {
-                g.printSystem("No valid commands");
-            }
-            for (String chainedCommand : commands) {
-                textInput(room, chainedCommand, parameters);
-            }
-        }
-
         // Has to be tested last, so regular commands with the same name take
         // precedence
         else if (customCommands.containsCommand(command, room)) {

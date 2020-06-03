@@ -2269,91 +2269,115 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Should only be called out of EDT. All commands have to be defined
-     * lowercase, because they are made lowercase when entered.
      * 
-     * @param command
-     * @param parameter
-     * @return 
      */
-    public boolean commandGui(String channel, String command, String parameter) {
-        if (command.equals("settings")) {
+    public void addGuiCommands() {
+        client.commands.addEdt("settings", p -> {
             getSettingsDialog().showSettings();
-        } else if (command.equals("customemotes")) {
+        });
+        client.commands.addEdt("customEmotes", p -> {
             printLine(emoticons.getCustomEmotesInfo());
-        } else if (command.equals("reloadcustomemotes")) {
+        });
+        client.commands.addEdt("reloadCustomEmotes", p -> {
             printLine("Reloading custom emotes from file..");
             emoticons.loadCustomEmotes();
             printLine(emoticons.getCustomEmotesInfo());
-        } else if (command.equals("livestreams")) {
+        });
+        client.commands.addEdt("livestreams", p -> {
             openLiveStreamsDialog();
-        } else if (command.equals("channeladmin")) {
+        });
+        client.commands.addEdt("channelAdmin", p -> {
             openChannelAdminDialog();
-        } else if (command.equals("channelinfo")) {
+        });
+        client.commands.addEdt("channelInfo", p -> {
             openChannelInfoDialog();
-        } else if (command.equals("userinfo")) {
-            parameter = StringUtil.trim(parameter);
+        });
+        client.commands.addEdt("userinfo", p -> {
+            String channel = p.getChannel();
+            String parameter = StringUtil.trim(p.getArgs());
             if (StringUtil.isNullOrEmpty(parameter)) {
                 parameter = client.settings.getString("username");
             }
-            User user = client.getExistingUser(channel, parameter);
-            if (user != null) {
-                openUserInfoDialog(user, null, null);
-            } else {
-                printSystem(String.format("User %s in %s not found",
-                        parameter,
-                        channel));
+            String[] split = parameter.split(" ");
+            String username = split[0];
+            if (split.length > 1) {
+                channel = Helper.toChannel(split[1]);
             }
-        } else if (command.equals("search")) {
+            if (!Helper.isValidChannelStrict(channel)) {
+                printSystem("Invalid channel: "+channel);
+            }
+            else if (!Helper.isValidStream(username)) {
+                printSystem("Invalid username: "+username);
+            }
+            else {
+                User user = client.getUser(channel, username);
+                openUserInfoDialog(user, null, null);
+            }
+        });
+        client.commands.addEdt("search", p -> {
             openSearchDialog();
-        } else if (command.equals("insert")) {
-            insert(parameter, false);
-        } else if (command.equals("insertword")) {
-            insert(parameter, true);
-        } else if (command.equals("openurl")) {
-            if (!UrlOpener.openUrl(parameter)) {
+        });
+        client.commands.addEdt("insert", p -> {
+            insert(p.getArgs(), false);
+        });
+        client.commands.addEdt("insertWord", p -> {
+            insert(p.getArgs(), true);
+        });
+        client.commands.addEdt("openUrl", p -> {
+            if (!UrlOpener.openUrl(p.getArgs())) {
                 printLine("Failed to open URL (none specified or invalid).");
             }
-        } else if (command.equals("openurlprompt")) {
+        });
+        client.commands.addEdt("openUrlPrompt", p -> {
             // Could do in invokeLater() so command isn't visible in input box
             // while the dialog is open, but probably doesn't matter since this
             // is mainly for custom commands put in a context menu anyway.
-            if (!UrlOpener.openUrlPrompt(getActiveWindow(), parameter, true)) {
+            if (!UrlOpener.openUrlPrompt(getActiveWindow(), p.getArgs(), true)) {
                 printLine("Failed to open URL (none specified or invalid).");
             }
-        } else if (command.equals("openfile")) {
-            MiscUtil.openFile(parameter, getActiveWindow());
-        } else if (command.equals("openfileprompt")) {
-            MiscUtil.openFilePrompt(parameter, getActiveWindow());
-        } else if (command.equals("openfollowers")) {
+        });
+        client.commands.addEdt("openFile", p -> {
+            MiscUtil.openFile(p.getArgs(), getActiveWindow());
+        });
+        client.commands.addEdt("openFilePrompt", p -> {
+            MiscUtil.openFilePrompt(p.getArgs(), getActiveWindow());
+        });
+        client.commands.addEdt("openFollowers", p -> {
             openFollowerDialog();
-        } else if (command.equals("opensubscribers")) {
+        });
+        client.commands.addEdt("openSubscribers", p -> {
             openSubscriberDialog();
-        } else if (command.equals("openrules")) {
+        });
+        client.commands.addEdt("openRules", p -> {
             // Chat rules API removed, but keep this for now
-        } else if (command.equals("openstreamchat")) {
+        });
+        client.commands.addEdt("openStreamChat", p -> {
             openStreamChat();
-        } else if (command.equals("clearstreamchat")) {
+        });
+        client.commands.addEdt("clearStreamChat", p -> {
             streamChat.clear();
-        } else if (command.equals("streamchattest")) {
+        });
+        client.commands.addEdt("streamChatTest", p -> {
             String message = "A bit longer chat message with emotes and stuff "
                     + "FrankerZ ZreknarF MiniK ("+(int)(Math.random()*10)+")";
-            if (parameter != null && !parameter.isEmpty()) {
-                message = parameter;
+            if (p.hasArgs()) {
+                message = p.getArgs();
             }
             UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null, null, null);
             streamChat.printMessage(m);
-        } else if (command.equals("livestreamer")) {
+        });
+        client.commands.addEdt("livestreamer", p -> {
             String stream = null;
             String quality = null;
-            if (parameter != null && !parameter.trim().isEmpty()) {
-                String[] split = parameter.trim().split(" ");
+            String parameter = StringUtil.trim(p.getArgs());
+            if (parameter != null && !parameter.isEmpty()) {
+                String[] split = parameter.split(" ");
                 stream = split[0];
                 if (stream.equals("$active")) {
                     stream = channels.getActiveChannel().getStreamName();
                     if (stream == null) {
                         printLine("Livestreamer: No channel open.");
-                        return true;
+                        return;
                     }
                 }
                 if (split.length > 1) {
@@ -2362,33 +2386,37 @@ public class MainGui extends JFrame implements Runnable {
             }
             printLine("Livestreamer: Opening stream..");
             livestreamerDialog.open(stream, quality);
-        } else if (command.equals("help")) {
+        });
+        client.commands.addEdt("help", p -> {
             openHelp(null);
-        } else if (command.equals("setstreamchatsize")) {
-            Dimension size = Helper.getDimensionFromParameter(parameter);
+        });
+        client.commands.addEdt("setStreamChatSize", p -> {
+            Dimension size = Helper.getDimensionFromParameter(p.getArgs());
             if (size != null) {
                 setStreamChatSize(size.width, size.height);
                 printSystem("Set StreamChat size to " + size.width + "x" + size.height);
-                return true;
             }
-            printSystem("Invalid parameters.");
-        } else if (command.equals("getstreamchatsize")) {
+            else {
+                printSystem("Invalid parameters.");
+            }
+        });
+        client.commands.addEdt("getStreamChatSize", p -> {
             Dimension d = streamChat.getSize();
             printSystem("StreamChat size: "+d.width+"x"+d.height);
-        } else if (command.equals("setsize")) {
-            Dimension size = Helper.getDimensionFromParameter(parameter);
+        });
+        client.commands.addEdt("setSize", p -> {
+            Dimension size = Helper.getDimensionFromParameter(p.getArgs());
             if (size != null) {
                 setSize(size);
                 printSystem(String.format("Set Window size to %dx%d", size.width, size.height));
-                return true;
             }
-            printSystem("Invalid parameters.");
-        } else if (command.equals("popoutchannel")) {
+            else {
+                printSystem("Invalid parameters.");
+            }
+        });
+        client.commands.addEdt("popoutChannel", p -> {
             channels.popoutActiveChannel();
-        } else {
-            return false;
-        }
-        return true;
+        });
     }
     
     public void insert(final String text, final boolean spaces) {
