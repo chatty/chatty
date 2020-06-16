@@ -1949,7 +1949,7 @@ public class MainGui extends JFrame implements Runnable {
                     String url;
                     switch (cmd) {
                         case "stream":
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, false);
+                            url = TwitchUrl.makeTwitchStreamUrl(stream);
                             break;
                         case "profile":
                             url = TwitchUrl.makeTwitchProfileUrl(stream);
@@ -1961,7 +1961,7 @@ public class MainGui extends JFrame implements Runnable {
                             url = TwitchUrl.makeTwitchChatUrl(stream);
                             break;
                         default:
-                            url = TwitchUrl.makeTwitchStreamUrl(stream, true);
+                            url = TwitchUrl.makeTwitchStreamUrl(stream);
                             break;
                     }
                     urls.add(url);

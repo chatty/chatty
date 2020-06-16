@@ -8,7 +8,6 @@ import java.awt.Component;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  * Helper class to build and open Twitch related URLs.
@@ -26,44 +25,16 @@ public class TwitchUrl {
         }
     }
     
-    public static void openTwitchProfile(String nick, Component parent) {
-        if (nick == null) {
-            JOptionPane.showMessageDialog(parent, "Unable to open Twitch Profile URL (Not on a channel)",
-                    "Info", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            String url = makeTwitchProfileUrl(nick);
-            UrlOpener.openUrlPrompt(parent, url);
-        }
-    }
-    
-    public static void openTwitchStream(String nick, Component parent) {
-        openTwitchStream(nick, false, parent);
-    }
-    
-    public static void openTwitchStream(String nick, boolean popout, Component parent) {
-        if (nick == null) {
-            JOptionPane.showMessageDialog(parent, "Unable to open Twitch Stream URL (Not on a channel)",
-                    "Info", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            String url = makeTwitchStreamUrl(nick, popout);
-            UrlOpener.openUrlPrompt(parent, url);
-        }
-    }
-    
     public static String makeTwitchProfileUrl(String channel) {
         return "https://twitch.tv/" + StringUtil.toLowerCase(channel) + "/profile";
     }
     
-    public static String makeTwitchStreamUrl(String channel, boolean popout) {
-        String url = "https://twitch.tv/" + StringUtil.toLowerCase(channel) + "";
-        if (popout) {
-            url += "/popout";
-        }
-        return url;
+    public static String makeTwitchStreamUrl(String channel) {
+        return "https://twitch.tv/" + StringUtil.toLowerCase(channel);
     }
     
     public static String makeTwitchPlayerUrl(String channel) {
-        return "https://player.twitch.tv/?channel="+StringUtil.toLowerCase(channel);
+        return "https://player.twitch.tv/?channel="+StringUtil.toLowerCase(channel)+"&parent=twitch.tv";
     }
     
     public static String makeTwitchChatUrl(String channel) {
