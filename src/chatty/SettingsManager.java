@@ -396,6 +396,7 @@ public class SettingsManager {
         settings.addBoolean("splash", true);
         settings.addBoolean("hideStreamsOnMinimize", true);
         settings.addLong("inputFocus", 0);
+        settings.addList("icons", new ArrayList<>(), Setting.STRING);
         
         // Tray
         settings.addBoolean("closeToTray", false);

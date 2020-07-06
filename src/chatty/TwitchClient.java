@@ -32,6 +32,7 @@ import chatty.util.BotNameManager;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.EmoticonListener;
+import chatty.util.IconManager;
 import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
@@ -224,6 +225,7 @@ public class TwitchClient {
         
         initDxSettings();
         
+        IconManager.setCustomIcons(settings.getList("icons"));
         if (settings.getBoolean("splash")) {
             Splash.initSplashScreen(Splash.getLocation((String)settings.mapGet("windows", "main")));
         }

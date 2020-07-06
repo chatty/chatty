@@ -1,6 +1,7 @@
 
 package chatty.splash;
 
+import chatty.util.IconManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GraphicsDevice;
@@ -52,16 +53,7 @@ public class SplashWindow extends JFrame {
      * Sets different sizes of a splash window icon.
      */
     private void setWindowIcons() {
-        ArrayList<Image> windowIcons = new ArrayList<>();
-        windowIcons.add(createImage("app_main_16.png"));
-        windowIcons.add(createImage("app_main_64.png"));
-        windowIcons.add(createImage("app_main_128.png"));
-        setIconImages(windowIcons);
-    }
-
-    private Image createImage(String name) {
-        name = "/chatty/gui/" + name;
-        return Toolkit.getDefaultToolkit().createImage(getClass().getResource(name));
+        setIconImages(IconManager.getMainIcons());
     }
     
     /**
