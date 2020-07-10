@@ -101,6 +101,8 @@ public class HotkeyTextField extends JPanel implements StringSetting {
         this.hotkey = hotkey;
         if (hotkey != null) {
             textField.setText(Hotkey.keyStrokeToText(hotkey));
+            textField.setToolTipText(String.format("Key Code: %1$d (0x%1$X)",
+                    hotkey.getKeyCode()));
         } else {
             textField.setText("No hotkey set.");
         }
