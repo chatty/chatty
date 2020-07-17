@@ -72,6 +72,7 @@ public class Splash {
             "Never dig below your feet!",
             "Kohle, Kohle, Kohle 🎵",
             "Remember the Cant!",
+            "Global Hotkeys!"
         };
     }
     

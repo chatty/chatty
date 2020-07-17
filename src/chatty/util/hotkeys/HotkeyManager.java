@@ -71,6 +71,7 @@ public class HotkeyManager {
     private boolean enabled = true;
     
     private GlobalHotkeySetter globalHotkeys;
+    private boolean attemptedToInitGlobalHotkeys;
     
     /**
      * Warning text intended to be output to the user, about an error of the
@@ -82,7 +83,25 @@ public class HotkeyManager {
     public HotkeyManager(MainGui main) {
         this.main = main;
                 
-        if (Chatty.HOTKEY) {
+        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
+
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                return applicationKeyTriggered(e);
+            }
+        });
+    }
+    
+    /**
+     * Should be called the first time global hotkeys are registered, not on
+     * start. This makes sure that they are only initialized when a global
+     * hotkey is actually configured and enabled.
+     */
+    private void initGlobalHotkeys() {
+        if (Chatty.HOTKEY && !attemptedToInitGlobalHotkeys) {
+            // Try to init only once
+            attemptedToInitGlobalHotkeys = true;
             try {
                 globalHotkeys = new GlobalHotkeySetter(new GlobalHotkeySetter.GlobalHotkeyListener() {
 
@@ -93,25 +112,16 @@ public class HotkeyManager {
                 });
                 // If an error occured during initialization, then set to null
                 // which means it's not going to be used.
-                if (!globalHotkeys.isInitalized()) {
+                if (!globalHotkeys.isActive()) {
                     globalHotkeyErrorWarning = globalHotkeys.getError();
                     globalHotkeys = null;
                 }
             } catch (NoClassDefFoundError ex) {
                 LOGGER.warning("Failed to initialize hotkey setter [" + ex + "]");
-                globalHotkeyErrorWarning = "Failed to initialize global hotkeys (jintellitype-xx.jar not found).";
+                globalHotkeyErrorWarning = "Failed to initialize global hotkeys (library not found).";
                 globalHotkeys = null;
             }
         }
-
-        KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                return applicationKeyTriggered(e);
-            }
-        });
     }
     
     public void setSettings(Settings settings) {
@@ -183,12 +193,15 @@ public class HotkeyManager {
      * @param enabled true to enable global hotkeys, false to disable
      */
     private void setGlobalHotkeysRegistered(boolean register) {
-        boolean previous = globalHotkeysRegister;
-        this.globalHotkeysRegister = register;
-        if (register && !previous) {
+        if (register == globalHotkeysRegister) {
+            return;
+        }
+        globalHotkeysRegister = register;
+        if (register) {
+            removeGlobalHotkeys();
             addGlobalHotkeys();
         }
-        if (!register && previous) {
+        else {
             removeGlobalHotkeys();
         }
     }
@@ -227,7 +240,13 @@ public class HotkeyManager {
      * @return
      */
     public boolean globalHotkeysAvailable() {
-        return globalHotkeys != null;
+        /**
+         * Since global hotkeys are now lazily initialized, the warning in the
+         * hotkey settings would have to be adjusted and this doesn't really
+         * determine if global hotkeys could be available.
+         */
+        return true;
+//        return globalHotkeys != null;
     }
     
     /**
@@ -259,6 +278,10 @@ public class HotkeyManager {
         return actions.get(hotkey.actionId) != null;
     }
     
+    private boolean isValidHotkey(Hotkey hotkey) {
+        return doesHotkeyHaveAction(hotkey) && hotkey.hasValidCode();
+    }
+    
     /**
      * Removes and reads all hotkeys according to the current data.
      */
@@ -277,7 +300,7 @@ public class HotkeyManager {
      */
     private void addHotkeys(JRootPane pane) {
         for (Hotkey hotkey : hotkeys) {
-            if (doesHotkeyHaveAction(hotkey) && hotkey.type == Type.REGULAR) {
+            if (isValidHotkey(hotkey) && hotkey.type == Type.REGULAR) {
                 if (pane == null) {
                     addHotkey(hotkey, main.getRootPane());
                     for (JDialog popout : popouts.keySet()) {
@@ -310,23 +333,16 @@ public class HotkeyManager {
         if (!globalHotkeysRegister) {
             return;
         }
-        for (Hotkey hotkey : hotkeys) {
-            if (doesHotkeyHaveAction(hotkey) && hotkey.type == Type.GLOBAL) {
-                addGlobalHotkey(hotkey);
-            }
+        if (hasGlobalHotkey()) {
+            initGlobalHotkeys();
         }
-    }
-
-    /**
-     * Adds a single global hotkey.
-     * 
-     * @param hotkey 
-     */
-    private void addGlobalHotkey(Hotkey hotkey) {
-        if (globalHotkeys != null) {
-            globalHotkeys.registerHotkey(hotkey,
-                    hotkey.keyStroke.getModifiers(),
-                    hotkey.keyStroke.getKeyCode());
+        if (globalHotkeys == null) {
+            return;
+        }
+        for (Hotkey hotkey : hotkeys) {
+            if (isValidHotkey(hotkey) && hotkey.type == Type.GLOBAL) {
+                globalHotkeys.registerHotkey(hotkey, hotkey.keyStroke);
+            }
         }
     }
     
@@ -478,16 +494,22 @@ public class HotkeyManager {
         if (globalHotkeyErrorWarning == null) {
             return;
         }
+        if (hasGlobalHotkey()) {
+            LOGGER.log(Logging.USERINFO, globalHotkeyErrorWarning + " "
+                    + "[You are getting this message because you have a "
+                    + "global hotkey configured. If you don't use it you "
+                    + "can ignore this warning.]");
+            globalHotkeyErrorWarning = null;
+        }
+    }
+    
+    private boolean hasGlobalHotkey() {
         for (Hotkey hotkey : hotkeys) {
-            if (doesHotkeyHaveAction(hotkey) && hotkey.type == Type.GLOBAL) {
-                LOGGER.log(Logging.USERINFO, globalHotkeyErrorWarning+" "
-                        + "[You are getting this message because you have a "
-                        + "global hotkey configured. If you don't use it you "
-                        + "can ignore this warning.]");
-                globalHotkeyErrorWarning = null;
-                return;
+            if (isValidHotkey(hotkey) && hotkey.type == Type.GLOBAL) {
+                return true;
             }
         }
+        return false;
     }
     
     /**
@@ -525,7 +547,9 @@ public class HotkeyManager {
         if (hotkeyAction == null) {
             return;
         }
-        hotkeyAction.action.putValue(Action.ACCELERATOR_KEY, hotkey.keyStroke);
+        if (hotkey.hasValidCode()) {
+            hotkeyAction.action.putValue(Action.ACCELERATOR_KEY, hotkey.keyStroke);
+        }
     }
 
     /**
@@ -554,7 +578,7 @@ public class HotkeyManager {
         }
         KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent(e);
         for (Hotkey hotkey : hotkeys) {
-            if (hotkey.type == Hotkey.Type.APPLICATION && hotkey.keyStroke.equals(keyStroke)) {
+            if (hotkey.type == Hotkey.Type.APPLICATION && hotkey.keyStroke.equals(keyStroke) && hotkey.hasValidCode()) {
                 HotkeyAction action = actions.get(hotkey.actionId);
                 if (action != null && hotkey.shouldExecuteAction()) {
                     action.action.actionPerformed(new ActionEvent(action, 0, hotkey.custom));

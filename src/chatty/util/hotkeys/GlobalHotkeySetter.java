@@ -1,71 +1,36 @@
 
 package chatty.util.hotkeys;
 
-import chatty.*;
-import com.melloware.jintellitype.HotkeyListener;
-import com.melloware.jintellitype.JIntellitype;
-import com.melloware.jintellitype.JIntellitypeException;
-import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.Map;
+import com.tulskiy.keymaster.common.Provider;
 import java.util.logging.Logger;
+import javax.swing.KeyStroke;
 
 /**
- * Actually initialize JIntellitype and register the hotkeys.
+ * JKeymaster (JNA) global hotkey handling.
  * 
  * @author tduva
  */
-public class GlobalHotkeySetter implements HotkeyListener {
+public class GlobalHotkeySetter {
     
     private static final Logger LOGGER = Logger.getLogger(GlobalHotkeySetter.class.getName());
     
-    private boolean initialized = false;
+    private final GlobalHotkeySetter.GlobalHotkeyListener listener;
     
-    /**
-     * Error that occured when initializing (usually the correct dll not found).
-     */
-    private String error;
+    private String error = "Global hotkey error";
+    private Provider hotkeys;
+    private boolean anyRegistered;
     
-    private final GlobalHotkeyListener listener;
-
-    /**
-     * Save an association between id (Integer) that JIntelliType uses and the
-     * id that can be referred to by the caller (any Object).
-     */
-    private final Map<Integer, Object> hotkeys = new HashMap<>();
-    
-    /**
-     * Increasing number to get ids off of for JIntelliType to use.
-     */
-    private int idCount;
-    
-    public GlobalHotkeySetter(GlobalHotkeyListener listener) {
+    public GlobalHotkeySetter(GlobalHotkeySetter.GlobalHotkeyListener listener) {
         this.listener = listener;
-        initialize();
-    }
-    
-    /**
-     * Adds a hotkey listener.
-     */
-    public final void initialize() {
         try {
-            JIntellitype.getInstance().addHotKeyListener(this);
-            initialized = true;
-        } catch (JIntellitypeException ex) {
-            error = "Failed adding global hotkeys listener: "+ex.getLocalizedMessage();
-            LOGGER.warning(error);
+            hotkeys = Provider.getCurrentProvider(true);
+            if (hotkeys == null) {
+                error = "Global hotkeys: Platform not supported";
+            }
+        } catch (Throwable ex) {
+            LOGGER.warning("Global hotkey error: "+ex);
+            error = "Global hotkey error: "+ex;
         }
-    }
-    
-    /**
-     * Whether the listener has been added without an error. If false, then an
-     * error occured which can be retrieved with the
-     * {@link #getError() getError} method.
-     * 
-     * @return true if global hotkeys can be added, false if an error occured
-     */
-    public boolean isInitalized() {
-        return initialized;
     }
     
     /**
@@ -78,41 +43,37 @@ public class GlobalHotkeySetter implements HotkeyListener {
     }
     
     /**
-     * Called when global hotkey is pressed. This is run in the EDT.
+     * Whether the global hotkey provider has been initialized and is still
+     * active. If false, then more information may be retrieved with
+     * {@link #getError() getError}, unless the provider was intentionally
+     * stopped.
      * 
-     * @param i 
+     * @return true if global hotkeys can be added, false otherwise
      */
-    @Override
-    public void onHotKey(int i) {
-        Object hotkeyId = hotkeys.get(i);
-        if (hotkeyId != null) {
-            listener.onHotkey(hotkeyId);
-        }
+    public boolean isActive() {
+        return hotkeys != null && hotkeys.isRunning();
     }
     
     /**
-     * Sets a hotkey with the given id. The hotkey consists of modifiers
-     * (c == ctrl, s == shift, ..) and the keyCode.
+     * Sets a hotkey with the given id.
      * 
-     * @param hotkeyId
-     * @param modifiers
-     * @param keyCode
+     * @param hotkeyId Used in the listener to notify about a hotkey press
+     * @param keyStroke The hotkey to register (some key codes may not work
+     * depending on the system)
      */
-    public void registerHotkey(Object hotkeyId, int modifiers, int keyCode) {
-        if (!initialized) {
+    public void registerHotkey(Object hotkeyId, KeyStroke keyStroke) {
+        if (!isActive()) {
             return;
         }
         try {
-            int id = getId(hotkeyId);
-            int mod = getModFromModifiers(modifiers);
-            // Remove previously under this id registered hotkey (if there is
-            // any)
-            JIntellitype.getInstance().unregisterHotKey(id);
-            LOGGER.info("[Global Hotkeys] Trying to register hotkey: " + id + "/" + mod + "/" + keyCode);
-            JIntellitype.getInstance().registerHotKey(id, mod, keyCode);
-            hotkeys.put(id, hotkeyId);
-        } catch (JIntellitypeException ex) {
-            LOGGER.info("[Global Hotkeys] Couldn't register hotkey: " + ex);
+            LOGGER.info("[Global Hotkeys] Trying to register hotkey: " + hotkeyId);
+            hotkeys.register(keyStroke, h -> {
+                listener.onHotkey(hotkeyId);
+            });
+            anyRegistered = true;
+        } catch (Throwable ex) {
+            // I don't think there can be an exception, but just in case
+            LOGGER.info("[Global Hotkeys] Error registering hotkey: " + ex);
         }
     }
     
@@ -120,64 +81,38 @@ public class GlobalHotkeySetter implements HotkeyListener {
      * Removes all registered hotkeys.
      */
     public void unregisterAllHotkeys() {
-        if (!initialized) {
+        if (!isActive() || !anyRegistered) {
             return;
         }
-        if (!hotkeys.isEmpty()) {
-            LOGGER.info("[Global Hotkeys] Unregistering "+hotkeys.size()+" global hotkeys.");
+        try {
+            hotkeys.reset();
+            anyRegistered = false;
         }
-        for (Integer id : hotkeys.keySet()) {
-            try {
-                JIntellitype.getInstance().unregisterHotKey(id);
-            } catch (JIntellitypeException ex) {
-                LOGGER.info("[Global Hotkeys] Couldn't unregister hotkey: " + ex);
-            }
-        }
-        hotkeys.clear();
-        idCount = 0;
-    }
-    
-    private int getModFromModifiers(int modifiers) {
-        int mod = 0;
-        if (checkModifier(modifiers, KeyEvent.CTRL_DOWN_MASK)) {
-            mod += JIntellitype.MOD_CONTROL;
-        }
-        if (checkModifier(modifiers, KeyEvent.ALT_DOWN_MASK)) {
-            mod += JIntellitype.MOD_ALT;
-        }
-        if (checkModifier(modifiers, KeyEvent.SHIFT_DOWN_MASK)) {
-            mod += JIntellitype.MOD_SHIFT;
-        }
-        return mod;
-    }
-    
-    private static boolean checkModifier(int modifiers, int modifier) {
-        return (modifiers & modifier) == modifier;
-    }
-    
-    public void cleanUp() {
-        if (initialized) {
-            JIntellitype.getInstance().cleanUp();
+        catch (Throwable ex) {
+            // I don't think there can be an exception, but just in case
+            LOGGER.warning("[Global Hotkeys] Error resetting: " + ex);
         }
     }
     
     /**
-     * Find if this hotkey has an id and if not, assign a new one.
-     * 
-     * @param hotkeyId
-     * @return 
+     * Free up any ressources if necessary. This object can no longer be used
+     * afterwards.
      */
-    private int getId(Object hotkeyId) {
-        for (Integer id : hotkeys.keySet()) {
-            if (hotkeys.get(id) == hotkeyId) {
-                return id;
-            }
+    public void cleanUp() {
+        if (!isActive()) {
+            return;
         }
-        return idCount++;
+        try {
+            hotkeys.close();
+        }
+        catch (Throwable ex) {
+            // I don't think there can be an exception, but just in case
+            LOGGER.warning("[Global Hotkeys] Error closing: " + ex);
+        }
     }
     
     public interface GlobalHotkeyListener {
         public void onHotkey(Object hotkeyId);
     }
-
+    
 }

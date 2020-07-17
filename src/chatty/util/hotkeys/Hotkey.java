@@ -88,6 +88,10 @@ public class Hotkey {
         return false;
     }
     
+    public boolean hasValidCode() {
+        return keyStroke.getKeyCode() != KeyEvent.VK_UNDEFINED;
+    }
+    
     /**
      * Turns a KeyStroke into a readable String.
      * 
@@ -110,7 +114,19 @@ public class Hotkey {
      */
     @Override
     public String toString() {
-        return actionId+"["+keyStrokeToText(keyStroke)+"]"+type+delay+custom;
+        if (custom != null && !custom.isEmpty()) {
+            return String.format("%s(%s)[%s][%s/%d]",
+                    actionId,
+                    custom,
+                    keyStrokeToText(keyStroke),
+                    type,
+                    delay);
+        }
+        return String.format("%s[%s][%s/%d]",
+                    actionId,
+                    keyStrokeToText(keyStroke),
+                    type,
+                    delay);
     }
     
 }

@@ -28,9 +28,9 @@ public class Chatty {
     public static final boolean DEBUG = false;
     
     /**
-     * Enables the hotkey feature for running commercials (windows only).
+     * Enables global hotkeys.
      */
-    public static final boolean HOTKEY = MiscUtil.OS_WINDOWS;
+    public static final boolean HOTKEY = true;
     
     /**
      * The Chatty website as it can be opened in the menu.

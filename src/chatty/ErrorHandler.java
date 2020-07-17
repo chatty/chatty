@@ -35,8 +35,16 @@ public class ErrorHandler implements UncaughtExceptionHandler {
         }
         try {
             String stacktrace = Logging.getStacktrace(e);
-            LOGGER.severe(String.format("[%s/%s][%s][%s]\n%s",
-                    e.getClass(), e.getLocalizedMessage(), e.getCause(), Thread.currentThread(), stacktrace));
+            if (t != null && t.getName() != null && t.getName().startsWith("JKeyMaster-")) {
+                // Output as warning, but also show directly to user
+                LOGGER.warning(String.format("[%s/%s][%s][%s]\n%s",
+                        e.getClass(), e.getLocalizedMessage(), e.getCause(), Thread.currentThread(), stacktrace));
+                LOGGER.log(Logging.USERINFO, "A global hotkey error occured. Check debug logs for more details.");
+            }
+            else {
+                LOGGER.severe(String.format("[%s/%s][%s][%s]\n%s",
+                        e.getClass(), e.getLocalizedMessage(), e.getCause(), Thread.currentThread(), stacktrace));
+            }
         } catch (Throwable ex) {
             LOGGER.severe("Exception "+ex+"\n\toccured during logging of uncaught exception: "+e.getClass().getName()+" ["+t.toString()+"]");
         }

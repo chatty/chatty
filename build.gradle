@@ -57,6 +57,9 @@ dependencies {
     // Take the .jar files from the assets/lib directory and add them to the compile-time classpath
     compile fileTree(dir: 'assets/lib', include: ['*.jar'])
 
+    implementation 'net.java.dev.jna:jna:5.5.0'
+    implementation 'net.java.dev.jna:jna-platform:5.5.0'
+
     testCompile 'junit:junit:4.12'
 }
 
@@ -107,33 +110,9 @@ task allPlatformsZip(type: Zip, group: 'build') {
     archiveName = "${archivesBaseName}_${version}.zip"
 }
 
-task hotkey32Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype32.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_32bit.zip"
-}
-
-task hotkey64Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype64.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_64bit.zip"
-}
-
 // Builds all the release zips
 task releaseZips(group: 'build') {
-    dependsOn allPlatformsZip, hotkey32Zip, hotkey64Zip
+    dependsOn allPlatformsZip
 }
 
 // Builds the full project, runs the unit tests and packages the release zips.
@@ -230,8 +209,6 @@ task innosetup(type: Exec, group: 'build') {
             from ('assets') {
                 exclude 'lib'
     	    }
-            from('assets/lib/dlls/JIntellitype32.dll')
-            from('assets/lib/dlls/JIntellitype64.dll')
             from('assets-bundle/Chatty.ico')
             into("${innosetupDir}/pack")
         }
@@ -257,10 +234,6 @@ task innosetupStandalone(type: Exec, group: 'build') {
                 exclude 'lib'
 	        into 'app'
             }
-            from ('assets/lib/dlls/JIntellitype32.dll') {
-                into 'app'
-            }
-            rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
             from ('assets-bundle/fallback-fonts') {
                 into 'runtime/lib/fonts/fallback'
             }
