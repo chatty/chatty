@@ -36,7 +36,11 @@ public class Logging {
     
     private final RingBuffer<LogRecord> lastMessages = new RingBuffer<>(8);
     
+    private static TwitchClient client;
+    
     public Logging(final TwitchClient client) {
+        Logging.client = client;
+        
         createLogDir();
         
         // Remove default handlers
@@ -68,7 +72,7 @@ public class Logging {
             fileSession.setFilter(new FileFilter());
             Logger.getLogger("").addHandler(fileSession);
         } catch (IOException | SecurityException ex) {
-            Logger.getLogger(Logging.class.getName()).log(Level.WARNING, null, ex);
+            fileWarning(ex);
         }
         
         // Add handler for the GUI (display errors, log into debug window)
@@ -195,7 +199,7 @@ public class Logging {
             file.setLevel(Level.INFO);
             return file;
         } catch (IOException | SecurityException ex) {
-            Logger.getLogger(Logging.class.getName()).log(Level.WARNING, null, ex);
+            fileWarning(ex);
         }
         return null;
     }
@@ -204,7 +208,15 @@ public class Logging {
         try {
             Files.createDirectories(Paths.get(Chatty.getDebugLogDirectory()));
         } catch (IOException ex) {
-            Logger.getLogger(Logging.class.getName()).log(Level.SEVERE, null, ex);
+            fileWarning(ex);
+        }
+    }
+    
+    private static void fileWarning(Throwable ex) {
+        if (client != null) {
+            client.warning(String.format("Failed creating log files. Check that %s can be written to. (%s)",
+                    Chatty.getDebugLogDirectory(),
+                    ex));
         }
     }
     

@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -91,18 +90,22 @@ public class Stuff {
      * Initialize variables used for updating.
      */
     public static synchronized void init() {
-        Path jarPathTemp = null;
+        init(determineJarPath());
+    }
+    
+    public static Path determineJarPath() {
         try {
-            jarPathTemp = Paths.get(RunUpdater.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (!jarPathTemp.toString().endsWith(".jar")
-                    || !Files.exists(jarPathTemp)
-                    || !Files.isRegularFile(jarPathTemp)) {
-                jarPathTemp = null;
+            Path jarPath = Paths.get(Stuff.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (!jarPath.toString().endsWith(".jar")
+                    || !Files.exists(jarPath)
+                    || !Files.isRegularFile(jarPath)) {
+                jarPath = null;
             }
+            return jarPath;
         } catch (URISyntaxException ex) {
             LOGGER.warning("jar: "+ex);
         }
-        init(jarPathTemp);
+        return null;
     }
     
     /**

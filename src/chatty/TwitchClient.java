@@ -80,6 +80,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -199,6 +200,10 @@ public class TwitchClient {
         LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
                 +" [Settings Directory] "+Chatty.getUserDataDirectory()
                 +" [Classpath] "+System.getProperty("java.class.path"));
+        
+        if (Chatty.getOriginalWdir() != null) {
+            LOGGER.info("Working directory changed due to -appwdir (from: "+Chatty.getOriginalWdir()+")");
+        }
         
         // Settings
         settingsManager = new SettingsManager();
@@ -394,6 +399,13 @@ public class TwitchClient {
         
         // Output any cached warning messages
         warning(null);
+        
+        if (!settingsManager.checkSettingsDir()) {
+            warning("The settings directory could not be created, so Chatty"
+                    + " will not function correctly. Make sure that "+Chatty.getUserDataDirectory()
+                    + " is accessible or change it using launch options.");
+            return;
+        }
         
         addCommands();
         g.addGuiCommands();
@@ -3082,7 +3094,10 @@ public class TwitchClient {
         
         IrcLogger() {
             IRC_LOGGER.setUseParentHandlers(false);
-            IRC_LOGGER.addHandler(Logging.getIrcFileHandler());
+            FileHandler handler = Logging.getIrcFileHandler();
+            if (handler != null) {
+                IRC_LOGGER.addHandler(handler);
+            }
         }
         
         public void onRawReceived(String text) {

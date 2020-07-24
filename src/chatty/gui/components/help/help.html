@@ -1489,8 +1489,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
             via "Main - Save..")</dd>
         
         <dt><code>-cd</code></dt>
-        <dd>Use current working directory (usually the directory you
-                start Chatty from) for saving/loading settings and other files.
+        <dd>Use current working directory as settings directory.
                 This can be useful to make Chatty more portable or use several
                 different setting files on the same computer.
                 <a href="help-guide_folders.html">More information..</a></dd>
@@ -1498,7 +1497,11 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
         <dt><code>-d &lt;dir&gt;</code></dt>
         <dd>Same as <code>-cd</code>, except that you directly specify the
             settings directory to use. The specified directory has to already
-            exist.</dd>
+            exist (even if you just created an empty directory for it).</dd>
+        
+        <dt><code>-portable</code></dt>
+        <dd>Creates a directory called "portable_settings" next to where the
+            "Chatty.jar" is located and uses that as settings directory.</dd>
         
         <dt><code>-set:&lt;settingName&gt; &lt;setting value&gt;</code></dt>
         <dd>Change any setting that can be edited via the <code>/set</code>

@@ -17,6 +17,8 @@ import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
@@ -917,6 +919,11 @@ public class SettingsManager {
 //            result.append(settings.settingValueToString(setting));
 //        }
 //        LOGGER.info(result.toString());
+    }
+    
+    public boolean checkSettingsDir() {
+        Path path = Paths.get(Chatty.getUserDataDirectory());
+        return Files.isDirectory(path);
     }
     
     private void addDefaultHotkey(String version, String id, String hotkey) {

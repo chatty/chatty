@@ -50,6 +50,9 @@
             <li>The <code>-d &lt;dir&gt;</code> launch option changes the settings
                 directory to the specified directory (which must already exist).
                 Example: <code>-d D:\program settings\Chatty</code> (no quotes)</li>
+            <li>The <code>-portable</code> launch option changes the settings
+                directory to a directory called <code>portable_settings</code>
+                created next to the <code>Chatty.jar</code>.</li>
         </ul>
         
         <p>You can use launch options by adding them to <a href="help-guide_create_shortcut.html">a shortcut</a>
@@ -163,9 +166,10 @@
     
     <h3><a name="wdir">Working Directory</a></h3>
     <p>This directory is associated with Chatty when you start it. This is
-        usually the directory the program is started from. In some cases,
-        depending on how Chatty is started, this may point to a different
-        directory, which can cause issues.</p>
+        usually the directory the program is started from. When using the
+        standalone (Chatty.exe) this is always set to the "app" directory of
+        the standalone bundle. In some cases, depending on how Chatty is
+        started, this may point to a different directory.</p>
     
     <p>You can change the Working Directory by specifying it when you start
         Chatty, usually by <a href="help-guide_create_shortcut.html">creating a shortcut</a>
@@ -184,7 +188,7 @@
         </tr>
         <tr>
             <td>|-- sounds</td>
-            <td class="fileCommentFolder">[Folder] Sound files</td>
+            <td class="fileCommentFolder">[Folder] Sound files for Notifications</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- &lt;sound&gt;.wav</td>
@@ -192,15 +196,11 @@
         </tr>
         <tr>
             <td>|-- img</td>
-            <td class="fileCommentFolder">[Folder] Image files for custom usericons</td>
+            <td class="fileCommentFolder">[Folder] Image files for Custom Badges</td>
         </tr>
         <tr>
             <td>|&nbsp;&nbsp;&nbsp;|-&nbsp;&lt;various&nbsp;images&gt;</td>
             <td class="fileComment">.png files</td>
-        </tr>
-        <tr>
-            <td>|- JIntellitype.dll</td>
-            <td class="fileComment">DLL for global hotkey support</td>
         </tr>
     </table>
     

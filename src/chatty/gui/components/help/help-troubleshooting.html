@@ -10,7 +10,7 @@
         <li>Startup / Folders / Settings
             <ul>
                 <li><a href="#start">Chatty won't start</a></li>
-                <li><a href="#jintellitype">Global Hotkeys / JIntellitype.dll error</a></li>
+                <li><a href="#global_hotkeys">Global Hotkeys Error</a></li>
                 <li><a href="#settings_lost">Settings lost</a></li>
                 <li><a href="#wrong_folders">Wrong image/sounds folder</a></li>
             </ul>
@@ -73,36 +73,30 @@
     be disabled by default, but can lower performance if checked.</p>
     
     <h2>
-        <a name="jintellitype">Global Hotkeys / JIntellitype.dll error</a>
+        <a name="global_hotkeys">Global Hotkeys Error</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
     <p><em>Note:</em> If you don't use global hotkeys you don't have to worry
-        about this. Global hotkeys are currently only available on Windows.</p>
+        about this.</p>
     
     <p>If global hotkeys don't work, but there is no error message about it,
         make sure that you actually have global hotkeys enabled in the Hotkeys
         settings or in the menu "Extra - Options".</p>
     
+    <p>Global hotkeys should usually work on Windows, Linux and Mac. It's
+        possible that they don't work in just some contexts, for example some
+        games.</p>
+    
     <h3>Error message</h3>
-    <p>If you get an error message related to JIntellitype or global hotkeys:</p>
+    <p>If you get an error message related to global hotkeys:</p>
     
     <ul>
-        <li>Make sure that you are using a version that had <code>hotkey</code>
-            in the download name, or the Windows standalone version.</li>
-        <li>When you're not using the Windows standalone, make sure that you're
-            using the correct <code>hotkey</code> version for the version of
-            Java you have installed: <code>hotkey_32bit</code> for 32bit Java
-            and <code>hotkey_64bit</code> for 64bit Java. For example if Java is
-            installed in <code>C:\Program Files (x86)</code>, then it should be
-            a 32bit version. You can find out where the JRE that Chatty is using
-            is located by entering <code>/appinfo</code> in Chatty.</li>
-        <li>Make sure the <code>JIntellitype.dll</code> is located in the folder
-            that opens when you enter <code>/openWdir</code> in Chatty.</li>
+        <li>Check <code>Extra - Debug window</code> for errors related to
+            global hotkeys. It's possible that there was some error with the
+            native library or that your platform is not supported properly.</li>
         <li>Try restarting your computer, sometimes it is only a temporary
             issue.</li>
     </ul>
-    
-    <div class="moreInfo">Related information: <a href="help-guide_folders.html">Chatty directories and files</a></div>
     
     <h2>
         <a name="livestreamer">Livestreamer won't run properly</a>
@@ -200,6 +194,18 @@
         <a name="start">Chatty won't start</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
+    
+    <h3>Windows Standalone Version</h3>
+    <p>The <code>Chatty.exe</code> uses the bundled Java (JRE) to execute the
+        <code>Chatty.jar</code> in the <code>app</code> directory. If nothing
+        happens after starting the <code>Chatty.jar</code>, try the following:</p>
+    <ul>
+        <li>Re-download the Standalone Bundle and make sure it extracts fully.</li>
+        <li>Make sure that the path where Chatty is located contains only ASCII
+            characters (basicially no non-english letters).</li>
+    </ul>
+    
+    <h3>JAR Version</h3>
     <p>You need to have at least Java 8 JRE (Java Runtime Environment) installed to run Chatty.</p>
     <p>If you try to start Chatty by double-clicking the <code>Chatty.jar</code>,
         first make sure that <code>.jar</code> files are associated with Java,

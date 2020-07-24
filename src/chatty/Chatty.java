@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.components.updating.Stuff;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.ElapsedTime;
@@ -8,6 +9,9 @@ import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.simple.JSONObject;
@@ -96,6 +100,8 @@ public class Chatty {
     
     private static String settingsDirInfo = null;
     
+    private static String originalWdir = null;
+    
     private static String[] args;
     
     /**
@@ -123,18 +129,37 @@ public class Chatty {
             }
         }
         
+        if (parsedArgs.containsKey("appwdir") && !parsedArgs.containsKey("regularwdir")) {
+            Path path = Stuff.determineJarPath();
+            if (path != null) {
+                originalWdir = System.getProperty("user.dir");
+                System.setProperty("user.dir", path.getParent().toString());
+            }
+        }
+        
         if (parsedArgs.containsKey("cd")) {
             settingsDir = System.getProperty("user.dir");
             settingsDirInfo = "-cd";
         }
+        if (parsedArgs.containsKey("portable")) {
+            Path path = Stuff.determineJarPath();
+            if (path != null) {
+                settingsDir = path.getParent().resolve("portable_settings").toString();
+                settingsDirInfo = "-portable";
+            }
+        }
         if (parsedArgs.containsKey("d")) {
             String dir = parsedArgs.get("d");
-            File file = new File(dir).getAbsoluteFile();
-            if (file.isDirectory()) {
-                settingsDir = file.toString();
+            Path path = Paths.get(dir);
+            if (!path.isAbsolute()) {
+                path = Paths.get(System.getProperty("user.dir"), dir);
+            }
+            if (Files.isDirectory(path)) {
+                settingsDir = path.toString();
                 settingsDirInfo = "-d";
-            } else {
-                invalidSettingsDir = file.toString();
+            }
+            else {
+                invalidSettingsDir = path.toString();
             }
         }
         
@@ -231,6 +256,10 @@ public class Chatty {
     
     public static String getSettingsDirectoryInfo() {
         return settingsDirInfo;
+    }
+    
+    public static String getOriginalWdir() {
+        return originalWdir;
     }
     
     public static String getExportDirectory() {
