@@ -2248,7 +2248,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * 
+     * Add commands related to the GUI.
      */
     public void addGuiCommands() {
         client.commands.addEdt("settings", p -> {
@@ -4282,6 +4282,10 @@ public class MainGui extends JFrame implements Runnable {
 
     public String getActiveStream() {
         return channels.getActiveChannel().getStreamName();
+    }
+    
+    public Room getActiveRoom() {
+        return channels.getActiveChannel().getRoom();
     }
     
     /**

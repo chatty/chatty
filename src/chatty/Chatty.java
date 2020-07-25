@@ -166,16 +166,13 @@ public class Chatty {
         final TwitchClient client = new TwitchClient(parsedArgs);
         
         // Adding listener just in case, will do nothing if not used
-        SingleInstance.setNewInstanceListener(new SingleInstance.NewInstanceListener() {
-
-            @Override
-            public void newInstance(String message) {
-                Map<String, String> args = decodeParametersFromJSON(message);
-                if (args.containsKey("channel")) {
-                    String channel = args.get("channel");
-                    client.joinChannels(Helper.parseChannelsFromString(channel, false));
-                }
+        SingleInstance.setNewInstanceListener(message -> {
+            Map<String, String> args1 = decodeParametersFromJSON(message);
+            if (args1.containsKey("channel")) {
+                String channel = args1.get("channel");
+                client.joinChannels(Helper.parseChannelsFromString(channel, false));
             }
+            client.customCommandLaunch(args1.get("cc"));
         });
         
         LogUtil.startMemoryUsageLogging();

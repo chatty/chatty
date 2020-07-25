@@ -188,6 +188,7 @@ public class TwitchClient {
     private final IrcLogger ircLogger;
     
     private boolean fixServer = false;
+    private String launchCommand;
     
     public TwitchClient(Map<String, String> args) {
         // Logging
@@ -216,6 +217,7 @@ public class TwitchClient {
         settingsManager.backupFiles();
         settingsManager.startAutoSave(this);
         
+        launchCommand = args.get("cc");
         Helper.setDefaultTimezone(settings.getString("timezone"));
         
         addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
@@ -449,6 +451,9 @@ public class TwitchClient {
         }
         
         UserContextMenu.client = this;
+        
+        customCommandLaunch(launchCommand);
+        launchCommand = null;
     }
     
 
@@ -941,7 +946,7 @@ public class TwitchClient {
         commands.add("server", p -> {
             commandServer(p.getArgs());
         });
-        commands.add("reconnet", p -> commandReconnect());
+        commands.add("reconnect", p -> commandReconnect());
         commands.add("connection", p -> {
             g.printLine(p.getRoom(), c.getConnectionInfo());
         });
@@ -1631,6 +1636,25 @@ public class TwitchClient {
         } else {
             textInput(room, result, parameters);
         }
+    }
+    
+    public void customCommandLaunch(String commandAndParameters) {
+        if (StringUtil.isNullOrEmpty(commandAndParameters)) {
+            return;
+        }
+        LOGGER.info("Running launch command: "+commandAndParameters);
+        String[] split = commandAndParameters.split(" ", 2);
+        String commandName = split[0];
+        Parameters p;
+        if (split.length == 2) {
+            p = Parameters.create(split[1]);
+        }
+        else {
+            p = Parameters.create(null);
+        }
+        p.put("-cc", "true");
+        // Probably safer, since it access state from the GUI
+        SwingUtilities.invokeLater(() -> customCommand(g.getActiveRoom(), commandName, p));
     }
     
     public void customCommand(Room room, String command, Parameters parameters) {
