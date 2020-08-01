@@ -90,6 +90,12 @@ External Libraries
 	(for the license text see the APACHE_LICENSE file
 	or <http://www.apache.org/licenses/LICENSE-2.0>).
 
+* JKeyMaster (modified):
+  * Files under `assets/lib/`: `jkeymaster-*`
+  * Website: <https://github.com/tulskiy/jkeymaster>
+  * License: "LGPL-3.0 License"
+  * Using JNA (<https://github.com/java-native-access/jna>) under "Apache License 2.0"
+
 * JIntellitype:
   * Files under `assets/lib/`: `jintellitype-*.jar`, `Jintellitype*.dll`, `jintellitype-*-dist.zip`
   * Website: <https://code.google.com/p/jintellitype/>
