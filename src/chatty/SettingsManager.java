@@ -579,7 +579,7 @@ public class SettingsManager {
         settings.addString("logMode", "always");
         settings.addBoolean("logMessage", true);
         settings.addString("logMessageTemplate", "$if(timestamp,$(timestamp) )<$(full-nick2)>$if(action,*) $(msg)");
-        settings.addBoolean("logMod", true);
+        settings.addBoolean("logMod", false);
         settings.addBoolean("logJoinPart", false);
         settings.addBoolean("logBan", true);
         settings.addBoolean("logDeleted", true);
