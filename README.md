@@ -96,13 +96,6 @@ External Libraries
   * License: "LGPL-3.0 License"
   * Using JNA (<https://github.com/java-native-access/jna>) under "Apache License 2.0"
 
-* JIntellitype:
-  * Files under `assets/lib/`: `jintellitype-*.jar`, `Jintellitype*.dll`, `jintellitype-*-dist.zip`
-  * Website: <https://code.google.com/p/jintellitype/>
-  * License: "Apache License 2.0"
-	(for the license text see the APACHE_LICENSE file
-	or <http://www.apache.org/licenses/LICENSE-2.0>).
-
 * JTattoo by MH Software-Entwicklung:
   * Files under `assets/lib/`: `JTattoo-*.jar`, `JTattoo-*-sources.zip`
   * Website: <http://www.jtattoo.net>
