@@ -275,6 +275,22 @@ public class Chatty {
         return System.getProperty("user.dir")+File.separator;
     }
     
+    /**
+     * Turns the given path into an absolute path by using the current working
+     * directory. This can be necessary if the "-appwdir" option was used, since
+     * setting the "user.dir" property doesn't necessarily affect the regular
+     * functions (such as Paths.get("test").toAbsolutePath()).
+     * 
+     * @param path
+     * @return The absolute path, or the given path if it is already absolute
+     */
+    public static Path toAbsolutePathWdir(Path path) {
+        if (path.isAbsolute()) {
+            return path;
+        }
+        return Paths.get(System.getProperty("user.dir"), path.toString());
+    }
+    
     public static String getSoundDirectory() {
         return getWorkingDirectory()+"sounds"+File.separator;
     }

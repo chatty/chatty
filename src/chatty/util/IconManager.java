@@ -1,9 +1,11 @@
 
 package chatty.util;
 
+import chatty.Chatty;
 import chatty.gui.MainGui;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +26,10 @@ public class IconManager {
     public static void setCustomIcons(List<String> icons) {
         List<ImageIcon> result = new ArrayList<>();
         for (String path : icons) {
-            if (Paths.get(path).toFile().isFile()) {
+            Path absolutePath = Chatty.toAbsolutePathWdir(Paths.get(path));
+            if (absolutePath.toFile().isFile()) {
                 try {
-                    ImageIcon image = new ImageIcon(path);
+                    ImageIcon image = new ImageIcon(absolutePath.toString());
                     result.add(image);
                 } catch (Exception ex) {
                     LOGGER.warning(String.format("Error creating custom icon: %s [%s]", path, ex));
