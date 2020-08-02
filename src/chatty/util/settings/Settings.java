@@ -5,6 +5,7 @@ import chatty.Logging;
 import chatty.util.settings.FileManager.SaveResult;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -957,8 +958,8 @@ public class Settings {
                 return false;
             }
         }
-        catch (FileNotFoundException ex) {
-            LOGGER.warning("Error loading settings from file: "+ex);
+        catch (FileNotFoundException | NoSuchFileException ex) {
+            LOGGER.warning("File not found: "+ex);
         }
         catch (IOException ex) {
             LOGGER.warning("Error loading settings from file: "+ex);
