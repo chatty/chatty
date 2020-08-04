@@ -14,17 +14,25 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
 import chatty.util.StringUtil;
+import javafx.scene.shape.Box;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.Console;
+
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -88,16 +96,32 @@ public final class Channel extends JPanel {
         westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
         west.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         west.getVerticalScrollBar().setUnitIncrement(40);
-
         
-        // User list
+        // User list TODO
+        JSplitPane userList_MainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JPanel userList_PanelContainer = new JPanel();        
+        
+        JTextField userSearchBar = new JTextField(40);
+        userSearchBar.addKeyListener(new KeyAdapter() {
+        	@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				users.setFilter(userSearchBar.getText());
+			}
+		});
+        userList_PanelContainer.add(userSearchBar);
+        
         users = new UserList(contextMenuListener, main.getUserListener());
         updateUserlistSettings();
-        userlist = new JScrollPane(users);
-        
+        userList_PanelContainer.add(users);
+        userList_MainPanel.setPreferredSize(new Dimension(200,0));
+        userList_MainPanel.setLayout(new BorderLayout());
+        userList_MainPanel.add(userSearchBar, BorderLayout.NORTH);
+        userList_MainPanel.add(new JScrollPane(users), BorderLayout.CENTER);
+        userlist = new JScrollPane(userList_PanelContainer);
         
         // Split Pane
-        mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,west,userlist);
+        mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,west,userList_MainPanel);
         mainPane.setResizeWeight(1);
         mainPane.setDividerSize(DIVIDER_SIZE);
         
@@ -231,6 +255,10 @@ public final class Channel extends JPanel {
     
     public void clearUsers() {
         users.clearUsers();
+    }
+    
+    public void searchUser(String user) {
+    	users.setFilter(user);
     }
     
     public int getNumUsers() {

@@ -23,15 +23,18 @@ import javax.swing.JList;
 public class UserList extends JList<User> {
     
     private final UserlistModel<User> data;
+    private final UserlistModel<User> data_filtered;
     private final ContextMenuListener contextMenuListener;
     private final UserListener userListener;
     
     private long displayNamesMode = SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED;
+	private String filter = "";
     
     public UserList(ContextMenuListener contextMenuListener,
             UserListener userListener) {
         data = new UserlistModel<>();
-        this.setModel(data);
+        data_filtered = new UserlistModel<>();
+        this.setModel(data_filtered);
         this.setCellRenderer(new DefaultListCellRenderer() {
             
             @Override
@@ -47,8 +50,9 @@ public class UserList extends JList<User> {
                     return this;
                 }
                 // Configure some default stuff like colors
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 
+                
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 User user = (User)value;
                 setText(Helper.makeDisplayNick(user, displayNamesMode));
                 return this;
@@ -89,37 +93,64 @@ public class UserList extends JList<User> {
     public void setDisplayNamesMode(long mode) {
         this.displayNamesMode = mode;
         data.update();
+        filterUsers();
     }
     
     public void addUser(User user) {
         data.add(user);
+        filterUsers();
     }
     
     public void removeUser(User user) {
         data.remove(user);
+        filterUsers();
     }
     
     public void updateUser(User user) {
         data.remove(user);
         data.add(user);
+        filterUsers();
         //TODO: this didnt sort the user correctly after opping, maybe it can be fixed?
         //userlistData.updated(user);
     }
     
     public void resort() {
         data.sort();
+        filterUsers();
     }
     
     public void clearUsers() {
         data.clear();
+        filterUsers();
     }
     
     public int getNumUsers() {
         return data.getSize();
     }
     
+    public void setFilter(String filter) {
+    	this.filter = filter;
+    }
+    
+    public void clearFilter() {
+        filter = "";
+    }
+    
     public ArrayList<User> getData() {
         return data.getData();
+    }
+    
+    
+        
+    private void filterUsers(){
+    	data_filtered.clear();
+    	
+    	for(User user: data.getData()) {
+    		if(user.getName().toLowerCase().contains(filter.toLowerCase()) || (filter == null || filter.equalsIgnoreCase(""))) {
+    			data_filtered.add(user);
+    		}
+    	}
+    	return;
     }
     
     /**
