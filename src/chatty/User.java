@@ -378,7 +378,7 @@ public class User implements Comparable<User> {
         }
     }
     
-    private static final int BAN_INFO_WAIT = 500;
+    private static final int BAN_INFO_WAIT = 1000;
     
     private synchronized void replayCachedBanInfo() {
         if (cachedBanInfo == null) {
