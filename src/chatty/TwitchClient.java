@@ -1608,6 +1608,8 @@ public class TwitchClient {
             c.debugConnection();
         } else if (command.equals("clearoldcachefiles")) {
             ImageCache.deleteExpiredFiles();
+        } else if (command.equals("sha1")) {
+            g.printSystem(ImageCache.sha1(parameter));
         }
     }
     

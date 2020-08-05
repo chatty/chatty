@@ -463,7 +463,7 @@ public class ImageCache {
         return null;
     }
     
-    private static String sha1(String input) {
+    public static String sha1(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             return byteArrayToHexString(md.digest(input.getBytes("UTF-8")));
