@@ -112,9 +112,13 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     public JMenuItem addItem(String action, String text, ImageIcon icon) {
         return addItem(action, text, -1, null, icon);
     }
-
+    
     public JMenuItem addItem(String action, String text, String parent) {
         return addItem(action, text, -1, parent, null);
+    }
+    
+    public JMenuItem addItem(String action, String text, String parent, ImageIcon icon) {
+        return addItem(action, text, -1, parent, icon);
     }
 
     public JMenuItem addCommandItem(CommandMenuItem item) {

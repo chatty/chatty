@@ -10,6 +10,7 @@ import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.lang.Language;
 import chatty.util.api.StreamInfo;
+import chatty.util.settings.Settings;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -90,7 +91,7 @@ public class LiveStreamsDialog extends JFrame {
     private boolean liveStreamListSelected = true;
     
     public LiveStreamsDialog(ContextMenuListener listener,
-            ChannelFavorites favs) {
+            ChannelFavorites favs, Settings settings) {
         
         setTitle("Live Streams");
         setPreferredSize(new Dimension(280,350));
@@ -104,7 +105,7 @@ public class LiveStreamsDialog extends JFrame {
             }
         };
         // Create list
-        list = new LiveStreamsList(localLiveStreamListener, favs);
+        list = new LiveStreamsList(localLiveStreamListener, favs, settings);
         list.addContextMenuListener(listener);
         list.addContextMenuListener(localCml);
         setSorting(Sorting.RECENT, true);

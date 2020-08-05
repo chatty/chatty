@@ -58,7 +58,8 @@ public class Notification {
                     TypeOption.NEW_STREAM,
                     TypeOption.LIVE,
                     TypeOption.NO_UPTIME,
-                    TypeOption.FAV_CHAN));
+                    TypeOption.FAV_CHAN,
+                    TypeOption.FAV_GAME));
         }
         
         private static List<TypeOption> createMessageSubtypes() {
@@ -79,6 +80,7 @@ public class Notification {
         LIVE("noOffline"),
         OWN_MSG("own"),
         FAV_CHAN("fav"),
+        FAV_GAME("favGame"),
         CONTAINS_BITS("bits");
         
         public String id;

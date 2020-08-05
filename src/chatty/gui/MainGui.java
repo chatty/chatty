@@ -229,7 +229,7 @@ public class MainGui extends JFrame implements Runnable {
         GuiUtil.installEscapeCloseOperation(favoritesDialog);
         joinDialog = new JoinDialog(this);
         GuiUtil.installEscapeCloseOperation(joinDialog);
-        liveStreamsDialog = new LiveStreamsDialog(contextMenuListener, client.channelFavorites);
+        liveStreamsDialog = new LiveStreamsDialog(contextMenuListener, client.channelFavorites, client.settings);
         setLiveStreamsWindowIcons();
         //GuiUtil.installEscapeCloseOperation(liveStreamsDialog);
         EmoteContextMenu.setEmoteManager(emoticons);
@@ -1811,6 +1811,22 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("sortOption_favFirst")) {
                 JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
                 client.settings.setBoolean("liveStreamsSortingFav", item.isSelected());
+            }
+            if (cmd.equals("favoriteGame")) {
+                for (StreamInfo info : streamInfos) {
+                    if (!StringUtil.isNullOrEmpty(info.getGame())) {
+                        client.settings.setAdd("gameFavorites", info.getGame());
+                    }
+                }
+                client.settings.setSettingChanged("gameFavorites");
+            }
+            if (cmd.equals("unfavoriteGame")) {
+                for (StreamInfo info : streamInfos) {
+                    if (!StringUtil.isNullOrEmpty(info.getGame())) {
+                        client.settings.listRemove("gameFavorites", info.getGame());
+                    }
+                }
+                client.settings.setSettingChanged("gameFavorites");
             }
         }
         

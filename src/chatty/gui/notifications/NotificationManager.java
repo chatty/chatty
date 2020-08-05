@@ -96,7 +96,8 @@ public class NotificationManager {
             boolean liveReq = !n.hasOption(TypeOption.LIVE) || info.getOnline();
             boolean newReq = !n.hasOption(TypeOption.NEW_STREAM) || info.getTimeStartedWithPicnicAgo() < 15*60*1000;
             boolean nowLiveReq = !n.hasOption(TypeOption.NOW_LIVE) || info.getPrevLastOnlineAgoSecs() > 15*60;
-            if (liveReq && newReq && nowLiveReq) {
+            boolean gameFavReq = !n.hasOption(TypeOption.FAV_GAME) || settings.listContains("gameFavorites", info.getGame());
+            if (liveReq && newReq && nowLiveReq && gameFavReq) {
                 String title;
                 if (info.getOnline() && !n.hasOption(TypeOption.NO_UPTIME)) {
                     title = String.format("[Status] %2$s (%1$s)",

@@ -355,6 +355,8 @@ public class SettingsManager {
         settings.addBoolean("historyClear", true);
         settings.addLong("favoritesSorting", 20);
         
+        settings.addList("gameFavorites", new ArrayList(), Setting.STRING);
+        
         //=======================
         // Channel Admin Features
         //=======================
