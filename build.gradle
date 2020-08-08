@@ -1,10 +1,9 @@
 import java.util.regex.Matcher
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "2.0.4"
+    id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "java"
 }
-
-apply plugin: 'java'
 
 // This seems to fix non-ASCII characters in the code not appearing correctly after compiling
 compileJava.options.encoding = 'UTF-8'
@@ -54,24 +53,20 @@ def extractVersion = { ->
 version = extractVersion()
 
 dependencies {
-    // Take the .jar files from the assets/lib directory and add them to the compile-time classpath
-    compile fileTree(dir: 'assets/lib', include: ['*.jar'])
-
+    implementation fileTree(dir: 'assets/lib', include: ['*.jar'])
     implementation 'net.java.dev.jna:jna:5.5.0'
     implementation 'net.java.dev.jna:jna-platform:5.5.0'
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 // The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
 // installed. It allows you to specify the project's Gradle version for everyone that has checked out the project.
 wrapper {
-    gradleVersion = '2.13'
+    gradleVersion = '6.5.1'
 }
 
 jar {
-    archiveName = "${archivesBaseName}.jar"
-
     manifest {
         attributes(
                 'Main-Class': mainClass,
@@ -84,9 +79,8 @@ jar {
 // dependencies. This removes the need for a separate 'libs' directory when Chatty is installed.
 shadowJar {
     // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
-    classifier = null
-
-    version = null
+    classifier = ''
+    archiveVersion = ''
 
     manifest {
         inheritFrom project.tasks.jar.manifest
@@ -106,8 +100,8 @@ task allPlatformsZip(type: Zip, group: 'build') {
         exclude 'lib'
     }
 
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}.zip"
+    destinationDirectory = releasesDir
+    archiveFileName = "${archivesBaseName}_${project.version}.zip"
 }
 
 // Builds all the release zips
@@ -137,7 +131,7 @@ task javapackager(type: Exec, group: 'build') {
     if (project.hasProperty('javapackagerPath')) {
         def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
         command << "-Bicon=assets-bundle/Chatty.ico"
-        command << "-BappVersion=${version}"
+        command << "-BappVersion=${project.version}"
         command << "-BjvmProperties=sun.java2d.d3d=false"
         command << "-BjvmOptions=-Xmx400M"
         if (project.hasProperty('jrePath')) {
@@ -164,8 +158,8 @@ task windowsZip(type: Zip, group: 'build') {
     }
     from 'assets-bundle/readme-bundle.txt'
 
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_win_standalone.zip"
+    destinationDirectory = releasesDir
+    archiveFileName = "${archivesBaseName}_${project.version}_win_standalone.zip"
 }
 
 task releaseWindows(group: 'build') {
@@ -184,7 +178,7 @@ def prepareSetupFile(file, to) {
             from("setup/"+file) {
                 rename(file, "setup.iss")
                 expand([
-                    applicationVersion: version,
+                    applicationVersion: project.version,
                     code: new File('setup/_functions.iss-part').getText('UTF-8'),
                     setup: new File('setup/_common.iss-part').getText('UTF-8')
                 ])
@@ -238,7 +232,6 @@ task innosetupStandalone(type: Exec, group: 'build') {
                 into 'runtime/lib/fonts/fallback'
             }
             from 'assets-bundle/readme-bundle.txt'
-            from('assets-bundle/Chatty.ico')
             into("${innosetupDir2}/pack")
         }
         def command = [innosetupPath, "/Q", "${innosetupDir2}\\setup.iss"]
