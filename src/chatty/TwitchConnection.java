@@ -1472,6 +1472,7 @@ public class TwitchConnection {
 
     public User userJoined(User user) {
         if (user.setOnline(true)) {
+            user.setFirstSeen();
             if (user.getName().equals(user.getStream())) {
                 user.setBroadcaster(true);
             }

@@ -118,15 +118,21 @@ public class InfoPanel extends JPanel {
             return;
         }
         if (currentUser != null) {
-            firstSeen.setText(new String[]{
-                String.format("First seen: %s ago", formatAgoTime(currentUser.getCreatedAt(), false)),
-                String.format("First seen: %s ago", formatAgoTime(currentUser.getCreatedAt(), true))
-            });
-            firstSeen.setToolTipText(String.format("<html>First seen: %s ago (%s)"
-                    + "<br /><br />"
-                    + "(Could mean the first message or when the user first joined, during this Chatty session)",
-                    formatAgoTimeVerbose(currentUser.getCreatedAt()),
-                    DateTime.formatFullDatetime(currentUser.getCreatedAt())));
+            if (currentUser.getFirstSeen() == -1) {
+                firstSeen.setText("First seen: n/a");
+                firstSeen.setToolTipText(null);
+            }
+            else {
+                firstSeen.setText(new String[]{
+                    String.format("First seen: %s ago", formatAgoTime(currentUser.getFirstSeen(), false)),
+                    String.format("First seen: %s ago", formatAgoTime(currentUser.getFirstSeen(), true))
+                });
+                firstSeen.setToolTipText(String.format("<html>First seen: %s ago (%s)"
+                        + "<br /><br />"
+                        + "(Could mean the first message or when the user first joined, during this Chatty session)",
+                        formatAgoTimeVerbose(currentUser.getFirstSeen()),
+                        DateTime.formatFullDatetime(currentUser.getFirstSeen())));
+            }
         }
         infoLabelSize.check();
     }

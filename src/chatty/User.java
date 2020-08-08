@@ -48,7 +48,7 @@ public class User implements Comparable<User> {
     //========
     // Basics
     //========
-    private final long createdAt = System.currentTimeMillis();
+    private long firstSeen = -1;
     private volatile String id;
     private Room room;
     
@@ -278,8 +278,14 @@ public class User implements Comparable<User> {
         }
     }
     
-    public long getCreatedAt() {
-        return createdAt;
+    public synchronized long getFirstSeen() {
+        return firstSeen;
+    }
+    
+    public synchronized void setFirstSeen() {
+        if (firstSeen == -1) {
+            firstSeen = System.currentTimeMillis();
+        }
     }
     
     public synchronized int getNumberOfMessages() {
@@ -323,6 +329,7 @@ public class User implements Comparable<User> {
      * @param id 
      */
     public synchronized void addMessage(String line, boolean action, String id) {
+        setFirstSeen();
         addLine(new TextMessage(System.currentTimeMillis(), line, action, id));
         numberOfMessages++;
     }
@@ -349,14 +356,17 @@ public class User implements Comparable<User> {
     }
     
     public synchronized void addSub(String message, String text) {
+        setFirstSeen();
         addLine(new SubMessage(System.currentTimeMillis(), message, text));
     }
     
     public synchronized void addInfo(String message, String text) {
+        setFirstSeen();
         addLine(new InfoMessage(System.currentTimeMillis(), message, text));
     }
     
     public synchronized void addModAction(ModeratorActionData data) {
+        setFirstSeen();
         addLine(new ModAction(System.currentTimeMillis(), data.getCommandAndParameters()));
     }
     
