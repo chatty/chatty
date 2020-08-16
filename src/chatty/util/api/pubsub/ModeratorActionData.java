@@ -115,6 +115,14 @@ public class ModeratorActionData extends MessageData {
             }
         }
         
+        // For type:"moderator_added" events, which don't have args
+        if (args.isEmpty() && (moderation_action.equals("mod") || moderation_action.equals("unmod"))) {
+            String target_user = (String)data.get("target_user_login");
+            if (target_user != null) {
+                args.add(target_user);
+            }
+        }
+        
         String created_by = (String)data.get("created_by");
         if (created_by == null) {
             created_by = "";
