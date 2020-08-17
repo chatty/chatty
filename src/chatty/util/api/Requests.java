@@ -605,6 +605,10 @@ public class Requests {
                 
                 removeRequest(url);
                 
+                if (Debugging.isEnabled("requestresponse")) {
+                    LOGGER.info(result);
+                }
+                
                 listener.result(new RequestResult(result, responseCode));
             }
         });

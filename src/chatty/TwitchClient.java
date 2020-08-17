@@ -526,8 +526,8 @@ public class TwitchClient {
         //testUser.setColor(new Color(0,216,107));
         //testUser.setBot(true);
         //testUser.setTurbo(true);
-        //testUser.setModerator(true);
-        //testUser.setSubscriber(true);
+        testUser.setModerator(true);
+        testUser.setSubscriber(true);
         //testUser.setAdmin(true);
         //testUser.setStaff(true);
         //testUser.setBroadcaster(true);
