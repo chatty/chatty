@@ -58,6 +58,7 @@ public class EditorStringSetting extends JPanel implements StringSetting {
         
         editButton = new JButton(Language.getString("dialog.button.edit"));
         editButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        editButton.setToolTipText(title);
         editButton.addActionListener(new ActionListener() {
 
             @Override

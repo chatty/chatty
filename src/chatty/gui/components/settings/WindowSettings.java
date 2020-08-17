@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.WindowStateManager;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -84,8 +85,8 @@ public class WindowSettings extends SettingsPanel {
         other.add(d.addSimpleBooleanSetting("inputEnabled"),
                 d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
         
-        other.add(d.addComboLongSetting("inputFocus", 0, 1),
-                d.makeGbc(0, 7, 2, 1, GridBagConstraints.WEST));
+        SettingsUtil.addLabeledComponent(other, "inputFocus", 0, 7, 1, WEST,
+                d.addComboLongSetting("inputFocus", 0, 1, 2));
         
         //--------
         // Popout

@@ -172,6 +172,8 @@ public class StatusPanel extends JPanel {
                 statusEdited();
             }
         });
+        GuiUtil.resetFocusTraversalKeys(status);
+        status.getAccessibleContext().setAccessibleName(Language.getString("admin.input.title"));
         GuiUtil.installLengthLimitDocumentFilter(status, 500, false);
         gbc = makeGbc(0,2,3,1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -179,6 +181,7 @@ public class StatusPanel extends JPanel {
         gbc.weighty = 1;
         add(new JScrollPane(status), gbc);
         
+        game.getAccessibleContext().setAccessibleName(Language.getString("admin.input.game"));
         game.setEditable(false);
         gbc = makeGbc(0,3,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -192,10 +195,12 @@ public class StatusPanel extends JPanel {
         add(selectGame, gbc);
 
         removeGame.setMargin(SMALL_BUTTON_INSETS);
+        removeGame.getAccessibleContext().setAccessibleName(Language.getString("admin.button.removeGame2"));
         gbc = makeGbc(2,3,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(removeGame,gbc);
         
+        streamTags.getAccessibleContext().setAccessibleName(Language.getString("admin.input.tags"));
         streamTags.setEditable(false);
         streamTags.setBackground(game.getBackground());
         streamTags.setBorder(game.getBorder());
@@ -212,6 +217,7 @@ public class StatusPanel extends JPanel {
         add(selectTags, gbc);
         
         removeTags.setMargin(SMALL_BUTTON_INSETS);
+        removeTags.getAccessibleContext().setAccessibleName(Language.getString("admin.button.removeTags2"));
         gbc = makeGbc(2,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -220,6 +226,7 @@ public class StatusPanel extends JPanel {
         gbc = makeGbc(0,5,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         update.setMnemonic(KeyEvent.VK_U);
+        update.setToolTipText(Language.getString("admin.button.update.tip"));
         add(update, gbc);
         
         gbc = makeGbc(0,6,3,1);

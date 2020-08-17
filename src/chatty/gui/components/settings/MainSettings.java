@@ -9,6 +9,7 @@ import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import chatty.util.settings.FileManager;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.EAST;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.io.File;
@@ -48,9 +49,6 @@ public class MainSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST);
         startSettingsPanel.add(d.addSimpleBooleanSetting("splash"), gbc);
         
-        gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST);
-        startSettingsPanel.add(new JLabel(Language.getString("settings.startup.onStart")), gbc);
-        
         Map<Long, String> onStartDef = new LinkedHashMap<>();
         onStartDef.put((long)0, Language.getString("settings.startup.option.doNothing"));
         onStartDef.put((long)1, Language.getString("settings.startup.option.openConnect"));
@@ -59,16 +57,11 @@ public class MainSettings extends SettingsPanel {
         onStartDef.put((long)4, Language.getString("settings.startup.option.connectJoinFavorites"));
         ComboLongSetting onStart = new ComboLongSetting(onStartDef);
         d.addLongSetting("onStart", onStart);
-        gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
-        startSettingsPanel.add(onStart, gbc);
+        SettingsUtil.addLabeledComponent(startSettingsPanel, "settings.startup.onStart", 0, 1, 1, EAST, onStart);
         
-        gbc = d.makeGbc(0, 2, 1, 1, GridBagConstraints.EAST);
-        startSettingsPanel.add(new JLabel(Language.getString("settings.startup.channels")), gbc);
-        
-        gbc = d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST);
         JTextField channels = d.addSimpleStringSetting("autojoinChannel", 25, true);
         GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
-        startSettingsPanel.add(channels, gbc);
+        SettingsUtil.addLabeledComponent(startSettingsPanel, "settings.startup.channels", 0, 2, 1, EAST, channels);
         
         onStart.addActionListener(e -> {
             boolean channelsEnabled = onStart.getSettingValue().equals(Long.valueOf(2));
@@ -93,9 +86,11 @@ public class MainSettings extends SettingsPanel {
                 d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
         
-        languagePanel.add(d.createLabel("timezone"),
+        JLabel timezoneLabel = SettingsUtil.createLabel("timezone");
+        languagePanel.add(timezoneLabel,
                 d.makeGbc(0, 2, 1, 1));
         TimezoneSetting timezoneSetting = new TimezoneSetting(d);
+        timezoneLabel.setLabelFor(timezoneSetting);
         d.addStringSetting("timezone", timezoneSetting);
         gbc = d.makeGbc(1, 2, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -111,10 +106,12 @@ public class MainSettings extends SettingsPanel {
             dirInfo = Language.getString("settings.directory.argument", Chatty.getSettingsDirectoryInfo());
         }
         
-        dirPanel.add(new JLabel(Language.getString("settings.directory.info", dirInfo)),
+        JLabel dirLabel = new JLabel(Language.getString("settings.directory.info", dirInfo));
+        dirPanel.add(dirLabel,
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         
         JTextField dir = new JTextField(Chatty.getUserDataDirectory(), 30);
+        dirLabel.setLabelFor(dir);
         dir.setEditable(false);
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;

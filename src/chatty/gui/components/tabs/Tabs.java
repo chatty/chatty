@@ -340,6 +340,10 @@ public class Tabs extends JPanel {
         if (index != -1) {
             tabs.setTitleAt(index, title);
             tabs.setToolTipTextAt(index, tooltip);
+            if (title.startsWith("#")) {
+                tabs.getAccessibleContext().setAccessibleName("Channel "+title.substring(1));
+                tabs.getAccessibleContext().setAccessibleDescription("");
+            }
         }
     }
     

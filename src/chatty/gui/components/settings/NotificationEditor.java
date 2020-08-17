@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.EAST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
@@ -137,8 +138,7 @@ class NotificationEditor extends TableEditor<Notification> {
             // Apparently value can be null in rare cases, even if it shouldn't
             // be
             if (value == null) {
-                setText("");
-                setToolTipText("error");
+                setText("error");
                 return this;
             }
             Notification n = (Notification) value;
@@ -270,18 +270,18 @@ class NotificationEditor extends TableEditor<Notification> {
             
             desktopState.addItemListener(e -> {
                 if (desktopState.getSettingValue() == State.OFF) {
-                    tabs.setTitleAt(0, "Notification (Off)");
+                    tabs.setTitleAt(0, Language.getString("settings.notifications.column.notification")+" (Off)");
                 } else {
-                    tabs.setTitleAt(0, "Notification");
+                    tabs.setTitleAt(0, Language.getString("settings.notifications.column.notification"));
                 }
                 updateDesktopSettings();
             });
             
             soundState.addItemListener(e -> {
                 if (soundState.getSettingValue() == State.OFF) {
-                    tabs.setTitleAt(1, "Sound (Off)");
+                    tabs.setTitleAt(1, Language.getString("settings.notifications.column.sound")+" (Off)");
                 } else {
-                    tabs.setTitleAt(1, "Sound");
+                    tabs.setTitleAt(1, Language.getString("settings.notifications.column.sound"));
                 }
                 updateSoundSettings();
             });
@@ -302,10 +302,9 @@ class NotificationEditor extends TableEditor<Notification> {
             matcherEditor.setAllowEmpty(true);
             matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, matcherEditor);
             
-            optionsPanel.add(new JLabel("Channel:"), GuiUtil.makeGbc(0, 2, 1, 1));
-            optionsPanel.add(channel, GuiUtil.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
-            optionsPanel.add(new JLabel("Match:"), GuiUtil.makeGbc(0, 3, 1, 1));
-            optionsPanel.add(matcher, GuiUtil.makeGbc(1, 3, 1, 1));
+            SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.channel", 0, 2, 1, EAST, channel);
+            SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.textMatch", 0, 3, 1, EAST, matcher);
+            
             optionsPanel.add(options, GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
             
             colorChooser = new ColorChooser(dialog);
@@ -360,11 +359,7 @@ class NotificationEditor extends TableEditor<Notification> {
             GridBagConstraints gbc;
 
             //### Basic Settings Panel ###
-            gbc = GuiUtil.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST);
-            optionsPanel.add(new JLabel("Event:"), gbc);
-            
-            gbc = GuiUtil.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST);
-            optionsPanel.add(type, gbc);
+            SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.event", 0, 0, 2, EAST, type);
             
             description = new JLabel();
             gbc = GuiUtil.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST);
@@ -373,8 +368,10 @@ class NotificationEditor extends TableEditor<Notification> {
             //-----------------------
             // Notification Settings
             //-----------------------
+            JLabel desktopStateLabel = new JLabel("Status:");
+            desktopStateLabel.setLabelFor(desktopState);
             gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST);
-            desktop.add(new JLabel("Status:"), gbc);
+            desktop.add(desktopStateLabel, gbc);
             
             gbc = GuiUtil.makeGbc(1, 1, 2, 1, GridBagConstraints.CENTER);
             desktop.add(desktopState, gbc);
@@ -395,40 +392,19 @@ class NotificationEditor extends TableEditor<Notification> {
             //----------------
             // Sound Settings
             //----------------
+            JLabel soundStateLabel = new JLabel("Status:");
+            soundStateLabel.setLabelFor(soundState);
             gbc = GuiUtil.makeGbc(0, 1, 1, 1);
-            sound.add(new JLabel("Status:"), gbc);
+            sound.add(soundStateLabel, gbc);
             
             gbc = GuiUtil.makeGbc(1, 1, 3, 1);
             gbc.anchor = GridBagConstraints.WEST;
             sound.add(soundState, gbc);
             
-            gbc = GuiUtil.makeGbc(0, 2, 1, 1);
-            sound.add(new JLabel("File:"), gbc);
-            
-            gbc = GuiUtil.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST);
-            sound.add(soundFile, gbc);
-            
-            gbc = GuiUtil.makeGbc(0, 3, 1, 1);
-            sound.add(new JLabel("Volume:"), gbc);
-            
-            gbc = GuiUtil.makeGbc(1, 3, 3, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 0.9;
-            sound.add(volumeSlider, gbc);
-            
-            gbc = GuiUtil.makeGbc(0, 4, 1, 1);
-            sound.add(new JLabel("Cooldown:"), gbc);
-            
-            gbc = GuiUtil.makeGbc(1, 4, 1, 1);
-            gbc.anchor = GridBagConstraints.WEST;
-            sound.add(soundCooldown, gbc);
-            
-            gbc = GuiUtil.makeGbc(2, 4, 1, 1);
-            sound.add(new JLabel("Passive Cooldown:"), gbc);
-            
-            gbc = GuiUtil.makeGbc(3, 4, 1, 1);
-            gbc.anchor = GridBagConstraints.WEST;
-            sound.add(soundInactiveCooldown, gbc);
+            SettingsUtil.addLabeledComponent(sound, "settings.notifications.soundFile", 0, 2, 3, EAST, soundFile);
+            SettingsUtil.addLabeledComponent(sound, "settings.notifications.soundVolume", 0, 3, 3, EAST, volumeSlider);
+            SettingsUtil.addLabeledComponent(sound, "settings.notifications.soundCooldown", 0, 4, 1, EAST, soundCooldown);
+            SettingsUtil.addLabeledComponent(sound, "settings.notifications.soundPassiveCooldown", 2, 4, 1, EAST, soundInactiveCooldown);
             
             playSound = new JButton("Test Sound");
             playSound.addActionListener(new ActionListener() {
@@ -473,8 +449,8 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc.weightx = 0.3;
             dialog.add(cancelButton, gbc);
             
-            tabs.addTab("Notification", GuiUtil.northWrap(desktop));
-            tabs.addTab("Sound", GuiUtil.northWrap(sound));
+            tabs.addTab(Language.getString("settings.notifications.column.notification"), GuiUtil.northWrap(desktop));
+            tabs.addTab(Language.getString("settings.notifications.column.sound"), GuiUtil.northWrap(sound));
             
             ActionListener buttonAction = new ActionListener() {
 
@@ -532,8 +508,10 @@ class NotificationEditor extends TableEditor<Notification> {
             if (eventDescription != null) {
                 description.setVisible(true);
                 description.setText("<html><body style='width:"+matcher.getPreferredSize().width+"'>"+eventDescription);
+                type.setToolTipText(eventDescription);
             } else {
                 description.setVisible(false);
+                type.setToolTipText(null);
             }
             matcher.setInfo(SettingConstants.HTML_PREFIX
                     +SettingsUtil.getInfo("info-notification-match.html", type.getSettingValue().name()));

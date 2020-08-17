@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -115,13 +116,9 @@ public class OtherSettings extends SettingsPanel {
                 "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"),
                 d.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST));
         
-        other.add(new JLabel("Prepend to window title:"),
-                d.makeGbc(0, 8, 1, 1, GridBagConstraints.WEST));
+        SettingsUtil.addLabeledComponent(other, "titleAddition", 0, 8, 2, WEST,
+                d.addSimpleStringSetting("titleAddition", 10, true));
         
-        other.add(d.addSimpleStringSetting(
-                "titleAddition", 10, true),
-                d.makeGbc(1, 8, 2, 1, GridBagConstraints.WEST));
-
         other.add(d.addSimpleBooleanSetting(
                 "abSaveOnChange",
                 "Save Addressbook immediately after changing entries",

@@ -185,6 +185,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     }
     
     public ChannelTextPane(MainGui main, StyleServer styleServer, boolean isStreamChat, boolean startAtBottom) {
+        getAccessibleContext().setAccessibleName("Chat Output");
+        getAccessibleContext().setAccessibleDescription("");
         lineSelection = new LineSelection(main.getUserListener());
         this.styleServer = styleServer;
         this.main = main;

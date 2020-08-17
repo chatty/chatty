@@ -7,6 +7,7 @@ import chatty.gui.components.completion.AutoCompletionServer;
 import chatty.util.colors.ColorCorrectionNew;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +41,8 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
     private boolean historyTextEdited = false;
     
     private boolean historyRequireCtrlMultirow = false;
+    
+    private boolean completionEnabled = true;
     
     private final Set<ActionListener> listeners = new HashSet<>();
     
@@ -100,6 +103,11 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
             // figure out what actually causes this error
             return new Point(0,0);
         }
+    }
+    
+    public void setCompletionEnabled(boolean enabled) {
+        this.completionEnabled = enabled;
+        autoCompletion.setEnabled(enabled);
     }
     
     public void setCompletionMaxItemsShown(int max) {
@@ -225,6 +233,14 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
             }
         }
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
+            if (!completionEnabled || getText().isEmpty()) {
+                if (e.getModifiers() == 0) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
+                }
+                else if (e.getModifiers() == KeyEvent.SHIFT_MASK) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusPreviousComponent();
+                }
+            }
             e.consume();
         }
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -235,7 +251,7 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_TAB) {
+        if (e.getKeyCode() == KeyEvent.VK_TAB && completionEnabled) {
             if (e.isControlDown() || e.isAltDown() || e.isAltGraphDown()) {
                 return;
             }

@@ -667,7 +667,9 @@ public class Channels {
     }
     
     public void setInitialFocus() {
-        getActiveChannel().requestFocusInWindow();
+        if (gui.getSettings().getLong("inputFocus") != 2) {
+            getActiveChannel().requestFocusInWindow();
+        }
     }
     
     public void refreshStyles() {
@@ -679,6 +681,12 @@ public class Channels {
     public void updateUserlistSettings() {
         for (Channel channel : getChannels()) {
             channel.updateUserlistSettings();
+        }
+    }
+    
+    public void setCompletionEnabled(boolean enabled) {
+        for (Channel channel : getChannels()) {
+            channel.setCompletionEnabled(enabled);
         }
     }
     

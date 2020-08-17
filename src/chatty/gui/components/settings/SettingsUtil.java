@@ -1,12 +1,19 @@
 
 package chatty.gui.components.settings;
 
+import static chatty.gui.components.settings.SettingsDialog.makeGbc;
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.function.Function;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -91,6 +98,50 @@ public class SettingsUtil {
             return removeHtmlConditions(html, type);
         }
         return html;
+    }
+    
+    public static JLabel createLabel(String settingName) {
+        return createLabel(settingName, false);
+    }
+    
+    public static JLabel createLabel(String settingName, boolean info) {
+        String baseKey = "settings.label."+settingName;
+        if (settingName.contains(".")) {
+            baseKey = settingName;
+        }
+        String text = Language.getString(baseKey);
+        String tip = Language.getString(baseKey+".tip", false);
+        JLabel label;
+        if (info) {
+            label = new JLabel(SettingConstants.HTML_PREFIX+text);
+        } else {
+            label = new JLabel(text);
+        }
+        label.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
+        return label;
+    }
+    
+    public static void addLabeledComponent(JPanel panel, String labelSettingName, int x, int y, int w, int labelAlign, JComponent component) {
+        JLabel label = createLabel(labelSettingName);
+        label.setLabelFor(component);
+        panel.add(label, SettingsDialog.makeGbc(x, y, 1, 1, labelAlign));
+        panel.add(component, SettingsDialog.makeGbc(x+1, y, w, 1, GridBagConstraints.WEST));
+    }
+    
+    public static JPanel createPanel(String settingName, JComponent... settingComponent) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = makeGbc(0, 0, 1, 1);
+        // Make sure to only have space between the two components, since other
+        // spacing will be added when this panel is added to the layout
+        gbc.insets = new Insets(0, 0, 0, gbc.insets.right);
+        panel.add(createLabel(settingName), gbc);
+        gbc = makeGbc(1, 0, 1, 1);
+        gbc.insets = new Insets(0, gbc.insets.left, 0, 0);
+        for (JComponent comp : settingComponent) {
+            panel.add(comp, gbc);
+            gbc.gridx++;
+        }
+        return panel;
     }
     
 }

@@ -233,6 +233,8 @@ public class FollowersDialog extends JDialog {
         
         pack();
         setSize(300,400);
+        
+        GuiUtil.installEscapeCloseOperation(this);
     }
     
     public void setCompactMode(boolean compactMode) {

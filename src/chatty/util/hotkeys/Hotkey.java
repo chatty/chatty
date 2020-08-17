@@ -101,7 +101,7 @@ public class Hotkey {
     public static String keyStrokeToText(KeyStroke keyStroke) {
         String mod = KeyEvent.getKeyModifiersText(keyStroke.getModifiers());
         String key = KeyEvent.getKeyText(keyStroke.getKeyCode());
-        if (mod.isEmpty()) {
+        if (mod.isEmpty() || mod.equals(key)) {
             return key;
         }
         return mod+"+"+key;

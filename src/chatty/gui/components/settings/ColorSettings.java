@@ -384,7 +384,7 @@ public class ColorSettings extends SettingsPanel {
         gbc = d.makeGbc(1, 9, 2, 1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(-1,10,0,0);
-        colorsPanel.add(d.createPanel("timestampColorInherit", timestampInheritSelection), gbc);
+        colorsPanel.add(SettingsUtil.createPanel("timestampColorInherit", timestampInheritSelection), gbc);
         
         //--------------------------
         // Background Switch Button

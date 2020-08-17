@@ -601,6 +601,7 @@ public class SettingsManager {
         settings.addBoolean("logLockFiles", true);
         
         // TAB Completion
+        settings.addBoolean("completionEnabled", true);
         settings.addMap("customCompletion", new HashMap(), Setting.STRING);
         settings.addLong("completionMaxItemsShown", 5);
         settings.addBoolean("completionShowPopup", true);

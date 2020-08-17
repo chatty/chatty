@@ -114,8 +114,8 @@ public class FavoritesDialog extends JDialog {
         table.setRowSorter(rowSorter);
         sorter = new CustomSorter(rowSorter);
         setupTable();
-        
-        
+
+        input.setToolTipText(Language.getString("favorites.input.tip"));
         gbc = makeGbc(0,0,2,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(input, gbc);
@@ -150,10 +150,7 @@ public class FavoritesDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(cancelButton, gbc);
 
-        removeFromFavoritesButton.setToolTipText("Remove selected channel(s) "
-                + "from favorites only");
-        removeButton.setToolTipText("Remove selected channel(s) from favorites "
-                + "and history");
+        removeButton.setToolTipText(Language.getString("favorites.button.remove.tip"));
         
         ActionListener actionListener = new ActionListener() {
 

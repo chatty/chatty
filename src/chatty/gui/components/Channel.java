@@ -105,6 +105,7 @@ public final class Channel extends JPanel {
         input = new ChannelEditBox(40);
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
+        input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
         // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
@@ -411,6 +412,10 @@ public final class Channel extends JPanel {
         }
         userlistEnabled = enable;
         revalidate();
+    }
+    
+    public void setCompletionEnabled(boolean enabled) {
+        input.setCompletionEnabled(enabled);
     }
     
     /**

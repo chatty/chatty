@@ -3,6 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import chatty.util.hotkeys.Hotkey;
 import java.awt.Color;
 import java.awt.Component;
@@ -164,10 +165,11 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                 public void hotkeyEntered(KeyStroke newHotkey) {
                     Hotkey hotkey = getHotkeyForKeyStroke(newHotkey);
                     if (hotkey != null && hotkey != preset) {
-                        String message = "Used already: "+actionNames.get(hotkey.actionId);
+                        String action = actionNames.get(hotkey.actionId);
+                        String message = "Used already: "+action;
                         hotkeyInfo.setText(message);
                         dialog.pack();
-                        //JOptionPane.showMessageDialog(dialog, message);
+                        JOptionPane.showMessageDialog(dialog, "Hotkey already used for action: "+action);
                     } else {
                         hotkeyInfo.setText(null);
                         dialog.pack();
@@ -225,9 +227,9 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
 
             // Hotkey scope selection radio buttons
             final ButtonGroup scopeSelection = new ButtonGroup();
-            scopeSelection.add(global);
-            scopeSelection.add(applicationWide);
             scopeSelection.add(regular);
+            scopeSelection.add(applicationWide);
+            scopeSelection.add(global);
             
             JPanel scopeSelectionPanel = new JPanel();
             ((FlowLayout)scopeSelectionPanel.getLayout()).setVgap(0);
@@ -239,7 +241,9 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             GridBagConstraints gbc;
             
             gbc = GuiUtil.makeGbc(0, 0, 1, 1);
-            dialog.add(new JLabel("Action:"), gbc);
+            JLabel actionLabel = new JLabel(Language.getString("settings.hotkeys.action"));
+            actionLabel.setLabelFor(actionId);
+            dialog.add(actionLabel, gbc);
             
             gbc = GuiUtil.makeGbc(1, 0, 4, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -274,9 +278,12 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             gbc.insets = new Insets(-1, 5, 7, 5);
             dialog.add(scopeTip, gbc);
             
+            JLabel delayLabel = new JLabel(Language.getString("settings.hotkeys.delay"));
+            delayLabel.setToolTipText(Language.getString("settings.hotkeys.delay.tip"));
+            delayLabel.setLabelFor(delay);
             gbc = GuiUtil.makeGbc(0, 6, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
-            dialog.add(new JLabel("Delay:"), gbc);
+            dialog.add(delayLabel, gbc);
             
             gbc = GuiUtil.makeGbc(1, 6, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
@@ -331,7 +338,6 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             hotkeyInfo.setText(null);
             dialog.pack();
             updateButtons();
-            hotkeyChooser.requestFocusInWindow();
             
             // Wait for dialog to close
             dialog.setVisible(true);

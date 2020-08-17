@@ -630,6 +630,11 @@ public class GuiUtil {
         });
     }
     
+    public static void resetFocusTraversalKeys(Component comp) {
+        comp.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        comp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
+    }
+    
     public static void focusTest() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addVetoableChangeListener(new VetoableChangeListener() {
 

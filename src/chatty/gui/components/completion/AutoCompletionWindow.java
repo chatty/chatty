@@ -531,6 +531,8 @@ public class AutoCompletionWindow {
                     text.setText(item.getCode());
                 }
             }
+            panel.getAccessibleContext().setAccessibleName(item.getCode());
+            panel.getAccessibleContext().setAccessibleDescription(item.getInfo());
             
             ImageIcon image = item.getImage(list);
             icon.setIcon(image);

@@ -93,7 +93,7 @@ public class UsercolorSettings extends SettingsPanel {
         otherPanel.add(colorCorrectionPreview,
                 d.makeGbc(2, 0, 1, 1));
         
-        otherPanel.add(d.createLabel("nickColorBackground"),
+        otherPanel.add(SettingsUtil.createLabel("nickColorBackground"),
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
         
         otherPanel.add(d.addComboLongSetting("nickColorBackground", 0, 1, 2),

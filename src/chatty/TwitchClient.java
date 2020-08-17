@@ -730,7 +730,7 @@ public class TwitchClient {
         }
         
         if (name == null || name.isEmpty() || password == null || password.isEmpty()) {
-            g.showMessage("Cannot connect: Incomplete login data.");
+            g.showMessage(Language.getString("connect.error.noLogin"));
             return false;
         }
         
@@ -743,7 +743,7 @@ public class TwitchClient {
             autojoin = Helper.parseChannels(channel);
         }
         if (autojoin.length == 0) {
-            g.showMessage("A channel to join has to be specified.");
+            g.showMessage(Language.getString("connect.error.noChannel"));
             return false;
         }
         

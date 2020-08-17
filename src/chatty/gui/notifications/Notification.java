@@ -92,7 +92,7 @@ public class Notification {
     }
     
     public enum State {
-        ALWAYS(1, "Enabled"),
+        ALWAYS(1, "Always enabled"),
         OFF(0, "Off"),
         CHANNEL_ACTIVE(2, "Chan focused"),
         CHANNEL_NOT_ACTIVE(3, "Chan not focused"),

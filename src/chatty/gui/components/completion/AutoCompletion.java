@@ -61,6 +61,7 @@ public class AutoCompletion {
     //----------
     // Settings
     //----------
+    private boolean isEnabled = true;
     private boolean showPopup = true;
     private boolean completeToCommonPrefix = true;
     private boolean appendSpace = false;
@@ -118,6 +119,10 @@ public class AutoCompletion {
     //==========
     // Settings
     //==========
+    
+    public void setEnabled(boolean enabled) {
+        this.isEnabled = enabled;
+    }
     
     /**
      * Show the info popup during completion. This is also a prerequisite for
@@ -403,6 +408,9 @@ public class AutoCompletion {
     }
     
     private void start(String type) {
+        if (!isEnabled) {
+            return;
+        }
         if (word == null || word.isEmpty()) {
             return;
         }

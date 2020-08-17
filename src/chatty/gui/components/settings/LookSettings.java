@@ -151,14 +151,14 @@ public class LookSettings extends SettingsPanel {
         
         // Scrollbar
         gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(d.createLabel("lafScroll"), gbc);
+        lafSettingsPanel.add(SettingsUtil.createLabel("lafScroll"), gbc);
         
         gbc = d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafScroll, gbc);
         
         // Style
         gbc = d.makeGbc(0, 8, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(d.createLabel("lafStyle"), gbc);
+        lafSettingsPanel.add(SettingsUtil.createLabel("lafStyle"), gbc);
         
         gbc = d.makeGbc(1, 8, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafStyle, gbc);
@@ -177,14 +177,14 @@ public class LookSettings extends SettingsPanel {
         
         // Variant
         gbc = d.makeGbc(0, 9, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(d.createLabel("lafVariant"), gbc);
+        lafSettingsPanel.add(SettingsUtil.createLabel("lafVariant"), gbc);
         
         gbc = d.makeGbc(1, 9, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafVariant, gbc);
         
         // Gradient
         gbc = d.makeGbc(2, 9, 1, 1);
-        lafSettingsPanel.add(d.createLabel("lafGradient"), gbc);
+        lafSettingsPanel.add(SettingsUtil.createLabel("lafGradient"), gbc);
         
         gbc = d.makeGbc(3, 9, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafGradient, gbc);

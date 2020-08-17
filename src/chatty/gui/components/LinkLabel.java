@@ -3,8 +3,9 @@ package chatty.gui.components;
 
 import chatty.util.colors.HtmlColors;
 import chatty.gui.LaF;
-import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.event.HyperlinkEvent;
@@ -26,6 +27,7 @@ public class LinkLabel extends JEditorPane {
         setOpaque(false);
         setContentType("text/html");
         setText(text);
+        setCaretPosition(0);
         
         // Link Listener
         this.addHyperlinkListener(new HyperlinkListener() {
@@ -38,6 +40,18 @@ public class LinkLabel extends JEditorPane {
             }
         });
         setStyle();
+        
+        addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                // Make sure cursor is at the top, so it doesn't start reading
+                // at the bottom (setting to 1 for some reason activates the
+                // cursor immediately)
+                setCaretPosition(1);
+            }
+        });
+        getAccessibleContext().setAccessibleName("Help Text");
+        getAccessibleContext().setAccessibleDescription("");
     }
     
     private void setStyle() {

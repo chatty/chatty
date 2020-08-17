@@ -263,6 +263,7 @@ public class NotificationSettings extends SettingsPanel {
 
         editor.setPreferredSize(new Dimension(10,260));
         tabs.add(l("tab.events"), editor);
+        tabs.setToolTipTextAt(0, l("tab.events.tip"));
         // Needs to start at "Off", since no event will be triggered at first
         tabs.add(l("tab.notificationSettingsOff"), GuiUtil.northWrap(notificationSettings));
         tabs.add(l("tab.soundSettingsOff"), GuiUtil.northWrap(soundSettings));

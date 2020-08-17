@@ -7,6 +7,7 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.EAST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
@@ -95,7 +96,8 @@ public class MessageSettings extends SettingsPanel {
                 d.makeGbc(2, 1, 2, 1, GridBagConstraints.WEST));
 
         // Combining Characters
-        otherSettingsPanel.add(new JLabel("Filter combining chars:"),
+        JLabel combiningCharsLabel = new JLabel("Filter combining chars:");
+        otherSettingsPanel.add(combiningCharsLabel,
                 d.makeGbc(0, 2, 1, 1));
 
         Map<Long, String> filterSetting = new LinkedHashMap<>();
@@ -103,6 +105,7 @@ public class MessageSettings extends SettingsPanel {
         filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_LENIENT), "Lenient");
         filterSetting.put(Long.valueOf(Helper.FILTER_COMBINING_CHARACTERS_STRICT), "Strict");
         ComboLongSetting filterCombiningCharacters = new ComboLongSetting(filterSetting);
+        combiningCharsLabel.setLabelFor(filterCombiningCharacters);
         d.addLongSetting("filterCombiningCharacters", filterCombiningCharacters);
 
         otherSettingsPanel.add(filterCombiningCharacters,
@@ -117,8 +120,6 @@ public class MessageSettings extends SettingsPanel {
     public static JPanel createTimestampPanel(SettingsDialog d, String setting) {
         JPanel timestampPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         
-        timestampPanel.add(new JLabel(Language.getString("settings.otherMessageSettings.timestamp")));
-
         final Map<String,String> timestampOptions = new LinkedHashMap<>();
         timestampOptions.put("off", "Off");
         timestampOptions.put("", "Empty (Space)");
@@ -129,8 +130,8 @@ public class MessageSettings extends SettingsPanel {
         ComboStringSetting combo = new ComboStringSetting(timestampOptions);
         combo.setEditable(false);
         d.addStringSetting(setting, combo);
-        timestampPanel.add(combo,
-                d.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST));
+        
+        SettingsUtil.addLabeledComponent(timestampPanel, "settings.otherMessageSettings.timestamp", 0, 0, 2, EAST, combo);
         
         JButton editTimestampButton = new JButton(Language.getString("dialog.button.customize"));
         editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
@@ -146,6 +147,7 @@ public class MessageSettings extends SettingsPanel {
                 combo.setSettingValue(result);
             }
         });
+        editTimestampButton.getAccessibleContext().setAccessibleName(Language.getString("settings.otherMessageSettings.customizeTimestamp"));
         timestampPanel.add(editTimestampButton);
         return timestampPanel;
     }

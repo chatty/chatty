@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.awt.Component;
@@ -8,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,6 +53,12 @@ public class TableEditor<T> extends JPanel {
     
     public static final int SORTING_MODE_MANUAL = 0;
     public static final int SORTING_MODE_SORTED = 1;
+    
+    private static final String BUTTON_ADD_TIP = Language.getString("settings.listSelector.button.add.tip");
+    private static final String BUTTON_REMOVE_TIP = Language.getString("settings.listSelector.button.remove.tip");
+    private static final String BUTTON_EDIT_TIP = Language.getString("settings.listSelector.button.edit.tip");
+    private static final String BUTTON_UP_TIP = Language.getString("settings.listSelector.button.moveUp.tip");
+    private static final String BUTTON_DOWN_TIP = Language.getString("settings.listSelector.button.moveDown.tip");
     
     private final ButtonAction buttonActionListener = new ButtonAction();
     
@@ -151,6 +159,17 @@ public class TableEditor<T> extends JPanel {
                 removeSelected();
             }
         });
+        table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "editItems");
+        table.getActionMap().put("editItems", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editSelectedItem();
+            }
+        });
+        
+        // Set to default, so that TAB can be used to leave the table
+        GuiUtil.resetFocusTraversalKeys(table);
         
         table.addKeyListener(new KeyAdapter() {
 
@@ -169,11 +188,11 @@ public class TableEditor<T> extends JPanel {
         searchTimer.setRepeats(true);
 
         // Buttons Configuration
-        configureButton(add, "list-add.png", "Add new item (after selected)");
-        configureButton(edit, "edit.png", "Edit selected item (double-click)");
-        configureButton(remove, "list-remove.png", "Remove selected item");
-        configureButton(moveUp, "go-up.png", "Move selected item up");
-        configureButton(moveDown, "go-down.png", "Move selected item down");
+        configureButton(add, "list-add.png", BUTTON_ADD_TIP);
+        configureButton(edit, "edit.png", BUTTON_EDIT_TIP);
+        configureButton(remove, "list-remove.png", BUTTON_REMOVE_TIP);
+        configureButton(moveUp, "go-up.png", BUTTON_UP_TIP);
+        configureButton(moveDown, "go-down.png", BUTTON_DOWN_TIP);
         configureButton(refresh, "view-refresh.png", "Refresh data");
         configureButton(editAll, "edit-all.png", Language.getString("settings.listSelector.button.editAll.tip"));
         
@@ -452,6 +471,21 @@ public class TableEditor<T> extends JPanel {
             moveDown.setEnabled(false);
         }
         editAll.setEnabled(!currentlyFiltering);
+        if (enabled) {
+            String item = getSelectedRowText();
+            if (item != null) {
+                remove.setToolTipText(BUTTON_REMOVE_TIP+": "+item);
+                edit.setToolTipText(BUTTON_EDIT_TIP+": "+item);
+                moveUp.setToolTipText(BUTTON_UP_TIP+": "+item);
+                moveDown.setToolTipText(BUTTON_DOWN_TIP+": "+item);
+            }
+            else {
+                remove.setToolTipText(BUTTON_REMOVE_TIP);
+                edit.setToolTipText(BUTTON_EDIT_TIP);
+                moveUp.setToolTipText(BUTTON_UP_TIP);
+                moveDown.setToolTipText(BUTTON_DOWN_TIP);
+            }
+        }
     }
     
     /**
@@ -462,6 +496,25 @@ public class TableEditor<T> extends JPanel {
     private void setRowSelected(int viewIndex) {
         table.getSelectionModel().setSelectionInterval(viewIndex, viewIndex);
         scrollToRow(viewIndex);
+    }
+    
+    private String getSelectedRowText() {
+        int index = table.getSelectedRow();
+        if (index == -1) {
+            return null;
+        }
+        int modelIndex = indexToModel(index);
+        if (modelIndex == -1) {
+            return null;
+        }
+        StringBuilder b = new StringBuilder();
+        for (int column=0; column < data.getColumnCount(); column++) {
+            if (b.length() > 0) {
+                b.append(", ");
+            }
+            b.append(data.getValueAt(modelIndex, column));
+        }
+        return b.toString();
     }
     
     private void scrollToSelection() {
@@ -875,6 +928,10 @@ public class TableEditor<T> extends JPanel {
         // Reset search on backspace
         if (input == '\b') {
             resetSearch();
+            return;
+        }
+        // Prevent stuff like ESC and TAB, could probably be better though
+        if (!Character.isLetterOrDigit(input) && input != '_' && input != '#') {
             return;
         }
         

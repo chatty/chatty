@@ -4162,7 +4162,7 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.setString("token", "");
             }
             else {
-                result = "Login data invalid. [help:login-invalid What does this mean?]";
+                result = "Login data invalid. This may only be temporary. If the issue persists, remove login and connect Twitch account again.";
             }
             if (!showInDialog && !changedTokenResponse) {
                 showTokenWarning();
@@ -4493,6 +4493,8 @@ public class MainGui extends JFrame implements Runnable {
                     emotesDialog.setCloseOnDoubleClick(bool);
                 } else if (setting.equals("foreignToken")) {
                     tokenDialog.setForeignToken(bool);
+                } else if (setting.equals("completionEnabled")) {
+                    channels.setCompletionEnabled(bool);
                 }
                 if (setting.startsWith("title")) {
                     updateState(true);

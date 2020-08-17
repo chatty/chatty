@@ -145,6 +145,8 @@ public class StatusHistoryDialog extends JDialog {
         pack();
         setMinimumSize(new Dimension(getPreferredSize().width, 200));
         setSize(new Dimension(740,400));
+        
+        GuiUtil.installEscapeCloseOperation(this);
     }
     
     private void addShortcuts() {

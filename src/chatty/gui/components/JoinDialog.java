@@ -68,7 +68,9 @@ public class JoinDialog extends JDialog {
         GridBagConstraints gbc;
         
         gbc = makeGbc(0,0,1,1);
-        add(new JLabel(Language.getString("join.channel")), gbc);
+        JLabel label = new JLabel(Language.getString("join.channel"));
+        label.setLabelFor(channels);
+        add(label, gbc);
         
         gbc = makeGbc(1,0,2,1);
         gbc.insets = new Insets(5,5,5,5);

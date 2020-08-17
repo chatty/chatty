@@ -16,6 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -38,7 +39,6 @@ public class TokenDialog extends JDialog {
     private final JButton deleteToken = new JButton(Language.getString("login.button.removeLogin"));
     private final JButton requestToken = new JButton(Language.getString("login.button.requestLogin"));
     private final JButton verifyToken = new JButton(Language.getString("login.button.verifyLogin"));
-    private final LinkLabel tokenInfo;
     private final LinkLabel foreignTokenInfo;
     private final LinkLabel otherInfo;
     private final JButton done = new JButton(Language.getString("dialog.button.close"));
@@ -54,7 +54,6 @@ public class TokenDialog extends JDialog {
         
         accessLabel = new LinkLabel("Access: [help:login (help)]", owner.getLinkLabelListener());
         //tokenInfo = new JLabel();
-        tokenInfo = new LinkLabel("", owner.getLinkLabelListener());
         foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
                     + "Login data set externally with -token parameter.", owner.getLinkLabelListener());
         foreignTokenInfo.setVisible(false);
@@ -85,12 +84,10 @@ public class TokenDialog extends JDialog {
         gbc = makeGridBagConstraints(0, 4, 2, 1, GridBagConstraints.WEST);
         add(otherInfo, gbc);
         
-        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
-        add(tokenInfo, gbc);
-        
         gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.WEST);
         add(foreignTokenInfo, gbc);
         
+        deleteToken.setToolTipText(Language.getString("login.button.removeLogin.tip"));
         gbc = makeGridBagConstraints(0,7,1,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(deleteToken, gbc);
@@ -179,7 +176,7 @@ public class TokenDialog extends JDialog {
      * Change status to verifying token.
      */
     public void verifyingToken() {
-        setTokenInfo(Language.getString("login.verifyingLogin"));
+//        setTokenInfo(Language.getString("login.verifyingLogin"));
         verifyToken.setEnabled(false);
     }
     
@@ -190,21 +187,9 @@ public class TokenDialog extends JDialog {
      * @param result 
      */
     public void tokenVerified(boolean valid, String result) {
-        setTokenInfo(result);
+        JOptionPane.showMessageDialog(this, result);
         verifyToken.setEnabled(true);
         update();
-    }
-    
-    private void setTokenInfo(String info) {
-        tokenInfo.setText("<html><body style='width:170px'>"+info);
-        pack();
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                pack();
-            }
-        });
     }
     
     public void setForeignToken(boolean foreign) {

@@ -95,6 +95,7 @@ public class Editor implements StringEditor {
         // Use monospaced font for easier editing of some kinds of text
         input.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, false);
+        GuiUtil.resetFocusTraversalKeys(input);
         dialog.add(new JScrollPane(input), gbc);
         
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);

@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.Chatty;
+import chatty.gui.GuiUtil;
 import chatty.gui.LinkListener;
 import chatty.gui.UrlOpener;
 import chatty.gui.components.admin.StatusHistoryEntry;
@@ -189,6 +190,8 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         
         pack();
         setMinimumSize(new Dimension(200,0));
+        
+        GuiUtil.installEscapeCloseOperation(this);
     }
     
     /**

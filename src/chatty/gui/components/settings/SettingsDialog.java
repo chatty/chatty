@@ -596,12 +596,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
         }
     }
     
-    
-    protected GridBagConstraints makeGbc(int x, int y, int w, int h) {
+    protected static GridBagConstraints makeGbc(int x, int y, int w, int h) {
         return makeGbc(x, y, w, h, GridBagConstraints.CENTER);
     }
     
-    protected GridBagConstraints makeGbc(int x, int y, int w, int h, int anchor) {
+    protected static GridBagConstraints makeGbc(int x, int y, int w, int h, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
@@ -612,7 +611,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
     
-    protected GridBagConstraints makeNoGapGbc(int x, int y, int w, int h, int anchor) {
+    protected static GridBagConstraints makeNoGapGbc(int x, int y, int w, int h, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
@@ -623,7 +622,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
     
-    protected GridBagConstraints makeGbcCloser(int x, int y, int w, int h, int anchor) {
+    protected static GridBagConstraints makeGbcCloser(int x, int y, int w, int h, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
@@ -634,7 +633,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
 
-    protected GridBagConstraints makeGbcSub(int x, int y, int w, int h, int anchor) {
+    protected static GridBagConstraints makeGbcSub(int x, int y, int w, int h, int anchor) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;
         gbc.gridy = y;
@@ -874,39 +873,6 @@ public class SettingsDialog extends JDialog implements ActionListener {
         table.setPreferredSize(new Dimension(width, height));
         mapSettings.put(name, table);
         return table;
-    }
-    
-    protected JLabel createLabel(String settingName) {
-        return createLabel(settingName, false);
-    }
-    
-    protected JLabel createLabel(String settingName, boolean info) {
-        String text = Language.getString("settings.label."+settingName);
-        String tip = Language.getString("settings.label."+settingName+".tip", false);
-        JLabel label;
-        if (info) {
-            label = new JLabel(SettingConstants.HTML_PREFIX+text);
-        } else {
-            label = new JLabel(text);
-        }
-        label.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
-        return label;
-    }
-    
-    protected JPanel createPanel(String settingName, JComponent... settingComponent) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = makeGbc(0, 0, 1, 1);
-        // Make sure to only have space between the two components, since other
-        // spacing will be added when this panel is added to the layout
-        gbc.insets = new Insets(0, 0, 0, gbc.insets.right);
-        panel.add(createLabel(settingName), gbc);
-        gbc = makeGbc(1, 0, 1, 1);
-        gbc.insets = new Insets(0, gbc.insets.left, 0, 0);
-        for (JComponent comp : settingComponent) {
-            panel.add(comp, gbc);
-            gbc.gridx++;
-        }
-        return panel;
     }
     
     protected void clearHistory() {

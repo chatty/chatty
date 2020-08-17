@@ -2,6 +2,7 @@
 package chatty.gui.components.admin;
 
 import chatty.Chatty;
+import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
@@ -120,6 +121,8 @@ public class AdminDialog extends JDialog {
         finishDialog();
         
         startUpdateTimer();
+        
+        GuiUtil.installEscapeCloseOperation(this);
     }
     
     /**

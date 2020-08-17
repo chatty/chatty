@@ -3,10 +3,13 @@ package chatty.gui.components.settings;
 
 import chatty.SettingsManager;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.EAST;
+import static java.awt.GridBagConstraints.WEST;
 import java.awt.Insets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -33,19 +36,12 @@ public class NameSettings extends SettingsPanel {
         ComboLongSetting displayNamesMode = new ComboLongSetting(displayNamesModeSettings);
         d.addLongSetting("displayNamesMode", displayNamesMode);
 
-        main.add(new JLabel("Chat:"),
-                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
-        main.add(displayNamesMode,
-                d.makeGbc(1, 0, 2, 1, GridBagConstraints.WEST));
+        SettingsUtil.addLabeledComponent(main, "displayNamesMode", 0, 0, 2, EAST, displayNamesMode);
         
         ComboLongSetting displayNamesModeUserlist = new ComboLongSetting(displayNamesModeSettings);
         d.addLongSetting("displayNamesModeUserlist", displayNamesModeUserlist);
         
-        
-        main.add(new JLabel("Userlist:"),
-                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
-        main.add(displayNamesModeUserlist,
-                d.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST));
+        SettingsUtil.addLabeledComponent(main, "displayNamesModeUserlist", 0, 1, 2, EAST, displayNamesModeUserlist);
         
         main.add(new JLabel("<html><body style=\"width:300px\">Note: "
                 + "Localized/Capitalized names in the Userlist are only "
@@ -111,9 +107,12 @@ public class NameSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 2, 1, 1, GridBagConstraints.EAST);
         // +1 on the right to align properly
         gbc.insets = new Insets(5, 5, 5, 6);
-        other.add(d.createLabel("markHoveredUser"),
+        JLabel markHoveredUserLabel = SettingsUtil.createLabel("markHoveredUser");
+        JComboBox markHoveredUser = d.addComboLongSetting("markHoveredUser", new int[]{0,1,2,3,4});
+        markHoveredUserLabel.setLabelFor(markHoveredUser);
+        other.add(markHoveredUserLabel,
                 gbc);
-        other.add(d.addComboLongSetting("markHoveredUser", new int[]{0,1,2,3,4}),
+        other.add(markHoveredUser,
                 d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST));
         
         JPanel custom = addTitledPanel("Custom Names", 2, true);
