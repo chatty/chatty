@@ -13,7 +13,6 @@ import chatty.gui.StyleServer;
 import chatty.gui.UrlOpener;
 import chatty.gui.MainGui;
 import chatty.User;
-import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.components.Channel;
 import chatty.util.api.usericons.Usericon;
@@ -21,7 +20,6 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.ChattyMisc;
 import chatty.util.ChattyMisc.CombinedEmotesInfo;
-import chatty.util.CombinedEmoticon;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
@@ -63,6 +61,8 @@ import java.util.regex.Pattern;
 import javax.swing.*;
 import static javax.swing.JComponent.WHEN_FOCUSED;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 
@@ -223,6 +223,21 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         FixSelection.install(this);
         this.isStreamChat = isStreamChat;
+        
+        if (Chatty.DEBUG) {
+            addCaretListener(new CaretListener() {
+                @Override
+                public void caretUpdate(CaretEvent e) {
+                    System.out.println(e + " " + Util.getText(doc, e.getDot(), e.getDot()+1));
+                }
+            });
+            addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    getCaret().setVisible(true); // show the caret anyway
+                }
+            });
+        }
     }
     
     /**
