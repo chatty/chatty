@@ -2,11 +2,13 @@
 package chatty.gui;
 
 import java.awt.Color;
+import java.awt.Insets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.plaf.InsetsUIResource;
 import javax.swing.plaf.UIResource;
 
 /**
@@ -37,6 +39,8 @@ public class LaFCustomDefaults {
                     return Integer.parseInt(value);
                 case "color":
                     return LaFUtil.parseColor(value, null);
+                case "insets":
+                    return createDefaultInsets(value);
             }
         }
         return null;
@@ -47,7 +51,19 @@ public class LaFCustomDefaults {
         if (value.isEmpty()) {
             return EMPTY_BORDER;
         }
-        String[] sizeSplit = split[0].split(" ");
+        Insets insets = createDefaultInsets(split[0]);
+        Color color = null;
+        if (split.length == 2) {
+            color = LaFUtil.parseColor(split[1], null);
+        }
+        if (color != null) {
+            return new UIResourceMatteBorder(insets.top, insets.left, insets.bottom, insets.right, color);
+        }
+        return new UIResourceEmptyBorder(insets.top, insets.left, insets.bottom, insets.right);
+    }
+    
+    private static InsetsUIResource createDefaultInsets(String value) {
+        String[] sizeSplit = value.split(" ");
         int top = 1;
         int left = 1;
         int bottom = 1;
@@ -69,14 +85,7 @@ public class LaFCustomDefaults {
         catch (Exception ex) {
             // Use defaults
         }
-        Color color = null;
-        if (split.length == 2) {
-            color = LaFUtil.parseColor(split[1], null);
-        }
-        if (color != null) {
-            return new UIResourceMatteBorder(top, left, bottom, right, color);
-        }
-        return new UIResourceEmptyBorder(top, left, bottom, right);
+        return new InsetsUIResource(top, left, bottom, right);
     }
     
     public static final UIResourceEmptyBorder EMPTY_BORDER = new UIResourceEmptyBorder(0, 0, 0, 0);
