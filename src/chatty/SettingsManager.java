@@ -203,6 +203,7 @@ public class SettingsManager {
         settings.addLong("lafVariant", 0);
         settings.addString("lafStyle", "regular");
         settings.addString("lafScroll", "default");
+        settings.addBoolean("lafNativeWindow", false);
         settings.addString("language", "");
         settings.addString("timezone", "");
         

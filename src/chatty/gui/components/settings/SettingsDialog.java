@@ -648,6 +648,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
         booleanSettings.put(name, setting);
     }
     
+    public Boolean getBooleanSettingValue(String name) {
+        if (booleanSettings.containsKey(name)) {
+            return booleanSettings.get(name).getSettingValue();
+        }
+        return null;
+    }
+    
     /**
      * Add boolean setting where the description is in the Strings file as
      * "settings.boolean.[settingName]" and the optional tooltip as

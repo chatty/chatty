@@ -108,6 +108,7 @@ public class LookSettings extends SettingsPanel {
         ComboLongSetting lafVariant = d.addComboLongSetting("lafVariant", 0, 1, 2, 3, 4);
         ComboStringSetting lafStyle = d.addComboStringSetting("lafStyle", false,
                 "classic", "classicStrong", "regular", "regularStrong", "simple", "sleek", "minimal");
+        SimpleBooleanSetting lafNativeWindow = d.addSimpleBooleanSetting("lafNativeWindow");
         
         //--------------------------
         // Font Scale
@@ -163,6 +164,9 @@ public class LookSettings extends SettingsPanel {
         gbc = d.makeGbc(1, 8, 1, 1, GridBagConstraints.WEST);
         lafSettingsPanel.add(lafStyle, gbc);
         
+        gbc = d.makeGbc(2, 8, 2, 1, GridBagConstraints.WEST);
+        lafSettingsPanel.add(lafNativeWindow, gbc);
+        
         // Colors
         gbc = d.makeGbc(0, 10, 1, 1, GridBagConstraints.EAST);
         lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.colors")), gbc);
@@ -190,6 +194,7 @@ public class LookSettings extends SettingsPanel {
         lafSettingsPanel.add(lafGradient, gbc);
 
         SettingsUtil.addSubsettings(laf, s -> s.equals("hifiCustom"), foregroundColor, backgroundColor, lafGradient, lafStyle);
+        SettingsUtil.addSubsettings(laf, s -> !s.equals("default") && !s.equals("system"), lafNativeWindow);
         
         //--------------------------
         // Font Scale
@@ -226,7 +231,7 @@ public class LookSettings extends SettingsPanel {
             text += "This Look&Feel differs depending what OS you are using.";
         }
         else {
-            text += "No window snapping. ";
+            text += "No window snapping (unless you enable using the native window, see [help-laf:native-window help]). ";
             if (selected.equals("hifiCustom")) {
                 text += "Allows some basic customization here. ";
             }

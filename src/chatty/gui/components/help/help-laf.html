@@ -24,6 +24,44 @@
             GUI issues, so a restart of Chatty is recommended to complete your
             changes.</p>
         
+        <h2><a name="native-window">Native Window</a></h2>
+        <p>Some Look & Feel will not provide a styled window, but will instead
+            let the current window manager provide the titlebar/frame of the
+            window. Using the native style window has the advantage that
+            features such as window snapping and window management may work
+            better.</p>
+        
+        <p>For Look & Feel other than "Default" and "System", you have to enable
+            the native window setting under "Look" (or <code>/set lafNativeWindow on</code>)
+            in order to use the native window. Restart Chatty after changing.</p>
+        
+        <p>The colors of the native window may depend on the OS.</p>
+        
+        <h3>How to set window colors in Windows 10</h3>
+        <p>The native window color in Windows 10 may be just white, even in dark
+            mode, unless you change some settings.</p>
+        
+        <p>Open your start menu and search for "accent color", select "Choose
+            your accent color".</p>
+        
+        <img src="laf_win10_color_start.png" alt="Screenshot of the start menu with Choose your accent color search result" />
+        
+        <p>Tick the "Title bars and window borders" option at the bottom.</p>
+        
+        <img src="laf_win10_color_tickbox.png" alt="Screenshot of the setting to enable" />
+        
+        <p>This will apply the accent color only for active windows. You can
+            set the inactive window color through the registry, for example by
+            downloading and executing one of the following files:
+            <a href="https://tduva.com/misc/InactiveWindowColor.reg">Blue/Gray</a> or
+            <a href="https://tduva.com/misc/InactiveWindowColor_Dark.reg">Dark/Dark</a>
+            (These set both the active and inactive color, although it seems the
+            active one may be overwritten by the regular accent color setting,
+            so you may need to set that one normally.)</p>
+        
+        <p>Log out of Windows and back in (or restart) in case the colors don't
+            immediately apply.</p>
+        
         <h2><a name="custom">Custom Properties</a></h2>
         <p>The JTattoo Look & Feel (HiFi, Noire, Minte, Graphite, Aero, Fast, Luna)
             allow you to use these properties, which overwrite their default
