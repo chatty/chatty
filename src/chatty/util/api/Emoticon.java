@@ -349,7 +349,7 @@ public class Emoticon {
      * interpreted as regex (and others still consist of an actual regex).
      */
     private static final Set<String> LITERAL = new HashSet<>(Arrays.asList(new String[]{
-        "8-)", ":|", ";)", ">(", ":\\", ":)", "R)"
+        "8-)", ":|", ";)", ">(", ":\\", ":)", ":-)", "R)", ":(", ":-(", "B)", "B-)"
     }));
     
     private void createMatcher() {
