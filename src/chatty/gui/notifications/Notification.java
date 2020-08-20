@@ -386,4 +386,9 @@ public class Notification {
         return result;
     }
     
+    @Override
+    public String toString() {
+        return "Event "+type.label+", Desktop Notification "+getDesktopState()+", Sound "+getSoundState();
+    }
+    
 }

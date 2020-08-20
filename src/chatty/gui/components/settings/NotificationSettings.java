@@ -184,7 +184,7 @@ public class NotificationSettings extends SettingsPanel {
         JPanel soundSettings = new JPanel(new GridBagLayout());
         
         gbc = d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
-        JCheckBox soundsEnabled = d.addSimpleBooleanSetting("sounds", "Enable sounds (uncheck to mute)",
+        JCheckBox soundsEnabled = d.addSimpleBooleanSetting("sounds", "Enable sounds",
                 "Use this to enable/disable all sounds.");
         soundSettings.add(soundsEnabled, gbc);
         

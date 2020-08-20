@@ -17,6 +17,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -507,14 +508,16 @@ public class TableEditor<T> extends JPanel {
         if (modelIndex == -1) {
             return null;
         }
-        StringBuilder b = new StringBuilder();
+        List<String> parts = new ArrayList<>();
         for (int column=0; column < data.getColumnCount(); column++) {
-            if (b.length() > 0) {
-                b.append(", ");
+            String part = String.valueOf(data.getValueAt(modelIndex, column));
+            // Avoid duplicates, since several columns could return the same
+            // object
+            if (!parts.contains(part)) {
+                parts.add(part);
             }
-            b.append(data.getValueAt(modelIndex, column));
         }
-        return b.toString();
+        return StringUtil.join(parts, ", ");
     }
     
     private void scrollToSelection() {
