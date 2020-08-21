@@ -2358,7 +2358,7 @@ public class MainGui extends JFrame implements Runnable {
             if (p.hasArgs()) {
                 message = p.getArgs();
             }
-            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null, null, null);
+            UserMessage m = new UserMessage(client.getSpecialUser(), message, null, null, 0, null, null, null, MsgTags.EMPTY);
             streamChat.printMessage(m);
         });
         client.commands.addEdt("livestreamer", p -> {
@@ -2982,7 +2982,8 @@ public class MainGui extends JFrame implements Runnable {
                         ignoreMatches = ignoreList.getLastTextMatches();
                     }
                     ignoredMessages.addMessage(channel, user, text, action,
-                            tagEmotes, bitsForEmotes, whisper, ignoreMatches);
+                            tagEmotes, bitsForEmotes, whisper, ignoreMatches,
+                            tags);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -3002,8 +3003,8 @@ public class MainGui extends JFrame implements Runnable {
                     UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bitsForEmotes,
                             highlightMatches,
                             hasReplacements ? filter.getLastTextMatches() : null,
-                            hasReplacements ? filter.getLastReplacement() : null);
-                    message.pointsHl = tags.isHighlightedMessage();
+                            hasReplacements ? filter.getLastReplacement() : null,
+                            tags);
                     
                     // Custom color
                     boolean hlByPoints = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");

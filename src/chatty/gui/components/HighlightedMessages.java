@@ -17,6 +17,7 @@ import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.colors.ColorCorrector;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -142,9 +143,10 @@ public class HighlightedMessages extends JDialog {
     }
     
     public void addMessage(String channel, User user, String text, boolean action,
-            TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches) {
+            TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches,
+            MsgTags tags) {
         messageAdded(channel);
-        UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null);
+        UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null, tags);
         message.whisper = whisper;
         messages.printMessage(message);
     }

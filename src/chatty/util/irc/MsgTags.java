@@ -45,6 +45,27 @@ public class MsgTags extends IrcMsgTags {
         return isValue("chatty-source", "pubsub");
     }
     
+    public boolean hasReplyUserMsg() {
+        return containsKey("reply-parent-msg-body") && containsKey("reply-parent-display-name");
+    }
+    
+    public String getReplyUserMsg() {
+        if (hasReplyUserMsg()) {
+            return String.format("<%s> %s",
+                    get("reply-parent-display-name"),
+                    get("reply-parent-msg-body"));
+        }
+        return null;
+    }
+    
+    public boolean isReply() {
+        return containsKey("reply-parent-msg-id");
+    }
+    
+    public String getReplyParentMsgId() {
+        return get("reply-parent-msg-id");
+    }
+    
     //================
     // Factory Methods
     //================

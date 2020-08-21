@@ -248,12 +248,15 @@ public class LinkController extends MouseAdapter {
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
+        String replyText = getReplyText(element);
         if (emoteImage != null) {
             popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
             popup.show(textPane, element, p -> makeUsericonPopupText(usericon, p), usericon.image.getIconWidth());
         } else if (replacedText != null) {
             popup.show(textPane, element, p -> makeReplacementPopupText(replacedText, p), 1);
+        } else if (replyText != null) {
+            popup.show(textPane, element, p -> makeReplyPopupText(replyText, p), 1);
         } else {
             popup.hide();
         }
@@ -332,6 +335,10 @@ public class LinkController extends MouseAdapter {
     
     private String getReplacedText(Element e) {
         return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLACEMENT_FOR));
+    }
+    
+    private String getReplyText(Element e) {
+        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLY_PARENT_MSG));
     }
     
     private String getSelectedText(MouseEvent e) {
@@ -778,6 +785,16 @@ public class LinkController extends MouseAdapter {
         p.setText(String.format("%sFiltered Text<div style='text-align:left;font-weight:normal'>%s</div>",
                 POPUP_HTML_PREFIX,
                 StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replacedText), 70, true)));
+    }
+    
+    //-------------
+    // Reply Popup
+    //-------------
+    
+    private static void makeReplyPopupText(String replyText, MyPopup p) {
+        p.setText(String.format("%sReply to:<div style='text-align:left;font-weight:normal'>%s</div>",
+                POPUP_HTML_PREFIX,
+                StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replyText), 70, true)));
     }
     
     //-------------

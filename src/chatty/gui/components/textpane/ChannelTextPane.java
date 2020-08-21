@@ -23,6 +23,7 @@ import chatty.util.ChattyMisc.CombinedEmotesInfo;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
+import chatty.util.Pair;
 import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
 import chatty.util.api.CheerEmoticon;
@@ -34,6 +35,7 @@ import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.colors.ColorCorrector;
+import chatty.util.irc.MsgTags;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -90,6 +92,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private static final Logger LOGGER = Logger.getLogger(ChannelTextPane.class.getName());
     
+    private static final ImageIcon REPLY_ICON = new ImageIcon(MainGui.class.getResource("reply.png"));
+    
     private final DefaultStyledDocument doc;
     
     private static AtomicLong idCounter = new AtomicLong();
@@ -139,7 +143,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         CUSTOM_BACKGROUND, CUSTOM_FOREGROUND,
         
         IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
-        ACTION_REASON
+        ACTION_REASON,
+        
+        REPLY_PARENT_MSG
     }
     
     /**
@@ -489,7 +495,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print(" [", style);
             // Output with emotes, but don't turn URLs into clickable links
-            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null);
+            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null, null);
             print("]", style);
         }
         finishLine();
@@ -549,7 +555,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             style = styles.standard(color);
         }
         printTimestamp(style);
-        printUser(user, action, message.whisper, message.id, background, message.pointsHl);
+        printUser(user, action, message.whisper, message.id, background, message.tags.isHighlightedMessage());
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && color == null && action && styles.isEnabled(Setting.ACTION_COLORED)) {
@@ -558,7 +564,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         print(" ", style);
         printSpecialsNormal(text, user, style, emotes, false, message.bits > 0,
                 message.highlightMatches,
-                message.replaceMatches, message.replacement);
+                message.replaceMatches, message.replacement, message.tags);
         
         if (message.highlighted) {
             setLineHighlighted(doc.getLength());
@@ -2194,11 +2200,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     protected void printSpecialsNormal(String text, User user, MutableAttributeSet style,
             TagEmotes emotes, boolean ignoreLinks, boolean containsBits,
             java.util.List<Match> highlightMatches,
-            java.util.List<Match> replacements, String replacement) {
+            java.util.List<Match> replacements, String replacement,
+            MsgTags tags) {
         // Where stuff was found
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         // The style of the stuff (basicially metadata)
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
+        
+        if (tags.isReply() && text.startsWith("@")) {
+            Pair<User, String> replyData = getReplyData(tags);
+            if (replyData.value != null) {
+                ranges.put(0, 0);
+                rangesStyle.put(0, styles.reply(replyData.value));
+            }
+        }
         
         applyReplacements(text, replacements, replacement, ranges, rangesStyle);
         
@@ -2394,6 +2409,38 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 }
             }
         }
+    }
+    
+    /**
+     * Returns the user that was being replied to as key, the replied to text
+     * to be shown in the popup as value. Both of those can be null.
+     * 
+     * @param tags
+     * @return 
+     */
+    private Pair<User, String> getReplyData(MsgTags tags) {
+        User user = null;
+        String replyMsgText = tags.getReplyUserMsg();
+        if (replyMsgText == null) {
+            // Check in recent users if no text supplied (usually for sent msgs)
+            String msgId = tags.getReplyParentMsgId();
+            Set<User> alreadyChecked = new HashSet<>();
+            for (MentionCheck check : lastUsers.getItems()) {
+                if (alreadyChecked.contains(check.user)) {
+                    continue;
+                }
+                alreadyChecked.add(check.user);
+                String msg = check.user.getMessageText(msgId);
+                if (msg != null) {
+                    replyMsgText = String.format("<%s> %s",
+                            check.user.getDisplayNick(),
+                            msg);
+                    user = check.user;
+                    break;
+                }
+            }
+        }
+        return new Pair(user, replyMsgText);
     }
     
     private int fCount = 0;
@@ -3919,6 +3966,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         public long namesMode() {
             return numericSettings.get(Setting.DISPLAY_NAMES_MODE);
+        }
+        
+        public MutableAttributeSet reply(String parentUserText) {
+            SimpleAttributeSet style = new SimpleAttributeSet();
+            StyleConstants.setIcon(style, addSpaceToIcon(REPLY_ICON));
+            style.addAttribute(Attribute.REPLY_PARENT_MSG, parentUserText);
+            return style;
         }
     }
     

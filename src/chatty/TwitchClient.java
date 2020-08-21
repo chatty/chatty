@@ -22,6 +22,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
+import chatty.gui.components.SelectReplyMessage;
 import chatty.gui.components.eventlog.EventLog;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
@@ -324,7 +325,8 @@ public class TwitchClient {
             for (int i=0;i<99;i++) {
                 j.addMessage("abc", false, null);
             }
-            j.addMessage("abc", false, null);
+            j.addMessage("abc", false, "abc-id");
+            j.addMessage("blah", true, "blah-id");
             j.setDisplayNick("Joshimoose");
             j.setTurbo(true);
             j.setVip(true);
@@ -841,6 +843,9 @@ public class TwitchClient {
      * sending a message as well
      */
     private void sendMessage(String channel, String text, boolean allowCommandMessageLocally) {
+        if (sendAsReply(channel, text)) {
+            return;
+        }
         if (c.sendSpamProtectedMessage(channel, text, false)) {
             User user = c.localUserJoined(channel);
             g.printMessage(user, text, false);
@@ -848,6 +853,47 @@ public class TwitchClient {
                 modCommandAddStreamHighlight(user, text, MsgTags.EMPTY);
             }
         } else {
+            g.printLine("# Message not sent to prevent ban: " + text);
+        }
+    }
+    
+    private boolean sendAsReply(String channel, String text) {
+        boolean restricted = settings.getBoolean("mentionReplyRestricted");
+        boolean doubleAt = text.startsWith("@@");
+        if (doubleAt || (!restricted && text.startsWith("@"))) {
+            String[] split = text.split(" ", 2);
+            // Min username length may be 1 or 2, depending on @@ or @
+            if (split.length == 2 && split[0].length() > 2 && split[1].length() > 0) {
+                String username = split[0].substring(doubleAt ? 2 : 1);
+                String actualMsg = split[1];
+                User user = c.getExistingUser(channel, username);
+                if (user != null) {
+                    SelectReplyMessage.settings = settings;
+                    String msgId = SelectReplyMessage.show(user);
+                    if (msgId != null) {
+                        if (!msgId.isEmpty()) {
+                            sendReply(channel, actualMsg, username, msgId);
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private void sendReply(String channel, String text, String atUsername, String atMsgId) {
+        MsgTags tags = MsgTags.create("reply-parent-msg-id", atMsgId);
+        if (c.sendSpamProtectedMessage(channel, text, false, tags)) {
+            User user = c.localUserJoined(channel);
+            String localOutputText = text;
+            if (!text.startsWith("@")) {
+                localOutputText = String.format("@%s %s",
+                        atUsername, text);
+            }
+            g.printMessage(user, localOutputText, false, tags);
+        }
+        else {
             g.printLine("# Message not sent to prevent ban: " + text);
         }
     }
@@ -977,6 +1023,17 @@ public class TwitchClient {
         });
         commands.add("msg", p -> {
             commandCustomMessage(p.getArgs());
+        });
+        commands.add("msgreply", p -> {
+            if (p.getParameters().notEmpty("nick", "msg-id") && p.hasArgs()) {
+                    String atUsername = p.getParameters().get("nick");
+                    String atMsgId = p.getParameters().get("msg-id");
+                    String msg = p.getArgs();
+                    sendReply(p.getChannel(), msg, atUsername, atMsgId);
+            }
+            else {
+                g.printLine("Invalid reply parameters");
+            }
         });
         commands.add("w", p -> {
             w.whisperCommand(p.getArgs(), false);

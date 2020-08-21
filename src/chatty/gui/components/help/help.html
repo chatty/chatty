@@ -175,6 +175,8 @@
     <h3><a name="commands-chat">Chat commands:</a></h3>
     <ul>
 	<li><code>/me &lt;message&gt;</code> - Send an action message (* nickname says something) to the channel</li>
+        <li><code>/msgreply &lt;message&gt;</code> - Send a reply to a specific message, only works when added to the User Context Menu or User Dialog
+            in the Commands settings (e.g. <code>Reply=/msgreply $$input(Reply to $(nick))</code>)</li>
 	<li><code>/to &lt;nick&gt; [time] [reason]</code> - Timeout the user with the given nickname for "time" seconds (time is optional)</li>
         <li><code>/timeout</code>, <code>/ban</code>, <code>/unban</code>,
                 <code>/slow</code>, <code>/slowoff</code>,

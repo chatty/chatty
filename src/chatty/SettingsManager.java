@@ -618,6 +618,9 @@ public class SettingsManager {
         settings.addString("completionEmotePrefix", ":");
         settings.addLong("completionMixed", 0);
         settings.addBoolean("completionSpace", false);
+        
+        // Replying
+        settings.addBoolean("mentionReplyRestricted", false);
 
         // Stream Chat
         settings.addLong("streamChatMessageTimeout", -1);

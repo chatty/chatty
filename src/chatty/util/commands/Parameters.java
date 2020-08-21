@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.StringUtil;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,21 @@ public class Parameters {
      */
     public synchronized String get(String key) {
         return parameters.get(key);
+    }
+    
+    /**
+     * Check that all of the given parameters are not null or empty.
+     * 
+     * @param keys
+     * @return true if all parameters with the given keys are not null or empty
+     */
+    public synchronized boolean notEmpty(String... keys) {
+        for (String key : keys) {
+            if (StringUtil.isNullOrEmpty(parameters.get(key))) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /**

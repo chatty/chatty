@@ -469,13 +469,24 @@
         <dd><em>Example:</em> <code>$urlencode($(msg))</code> in User Dialog
             encodes the currently selected message.</dd>
         
-        <dt><code>$sort(&lt;input&gt;,[type],[separator]</code></dt>
+        <dt><code>$sort(&lt;input&gt;,[type],[separator])</code></dt>
         <dd>Sorts the given input alphabetically. The sort type can be "abc"
             (default) for case-insensitive sorting or "Abc" for case-sensitive
             sorting. The separator is what separates the parts that are sorted,
             by default a space.</dd>
         <dd><em>Example:</em> <code>$sort(B c a)</code> turns into <code>a B c</code></dd>
         <dd><em>Example:</em> <code>$sort(B c a,Abc)</code> turns into <code>B a c</code></dd>
+        
+        <dt><code>$input([message],[intial],[type])</code></dt>
+        <dd>Requests text input from the user by showing an input dialog.
+            Execution is paused while the dialog is open. The user may enter an
+            empty value (the result is just empty) or cancel the dialog (the
+            command will not be executed).</dd>
+        <dd>The <code>message</code> is shown in the input dialog, the <code>initial</code>
+            text will already be in the input field when the dialog opens. The
+            <code>type</code> is currently not used and can just be left empty.</dd>
+        <dd><em>Example:</em> <code>$input()</code></dd>
+        <dd><em>Example:</em> <code>$input(Enter a number please)</code></dd>
         
         <dt><code>$datetime([format],[timezone],[locale])</code></dt>
         <dd>Outputs the current date/time. You can optionally give a format
