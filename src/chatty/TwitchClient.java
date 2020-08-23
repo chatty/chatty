@@ -23,6 +23,7 @@ import chatty.gui.LaF;
 import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
 import chatty.gui.components.SelectReplyMessage;
+import chatty.gui.components.SelectReplyMessage.SelectReplyMessageResult;
 import chatty.gui.components.eventlog.EventLog;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
@@ -42,6 +43,7 @@ import chatty.util.MiscUtil;
 import chatty.util.OtherBadges;
 import chatty.util.ProcessManager;
 import chatty.util.RawMessageTest;
+import chatty.util.ReplyManager;
 import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
@@ -869,10 +871,11 @@ public class TwitchClient {
                 User user = c.getExistingUser(channel, username);
                 if (user != null) {
                     SelectReplyMessage.settings = settings;
-                    String msgId = SelectReplyMessage.show(user);
-                    if (msgId != null) {
-                        if (!msgId.isEmpty()) {
-                            sendReply(channel, actualMsg, username, msgId);
+                    SelectReplyMessageResult result = SelectReplyMessage.show(user);
+                    if (result != null) {
+                        // Should not send normally, so return true
+                        if (result.send) {
+                            sendReply(channel, actualMsg, username, result.atMsgId, null);
                         }
                         return true;
                     }
@@ -882,7 +885,7 @@ public class TwitchClient {
         return false;
     }
     
-    private void sendReply(String channel, String text, String atUsername, String atMsgId) {
+    private void sendReply(String channel, String text, String atUsername, String atMsgId, String atMsg) {
         MsgTags tags = MsgTags.create("reply-parent-msg-id", atMsgId);
         if (c.sendSpamProtectedMessage(channel, text, false, tags)) {
             User user = c.localUserJoined(channel);
@@ -891,6 +894,9 @@ public class TwitchClient {
                 localOutputText = String.format("@%s %s",
                         atUsername, text);
             }
+            ReplyManager.addReply(atMsgId, null,
+                    String.format("<%s> %s", user.getName(), localOutputText),
+                    atMsg != null ? String.format("<%s> %s", atUsername, atMsg) : null);
             g.printMessage(user, localOutputText, false, tags);
         }
         else {
@@ -1025,11 +1031,12 @@ public class TwitchClient {
             commandCustomMessage(p.getArgs());
         });
         commands.add("msgreply", p -> {
-            if (p.getParameters().notEmpty("nick", "msg-id") && p.hasArgs()) {
+            if (p.getParameters().notEmpty("nick", "msg-id", "msg") && p.hasArgs()) {
                     String atUsername = p.getParameters().get("nick");
                     String atMsgId = p.getParameters().get("msg-id");
+                    String atMsg = p.getParameters().get("msg");
                     String msg = p.getArgs();
-                    sendReply(p.getChannel(), msg, atUsername, atMsgId);
+                    sendReply(p.getChannel(), msg, atUsername, atMsgId, atMsg);
             }
             else {
                 g.printLine("Invalid reply parameters");
@@ -2929,6 +2936,9 @@ public class TwitchClient {
             }
             else {
                 g.printMessage(user, text, action, tags);
+                if (tags.isReply() && tags.hasReplyUserMsg()) {
+                    ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
+                }
                 if (!action) {
                     addressbookCommands(user.getChannel(), user, text);
                     modCommandAddStreamHighlight(user, text, tags);

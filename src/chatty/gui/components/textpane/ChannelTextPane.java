@@ -24,6 +24,7 @@ import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.Pair;
+import chatty.util.ReplyManager;
 import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
 import chatty.util.api.CheerEmoticon;
@@ -145,7 +146,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
         ACTION_REASON,
         
-        REPLY_PARENT_MSG
+        REPLY_PARENT_MSG, REPLY_PARENT_MSG_ID
     }
     
     /**
@@ -167,7 +168,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         SHOW_TOOLTIPS, SHOW_TOOLTIP_IMAGES, BOTTOM_MARGIN,
         
         DISPLAY_NAMES_MODE,
-        MENTIONS, MENTIONS_INFO,
+        MENTIONS, MENTIONS_INFO, MENTION_MESSAGES,
         HIGHLIGHT_HOVERED_USER, HIGHLIGHT_MATCHES_ALL, USERCOLOR_BACKGROUND
     }
     
@@ -495,7 +496,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             print(" [", style);
             // Output with emotes, but don't turn URLs into clickable links
-            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null, null);
+            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null, message.tags);
             print("]", style);
         }
         finishLine();
@@ -2207,11 +2208,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         // The style of the stuff (basicially metadata)
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
         
-        if (tags.isReply() && text.startsWith("@")) {
+        if (tags != null && tags.isReply() && text.startsWith("@")) {
             Pair<User, String> replyData = getReplyData(tags);
             if (replyData.value != null) {
                 ranges.put(0, 0);
-                rangesStyle.put(0, styles.reply(replyData.value));
+                rangesStyle.put(0, styles.reply(replyData.value, tags.getReplyParentMsgId()));
             }
         }
         
@@ -2421,6 +2422,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     private Pair<User, String> getReplyData(MsgTags tags) {
         User user = null;
         String replyMsgText = tags.getReplyUserMsg();
+        if (replyMsgText == null) {
+            replyMsgText = ReplyManager.getFirstUserMsg(tags.getReplyParentMsgId());
+        }
         if (replyMsgText == null) {
             // Check in recent users if no text supplied (usually for sent msgs)
             String msgId = tags.getReplyParentMsgId();
@@ -3527,6 +3531,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.SHOW_TOOLTIP_IMAGES, true);
             addNumericSetting(Setting.MENTIONS, 0, 0, 200);
             addNumericSetting(Setting.MENTIONS_INFO, 0, 0, 200);
+            addNumericSetting(Setting.MENTION_MESSAGES, 0, 0, 200);
             addSetting(Setting.HIGHLIGHT_MATCHES_ALL, true);
             addNumericSetting(Setting.USERCOLOR_BACKGROUND, 1, 0, 200);
             addNumericSetting(Setting.FILTER_COMBINING_CHARACTERS, 1, 0, 2);
@@ -3542,6 +3547,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             linkController.setPopupEnabled(settings.get(Setting.SHOW_TOOLTIPS));
             linkController.setPopupImagesEnabled(settings.get(Setting.SHOW_TOOLTIP_IMAGES));
             linkController.setUserHoverHighlightMode(getInt(Setting.HIGHLIGHT_HOVERED_USER));
+            linkController.setPopupMentionMessages(getInt(Setting.MENTION_MESSAGES));
         }
         
         /**
@@ -3968,10 +3974,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             return numericSettings.get(Setting.DISPLAY_NAMES_MODE);
         }
         
-        public MutableAttributeSet reply(String parentUserText) {
+        public MutableAttributeSet reply(String parentUserText, String parentMsgId) {
             SimpleAttributeSet style = new SimpleAttributeSet();
             StyleConstants.setIcon(style, addSpaceToIcon(REPLY_ICON));
             style.addAttribute(Attribute.REPLY_PARENT_MSG, parentUserText);
+            style.addAttribute(Attribute.REPLY_PARENT_MSG_ID, parentMsgId);
             return style;
         }
     }

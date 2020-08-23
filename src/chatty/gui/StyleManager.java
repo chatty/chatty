@@ -51,7 +51,7 @@ public class StyleManager implements StyleServer {
             "showImageTooltips", "showTooltipImages", "highlightMatches",
             "nickColorCorrection",
             "mentions", "mentionsInfo", "markHoveredUser", "highlightMatchesAll",
-            "nickColorBackground",
+            "nickColorBackground", "mentionMessages",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -223,6 +223,7 @@ public class StyleManager implements StyleServer {
         addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
         addLongSetting(Setting.MENTIONS, "mentions");
         addLongSetting(Setting.MENTIONS_INFO, "mentionsInfo");
+        addLongSetting(Setting.MENTION_MESSAGES, "mentionMessages");
         // Deleted Messages Settings
         String deletedMessagesMode = settings.getString("deletedMessagesMode");
         long deletedMessagesModeNumeric = 0;

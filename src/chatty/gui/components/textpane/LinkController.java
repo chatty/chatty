@@ -18,7 +18,10 @@ import chatty.gui.components.menus.UsericonContextMenu;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
+import chatty.util.DateTime;
 import chatty.util.Debugging;
+import chatty.util.ReplyManager;
+import chatty.util.ReplyManager.Reply;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
@@ -36,6 +39,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -98,6 +102,8 @@ public class LinkController extends MouseAdapter {
     private MyPopup popup = new MyPopup();
     
     private boolean popupImagesEnabled;
+    
+    private int mentionMessages;
     
     private Element prevHoverElement;
     
@@ -248,24 +254,26 @@ public class LinkController extends MouseAdapter {
         EmoticonImage emoteImage = getEmoticonImage(element);
         Usericon usericon = getUsericon(element);
         String replacedText = getReplacedText(element);
-        String replyText = getReplyText(element);
+        String replyMsgId = getReplyText(element);
+        User mention = getMention(element);
         if (emoteImage != null) {
             popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
             popup.show(textPane, element, p -> makeUsericonPopupText(usericon, p), usericon.image.getIconWidth());
         } else if (replacedText != null) {
             popup.show(textPane, element, p -> makeReplacementPopupText(replacedText, p), 1);
-        } else if (replyText != null) {
-            popup.show(textPane, element, p -> makeReplyPopupText(replyText, p), 1);
+        } else if (replyMsgId != null) {
+            popup.show(textPane, element, p -> makeReplyPopupText(replyMsgId, p), 1);
+        } else if (mention != null && mentionMessages > 0) {
+            popup.show(textPane, element, p -> makeMentionPopupText(mention, p, mentionMessages), 1);
         } else {
             popup.hide();
         }
 
         User user = null;
-        User mention = null;
         boolean isClickableElement = (getUrl(element) != null && !isUrlDeleted(element))
                 || (user = getUser(element)) != null
-                || (mention = getMention(element)) != null
+                || mention != null
                 || emoteImage != null
                 || usericon != null;
         
@@ -338,7 +346,7 @@ public class LinkController extends MouseAdapter {
     }
     
     private String getReplyText(Element e) {
-        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLY_PARENT_MSG));
+        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLY_PARENT_MSG_ID));
     }
     
     private String getSelectedText(MouseEvent e) {
@@ -674,6 +682,10 @@ public class LinkController extends MouseAdapter {
         popupImagesEnabled = enabled;
     }
     
+    public void setPopupMentionMessages(int amount) {
+        mentionMessages = amount;
+    }
+    
     public void cleanUp() {
         popup.cleanUp();
     }
@@ -791,10 +803,35 @@ public class LinkController extends MouseAdapter {
     // Reply Popup
     //-------------
     
-    private static void makeReplyPopupText(String replyText, MyPopup p) {
-        p.setText(String.format("%sReply to:<div style='text-align:left;font-weight:normal'>%s</div>",
-                POPUP_HTML_PREFIX,
-                StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(replyText), 70, true)));
+    private static void makeReplyPopupText(String replyMsgId, MyPopup p) {
+        List<Reply> replies = ReplyManager.getReplies(replyMsgId);
+        StringBuilder b = new StringBuilder();
+        for (Reply reply : replies) {
+            b.append(StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(reply.userMsg), 70, true));
+            b.append("<br />");
+        }
+        p.setText(String.format("%sThread:<div style='text-align:left;font-weight:normal'>%s</div>",
+                POPUP_HTML_PREFIX, b.toString()));
+    }
+    
+    private static void makeMentionPopupText(User user, MyPopup p, int amount) {
+        List<User.Message> msgs = user.getMessages();
+        int count = 0;
+        StringBuilder b = new StringBuilder();
+        for (int i = msgs.size() - 1; i >= 0; i--) {
+            User.Message msg = msgs.get(i);
+            if (msg instanceof User.TextMessage) {
+                b.insert(0, String.format("[%s] %s<br />",
+                        DateTime.format2(msg.getTime()),
+                        StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(((User.TextMessage) msg).text), 70, true)));
+                count++;
+            }
+            if (count >= amount) {
+                break;
+            }
+        }
+        p.setText(String.format("%sLatest messages of %s:<div style='text-align:left;font-weight:normal'>%s</div>",
+                POPUP_HTML_PREFIX, user, b.toString()));
     }
     
     //-------------

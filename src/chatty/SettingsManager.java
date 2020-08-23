@@ -233,6 +233,7 @@ public class SettingsManager {
         settings.addLong("mentions", 3);
         settings.addLong("mentionsInfo", 3);
         settings.addLong("markHoveredUser", chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS);
+        settings.addLong("mentionMessages", 0);
 
         // Badges/Emotes
         settings.addBoolean("emoticonsEnabled",true);

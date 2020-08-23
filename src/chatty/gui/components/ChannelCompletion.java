@@ -77,7 +77,7 @@ public class ChannelCompletion implements AutoCompletionServer {
         "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ", "/host ",
         "/unban ", "/ignore ", "/unignore ", "/ignorechat ", "/unignorechat ",
         "/ignorewhisper ", "/unignorewhisper ", "/follow ", "/unfollow ",
-        "/untimeout ", "/favorite ", "/unfavorite "
+        "/untimeout ", "/favorite ", "/unfavorite ", "@@"
     }));
     
     private Font currentFont;

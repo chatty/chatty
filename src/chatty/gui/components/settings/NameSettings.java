@@ -115,6 +115,20 @@ public class NameSettings extends SettingsPanel {
         other.add(markHoveredUser,
                 d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST));
         
+        //--------------------------
+        // Mention Messages
+        //--------------------------
+        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
+        gbc.insets = new Insets(5, 5, 5, 6);
+        JLabel mentionMessagesLabel = SettingsUtil.createLabel("mentionMessages");
+        JComboBox mentionMessages = d.addComboLongSetting("mentionMessages", new int[]{0,1,2,3,4,5,6,7,8,9,10});
+        mentionMessagesLabel.setLabelFor(mentionMessages);
+        other.add(mentionMessagesLabel, gbc);
+        other.add(mentionMessages, d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST));
+        
+        //--------------------------
+        // Custom Names
+        //--------------------------
         JPanel custom = addTitledPanel("Custom Names", 2, true);
         customNamesEditor = d.addStringMapSetting("customNames", 270, 200);
         customNamesEditor.setKeyFilter("[^\\w]");
