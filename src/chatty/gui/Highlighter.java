@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -366,6 +367,20 @@ public class Highlighter {
             matchItems.add(item);
         }
         
+        private void addChanCatItem(String info, Object infoData, BiFunction<String, Addressbook, Boolean> m) {
+            Item item = new Item(info, infoData) {
+
+                @Override
+                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
+                    if (channel == null || ab == null) {
+                        return false;
+                    }
+                    return m.apply(channel, ab);
+                }
+            };
+            matchItems.add(item);
+        }
+        
         private void addTagsItem(String info, Object infoData, Function<MsgTags, Boolean> m) {
             Item item = new Item(info, infoData) {
 
@@ -554,38 +569,48 @@ public class Highlighter {
                 }
                 else if (item.startsWith("chanCat:")) {
                     List<String> cats = parseStringListPrefix(item, "chanCat:", s -> s);
-                    matchItems.add(new Item("Channel Addressbook Category", cats) {
-
-                        @Override
-                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
-                            if (channel == null || ab == null) {
-                                return false;
+                    addChanCatItem("Channel Addressbook Category", cats, (channel, ab) -> {
+                        for (String cat : cats) {
+                            if (ab.hasCategory(channel, cat)) {
+                                return true;
                             }
-                            for (String cat : cats) {
-                                if (ab.hasCategory(channel, cat)) {
-                                    return true;
-                                }
-                            }
-                            return false;
                         }
+                        return false;
                     });
                 }
                 else if (item.startsWith("!chanCat:")) {
                     List<String> cats = parseStringListPrefix(item, "!chanCat:", s -> s);
-                    matchItems.add(new Item("Not Channel Addressbook Category", cats) {
-
-                        @Override
-                        public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
-                            if (channel == null || ab == null) {
-                                return false;
+                    addChanCatItem("Not Channel Addressbook Category", cats, (channel, ab) -> {
+                        for (String cat : cats) {
+                            if (!ab.hasCategory(channel, cat)) {
+                                return true;
                             }
-                            for (String cat : cats) {
-                                if (!ab.hasCategory(channel, cat)) {
-                                    return true;
-                                }
-                            }
-                            return false;
                         }
+                        return false;
+                    });
+                }
+                else if (item.startsWith("chanCat2:")) {
+                    List<String> cats = parseStringListPrefix(item, "chanCat2:", s -> s);
+                    addChanCatItem("Channel/User Addressbook Category", cats, (channel, ab) -> {
+                        String stream = Helper.toStream(channel);
+                        for (String cat : cats) {
+                            if (ab.hasCategory(channel, cat) || ab.hasCategory(stream, cat)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                }
+                else if (item.startsWith("!chanCat2:")) {
+                    List<String> cats = parseStringListPrefix(item, "!chanCat2:", s -> s);
+                    addChanCatItem("Not Channel/User Addressbook Category", cats, (channel, ab) -> {
+                        String stream = Helper.toStream(channel);
+                        for (String cat : cats) {
+                            if (!ab.hasCategory(channel, cat) && !ab.hasCategory(stream, cat)) {
+                                return true;
+                            }
+                        }
+                        return false;
                     });
                 }
                 //--------------------------

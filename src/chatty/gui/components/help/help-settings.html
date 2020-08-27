@@ -851,8 +851,8 @@
             it always tries to match the entire username. Example:
             <code>reuser:(?i)a.*</code> would match all names starting with "a".</li>
         <li><code>cat:</code> - One or several (comma separated) <a href="help.html#addressbook">Addressbook</a>
-            categories. The user who send the message must be in at least on of them.
-            Example: <code>cat:friends,family</code></li>
+            categories. The user who send the message must be in at least one of them.
+            Example: <code>cat:friends,family</code> (the user must be in "friends" or "family", or both)</li>
         <li><code>!cat:</code> - One or several Addressbook categories.
             The user who send the message must <em>not</em> be in at least one of them.</li>
         <li><code>chan:</code> - One or several channels the message must
@@ -862,12 +862,18 @@
         <li><code>chanCat:</code> - One or several <a href="help.html#addressbook">Addressbook</a>
             categories. The channel the message was send in must be in at least
             one of those categories (added to the Addressbook with the name of
-            the channel, including leading #).</li>
+            the channel, including leading #, e.g. <code>#esl_csgo</code>).</li>
         <li><code>!chanCat:</code> - One or several Addressbook categories. The
             channel the message was send in must <em>not</em> be in at least one
             of them. Example: <code>!chanCat:modding,important</code> (if
             channel has both, the match fails), <code>!chanCat:modding !chanCat:important</code>
             (if channel has one or both, the match fails)</li>
+        <li><code>chanCat2:</code> / <code>!chanCat2:</code> - Same as <code>chanCat:</code> / <code>!chanCat:</code>,
+            except that it looks up the channel in the Addressbook both in the
+            channel and user format. Example: <code>chanCat2:abc</code> in the
+            channel #joshimuz will look for the <code>abc</code> category under
+            both <code>#joshimuz</code> and <code>joshimuz</code> as if they
+            were one.</li>
         <li><code>status:</code> to specify that the user has to have one of the
             given status codes (case-sensitive):
             <ul>
