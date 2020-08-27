@@ -33,7 +33,8 @@ import javax.swing.ListSelectionModel;
 public class SelectReplyMessage {
     
     private static final String SETTING = "mentionReplyRestricted";
-    private static final SelectReplyMessageResult DONT_SEND_RESULT = new SelectReplyMessageResult();
+    private static final SelectReplyMessageResult DONT_SEND_RESULT = new SelectReplyMessageResult(SelectReplyMessageResult.Action.DONT_SEND);
+    private static final SelectReplyMessageResult SEND_NORMALLY_RESULT = new SelectReplyMessageResult(SelectReplyMessageResult.Action.SEND_NORMALLY);
     
     public static Settings settings;
     
@@ -55,7 +56,7 @@ public class SelectReplyMessage {
         private final JList<User.TextMessage> list;
         private final JCheckBox continueThread = new JCheckBox("Continue thread");
         
-        private SelectReplyMessageResult result;
+        private SelectReplyMessageResult result = DONT_SEND_RESULT;
         
         private Dialog(User user) {
             super(KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow());
@@ -98,23 +99,32 @@ public class SelectReplyMessage {
             list.setVisibleRowCount(14);
             list.addListSelectionListener(e -> {
                 TextMessage m = list.getSelectedValue();
-                boolean hasParentId = ReplyManager.getParentMsgId(m.id) != null;
-                continueThread.setSelected(hasParentId);
-                continueThread.setEnabled(hasParentId);
+                if (m != null) {
+                    boolean hasParentId = ReplyManager.getParentMsgId(m.id) != null;
+                    continueThread.setSelected(hasParentId);
+                    continueThread.setEnabled(hasParentId);
+                }
             });
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             JListActionHelper.install(list, (JListActionHelper.Action action, Point location, List<User.TextMessage> selected) -> {
                 if (action == Action.ENTER || action == Action.DOUBLE_CLICK) {
                     confirm();
                 }
-            });
+                else if (action == Action.CTRL_ENTER) {
+                    result = SEND_NORMALLY_RESULT;
+                    setVisible(false);
+                }
+            }, false);
 
             JButton ok = new JButton("Send reply");
             ok.addActionListener(e -> {
                 confirm();
             });
             JButton decline = new JButton("Send normally");
-            decline.addActionListener(e -> setVisible(false));
+            decline.addActionListener(e -> {
+                result = SEND_NORMALLY_RESULT;
+                setVisible(false);
+            });
             
             if (settings != null) {
                 JCheckBox restrictSetting = new JCheckBox("Only show when message starts with @@<username>");
@@ -133,7 +143,7 @@ public class SelectReplyMessage {
 
             add(new JScrollPane(list), GuiUtil.makeGbc(0, 0, 3, 1));
             add(continueThread, GuiUtil.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
-            add(new JLabel("Tip: Press Enter to send reply, ESC to send normally"), GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+            add(new JLabel("<html><body style='width:380'>Tip: Press <kbd>Enter</kbd> to send reply, <kbd>Ctrl+Enter</kbd> to send normally, <kbd>ESC</kbd> to cancel"), GuiUtil.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
             GridBagConstraints gbc = GuiUtil.makeGbc(0, 4, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
@@ -179,17 +189,21 @@ public class SelectReplyMessage {
     
     public static class SelectReplyMessageResult {
         
+        public enum Action {
+            REPLY, SEND_NORMALLY, DONT_SEND;
+        }
+        
         public final String atMsgId;
-        public final boolean send;
+        public final Action action;
         
         public SelectReplyMessageResult(String atMsgId) {
             this.atMsgId = atMsgId;
-            this.send = true;
+            this.action = Action.REPLY;
         }
         
-        public SelectReplyMessageResult() {
+        public SelectReplyMessageResult(Action action) {
             this.atMsgId = null;
-            this.send = false;
+            this.action = action;
         }
         
     }

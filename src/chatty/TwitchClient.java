@@ -872,9 +872,9 @@ public class TwitchClient {
                 if (user != null) {
                     SelectReplyMessage.settings = settings;
                     SelectReplyMessageResult result = SelectReplyMessage.show(user);
-                    if (result != null) {
+                    if (result.action != SelectReplyMessageResult.Action.SEND_NORMALLY) {
                         // Should not send normally, so return true
-                        if (result.send) {
+                        if (result.action == SelectReplyMessageResult.Action.REPLY) {
                             sendReply(channel, actualMsg, username, result.atMsgId, null);
                         }
                         return true;

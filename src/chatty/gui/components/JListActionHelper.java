@@ -16,14 +16,16 @@ import javax.swing.JList;
  */
 public class JListActionHelper<T> implements MouseListener, KeyListener {
     
-    public enum Action { CONTEXT_MENU, ENTER, DOUBLE_CLICK, SPACE }
+    public enum Action { CONTEXT_MENU, ENTER, CTRL_ENTER, DOUBLE_CLICK, SPACE }
     
     private final JList<T> list;
     private final JListContextMenuListener<T> listener;
+    private final boolean allowClearSelection;
     
-    public JListActionHelper(JList<T> list, JListContextMenuListener<T> listener) {
+    public JListActionHelper(JList<T> list, JListContextMenuListener<T> listener, boolean allowClearSelection) {
         this.list = list;
         this.listener = listener;
+        this.allowClearSelection = allowClearSelection;
     }
 
     @Override
@@ -70,7 +72,7 @@ public class JListActionHelper<T> implements MouseListener, KeyListener {
                     list.setSelectedIndex(index);
                 }
             }
-        } else {
+        } else if (allowClearSelection) {
             list.clearSelection();
         }
     }
@@ -101,7 +103,12 @@ public class JListActionHelper<T> implements MouseListener, KeyListener {
             openContextMenu(getSelectedLocation());
         }
         else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            otherAction(Action.ENTER);
+            if (e.isControlDown()) {
+                otherAction(Action.CTRL_ENTER);
+            }
+            else {
+                otherAction(Action.ENTER);
+            }
         }
         else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             otherAction(Action.SPACE);
@@ -126,7 +133,13 @@ public class JListActionHelper<T> implements MouseListener, KeyListener {
     }
     
     public static <T> void install(JList<T> list, JListContextMenuListener<T> listener) {
-        JListActionHelper<T> helper = new JListActionHelper<>(list, listener);
+        JListActionHelper<T> helper = new JListActionHelper<>(list, listener, true);
+        list.addMouseListener(helper);
+        list.addKeyListener(helper);
+    }
+    
+    public static <T> void install(JList<T> list, JListContextMenuListener<T> listener, boolean allowClearSelection) {
+        JListActionHelper<T> helper = new JListActionHelper<>(list, listener, allowClearSelection);
         list.addMouseListener(helper);
         list.addKeyListener(helper);
     }
