@@ -293,14 +293,24 @@ public class ChatLog {
         if (mode.equals("off")) {
             return false;
         }
-        if (mode.equals("always")) {
+        else if (mode.equals("always")) {
             return true;
         }
-        if (mode.equals("blacklist") && !settings.listContains("logBlacklist", channel)) {
-            return true;
+        else if (mode.equals("blacklist")) {
+            if (!settings.listContains("logBlacklist", channel)) {
+                return true;
+            }
+            if (channel.startsWith("$") && !settings.listContains("logBlacklist", "$_whisper_")) {
+                return true;
+            }
         }
-        if (mode.equals("whitelist") && settings.listContains("logWhitelist", channel)) {
-            return true;
+        else if (mode.equals("whitelist")) {
+            if (settings.listContains("logWhitelist", channel)) {
+                return true;
+            }
+            if (channel.startsWith("$") && settings.listContains("logWhitelist", "$_whisper_")) {
+                return true;
+            }
         }
         return false;
     }

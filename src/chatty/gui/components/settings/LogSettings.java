@@ -321,7 +321,8 @@ public class LogSettings extends SettingsPanel {
          */
         @Override
         public String format(String input) {
-            if (input != null && !input.isEmpty() && !input.startsWith("#")) {
+            if (input != null && !input.isEmpty() && !input.startsWith("#")
+                    && !input.startsWith("$")) {
                 input = "#"+input;
             }
             if (input.length() == 1) {
