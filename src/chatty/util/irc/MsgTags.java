@@ -21,6 +21,10 @@ public class MsgTags extends IrcMsgTags {
         return get("id");
     }
     
+    public boolean hasId() {
+        return hasValue("id");
+    }
+    
     public int getBits() {
         return getInteger("bits", 0);
     }
@@ -46,7 +50,7 @@ public class MsgTags extends IrcMsgTags {
     }
     
     public boolean hasReplyUserMsg() {
-        return containsKey("reply-parent-msg-body") && containsKey("reply-parent-display-name");
+        return hasValue("reply-parent-msg-body") && hasValue("reply-parent-display-name");
     }
     
     public String getReplyUserMsg() {
@@ -59,7 +63,7 @@ public class MsgTags extends IrcMsgTags {
     }
     
     public boolean isReply() {
-        return containsKey("reply-parent-msg-id");
+        return hasValue("reply-parent-msg-id");
     }
     
     public String getReplyParentMsgId() {

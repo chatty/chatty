@@ -101,8 +101,9 @@ public class IrcMsgTags {
         return false;
     }
     
-    public boolean isEmpty(String key) {
-        return !tags.containsKey(key) || tags.get(key).isEmpty();
+    public boolean hasValue(String key) {
+        String value = tags.get(key);
+        return value != null && !value.isEmpty();
     }
     
     /**

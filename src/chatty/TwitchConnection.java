@@ -1408,7 +1408,7 @@ public class TwitchConnection {
                     if (tags.containsKey("followers-only")) {
                         channelStates.setFollowersOnly(channel, tags.get("followers-only"));
                     }
-                    if (!tags.isEmpty("room-id")) {
+                    if (tags.hasValue("room-id")) {
                         listener.onRoomId(channel, tags.get("room-id"));
                         if (Helper.isRegularChannel(channel)) {
                             // Set id for room (this should not run too often to

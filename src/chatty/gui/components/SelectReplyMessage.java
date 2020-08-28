@@ -163,11 +163,14 @@ public class SelectReplyMessage {
         private void confirm() {
             User.TextMessage selected = list.getSelectedValue();
             if (selected != null) {
-                result = new SelectReplyMessageResult(selected.id);
+                result = new SelectReplyMessageResult(selected.id, selected.text);
                 if (continueThread.isSelected()) {
                     String parentMsgId = ReplyManager.getParentMsgId(selected.id);
                     if (parentMsgId != null) {
-                        result = new SelectReplyMessageResult(parentMsgId);
+                        // Overwrite result with parent msg-id if available
+                        // Msg should be null for this, since the selected.text
+                        // isn't the parent text
+                        result = new SelectReplyMessageResult(parentMsgId, null);
                     }
                 }
             }
@@ -177,9 +180,10 @@ public class SelectReplyMessage {
         public SelectReplyMessageResult select() {
             if (list.getModel().getSize() == 0) {
                 // No messages available, so immediatelly return
-                return null;
+                return SEND_NORMALLY_RESULT;
             }
             list.setSelectedIndex(list.getModel().getSize() - 1);
+            list.ensureIndexIsVisible(list.getSelectedIndex());
             setLocationRelativeTo(getParent());
             setVisible(true);
             return result;
@@ -194,15 +198,18 @@ public class SelectReplyMessage {
         }
         
         public final String atMsgId;
+        public final String atMsg;
         public final Action action;
         
-        public SelectReplyMessageResult(String atMsgId) {
+        public SelectReplyMessageResult(String atMsgId, String atMsg) {
             this.atMsgId = atMsgId;
+            this.atMsg = atMsg;
             this.action = Action.REPLY;
         }
         
         public SelectReplyMessageResult(Action action) {
             this.atMsgId = null;
+            this.atMsg = null;
             this.action = action;
         }
         
@@ -213,6 +220,9 @@ public class SelectReplyMessage {
         user.addMessage("abc", true, "1");
         user.addMessage("abc2", true, "2");
         user.addMessage("abc2", true, null);
+        for (int i=0;i<30;i++) {
+            user.addMessage("blah"+i, false, i+"msg-id");
+        }
         System.out.println(SelectReplyMessage.show(user));
         System.exit(0);
     }

@@ -17,7 +17,7 @@ import javax.swing.Timer;
  */
 public class ReplyManager {
     
-    private static final long DELETE_TIME = TimeUnit.HOURS.toMillis(4);
+    private static final long DELETE_TIME = TimeUnit.HOURS.toMillis(12);
 //    private static final long DELETE_TIME = TimeUnit.MINUTES.toMillis(2);
     
     private static final Map<String, List<Reply>> data = new HashMap<>();

@@ -859,6 +859,14 @@ public class TwitchClient {
         }
     }
     
+    /**
+     * Check if the message should be sent as a reply.
+     * 
+     * @param channel The channel to send the message to (not null)
+     * @param text The text to send (not null)
+     * @return true if the message was handled by this method, false if it
+     * should be sent normally
+     */
     private boolean sendAsReply(String channel, String text) {
         boolean restricted = settings.getBoolean("mentionReplyRestricted");
         boolean doubleAt = text.startsWith("@@");
@@ -875,7 +883,8 @@ public class TwitchClient {
                     if (result.action != SelectReplyMessageResult.Action.SEND_NORMALLY) {
                         // Should not send normally, so return true
                         if (result.action == SelectReplyMessageResult.Action.REPLY) {
-                            sendReply(channel, actualMsg, username, result.atMsgId, null);
+                            // If changed to parent msg-id, atMsg will be null
+                            sendReply(channel, actualMsg, username, result.atMsgId, result.atMsg);
                         }
                         return true;
                     }
@@ -885,6 +894,15 @@ public class TwitchClient {
         return false;
     }
     
+    /**
+     * Send a reply.
+     * 
+     * @param channel The channel to send to (not null)
+     * @param text The text to send (not null)
+     * @param atUsername The username to address (not null)
+     * @param atMsgId The msg-id to use as reply thread parent (not null)
+     * @param atMsg The parent msg text (may be null)
+     */
     private void sendReply(String channel, String text, String atUsername, String atMsgId, String atMsg) {
         MsgTags tags = MsgTags.create("reply-parent-msg-id", atMsgId);
         if (c.sendSpamProtectedMessage(channel, text, false, tags)) {
@@ -2936,7 +2954,7 @@ public class TwitchClient {
             }
             else {
                 g.printMessage(user, text, action, tags);
-                if (tags.isReply() && tags.hasReplyUserMsg()) {
+                if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
                     ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
                 }
                 if (!action) {

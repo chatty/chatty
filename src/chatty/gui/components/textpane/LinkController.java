@@ -806,9 +806,14 @@ public class LinkController extends MouseAdapter {
     private static void makeReplyPopupText(String replyMsgId, MyPopup p) {
         List<Reply> replies = ReplyManager.getReplies(replyMsgId);
         StringBuilder b = new StringBuilder();
-        for (Reply reply : replies) {
-            b.append(StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(reply.userMsg), 70, true));
-            b.append("<br />");
+        if (replies != null) {
+            for (Reply reply : replies) {
+                b.append(StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(reply.userMsg), 70, true));
+                b.append("<br />");
+            }
+        }
+        else {
+            b.append("No reply data found (may have expired).");
         }
         p.setText(String.format("%sThread:<div style='text-align:left;font-weight:normal'>%s</div>",
                 POPUP_HTML_PREFIX, b.toString()));
