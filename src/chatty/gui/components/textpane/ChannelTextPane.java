@@ -237,7 +237,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addCaretListener(new CaretListener() {
                 @Override
                 public void caretUpdate(CaretEvent e) {
-                    System.out.println(e + " " + Util.getText(doc, e.getDot(), e.getDot()+1));
+                    System.out.println(String.format("Caret update: %s '%s' %d",
+                            e,
+                            Util.getText(doc, e.getDot(), e.getDot() + 1).replace("\n", "\\n"),
+                            doc.getLength()));
                 }
             });
             addFocusListener(new FocusAdapter() {
