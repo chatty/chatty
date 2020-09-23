@@ -461,7 +461,13 @@
                         For better quality several images of different sizes can
                         be provided. The default icons are 16x16, 64x64 and
                         128x128 pixels. Check "Extra - Debug window" to see
-                        which images successfully loaded.</td>
+                        which images successfully loaded.<br />
+                        Each path may be prefixed with a type in square brackets
+                        that restricts this image to replacing only certain
+                        icons in the program (paths with no prefix apply to
+                        everyting, except types that do have a prefixed path):
+                        main, tray, notif, live, help, debug<br />
+                        Example: <code>[tray]C:\chatty_tray.png</code></td>
                 </tr>
             </table>
             

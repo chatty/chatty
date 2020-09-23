@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.lang.Language;
 import chatty.util.IconManager;
+import chatty.util.IconManager.CustomIcon;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,7 +44,7 @@ public class TrayIconManager {
             Dimension iconDimension = tray.getTrayIconSize();
             int size = Math.min(iconDimension.width, iconDimension.height);
             LOGGER.info("Creating TrayIcon ("+iconDimension.width+"x"+iconDimension.height+")");
-            Image image = IconManager.getMainIcon(size);
+            Image image = IconManager.getTrayIcon(size);
             trayIcon = new TrayIcon(image, "Chatty");
             trayIcon.setImageAutoSize(true);
             trayIcon.setPopupMenu(popup);
