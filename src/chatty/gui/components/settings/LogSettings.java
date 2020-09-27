@@ -102,6 +102,7 @@ public class LogSettings extends SettingsPanel {
         modePanel.add(info, gbc);
         
         JPanel typesPanel = createTitledPanel("Message Types");
+        JPanel extraPanel = createTitledPanel("Extra log file");
         
         JCheckBox logMessages = d.addSimpleBooleanSetting("logMessage");
         JCheckBox logIgnored = d.addSimpleBooleanSetting("logIgnored");
@@ -212,6 +213,11 @@ public class LogSettings extends SettingsPanel {
                 d.makeGbcCloser(0, 11, 1, 1, GridBagConstraints.WEST));
         typesPanel.add(d.addSimpleBooleanSetting("logBits"),
                 d.makeGbcCloser(0, 12, 1, 1, GridBagConstraints.WEST));
+        
+        extraPanel.add(d.addSimpleBooleanSetting("logHighlighted2"),
+                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
+        extraPanel.add(d.addSimpleBooleanSetting("logIgnored2"),
+                d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         
@@ -268,12 +274,18 @@ public class LogSettings extends SettingsPanel {
         gbc.weighty = 1;
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridheight = 2;
         addPanel(modePanel, gbc);
         
         gbc = getGbc(0);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.gridx = 1;
         addPanel(typesPanel, gbc);
+        
+        gbc = getGbc(1);
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.gridx = 1;
+        addPanel(extraPanel, gbc);
         
         gbc = getGbc(2);
         gbc.gridwidth = 2;

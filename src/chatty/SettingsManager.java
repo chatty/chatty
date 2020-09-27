@@ -596,6 +596,8 @@ public class SettingsManager {
         settings.addBoolean("logBits", true);
         settings.addList("logWhitelist",new ArrayList(), Setting.STRING);
         settings.addList("logBlacklist",new ArrayList(), Setting.STRING);
+        settings.addBoolean("logHighlighted2", false);
+        settings.addBoolean("logIgnored2", false);
         settings.addString("logPath", "");
         settings.addString("logSplit", "never");
         settings.addBoolean("logSubdirectories", false);

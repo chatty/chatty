@@ -289,6 +289,18 @@ public class ChatLog {
         if (channel == null || channel.isEmpty()) {
             return false;
         }
+        
+        // Check non-channel files (not affected by logMode, seems already
+        // separate enough to handle it separately from channels)
+        if (channel.equals("_highlighted")) {
+            return settings.getBoolean("logHighlighted2");
+        }
+        if (channel.equals("_ignored")) {
+            return settings.getBoolean("logIgnored2");
+        }
+        
+        // Check channel files (whispers also fall under this because it allows
+        // setting it for individual $username channels)
         String mode = settings.getString("logMode");
         if (mode.equals("off")) {
             return false;
