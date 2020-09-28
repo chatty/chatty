@@ -3,7 +3,6 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.gui.components.textpane.ChannelTextPane;
-import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
@@ -57,7 +56,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -805,6 +803,27 @@ public class GuiUtil {
         }
         g.dispose();
         return new ImageIcon(img);
+    }
+    
+    /**
+     * Run in the EDT, either by running it directly if already in the EDT or
+     * by using SwingUtilities.invokeAndWait.
+     * 
+     * @param runnable What to execute
+     * @param description Used for logging when an error occurs
+     */
+    public static void edtAndWait(Runnable runnable, String description) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        }
+        else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            }
+            catch (Exception ex) {
+                LOGGER.warning("Failed to execute edtAndWait ("+description+"): "+ex);
+            }
+        }
     }
     
 }
