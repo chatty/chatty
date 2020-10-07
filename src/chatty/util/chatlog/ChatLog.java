@@ -122,14 +122,25 @@ public class ChatLog {
         }
     }
     
-    public void message(String channel, User user, String message, boolean action) {
+    /**
+     * Log a regular chat message.
+     * 
+     * @param channel The channel to log to (normally the channel received in,
+     * highlighted/ignore messages could be different)
+     * @param user The user that sent the message
+     * @param message The message text
+     * @param action Whether the message is an action message
+     * @param includedChannel Channel name to include in the log line (probably
+     * due to it being logged into another file, like highlighted), can be null
+     */
+    public void message(String channel, User user, String message, boolean action, String includedChannel) {
         if (isSettingEnabled("logMessage") && isChanEnabled(channel)) {
             Parameters param = messageParam(
                             user,
                             message,
                             action,
                             settings,
-                            sdf != null ? DateTime.currentTime(sdf) : "");
+                            timestamp(includedChannel, false));
             String line = messageTemplate.replace(param);
             if (line != null && !line.isEmpty()) {
                 writeLine(channel, line);
@@ -149,9 +160,9 @@ public class ChatLog {
         return p;
     }
 
-    public void info(String channel, String message) {
+    public void info(String channel, String message, String includedChannel) {
         if (isSettingEnabled("logInfo") && isChanEnabled(channel)) {
-            writeLine(channel, timestamp()+message);
+            writeLine(channel, timestamp(includedChannel, true)+message);
         }
     }
     
@@ -257,10 +268,23 @@ public class ChatLog {
     }
     
     private String timestamp() {
-        if (sdf == null) {
+        return timestamp(null, true);
+    }
+    
+    private String timestamp(String includedChannel, boolean appendSpace) {
+        String space = appendSpace ? " " : "";
+        if (includedChannel != null) {
+            if (sdf != null) {
+                return DateTime.currentTime(sdf)+"["+includedChannel+"]"+space;
+            }
+            return "["+includedChannel+"]"+space;
+        }
+        else {
+            if (sdf != null) {
+                return DateTime.currentTime(sdf)+space;
+            }
             return "";
         }
-        return DateTime.currentTime(sdf)+" ";
     }
     
     /**
@@ -292,10 +316,10 @@ public class ChatLog {
         
         // Check non-channel files (not affected by logMode, seems already
         // separate enough to handle it separately from channels)
-        if (channel.equals("_highlighted")) {
+        if (channel.equals("highlighted")) {
             return settings.getBoolean("logHighlighted2");
         }
-        if (channel.equals("_ignored")) {
+        if (channel.equals("ignored")) {
             return settings.getBoolean("logIgnored2");
         }
         

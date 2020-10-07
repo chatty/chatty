@@ -2903,7 +2903,7 @@ public class TwitchClient {
 
         @Override
         public void onChannelLeft(Room room, boolean closeChannel) {
-            chatLog.info(room.getFilename(), "You have left "+room.getDisplayName());
+            chatLog.info(room.getFilename(), "You have left "+room.getDisplayName(), null);
             if (closeChannel) {
                 closeChannel(room.getChannel());
             }

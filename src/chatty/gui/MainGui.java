@@ -2937,7 +2937,7 @@ public class MainGui extends JFrame implements Runnable {
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
                     client.chatLog.bits(chan.getFilename(), user, bitsAmount);
-                    client.chatLog.message(chan.getFilename(), user, text, action);
+                    client.chatLog.message(chan.getFilename(), user, text, action, null);
                 }
                 
                 boolean highlighted = false;
@@ -2984,7 +2984,7 @@ public class MainGui extends JFrame implements Runnable {
                     ignoredMessages.addMessage(channel, user, text, action,
                             tagEmotes, bitsForEmotes, whisper, ignoreMatches,
                             tags);
-                    client.chatLog.message("_ignored", user, "["+channel+"] "+text, action);
+                    client.chatLog.message("ignored", user, text, action, channel);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
                 long ignoreMode = client.settings.getLong("ignoreMode");
@@ -3034,7 +3034,7 @@ public class MainGui extends JFrame implements Runnable {
                     chan.printMessage(message);
                     if (highlighted) {
                         highlightedMessages.addMessage(channel, message);
-                        client.chatLog.message("_highlighted", user, "["+channel+"] "+text, action);
+                        client.chatLog.message("highlighted", user, text, action, channel);
                     }
                     if (client.settings.listContains("streamChatChannels", channel)) {
                         streamChat.printMessage(message);
@@ -3334,7 +3334,7 @@ public class MainGui extends JFrame implements Runnable {
                 // After colors and everything is set
                 if (highlighted) {
                     highlightedMessages.addInfoMessage(channel.getChannel(), message);
-                    client.chatLog.info("_highlighted", "["+channel.getChannel()+"] "+message);
+                    client.chatLog.info("highlighted", message.text, channel.getChannel());
                 }
             }
             channel.printInfoMessage(message);
@@ -3343,7 +3343,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         } else if (!message.isHidden()) {
             ignoredMessages.addInfoMessage(channel.getRoom().getDisplayName(), message.text);
-            client.chatLog.info("_ignored", "["+channel.getChannel()+"] "+message);
+            client.chatLog.info("ignored", message.text, channel.getChannel());
         }
         
         //----------
@@ -3355,7 +3355,7 @@ public class MainGui extends JFrame implements Runnable {
             // ModLog message could be ModLogInfo or generic ModInfo (e.g. for
             // abandoned messages), so just checking the text instead of type or
             // something (ModActions are logged separately)
-            client.chatLog.info(channel.getFilename(), message.text);
+            client.chatLog.info(channel.getFilename(), message.text, null);
         }
         return !ignored;
     }
