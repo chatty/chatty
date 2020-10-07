@@ -1135,14 +1135,16 @@ public class TwitchConnection {
             if (months == -1) {
                 months = tags.getInteger("msg-param-months", -1);
             }
+            int giftMonths = tags.getInteger("msg-param-gift-months", -1);
+            
             if (StringUtil.isNullOrEmpty(login, text)) {
                 return;
             }
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
             if (tags.isValueOf("msg-id", "resub", "sub", "subgift", "anonsubgift")) {
-                if (months > 1 && !text.matches(".*\\b"+months+"\\b.*")) {
-                    text += " They've subscribed for "+months+" months!";
+                if (giftMonths > 1 && !text.matches(".* gifted "+giftMonths+" .*")) {
+                    text += " They gifted "+giftMonths+" months!";
                 }
                 listener.onSubscriberNotification(user, text, message, months, tags);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
