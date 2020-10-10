@@ -33,15 +33,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -915,6 +919,7 @@ public class EmotesDialog extends JDialog {
             Set<String> turboEmotes = new HashSet<>();
             Map<String, Set<EmotesetInfo>> perStream = new HashMap<>();
             Map<String, Set<EmotesetInfo>> perInfo = new HashMap<>();
+            Map<String, Set<EmotesetInfo>> perPrefix = new HashMap<>();
             List<String> unknownEmotesets = new ArrayList<>();
             Set<String> unknownEmotesetsSingle = new HashSet<>();
             for (String emoteset : localUserEmotesets) {
@@ -947,11 +952,51 @@ public class EmotesDialog extends JDialog {
                         }
                     } else {
                         // Unknown emoteset
-                        if (emoteManager.getEmoticonsBySet(emoteset).size() == 1) {
-                            unknownEmotesetsSingle.add(emoteset);
-                        } else {
-                            unknownEmotesets.add(emoteset);
+                        Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
+                        String emotePrefix = getPrefix(emotes);
+                        if (emotePrefix == null) {
+                            if (emotes.size() == 1) {
+                                unknownEmotesetsSingle.add(emoteset);
+                            }
+                            else {
+                                unknownEmotesets.add(emoteset);
+                            }
                         }
+                        else {
+                            // Fallback based on emote codes prefix
+                            String key = emotePrefix+" Emotes";
+                            if (!perPrefix.containsKey(key)) {
+                                perPrefix.put(key, new HashSet<>());
+                            }
+                            perPrefix.get(key).add(new EmotesetInfo(emoteset, null, null, null));
+                        }
+                    }
+                }
+            }
+            
+            //--------------------------
+            // Unknown Emotesets
+            //--------------------------
+            /**
+             * After collecting all perPrefix sets, sort ones that ended up with
+             * only one emote into "Other" and add others to perInfo emotes, so
+             * they are sorted the same
+             */
+            Iterator<Map.Entry<String, Set<EmotesetInfo>>> it = perPrefix.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Set<EmotesetInfo>> entry = it.next();
+                String key = entry.getKey();
+                Set<EmotesetInfo> sets = entry.getValue();
+                String emoteset = sets.iterator().next().emoteset_id;
+                if (sets.size() == 1 && emoteManager.getEmoticonsBySet(emoteset).size() == 1) {
+                    unknownEmotesetsSingle.add(emoteset);
+                }
+                else {
+                    if (perInfo.containsKey(key)) {
+                        perInfo.get(key).addAll(sets);
+                    }
+                    else {
+                        perInfo.put(key, sets);
                     }
                 }
             }
@@ -965,7 +1010,9 @@ public class EmotesDialog extends JDialog {
                 addEmotes(stream, perStream.get(stream));
             }
             
-            for (String info : perInfo.keySet()) {
+            List<String> sortedInfos = new ArrayList<>(perInfo.keySet());
+            Collections.sort(sortedInfos, String.CASE_INSENSITIVE_ORDER);
+            for (String info : sortedInfos) {
                 addEmotes(info, perInfo.get(info));
             }
             
@@ -1415,6 +1462,62 @@ public class EmotesDialog extends JDialog {
             lgbc.gridy++;
         }
         
+    }
+    
+    private static final Pattern PREFIX_PATTERN = Pattern.compile("^([A-Za-z][a-z0-9]+)");
+    
+    private static String getPrefix(String code) {
+        Matcher m = PREFIX_PATTERN.matcher(code);
+        if (m.find()) {
+            return m.group();
+        }
+        return null;
+    }
+    
+    /**
+     * The the emote prefix. Since it can be a bit ambigious what is part of the
+     * prefix (especially with numbers or sets that don't really have a prefix)
+     * this may not be entirely correct.
+     * 
+     * It assumes that everything lowercase or number (first character can be
+     * uppercase) belongs to the prefix, however it would be an issue when the
+     * code after the prefix starts with a number, so there is some leniancy for
+     * not all emotes having the same prefix (the shortest will be used most of
+     * them have it).
+     * 
+     * @param emotes
+     * @return 
+     */
+    private static String getPrefix(Collection<Emoticon> emotes) {
+        String commonPrefix = null;
+        int count = 0;
+        for (Emoticon emote : emotes) {
+            String prefix = getPrefix(emote.code);
+            if (prefix == null) {
+                return null;
+            }
+            if (commonPrefix == null) {
+                commonPrefix = prefix;
+                count = 1;
+            }
+            else if (prefix.equals(commonPrefix)) {
+                count++;
+            }
+            else if (prefix.length() < commonPrefix.length()
+                    && commonPrefix.startsWith(prefix)) {
+                // Always prefer shorter prefix, if it still fits
+                commonPrefix = prefix;
+                count = 1;
+            }
+
+            if (!prefix.startsWith(commonPrefix)) {
+                return null;
+            }
+        }
+        if (count >= emotes.size() * 0.8) {
+            return commonPrefix;
+        }
+        return null;
     }
     
 }
