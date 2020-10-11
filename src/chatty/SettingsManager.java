@@ -240,6 +240,7 @@ public class SettingsManager {
         settings.addLong("emoteMaxHeight", 0);
         settings.addLong("emoteScale", 100);
         settings.addLong("emoteScaleDialog", 100);
+        settings.addList("emoteHiddenSets", new ArrayList<>(), Setting.STRING);
         settings.addBoolean("closeEmoteDialogOnDoubleClick", false);
         settings.addBoolean("ffz", true);
         settings.addBoolean("ffzEvent", true);

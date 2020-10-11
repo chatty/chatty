@@ -977,6 +977,7 @@ public class MainGui extends JFrame implements Runnable {
         streamChat.setMessageTimeout((int)client.settings.getLong("streamChatMessageTimeout"));
         
         emotesDialog.setEmoteScale((int)client.settings.getLong("emoteScaleDialog"));
+        emotesDialog.setHiddenEmotesets(client.settings.getList("emoteHiddenSets"));
         emotesDialog.setCloseOnDoubleClick(client.settings.getBoolean("closeEmoteDialogOnDoubleClick"));
         
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
@@ -4625,12 +4626,13 @@ public class MainGui extends JFrame implements Runnable {
 
         @Override
         public void aboutToSaveSettings(Settings settings) {
-            if (SwingUtilities.isEventDispatchThread()) {
+            GuiUtil.edtAndWait(() -> {
                 System.out.println("Saving GUI settings.");
                 client.settings.setLong("favoritesSorting", favoritesDialog.getSorting());
                 emoticons.saveFavoritesToSettings(settings);
                 client.settings.setString("statusHistorySorting", adminDialog.getStatusHistorySorting());
-            }
+                client.settings.putList("emoteHiddenSets", emotesDialog.getHiddenEmotesets());
+            }, "Save GUI settings");
         }
         
     }

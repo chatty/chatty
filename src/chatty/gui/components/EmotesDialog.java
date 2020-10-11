@@ -134,7 +134,8 @@ public class EmotesDialog extends JDialog {
     private float scale;
     private boolean closeOnDoubleClick = true;
     private boolean userEmotesAccess;
-   
+    private final Set<String> hiddenEmotesets = new HashSet<>();
+    
     
     public EmotesDialog(Window owner, Emoticons emotes, final MainGui main, ContextMenuListener contextMenuListener) {
         super(owner);
@@ -460,6 +461,25 @@ public class EmotesDialog extends JDialog {
         }
     }
     
+    /**
+     * Set emotesets for hidden sections. Does not update already loaded pages.
+     * 
+     * @param sets 
+     */
+    public void setHiddenEmotesets(Collection<String> sets) {
+        this.hiddenEmotesets.clear();
+        this.hiddenEmotesets.addAll(sets);
+    }
+    
+    /**
+     * Get the current emotesets for hidden sections.
+     * 
+     * @return 
+     */
+    public Collection<String> getHiddenEmotesets() {
+        return hiddenEmotesets;
+    }
+    
     public void setUserEmotes(boolean access) {
         userEmotesAccess = access;
         // Not ideal, but better than nothing
@@ -676,14 +696,35 @@ public class EmotesDialog extends JDialog {
             //panel.revalidate();
             gbc.gridy = 0;
         }
-    
+        
+        /**
+         * Section should show the title only if at least one of the given sets
+         * is hidden.
+         * 
+         * @param emotesets
+         * @return 
+         */
+        private boolean isHidden(Collection<String> emotesets) {
+            for (String set : emotesets) {
+                if (hiddenEmotesets.contains(set)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private boolean isHidden(String emoteset) {
+            return hiddenEmotesets.contains(emoteset);
+        }
+        
         /**
          * Adds the emotes of the given emoteset. Includes the name of the
          * stream if available.
          *
          * @param emoteset The emoteset
+         * @param allowHide Enable hide feature
          */
-        void addEmotes(String emoteset) {
+        void addEmotes(String emoteset, boolean allowHide) {
             String stream = emoteManager.getLabelByEmoteset(emoteset);
             if (stream == null) {
                 stream = "-";
@@ -691,8 +732,11 @@ public class EmotesDialog extends JDialog {
             Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
             List<Emoticon> sorted = new ArrayList<>(emotes);
             Collections.sort(sorted, new SortEmotesByTypeAndName());
-            addTitle(stream + " [" + emoteset + "] (" + emotes.size() + " emotes)");
-            addEmotesPanel(sorted);
+            addTitle(stream + " [" + emoteset + "] (" + emotes.size() + " emotes)",
+                    Arrays.asList(new String[]{emoteset}));
+            if (!allowHide || !isHidden(emoteset)) {
+                addEmotesPanel(sorted);
+            }
         }
         
         /**
@@ -701,9 +745,10 @@ public class EmotesDialog extends JDialog {
          * @param titlePrefix Title prefix (emotesets and emotecount added
          * automatically)
          * @param emotesets The emotesets to display
+         * @param allowHide Enable hide feature
          * @return true if any emotes have been added, false otherwise
          */
-        boolean addEmotes(String titlePrefix, Set<EmotesetInfo> emotesets) {
+        boolean addEmotes(String titlePrefix, Set<EmotesetInfo> emotesets, boolean allowHide) {
             List<String> sets = new ArrayList<>();
             for (EmotesetInfo set : emotesets) {
                 sets.add(set.emoteset_id);
@@ -717,17 +762,26 @@ public class EmotesDialog extends JDialog {
             addTitle(String.format("%s %s (%d emotes)",
                     titlePrefix,
                     sets,
-                    sorted.size()));
-            addEmotesPanel(sorted);
-            return !sorted.isEmpty();
+                    sorted.size()), sets);
+            boolean show = !allowHide || !isHidden(sets);
+            if (show) {
+                addEmotesPanel(sorted);
+            }
+            return show && !sorted.isEmpty();
+        }
+        
+        void addTitle(String title) {
+            addTitle(title, null);
         }
     
         /**
          * Adds a title (label with seperating line).
          *
          * @param title The text of the title
+         * @param sets Emotesets that will be added under this title (for hide
+         * feature)
          */
-        void addTitle(String title) {
+        void addTitle(String title, Collection<String> sets) {
             JLabel titleLabel = new JLabel(StringUtil.shortenTo(title, 48, 34));
             titleLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, titleLabel.getForeground()));
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -738,6 +792,23 @@ public class EmotesDialog extends JDialog {
             add(titleLabel, gbc);
             gbc.gridx = 0;
             gbc.gridy++;
+            if (sets != null) {
+                // If sets are given, allow clicking on title to hide/unhide
+                titleLabel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            if (isHidden(sets)) {
+                                hiddenEmotesets.removeAll(sets);
+                            }
+                            else {
+                                hiddenEmotesets.addAll(sets);
+                            }
+                            updateEmotes();
+                        }
+                    }
+                });
+            }
         }
     
         /**
@@ -1007,18 +1078,18 @@ public class EmotesDialog extends JDialog {
             List<String> sortedStreams = new ArrayList<>(perStream.keySet());
             Collections.sort(sortedStreams, String.CASE_INSENSITIVE_ORDER);
             for (String stream : sortedStreams) {
-                addEmotes(stream, perStream.get(stream));
+                addEmotes(stream, perStream.get(stream), true);
             }
             
             List<String> sortedInfos = new ArrayList<>(perInfo.keySet());
             Collections.sort(sortedInfos, String.CASE_INSENSITIVE_ORDER);
             for (String info : sortedInfos) {
-                addEmotes(info, perInfo.get(info));
+                addEmotes(info, perInfo.get(info), true);
             }
             
             Collections.sort(unknownEmotesets, SORT_EMOTESETS);
             for (String emoteset : unknownEmotesets) {
-                addEmotes(emoteset);
+                addEmotes(emoteset, true);
             }
             
             // Unknown emotesets that only contain a single emote should be
@@ -1038,8 +1109,14 @@ public class EmotesDialog extends JDialog {
                     // other set as well, and the emotes are equal
                     continue;
                 }
-                addEmotes(emoteset);
+                addEmotes(emoteset, true);
             }
+            
+            // Don't show if there is very little (or nothing) to show/hide
+            if (sortedStreams.size() + sortedInfos.size() > 2) {
+                addSubtitle("(Tip: Click headings to show/hide emotes)", false);
+            }
+            
             relayout();
         }
         
@@ -1125,10 +1202,10 @@ public class EmotesDialog extends JDialog {
                         }
                     }
                     if (!withAccess.isEmpty()) {
-                        addEmotes(Language.getString("emotesDialog.subemotes", stream), withAccess);
+                        addEmotes(Language.getString("emotesDialog.subemotes", stream), withAccess, false);
                     }
                     if (!noAccess.isEmpty()) {
-                        if (addEmotes(Language.getString("emotesDialog.subemotes", stream), noAccess)) {
+                        if (addEmotes(Language.getString("emotesDialog.subemotes", stream), noAccess, false)) {
                             if (withAccess.isEmpty()) {
                                 // No subscription active
                                 addSubtitle(Language.getString("emotesDialog.subscriptionRequired2"), true);
