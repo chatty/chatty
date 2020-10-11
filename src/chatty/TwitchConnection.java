@@ -1143,8 +1143,21 @@ public class TwitchConnection {
             User user = userJoined(channel, login);
             updateUserFromTags(user, tags);
             if (tags.isValueOf("msg-id", "resub", "sub", "subgift", "anonsubgift")) {
+                text = text.trim();
                 if (giftMonths > 1 && !text.matches(".* gifted "+giftMonths+" .*")) {
                     text += " They gifted "+giftMonths+" months!";
+                }
+                // There are still some types of notifications that don't have
+                // this info, and it might be useful
+                if (months > 1 && !text.matches(".*\\b"+months+"\\b.*")) {
+                    String recipient = tags.get("msg-param-recipient-display-name");
+                    if (StringUtil.isNullOrEmpty(recipient)) {
+                        recipient = "They've";
+                    }
+                    else {
+                        recipient += " has";
+                    }
+                    text += " "+recipient+" subscribed for "+months+" months!";
                 }
                 listener.onSubscriberNotification(user, text, message, months, tags);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {
