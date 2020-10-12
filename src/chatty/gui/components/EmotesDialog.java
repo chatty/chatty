@@ -3,7 +3,6 @@ package chatty.gui.components;
 
 import chatty.Chatty;
 import chatty.gui.GuiUtil;
-import chatty.gui.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
@@ -17,6 +16,9 @@ import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticon.EmoticonUser;
 import chatty.util.api.Emoticons;
+import chatty.util.colors.ColorCorrection;
+import chatty.util.colors.ColorCorrectionNew;
+import chatty.util.colors.HtmlColors;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -57,7 +59,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -108,6 +109,7 @@ public class EmotesDialog extends JDialog {
     private final ButtonGroup buttonGroup;
     private final EmotesPanel defaultPanel;
     private final Color emotesBackground;
+    private final Color emotesForeground;
     private final JButton refreshButton = new JButton(new ImageIcon(EmotesDialog.class.getResource("view-refresh.png")));
     
     /**
@@ -136,7 +138,6 @@ public class EmotesDialog extends JDialog {
     private boolean userEmotesAccess;
     private final Set<String> hiddenEmotesets = new HashSet<>();
     
-    
     public EmotesDialog(Window owner, Emoticons emotes, final MainGui main, ContextMenuListener contextMenuListener) {
         super(owner);
         
@@ -154,16 +155,17 @@ public class EmotesDialog extends JDialog {
         this.setFocusableWindowState(false);
         this.contextMenuListener = contextMenuListener;
         this.emoteManager = emotes;
-        Color bg = new JTextArea().getBackground();
-        if (bg.equals(Color.WHITE)) {
-            emotesBackground = new Color(250, 250, 250);
+        Color bg = HtmlColors.decode(main.getSettings().getString("backgroundColor"));
+        // Offset the color a bit so it doesn't merge with the background of
+        // chat as much
+        if (ColorCorrection.isLightColor(bg)) {
+            emotesBackground = ColorCorrectionNew.makeDarker(bg, 0.982f);
         }
         else {
-            emotesBackground = bg;
+            // Dark background seemed to require a larger difference
+            emotesBackground = ColorCorrectionNew.makeDarker(bg, 0.96f);
         }
-        //emotesBackground = new JPanel().getBackground().brighter();
-        //emotesBackground = brighter(new JPanel().getBackground(), 0.8);
-        //emotesBackground = HtmlColors.decode(main.getSettings().getString("backgroundColor"));
+        emotesForeground = HtmlColors.decode(main.getSettings().getString("foregroundColor"));
         setResizable(true);
 
         //------------------
@@ -783,6 +785,7 @@ public class EmotesDialog extends JDialog {
          */
         void addTitle(String title, Collection<String> sets) {
             JLabel titleLabel = new JLabel(StringUtil.shortenTo(title, 48, 34));
+            titleLabel.setForeground(emotesForeground);
             titleLabel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, titleLabel.getForeground()));
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = TITLE_INSETS;
@@ -821,7 +824,8 @@ public class EmotesDialog extends JDialog {
          */
         void addSubtitle(String title, boolean smallMargin) {
             JLabel titleLabel = new JLabel(title);
-            titleLabel.setForeground(Color.GRAY);
+            // Usually gray should be readable, but just in case
+            titleLabel.setForeground(ColorCorrection.correctReadability(Color.GRAY, emotesBackground));
             gbc.fill = GridBagConstraints.NONE;
             gbc.weightx = 0;
             gbc.insets = smallMargin ? SUBTITLE_INSETS_SMALLER_MARGIN : SUBTITLE_INSETS;
@@ -1497,7 +1501,9 @@ public class EmotesDialog extends JDialog {
             panel.add(new EmoteLabel(emote, mouseListener, scale, emoteUser), lgbc);
             
             lgbc.gridy = 1;
-            panel.add(new JLabel(label), lgbc);
+            JLabel title = new JLabel(label);
+            title.setForeground(emotesForeground);
+            panel.add(title, lgbc);
             
             lgbc.gridx++;
         }
