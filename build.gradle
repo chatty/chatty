@@ -2,6 +2,7 @@ import java.util.regex.Matcher
 
 plugins {
     id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "org.gradle.crypto.checksum" version "1.1.0"
     id "java"
 }
 
@@ -242,3 +243,18 @@ task innosetupStandalone(type: Exec, group: 'build') {
 task releaseWinSetups(group: 'build') {
     dependsOn releaseWindows, innosetup, innosetupStandalone, build
 }
+
+//---------
+// Checksum
+//---------
+
+import org.gradle.crypto.checksum.Checksum
+
+task createChecksums(type: Checksum) {
+    files = layout.files { releasesDir.listFiles() }.filter { File f ->
+        f.name.endsWith(".exe") || f.name.endsWith(".zip")
+    }
+    outputDir = new File(releasesDir, "v"+version)
+    algorithm = Checksum.Algorithm.SHA256
+}
+
