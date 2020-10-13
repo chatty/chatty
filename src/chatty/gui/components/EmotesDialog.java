@@ -811,6 +811,7 @@ public class EmotesDialog extends JDialog {
                         }
                     }
                 });
+                titleLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
         }
     
