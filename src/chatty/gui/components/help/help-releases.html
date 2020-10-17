@@ -61,11 +61,80 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.13">Version 0.13</a> <a name="latest">(This one!)</a> (2020-??-??)
+        <a name="0.13">Version 0.13</a> <a name="latest">(This one!)</a> (2020-10-17)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>Chatty now supports the Twitch reply feature, both marking replies with
+        an icon (showing more information on hover) and sending a reply by
+        writing a message beginning with an @-mention.</p>
+    
+    <p>Due to the new global hotkey library used Chatty does not have separate
+        hotkey releases and global hotkeys should also work on Windows, Mac and
+        Linux.</p>
+    
     <pre>
-TBD
+### Twitch features
+- Added some support for the Twitch Chat reply feature
+  - Show icon in front of reply (hover over it to show messages)
+  - Offer to reply when a message starts with @username (optionally restricted
+    to using @@username)
+- Added number of gifted months to gift sub message (as long as the original
+  message doesn't have it)
+
+### Settings
+- Added setting "Main - Look - Use native window" to use the Window style the OS
+  provides (which may allow native window management like window snapping)
+- Highlight (and other): Added "chanCat2:" prefix to look for channel and user
+  Addressbook category (instead of just channel Addressbook category)
+- Added context menu setting for Stream Chat channel logo size
+- Added some launch options
+- Added "icons" setting to customize window icons used by Chatty
+
+### Accessibility
+- Added option to "Settings - Window - Chat input field focus" to not auto
+  change focus
+- Added setting to completely disable TAB Completion
+- Can now move focus from input field using TAB if it is empty
+- Associated a lot of labels with what they describe, added some tooltips
+- Improved various GUI elements
+- Changed some GUI elements to prevent getting trapped when using TAB navigation
+- Improved cursor not moving in unexpected ways in chat
+
+### Emotes Dialog
+- Use Emote prefixes (automatically determined, so might not be correct) as
+  fallback when no channel or other information is available
+- Added clickable headings under "My Emotes" to allow hiding sections
+- Changed dialog colors to be based on Chat Colors (foreground/background)
+
+### Chat Log
+- Added settings to log highlighted/ignored messages to separate files
+- Allows whisper channels to be added to channel list
+- Apply "$_whisper_" to per user tab logging as well
+
+### Other Changes
+- Added "/rejoin" command to rejoin directly without closing channel
+- Switched to a different global hotkey library
+  - Should work on Windows, Mac and Linux
+  - No separate hotkey release versions
+  - Fixed F13-F24 not working on Windows
+- Added "Favorite Games" feature in Live Streams Dialog
+  - Add/remove favorite games through context menu, under "Sort by.."
+  - Streams (followed/joined) playing favorited games can be sorted to the top
+  - Stream Status Notification can be restricted to only favorited games
+- Changed "First Seen" to first message seen during the session, rather than
+  user object first created during the session
+- Updated some Moderation Log messages to include more information
+- Updated translations
+- Updated help
+
+### Bugfixes
+- Fixed some bugs where not all settings would be saved correctly for auto saves
+  while Chatty is running
+- Fixed error related to chat logging
+- Fixed double replacement sometimes occuring with Filter list
+- Updated some Twitch URLs
+- Updated SRL API URL
+- Added workaround for some inconsistent emote codes
     </pre>
     
     <h2>
