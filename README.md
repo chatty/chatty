@@ -10,15 +10,15 @@ Twitch specific features.
 * YouTube: https://www.youtube.com/user/chattyclient
 * Discord: https://discord.gg/WTuqGeJ
 
-I learned about most of the Java techniques and APIs used in this during
-development, so many things won't be designed ideally. I also never
+I learned about most of the Java techniques and APIs used in this project during
+development, so many things won't be designed ideally. I never
 released such a project as opensource before, so if I missed anything or
 didn't adhere to some license correctly, please tell me.
 
 Download
 ========
 
-Go to the [website](https://chatty.github.io) for ready to use downloads
+[Click here](https://chatty.github.io) for ready to use downloads
 and more information on the features.
 
 Contributions
