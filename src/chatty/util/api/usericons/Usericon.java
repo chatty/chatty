@@ -67,6 +67,7 @@ public class Usericon implements Comparable {
         HL(14, "Highlighted by channel points", "HL", "'", null, null),
         CHANNEL_LOGO(15, "Channel Logo", "CHL", null, null, null),
         FOUNDER(16, "Founder", "FND", "%", "founder", null),
+        ALL(17, "All Types", "ALL", "", null, null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
