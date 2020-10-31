@@ -918,6 +918,12 @@ public class TwitchConnection {
                 changed = true;
             }
             
+            Map<String, String> badgeInfo = Helper.parseBadges(tags.get("badge-info"));
+            String subMonths = badgeInfo.get("subscriber");
+            if (subMonths != null) {
+                user.setSubMonths(Helper.parseShort(subMonths, (short)0));
+            }
+            
             if (settings.getBoolean("ircv3CapitalizedNames")) {
                 if (user.setDisplayNick(StringUtil.trim(tags.get("display-name")))) {
                     changed = true;

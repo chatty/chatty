@@ -90,6 +90,7 @@ public class User implements Comparable<User> {
      * Current badges id/version. Map gets replaced, not modified.
      */
     private Map<String, String> twitchBadges;
+    private short subMonths;
     private volatile UsericonManager iconManager;
     
     //===========
@@ -203,6 +204,14 @@ public class User implements Comparable<User> {
             return iconManager.getBadges(badges, this, botBadgeEnabled, pointsHl, channelLogo);
         }
         return null;
+    }
+    
+    public synchronized void setSubMonths(short months) {
+        this.subMonths = months;
+    }
+    
+    public synchronized short getSubMonths() {
+        return subMonths;
     }
     
     /**

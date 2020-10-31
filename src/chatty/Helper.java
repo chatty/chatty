@@ -755,6 +755,15 @@ public class Helper {
         return Collections.unmodifiableMap(result);
     }
     
+    public static short parseShort(String input, short defaultValue) {
+        try {
+            return Short.parseShort(input);
+        }
+        catch (NumberFormatException ex) {
+            return defaultValue;
+        }
+    }
+    
     public static String makeDisplayNick(User user, long displayNamesMode) {
         if (user.hasCustomNickSet()) {
             return user.getFullNick();

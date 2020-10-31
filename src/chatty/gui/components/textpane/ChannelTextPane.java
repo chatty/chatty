@@ -138,7 +138,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
-        APPENDED_INFO_UPDATED, MENTION,
+        APPENDED_INFO_UPDATED, MENTION, USERICON_INFO,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_FOREGROUND,
@@ -1974,7 +1974,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (badge.image != null && !badge.removeBadge) {
-                    print(badge.getSymbol(), styles.makeIconStyle(badge));
+                    print(badge.getSymbol(), styles.makeIconStyle(badge, user));
                 }
             }
         }
@@ -3881,9 +3881,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
          * once.
          * 
          * @param icon
+         * @param user
          * @return The created style (or read from the cache)
          */
-        public MutableAttributeSet makeIconStyle(Usericon icon) {
+        public MutableAttributeSet makeIconStyle(Usericon icon, User user) {
             MutableAttributeSet style = savedIcons.get(icon);
             if (style == null) {
                 //System.out.println("Creating icon style: "+icon);
@@ -3891,6 +3892,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 if (icon != null && icon.image != null) {
                     StyleConstants.setIcon(style, addSpaceToIcon(icon.image));
                     style.addAttribute(Attribute.USERICON, icon);
+                    if (icon.type == Usericon.Type.TWITCH
+                            && Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.SUB
+                            && user.getSubMonths() > 0) {
+                        style.addAttribute(Attribute.USERICON_INFO, DateTime.formatMonthsVerbose(user.getSubMonths()));
+                    }
                 }
                 savedIcons.put(icon, style);
             }

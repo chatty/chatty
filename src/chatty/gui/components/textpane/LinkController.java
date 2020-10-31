@@ -259,7 +259,7 @@ public class LinkController extends MouseAdapter {
         if (emoteImage != null) {
             popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericon != null) {
-            popup.show(textPane, element, p -> makeUsericonPopupText(usericon, p), usericon.image.getIconWidth());
+            popup.show(textPane, element, p -> makeUsericonPopupText(usericon, getUsericonInfo(element), p), usericon.image.getIconWidth());
         } else if (replacedText != null) {
             popup.show(textPane, element, p -> makeReplacementPopupText(replacedText, p), 1);
         } else if (replyMsgId != null) {
@@ -339,6 +339,10 @@ public class LinkController extends MouseAdapter {
     
     private Usericon getUsericon(Element e) {
         return (Usericon)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON));
+    }
+    
+    private String getUsericonInfo(Element e) {
+        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON_INFO));
     }
     
     private String getReplacedText(Element e) {
@@ -765,7 +769,7 @@ public class LinkController extends MouseAdapter {
     // Usericon Popup
     //----------------
     
-    private static void makeUsericonPopupText(Usericon usericon, MyPopup p) {
+    private static void makeUsericonPopupText(Usericon usericon, String moreInfo, MyPopup p) {
         String info;
         if (!usericon.metaTitle.isEmpty()) {
             info = POPUP_HTML_PREFIX+"Badge: "+usericon.metaTitle;
@@ -785,6 +789,9 @@ public class LinkController extends MouseAdapter {
         }
         if (Debugging.isEnabled("tt")) {
             info += " ["+usericon.image.getDescription()+"]";
+        }
+        if (!StringUtil.isNullOrEmpty(moreInfo)) {
+            info += "<br />("+moreInfo+")";
         }
         p.setText(info);
     }
