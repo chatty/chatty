@@ -24,6 +24,7 @@ public class UsercolorItem extends ColorItem {
     public static final int TYPE_STATUS = 2;
     public static final int TYPE_ALL = 3;
     public static final int TYPE_CATEGORY = 4;
+    public static final int TYPE_DEFAULT_COLOR = 5;
     public static final int TYPE_UNDEFINED = -1;
     
     public final Color color;
@@ -67,6 +68,8 @@ public class UsercolorItem extends ColorItem {
             type = TYPE_NAME;
         } else if (id.equals("$all")) {
             type = TYPE_ALL;
+        } else if (id.toLowerCase().equals("$defaultcolor")) {
+            type = TYPE_DEFAULT_COLOR;
         } else {
             type = TYPE_UNDEFINED;
         }

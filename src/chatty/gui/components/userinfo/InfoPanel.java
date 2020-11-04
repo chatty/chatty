@@ -152,10 +152,12 @@ public class InfoPanel extends JPanel {
 
         if (currentUser.hasCustomColor()) {
             Color plainColor = currentUser.getPlainColor();
-            colorText = "Color: "+colorNamed+"**";
-            colorTooltipText = "Custom Color: "+colorCode
-                    +" (Original: "+HtmlColors.getNamedColorString(plainColor)+"/"
-                    + HtmlColors.getColorString(plainColor)+")";
+            colorText = "Color: "+colorNamed+"**"+(currentUser.hasDefaultColor() ? "*" : "");
+            colorTooltipText = String.format("Custom Color: %s (Original: %s/%s%s)",
+                    colorCode,
+                    HtmlColors.getNamedColorString(plainColor),
+                    HtmlColors.getColorString(plainColor),
+                    currentUser.hasDefaultColor() ? " (default)" : "");
         } else if (currentUser.hasDefaultColor()) {
             colorText = "Color: "+colorNamed+"*";
             colorTooltipText = "Color: "+colorCode+" (default)";
