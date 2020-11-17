@@ -920,6 +920,9 @@ public class TwitchConnection {
             
             Map<String, String> badgeInfo = Helper.parseBadges(tags.get("badge-info"));
             String subMonths = badgeInfo.get("subscriber");
+            if (subMonths == null) {
+                subMonths = badgeInfo.get("founder");
+            }
             if (subMonths != null) {
                 user.setSubMonths(Helper.parseShort(subMonths, (short)0));
             }

@@ -151,6 +151,9 @@ public class RawMessageTest {
         if (type.equals("reply")) {
             return "@badge-info=subscriber/40;badges=broadcaster/1,subscriber/3024,partner/1;client-nonce=abc;color=#FF526F;display-name=TestUser;emotes=;flags=;id=abc;mod=0;reply-parent-display-name=OtherUser;reply-parent-msg-body=Test:\\sAbc;reply-parent-msg-id=abcd;reply-parent-user-id=123;reply-parent-user-login=otheruser;room-id=123;subscriber=1;tmi-sent-ts=123;turbo=0;user-type= :testuser!testuser@testuser.tmi.twitch.tv PRIVMSG "+channel+" :@OtherUser This is a reply!";
         }
+        if (type.equals("founder")) {
+            return "@badge-info=founder/29;badges=moderator/1,founder/0;client-nonce=1234;color=#0000FF;display-name=USERNAME;emotes=;flags=;id=1234;mod=1;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type=mod :username!username@username.tmi.twitch.tv PRIVMSG " + channel + " :Ja bitte?";
+        }
         return null;
     }
     

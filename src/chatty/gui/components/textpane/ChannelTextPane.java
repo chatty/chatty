@@ -3893,7 +3893,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                     StyleConstants.setIcon(style, addSpaceToIcon(icon.image));
                     style.addAttribute(Attribute.USERICON, icon);
                     if (icon.type == Usericon.Type.TWITCH
-                            && Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.SUB
+                            && (Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.SUB
+                                || Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.FOUNDER)
                             && user != null
                             && user.getSubMonths() > 0) {
                         style.addAttribute(Attribute.USERICON_INFO, DateTime.formatMonthsVerbose(user.getSubMonths()));
