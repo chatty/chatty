@@ -57,10 +57,13 @@ public class MsgColorSettings extends SettingsPanel {
         main.add(info, d.makeGbc(0, 2, 1, 1));
         
         other.add(d.addSimpleBooleanSetting("msgColorsPrefer"),
-                d.makeGbc(0, 9, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        other.add(d.addSimpleBooleanSetting("msgColorsLinks"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("actionColored"),
-                d.makeGbc(0, 10, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
         
     }
     

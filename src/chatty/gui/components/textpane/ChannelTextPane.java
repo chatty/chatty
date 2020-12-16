@@ -161,7 +161,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         DELETED_MESSAGES_MODE, BAN_DURATION_APPENDED, BAN_REASON_APPENDED,
         BAN_DURATION_MESSAGE, BAN_REASON_MESSAGE,
         
-        ACTION_COLORED, BUFFER_SIZE, AUTO_SCROLL_TIME,
+        ACTION_COLORED, LINKS_CUSTOM_COLOR, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_SHOW_ANIMATED,
@@ -2188,7 +2188,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
         
-        findLinks(text, ranges, rangesStyle, style);
+        findLinks(text, ranges, rangesStyle, styles.isEnabled(Setting.LINKS_CUSTOM_COLOR)
+                                                 ? style : styles.info());
         
         if (styles.isEnabled(Setting.MENTIONS_INFO)) {
             findMentions(text, ranges, rangesStyle, style, Setting.MENTIONS_INFO);
@@ -2222,7 +2223,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         applyReplacements(text, replacements, replacement, ranges, rangesStyle);
         
         if (!ignoreLinks) {
-            findLinks(text, ranges, rangesStyle, styles.standard());
+            findLinks(text, ranges, rangesStyle, styles.isEnabled(Setting.LINKS_CUSTOM_COLOR)
+                                                 ? style : styles.standard());
         }
         
         if (styles.isEnabled(Setting.EMOTICONS_ENABLED)) {
@@ -3532,6 +3534,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addSetting(Setting.EMOTICONS_SHOW_ANIMATED, false);
             addSetting(Setting.SHOW_TOOLTIPS, true);
             addSetting(Setting.SHOW_TOOLTIP_IMAGES, true);
+            addSetting(Setting.LINKS_CUSTOM_COLOR, true);
             addNumericSetting(Setting.MENTIONS, 0, 0, 200);
             addNumericSetting(Setting.MENTIONS_INFO, 0, 0, 200);
             addNumericSetting(Setting.MENTION_MESSAGES, 0, 0, 200);

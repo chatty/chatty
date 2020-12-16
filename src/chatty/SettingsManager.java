@@ -296,6 +296,7 @@ public class SettingsManager {
         settings.addBoolean("msgColorsEnabled", false);
         settings.addList("msgColors", new LinkedList(), Setting.STRING);
         settings.addBoolean("msgColorsPrefer", false);
+        settings.addBoolean("msgColorsLinks", true);
         
         // Usercolors
         settings.addBoolean("customUsercolors", false);
