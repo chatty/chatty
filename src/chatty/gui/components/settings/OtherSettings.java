@@ -2,6 +2,8 @@
 package chatty.gui.components.settings;
 
 import chatty.Chatty;
+import chatty.gui.components.LinkLabel;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.WEST;
 import javax.swing.JCheckBox;
@@ -124,6 +126,15 @@ public class OtherSettings extends SettingsPanel {
                 "Save Addressbook immediately after changing entries",
                 "Save immediately after updating addressbook (including changes via commands)"),
                 d.makeGbc(0, 9, 3, 1, GridBagConstraints.WEST));
+        
+        JPanel pronouns = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        pronouns.add(d.addSimpleBooleanSetting(
+                "pronouns",
+                "Display pronouns in User Dialog",
+                "Click on a user in chat to open User Dialog, the pronoun (if available) will be shown in the title next to the username"));
+        pronouns.add(new LinkLabel("(based on [url:http://pronouns.alejo.io pronouns.alejo.io])", d.getLinkLabelListener()));
+        other.add(pronouns,
+                d.makeGbc(0, 10, 3, 1, GridBagConstraints.WEST));
     }
     
 }

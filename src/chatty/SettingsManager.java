@@ -682,6 +682,8 @@ public class SettingsManager {
         settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
         
         settings.addMap("rewards", new HashMap(), Setting.STRING);
+        
+        settings.addBoolean("pronouns", false);
     }
     
     private boolean loadSuccess;

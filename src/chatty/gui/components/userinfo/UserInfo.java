@@ -10,6 +10,7 @@ import chatty.gui.components.menus.UserContextMenu;
 import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
 import chatty.util.MiscUtil;
+import chatty.util.Pronouns;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
@@ -68,12 +69,15 @@ public class UserInfo extends JDialog {
     
     private final UserInfoRequester requester;
     
+    private final Settings settings;
+    
     public UserInfo(final Window parent, UserInfoListener listener,
             UserInfoRequester requester,
             Settings settings,
             final ContextMenuListener contextMenuListener) {
         super(parent);
         this.requester = requester;
+        this.settings = settings;
         GuiUtil.installEscapeCloseOperation(this);
         banReasons = new BanReasons(this, settings);
         
@@ -368,7 +372,24 @@ public class UserInfo extends JDialog {
             currentAutoModMsgId = autoModMsgId;
         }
         currentLocalUsername = localUsername;
-
+        
+        updateTitle(user, null);
+        if (settings.getBoolean("pronouns")) {
+            Pronouns.instance().getUser((username, pronoun) -> {
+                if (currentUser.getName().equals(username)) {
+                    updateTitle(user, pronoun);
+                }
+            }, user.getName());
+        }
+        
+        updateMessages();
+        infoPanel.update(user);
+        singleMessage.setEnabled(currentMsgId != null);
+        updateButtons();
+        finishDialog();
+    }
+    
+    private void updateTitle(User user, String pronoun) {
         String categoriesString = "";
         Set<String> categories = user.getCategories();
         if (categories != null && !categories.isEmpty()) {
@@ -379,13 +400,9 @@ public class UserInfo extends JDialog {
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
                 +(!user.hasRegularDisplayNick() ? " ("+user.getName()+")" : "")
                 +displayNickInfo
+                +(pronoun != null ? " ("+pronoun+")" : "")
                 +" / "+user.getRoom().getDisplayName()
                 +" "+categoriesString);
-        updateMessages();
-        infoPanel.update(user);
-        singleMessage.setEnabled(currentMsgId != null);
-        updateButtons();
-        finishDialog();
     }
 
     public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
