@@ -187,7 +187,10 @@ public class TokenDialog extends JDialog {
      * @param result 
      */
     public void tokenVerified(boolean valid, String result) {
-        JOptionPane.showMessageDialog(this, result);
+        if (isVisible()) {
+            // Only show when verifying while the token dialog is open
+            JOptionPane.showMessageDialog(this, result);
+        }
         verifyToken.setEnabled(true);
         update();
     }
