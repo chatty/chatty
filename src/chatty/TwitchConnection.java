@@ -1154,7 +1154,7 @@ public class TwitchConnection {
             if (tags.isValueOf("msg-id", "resub", "sub", "subgift", "anonsubgift")) {
                 text = text.trim();
                 if (giftMonths > 1 && !text.matches(".* gifted "+giftMonths+" .*")) {
-                    text += " They gifted "+giftMonths+" months!";
+                    text += " It's a "+giftMonths+"-month gift!";
                 }
                 // There are still some types of notifications that don't have
                 // this info, and it might be useful
