@@ -20,7 +20,7 @@ public interface FrankerFaceZListener {
      */
     public void channelEmoticonsReceived(EmoticonUpdate emotes);
     public void usericonsReceived(List<Usericon> icons);
-    public void botNamesReceived(Set<String> botNames);
+    public void botNamesReceived(String stream, Set<String> botNames);
     public void wsInfo(String info);
     public void authorizeUser(String code);
     public void wsUserInfo(String info);

@@ -2713,9 +2713,10 @@ public class TwitchClient {
         }
 
         @Override
-        public void botNamesReceived(Set<String> botNames) {
+        public void botNamesReceived(String stream, Set<String> botNames) {
             if (settings.getBoolean("botNamesFFZ")) {
-                botNameManager.addBotNames(null, botNames);
+                String channel = Helper.toValidChannel(stream);
+                botNameManager.addBotNames(channel, botNames);
             }
         }
 

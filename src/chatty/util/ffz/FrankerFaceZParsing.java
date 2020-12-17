@@ -5,7 +5,9 @@ import chatty.util.api.usericons.Usericon;
 import chatty.util.JSONUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.usericons.UsericonFactory;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -246,6 +248,63 @@ public class FrankerFaceZParsing {
             }
         } catch (Exception ex) {
             LOGGER.warning("Error parsing bot names: "+ex);
+        }
+        return result;
+    }
+    
+    /**
+     * Get the badge id. Used to get bot names.
+     * 
+     * @param json
+     * @return A string containing the id, or null if an error occured
+     */
+    public static String getBotBadgeId(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject)parser.parse(json);
+            JSONObject badge = (JSONObject)root.get("badge");
+            Number id = (Number)badge.get("id");
+            if (id == null) {
+                return null;
+            }
+            return String.valueOf(id);
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing bot badge id: "+ex);
+        }
+        return null;
+    }
+    
+    /**
+     * Parse the badges contained in the single room response. Currently only
+     * used to retrieve bot names.
+     * 
+     * @param json
+     * @return A map with badge id as key and names as value (never null, may be
+     * empty)
+     */
+    public static Map<String, Set<String>> parseRoomBadges(String json) {
+        Map<String, Set<String>> result = new HashMap<>();
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject o = (JSONObject)parser.parse(json);
+            JSONObject room = (JSONObject)o.get("room");
+            JSONObject badges = (JSONObject)room.get("user_badges");
+            for (Object key : badges.keySet()) {
+                Object value = badges.get(key);
+                if (key instanceof String && value instanceof JSONArray) {
+                    String badgeId = (String) key;
+                    JSONArray names = (JSONArray)value;
+                    Set<String> namesResult = new HashSet<>();
+                    for (Object item : names) {
+                        if (item instanceof String) {
+                            namesResult.add((String)item);
+                        }
+                    }
+                    result.put(badgeId, namesResult);
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.warning("Error parsing room badges: "+ex);
         }
         return result;
     }
