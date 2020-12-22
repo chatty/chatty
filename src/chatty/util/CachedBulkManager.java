@@ -374,6 +374,13 @@ public class CachedBulkManager<Key,Item> {
         }
     }
     
+    public String debugVerbose() {
+        synchronized(LOCK) {
+            return String.format("requests: %d pending: %d [%s]",
+                    queries.size(), requestPending.size(), queries);
+        }
+    }
+    
     public int pendingRequests() {
         synchronized(LOCK) {
             return queries.size();

@@ -85,6 +85,8 @@ public class UserContextMenu extends ContextMenu {
         addSeparator(MISC_MENU);
         addItem("setcolor", Language.getString("userCm.setColor"), MISC_MENU);
         addItem("setname", Language.getString("userCm.setName"), MISC_MENU);
+        addSeparator(MISC_MENU);
+        addItem("notes", "Notes", MISC_MENU);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user

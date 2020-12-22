@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import chatty.Helper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,8 @@ public class Pronouns {
         }
     }
     
+    private static final String NOT_FOUND = "__EMPTY_RESULT__";
+    
     public Pronouns() {
         data = new CachedBulkManager<>(new CachedBulkManager.Requester<String, String>() {
             @Override
@@ -49,7 +52,12 @@ public class Pronouns {
                     } else {
                         String pronoun_id = parseUser(result);
                         if (pronoun_id == null) {
-                            manager.setNotFound(username);
+                            /**
+                             * Empty result means it won't overwrite an already
+                             * requested one in getUser2(), but it will not find
+                             * a pronoun for it.
+                             */
+                            manager.setResult(username, NOT_FOUND);
                         }
                         else {
                             manager.setResult(username, pronoun_id);
@@ -57,7 +65,7 @@ public class Pronouns {
                     }
                 });
             }
-        }, CachedBulkManager.DAEMON);
+        }, CachedBulkManager.DAEMON | CachedBulkManager.UNIQUE);
         requestPronouns();
     }
     
@@ -71,6 +79,9 @@ public class Pronouns {
      * @param username 
      */
     public void getUser(BiConsumer<String, String> listener, String username) {
+        if (!Helper.isValidStream(username)) {
+            return;
+        }
         data.query(UNIQUE, (CachedBulkManager.Result<String, String> result) -> {
             if (pronouns.isEmpty()) {
                 // If other request isn't finished yet, wait a bit
@@ -82,6 +93,22 @@ public class Pronouns {
                 sendResult(listener, username, result);
             }
         }, CachedBulkManager.ASAP, username);
+    }
+    
+    private long userCounter = 0;
+    
+    public String getUser2(String username) {
+        if (!Helper.isValidStream(username)) {
+            return null;
+        }
+        /**
+         * Keep only the most recent requests. This should ensure that it
+         * doesn't keep requesting for ages, even after e.g. leaving a busy
+         * channel.
+         */
+        userCounter++;
+        String unique = "user" + (userCounter % 5);
+        return pronouns.get(data.getOrQuerySingle(unique, null, CachedBulkManager.NONE, username));
     }
     
     private void sendResult(BiConsumer<String, String> listener, String username, CachedBulkManager.Result<String, String> result) {

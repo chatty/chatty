@@ -17,6 +17,7 @@ import chatty.gui.Highlighter.Match;
 import chatty.gui.components.Channel;
 import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.userinfo.UserNotes;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.ChattyMisc;
 import chatty.util.ChattyMisc.CombinedEmotesInfo;
@@ -1878,9 +1879,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             }
         }
         
+        String addition = null;
+        
         // Add username in parentheses behind, if necessary
         if (!user.hasRegularDisplayNick() && !user.hasCustomNickSet()
                 && styles.namesMode() == SettingsManager.DISPLAY_NAMES_MODE_BOTH) {
+            addition = user.getName();
+        }
+        
+        String notes = UserNotes.instance().getChatNotes(user);
+        if (notes != null) {
+            addition = StringUtil.append(addition, ", ", notes);
+        }
+        
+        if (addition != null) {
             MutableAttributeSet style = styles.messageUser(user, msgId, background);
             StyleConstants.setBold(style, false);
             int fontSize = StyleConstants.getFontSize(style) - 2;
@@ -1888,7 +1900,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 fontSize = StyleConstants.getFontSize(style);
             }
             StyleConstants.setFontSize(style, fontSize);
-            print(" ("+user.getName()+")", style);
+            print(" ("+addition+")", style);
         }
         
         // Finish up

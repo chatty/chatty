@@ -44,6 +44,7 @@ public class UserInfo extends JDialog {
 
     private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
     private final JCheckBox pinnedDialog = new JCheckBox(Language.getString("userDialog.setting.pin"));
+    private final JButton notesButton = new JButton("Notes");
     private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
     private final BanReasons banReasons;
     private final Buttons buttons;
@@ -118,7 +119,7 @@ public class UserInfo extends JDialog {
         //==========================
         JPanel topPanel = new JPanel(new GridBagLayout());
 
-        gbc = makeGbc(0,0,3,1);
+        gbc = makeGbc(0,0,4,1);
         gbc.insets = new Insets(2, 2, 0, 2);
         topPanel.add(buttons.getPrimary(), gbc);
         
@@ -142,6 +143,15 @@ public class UserInfo extends JDialog {
         topPanel.add(banReasons, gbc);
 
         gbc = makeGbc(2, 1, 1, 1);
+        gbc.weightx = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        notesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        notesButton.addActionListener(e -> {
+            UserNotes.instance().showDialog(currentUser, this);
+        });
+        topPanel.add(notesButton, gbc);
+        
+        gbc = makeGbc(3, 1, 1, 1);
         gbc.insets = new Insets(2, 8, 2, 8);
         gbc.anchor = GridBagConstraints.EAST;
         pinnedDialog.setToolTipText(Language.getString("userDialog.setting.pin.tip"));

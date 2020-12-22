@@ -64,6 +64,7 @@ import chatty.gui.components.textpane.ModLogInfo;
 import chatty.gui.components.textpane.SubscriberMessage;
 import chatty.gui.components.textpane.UserNotice;
 import chatty.gui.components.userinfo.UserInfoManager;
+import chatty.gui.components.userinfo.UserNotes;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
@@ -970,6 +971,7 @@ public class MainGui extends JFrame implements Runnable {
         
         userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
+        UserNotes.init(client.api, client.settings);
         
         hotkeyManager.setGlobalHotkeysEnabled(client.settings.getBoolean("globalHotkeysEnabled"));
         hotkeyManager.loadFromSettings(client.settings);
@@ -1631,6 +1633,9 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.equals("setname")) {
                 setCustomName(user.getName());
+            }
+            else if (cmd.equals("notes")) {
+                UserNotes.instance().showDialog(user, MainGui.this);
             }
             else if (cmd.startsWith("command")) {
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());

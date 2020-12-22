@@ -346,6 +346,8 @@ public class SettingsManager {
         settings.addBoolean("reuseUserDialog", false);
         settings.addString("userDialogTimestamp", "[HH:mm:ss]");
         settings.addLong("clearUserMessages", 12);
+        settings.addMap("userNotes", new HashMap(), Setting.STRING);
+        settings.addMap("userNotesChat", new HashMap(), Setting.STRING);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);
@@ -684,6 +686,7 @@ public class SettingsManager {
         settings.addMap("rewards", new HashMap(), Setting.STRING);
         
         settings.addBoolean("pronouns", false);
+        settings.addBoolean("pronounsChat", false);
     }
     
     private boolean loadSuccess;
