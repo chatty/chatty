@@ -25,7 +25,9 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JRootPane;
+import javax.swing.JWindow;
 import javax.swing.KeyStroke;
 
 /**
@@ -56,7 +58,7 @@ public class HotkeyManager {
     private final MainGui main;
     private final List<Hotkey> hotkeys = new ArrayList<>();
     private final Map<String, HotkeyAction> actions = new LinkedHashMap<>();
-    private final Map<JDialog, Object> popouts = new WeakHashMap<>();
+    private final Map<JRootPane, Object> popouts = new WeakHashMap<>();
     
     /**
      * Whether global hotkeys are currently to be enabled (registered).
@@ -147,9 +149,21 @@ public class HotkeyManager {
      *
      * @param popout 
      */
-    public void registerPopout(JDialog popout) {
-        popouts.put(popout, null);
-        addHotkeys(popout.getRootPane());
+    public void registerPopout(Object popout) {
+        JRootPane pane = null;
+        if (popout instanceof JWindow) {
+            pane = ((JWindow)popout).getRootPane();
+        }
+        else if (popout instanceof JFrame) {
+            pane = ((JFrame)popout).getRootPane();
+        }
+        else if (popout instanceof JDialog) {
+            pane = ((JDialog)popout).getRootPane();
+        }
+        if (pane != null) {
+            popouts.put(pane, null);
+            addHotkeys(pane);
+        }
     }
     
     /**
@@ -303,8 +317,8 @@ public class HotkeyManager {
             if (isValidHotkey(hotkey) && hotkey.type == Type.REGULAR) {
                 if (pane == null) {
                     addHotkey(hotkey, main.getRootPane());
-                    for (JDialog popout : popouts.keySet()) {
-                        addHotkey(hotkey, popout.getRootPane());
+                    for (JRootPane popoutPane : popouts.keySet()) {
+                        addHotkey(hotkey, popoutPane);
                     }
                 } else {
                     addHotkey(hotkey, pane);
@@ -351,8 +365,8 @@ public class HotkeyManager {
      */
     private void removeAllHotkeys() {
         removeHotkeys(main.getRootPane());
-        for (JDialog popout : popouts.keySet()) {
-            removeHotkeys(popout.getRootPane());
+        for (JRootPane popoutPane : popouts.keySet()) {
+            removeHotkeys(popoutPane);
         }
         removeGlobalHotkeys();
         removeHotkeysFromActions();

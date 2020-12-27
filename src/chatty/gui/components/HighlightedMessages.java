@@ -3,21 +3,29 @@ package chatty.gui.components;
 
 import chatty.Room;
 import chatty.User;
+import chatty.gui.Channels;
+import chatty.gui.DockStyledTabContainer;
+import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.StyleServer;
+import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.MyStyleConstants;
+import chatty.util.MiscUtil;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.colors.ColorCorrector;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
 import chatty.util.irc.MsgTags;
+import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -28,8 +36,10 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
@@ -39,6 +49,9 @@ import javax.swing.text.SimpleAttributeSet;
  * @author tduva
  */
 public class HighlightedMessages extends JDialog {
+    
+    public final static int DOCKED = 1 << 0;
+    public final static int AUTO_OPEN = 1 << 1;
     
     private final TextPane messages;
     private String currentChannel;
@@ -56,6 +69,17 @@ public class HighlightedMessages extends JDialog {
     private final String label;
     
     private final ContextMenuListener contextMenuListener;
+    private final Channels channels;
+    private final Settings settings;
+    
+    // Dock
+    private final DockStyledTabContainer content;
+    private boolean isDocked;
+    
+    // Settings
+    private boolean autoOpen;
+    private String settingName;
+    
     
     /**
      * Creates a new dialog.
@@ -68,11 +92,15 @@ public class HighlightedMessages extends JDialog {
      * @param contextMenuListener
      */
     public HighlightedMessages(MainGui owner, StyleServer styleServer,
-            String title, String label, ContextMenuListener contextMenuListener) {
+            String title, String shortTitle, String label, ContextMenuListener contextMenuListener,
+            Channels channels, String settingName) {
         super(owner);
         this.title = title;
         this.label = label;
+        this.channels = channels;
         this.contextMenuListener = contextMenuListener;
+        this.settingName = settingName;
+        this.settings = owner.getSettings();
         updateTitle();
         
         this.addComponentListener(new MyVisibleListener());
@@ -121,7 +149,7 @@ public class HighlightedMessages extends JDialog {
                 return styleServer.getColorCorrector();
             }
         };
-        messages = new TextPane(owner, modifiedStyleServer);
+        messages = new TextPane(owner, modifiedStyleServer, () -> new HighlightsContextMenu(isDocked, autoOpen));
         messages.setContextMenuListener(new MyContextMenuListener());
         //messages.setLineWrap(true);
         //messages.setWrapStyleWord(true);
@@ -131,10 +159,75 @@ public class HighlightedMessages extends JDialog {
         messages.setScrollPane(scroll);
         
         add(scroll);
+        content = new DockStyledTabContainer(scroll, shortTitle, channels.getDock());
         
         setPreferredSize(new Dimension(400,300));
         
         pack();
+        
+        updateTabSettings(owner.getSettings().getLong("tabsMessage"));
+        owner.getSettings().addSettingChangeListener((setting, type, value) -> {
+            if (setting.equals("tabsMessage")) {
+                SwingUtilities.invokeLater(() -> updateTabSettings((Long)value));
+            }
+        });
+    }
+    
+    private void updateTabSettings(long value) {
+        content.setSettings(0, (int)value, 0, 0, 0);
+    }
+        
+    private void saveSettings() {
+        int value = isDocked ? DOCKED : 0;
+        value = value | (autoOpen ? AUTO_OPEN : 0);
+        settings.setLong(settingName, value);
+    }
+    
+    public void loadSettings() {
+        int value = (int)settings.getLong(settingName);
+        setDocked(MiscUtil.isBitEnabled(value, DOCKED));
+        autoOpen = MiscUtil.isBitEnabled(value, AUTO_OPEN);
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        setVisible(visible, true);
+    }
+    
+    private void setVisible(boolean visible, boolean switchTo) {
+        if (visible == isVisible()) {
+            return;
+        }
+        if (isDocked) {
+            if (visible) {
+                channels.getDock().addContent(content);
+                if (switchTo) {
+                    channels.getDock().setActiveContent(content);
+                }
+            }
+            else {
+                channels.getDock().removeContent(content);
+            }
+        }
+        else {
+            if (!switchTo) {
+                GuiUtil.setNonAutoFocus(this);
+            }
+            super.setVisible(visible);
+        }
+        if (visible) {
+            newCount = 0;
+        }
+    }
+    
+    @Override
+    public boolean isVisible() {
+        if (isDocked) {
+            return channels.getDock().hasContent(content);
+        }
+        else {
+            return super.isVisible();
+        }
     }
     
     public void addMessage(String channel, UserMessage message) {
@@ -173,6 +266,12 @@ public class HighlightedMessages extends JDialog {
         updateTitle();
         if (!isVisible()) {
             newCount++;
+        }
+        if (autoOpen) {
+            setVisible(true, false);
+        }
+        if (isDocked && !content.isContentVisible()) {
+            content.setNewMessage(true);
         }
     }
     
@@ -217,14 +316,40 @@ public class HighlightedMessages extends JDialog {
         return newCount;
     }
     
+    private void setDocked(boolean docked) {
+        if (isDocked != docked && isVisible()) {
+            // Will make change visible as well, so only do if already visible
+            toggleDock();
+        }
+        // Always update value, even if not currently visible
+        isDocked = docked;
+    }
+    
+    private void toggleDock() {
+        if (isDocked) {
+            channels.getDock().removeContent(content);
+            add(content.getComponent());
+            isDocked = false;
+            super.setVisible(true);
+        }
+        else {
+            remove(content.getComponent());
+            channels.getDock().addContent(content);
+            channels.getDock().setActiveContent(content);
+            isDocked = true;
+            super.setVisible(false);
+        }
+        saveSettings();
+    }
+    
     /**
      * Normal channel text pane modified a bit to fit the needs for this.
      */
     static class TextPane extends ChannelTextPane {
         
-        public TextPane(MainGui main, StyleServer styleServer) {
+        public TextPane(MainGui main, StyleServer styleServer, Supplier<ContextMenu> contextMenuCreator) {
             super(main, styleServer);
-            linkController.setContextMenuCreator(() -> new HighlightsContextMenu());
+            linkController.setContextMenuCreator(contextMenuCreator);
         }
         
         public void clear() {
@@ -237,8 +362,19 @@ public class HighlightedMessages extends JDialog {
         
         @Override
         public void menuItemClicked(ActionEvent e) {
-            if (e.getActionCommand().equals("clearHighlights")) {
-                clear();
+            switch (e.getActionCommand()) {
+                case "clearHighlights":
+                    clear();
+                    break;
+                case "toggleDock":
+                    toggleDock();
+                    break;
+                case "toggleAutoOpen":
+                    autoOpen = !autoOpen;
+                    saveSettings();
+                    break;
+                default:
+                    break;
             }
             contextMenuListener.menuItemClicked(e);
         }

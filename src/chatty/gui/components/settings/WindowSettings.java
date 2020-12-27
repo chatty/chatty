@@ -100,6 +100,8 @@ public class WindowSettings extends SettingsPanel {
                 "Automatically close a popout if the last channel in the main window is closed"),
                 d.makeGbc(1, 0, 1, 1));
         
+        popout.add(SettingsUtil.createPanel("tabsPopoutDrag", d.addComboLongSetting("tabsPopoutDrag", new int[]{0,1,2})),
+                d.makeGbc(0, 1, 2, 1));
     }
     
 }

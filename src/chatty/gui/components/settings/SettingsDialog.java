@@ -57,10 +57,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "ffz", "nod3d", "noddraw",
             "userlistWidth", "userlistMinWidth", "userlistEnabled",
             "capitalizedNames", "correctlyCapitalizedNames", "ircv3CapitalizedNames",
-            "tabOrder", "tabsMwheelScrolling", "tabsMwheelScrollingAnywhere", "inputFont",
+            "inputFont",
             "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
             "logPath", "logTimestamp", "logSplit", "logSubdirectories",
-            "tabsPlacement", "tabsLayout", "logLockFiles", "logMessageTemplate",
+            "logLockFiles", "logMessageTemplate",
             "laf", "lafTheme", "lafFontScale", "language", "timezone"
     ));
     

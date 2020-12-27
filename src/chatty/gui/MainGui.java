@@ -76,6 +76,7 @@ import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
+import chatty.util.dnd.DockContent;
 import chatty.util.hotkeys.HotkeyManager;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.FileManager;
@@ -102,6 +103,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import chatty.util.dnd.DockPopout;
 
 /**
  * The Main Hub for all GUI activity.
@@ -253,18 +255,21 @@ public class MainGui extends JFrame implements Runnable {
 
         // Channels/Chat output
         styleManager = new StyleManager(client.settings);
-        highlightedMessages = new HighlightedMessages(this, styleManager,
-                Language.getString("highlightedDialog.title"),
-                Language.getString("highlightedDialog.info"),
-                contextMenuListener);
-        ignoredMessages = new HighlightedMessages(this, styleManager,
-                Language.getString("ignoredDialog.title"),
-                Language.getString("ignoredDialog.info"),
-                contextMenuListener);
         channels = new Channels(this,styleManager, contextMenuListener);
         channels.getComponent().setPreferredSize(new Dimension(600,300));
         add(channels.getComponent(), BorderLayout.CENTER);
         channels.setChangeListener(new ChannelChangeListener());
+        
+        highlightedMessages = new HighlightedMessages(this, styleManager,
+                Language.getString("highlightedDialog.title"),
+                Language.getString("menubar.dialog.highlightedMessages"),
+                Language.getString("highlightedDialog.info"),
+                contextMenuListener, channels, "highlightDock");
+        ignoredMessages = new HighlightedMessages(this, styleManager,
+                Language.getString("ignoredDialog.title"),
+                Language.getString("menubar.dialog.ignoredMessages"),
+                Language.getString("ignoredDialog.info"),
+                contextMenuListener, channels, "ignoreDock");
         
         // Some newer stuff
         addressbookDialog = new AddressbookDialog(this, client.addressbook);
@@ -342,7 +347,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.setWindowAttached(window, attached);
     }
     
-    protected void popoutCreated(JDialog popout) {
+    protected void popoutCreated(Window popout) {
         hotkeyManager.registerPopout(popout);
     }
     
@@ -430,7 +435,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                channels.switchToNextChannel();
+                channels.switchToNextTab();
             }
         });
         
@@ -438,7 +443,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                channels.switchToPreviousChannel();
+                channels.switchToPreviousTab();
             }
         });
         
@@ -446,7 +451,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                client.closeChannel(channels.getActiveChannel().getChannel());
+                channels.getActiveContent().remove();
             }
         });
         
@@ -950,7 +955,6 @@ public class MainGui extends JFrame implements Runnable {
         UrlOpener.setPrompt(client.settings.getBoolean("urlPrompt"));
         UrlOpener.setCustomCommandEnabled(client.settings.getBoolean("urlCommandEnabled"));
         UrlOpener.setCustomCommand(client.settings.getString("urlCommand"));
-        channels.setTabOrder(client.settings.getString("tabOrder"));
         
         favoritesDialog.setSorting((int)client.settings.getLong("favoritesSorting"));
         
@@ -985,6 +989,9 @@ public class MainGui extends JFrame implements Runnable {
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
         
         Sound.setDeviceName(client.settings.getString("soundDevice"));
+        
+        highlightedMessages.loadSettings();
+        ignoredMessages.loadSettings();
         
         updateTokenScopes();
     }
@@ -1530,7 +1537,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("srlRaces")) {
                 openSrlRaces();
             } else if (cmd.equals("srlRaceActive")) {
-                srl.searchRaceWithEntrant(channels.getActiveTab().getStreamName());
+                srl.searchRaceWithEntrant(channels.getActiveChannel().getStreamName());
             } else if (cmd.startsWith("srlRace4")) {
                 String stream = cmd.substring(8);
                 if (!stream.isEmpty()) {
@@ -1558,12 +1565,17 @@ public class MainGui extends JFrame implements Runnable {
         public void menuSelected(MenuEvent e) {
             if (e.getSource() == menu.srlStreams) {
                 ArrayList<String> popoutStreams = new ArrayList<>();
-                for (Channel channel : channels.getPopoutChannels().keySet()) {
-                    if (channel.getStreamName() != null) {
-                        popoutStreams.add(channel.getStreamName());
+                String activeStream = channels.getActiveChannel().getStreamName();
+                for (DockContent c : channels.getDock().getPopoutContents()) {
+                    if (c instanceof Channels.DockChannelContainer) {
+                        Channel channel = ((Channels.DockChannelContainer) c).getContent();
+                        if (channel.getStreamName() != null
+                                && !channel.getStreamName().equals(activeStream)) {
+                            popoutStreams.add(channel.getStreamName());
+                        }
                     }
                 }
-                menu.updateSrlStreams(channels.getActiveTab().getStreamName(), popoutStreams);
+                menu.updateSrlStreams(activeStream, popoutStreams);
             } else if (e.getSource() == menu.view) {
                 menu.updateCount(highlightedMessages.getNewCount(),
                         highlightedMessages.getDisplayedCount(),
@@ -1690,36 +1702,10 @@ public class MainGui extends JFrame implements Runnable {
         @Override
         public void menuItemClicked(ActionEvent e) {
             Debugging.println("cmchan", "[cm] tab: %s chan: %s lastchan: %s",
-                    channels.getActiveTab(), channels.getActiveChannel(), channels.getLastActiveChannel());
+                    channels.getMainActiveChannel(), channels.getActiveChannel(), channels.getLastActiveChannel());
             
             String cmd = e.getActionCommand();
-            if (cmd.equals("closeChannel")) {
-                // TabContextMenu
-                client.closeChannel(channels.getActiveChannel().getChannel());
-            }
-            else if (cmd.startsWith("closeAllTabs")) {
-                // TabContextMenu
-                Collection<Channel> chans = null;
-                if (cmd.equals("closeAllTabsButCurrent")) {
-                    chans = channels.getTabsRelativeToCurrent(0);
-                } else if (cmd.equals("closeAllTabsToLeft")) {
-                    chans = channels.getTabsRelativeToCurrent(-1);
-                } else if (cmd.equals("closeAllTabsToRight")) {
-                    chans = channels.getTabsRelativeToCurrent(1);
-                } else if (cmd.equals("closeAllTabs")) {
-                    chans = channels.getTabs();
-                }
-                if (chans != null) {
-                    for (Channel c : chans) {
-                        client.closeChannel(c.getChannel());
-                    }
-                }
-            }
-            else if (cmd.equals("popoutChannel")) {
-                // TabContextMenu
-                channels.popoutActiveChannel();
-            }
-            else if (cmd.startsWith("historyRange")) {
+            if (cmd.startsWith("historyRange")) {
                 int range = Integer.parseInt(cmd.substring("historyRange".length()));
                 // Change here as well, because even if it's the same value,
                 // update may be needed. This will make it update twice often.
@@ -1741,7 +1727,7 @@ public class MainGui extends JFrame implements Runnable {
         @Override
         public void channelMenuItemClicked(ActionEvent e, Channel channel) {
             Debugging.println("cmchan", "[channelcm] tab: %s chan: %s lastchan: %s",
-                    channels.getActiveTab(), channels.getActiveChannel(), channels.getLastActiveChannel());
+                    channels.getMainActiveChannel(), channels.getActiveChannel(), channels.getLastActiveChannel());
             
             String cmd = e.getActionCommand();
             if (cmd.equals("channelInfo")) {
@@ -1753,6 +1739,23 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.equals("closeChannel")) {
                 client.closeChannel(channel.getChannel());
+            }
+            else if (cmd.equals("popoutChannel")) {
+                // TabContextMenu
+                channels.popout(channel.getDockContent(), false);
+            }
+            else if (cmd.equals("popoutChannelWindow")) {
+                // TabContextMenu
+                channels.popout(channel.getDockContent(), true);
+            }
+            else if (cmd.startsWith("closeAllTabs")) {
+                // TabContextMenu
+                Collection<Channel> chans = Channels.getCloseTabsChans(channels, channel).get(cmd);
+                if (chans != null) {
+                    for (Channel c : chans) {
+                        client.closeChannel(c.getChannel());
+                    }
+                }
             }
             else if (cmd.equals("joinHostedChannel")) {
                 client.command(channel.getRoom(), "joinhosted");
@@ -2416,7 +2419,10 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         client.commands.addEdt("popoutChannel", p -> {
-            channels.popoutActiveChannel();
+            channels.popout(channels.getActiveContent(), false);
+        });
+        client.commands.addEdt("popoutChannelWindow", p -> {
+            channels.popout(channels.getActiveContent(), true);
         });
     }
     
@@ -2814,7 +2820,7 @@ public class MainGui extends JFrame implements Runnable {
     
     public void setChannelNewStatus(final String ownerChannel, final String newStatus) {
         SwingUtilities.invokeLater(() -> {
-                channels.setChannelNewStatus(ownerChannel);
+            channels.setChannelNewStatus(ownerChannel);
         });
     }
     
@@ -3386,27 +3392,20 @@ public class MainGui extends JFrame implements Runnable {
      * Perform search in the currently selected channel. Should only be called
      * from the EDT.
      * 
-     * @param window
+     * @param chan
      * @param searchText 
      * @return  
      */
-    public boolean search(final Window window, final String searchText) {
-        Channel chan = channels.getChannelFromWindow(window);
+    public boolean search(Channel chan, final String searchText) {
         if (chan == null) {
             return false;
         }
         return chan.search(searchText);
     }
     
-    public void resetSearch(final Window window) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Channel chan = channels.getChannelFromWindow(window);
-                if (chan != null) {
-                    chan.resetSearch();
-                }
-            }
+    public void resetSearch(Channel chan) {
+        SwingUtilities.invokeLater(() -> {
+            chan.resetSearch();
         });
     }
     
@@ -3701,6 +3700,12 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void updateStreamLive(StreamInfo info) {
+        SwingUtilities.invokeLater(() -> {
+            channels.setStreamLive(info.stream, info.isValidEnough() && info.getOnline());
+        });
+    }
+    
     public void updateState() {
         updateState(false);
     }
@@ -3812,18 +3817,17 @@ public class MainGui extends JFrame implements Runnable {
         private void updateTitles(int state) {
             // May be necessary to make the title either way, because it also
             // requests stream info
-            String mainTitle = makeTitle(channels.getActiveTab(), state);
-            String trayTooltip = makeTitle(channels.getLastActiveChannel(), state);
+            String mainTitle = makeTitle(channels.getMainActiveContent(), state);
+            String trayTooltip = makeTitle(channels.getLastActiveChannel().getDockContent(), state);
             trayIcon.setTooltipText(trayTooltip);
             if (client.settings.getBoolean("simpleTitle")) {
                 setTitle("Chatty");
             } else {
                 setTitle(mainTitle);
             }
-            Map<Channel, JDialog> popoutChannels = channels.getPopoutChannels();
-            for (Channel channel : popoutChannels.keySet()) {
-                String title = makeTitle(channel, state);
-                popoutChannels.get(channel).setTitle(title);
+            for (Map.Entry<DockPopout, DockContent> entry : channels.getActivePopoutContent().entrySet()) {
+                String title = makeTitle(entry.getValue(), state);
+                entry.getKey().setTitle(title);
             }
         }
 
@@ -3835,7 +3839,14 @@ public class MainGui extends JFrame implements Runnable {
          * @param state The current state
          * @return The created title
          */
-        private String makeTitle(Channel channel, int state) {
+        private String makeTitle(DockContent content, int state) {
+            Channel channel = null;
+            if (content instanceof Channels.DockChannelContainer) {
+                channel = ((Channels.DockChannelContainer)content).getContent();
+            }
+            if (channel == null) {
+                return appendToTitle(content.getTitle());
+            }
             String channelName = channel.getName();
             String chan = channel.getChannel();
 
@@ -3934,16 +3945,19 @@ public class MainGui extends JFrame implements Runnable {
             } else {
                 title += secondaryConnectionsStatus;
             }
-
+            return appendToTitle(title);
+        }
+        
+        private String appendToTitle(String title) {
             title += " - Chatty";
             
             String addition = client.settings.getString("titleAddition");
             if (!addition.isEmpty()) {
                 title = addition+" "+title;
             }
-            
             return title;
         }
+        
     }
 
     public void openConnectDialog(final String channelPreset) {

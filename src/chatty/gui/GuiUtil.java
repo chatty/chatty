@@ -126,17 +126,7 @@ public class GuiUtil {
         JOptionPane p = new JOptionPane(message, messageType, optionType);
         p.setOptions(options);
         final JDialog d = p.createDialog(parent, title);
-        d.setAutoRequestFocus(false);
-        d.setFocusableWindowState(false);
-        // Make focusable after showing the dialog, so that it can be focused
-        // by the user, but doesn't steal focus from the user when it opens.
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                d.setFocusableWindowState(true);
-            }
-        });
+        setNonAutoFocus(d);
         d.setVisible(true);
         // Find index of result
         Object value = p.getValue();
@@ -146,6 +136,22 @@ public class GuiUtil {
             }
         }
         return -1;
+    }
+    
+    /**
+     * Configure the given window to not take focus immediately. It will be
+     * able to take focus afterwards.
+     * 
+     * @param w 
+     */
+    public static void setNonAutoFocus(Window w) {
+        w.setAutoRequestFocus(false);
+        w.setFocusableWindowState(false);
+        // Make focusable after showing the dialog, so that it can be focused
+        // by the user, but doesn't steal focus from the user when it opens.
+        SwingUtilities.invokeLater(() -> {
+            w.setFocusableWindowState(true);
+        });
     }
     
     public static void showNonModalMessage(Component parent, String title, String message, int type) {

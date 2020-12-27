@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
@@ -38,6 +39,8 @@ public class SearchDialog extends JDialog {
     private final JButton searchButton = new JButton(Language.getString("searchDialog.button.search"));
     //private final JCheckBox highlightAll = new JCheckBox("Highlight all occurences");
     
+    private Channel chan;
+    
     private static final Map<Window, SearchDialog> created = new HashMap<>();
     
     public static void showSearchDialog(Channel channel, MainGui g, Window owner) {
@@ -48,10 +51,11 @@ public class SearchDialog extends JDialog {
             GuiUtil.installEscapeCloseOperation(dialog);
             created.put(owner, dialog);
         }
+        dialog.setChannel(channel);
         dialog.setVisible(true);
     }
     
-    public SearchDialog(final MainGui g, final Window owner) {
+    private SearchDialog(final MainGui g, final Window owner) {
         super(owner);
         setTitle(Language.getString("searchDialog.title"));
         setResizable(false);
@@ -82,7 +86,7 @@ public class SearchDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!g.search(owner, searchText.getText())) {
+                if (!g.search(chan, searchText.getText())) {
                     searchText.setBackground(COLOR_NO_RESULT);
                     timer.restart();
                 }
@@ -94,13 +98,17 @@ public class SearchDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                g.resetSearch(owner);
+                g.resetSearch(chan);
                 searchText.setText(null);
                 searchText.setBackground(COLOR_NORMAL);
             }
         });
         
         pack();
+    }
+    
+    public void setChannel(Channel chan) {
+        this.chan = chan;
     }
     
 }

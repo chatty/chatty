@@ -5,27 +5,34 @@ import chatty.Helper;
 import chatty.Helper.IntegerPair;
 import chatty.Room;
 import chatty.gui.components.Channel;
-import chatty.gui.components.ChannelDialog;
-import chatty.gui.components.tabs.Tabs;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.TabContextMenu;
 import chatty.util.Debugging;
+import chatty.util.IconManager;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockListener;
+import chatty.util.dnd.DockManager;
+import chatty.util.dnd.DockSetting;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.*;
-import javax.swing.JDialog;
+import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import chatty.util.dnd.DockPopout;
 
 /**
  * Managing the Channel objects in the main window and popouts, providing a
  * default channel while no other is added.
+ * 
+ * TODO:
+ * - Switching tabs in right-hand split while the focus is not on the tab (e.g.
+ * input) will first switch focus to active tab in left-hand split
  * 
  * @author tduva
  */
@@ -33,7 +40,6 @@ public class Channels {
 
     private final MainGui gui;
             
-    private final WindowListener windowListener;
     private ChangeListener changeListener;
     
     /**
@@ -42,20 +48,19 @@ public class Channels {
     private final HashMap<String, Channel> channels = new HashMap<>();
     
     /**
-     * Saves which channels are in a popout (and which dialog it is).
-     */
-    private final Map<Channel, JDialog> dialogs = new LinkedHashMap<>();
-    
-    /**
      * Saves attributes of closed popout dialogs.
      */
     private final List<LocationAndSize> dialogsAttributes = new ArrayList<>();
-    private final Tabs tabs;
+    private final DockManager dock;
+    
+    /**
+     * The default channel does not represent an actual channel, but is just a
+     * placeholder for when the main window does not contain a channel.
+     */
     private Channel defaultChannel;
     private final StyleManager styleManager;
     private final ContextMenuListener contextMenuListener;
     private final MouseClickedListener mouseClickedListener = new MyMouseClickedListener();
-    private Channel.OnceOffEditListener onceOffEditListener;
     
     /**
      * Default width of the userlist, given to Channel objects when created.
@@ -64,59 +69,165 @@ public class Channels {
     private int minUserlistWidth = 0;
     private boolean defaultUserlistVisibleState = true;
     private boolean chatScrollbarAlaways;
-    private Channel lastActiveChannel = null;
     
     private boolean savePopoutAttributes;
     private boolean closeLastChannelPopout;
     
     /**
-     * Save channels whose state is new highlighted messages, so the color
-     * doesn't get overwritten by new messages.
+     * The DockManager tracks the last active content, however that might not be
+     * a Channel, so the last active Channel is tracked here.
      */
-    private final Set<Channel> highlighted = new HashSet<>();
+    private Channel lastActiveChannel;
+    
+    /**
+     * Store which streams are currently live, since this is only updated when a
+     * stream changes status, which could be before the channel tab is actually
+     * added. This can be referred to when the tab is added to set the correct
+     * initial value.
+     */
+    private final Set<String> liveStreams = new HashSet<>();
     
     public Channels(MainGui gui, StyleManager styleManager,
             ContextMenuListener contextMenuListener) {
-        windowListener = new MyWindowListener();
-        tabs = new Tabs();
-        tabs.setPopupMenu(new TabContextMenu(contextMenuListener));
+        dock = new DockManager(new DockListener() {
+            @Override
+            public void activeContentChanged(DockPopout window, DockContent content, boolean focusChange) {
+                //System.out.println("changed: "+content+" "+Debugging.getStacktrace());
+                channelChanged();
+                if (content.getComponent() instanceof Channel) {
+                    Channel c = (Channel) content.getComponent();
+                    lastActiveChannel = c;
+                    if (!focusChange) {
+                        // Changing focus due to a focus change is dodgy, so don't
+                        // do that
+                        setInitialFocus(c);
+                    }
+                }
+                updateActiveContent();
+                resetTab(content);
+                Debugging.println("dndp", "Path: %s", content.getPath());
+            }
+            
+            @Override
+            public void popoutOpened(DockPopout popout, DockContent content) {
+                dockPopoutOpened(popout);
+            }
+
+            @Override
+            public void popoutClosed(DockPopout popout, List<DockContent> contents) {
+                dockPopoutClosed(popout, contents);
+            }
+            
+        });
+        // One-time settings
+        dock.setSetting(DockSetting.Type.POPOUT_ICONS, IconManager.getMainIcons());
+        dock.setSetting(DockSetting.Type.POPOUT_PARENT, gui);
         this.styleManager = styleManager;
         this.contextMenuListener = contextMenuListener;
         this.gui = gui;
-        tabs.addChangeListener(new TabChangeListener());
-        tabs.setMouseWheelScrollingEnabled(gui.getSettings().getBoolean("tabsMwheelScrolling"));
-        tabs.setMouseWheelScrollingAnywhereEnabled(gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
-        tabs.setTabPlacement(gui.getSettings().getString("tabsPlacement"));
-        tabs.setTabLayoutPolicy(gui.getSettings().getString("tabsLayout"));
-        gui.addWindowListener(windowListener);
-        //tabs.setOpaque(false);
-        //tabs.setBackground(new Color(0,0,0,0));
         addDefaultChannel();
+        updateSettings();
+        gui.getSettings().addSettingChangeListener((setting, type, value) -> {
+            if (setting.startsWith("tab") || setting.equals("laf")) {
+                SwingUtilities.invokeLater(() -> {
+                    updateSettings();
+                });
+            }
+        });
     }
     
-    public void setOnceOffEditListener(Channel.OnceOffEditListener listener) {
-        this.onceOffEditListener = listener;
-        if (defaultChannel != null) {
-            defaultChannel.setOnceOffEditListener(listener);
+    public DockManager getDock() {
+        return dock;
+    }
+    
+    public Component getComponent() {
+        return dock.getBase();
+    }
+    
+    private void channelTabClosed(Channel channel) {
+        gui.client.closeChannel(channel.getChannel());
+    }
+    
+    //==========================
+    // Dock Settings
+    //==========================
+    private void updateSettings() {
+        for (Channel chan : channels.values()) {
+            updateSettings(chan);
         }
+        dock.setSetting(DockSetting.Type.TAB_LAYOUT, getTabLayoutPolicyValue(gui.getSettings().getString("tabsLayout")));
+        dock.setSetting(DockSetting.Type.TAB_PLACEMENT, getTabPlacementValue(gui.getSettings().getString("tabsPlacement")));
+        dock.setSetting(DockSetting.Type.TAB_SCROLL, gui.getSettings().getBoolean("tabsMwheelScrolling"));
+        dock.setSetting(DockSetting.Type.TAB_SCROLL_ANYWHERE, gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
+        dock.setSetting(DockSetting.Type.TAB_ORDER, getTabOrderValue(gui.getSettings().getString("tabOrder")));
+        dock.setSetting(DockSetting.Type.FILL_COLOR, UIManager.getColor("TextField.selectionBackground"));
+        dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
+        dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
+        dock.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
     }
     
-    public void setChangeListener(ChangeListener listener) {
-        changeListener = listener;
-    }
-    
-    private void channelChanged() {
-        if (changeListener != null) {
-            changeListener.stateChanged(new ChangeEvent(this));
+    private int getTabLayoutPolicyValue(String type) {
+        switch(type) {
+            case "wrap": return JTabbedPane.WRAP_TAB_LAYOUT;
+            case "scroll": return JTabbedPane.SCROLL_TAB_LAYOUT;
         }
+        return JTabbedPane.WRAP_TAB_LAYOUT;
     }
+    
+    private int getTabPlacementValue(String location) {
+        switch(location) {
+            case "top": return JTabbedPane.TOP;
+            case "bottom": return JTabbedPane.BOTTOM;
+            case "left": return JTabbedPane.LEFT;
+            case "right": return JTabbedPane.RIGHT;
+        }
+        return JTabbedPane.TOP;
+    }
+    
+    private DockSetting.TabOrder getTabOrderValue(String order) {
+        if (order.equals("alphabetical")) {
+            return DockSetting.TabOrder.ALPHABETIC;
+        }
+        return DockSetting.TabOrder.INSERTION;
+    }
+    
+    private DockSetting.PopoutType getPopoutTypeValue(int type) {
+        switch (type) {
+            case 1: return DockSetting.PopoutType.DIALOG;
+            case 2: return DockSetting.PopoutType.FRAME;
+        }
+        return DockSetting.PopoutType.NONE;
+    }
+    
+    private void updateSettings(Channel chan) {
+        chan.getDockContent().setSettings(
+                (int) gui.getSettings().getLong("tabsLive"),
+                (int) gui.getSettings().getLong("tabsMessage"),
+                (int) gui.getSettings().getLong("tabsHighlight"),
+                (int) gui.getSettings().getLong("tabsStatus"),
+                (int) gui.getSettings().getLong("tabsActive"));
+    }
+    
+    //==========================
+    // Change Channel state
+    //==========================
     
     public void updateRoom(Room room) {
         Channel channel = channels.get(room.getChannel());
         if (channel != null) {
             if (channel.setRoom(room)) {
                 Debugging.printlnf("Update Room: %s", room);
-                updateChannelTabName(channel);
+            }
+        }
+    }
+    
+    private void updateActiveContent() {
+        for (Channel chan : channels.values()) {
+            if (getActiveChannel() == chan) {
+                chan.getDockContent().setActive(true);
+            }
+            else {
+                chan.getDockContent().setActive(false);
             }
         }
     }
@@ -128,9 +239,9 @@ public class Channels {
      * @param channel 
      */
     public void setChannelHighlighted(Channel channel) {
-        if (getActiveTab() != channel) {
-            tabs.setForegroundForComponent(channel, LaF.getTabForegroundHighlight());
-            highlighted.add(channel);
+        if (!channel.getDockContent().hasNewHighlight()
+                && !dock.isContentVisible(channel.getDockContent())) {
+            channel.getDockContent().setNewHighlight(true);
         }
     }
     
@@ -141,20 +252,38 @@ public class Channels {
      * @param channel 
      */
     public void setChannelNewMessage(Channel channel) {
-        if (getActiveTab() != channel && !highlighted.contains(channel)) {
-            tabs.setForegroundForComponent(channel, LaF.getTabForegroundUnread());
+        if (!channel.getDockContent().hasNewMessages()
+                && !channel.getDockContent().hasNewHighlight()
+                && !dock.isContentVisible(channel.getDockContent())) {
+            channel.getDockContent().setNewMessage(true);
+        }
+    }
+    
+    public void setStreamLive(String stream, boolean isLive) {
+        if (!Helper.isValidStream(stream)) {
+            return;
+        }
+        if (isLive) {
+            liveStreams.add(stream);
+        }
+        else {
+            liveStreams.remove(stream);
+        }
+        Channel chan = getExistingChannel(Helper.toChannel(stream));
+        if (chan != null) {
+            chan.getDockContent().setLive(isLive);
         }
     }
     
     /**
      * Reset state (color, title suffixes) to default.
      * 
-     * @param channel 
+     * @param content 
      */
-    public void resetChannelTab(Channel channel) {
-        tabs.setForegroundForComponent(channel, null);
-        tabs.setTitleForComponent(channel, channel.getName(), channel.getToolTipText());
-        highlighted.remove(channel);
+    public void resetTab(DockContent content) {
+        if (content instanceof DockStyledTabContainer) {
+            ((DockStyledTabContainer)content).resetNew();
+        }
     }
     
     /**
@@ -167,18 +296,54 @@ public class Channels {
         Collection<Channel> chans = getExistingChannelsByOwner(ownerChannel);
         // If any of the tabs for this channel is active, don't change
         for (Channel chan : chans) {
-            if (getActiveTab() == chan) {
+            if (dock.isContentVisible(chan.getDockContent())) {
                 return;
             }
         }
         for (Channel chan : chans) {
-            tabs.setTitleForComponent(chan, chan.getName()+"*", chan.getToolTipText());
+            chan.getDockContent().setNewStatus(true);
         }
     }
     
-    // TODO: Retain new status and stuff, and maybe reset new status when clicked on one of the tabs belong to the stream
-    public void updateChannelTabName(Channel channel) {
-        tabs.setTitleForComponent(channel, channel.getName(), channel.getToolTipText());
+    //==========================
+    // Add/remove
+    //==========================
+    
+    public Channel getChannel(Room room) {
+        String channelName = room.getChannel();
+        return getChannel(room, getTypeFromChannelName(channelName));
+    }
+    
+    public Channel.Type getTypeFromChannelName(String name) {
+        if (name.startsWith("#")) {
+            return Channel.Type.CHANNEL;
+        }
+        else if (name.startsWith("$")) {
+            return Channel.Type.WHISPER;
+        }
+        else if (name.startsWith("*")) {
+            return Channel.Type.SPECIAL;
+        }
+        return Channel.Type.NONE;
+    }
+    
+    /**
+     * Gets the Channel object for the given channel name. If none exists, the
+     * channel is automatically added.
+     *
+     * @param room Must not be null, but can be Room.EMPTY
+     * @param type
+     * @return
+     */
+    public Channel getChannel(Room room, Channel.Type type) {
+        Channel panel = channels.get(room.getChannel());
+        if (panel == null) {
+            panel = addChannel(room, type);
+        }
+        else if (panel.setRoom(room)) {
+            Debugging.println("Updating Channel Name to " + panel.getName());
+        }
+        return panel;
     }
     
     /**
@@ -186,154 +351,14 @@ public class Channels {
      */
     private void addDefaultChannel() {
         defaultChannel = createChannel(Room.EMPTY, Channel.Type.NONE);
-        tabs.addTab(defaultChannel);
+        dock.addContent(defaultChannel.getDockContent());
     }
-    
-    /**
-     * 
-     * @param room Must not be null
-     * @param type
-     * @return 
-     */
-    private Channel createChannel(Room room, Channel.Type type) {
-        Channel channel = new Channel(room,type,gui,styleManager, contextMenuListener);
-        channel.init();
-        channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
-        channel.setMouseClickedListener(mouseClickedListener);
-        channel.setScrollbarAlways(chatScrollbarAlaways);
-        channel.setUserlistEnabled(defaultUserlistVisibleState);
-        channel.setOnceOffEditListener(onceOffEditListener);
-        if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
-            channel.setUserlistEnabled(false);
-        }
-        
-        if (!gui.getSettings().getBoolean("inputEnabled")) {
-            channel.toggleInput();
-        }
-        
-        return channel;
-    }
-    
-    public Component getComponent() {
-        return tabs;
-    }
-    
-    public Collection<Channel> channels() {
-        return channels.values();
-    }
-    
-    /**
-     * Includes the defaultChannel that is there when no actual channel has been
-     * added yet.
-     * 
-     * @return 
-     */
-    public Collection<Channel> allChannels() {
-        if (channels.isEmpty() && defaultChannel != null) {
-            Collection<Channel> result = new ArrayList<>();
-            result.add(defaultChannel);
-            return result;
-        }
-        return channels.values();
-    }
-    
-    public int getChannelCount() {
-        return channels.size();
-    }
-    
-    /**
-     * Check if the given channel is added.
-     * 
-     * @param channel
-     * @return 
-     */
-    public boolean isChannel(String channel) {
-        if (channel == null) {
-            return false;
-        }
-        return channels.get(channel) != null;
-    }
-    
-//    public Channel getChannel(String channel) {
-//        return getChannel(channel, getTypeFromChannelName(channel), null);
-//    }
-    
-    public Channel.Type getTypeFromChannelName(String name) {
-        if (name.startsWith("#")) {
-            return Channel.Type.CHANNEL;
-        } else if (name.startsWith("$")) {
-            return Channel.Type.WHISPER;
-        } else if (name.startsWith("*")) {
-            return Channel.Type.SPECIAL;
-        }
-        return Channel.Type.NONE;
-    }
-    
-    public Channel getExistingChannel(String channel) {
-        return channels.get(channel);
-    }
-    
-    public Collection<Channel> getExistingChannelsByOwner(String channel) {
-        List<Channel> result = new ArrayList<>();
-        for (Channel chan : channels.values()) {
-            if (Objects.equals(chan.getOwnerChannel(), channel)) {
-                result.add(chan);
-            }
-        }
-        return result;
-    }
-    
-    public Channel getChannel(Room room) {
-        String channel = room.getChannel();
-        return getChannel(room, getTypeFromChannelName(channel));
-    }
-    
-    /**
-     * Gets the Channel object for the given channel name. If none exists, the
-     * channel is automatically added.
-     * 
-     * @param room Must not be null, but can be Room.EMPTY
-     * @param type
-     * @return 
-     */
-    public Channel getChannel(Room room, Channel.Type type) {
-        Channel panel = channels.get(room.getChannel());
-        if (panel == null) {
-            panel = addChannel(room, type);
-        } else if (panel.setRoom(room)) {
-            Debugging.println("Updating Channel Name to "+panel.getName());
-            updateChannelTabName(panel);
-        }
-        return panel;
-    }
-    
-    public String getChannelNameFromPanel(Channel panel) {
-        for (String key : channels.keySet()) {
-            if (channels.get(key) == panel) {
-                return key;
-            }
-        }
-        return null;
-    }
-    
-    public Channel getChannelFromWindow(Object dialog) {
-        for (Channel channel : dialogs.keySet()) {
-            if (dialogs.get(channel) == dialog) {
-                return channel;
-            }
-        }
-        if (dialog == gui) {
-            return getActiveTab();
-        }
-        return null;
-    }
-    
     
     /**
      * Adds a channel with the given name. If the default channel is still there
      * it is used for this channel and renamed.
      * 
-     * @param channelName
+     * @param room
      * @param type
      * @return 
      */
@@ -353,13 +378,41 @@ public class Channels {
         else {
             // No default channel, so create a new one
             panel = createChannel(room, type);
-            tabs.addTab(panel);
+            dock.addContent(panel.getDockContent());
             if (type != Channel.Type.WHISPER) {
-                tabs.setSelectedComponent(panel);
+                dock.setActiveContent(panel.getDockContent());
             }
         }
         channels.put(room.getChannel(), panel);
+        // Update after it has been added to "channels"
+        updateActiveContent();
         return panel;
+    }
+    
+    /**
+     * Create and configure a Channel.
+     * 
+     * @param room Must not be null
+     * @param type
+     * @return
+     */
+    private Channel createChannel(Room room, Channel.Type type) {
+        Channel channel = new Channel(room,type,gui,styleManager, contextMenuListener);
+        channel.setDockContent(new DockChannelContainer(channel, dock, this, contextMenuListener));
+        channel.init();
+        channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
+        channel.setMouseClickedListener(mouseClickedListener);
+        channel.setScrollbarAlways(chatScrollbarAlaways);
+        channel.setUserlistEnabled(defaultUserlistVisibleState);
+        channel.getDockContent().setLive(liveStreams.contains(room.getStream()));
+        updateSettings(channel);
+        if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
+            channel.setUserlistEnabled(false);
+        }
+        if (!gui.getSettings().getBoolean("inputEnabled")) {
+            channel.toggleInput();
+        }
+        return channel;
     }
     
     public void removeChannel(final String channelName) {
@@ -368,82 +421,76 @@ public class Channels {
             return;
         }
         channels.remove(channelName);
-        closePopout(channel);
-        tabs.removeTab(channel);
+        dock.removeContent(channel.getDockContent());
         channel.cleanUp();
 
-        if (tabs.getTabCount() == 0) {
-            if (dialogs.isEmpty() || !closeLastChannelPopout) {
+        if (dock.isMainEmpty() || channels.isEmpty()) {
+            if (!closeLastChannelPopout || !dock.closeWindow()) {
                 addDefaultChannel();
-            } else {
-                closePopout(dialogs.keySet().iterator().next());
             }
-            lastActiveChannel = null;
             channelChanged();
             gui.updateState();
         }
     }
     
+    //==========================
+    // Popout
+    //==========================
+    
     /**
-     * Popout the given channel if it isn't already and if there is actually
-     * more than one tab.
+     * Popout the given content.
      * 
-     * @param channel The {@code Channel} to popout
+     * @param content The {@code Channel} to popout
+     * @param window Open in window instead of dialog
      */
-    public void popout(final Channel channel) {
-        if (channel == null) {
-            return;
-        }
-        if (dialogs.containsKey(channel)) {
-            return;
-        }
-        if (tabs.getTabCount() < 2) {
-            return;
-        }
-        tabs.removeTab(channel);
-        
-        // Create and configure new dialog for the popout
-        final JDialog newDialog = new ChannelDialog(gui, channel);
-        newDialog.setLocationRelativeTo(gui);
-        newDialog.addWindowListener(windowListener);
-        gui.popoutCreated(newDialog);
-
-        // Restore attributes if available
-        if (!dialogsAttributes.isEmpty()) {
-            LocationAndSize attr = dialogsAttributes.remove(0);
-            if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
-                newDialog.setLocation(attr.location);
-            }
-            newDialog.setSize(attr.size);
-        }
-        
-        dialogs.put(channel, newDialog);
-        
-        // Making it visible directly apparently makes it not properly detect
-        // it as active window
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                newDialog.setVisible(true);
-            }
-        });
-        
+    public void popout(DockContent content, boolean window) {
+        DockPopout popout = dock.popout(content, window ? DockSetting.PopoutType.FRAME : DockSetting.PopoutType.DIALOG);
         gui.updateState(true);
-    }
-    
-    public void popoutActiveChannel() {
-        if (getActiveChannel() != null) {
-            popout(getActiveChannel());
+        
+        // Setting the location/size should only be done for popouts not created
+        // by drag, so not in dockPopoutOpened()
+        if (popout != null) {
+            Window w = popout.getWindow();
+            // Restore attributes if available
+            if (!dialogsAttributes.isEmpty()) {
+                LocationAndSize attr = dialogsAttributes.remove(0);
+                if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
+                    w.setLocation(attr.location);
+                }
+                w.setSize(attr.size);
+            }
         }
     }
     
-    public void setSavePopoutAttributes(boolean save) {
-        savePopoutAttributes = save;
-        if (!save) {
-            dialogsAttributes.clear();
+    /**
+     * This is called by the DockManager when a popout is created. This also
+     * includes popouts created by the DockManager itself (e.g. by drag).
+     * 
+     * @param popout 
+     */
+    private void dockPopoutOpened(DockPopout popout) {
+        // Register hotkeys if necessary
+        gui.popoutCreated(popout.getWindow());
+    }
+    
+    private void dockPopoutClosed(DockPopout popout, List<DockContent> contents) {
+        if (savePopoutAttributes) {
+            Window window = popout.getWindow();
+            dialogsAttributes.add(0, new LocationAndSize(
+                    window.getLocation(), window.getSize()));
+        }
+        if (!contents.isEmpty()) {
+            if (defaultChannel != null) {
+                dock.removeContent(defaultChannel.getDockContent());
+                defaultChannel = null;
+            }
+            gui.updateState(true);
         }
     }
+    
+    //--------------------------
+    // Saving/loading attributes
+    //--------------------------
     
     /**
      * Returns a list of Strings that contain the location/size of open dialogs
@@ -455,9 +502,10 @@ public class Channels {
      */
     public List getPopoutAttributes() {
         List<String> attributes = new ArrayList<>();
-        for (JDialog dialog : dialogs.values()) {
-            attributes.add(dialog.getX()+","+dialog.getY()
-                    +";"+dialog.getWidth()+","+dialog.getHeight());
+        for (DockPopout popout : dock.getPopouts()) {
+            Window w = popout.getWindow();
+            attributes.add(w.getX()+","+w.getY()
+                    +";"+w.getWidth()+","+w.getHeight());
         }
         for (LocationAndSize attr : dialogsAttributes) {
             attributes.add(attr.location.x + "," + attr.location.y
@@ -493,46 +541,33 @@ public class Channels {
         }
     }
     
+    //--------------------------
+    // Popout settings
+    //--------------------------
+    
     public void setCloseLastChannelPopout(boolean close) {
         closeLastChannelPopout = close;
     }
     
-    /**
-     * Once the popout dialog was closed (either by the user or by the program)
-     * add the channel to the tabs again and update the GUI.
-     * 
-     * @param channel 
-     */
-    private void popoutDisposed(Channel channel) {
-        if (channel == null) {
-            return;
+    public void setSavePopoutAttributes(boolean save) {
+        savePopoutAttributes = save;
+        if (!save) {
+            dialogsAttributes.clear();
         }
-        dialogs.remove(channel);
-        if (defaultChannel != null) {
-            tabs.removeTab(defaultChannel);
-            defaultChannel = null;
-        }
-        tabs.addTab(channel);
-        tabs.setSelectedComponent(channel);
-        gui.updateState(true);
     }
     
-    /**
-     * Close the popout for the given channel (if it exists) and move the
-     * channel back to the main window.
-     * 
-     * @param channel 
-     */
-    public void closePopout(Channel channel) {
-        if (channel == null) {
-            return;
+    //==========================
+    // Active content
+    //==========================
+    
+    public void setChangeListener(ChangeListener listener) {
+        changeListener = listener;
+    }
+
+    private void channelChanged() {
+        if (changeListener != null) {
+            changeListener.stateChanged(new ChangeEvent(this));
         }
-        if (!dialogs.containsKey(channel)) {
-            return;
-        }
-        JDialog dialog = dialogs.remove(channel);
-        dialog.dispose();
-        popoutDisposed(channel);
     }
     
     /**
@@ -545,62 +580,91 @@ public class Channels {
      * tab of the main window is returned.
      * </p>
      * 
-     * @return The Channel object which is currently selected.
+     * @return The Channel object which is currently selected, could be null,
+     * but that would likely be a bug, since there should always be at least one
+     * channel
      */
     public Channel getActiveChannel() {
-        for (Channel channel : dialogs.keySet()) {
-            if (dialogs.get(channel).isActive()) {
-                return channel;
+        // Prefer actual active
+        DockContent activeContent = dock.getActiveContent();
+        if (activeContent instanceof DockChannelContainer) {
+            return ((DockChannelContainer)activeContent).getContent();
+        }
+        if (channels.containsValue(lastActiveChannel) || lastActiveChannel == defaultChannel) {
+            return lastActiveChannel;
+        }
+        // If a Channel isn't active, try others
+        for (DockContent otherActive : dock.getAllActive().values()) {
+            if (otherActive instanceof DockChannelContainer) {
+                return ((DockChannelContainer)otherActive).getContent();
             }
-        }
-        return getActiveTab();
-    }
-    
-    /**
-     * Returns the Channel that was last active. If the focus is on a Window
-     * that contains a Channel, it should be the same as
-     * {@link getActiveChannel()}, otherwise it is the Channel that was active
-     * before a Window without a Channel was focused (e.g. an info dialog).
-     * 
-     * @return 
-     */
-    public Channel getLastActiveChannel() {
-        if (lastActiveChannel == null) {
-            return getActiveTab();
-        }
-        return lastActiveChannel;
-    }
-    
-    /**
-     * Returns channel of the active tab in the main window (as opposed to the
-     * active channel, which might also be in a popout).
-     * 
-     * @return 
-     */
-    public Channel getActiveTab() {
-        Component c = tabs.getSelectedComponent();
-        if (c instanceof Channel) {
-            return (Channel) c;
         }
         return null;
     }
     
     /**
-     * Returns a map of all channels and their respective dialog.
-     * 
-     * @return The {@literal Map} with {@literal Channel} objects as keys and
-     * {@literal JDialog} objects as values
+     * This used to be slightly different, but is now just returning
+     * {@link getActiveChannel()}.
+     *
+     * @return
      */
-    public Map<Channel, JDialog> getPopoutChannels() {
-        return new HashMap<>(dialogs);
+    public Channel getLastActiveChannel() {
+        return getActiveChannel();
     }
     
     /**
-     * Return the channel from the given input box.
      * 
+     * 
+     * @return The active content, may be null, although that could probably
+     * be considered a bug since there should always be an active content
+     */
+    public DockContent getActiveContent() {
+        return dock.getActiveContent();
+    }
+    
+    /**
+     * Returns channel of the active tab in the main window. Falls back to the
+     * overall active channel, but that normally shouldn't happen.
+     * 
+     * @return Can return null
+     */
+    public Channel getMainActiveChannel() {
+        DockContent activeContent = getMainActiveContent();
+        if (activeContent instanceof DockChannelContainer) {
+            return ((DockChannelContainer)activeContent).getContent();
+        }
+        return null;
+    }
+    
+    public DockContent getMainActiveContent() {
+        return dock.getAllActive().get(null);
+    }
+    
+    /**
+     * Returns all popouts with their currently active content.
+     * 
+     * @return The popouts, without the main base (which would be null)
+     */
+    public Map<DockPopout, DockContent> getActivePopoutContent() {
+        Map<DockPopout, DockContent> result = new HashMap<>();
+        for (Map.Entry<DockPopout, DockContent> entry : dock.getAllActive().entrySet()) {
+            if (entry.getKey() != null) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+    
+    //==========================
+    // Get channels (other)
+    //==========================
+    
+    /**
+     * Return the channel from the given input box.
+     *
      * @param input The reference to the input box.
-     * @return The Channel object, or null if the given reference isn't an
-     *  input box
+     * @return The Channel object, or null if the given reference isn't an input
+     * box
      */
     public Channel getChannelFromInput(Object input) {
         if (defaultChannel != null && input == defaultChannel.getInput()) {
@@ -614,94 +678,148 @@ public class Channels {
         }
         return null;
     }
-
+    
+    /**
+     * Check if the given channel is added.
+     *
+     * @param channel
+     * @return
+     */
+    public boolean isChannel(String channel) {
+        if (channel == null) {
+            return false;
+        }
+        return channels.get(channel) != null;
+    }
+    
+    public Channel getExistingChannel(String channel) {
+        return channels.get(channel);
+    }
+    
+    public Collection<Channel> getExistingChannelsByOwner(String channel) {
+        List<Channel> result = new ArrayList<>();
+        for (Channel chan : channels.values()) {
+            if (Objects.equals(chan.getOwnerChannel(), channel)) {
+                result.add(chan);
+            }
+        }
+        return result;
+    }
+    
+    public Collection<Channel> channels() {
+        return channels.values();
+    }
+    
+    /**
+     * Includes the defaultChannel that is there when no actual channel has been
+     * added yet.
+     * 
+     * @return 
+     */
+    public Collection<Channel> allChannels() {
+        if (channels.isEmpty() && defaultChannel != null) {
+            Collection<Channel> result = new ArrayList<>();
+            result.add(defaultChannel);
+            return result;
+        }
+        return channels.values();
+    }
+    
+    public int getChannelCount() {
+        return channels.size();
+    }
+    
     public List<Channel> getChannels() {
         return getChannelsOfType(null);
     }
     
-    /**
-     * A list of all channels, be it in the main window or in popouts.
-     * 
-     * @param type
-     * @return The {@code List} of {@code Channel} objects
-     */
     public List<Channel> getChannelsOfType(Channel.Type type) {
-        List<Channel> result = new ArrayList<>(getTabs(type));
-        for (Channel c : channels.values()) {
-            // Add channels that aren't on tabs (popouts)
-            if ((type == null || c.getType() == type) && !result.contains(c)) {
-                result.add(c);
-            }
-        }
-        return result;
-    }
-    
-    public Collection<Channel> getTabs() {
-        return getTabs(null);
-    }
-    
-    public Collection<Channel> getTabs(Channel.Type type) {
         List<Channel> result = new ArrayList<>();
-        for (Component comp : tabs.getAllComponents()) {
-            Channel chan = (Channel)comp;
-            if ((type == null || chan.getType() == type)
-                    && channels.containsValue(chan) || chan == defaultChannel) {
-                result.add((Channel)comp);
+        for (DockContent content : dock.getContents()) {
+            if (content.getComponent() instanceof Channel) {
+                Channel chan = (Channel)content.getComponent();
+                if ((type == null || chan.getType() == type)
+                        && channels.containsValue(chan) || chan == defaultChannel) {
+                    result.add(chan);
+                }
             }
         }
         return result;
-    }
-    
-    public Collection<Channel> getTabsRelativeToCurrent(int direction) {
-        return getTabsRelativeTo(getActiveTab(), direction);
     }
     
     public Collection<Channel> getTabsRelativeTo(Channel chan, int direction) {
         List<Channel> result = new ArrayList<>();
-        for (Component comp : tabs.getComponents(chan, direction)) {
-            if (channels.containsValue(comp)) {
-                result.add((Channel)comp);
+        for (DockContent c : dock.getContentsRelativeTo(chan.getDockContent(), direction)) {
+            if (c.getComponent() instanceof Channel) {
+                result.add((Channel)c.getComponent());
             }
         }
         return result;
     }
     
-    public void setInitialFocus() {
-        if (gui.getSettings().getLong("inputFocus") != 2) {
-            getActiveChannel().requestFocusInWindow();
+    //==========================
+    // Change active content
+    //==========================
+    
+    public void switchToChannel(String channel) {
+        Channel c = getExistingChannel(channel);
+        if (c != null) {
+            dock.setActiveContent(c.getDockContent());
         }
     }
+    
+    public void switchToNextTab() {
+        DockContent c = dock.getContentTab(getActiveContent(), 1);
+        if (c != null) {
+            dock.setActiveContent(c);
+        }
+    }
+    
+    public void switchToPreviousTab() {
+        DockContent c = dock.getContentTab(getActiveContent(), -1);
+        if (c != null) {
+            dock.setActiveContent(c);
+        }
+    }
+    
+    
+    //==========================
+    // Focus
+    //==========================
+    
+    public void setInitialFocus() {
+        setInitialFocus(getActiveChannel());
+    }
+    
+    public void setInitialFocus(Channel channel) {
+        if (gui.getSettings().getLong("inputFocus") != 2) {
+            if (channel == null) {
+                channel = getActiveChannel();
+            }
+            channel.requestFocusInWindow();
+        }
+    }
+    
+    //==========================
+    // Settings
+    //==========================
     
     public void refreshStyles() {
         for (Channel channel : getChannels()) {
             channel.refreshStyles();
         }
     }
-    
+
     public void updateUserlistSettings() {
         for (Channel channel : getChannels()) {
             channel.updateUserlistSettings();
         }
     }
-    
+
     public void setCompletionEnabled(boolean enabled) {
         for (Channel channel : getChannels()) {
             channel.setCompletionEnabled(enabled);
         }
-    }
-    
-    public void switchToChannel(String channel) {
-        if (isChannel(channel)) {
-            tabs.setSelectedComponent(getExistingChannel(channel));
-        }
-    }
-    
-    public void switchToNextChannel() {
-        tabs.setSelectedNext();
-    }
-    
-    public void switchToPreviousChannel() {
-        tabs.setSelectedPrevious();
     }
     
     public void setDefaultUserlistWidth(int width, int minWidth) {
@@ -731,28 +849,43 @@ public class Channels {
         }
     }
     
-    public void setTabOrder(String order) {
-        Tabs.TabOrder setting = Tabs.TabOrder.INSERTION;
-        switch (order) {
-            case "alphabetical": setting = Tabs.TabOrder.ALPHABETIC; break;
-        }
-        tabs.setOrder(setting);
-    }
-
     /**
-     * When the active tab is changed, keeps track of the lastActiveChannel and
-     * does some work necessary when tab is changed.
+     * Creates a map of channels for different closing options.
+     * 
+     * @param channels
+     * @param channel
+     * @return 
      */
-    private class TabChangeListener implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            lastActiveChannel = getActiveTab();
-            
-            setInitialFocus();
-            resetChannelTab(getActiveChannel());
-            channelChanged();
+    public static Map<String, Collection<Channel>> getCloseTabsChans(Channels channels, Channel channel) {
+        Map<String, Collection<Channel>> result = new HashMap<>();
+        result.put("closeAllTabsButCurrent", channels.getTabsRelativeTo(channel, 0));
+        result.put("closeAllTabsToLeft", channels.getTabsRelativeTo(channel, -1));
+        result.put("closeAllTabsToRight", channels.getTabsRelativeTo(channel, 1));
+        
+        Collection<Channel> all = channels.getTabsRelativeTo(channel, 0);
+        all.add(channel);
+        result.put("closeAllTabs", all);
+        Collection<Channel> allOffline = new ArrayList<>();
+        for (Channel c : all) {
+            if (!c.getDockContent().isLive()) {
+                allOffline.add(c);
+            }
         }
+        result.put("closeAllTabsOffline", allOffline);
+        
+        Collection<Channel> all2 = channels.getChannels();
+        all2.remove(channel);
+        result.put("closeAllTabs2ButCurrent", all2);
+        
+        Collection<Channel> all2Offline = new ArrayList<>();
+        result.put("closeAllTabs2", channels.getChannels());
+        for (Channel c : channels.getChannels()) {
+            if (!c.getDockContent().isLive()) {
+                all2Offline.add(c);
+            }
+        }
+        result.put("closeAllTabs2Offline", all2Offline);
+        return result;
     }
     
     /**
@@ -761,39 +894,9 @@ public class Channels {
     private class MyMouseClickedListener implements MouseClickedListener {
 
         @Override
-        public void mouseClicked() {
-            setInitialFocus();
+        public void mouseClicked(Channel chan) {
+            setInitialFocus(chan);
         }
-    }
-    
-    /**
-     * Registered to popout dialogs and the main window, cleans up closed popout
-     * dialogs and keeps the lastActiveChannel up-to-date.
-     */
-    private class MyWindowListener extends WindowAdapter {
-        
-        @Override
-        public void windowClosed(WindowEvent e) {
-            if (e.getSource() == gui) {
-                return;
-            }
-            popoutDisposed(getChannelFromWindow(e.getSource()));
-            if (savePopoutAttributes) {
-                Window window = e.getWindow();
-                dialogsAttributes.add(0, new LocationAndSize(
-                        window.getLocation(), window.getSize()));
-            }
-        }
-        
-        @Override
-        public void windowActivated(WindowEvent e) {
-            Channel channel = getChannelFromWindow(e.getSource());
-            if (channel != lastActiveChannel) {
-                lastActiveChannel = channel;
-                channelChanged();
-            }
-        }
-        
     }
     
     private static class LocationAndSize {
@@ -804,6 +907,35 @@ public class Channels {
             this.location = location;
             this.size = size;
         }
+    }
+    
+    /**
+     * The container used to add a Channel to the DockManager.
+     */
+    public static class DockChannelContainer extends DockStyledTabContainer<Channel> {
+        
+        //--------------------------
+        // References
+        //--------------------------
+        private final ContextMenuListener listener;
+        private final Channels channels;
+        
+        public DockChannelContainer(Channel channel, DockManager m, Channels channels, ContextMenuListener listener) {
+            super(channel, channel.getName(), m);
+            this.listener = listener;
+            this.channels = channels;
+        }
+        
+        @Override
+        public JPopupMenu getContextMenu() {
+            return new TabContextMenu(listener, (Channel) getComponent(), Channels.getCloseTabsChans(channels, (Channel) getComponent()));
+        }
+        
+        @Override
+        public void remove() {
+            channels.channelTabClosed(getContent());
+        }
+
     }
     
 }

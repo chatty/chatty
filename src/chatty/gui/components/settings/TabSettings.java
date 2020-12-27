@@ -1,13 +1,18 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.Channels;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
+import java.awt.GridBagLayout;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 /**
  *
@@ -18,6 +23,7 @@ public class TabSettings extends SettingsPanel {
     public TabSettings(final SettingsDialog d) {
         
         JPanel other = addTitledPanel(Language.getString("settings.section.tabs"), 0);
+        JPanel infoPanel = addTitledPanel("Tab Info", 1);
         
         //------------
         // Tabs Order
@@ -70,6 +76,80 @@ public class TabSettings extends SettingsPanel {
                 d.makeGbcSub(0, 6, 4, 1, GridBagConstraints.WEST));
 
         SettingsUtil.addSubsettings(scroll, scroll2);
+
+        //--------------------------
+        // Tab Info
+        //--------------------------
+        JTabbedPane infoPanelTabs = new JTabbedPane();
+        infoPanelTabs.addTab("Live Stream", new TabInfoOptions("tabsLive", d));
+        infoPanelTabs.addTab("New Stream Status", new TabInfoOptions("tabsStatus", d));
+        infoPanelTabs.addTab("New Message", new TabInfoOptions("tabsMessage", d));
+        infoPanelTabs.addTab("New Highlight", new TabInfoOptions("tabsHighlight", d));
+        infoPanelTabs.addTab("Active Tab", new TabInfoOptions("tabsActive", d));
+        
+        GridBagConstraints gbc = SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
+        infoPanel.add(infoPanelTabs, gbc);
+    }
+    
+    private static class TabInfoOptions extends JPanel implements LongSetting {
+        
+        private final Map<Integer, JCheckBox> options = new HashMap<>();
+        
+        TabInfoOptions(String settingName, SettingsDialog settings) {
+            settings.addLongSetting(settingName, this);
+            setLayout(new GridBagLayout());
+            add(makeOption(Channels.DockChannelContainer.BOLD, "bold"),
+                    SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.ITALIC, "italic"),
+                    SettingsDialog.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.COLOR1, "color1"),
+                    SettingsDialog.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.COLOR2, "color2"),
+                    SettingsDialog.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.ASTERISK, "asterisk"),
+                    SettingsDialog.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.DOT1, "dot1"),
+                    SettingsDialog.makeGbc(2, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.DOT2, "dot2"),
+                    SettingsDialog.makeGbc(2, 2, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(Channels.DockChannelContainer.LINE, "line"),
+                    SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        }
+        
+        private JCheckBox makeOption(int option, String labelKey) {
+            String text = Language.getString("settings.tabs."+labelKey);
+            String tip = Language.getString("settings.tabs."+labelKey + ".tip", false);
+            JCheckBox check = new JCheckBox(text);
+            check.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
+            options.put(option, check);
+            return check;
+        }
+
+        @Override
+        public Long getSettingValue() {
+            long result = 0;
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                if (entry.getValue().isSelected()) {
+                    result = result | entry.getKey();
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Long getSettingValue(Long def) {
+            return getSettingValue();
+        }
+
+        @Override
+        public void setSettingValue(Long setting) {
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                entry.getValue().setSelected((setting & entry.getKey()) != 0);
+            }
+        }
+        
     }
     
 }

@@ -7,6 +7,7 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.MainGui;
 import chatty.User;
+import chatty.gui.Channels.DockChannelContainer;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.TextSelectionMenu;
@@ -53,6 +54,8 @@ public final class Channel extends JPanel {
     private final StyleServer styleManager;
     private final MainGui main;
     private Type type;
+    
+    private DockChannelContainer content;
     
     private boolean userlistEnabled = true;
     private int previousUserlistWidth;
@@ -117,30 +120,26 @@ public final class Channel extends JPanel {
         add(input, BorderLayout.SOUTH);
     }
     
+    public DockChannelContainer getDockContent() {
+        return content;
+    }
+    
+    public void setDockContent(DockChannelContainer content) {
+        this.content = content;
+        updateContentData();
+    }
+    
+    private void updateContentData() {
+        if (content != null) {
+            content.setTitle(getName());
+        }
+    }
+    
     public void init() {
         text.setChannel(this);
         
         input.requestFocusInWindow();
         setStyles();
-        
-        input.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                if (onceOffEditListener != null && room != Room.EMPTY) {
-                    onceOffEditListener.edited(room.getChannel());
-                    onceOffEditListener = null;
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
     }
     
     public boolean setRoom(Room room) {
@@ -148,6 +147,7 @@ public final class Channel extends JPanel {
             this.room = room;
             refreshBufferSize();
             setName(room.getDisplayName());
+            updateContentData();
             return true;
         }
         return false;
@@ -258,7 +258,6 @@ public final class Channel extends JPanel {
             input.requestFocusInWindow();
         });
         return input.requestFocusInWindow();
-        
     }
     
     
@@ -382,6 +381,16 @@ public final class Channel extends JPanel {
     }
     
     /**
+     * Return 0 size, so resizing in a split pane works.
+     * 
+     * @return 
+     */
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(0, 0);
+    }
+    
+    /**
      * Toggle visibility for the text input box.
      */
     public final void toggleInput() {
@@ -449,20 +458,9 @@ public final class Channel extends JPanel {
         return text.getSelectedUser();
     }
     
-        
     @Override
     public String toString() {
         return String.format("%s '%s'", type, room);
-    }
-    
-    private OnceOffEditListener onceOffEditListener;
-    
-    public void setOnceOffEditListener(OnceOffEditListener listener) {
-        onceOffEditListener = listener;
-    }
-    
-    public interface OnceOffEditListener {
-        public void edited(String channel);
     }
     
 }

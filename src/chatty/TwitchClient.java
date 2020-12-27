@@ -1500,6 +1500,8 @@ public class TwitchClient {
             } catch (NumberFormatException ex) { }
             StreamInfo info = api.getStreamInfo("tduva", null);
             info.set("Test 2", "Game", viewers, System.currentTimeMillis() - 1000, StreamType.LIVE);
+        } else if (command.equals("newstatus")) {
+            g.setChannelNewStatus(parameter, "");
         } else if (command.equals("refreshstreams")) {
             api.manualRefreshStreams();
         } else if (command.equals("usericonsinfo")) {
@@ -2540,6 +2542,7 @@ public class TwitchClient {
         public void streamInfoUpdated(StreamInfo info) {
             g.updateState(true);
             g.updateChannelInfo(info);
+            g.updateStreamLive(info);
             g.addStreamInfo(info);
             String channel = "#"+info.getStream();
             if (isChannelOpen(channel)) {

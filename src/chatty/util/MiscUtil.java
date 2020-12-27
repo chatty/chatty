@@ -288,4 +288,8 @@ public class MiscUtil {
         }
     }
     
+    public static boolean isBitEnabled(int value, int bit) {
+        return (value & bit) != 0;
+    }
+    
 }
