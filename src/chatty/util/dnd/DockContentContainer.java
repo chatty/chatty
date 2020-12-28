@@ -68,12 +68,12 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item = new JMenuItem("Popout "+title);
         item.addActionListener(e -> {
-            m.popout(this, DockSetting.PopoutType.DIALOG);
+            m.popout(this, DockSetting.PopoutType.DIALOG, null, null);
         });
         menu.add(item);
         JMenuItem item2 = new JMenuItem("Popout as window");
         item2.addActionListener(e -> {
-            m.popout(this, DockSetting.PopoutType.FRAME);
+            m.popout(this, DockSetting.PopoutType.FRAME, null, null);
         });
         menu.add(item2);
         JMenuItem closeItem = new JMenuItem("Close");

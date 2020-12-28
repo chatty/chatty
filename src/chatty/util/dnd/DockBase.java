@@ -106,6 +106,7 @@ public class DockBase extends JPanel implements DockChild {
             newCompTabs.addContent(content);
             // Configure old child (now component in new split)
             child.setDockParent(newChildSplit);
+            
             // Exchange child
             remove(child.getComponent());
             child = newChildSplit;
@@ -216,6 +217,11 @@ public class DockBase extends JPanel implements DockChild {
         child.setSetting(setting, value);
     }
     
+    /**
+     * Apply all setting values stored in the manager to the given child.
+     * 
+     * @param child 
+     */
     public void applySettings(DockChild child) {
         manager.applySettings(child);
     }

@@ -444,22 +444,22 @@ public class Channels {
      * @param window Open in window instead of dialog
      */
     public void popout(DockContent content, boolean window) {
-        DockPopout popout = dock.popout(content, window ? DockSetting.PopoutType.FRAME : DockSetting.PopoutType.DIALOG);
-        gui.updateState(true);
-        
-        // Setting the location/size should only be done for popouts not created
-        // by drag, so not in dockPopoutOpened()
-        if (popout != null) {
-            Window w = popout.getWindow();
-            // Restore attributes if available
-            if (!dialogsAttributes.isEmpty()) {
-                LocationAndSize attr = dialogsAttributes.remove(0);
-                if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
-                    w.setLocation(attr.location);
-                }
-                w.setSize(attr.size);
+        /**
+         * Setting the location/size should only be done for popouts not created
+         * by drag, so not in dockPopoutOpened()
+         */
+        Point location = null;
+        Dimension size = null;
+        if (!dialogsAttributes.isEmpty()) {
+            LocationAndSize attr = dialogsAttributes.remove(0);
+            if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
+                location = attr.location;
             }
+            size = attr.size;
         }
+        
+        dock.popout(content, window ? DockSetting.PopoutType.FRAME : DockSetting.PopoutType.DIALOG, location, size);
+        gui.updateState(true);
     }
     
     /**

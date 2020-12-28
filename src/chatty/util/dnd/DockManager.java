@@ -4,13 +4,17 @@ package chatty.util.dnd;
 import chatty.util.Debugging;
 import chatty.util.dnd.DockSetting.PopoutType;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 /**
  * The main class acting as the interface for external classes to add content,
@@ -66,6 +71,7 @@ public class DockManager {
     private DockSetting.PopoutType popoutTypeDrag = DockSetting.PopoutType.DIALOG;
     private List<Image> popoutIcons;
     private Frame popoutParent;
+    private final PropertyChangeListener popoutParentPropertyListener;
     
     public DockManager(DockListener listener) {
         main = new DockBase(this);
@@ -78,6 +84,12 @@ public class DockManager {
                 checkFocus((Component)o);
             }
         });
+        
+        popoutParentPropertyListener = (PropertyChangeEvent evt) -> {
+            if (evt.getPropertyName().equals("alwaysOnTop")) {
+                updateWindowsAlwaysOnTop(popoutParent.isAlwaysOnTop());
+            }
+        };
     }
     
     /**
@@ -312,7 +324,7 @@ public class DockManager {
             // Popout from dragging outside window
             Point location = MouseInfo.getPointerInfo().getLocation();
             DockContent c = t != null ? t.content : currentlyActive;
-            popout(c, popoutTypeDrag).getWindow().setLocation(location.x - 80, location.y - 10);
+            popout(c, popoutTypeDrag, new Point(location.x - 80, location.y - 10), null);
         }
         main.stopDrag();
         for (DockPopout window : popouts) {
@@ -320,7 +332,7 @@ public class DockManager {
         }
     }
     
-    private void closeWindow(DockPopout popout) {
+    private void closePopout(DockPopout popout) {
         // Add content to main (if present)
         List<DockContent> contents = popout.getBase().getContents();
         DockContent activeInPopout = active.get(popout);
@@ -356,52 +368,78 @@ public class DockManager {
     }
     
     public DockPopout popout(DockContent content) {
-        return popout(content, popoutType);
+        return popout(content, popoutType, null, null);
     }
     
     /**
      * Popout the given content into an extra window.
      * 
-     * @param content 
-     * @param type 
+     * @param content The first content to add to the popout
+     * @param type The type of popout
+     * @param location The location to open the popout in (may be null to open
+     * in default location)
+     * @param size The size of the popout (may be null to use default size)
      * @return  
      */
-    public DockPopout popout(DockContent content, PopoutType type) {
+    public DockPopout popout(DockContent content, PopoutType type, Point location, Dimension size) {
         if (type == PopoutType.NONE) {
             return null;
         }
+        
+        // Remove content from previous location
         main.removeContent(content);
         popouts.forEach(w -> w.getBase().removeContent(content));
-        DockPopout window = getUnusedPopout(type);
-        if (window == null) {
+        
+        // Get existing or create new popout
+        DockPopout popout = getUnusedPopout(type);
+        if (popout == null) {
             // Need to create a new one
             if (type == PopoutType.DIALOG) {
-                window = new DockPoputDialog(this, popoutParent);
+                popout = new DockPoputDialog(this, popoutParent);
             }
             else {
-                window = new DockPopoutFrame(this);
+                popout = new DockPopoutFrame(this);
             }
             // Configure new popout
-            applySettings(window.getBase());
+            applySettings(popout.getBase());
             if (popoutIcons != null) {
-                window.getWindow().setIconImages(popoutIcons);
+                popout.getWindow().setIconImages(popoutIcons);
             }
-            DockPopout window2 = window;
-            window.getWindow().addComponentListener(new ComponentAdapter() {
+            DockPopout popout2 = popout;
+            popout.getWindow().addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentHidden(ComponentEvent e) {
-                    closeWindow(window2);
+                    closePopout(popout2);
                 }
             });
         }
-        window.getBase().addContent(content);
-        window.getWindow().setSize(600, 400);
-        window.getWindow().setLocationByPlatform(true);
-        window.getWindow().setVisible(true);
-        popouts.add(window);
+        popout.getBase().addContent(content);
+        
+        // Configure window
+        Window window = popout.getWindow();
+        if (size != null) {
+            window.setSize(size);
+        } else {
+            window.setSize(600, 400);
+        }
+        if (location != null) {
+            window.setLocation(location);
+        }
+        else {
+            window.setLocationByPlatform(true);
+        }
+        if (popoutParent != null) {
+            window.setAlwaysOnTop(popoutParent.isAlwaysOnTop());
+        }
+        window.setVisible(true);
+        SwingUtilities.invokeLater(() -> window.toFront());
+        
+        // Finish up
+        popouts.add(popout);
         changedActiveContent(content, false);
-        listener.popoutOpened(window, content);
-        return window;
+        listener.popoutOpened(popout, content);
+        
+        return popout;
     }
     
     private DockPopout getUnusedPopout(PopoutType type) {
@@ -412,6 +450,12 @@ public class DockManager {
             return unusedFrames.poll();
         }
         return null;
+    }
+    
+    private void updateWindowsAlwaysOnTop(boolean onTop) {
+        for (DockPopout p : popouts) {
+            p.getWindow().setAlwaysOnTop(onTop);
+        }
     }
     
     public boolean isContentVisible(DockContent content) {
@@ -437,7 +481,13 @@ public class DockManager {
             popoutIcons = (List<Image>) value;
         }
         else if (setting == DockSetting.Type.POPOUT_PARENT) {
-            popoutParent = (Frame) value;
+            if (popoutParent != value) {
+                if (popoutParent != null) {
+                    popoutParent.removePropertyChangeListener("alwaysOnTop", popoutParentPropertyListener);
+                }
+                popoutParent = (Frame) value;
+                popoutParent.addPropertyChangeListener("alwaysOnTop", popoutParentPropertyListener);
+            }
         }
         else {
             settings.put(setting, value);
@@ -446,6 +496,11 @@ public class DockManager {
         }
     }
     
+    /**
+     * Apply all stored setting values to the given child.
+     * 
+     * @param child 
+     */
     public void applySettings(DockChild child) {
         settings.forEach((type, value) -> child.setSetting(type, value));
     }

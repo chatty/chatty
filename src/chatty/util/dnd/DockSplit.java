@@ -72,13 +72,14 @@ public class DockSplit extends JSplitPane implements DockChild {
             base.applySettings(newChildSplit);
             newChildSplit.setBase(base);
             newChildSplit.setDockParent(this);
-            // Change present comp
-            presentComp.setDockParent(newChildSplit);
             // Configure tabs (new left or right component)
             base.applySettings(newCompTabs);
             newCompTabs.setBase(base);
             newCompTabs.setDockParent(newChildSplit);
             newCompTabs.addContent(content);
+            // Configure present comp
+            presentComp.setDockParent(newChildSplit);
+            
             // Exchange left or right component
             if (checkComponent(left, info)) {
                 setLeftComponent(newChildSplit);
