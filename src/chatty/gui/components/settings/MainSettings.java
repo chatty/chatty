@@ -160,6 +160,7 @@ public class MainSettings extends SettingsPanel {
         Map<String, String> languageOptions = new LinkedHashMap<>();
         languageOptions.put("", Language.getString("settings.language.option.defaultLanguage"));
         languageOptions.put("zh_TW", "Chinese (traditional)");
+        languageOptions.put("cs", "Czech / Čeština");
         languageOptions.put("nl", "Dutch / Nederlands");
         languageOptions.put("en_US", "English (US)");
         languageOptions.put("en_GB", "English (UK)");
@@ -170,6 +171,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("ja", "Japanese / 日本語");
         languageOptions.put("ko", "Korean / 한국어");
         languageOptions.put("pl", "Polish / Polski");
+        languageOptions.put("pt_BR", "Portuguese (BR)");
         languageOptions.put("ru", "Russian / Русский");
         languageOptions.put("es", "Spanish / Español");
         languageOptions.put("tr", "Turkish / Türk");
