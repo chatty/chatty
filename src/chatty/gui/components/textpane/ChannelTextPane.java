@@ -1887,7 +1887,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             addition = user.getName();
         }
         
-        String notes = UserNotes.instance().getChatNotes(user);
+        String notes = UserNotes.instance().getNotesForChat(user);
         if (notes != null) {
             addition = StringUtil.append(addition, ", ", notes);
         }
@@ -3907,15 +3907,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 if (icon != null && icon.image != null) {
                     StyleConstants.setIcon(style, addSpaceToIcon(icon.image));
                     style.addAttribute(Attribute.USERICON, icon);
-                    if (icon.type == Usericon.Type.TWITCH
-                            && (Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.SUB
-                                || Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.FOUNDER)
-                            && user != null
-                            && user.getSubMonths() > 0) {
-                        style.addAttribute(Attribute.USERICON_INFO, DateTime.formatMonthsVerbose(user.getSubMonths()));
-                    }
                 }
                 savedIcons.put(icon, style);
+            }
+            // Update per-user information every time
+            if (icon.type == Usericon.Type.TWITCH
+                    && (Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.SUB
+                    || Usericon.typeFromBadgeId(icon.badgeType.id) == Usericon.Type.FOUNDER)
+                    && user != null
+                    && user.getSubMonths() > 0) {
+                style.addAttribute(Attribute.USERICON_INFO, DateTime.formatMonthsVerbose(user.getSubMonths()));
+            }
+            else {
+                style.removeAttribute(Attribute.USERICON_INFO);
             }
             return style;
         }

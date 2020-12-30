@@ -131,6 +131,12 @@ public class HighlightedMessages extends JDialog {
                     MyStyleConstants.setHighlightBackground(attr, null);
                     return attr;
                 }
+                if (type.equals("settings")) {
+                    MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
+                    // For crossing out messages for timeouts, but never show separate message
+                    attr.addAttribute(ChannelTextPane.Setting.SHOW_BANMESSAGES, false);
+                    return attr;
+                }
                 return styleServer.getStyle(type);
             }
 
@@ -252,6 +258,10 @@ public class HighlightedMessages extends JDialog {
     public void addInfoMessage(String channel, String text) {
         messageAdded(channel);
         messages.printLine(text);
+    }
+    
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        messages.userBanned(user, duration, reason, targetMsgId);
     }
     
     private void messageAdded(String channel) {

@@ -14,6 +14,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.awt.event.ActionListener;
+import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -56,7 +57,7 @@ public class UserNotes {
         this.settings = settings;
     }
     
-    public void showDialog(User user, Window parent) {
+    public void showDialog(User user, Window parent, Consumer<User> listener) {
         if (user.getId() == null) {
             JOptionPane.showMessageDialog(parent, "User ID not found.");
         }
@@ -65,6 +66,9 @@ public class UserNotes {
             d.showDialog(e -> {
                 set(SETTING_NOTES, user, d.getNotes());
                 set(SETTING_CHAT_NOTES, user, d.getChatNotes());
+                if (listener != null) {
+                    listener.accept(user);
+                }
             });
         }
     }
@@ -73,13 +77,34 @@ public class UserNotes {
         return get(SETTING_NOTES, user);
     }
     
-    public String getChatNotes(User user) {
+    /**
+     * Get the notes to be displayed in chat. May include the pronoun if the
+     * setting is enabled.
+     * 
+     * @param user
+     * @return 
+     */
+    public String getNotesForChat(User user) {
         String notes = get(SETTING_CHAT_NOTES, user);
         String pronouns = null;
         if (settings.getBoolean("pronounsChat")) {
             pronouns = Pronouns.instance().getUser2(user.getName());
         }
         return StringUtil.append(notes, ", ", pronouns);
+    }
+    
+    /**
+     * Get the notes that are displayed in chat.
+     * 
+     * @param user
+     * @return 
+     */
+    public String getChatNotes(User user) {
+        return get(SETTING_CHAT_NOTES, user);
+    }
+    
+    public boolean hasNotes(User user) {
+        return get(SETTING_NOTES, user) != null;
     }
     
     public String get(String setting, User user) {

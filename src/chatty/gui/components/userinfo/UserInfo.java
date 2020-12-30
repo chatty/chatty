@@ -11,6 +11,7 @@ import static chatty.gui.components.userinfo.Util.makeGbc;
 import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.Pronouns;
+import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
@@ -147,7 +148,11 @@ public class UserInfo extends JDialog {
         gbc.anchor = GridBagConstraints.EAST;
         notesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         notesButton.addActionListener(e -> {
-            UserNotes.instance().showDialog(currentUser, this);
+            UserNotes.instance().showDialog(currentUser, this, user -> {
+                if (user == currentUser) {
+                    updateStuff(currentUser);
+                }
+            });
         });
         topPanel.add(notesButton, gbc);
         
@@ -383,14 +388,7 @@ public class UserInfo extends JDialog {
         }
         currentLocalUsername = localUsername;
         
-        updateTitle(user, null);
-        if (settings.getBoolean("pronouns")) {
-            Pronouns.instance().getUser((username, pronoun) -> {
-                if (currentUser.getName().equals(username)) {
-                    updateTitle(user, pronoun);
-                }
-            }, user.getName());
-        }
+        updateStuff(user);
         
         updateMessages();
         infoPanel.update(user);
@@ -399,18 +397,37 @@ public class UserInfo extends JDialog {
         finishDialog();
     }
     
-    private void updateTitle(User user, String pronoun) {
+    /**
+     * Update notes (that are user id based) and title (which can change due to
+     * notes changing).
+     * 
+     * @param user 
+     */
+    private void updateStuff(User user) {
+        updateTitle(user, null);
+        if (settings.getBoolean("pronouns")) {
+            Pronouns.instance().getUser((username, pronoun) -> {
+                if (currentUser.getName().equals(username)) {
+                    updateTitle(user, pronoun);
+                }
+            }, user.getName());
+        }
+        notesButton.setText(UserNotes.instance().hasNotes(user) ? "Notes*" : "Notes");
+    }
+    
+    private void updateTitle(User user, String additionalInfo) {
         String categoriesString = "";
         Set<String> categories = user.getCategories();
         if (categories != null && !categories.isEmpty()) {
             categoriesString = categories.toString();
         }
         String displayNickInfo = user.hasDisplayNickSet() ? "" : "*";
+        additionalInfo = StringUtil.append(UserNotes.instance().getChatNotes(user), ", ", additionalInfo);
         this.setTitle(Language.getString("userDialog.title")+" "+user.toString()
                 +(user.hasCustomNickSet() ? " ("+user.getDisplayNick()+")" : "")
                 +(!user.hasRegularDisplayNick() ? " ("+user.getName()+")" : "")
                 +displayNickInfo
-                +(pronoun != null ? " ("+pronoun+")" : "")
+                +(additionalInfo != null ? " ("+additionalInfo+")" : "")
                 +" / "+user.getRoom().getDisplayName()
                 +" "+categoriesString);
     }
@@ -492,6 +509,7 @@ public class UserInfo extends JDialog {
             return;
         }
         infoPanel.setChannelInfo(info);
+        updateStuff(currentUser);
     }
     
     protected ChannelInfo getChannelInfo() {

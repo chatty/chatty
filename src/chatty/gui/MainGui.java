@@ -1647,7 +1647,7 @@ public class MainGui extends JFrame implements Runnable {
                 setCustomName(user.getName());
             }
             else if (cmd.equals("notes")) {
-                UserNotes.instance().showDialog(user, MainGui.this);
+                UserNotes.instance().showDialog(user, MainGui.this, null);
             }
             else if (cmd.startsWith("command")) {
                 Parameters parameters = Parameters.create(user.getRegularDisplayNick());
@@ -3186,6 +3186,8 @@ public class MainGui extends JFrame implements Runnable {
                 if (client.settings.listContains("streamChatChannels", user.getChannel())) {
                     streamChat.userBanned(user, duration, reason, id);
                 }
+                highlightedMessages.addBan(user, duration, reason, id);
+                ignoredMessages.addBan(user, duration, reason, id);
             }
         });
     }

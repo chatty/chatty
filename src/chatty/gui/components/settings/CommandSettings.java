@@ -185,6 +185,9 @@ public class CommandSettings extends SettingsPanel {
     }
     
     public static String formatCommandInfo(String input) {
+        if (input == null) {
+            return "<em>Empty</em>";
+        }
         return Helper.htmlspecialchars_encode(input)
                 .replace("\n", "<br>").replace(" ", "&nbsp;");
     }
