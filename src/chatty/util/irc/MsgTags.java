@@ -38,7 +38,7 @@ public class MsgTags extends IrcMsgTags {
     }
     
     public boolean isCustomReward() {
-        return containsKey("custom-reward-id");
+        return hasValue("custom-reward-id");
     }
     
     public String getCustomRewardId() {
