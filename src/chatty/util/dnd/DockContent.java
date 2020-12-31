@@ -59,6 +59,7 @@ public interface DockContent {
     public void addListener(DockContentPropertyListener listener);
     public void removeListener(DockContentPropertyListener listener);
     public Color getForegroundColor();
+    public boolean canPopout();
     
     public interface DockContentPropertyListener {
         

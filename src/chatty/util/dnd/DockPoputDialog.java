@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Window;
 import javax.swing.JDialog;
+import javax.swing.WindowConstants;
 
 /**
  *
@@ -23,6 +24,7 @@ public class DockPoputDialog extends JDialog implements DockPopout {
         setLayout(new BorderLayout());
         base = new DockBase(m);
         add(base, BorderLayout.CENTER);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 
     @Override

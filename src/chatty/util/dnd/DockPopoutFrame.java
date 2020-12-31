@@ -21,7 +21,7 @@ public class DockPopoutFrame extends JFrame implements DockPopout {
         id = "frame"+(counter++);
         base = new DockBase(m);
         add(base, BorderLayout.CENTER);
-        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
 
     @Override

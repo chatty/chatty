@@ -54,6 +54,16 @@ public class Test {
                 public void popoutOpened(DockPopout popout, DockContent content) {
                     
                 }
+
+                @Override
+                public void contentAdded(DockContent content) {
+                    
+                }
+
+                @Override
+                public void contentRemoved(DockContent content) {
+                    
+                }
             });
 //            m.setSetting(DockSetting.Type.TAB_PLACEMENT, "left");
             m.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);

@@ -314,7 +314,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
     @Override
     public void setActiveContent(DockContent content) {
         JComponent comp = getComponentByContent(content);
-        if (comp != null) {
+        if (comp != null && getSelectedComponent() != comp) {
             setSelectedComponent(comp);
         }
     }

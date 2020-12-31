@@ -12,6 +12,8 @@ import chatty.util.IconManager;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockListener;
 import chatty.util.dnd.DockManager;
+import chatty.util.dnd.DockPath;
+import chatty.util.dnd.DockPathEntry;
 import chatty.util.dnd.DockSetting;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -92,8 +94,6 @@ public class Channels {
         dock = new DockManager(new DockListener() {
             @Override
             public void activeContentChanged(DockPopout window, DockContent content, boolean focusChange) {
-                //System.out.println("changed: "+content+" "+Debugging.getStacktrace());
-                channelChanged();
                 if (content.getComponent() instanceof Channel) {
                     Channel c = (Channel) content.getComponent();
                     lastActiveChannel = c;
@@ -103,9 +103,21 @@ public class Channels {
                         setInitialFocus(c);
                     }
                 }
+                // This also resets lastActiveChannel if necessary
                 updateActiveContent();
                 resetTab(content);
-                Debugging.println("dndp", "Path: %s", content.getPath());
+                /**
+                 * Only inform listener if there is at least one channel and the
+                 * main isn't empty. This is to prevent stuff from trying to
+                 * update when the last overall channel is removed and the last
+                 * content is popped out and the default channel has not been
+                 * added yet. Let what handles the default channel call the
+                 * listener.
+                 */
+                if ((!channels.isEmpty() || defaultChannel != null) && !dock.isMainEmpty()) {
+                    channelChanged();
+                }
+                Debugging.println("dnda", "Path: %s", content.getPath());
             }
             
             @Override
@@ -116,6 +128,16 @@ public class Channels {
             @Override
             public void popoutClosed(DockPopout popout, List<DockContent> contents) {
                 dockPopoutClosed(popout, contents);
+            }
+
+            @Override
+            public void contentAdded(DockContent content) {
+                checkDefaultChannel();
+            }
+
+            @Override
+            public void contentRemoved(DockContent content) {
+                checkDefaultChannel();
             }
             
         });
@@ -221,14 +243,20 @@ public class Channels {
         }
     }
     
+    /**
+     * Update tabs to show which one is active. Also implicitly (by calling
+     * getActiveChannel()) resets lastACtiveChannel is necessary.
+     */
     private void updateActiveContent() {
+        if (!doesChannelExist(lastActiveChannel)) {
+            resetLastActiveChannel();
+        }
+        Channel active = getActiveChannel();
         for (Channel chan : channels.values()) {
-            if (getActiveChannel() == chan) {
-                chan.getDockContent().setActive(true);
-            }
-            else {
-                chan.getDockContent().setActive(false);
-            }
+            chan.getDockContent().setActive(active == chan);
+        }
+        if (defaultChannel != null) {
+            defaultChannel.getDockContent().setActive(active == defaultChannel);
         }
     }
     
@@ -351,6 +379,14 @@ public class Channels {
      */
     private void addDefaultChannel() {
         defaultChannel = createChannel(Room.EMPTY, Channel.Type.NONE);
+        addDefaultChannelToDock();
+    }
+    
+    private void addDefaultChannelToDock() {
+        // Ensure that it's being added in main window
+        DockPath path = new DockPath(defaultChannel.getDockContent());
+        path.addParent(DockPathEntry.createPopout(null));
+        defaultChannel.getDockContent().setTargetPath(path);
         dock.addContent(defaultChannel.getDockContent());
     }
     
@@ -373,19 +409,21 @@ public class Channels {
             defaultChannel = null;
             panel.setType(type);
             panel.setRoom(room);
-            channelChanged();
+            channels.put(room.getChannel(), panel);
         }
         else {
             // No default channel, so create a new one
             panel = createChannel(room, type);
+            // Add to channels first so it's already known as "existing"
+            channels.put(room.getChannel(), panel);
             dock.addContent(panel.getDockContent());
             if (type != Channel.Type.WHISPER) {
                 dock.setActiveContent(panel.getDockContent());
             }
         }
-        channels.put(room.getChannel(), panel);
         // Update after it has been added to "channels"
         updateActiveContent();
+        channelChanged();
         return panel;
     }
     
@@ -421,16 +459,52 @@ public class Channels {
             return;
         }
         channels.remove(channelName);
+        // Removing will automatically run checkDefaultChannel()
         dock.removeContent(channel.getDockContent());
         channel.cleanUp();
-
-        if (dock.isMainEmpty() || channels.isEmpty()) {
-            if (!closeLastChannelPopout || !dock.closeWindow()) {
+    }
+    
+    /**
+     * Add/remove/move default channel depending on whether the main window is
+     * empty and any other channels are presently added.
+     */
+    private void checkDefaultChannel() {
+        if (defaultChannel == null) {
+            /**
+             * Currently no default channel, check if it should be added
+             */
+            if (channels.isEmpty()) {
                 addDefaultChannel();
             }
-            channelChanged();
-            gui.updateState();
+            else if (dock.isMainEmpty()) {
+                if (!closeLastChannelPopout || !dock.closePopout()) {
+                    addDefaultChannel();
+                }
+            }
         }
+        else {
+            /**
+             * Default channel exists, check if it should be removed/moved. In
+             * some cases this may be called again when it's already removed, so
+             * also check that's still in there, just to be safe.
+             */
+            if (dock.hasContent(defaultChannel.getDockContent())) {
+                if (!channels.isEmpty() && dock.getContents(null).size() > 1) {
+                    dock.removeContent(defaultChannel.getDockContent());
+                    defaultChannel.cleanUp();
+                    defaultChannel = null;
+                }
+                // If main is empty, move default channel to main
+                else if (dock.isMainEmpty()) {
+                    // Removing content will trigger this method as well, but this
+                    // is only run when the default channel is still added
+                    dock.removeContent(defaultChannel.getDockContent());
+                    addDefaultChannelToDock();
+                }
+            }
+        }
+        updateActiveContent();
+        channelChanged();
     }
     
     //==========================
@@ -444,6 +518,9 @@ public class Channels {
      * @param window Open in window instead of dialog
      */
     public void popout(DockContent content, boolean window) {
+        if (!content.canPopout()) {
+            return;
+        }
         /**
          * Setting the location/size should only be done for popouts not created
          * by drag, so not in dockPopoutOpened()
@@ -471,6 +548,7 @@ public class Channels {
     private void dockPopoutOpened(DockPopout popout) {
         // Register hotkeys if necessary
         gui.popoutCreated(popout.getWindow());
+        checkDefaultChannel();
     }
     
     private void dockPopoutClosed(DockPopout popout, List<DockContent> contents) {
@@ -479,13 +557,15 @@ public class Channels {
             dialogsAttributes.add(0, new LocationAndSize(
                     window.getLocation(), window.getSize()));
         }
-        if (!contents.isEmpty()) {
-            if (defaultChannel != null) {
-                dock.removeContent(defaultChannel.getDockContent());
-                defaultChannel = null;
-            }
-            gui.updateState(true);
-        }
+//        if (!contents.isEmpty() && defaultChannel != null
+//                && !contents.contains(defaultChannel.getDockContent())
+//                && !channels.isEmpty()) {
+//            dock.removeContent(defaultChannel.getDockContent());
+//            defaultChannel.cleanUp();
+//            defaultChannel = null;
+//        }
+        checkDefaultChannel();
+        gui.updateState(true);
     }
     
     //--------------------------
@@ -577,7 +657,8 @@ public class Channels {
      * 
      * <p>
      * If the focus is not on a window containing a Channel, then the current
-     * tab of the main window is returned.
+     * tab of the main window is returned. If no Channel currently has focus, a
+     * channel is selected from the existing channels.
      * </p>
      * 
      * @return The Channel object which is currently selected, could be null,
@@ -590,16 +671,33 @@ public class Channels {
         if (activeContent instanceof DockChannelContainer) {
             return ((DockChannelContainer)activeContent).getContent();
         }
-        if (channels.containsValue(lastActiveChannel) || lastActiveChannel == defaultChannel) {
+        if (doesChannelExist(lastActiveChannel)) {
             return lastActiveChannel;
         }
-        // If a Channel isn't active, try others
-        for (DockContent otherActive : dock.getAllActive().values()) {
-            if (otherActive instanceof DockChannelContainer) {
-                return ((DockChannelContainer)otherActive).getContent();
+        // Checked before, so must not be valid
+        resetLastActiveChannel();
+        return lastActiveChannel;
+    }
+    
+    private void resetLastActiveChannel() {
+        lastActiveChannel = null;
+        // Find new channel
+        if (!channels.isEmpty()) {
+            // Try visible first (selected tab, popout)
+            for (Channel chan : channels.values()) {
+                if (dock.isContentVisible(chan.getDockContent())) {
+                    lastActiveChannel = chan;
+                    break;
+                }
+            }
+            if (lastActiveChannel == null) {
+                lastActiveChannel = channels.values().iterator().next();
             }
         }
-        return null;
+        else {
+            lastActiveChannel = defaultChannel;
+        }
+        Debugging.println("dnda", "Reset last active channel to: %s", lastActiveChannel);
     }
     
     /**
@@ -637,7 +735,7 @@ public class Channels {
     }
     
     public DockContent getMainActiveContent() {
-        return dock.getAllActive().get(null);
+        return dock.getActiveContent(null);
     }
     
     /**
@@ -647,9 +745,10 @@ public class Channels {
      */
     public Map<DockPopout, DockContent> getActivePopoutContent() {
         Map<DockPopout, DockContent> result = new HashMap<>();
-        for (Map.Entry<DockPopout, DockContent> entry : dock.getAllActive().entrySet()) {
-            if (entry.getKey() != null) {
-                result.put(entry.getKey(), entry.getValue());
+        for (DockPopout popout : dock.getPopouts()) {
+            DockContent active = dock.getActiveContent(popout);
+            if (active != null) {
+                result.put(popout, active);
             }
         }
         return result;
@@ -694,6 +793,16 @@ public class Channels {
     
     public Channel getExistingChannel(String channel) {
         return channels.get(channel);
+    }
+    
+    /**
+     * Check if the given channel is currently present.
+     * 
+     * @param channel
+     * @return 
+     */
+    private boolean doesChannelExist(Channel channel) {
+        return channel != null && (channels.containsValue(channel) || channel == defaultChannel);
     }
     
     public Collection<Channel> getExistingChannelsByOwner(String channel) {
@@ -796,7 +905,9 @@ public class Channels {
             if (channel == null) {
                 channel = getActiveChannel();
             }
-            channel.requestFocusInWindow();
+            if (channel != null) {
+                channel.requestFocusInWindow();
+            }
         }
     }
     
@@ -934,6 +1045,24 @@ public class Channels {
         @Override
         public void remove() {
             channels.channelTabClosed(getContent());
+        }
+        
+        @Override
+        public boolean canPopout() {
+            /**
+             * Prevent default channel popout. The default channel should stay
+             * in main. It can still be moved when tabs are visible in main, but
+             * it will be moved back if main becomes empty.
+             */
+            return ((Channel)(getComponent())).getRoom() != Room.EMPTY;
+        }
+        
+        @Override
+        public void setTitle(String title) {
+            if (title.isEmpty()) {
+                title = "No channel";
+            }
+            super.setTitle(title);
         }
 
     }

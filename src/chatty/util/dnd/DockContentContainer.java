@@ -143,5 +143,10 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
     public void setDockParent(DockChild parent) {
         this.parent = parent;
     }
+
+    @Override
+    public boolean canPopout() {
+        return true;
+    }
     
 }

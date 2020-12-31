@@ -1411,6 +1411,8 @@ public class TwitchClient {
             for (String chan : split2) {
                 g.printLine(c.getUser(chan, "test").getRoom(), "test");
             }
+        } else if (command.equals("switchchan")) {
+            g.switchToChannel(parameter);
         } else if (command.equals("settestuser")) {
             String[] split = parameter.split(" ");
             createTestUser(split[0], split[1]);

@@ -11,8 +11,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -134,13 +135,16 @@ public class DockManager {
         if (content == null) {
             return;
         }
-        if (content == currentlyActive) {
-            return;
+        DockPopout popout = getPopoutFromContent(content);
+        /**
+         * Don't have to continue if the content is already active, both overall
+         * and in it's respective popout (or main).
+         */
+        if (currentlyActive != content || active.get(popout) != content) {
+            currentlyActive = content;
+            active.put(popout, content);
+            listener.activeContentChanged(popout, content, focusChange);
         }
-        currentlyActive = content;
-        DockPopout popout = getDockWindowFromContent(content);
-        active.put(popout, content);
-        listener.activeContentChanged(popout, content, focusChange);
     }
     
     private void removeActive(DockContent content) {
@@ -156,14 +160,20 @@ public class DockManager {
         }
     }
     
-    private DockPopout getDockWindowFromContent(DockContent content) {
+    /**
+     * Get the popout that contains the given content.
+     * 
+     * @param content
+     * @return The popout, or null if the content is in main or not added at all
+     */
+    private DockPopout getPopoutFromContent(DockContent content) {
         Component c = content.getComponent();
         do {
             c = c.getParent();
             if (c instanceof DockBase) {
-                for (DockPopout window : popouts) {
-                    if (window.getBase() == c) {
-                        return window;
+                for (DockPopout popout : popouts) {
+                    if (popout.getBase() == c) {
+                        return popout;
                     }
                 }
                 return null;
@@ -172,18 +182,40 @@ public class DockManager {
         return null;
     }
     
+    /**
+     * Return the currently active content. If no active content is currently
+     * set, returns the first found content.
+     * 
+     * @return The active content, or null if no content is present at all
+     */
     public DockContent getActiveContent() {
-        return currentlyActive;
+        DockContent result = currentlyActive;
+        if (result == null) {
+            List<DockContent> contents = getContents();
+            if (!contents.isEmpty()) {
+                result = contents.iterator().next();
+            }
+        }
+        return result;
     }
     
     /**
-     * Get all active contents. The main DockBase is included with the null
-     * key.
+     * Get the active content for a specific popout. If no active content is
+     * currently set, returns the first found content in the specified popout.
      * 
-     * @return 
+     * @param popout The popout, or null for main
+     * @return The active content, or null if no content is in the popout
      */
-    public Map<DockPopout, DockContent> getAllActive() {
-        return active;
+    public DockContent getActiveContent(DockPopout popout) {
+        DockContent result = active.get(popout);
+        if (result == null) {
+            DockBase base = popout == null ? main : popout.getBase();
+            List<DockContent> contents = base.getContents();
+            if (!contents.isEmpty()) {
+                result = contents.iterator().next();
+            }
+        }
+        return result;
     }
     
     /**
@@ -196,8 +228,13 @@ public class DockManager {
         return main;
     }
     
+    /**
+     * Get all open popouts.
+     * 
+     * @return A copy of the list of popouts
+     */
     public Collection<DockPopout> getPopouts() {
-        return popouts;
+        return new ArrayList<>(popouts);
     }
     
     public List<DockContent> getContents() {
@@ -207,6 +244,22 @@ public class DockManager {
         return result;
     }
     
+    /**
+     * Get the contents for a specific popout.
+     * 
+     * @param popout The popout, or null for main
+     * @return A list of contents, could be empty (never null)
+     */
+    public List<DockContent> getContents(DockPopout popout) {
+        DockBase base = popout == null ? main : popout.getBase();
+        return new ArrayList<>(base.getContents());
+    }
+    
+    /**
+     * Get the content from all popouts (without main).
+     * 
+     * @return A list of contents, could be empty (never null)
+     */
     public Collection<DockContent> getPopoutContents() {
         List<DockContent> result = new ArrayList<>();
         popouts.forEach(w -> result.addAll(w.getBase().getContents()));
@@ -214,8 +267,9 @@ public class DockManager {
     }
     
     /**
+     * Get a list of contents from the same tab pane as the given content.
      * 
-     * @param content
+     * @param content The content to base this on
      * @param direction -1 for tabs to the left, 1 for tabs to the right and 0
      * for tabs in both directions
      * @return List of components in the given direction, except the given
@@ -228,6 +282,14 @@ public class DockManager {
         return result;
     }
     
+    /**
+     * Get the content contained in the tab relative to given content.
+     * 
+     * @param content The content to base this on
+     * @param direction -1 for the next tab to the left, 1 for the next tab to
+     * the right (wraps around if necessary)
+     * @return The next tab, or null if none could be found
+     */
     public DockContent getContentTab(DockContent content, int direction) {
         List<DockContent> c = getContentsRelativeTo(content, direction);
         if (!c.isEmpty()) {
@@ -240,7 +302,18 @@ public class DockManager {
         return null;
     }
     
+    /**
+     * Add content to the default location, which is the currently active tab
+     * pane, unless the content's target path is already non-null. Once added,
+     * the target path may be reset to null.
+     * 
+     * @param content 
+     */
     public void addContent(DockContent content) {
+        if (hasContent(content)) {
+            return;
+        }
+        
         if (currentlyActive == null) {
             changedActiveContent(content, false);
         }
@@ -260,8 +333,18 @@ public class DockManager {
                 }
             }
         }
+        
+        listener.contentAdded(content);
     }
     
+    /**
+     * Set the first content's target path to the path of the second content.
+     * Will not set the target path if it is already non-null or the target does
+     * not provide a non-null path.
+     * 
+     * @param content The content (must not be null)
+     * @param target The target (may be null)
+     */
     private void setTargetPath(DockContent content, DockContent target) {
         if (target == null || content.getTargetPath() != null) {
             return;
@@ -272,40 +355,67 @@ public class DockManager {
         }
     }
     
+    /**
+     * Remove the given content.
+     * 
+     * @param content The content
+     */
     public void removeContent(DockContent content) {
+        if (!hasContent(content)) {
+            return;
+        }
         removeActive(content);
         main.removeContent(content);
-        for (DockPopout w : popouts) {
-            w.getBase().removeContent(content);
-        }
+        applyToPopoutsSafe(p -> p.getBase().removeContent(content));
+        listener.contentRemoved(content);
     }
     
+    /**
+     * Check if the given content is currently added in main or any of the
+     * popouts.
+     * 
+     * @param content
+     * @return 
+     */
     public boolean hasContent(DockContent content) {
         return getContents().contains(content);
     }
     
+    /**
+     * Switch to the given content, for example by changing tabs.
+     * 
+     * @param content 
+     */
     public void setActiveContent(DockContent content) {
         main.setActiveContent(content);
         popouts.forEach(w -> w.getBase().setActiveContent(content));
+        DockPopout popout = getPopoutFromContent(content);
+        if (popout != null) {
+            // TODO: Not sure if this would be annoying
+//            popout.getWindow().toFront();
+        }
+        // This may already be called from a tab or focus change, however if the
+        // active didn't change, it wouldn't have any affect
+        changedActiveContent(content, false);
     }
     
     protected void baseEmpty(DockBase base) {
-        for (DockPopout w : popouts) {
-            if (w.getBase() == base) {
-                w.getWindow().setVisible(false);
+        applyToPopoutsSafe(p -> {
+            if (p.getBase() == base) {
+                DockManager.this.closePopout(p);
             }
-        }
+        });
     }
     
     public boolean isMainEmpty() {
         return main.isEmpty();
     }
     
-    public boolean closeWindow() {
+    public boolean closePopout() {
         if (popouts.isEmpty()) {
             return false;
         }
-        popouts.iterator().next().getWindow().setVisible(false);
+        DockManager.this.closePopout(popouts.iterator().next());
         return true;
     }
     
@@ -332,10 +442,17 @@ public class DockManager {
         }
     }
     
-    private void closePopout(DockPopout popout) {
+    public void closePopout(DockPopout popout) {
+        if (popout == null || !popouts.contains(popout)) {
+            return;
+        }
+        
+        // Remove first, so removing content doesn't trigger this method again
+        popouts.remove(popout);
+        
         // Add content to main (if present)
         List<DockContent> contents = popout.getBase().getContents();
-        DockContent activeInPopout = active.get(popout);
+        DockContent activeInPopout = getActiveContent(popout);
         DockContent activeInMain = active.get(null);
         for (DockContent c : contents) {
             popout.getBase().removeContent(c);
@@ -346,9 +463,9 @@ public class DockManager {
             main.setActiveContent(activeInPopout);
         }
         
-        // Remove popout from stuff
-        popouts.remove(popout);
+        // Was still required to retrieve activeInPopout before this
         active.remove(popout);
+        
         popout.getWindow().setVisible(false);
         
         // Store unused popouts
@@ -361,6 +478,10 @@ public class DockManager {
             if (!unusedFrames.contains((DockPopoutFrame) popout)) {
                 unusedFrames.add((DockPopoutFrame)popout);
             }
+        }
+        
+        if (activeInPopout != null) {
+            changedActiveContent(activeInPopout, false);
         }
         
         // Inform listeners
@@ -382,13 +503,13 @@ public class DockManager {
      * @return  
      */
     public DockPopout popout(DockContent content, PopoutType type, Point location, Dimension size) {
-        if (type == PopoutType.NONE) {
+        if (type == PopoutType.NONE || !content.canPopout()) {
             return null;
         }
         
         // Remove content from previous location
         main.removeContent(content);
-        popouts.forEach(w -> w.getBase().removeContent(content));
+        applyToPopoutsSafe(p -> p.getBase().removeContent(content));
         
         // Get existing or create new popout
         DockPopout popout = getUnusedPopout(type);
@@ -406,10 +527,12 @@ public class DockManager {
                 popout.getWindow().setIconImages(popoutIcons);
             }
             DockPopout popout2 = popout;
-            popout.getWindow().addComponentListener(new ComponentAdapter() {
+            popout.getWindow().addWindowListener(new WindowAdapter() {
+
                 @Override
-                public void componentHidden(ComponentEvent e) {
-                    closePopout(popout2);
+                public void windowClosing(WindowEvent e) {
+                    // User closed window directly
+                    DockManager.this.closePopout(popout2);
                 }
             });
         }
@@ -436,6 +559,7 @@ public class DockManager {
         
         // Finish up
         popouts.add(popout);
+        removeActive(content);
         changedActiveContent(content, false);
         listener.popoutOpened(popout, content);
         
@@ -450,6 +574,18 @@ public class DockManager {
             return unusedFrames.poll();
         }
         return null;
+    }
+    
+    /**
+     * Perform an action on a copy of popouts to prevent concurrent modification
+     * when the action might also close the popout.
+     * 
+     * @param function 
+     */
+    private void applyToPopoutsSafe(Consumer<DockPopout> function) {
+        for (DockPopout popout : new ArrayList<>(popouts)) {
+            function.accept(popout);
+        }
     }
     
     private void updateWindowsAlwaysOnTop(boolean onTop) {
