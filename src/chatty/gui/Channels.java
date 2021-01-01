@@ -847,8 +847,8 @@ public class Channels {
         for (DockContent content : dock.getContents()) {
             if (content.getComponent() instanceof Channel) {
                 Channel chan = (Channel)content.getComponent();
-                if ((type == null || chan.getType() == type)
-                        && channels.containsValue(chan) || chan == defaultChannel) {
+                boolean typeMatches = type == null || type == chan.getType();
+                if (typeMatches && doesChannelExist(chan)) {
                     result.add(chan);
                 }
             }
