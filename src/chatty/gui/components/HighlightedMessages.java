@@ -260,6 +260,11 @@ public class HighlightedMessages extends JDialog {
         messages.printLine(text);
     }
     
+    /**
+     * This should be fine as long as the text pane only searches for lines
+     * containing the same User object, so it doesn't affect messages with the
+     * same username from another channel.
+     */
     public void addBan(User user, long duration, String reason, String targetMsgId) {
         messages.userBanned(user, duration, reason, targetMsgId);
     }

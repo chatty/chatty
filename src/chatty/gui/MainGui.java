@@ -3200,6 +3200,8 @@ public class MainGui extends JFrame implements Runnable {
             if (client.settings.listContains("streamChatChannels", user.getChannel())) {
                 streamChat.userBanned(user, -2, null, targetMsgId);
             }
+            highlightedMessages.addBan(user, -2, null, targetMsgId);
+            ignoredMessages.addBan(user, -2, null, targetMsgId);
         });
     }
 
