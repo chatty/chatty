@@ -2304,6 +2304,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             String[] split = parameter.split(" ");
             String username = split[0];
+            if(username.startsWith("@")) username = username.substring(1);
             if (split.length > 1) {
                 channel = Helper.toChannel(split[1]);
             }
