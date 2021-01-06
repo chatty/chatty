@@ -36,7 +36,7 @@ public class HighlightSettings extends SettingsPanel {
         super(true);
         
         noHighlightUsers = new NoHighlightUsers(d);
-        highlightBlacklist = new HighlightBlacklist(d);
+        highlightBlacklist = new HighlightBlacklist(d, "Highlight", "highlightBlacklist");
         
         JPanel base = addTitledPanel(Language.getString("settings.section.highlightMessages"), 0, true);
         
@@ -92,7 +92,7 @@ public class HighlightSettings extends SettingsPanel {
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
         items.setInfo(getMatchingHelp("highlight"));
-        HighlighterTester tester = new HighlighterTester(d, true);
+        HighlighterTester tester = new HighlighterTester(d, true, "Highlight:");
         tester.setAddToBlacklistListener(e -> {
             highlightBlacklist.addItem(e.getActionCommand());
         });
@@ -188,70 +188,4 @@ public class HighlightSettings extends SettingsPanel {
         
     }
     
-    private static class HighlightBlacklist extends JDialog {
-        
-        private final ListSelector setting;
-        
-        public HighlightBlacklist(SettingsDialog d) {
-            super (d);
-            
-            setDefaultCloseOperation(HIDE_ON_CLOSE);
-            setTitle("Highlight Blacklist");
-            setLayout(new GridBagLayout());
-            
-            GridBagConstraints gbc;
-            
-            gbc = d.makeGbc(0, 0, 1, 1);
-            add(new JLabel("<html><body style='width:260px;padding:4px;'>"
-                    + "Any text regions matched by items in this list will "
-                    + "never trigger a Highlight.<br /><br />"
-                    + "For example if the Highlight list contains "
-                    + "<code>kerbo</code>, it would highlight the message "
-                    + "\"<code>Welcome :) kerboHowdy</code>\", however if "
-                    + "<code>kerboHowdy</code> was blacklisted it would "
-                    + "prevent that Highlight."), gbc);
-            
-            gbc = d.makeGbc(0, 1, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 1;
-            gbc.weighty = 1;
-            setting = d.addListSetting("highlightBlacklist", "Blacklist", 100, 250, false, true);
-            setting.setInfo(getMatchingHelp("highlightBlacklist"));
-            setting.setDataFormatter(input -> input.trim());
-            HighlighterTester tester = new HighlighterTester(d, true);
-            tester.setEditingBlacklistItem(true);
-            tester.setLinkLabelListener(d.getLinkLabelListener());
-            setting.setInfoLinkLabelListener(d.getLinkLabelListener());
-            setting.setEditor(tester);
-            
-            add(setting, gbc);
-            
-            JButton closeButton = new JButton(Language.getString("dialog.button.close"));
-            closeButton.addActionListener(new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                }
-            });
-            gbc = d.makeGbc(0, 5, 2, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1;
-            gbc.insets = new Insets(5, 5, 5, 5);
-            add(closeButton, gbc);
-            
-            pack();
-            setMinimumSize(getPreferredSize());
-        }
-        
-        public void addItem(String item) {
-            item = item.trim();
-            List<String> values = setting.getData();
-            if (!item.isEmpty() && !values.contains(item)) {
-                values.add(item);
-                setting.setData(values);
-            }
-        }
-        
-    }
 }

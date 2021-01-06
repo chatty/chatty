@@ -62,20 +62,12 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     private static final int MAX_INPUT_LENGTH = 50*1000;
 
-    private final static String INFO = "<html><body style='width: 300px;padding:5px;'>"
-            + "Test the entered 'Item' pattern with the 'Test' text. Disregards non-text related prefixes.";
-    
-    private final static String INFO_BLACKLIST = "<br /><br />"
-            + "Test a single <code>Blacklist</code> pattern (showing as "
-            + "strike-through), that if added to the Highlight Blacklist "
-            + "will prevent whatever it matches from triggering Highlights.";
-    
     private final static String TEST_PRESET = "Enter test text.";
     private final static String TEST_PRESET_EXAMPLE = TEST_PRESET+" Example: ";
     
     private final JButton okButton = new JButton(Language.getString("dialog.button.save"));
     private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
-    private final JButton addToBlacklistButton = new JButton("Add to Highlight Blacklist");
+    private final JButton addToBlacklistButton = new JButton("Add to Blacklist");
     private final JTextField itemValue = new JTextField(40);
     private final JTextField blacklistValue = new JTextField(40);
     private final JTextPane testInput = new JTextPane();
@@ -103,7 +95,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private HighlightItem highlightItem;
     private HighlightItem blacklistItem;
     
-    public HighlighterTester(Window owner, boolean showBlacklist) {
+    public HighlighterTester(Window owner, boolean showBlacklist, String type) {
         super(owner);
         
         setTitle("Test and Edit");
@@ -119,10 +111,10 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         GridBagConstraints gbc;
         
-        add(new JLabel(INFO+(showBlacklist ? INFO_BLACKLIST : "")),
+        add(new JLabel("<html><body style='width:340px;padding:4px;'>"+SettingsUtil.getInfo("info-highlightTester.html", showBlacklist ? "blacklist" : "")),
                 GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.CENTER));
         
-        add(new JLabel("Item:"),
+        add(new JLabel(type),
                 GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
         
         gbc = GuiUtil.makeGbc(1, 1, 2, 1);
@@ -415,7 +407,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                         Match m = blacklistMatches.get(i);
                         doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
                     }
-                } else {
+                } else if (blacklistItem.matchesTest(testInput.getText(), null)) {
                     doc.setCharacterAttributes(0, doc.getLength(), blacklistAttr, false);
                 }
             }
@@ -537,7 +529,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            HighlighterTester tester = new HighlighterTester(null, true);
+            HighlighterTester tester = new HighlighterTester(null, true, "Test:");
             tester.setAddToBlacklistListener(e -> {
                 System.out.println(e);
             });

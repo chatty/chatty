@@ -724,6 +724,38 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "hi, username!"));
         assertTrue(highlighter.check(user, "Username!"));
         assertFalse(highlighter.check(user, "usernamee"));
+        
+        // Blacklist block
+        update("user:testuser");
+        updateBlacklist("abc");
+        assertTrue(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(user, "blah abc"));
+        
+        update("user:testuser");
+        updateBlacklist("config:block abc");
+        assertFalse(highlighter.check(user, "abc"));
+        assertFalse(highlighter.check(user, "blah abc"));
+        
+        update("user:testuser test");
+        updateBlacklist("config:block abc");
+        assertFalse(highlighter.check(user, "abc test"));
+        assertFalse(highlighter.check(user, "blah abc test"));
+        
+        update("user:testuser test");
+        updateBlacklist("config:block");
+        assertFalse(highlighter.check(user, "abc test"));
+        assertFalse(highlighter.check(user, "blah abc test"));
+        
+        update("user:testuser");
+        updateBlacklist("config:block abcd");
+        assertTrue(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(user, "blah abc"));
+        
+        update("user:testuser", "abc");
+        updateBlacklist("config:block !start:!quote");
+        assertFalse(highlighter.check(user, "abc"));
+        assertFalse(highlighter.check(user, "blah abc"));
+        assertTrue(highlighter.check(user, "!quote blah abc"));
     }
     
     @Test
@@ -763,6 +795,16 @@ public class HighlighterTest {
         update("blacklist:cheesecake blacklist:applepie cake");
         assertTrue(highlighter.check(user, "cake"));
         assertFalse(highlighter.check(user, "cheesecake"));
+        
+        // Blacklist prefix only gets text matches, no text match means it spans all text
+        update("blacklist:config:info cake");
+        assertFalse(highlighter.check(user, "cake"));
+        assertFalse(highlighter.check(user, "cheesecake"));
+        
+        // When there is no text match to blacklist, it doesn't have any effect though
+        update("blacklist:config:info user:testUSER");
+        assertTrue(highlighter.check(user, "cake"));
+        assertTrue(highlighter.check(user, "cheesecake"));
     }
     
     @Test

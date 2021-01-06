@@ -1030,6 +1030,7 @@ public class MainGui extends JFrame implements Runnable {
     
     private void updateIgnore() {
         ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
+        ignoreList.update(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
     }
     
     private void updateFilter() {
@@ -4569,8 +4570,10 @@ public class MainGui extends JFrame implements Runnable {
                     BatchAction.queue(highlighter, () -> {
                         updateHighlight();
                     });
-                } else if (setting.equals("ignore")) {
-                    updateIgnore();
+                } else if (setting.equals("ignore") || setting.equals("ignoreBlacklist")) {
+                    BatchAction.queue(ignoreList, () -> {
+                        updateIgnore();
+                    });
                 } else if (setting.equals("filter")) {
                     updateFilter();
                 } else if (setting.equals("hotkeys")) {

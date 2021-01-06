@@ -585,6 +585,7 @@ public class SettingsManager {
         settings.addList("ignoredUsers", new ArrayList(), Setting.STRING);
         settings.addList("ignoredUsersWhisper", new ArrayList(), Setting.STRING);
         settings.addBoolean("ignoredUsersHideInGUI", true);
+        settings.addList("ignoreBlacklist", new ArrayList(), Setting.STRING);
         
         // Filter
         settings.addList("filter", new ArrayList(), Setting.STRING);
