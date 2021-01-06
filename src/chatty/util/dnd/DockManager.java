@@ -428,7 +428,9 @@ public class DockManager {
     
     protected void requestStopDrag(DockTransferable t) {
         if (!DockUtil.isMouseOverWindow()
-                && popoutTypeDrag != PopoutType.NONE) {
+                && popoutTypeDrag != PopoutType.NONE
+                && t != null
+                && t.content != null) {
             // Manually changed location, so reset
             t.content.setTargetPath(null);
             // Popout from dragging outside window
