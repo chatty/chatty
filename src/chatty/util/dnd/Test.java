@@ -64,6 +64,11 @@ public class Test {
                 public void contentRemoved(DockContent content) {
                     
                 }
+
+                @Override
+                public void popoutClosing(DockPopout popout) {
+                    m.closePopout(popout);
+                }
             });
 //            m.setSetting(DockSetting.Type.TAB_PLACEMENT, "left");
             m.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);

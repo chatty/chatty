@@ -22,5 +22,6 @@ public interface DockListener {
     public void popoutClosed(DockPopout popout, List<DockContent> content);
     public void contentAdded(DockContent content);
     public void contentRemoved(DockContent content);
+    public void popoutClosing(DockPopout popout);
     
 }

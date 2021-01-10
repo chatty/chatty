@@ -92,16 +92,7 @@ public class WindowSettings extends SettingsPanel {
         // Popout
         //--------
         JPanel popout = addTitledPanel("Popout", 3);
-        
-        popout.add(d.addSimpleBooleanSetting("popoutSaveAttributes", "Restore location/size",
-                "Save and restore the location and size of popout dialogs during the same session"),
-                d.makeGbc(0,0,1,1));
-        popout.add(d.addSimpleBooleanSetting("popoutCloseLastChannel", "Close popout when only channel",
-                "Automatically close a popout if the last channel in the main window is closed"),
-                d.makeGbc(1, 0, 1, 1));
-        
-        popout.add(SettingsUtil.createPanel("tabsPopoutDrag", d.addComboLongSetting("tabsPopoutDrag", new int[]{0,1,2})),
-                d.makeGbc(0, 1, 2, 1));
+        popout.add(new JLabel("Moved to 'Tabs'"));
     }
     
 }

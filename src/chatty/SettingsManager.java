@@ -425,6 +425,7 @@ public class SettingsManager {
         settings.addBoolean("popoutSaveAttributes", true);
         settings.addBoolean("popoutCloseLastChannel", false);
         settings.addList("popoutAttributes", new ArrayList(), Setting.STRING);
+        settings.addString("popoutClose", "ask");
         
         // Titlebar
         settings.addBoolean("simpleTitle", false);
@@ -437,6 +438,7 @@ public class SettingsManager {
 
         // Tabs
         settings.addString("tabOrder", "normal");
+        settings.addString("tabsOpen", "active2");
         settings.addBoolean("tabsMwheelScrolling", false);
         settings.addBoolean("tabsMwheelScrollingAnywhere", true);
         settings.addString("tabsPlacement", "top");
@@ -447,7 +449,7 @@ public class SettingsManager {
         settings.addLong("tabsStatus", 32);
         settings.addLong("tabsActive", 128);
         settings.addLong("tabsPopoutDrag", 2);
-
+        
         // Chat Window
         settings.addBoolean("chatScrollbarAlways", false);
         settings.addLong("userlistWidth", 120);

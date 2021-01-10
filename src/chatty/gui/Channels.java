@@ -7,8 +7,10 @@ import chatty.Room;
 import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.TabContextMenu;
+import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.IconManager;
+import chatty.util.KeyChecker;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockListener;
 import chatty.util.dnd.DockManager;
@@ -27,6 +29,16 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import chatty.util.dnd.DockPopout;
+import com.sun.glass.events.KeyEvent;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 /**
  * Managing the Channel objects in the main window and popouts, providing a
@@ -124,6 +136,38 @@ public class Channels {
             public void popoutOpened(DockPopout popout, DockContent content) {
                 dockPopoutOpened(popout);
             }
+            
+            @Override
+            public void popoutClosing(DockPopout popout) {
+                if (KeyChecker.isPressed(KeyEvent.VK_SHIFT)) {
+                    dock.closePopout(popout);
+                }
+                else if (KeyChecker.isPressed(KeyEvent.VK_CONTROL)) {
+                    removeContents(dock.getContents(popout));
+                }
+                else {
+                    switch (gui.getSettings().getString("popoutClose")) {
+                        case "close":
+                            removeContents(dock.getContents(popout));
+                            break;
+                        case "move":
+                            dock.closePopout(popout);
+                            break;
+                        default:
+                            ClosingDialog d = new ClosingDialog(popout);
+                            if (d.getChoice().equals("close")) {
+                                removeContents(dock.getContents(popout));
+                            }
+                            else if (d.getChoice().equals("move")) {
+                                dock.closePopout(popout);
+                            }
+                            
+                            if (d.shouldSaveChoice()) {
+                                gui.getSettings().setString("popoutClose", d.getChoice());
+                            }
+                    }
+                }
+            }
 
             @Override
             public void popoutClosed(DockPopout popout, List<DockContent> contents) {
@@ -139,7 +183,7 @@ public class Channels {
             public void contentRemoved(DockContent content) {
                 checkDefaultChannel();
             }
-            
+
         });
         // One-time settings
         dock.setSetting(DockSetting.Type.POPOUT_ICONS, IconManager.getMainIcons());
@@ -156,6 +200,8 @@ public class Channels {
                 });
             }
         });
+        KeyChecker.watch(KeyEvent.VK_SHIFT);
+        KeyChecker.watch(KeyEvent.VK_CONTROL);
     }
     
     public DockManager getDock() {
@@ -384,10 +430,38 @@ public class Channels {
     
     private void addDefaultChannelToDock() {
         // Ensure that it's being added in main window
-        DockPath path = new DockPath(defaultChannel.getDockContent());
-        path.addParent(DockPathEntry.createPopout(null));
-        defaultChannel.getDockContent().setTargetPath(path);
+        setTargetPath(defaultChannel.getDockContent(), "main");
         dock.addContent(defaultChannel.getDockContent());
+    }
+    
+    private void setTargetPath(DockContent content) {
+        setTargetPath(content, gui.getSettings().getString("tabsOpen"));
+    }
+    
+    private void setTargetPath(DockContent content, String target) {
+        content.setTargetPath(null);
+        if (target.equals("active")) {
+            DockContent active = dock.getActiveContent();
+            if (active != null) {
+                content.setTargetPath(active.getPath());
+            }
+        }
+        else if (target.equals("active2")) {
+            DockContent active = getActiveContent();
+            if (active != null) {
+                DockPopout popout = dock.getPopoutFromContent(active);
+                if ((popout == null && gui.isActive())
+                        || (popout != null && popout.getWindow().isActive())) {
+                    content.setTargetPath(active.getPath());
+                }
+            }
+        }
+        // Main in default location
+        if (content.getTargetPath() == null) {
+            DockPath path = new DockPath(content);
+            path.addParent(DockPathEntry.createPopout(null));
+            content.setTargetPath(path);
+        }
     }
     
     /**
@@ -416,6 +490,7 @@ public class Channels {
             panel = createChannel(room, type);
             // Add to channels first so it's already known as "existing"
             channels.put(room.getChannel(), panel);
+            setTargetPath(panel.getDockContent());
             dock.addContent(panel.getDockContent());
             if (type != Channel.Type.WHISPER) {
                 dock.setActiveContent(panel.getDockContent());
@@ -462,6 +537,12 @@ public class Channels {
         // Removing will automatically run checkDefaultChannel()
         dock.removeContent(channel.getDockContent());
         channel.cleanUp();
+    }
+    
+    private void removeContents(Collection<DockContent> contents) {
+        for (DockContent c : contents) {
+            c.remove();
+        }
     }
     
     /**
@@ -1065,6 +1146,76 @@ public class Channels {
             super.setTitle(title);
         }
 
+    }
+    
+    private class ClosingDialog extends JDialog {
+        
+        private final JCheckBox rememberChoice;
+        
+        private String result = "";
+        
+        ClosingDialog(DockPopout popout) {
+            super(popout.getWindow());
+            setTitle(Language.getString("popoutClose.title"));
+            setModal(true);
+            setResizable(false);
+            
+            setLayout(new GridBagLayout());
+            
+            JButton closeChannels = new JButton(Language.getString("settings.string.popoutClose.option.close"));
+            closeChannels.addActionListener(e -> {
+                result = "close";
+                setVisible(false);
+            });
+            
+            JButton moveChannels = new JButton(Language.getString("settings.string.popoutClose.option.move"));
+            moveChannels.addActionListener(e -> {
+                result = "move";
+                setVisible(false);
+            });
+            
+            rememberChoice = new JCheckBox(Language.getString("popoutClose.rememberChoice"));
+            
+            GridBagConstraints gbc = GuiUtil.makeGbc(1, 0, 1, 1);
+            
+            Icon icon = UIManager.getIcon("OptionPane.questionIcon");
+            if (icon != null) {
+                gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+                gbc.insets = new Insets(10, 10, 10, 10);
+                add(new JLabel(icon), gbc);
+            }
+            
+            gbc = GuiUtil.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST);
+            add(new JLabel("<html><body width='250px'><p>"+Language.getString("popoutClose.question")+"</p>"
+                    + "<p style='margin-top:5px;'>"+Language.getString("popoutClose.keyTip")+"</p>"), gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 1, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            add(closeChannels, gbc);
+            
+            gbc = GuiUtil.makeGbc(2, 1, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            gbc.insets = new Insets(5, 5, 5, 10);
+            add(moveChannels, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 2, 2, 1, GridBagConstraints.EAST);
+            gbc.insets = new Insets(0, 5, 5, 10);
+            add(rememberChoice, gbc);
+            pack();
+            setLocationRelativeTo(popout.getWindow());
+            setVisible(true);
+        }
+        
+        public String getChoice() {
+            return result;
+        }
+        
+        public boolean shouldSaveChoice() {
+            return rememberChoice.isSelected();
+        }
+        
     }
     
 }

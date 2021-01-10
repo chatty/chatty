@@ -3,9 +3,7 @@ package chatty.gui.components.settings;
 
 import chatty.gui.Channels;
 import chatty.lang.Language;
-import chatty.util.StringUtil;
 import java.awt.GridBagConstraints;
-import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +22,7 @@ public class TabSettings extends SettingsPanel {
         
         JPanel other = addTitledPanel(Language.getString("settings.section.tabs"), 0);
         JPanel infoPanel = addTitledPanel("Tab Info", 1);
+        JPanel popout = addTitledPanel("Popout", 2);
         
         //------------
         // Tabs Order
@@ -37,6 +36,15 @@ public class TabSettings extends SettingsPanel {
                 d.makeGbc(1, 0, 3, 1, GridBagConstraints.WEST)
         );
         
+        //--------------------------
+        // Open Tabs
+        //--------------------------
+        other.add(SettingsUtil.createLabel("settings.string.tabsOpen"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+
+        other.add(d.addComboStringSetting("tabsOpen", false, "main", "active", "active2"),
+                d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
+        
         //---------------
         // Tabs Location
         //---------------
@@ -47,9 +55,10 @@ public class TabSettings extends SettingsPanel {
         tabPlacementOptions.put("right", Language.getString("settings.tabs.option.right"));
         ComboStringSetting tabPlacementSetting = new ComboStringSetting(tabPlacementOptions);
         d.addStringSetting("tabsPlacement", tabPlacementSetting);
-        other.add(new JLabel( Language.getString("settings.tabs.placement")), d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+        other.add(new JLabel(Language.getString("settings.tabs.placement")),
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
         other.add(tabPlacementSetting,
-            d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST)
+                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST)
         );
         
         //-------------
@@ -61,9 +70,9 @@ public class TabSettings extends SettingsPanel {
         ComboStringSetting tabLayoutSetting = new ComboStringSetting(tabLayoutOptions);
         d.addStringSetting("tabsLayout", tabLayoutSetting);
         other.add(new JLabel(Language.getString("settings.tabs.layout")),
-                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
         other.add(tabLayoutSetting,
-                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST));
         
         //----------------
         // Tabs Scrolling
@@ -91,6 +100,31 @@ public class TabSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         infoPanel.add(infoPanelTabs, gbc);
+        
+        //--------
+        // Popout
+        //--------
+        popout.add(d.addSimpleBooleanSetting("popoutSaveAttributes", "Restore location/size",
+                "Save and restore the location and size of popout dialogs during the same session"),
+                d.makeGbc(0,0,1,1));
+        popout.add(d.addSimpleBooleanSetting("popoutCloseLastChannel", "Close popout when only channel",
+                "Automatically close a popout if the last channel in the main window is closed"),
+                d.makeGbc(1, 0, 1, 1));
+        
+        popout.add(SettingsUtil.createLabel("tabsPopoutDrag"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+        
+        popout.add(d.addComboLongSetting("tabsPopoutDrag", new int[]{0,1,2}),
+                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+        
+        popout.add(SettingsUtil.createLabel("popoutClose"),
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+        
+        popout.add(d.addComboStringSetting("popoutClose", false, "ask", "close", "move"),
+                d.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+        
+        popout.add(new JLabel(Language.getString("popoutClose.keyTip")),
+                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
     }
     
     private static class TabInfoOptions extends JPanel implements LongSetting {
