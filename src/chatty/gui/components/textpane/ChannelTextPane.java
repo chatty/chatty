@@ -139,7 +139,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
-        APPENDED_INFO_UPDATED, MENTION, USERICON_INFO,
+        APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, GENERAL_LINK,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_FOREGROUND,
@@ -644,6 +644,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         closeCompactMode();
         printTimestamp(style);
         printSpecialsInfo(message.text, style, message.highlightMatches);
+        Pair<String, String> link = message.getLink();
+        if (link != null) {
+            print(" ", style);
+            print(link.key, styles.generalLink(style, link.value));
+        }
         finishLine();
     }
     
@@ -1719,6 +1724,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
 
         @Override
         public void usericonClicked(Usericon usericon, MouseEvent e) {
+        }
+
+        @Override
+        public void linkClicked(Channel channel, String link) {
         }
         
     }
@@ -3693,6 +3702,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                 return specialColor;
             }
             return info();
+        }
+        
+        public MutableAttributeSet generalLink(AttributeSet base, String target) {
+            SimpleAttributeSet result = new SimpleAttributeSet(base);
+            result.addAttribute(Attribute.GENERAL_LINK, target);
+            StyleConstants.setUnderline(result, true);
+            return result;
         }
         
         public MutableAttributeSet compact() {

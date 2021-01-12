@@ -2,6 +2,7 @@
 package chatty.gui.components.textpane;
 
 import chatty.gui.Highlighter.Match;
+import chatty.util.Pair;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.HashMap;
@@ -94,6 +95,15 @@ public class InfoMessage {
     
     public long age() {
         return System.currentTimeMillis() - createdTime;
+    }
+    
+    public Pair<String, String> getLink() {
+        if (tags != null) {
+            if (tags.getHosted() != null) {
+                return new Pair("Join", "join."+tags.getHosted());
+            }
+        }
+        return null;
     }
     
 }

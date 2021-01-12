@@ -1209,8 +1209,15 @@ public class TwitchConnection {
          * 
          * @param channel
          * @param text 
+         * @param tags The associated tags, may be empty (never null)
          */
         private void infoMessage(String channel, String text, MsgTags tags) {
+            if (tags.isValue("msg-id", "host_on")) {
+                String hostedChannel = channelStates.getState(channel).getHosting();
+                if (hostedChannel != null) {
+                    tags = MsgTags.addTag(tags, "chatty-hosted", hostedChannel);
+                }
+            }
             if (text.startsWith("The moderators of")) {
                 parseModeratorsList(text, channel);
             } else {

@@ -2215,6 +2215,15 @@ public class MainGui extends JFrame implements Runnable {
                 UrlOpener.openUrlPrompt(MainGui.this, usericon.metaUrl);
             }
         }
+
+        @Override
+        public void linkClicked(Channel channel, String link) {
+            if (link.startsWith("join.")) {
+                String c = link.substring("join.".length());
+                client.joinChannel(c);
+            }
+        }
+        
     }
     
     private class MyNotificationActionListener implements NotificationActionListener<String> {
