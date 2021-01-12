@@ -430,6 +430,10 @@ public class UsericonManager {
             if (user.hasCategory(icon.category)) {
                 return true;
             }
+        } else if (icon.matchType == Usericon.MatchType.MATCH) {
+            if (icon.match.matches(user)) {
+                return true;
+            }
         } else if (icon.matchType == Usericon.MatchType.STATUS) {
             if (Helper.matchUserStatus(icon.restrictionValue, user)) {
                 return true;

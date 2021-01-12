@@ -153,6 +153,8 @@
             as hardcoded into Chatty, may be different from other programs), e.g. <code>$color:Blue</code> for blue,
             which can be used to replace colors</li>
         <li><code>$defaultColor</code> - Users that don't have a color set and have the default assigned color (somewhat random)</li>
+        <li><code>$m:&lt;item&gt;</code> - Specify user-related <a href="#Highlight_Meta_Matching">Highlight Matching</a> prefixes, such as
+            <code>$m:config:b|partner</code> to match users with a partner badge</li>
     </ul>
     
     <p>The order of the
@@ -230,11 +232,16 @@
         <dt>Restriction</dt>
         <dd>This is similiar to the <a href="#Usercolors">Usercolors</a> settings,
         where you can enter special restrictions the user has to match in order
-        for the icon to be displayed. What makes the most sense in this case is
-        probably just entering a username (e.g. <code>serenity</code>) or an
-        addressbook category (e.g. <code>$cat:vip</code>, which would refer to
-        the category <code>vip</code>). If you keep this empty, then no restriction
+        for the icon to be displayed. If you keep this empty, then no restriction
         is applied.</dd>
+        <dd>The most common restrictions would be (although most <a href="#Usercolors">Usercolors</a>
+            restrictions should work):
+            <ul>
+                <li>Just the username (e.g. <code>serenity</code>)</li>
+                <li>An addressbook category (e.g. <code>$cat:vip</code>, which would refer to
+        the category <code>vip</code>)</li>
+            </ul>
+        </dd>
         <dd>Specifying a <em>Type</em> other than <code>Addon</code> carries an
         implicit restriction, since e.g. the default moderator icons are only
         displayed if the user is a moderator.</dd>

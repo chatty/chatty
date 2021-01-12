@@ -3,7 +3,9 @@ package chatty.gui.colors;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -122,6 +124,11 @@ public class UsercolorManager {
             }
             else if (item.type == UsercolorItem.TYPE_CATEGORY) {
                 if (user.hasCategory(item.category)) {
+                    return item.color;
+                }
+            }
+            else if (item.type == UsercolorItem.TYPE_MATCH) {
+                if (item.match.matches(user)) {
                     return item.color;
                 }
             }

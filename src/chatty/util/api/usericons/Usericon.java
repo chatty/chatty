@@ -2,6 +2,7 @@
 package chatty.util.api.usericons;
 
 import chatty.Helper;
+import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import chatty.util.ImageCache;
 import chatty.util.StringUtil;
@@ -104,7 +105,7 @@ public class Usericon implements Comparable {
      * restriction doesn't have to be parsed everytime.
      */
     public enum MatchType {
-        CATEGORY, UNDEFINED, ALL, STATUS, NAME, COLOR
+        CATEGORY, UNDEFINED, ALL, STATUS, NAME, COLOR, MATCH
     }
     
     /**
@@ -202,6 +203,11 @@ public class Usericon implements Comparable {
      * The addressbook category to match (if given) in {@literal id}.
      */
     public final String category;
+    
+    /**
+     * Match user-related prefixes based on the Highlighting format.
+     */
+    public final Highlighter.HighlightItem match;
     
     /**
      * This is {@code true} if the channel restriction should be reversed, which
@@ -329,6 +335,13 @@ public class Usericon implements Comparable {
                 category = null;
             }
             
+            if (restrict.startsWith("$m:") && restrict.length() > "$m:".length()) {
+                match = new Highlighter.HighlightItem(restrict.substring("$m:".length()));
+            }
+            else {
+                match = null;
+            }
+            
             if (restrict.startsWith("#") && restrict.length() == 7) {
                 colorRestriction = HtmlColors.decode(restrict, null);
             } else if (restrict.startsWith("$color:") && restrict.length() > 7) {
@@ -340,6 +353,8 @@ public class Usericon implements Comparable {
             // Save the type
             if (restrict.startsWith("$cat:") && restrict.length() > 5) {
                 matchType = MatchType.CATEGORY;
+            } else if (match != null) {
+                matchType = MatchType.MATCH;
             } else if (colorRestriction != null) {
                 matchType = MatchType.COLOR;
             } else if (statusDef.contains(restrict)) {
@@ -354,6 +369,7 @@ public class Usericon implements Comparable {
         } else {
             matchType = MatchType.UNDEFINED;
             category = null;
+            match = null;
             this.restriction = null;
             restrictionValue = null;
             colorRestriction = null;

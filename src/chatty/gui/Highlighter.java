@@ -1213,6 +1213,10 @@ public class Highlighter {
             return matches(type, text, null, channel, ab, null, null, MsgTags.EMPTY);
         }
         
+        public boolean matches(User user) {
+            return matches(Type.ANY, "", null, null, null, user, null, MsgTags.EMPTY);
+        }
+        
         /**
          * Check whether a message matches this item.
          * 

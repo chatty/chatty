@@ -2,6 +2,7 @@
 package chatty.gui.colors;
 
 import chatty.Helper;
+import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import java.awt.Color;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.Set;
  * @author tduva
  */
 public class UsercolorItem extends ColorItem {
-
+    
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
             "$globalmod", "$anymod", "$vip"));
@@ -25,6 +26,7 @@ public class UsercolorItem extends ColorItem {
     public static final int TYPE_ALL = 3;
     public static final int TYPE_CATEGORY = 4;
     public static final int TYPE_DEFAULT_COLOR = 5;
+    public static final int TYPE_MATCH = 6;
     public static final int TYPE_UNDEFINED = -1;
     
     public final Color color;
@@ -33,6 +35,7 @@ public class UsercolorItem extends ColorItem {
     public final Color idColor;
     public final int type;
     public final String category;
+    public final Highlighter.HighlightItem match;
 
     public UsercolorItem(String id, Color color) {
         super(id, color, true, null, false);
@@ -57,11 +60,20 @@ public class UsercolorItem extends ColorItem {
             category = null;
         }
         
+        if (id.startsWith("$m:") && id.length() > "$m:".length()) {
+            match = new Highlighter.HighlightItem(id.substring("$m:".length()));
+        }
+        else {
+            match = null;
+        }
+        
         // Save the type
         if (idColor != null) {
             type = TYPE_COLOR;
         } else if (id.startsWith("$cat:") && id.length() > 5) {
             type = TYPE_CATEGORY;
+        } else if (match != null) {
+            type = TYPE_MATCH;
         } else if (statusDef.contains(id)) {
             type = TYPE_STATUS;
         } else if (Helper.isValidChannel(id)) {
