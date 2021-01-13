@@ -1030,7 +1030,7 @@ public class MainGui extends JFrame implements Runnable {
     
     private void updateIgnore() {
         ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
-        ignoreList.update(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
+        ignoreList.updateBlacklist(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
     }
     
     private void updateFilter() {
