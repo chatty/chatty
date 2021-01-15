@@ -2246,23 +2246,23 @@ public class MainGui extends JFrame implements Runnable {
         return userListener;
     }
     
-    public java.util.List<UsercolorItem> getUsercolorData() {
+    public List<UsercolorItem> getUsercolorData() {
         return client.usercolorManager.getData();
     }
 
-    public void setUsercolorData(java.util.List<UsercolorItem> data) {
+    public void setUsercolorData(List<UsercolorItem> data) {
         client.usercolorManager.setData(data);
     }
     
-    public java.util.List<MsgColorItem> getMsgColorData() {
+    public List<MsgColorItem> getMsgColorData() {
         return msgColorManager.getData();
     }
     
-    public void setMsgColorData(java.util.List<MsgColorItem> data) {
+    public void setMsgColorData(List<MsgColorItem> data) {
         msgColorManager.setData(data);
     }
     
-    public java.util.List<Usericon> getUsericonData() {
+    public List<Usericon> getUsericonData() {
         return client.usericonManager.getCustomData();
     }
     
@@ -2270,15 +2270,15 @@ public class MainGui extends JFrame implements Runnable {
         return client.usericonManager.getTwitchBadgeTypes();
     }
     
-    public void setUsericonData(java.util.List<Usericon> data) {
+    public void setUsericonData(List<Usericon> data) {
         client.usericonManager.setCustomData(data);
     }
     
-    public java.util.List<Notification> getNotificationData() {
+    public List<Notification> getNotificationData() {
         return notificationManager.getData();
     }
     
-    public void setNotificationData(java.util.List<Notification> data) {
+    public void setNotificationData(List<Notification> data) {
         notificationManager.setData(data);
     }
     
