@@ -913,6 +913,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private void close() {
         owner.hotkeyManager.setEnabled(true);
         setVisible(false);
+        dispose();
     }
     
     protected LinkLabelListener getLinkLabelListener() {

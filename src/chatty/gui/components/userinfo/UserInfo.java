@@ -89,7 +89,7 @@ public class UserInfo extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 if (settings.getBoolean("closeUserDialogOnAction")
                         && !isPinned()) {
-                    setVisible(false);
+                    dispose();
                 }
                 CustomCommand command = getCommand(e.getSource());
                 if (command == null) {
@@ -106,7 +106,7 @@ public class UserInfo extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                setVisible(false);
+                dispose();
             }
         };
         closeButton.addActionListener(actionListener);
