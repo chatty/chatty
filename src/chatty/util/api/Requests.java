@@ -100,14 +100,9 @@ public class Requests {
     // Stream Information
     //===================
     
-    protected void requestFollowedStreams(String token, String nextUrl) {
-        String url;
-        if (nextUrl != null) {
-            url = nextUrl;
-        } else {
-            url = "https://api.twitch.tv/kraken/streams/followed?stream_type=all&limit="
-                    + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset=0";
-        }
+    protected void requestFollowedStreams(String token, int offset) {
+        String url = "https://api.twitch.tv/kraken/streams/followed?stream_type=all&limit="
+                + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset="+offset;
         TwitchApiRequest request = new TwitchApiRequest(url, "v5");
         request.setToken(token);
         execute(request, r -> {

@@ -57,7 +57,7 @@ public class StreamInfoManager {
     /**
      * The maximum number of requests for followed streams in the set delay.
      */
-    private static final int FOLLOWED_STREAMS_REQUEST_LIMIT = 3;
+    private static final int FOLLOWED_STREAMS_REQUEST_LIMIT = 8;
     
     /**
      * Number of requests made to get followed streams. This is used as a
@@ -121,23 +121,34 @@ public class StreamInfoManager {
         if (!prevToken.equals(token)) {
             followsRequestErrors = 0;
         }
+        // For a manual refresh, the delay is reset
         if (checkTimePassed(followsRequestedET, UPDATE_FOLLOWS_DELAY,
                 followsRequestErrors)) {
             prevToken = token;
             followsRequestedET.set();
+            // This is only reset here, otherwise only increased
             followedStreamsRequests = 1;
-            api.requests.requestFollowedStreams(token, null);
+            api.requests.requestFollowedStreams(token, 0);
         }
     }
     
-    private void getFollowedStreamsNext(String url) {
-        if (url != null && followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
+    /**
+     * In order to return more than 100 followed streams, several requests may
+     * be necessary.
+     * <p>
+     * On the first request the value of {@code followedStreamsRequests} is set
+     * to 1 (in getFollowedStreams() when enough time has passed), whereas
+     * request results may call this for the next request (if number of results
+     * is equal to the limit).
+     */
+    private void getFollowedStreamsNext() {
+        if (followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
+            int offset = FOLLOWED_STREAMS_LIMIT*followedStreamsRequests;
+            api.requests.requestFollowedStreams(prevToken, offset);
             followedStreamsRequests++;
-            api.requests.requestFollowedStreams(prevToken, url);
         } else {
-            LOGGER.warning("Followed streams: Not getting next url '"+url+"' "
-                    + "(requests: "+followedStreamsRequests+", "
-                    + "limit: "+FOLLOWED_STREAMS_REQUEST_LIMIT+")");
+            LOGGER.warning("Followed streams: Not getting next url "
+                    + "(limit reached: "+FOLLOWED_STREAMS_REQUEST_LIMIT+")");
         }
     }
     
@@ -338,15 +349,12 @@ public class StreamInfoManager {
     }
     
     protected synchronized void requestResultFollows(String result, int responseCode) {
-        //System.out.println(result);
         if (responseCode == 200 && result != null) {
             int count = parseStreams(result, null);
             LOGGER.info("Got "+count+" (limit: "+FOLLOWED_STREAMS_LIMIT+") followed streams.");
-            // TODO
-//            if (count == FOLLOWED_STREAMS_LIMIT) {
-//                String nextUrl = getNextUrl(result);
-//                getFollowedStreamsNext(nextUrl);
-//            }
+            if (count == FOLLOWED_STREAMS_LIMIT) {
+                getFollowedStreamsNext();
+            }
             followsRequestErrors = 0;
         } else if (responseCode == 401) {
             followsRequestErrors += 4;
