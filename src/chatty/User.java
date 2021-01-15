@@ -679,6 +679,22 @@ public class User implements Comparable<User> {
     }
     
     /**
+     * Only return custom or corrected color.
+     * 
+     * @return The color, or null if no custom or corrected color is set
+     */
+    public synchronized Color getDisplayColor2() {
+        Color color = getColor();
+        if (hasCustomColor) {
+            return color;
+        }
+        if (hasCorrectedColor) {
+            return correctedColor;
+        }
+        return null;
+    }
+    
+    /**
      * Returns the original Twitch Chat color, either the color received from
      * Twitch Chat, or the default color if none was received yet.
      * 

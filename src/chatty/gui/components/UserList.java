@@ -55,8 +55,8 @@ public class UserList extends JList<User> {
                 User user = (User)value;
                 setText(Helper.makeDisplayNick(user, displayNamesMode));
 
-                if (settings.getBoolean("displayColoredNamesInUserlist")) {
-                    Color userColor = user.getCorrectedColor();
+                if (!isSelected && settings.getBoolean("displayColoredNamesInUserlist")) {
+                    Color userColor = user.getDisplayColor2();
                     if (userColor != null) {
                         setForeground(userColor);
                     }
