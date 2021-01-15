@@ -253,6 +253,12 @@ public class UserManager {
             }
             // Put User into the map for the channel
             getUsersByChannel(room.getChannel()).put(name, user);
+            
+            // Set history length
+            int userDialogMessageLimit = settings.getInt("userDialogMessageLimit");
+            if (userDialogMessageLimit >= 0) {
+                user.setMaxNumberOfLines(userDialogMessageLimit);
+            }
         }
         return user;
     }

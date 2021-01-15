@@ -24,7 +24,7 @@ import java.util.Set;
  * @author tduva
  */
 public class User implements Comparable<User> {
-    
+
     private static final NamedColor[] defaultColors = {
         new NamedColor("Red", 255, 0, 0),
         new NamedColor("Blue", 0, 0, 255),
@@ -43,7 +43,7 @@ public class User implements Comparable<User> {
         new NamedColor("SpringGreen", 0, 255, 127)
     };
     
-    private static final int MAXLINES = 100;
+    private int maxLines = 100;
     
     //========
     // Basics
@@ -306,7 +306,11 @@ public class User implements Comparable<User> {
     }
     
     public synchronized int getMaxNumberOfLines() {
-        return MAXLINES;
+        return maxLines;
+    }
+    
+    public synchronized void setMaxNumberOfLines(int num) {
+        this.maxLines = num;
     }
     
     /**
@@ -316,7 +320,7 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized boolean linesCleared() {
-        return lines.size() < MAXLINES && lines.size() < numberOfLines;
+        return lines.size() < maxLines && lines.size() < numberOfLines;
     }
     
     /**
@@ -327,7 +331,7 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized boolean maxLinesExceeded() {
-        return lines.size() == MAXLINES && lines.size() < numberOfLines;
+        return lines.size() == maxLines && lines.size() < numberOfLines;
     }
     
     /**
@@ -465,7 +469,7 @@ public class User implements Comparable<User> {
      */
     private void addLine(Message line) {
         lines.add(line);
-        if (lines.size() > MAXLINES) {
+        if (lines.size() > maxLines) {
             lines.remove(0);
         }
         numberOfLines++;

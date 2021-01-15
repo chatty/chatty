@@ -349,6 +349,7 @@ public class SettingsManager {
         settings.addLong("clearUserMessages", 12);
         settings.addMap("userNotes", new HashMap(), Setting.STRING);
         settings.addMap("userNotesChat", new HashMap(), Setting.STRING);
+        settings.addLong("userDialogMessageLimit", 100);
 
         // History / Favorites
         settings.addMap("channelHistory",new TreeMap(), Setting.LONG);

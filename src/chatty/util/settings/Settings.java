@@ -309,6 +309,10 @@ public class Settings {
     public long getLong(String setting) {
         return ((Number)(get(setting, Setting.LONG))).longValue();
     }
+    
+    public int getInt(String setting) {
+        return ((Number)(get(setting, Setting.LONG))).intValue();
+    }
 
     public long getLongDefault(String settingName) {
         return (Long)get(settingName, Setting.LONG, true);

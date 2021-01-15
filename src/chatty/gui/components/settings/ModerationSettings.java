@@ -66,12 +66,15 @@ public class ModerationSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(userInfo, "settings.long.clearUserMessages.label", 0, 4, 1, EAST,
                 d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}));
         
+        SettingsUtil.addLabeledComponent(userInfo, "userDialogMessageLimit", 0, 5, 1, EAST,
+                d.addSimpleLongSetting("userDialogMessageLimit", 3, true));
+        
         HotkeyTextField banReasonsHotkey = new HotkeyTextField(12, null);
         d.addStringSetting("banReasonsHotkey", banReasonsHotkey);
-        SettingsUtil.addLabeledComponent(userInfo, "banReasonsHotkey", 0, 5, 1, WEST, banReasonsHotkey);
+        SettingsUtil.addLabeledComponent(userInfo, "banReasonsHotkey", 0, 6, 1, EAST, banReasonsHotkey);
         
         userInfo.add(SettingsUtil.createLabel("banReasonsInfo", true),
-                d.makeGbc(0, 6, 2, 1));
+                d.makeGbc(0, 7, 2, 1));
     }
     
 }
