@@ -78,7 +78,6 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
         menu.add(item2);
         JMenuItem closeItem = new JMenuItem("Close");
         closeItem.addActionListener(e -> {
-            m.removeContent(this);
             remove();
         });
         menu.add(closeItem);
@@ -118,7 +117,7 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
 
     @Override
     public void remove() {
-        // No action
+        m.removeContent(this);
     }
 
     @Override

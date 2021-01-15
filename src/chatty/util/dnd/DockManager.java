@@ -419,10 +419,12 @@ public class DockManager {
         return true;
     }
     
-    protected void requestDrag() {
+    protected void requestDrag(boolean allowPopout) {
         main.startDrag();
-        for (DockPopout window : popouts) {
-            window.getBase().startDrag();
+        if (allowPopout) {
+            for (DockPopout window : popouts) {
+                window.getBase().startDrag();
+            }
         }
     }
     

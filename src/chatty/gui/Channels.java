@@ -565,22 +565,15 @@ public class Channels {
         }
         else {
             /**
-             * Default channel exists, check if it should be removed/moved. In
-             * some cases this may be called again when it's already removed, so
-             * also check that's still in there, just to be safe.
+             * Default channel exists, check if it should be removed. In some
+             * cases this may be called again when it's already removed, so also
+             * check that's still in there, just to be safe.
              */
             if (dock.hasContent(defaultChannel.getDockContent())) {
                 if (!channels.isEmpty() && dock.getContents(null).size() > 1) {
                     dock.removeContent(defaultChannel.getDockContent());
                     defaultChannel.cleanUp();
                     defaultChannel = null;
-                }
-                // If main is empty, move default channel to main
-                else if (dock.isMainEmpty()) {
-                    // Removing content will trigger this method as well, but this
-                    // is only run when the default channel is still added
-                    dock.removeContent(defaultChannel.getDockContent());
-                    addDefaultChannelToDock();
                 }
             }
         }

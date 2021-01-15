@@ -53,8 +53,8 @@ public class DockBase extends JPanel implements DockChild {
         child.addContent(content);
     }
     
-    public void requestDrag() {
-        manager.requestDrag();
+    public void requestDrag(boolean allowPopout) {
+        manager.requestDrag(allowPopout);
     }
     
     public void startDrag() {

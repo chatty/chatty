@@ -66,7 +66,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
                 // Start actual drag only after a short delay of dragging
                 if (dragIndex >= 0 && System.currentTimeMillis() - dragStarted > 120) {
                     transferHandler.drag(dragIndex, e);
-                    base.requestDrag();
+                    base.requestDrag(getContent(dragIndex).canPopout());
                     canStartDrag = false;
                 }
                 repaint();
