@@ -5,6 +5,11 @@ import chatty.User;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
 import javax.swing.JTextArea;
 
@@ -46,7 +51,18 @@ public class PastMessages extends JTextArea {
             b.append(" lines are saved>\n");
         }
         List<User.Message> messages = user.getMessages();
+        int currentDay = 0;
         for (User.Message m : messages) {
+            // Date separator
+            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(m.getTime()), ZoneId.systemDefault());
+            if (date.getDayOfMonth() != currentDay) {
+                currentDay = date.getDayOfMonth();
+                b.append("- ");
+                b.append(date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)));
+                b.append(" -");
+                b.append("\n");
+            }
+            // Messages
             if (m instanceof User.TextMessage) {
                 User.TextMessage tm = (User.TextMessage)m;
                 if (!StringUtil.isNullOrEmpty(currentMessageId)
