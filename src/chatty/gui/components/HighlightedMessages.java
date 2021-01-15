@@ -200,7 +200,7 @@ public class HighlightedMessages extends JDialog {
         setVisible(visible, true);
     }
     
-    private void setVisible(boolean visible, boolean switchTo) {
+    public void setVisible(boolean visible, boolean switchTo) {
         if (visible == isVisible()) {
             return;
         }

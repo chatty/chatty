@@ -1129,9 +1129,9 @@ public class MainGui extends JFrame implements Runnable {
             if (window == liveStreamsDialog) {
                 openLiveStreamsDialog();
             } else if (window == highlightedMessages) {
-                openHighlightedMessages();
+                openHighlightedMessages(false);
             } else if (window == ignoredMessages) {
-                openIgnoredMessages();
+                openIgnoredMessages(false);
             } else if (window == channelInfoDialog) {
                 openChannelInfoDialog();
             } else if (window == addressbookDialog) {
@@ -2732,25 +2732,25 @@ public class MainGui extends JFrame implements Runnable {
         client.joinChannels(chans);
     }
     
-    private void openHighlightedMessages() {
+    private void openHighlightedMessages(boolean switchTo) {
         windowStateManager.setWindowPosition(highlightedMessages);
-        highlightedMessages.setVisible(true);
+        highlightedMessages.setVisible(true, switchTo);
     }
     
     private void toggleHighlightedMessages() {
         if (!closeDialog(highlightedMessages)) {
-            openHighlightedMessages();
+            openHighlightedMessages(true);
         }
     }
     
-    private void openIgnoredMessages() {
+    private void openIgnoredMessages(boolean switchTo) {
         windowStateManager.setWindowPosition(ignoredMessages);
-        ignoredMessages.setVisible(true);
+        ignoredMessages.setVisible(true, switchTo);
     }
     
     private void toggleIgnoredMessages() {
         if (!closeDialog(ignoredMessages)) {
-            openIgnoredMessages();
+            openIgnoredMessages(true);
         }
     }
     
