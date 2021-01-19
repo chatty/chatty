@@ -202,6 +202,9 @@ public class Parser {
         else if (type.equals("input")) {
             return input(isRequired);
         }
+        else if (type.equals("request")) {
+            return request(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -439,6 +442,19 @@ public class Parser {
         }
         expect(")");
         return new Input(type, message, initial, isRequired);
+    }
+    
+    private Item request(boolean isRequired) throws ParseException {
+        expect("(");
+        Item url = param();
+        List<Item> options = new ArrayList<>();
+        if (accept(",")) {
+            do {
+                options.add(param());
+            } while (accept(","));
+        }
+        expect(")");
+        return new Request(url, options, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

@@ -15,12 +15,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
- * Managing custom commands, that return the text they are defined with, which
- * can then be entered like text in the input box. Custom commands are
- * case-insensitive.
+ * Manages named Custom Commands and provides additional methods like adding
+ * parameters to anonymous Custom Commands.
  * 
  * @author tduva
  */
@@ -42,25 +42,45 @@ public class CustomCommands {
     }
     
     /**
-     * Returns the text associated with the given command, inserting the given
-     * parameters as defined.
+     * Build the text based on the command with the given name and the
+     * parameters. The result is returned to the result function on the same
+     * thread as this is called, unless the command contains any async
+     * replacements.
      * 
-     * @param commandName The command
-     * @param parameters The parameters, each separated by a space from eachother
-     * @param channel
-     * @return A {@code String} as result of the command, or {@code null} if the
-     * command doesn't exist or the number of parameters were invalid
+     * <p>If a command with the given name does not exist, null is returned to
+     * the result function.
+     * 
+     * <p>This will add additional default parameters.
+     *
+     * @param commandName The command name
+     * @param parameters The parameters (must not be null)
+     * @param room The room the channel is in (must not be null)
+     * @param result Function that will be called with the result string
      */
-    public synchronized String command(String commandName, Parameters parameters, Room room) {
+    public void command(String commandName, Parameters parameters, Room room, Consumer<String> result) {
         CustomCommand command = getCommand(commands, commandName, room.getOwnerChannel());
         if (command != null) {
-            return command(command, parameters, room);
+            command(command, parameters, room, result);
         }
-        return null;
+        else {
+            result.accept(null);
+        }
     }
     
-    public synchronized String command(CustomCommand command, Parameters parameters, Room room) {
-        // Add some more parameters
+    /**
+     * Build the text based on the given command and the parameters. The result
+     * is returned to the result function on the same thread as this is called,
+     * unless the command ocntains any async replacements.
+     * 
+     * <p>This will add additional default parameters.
+     * 
+     * @param command The command (must not be null)
+     * @param parameters The parameters (must not be null)
+     * @param room The room
+     * @param result The result function
+     */
+    public void command(CustomCommand command, Parameters parameters, Room room, Consumer<String> result) {
+        // Add some default parameters
         addChans(room, parameters);
         Set<String> chans = new HashSet<>();
         client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
@@ -69,7 +89,6 @@ public class CustomCommands {
         parameters.putObject("localUser", client.getLocalUser(room.getChannel()));
         parameters.putObject("settings", client.settings);
         if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {
-            System.out.println("request");
             String stream = Helper.toValidStream(room.getStream());
             StreamInfo streamInfo = api.getStreamInfo(stream, null);
             if (streamInfo.isValid()) {
@@ -82,17 +101,47 @@ public class CustomCommands {
                 }
             }
         }
+        parameters.put("allow-request", "true");
         
-        // Add parameters for custom replacements
+        boolean performAsync = false;
+        if (shouldPerformAsyncReplacement(command)) {
+            performAsync = true;
+        }
+        
+        // Collect commands for custom replacements
         Set<String> customIdentifiers = command.getIdentifiersWithPrefix("_");
+        Map<String, CustomCommand> customIdentifiersCommands = new HashMap<>();
         for (String identifier : customIdentifiers) {
-            CustomCommand replacement = getCommand(replacements, identifier, room.getOwnerChannel());
-            if (replacement != null) {
-                parameters.put(identifier, replacement.replace(parameters));
+            CustomCommand identifierCommand = getCommand(replacements, identifier, room.getOwnerChannel());
+            if (identifierCommand != null) {
+                customIdentifiersCommands.put(identifier, identifierCommand);
+                if (shouldPerformAsyncReplacement(identifierCommand)) {
+                    performAsync = true;
+                }
             }
         }
-
-        return command.replace(parameters);
+        
+        // Actual replacement taking place
+        if (performAsync) {
+            new Thread(() -> {
+                addCustomIdentifiers(customIdentifiersCommands, parameters);
+                result.accept(command.replace(parameters));
+            }, "CustomCommand").start();
+        }
+        else {
+            addCustomIdentifiers(customIdentifiersCommands, parameters);
+            result.accept(command.replace(parameters));
+        }
+    }
+    
+    private static void addCustomIdentifiers(Map<String, CustomCommand> commands, Parameters parameters) {
+        for (Map.Entry<String, CustomCommand> entry : commands.entrySet()) {
+            parameters.put(entry.getKey(), entry.getValue().replace(parameters));
+        }
+    }
+    
+    private static boolean shouldPerformAsyncReplacement(CustomCommand command) {
+        return !command.getIdentifiersWithPrefix("-async-").isEmpty();
     }
     
     public static void addChans(Room room, Parameters parameters) {
@@ -190,7 +239,7 @@ public class CustomCommands {
      * @param channel The channel the command is run in
      * @return 
      */
-    private static CustomCommand getCommand(Map<String, Map<String, CustomCommand>> commands,
+    private synchronized static CustomCommand getCommand(Map<String, Map<String, CustomCommand>> commands,
             String commandName, String channel) {
         commandName = StringUtil.toLowerCase(commandName);
         channel = StringUtil.toLowerCase(Helper.toStream(channel));

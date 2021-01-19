@@ -136,6 +136,7 @@ public class UrlRequest {
             }
             LOGGER.warning(String.format("!%s (%s): %s",
                     label, ex, url));
+            result.error = ex.getClass().getSimpleName()+" ("+ex.getLocalizedMessage()+")";
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -157,6 +158,7 @@ public class UrlRequest {
         
         protected int responseCode;
         protected int length;
+        protected String error;
         
         public abstract void fill(BufferedReader reader, int responseCode) throws IOException;
         
@@ -166,6 +168,10 @@ public class UrlRequest {
         
         public int getLength() {
             return length;
+        }
+        
+        public String getError() {
+            return error;
         }
     }
     

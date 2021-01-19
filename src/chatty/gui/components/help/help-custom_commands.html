@@ -239,18 +239,13 @@
         </tr>
         <!-- User Context Menu -->
         <tr>
-            <th rowspan="7">User Context Menu</th>
-            <td><code>1</code>, <code>nick</code></td>
+            <th rowspan="5">User Context Menu</th>
+            <td><code>1</code></td>
             <td>Name of the user</td>
         </tr>
         <tr>
-            <td><code>display-nick</code>, <code>custom-nick</code>,
-                <code>full-nick</code></td>
-            <td>Variations of the name of the user. <code>display-nick</code>
-                may contain spaces for some users. <code>custom-nick</code> may
-                also be the <a href="help.html#customNames">Custom Name</a> you
-                set, <code>full-nick</code> is what is displayed in the userlist
-                (includes status symbols)</td>
+            <td>Various</td>
+            <td><a href="#user-identifiers">Various user-related identifiers</a></td>
         </tr>
         <tr>
             <td><code>msg</code></td>
@@ -269,14 +264,6 @@
             <td>Message id of the selected message filtered by AutoMod, for
                 approving or denying the message (when opened by clicking on
                 an appropriate message in chat)</td>
-        </tr>
-        <tr>
-            <td><code>user-id</code></td>
-            <td>The Twitch ID of the user</td>
-        </tr>
-        <tr>
-            <td><code>twitch-badge-info</code></td>
-            <td>Textual info of the user's Twitch badges (may change)</td>
         </tr>
         <!-- User Dialog -->
         <tr>
@@ -361,7 +348,24 @@
         </tr>
     </table>
     
-    <p>Example with pre-defined parameters:</p>
+    <h3><a name="user-identifiers">User-related Identifiers</a></h3>
+    <p>These are available where a user is involved, such as the User Dialog and
+        User Context Menu. In some contexts they may also be available with the
+        <code>my-</code> prefix for your own user info (e.g. <code>my-full-nick</code>).</p>
+    <ul>
+        <li><code>nick</code> - Name of the user, maybe capitalized</li>
+        <li><code>display-nick</code> - Same as <code>nick</code>, but may not match the regular username (spaces, completely different)</li>
+        <li><code>display-nick2</code> - Same as <code>display-nick</code>, but contains the regular username in parentheses if necessary</li>
+        <li><code>custom-nick</code> - Same as <code>display-nick</code>, but may also be the <a href="help.html#customNames">Custom Name</a> you set</li>
+        <li><code>full-nick</code> - The same name that is displayed in the userlist (includes status symbols)</li>
+        <li><code>full-nick2</code> - Same as <code>full-nick</code>, but contains the regular username in parentheses if necessary</li>
+        <li><code>special-nick</code> - Returns <code>true</code> if the user has a display name not matching the regular username</li>
+        <li><code>user-id</code> - The Twitch ID of the user (if available)</li>
+        <li><code>twitch-badges</code> - A textual representation of the Twitch badges (if available)</li>
+        <li><code>twitch-badge-info</code> - Another textual representation of the Twitch badges (if available)</li>
+    </ul>
+    
+    <h3>Pre-defined Parameters Example</h3>
     <dl class="defList">
         <dt><code>/streaminfo /echo [Stream Status] $(streamstatus) [Uptime] $(streamuptime)</code></dt>
         <dd>Entering <code>/streaminfo</code> outputs an info message (only for
@@ -567,6 +571,23 @@
             name you are logged into Chatty with.</dd>
         <dd><em>Example:</em> <code>$if($get(ontop),ONTOP)</code> will return
             <code>ONTOP</code> only if "View - Always on top" is enabled.</dd>
+        
+        <dt><code>$request(&lt;url&gt;,[options])</code></dt>
+        <dd>Performs a GET request on the given http/https URL and returns the
+            body of the reponse interpreted as UTF-8 encoded text. If an error
+            occurs the response will be empty.</dd>
+        <dd>Options:
+            <ul>
+                <li><code>error</code> - A request error will return an error
+                    message instead of an empty response.</li>
+            </ul></dd>
+        <dd><em>Note:</em> Normally Custom Commands are performed instantaneously, however the
+            replacements for any Custom Command that contains the <code>$request()</code>
+            function will be performed asynchronously so that it can complete
+            the request without freezing the GUI. This means the result of the
+            Custom Command may be run seconds or more later.</dd>
+        <dd><em>Tip:</em> Open "Extra - Debug window" to view debug output of
+            the requests being performed.</dd>
     </dl>
     
     <p class="note"><em>Tip:</em> Enter e.g. <code>//echo $datetime()</code>

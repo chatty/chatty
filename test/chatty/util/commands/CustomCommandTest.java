@@ -1,6 +1,9 @@
 
 package chatty.util.commands;
 
+import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -259,6 +262,38 @@ public class CustomCommandTest {
         CustomCommand.parse(" $ ");
         CustomCommand.parse(" $join(");
         CustomCommand.parse(" $join( ");
+    }
+    
+    @Test
+    public void testUser() {
+        User user = new User("username", "User Name", Room.EMPTY);
+
+        Parameters parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        CustomCommand command = CustomCommand.parse("$(nick) $(display-nick) $(full-nick) $(custom-nick) $(special-nick) $(display-nick2) $(full-nick2) $(user-id)");
+        assertEquals("username User Name User Name User Name true User Name (username) User Name (username) ", command.replace(parameters));
+        
+        user.setModerator(true);
+        user.setCustomNick("custom");
+        user.setDisplayNick("asdas");
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("username asdas @custom custom true asdas (username) @custom (username) ", command.replace(parameters));
+        
+        user.setId("id");
+        user.setDisplayNick("UserName");
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("UserName UserName @custom custom  UserName @custom id", command.replace(parameters));
+        
+        user.setCustomNick(null);
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("UserName UserName @UserName UserName  UserName @UserName id", command.replace(parameters));
     }
     
 }

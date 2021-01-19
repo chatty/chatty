@@ -58,10 +58,25 @@ interface Item {
         return null;
     }
 
+    /**
+     * Returns all prefixes with the given prefix contained in {@code input}.
+     * 
+     * @param prefix The prefix
+     * @param input Can be one or several {@code String} or {@code Item} objects
+     * @return The prefixes, may be empty, but never {@code null}
+     */
     public static Set<String> getIdentifiersWithPrefix(String prefix, Object... input) {
         return getIdentifiersWithPrefix(prefix, false, input);
     }
     
+    /**
+     * Returns all prefixes with the given prefix contained in {@code input}.
+     * 
+     * @param prefix The prefix
+     * @param required Whether to get required identifiers
+     * @param input Can be one or several {@code String} or {@code Item} objects
+     * @return The prefixes, may be empty, but never {@code null}
+     */
     public static Set<String> getIdentifiersWithPrefix(String prefix, boolean required, Object... input) {
         Set<String> output = new HashSet<>();
         for (Object value : input) {

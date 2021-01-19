@@ -1716,14 +1716,17 @@ public class TwitchClient {
             g.printLine("Custom command: Not on a channel");
             return;
         }
-        String result = customCommands.command(command, parameters, room);
-        if (result == null) {
-            g.printLine("Custom command: Insufficient parameters/data");
-        } else if (result.isEmpty()) {
-            g.printLine("Custom command: No action specified");
-        } else {
-            textInput(room, result, parameters);
-        }
+        customCommands.command(command, parameters, room, result -> {
+            if (result == null) {
+                g.printLine("Custom command: Insufficient parameters/data");
+            }
+            else if (result.isEmpty()) {
+                g.printLine("Custom command: No action specified");
+            }
+            else {
+                textInput(room, result, parameters);
+            }
+        });
     }
     
     public void customCommandLaunch(String commandAndParameters) {
@@ -1754,28 +1757,32 @@ public class TwitchClient {
             g.printLine("Custom command not found: "+command);
             return;
         }
-        String result = customCommands.command(command, parameters, room);
-        if (result == null) {
-            g.printLine("Custom command '"+command+"': Insufficient parameters/data");
-        } else if (result.isEmpty()) {
-            // This shouldn't actually happen if edited through the settings,
-            // which should trim() out whitespace, so that the command won't
-            // have a result if it's empty and thus won't be added as a command.
-            // Although it can also happen if the command just contains a \
-            // (which is interpreted as an escape character).
-            g.printLine("Custom command '"+command+"': No action specified");
-        } else {
-            // Check what command is called in the result of this command
-            String[] resultSplit = result.split(" ", 2);
-            String resultCommand = resultSplit[0];
-            if (resultCommand.startsWith("/")
-                    && customCommands.containsCommand(resultCommand.substring(1), room)) {
-                g.printLine("Custom command '"+command+"': Calling another custom "
-                        + "command ('"+resultCommand.substring(1)+"') is not allowed");
-            } else {
-                textInput(room, result, parameters);
+        customCommands.command(command, parameters, room, result -> {
+            if (result == null) {
+                g.printLine("Custom command '" + command + "': Insufficient parameters/data");
             }
-        }
+            else if (result.isEmpty()) {
+                // This shouldn't actually happen if edited through the settings,
+                // which should trim() out whitespace, so that the command won't
+                // have a result if it's empty and thus won't be added as a command.
+                // Although it can also happen if the command just contains a \
+                // (which is interpreted as an escape character).
+                g.printLine("Custom command '" + command + "': No action specified");
+            }
+            else {
+                // Check what command is called in the result of this command
+                String[] resultSplit = result.split(" ", 2);
+                String resultCommand = resultSplit[0];
+                if (resultCommand.startsWith("/")
+                        && customCommands.containsCommand(resultCommand.substring(1), room)) {
+                    g.printLine("Custom command '" + command + "': Calling another custom "
+                            + "command ('" + resultCommand.substring(1) + "') is not allowed");
+                }
+                else {
+                    textInput(room, result, parameters);
+                }
+            }
+        });
     }
     
     /**
