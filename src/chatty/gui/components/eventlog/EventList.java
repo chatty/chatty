@@ -94,6 +94,10 @@ public class EventList extends JList<Event> {
         }
     }
     
+    public void removeEvent(Event event) {
+        data.remove(event);
+    }
+    
     private static class MyListModel extends AbstractListModel<Event> {
 
         private static final int MAX_ENTRIES = 50;
@@ -111,17 +115,34 @@ public class EventList extends JList<Event> {
         }
 
         public void add(Event event) {
-            for (Event e : items) {
-                if (e.id != null && e.id.equals(event.id)) {
-                    return;
-                }
+            if (getIndexOf(event) != -1) {
+                return;
             }
             items.add(0, event);
             super.fireIntervalAdded(this, 0, 0);
             if (items.size() > MAX_ENTRIES) {
-                items.remove(items.size() - 1);
-                super.fireIntervalRemoved(this, items.size(), items.size());
+                int removeIndex = items.size() - 1;
+                items.remove(removeIndex);
+                super.fireIntervalRemoved(this, removeIndex, removeIndex);
             }
+        }
+        
+        public void remove(Event event) {
+            int index = getIndexOf(event);
+            if (index != -1) {
+                items.remove(index);
+                super.fireIntervalRemoved(this, index, index);
+            }
+        }
+        
+        private int getIndexOf(Event event) {
+            for (int i = 0; i < items.size(); i++) {
+                Event e = items.get(i);
+                if (e.id != null && e.id.equals(event.id)) {
+                    return i;
+                }
+            }
+            return -1;
         }
 
     }

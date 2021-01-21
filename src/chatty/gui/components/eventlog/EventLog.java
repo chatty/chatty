@@ -34,6 +34,7 @@ public class EventLog extends JDialog {
         super(g);
         setTitle(Language.getString("eventLog.title"));
         this.g = g;
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
         notificationList = new EventList(this);
         systemList = new EventList(this);
@@ -84,7 +85,9 @@ public class EventLog extends JDialog {
         setSize(460, 400);
     }
     
+    @Override
     public void setVisible(boolean visible) {
+        setLocationRelativeTo(g);
         super.setVisible(visible);
         if (visible) {
             updateEventState();
@@ -127,8 +130,26 @@ public class EventLog extends JDialog {
         }
     }
     
+    public void remove(Event event) {
+        if (event.type == Event.Type.NOTIFICATION) {
+            // Disabled for now
+        }
+        else {
+            systemList.removeEvent(event);
+            updateEventState();
+        }
+    }
+    
     private static EventLog main;
     
+    /**
+     * Add an event with the given id and arguments. If the id already exists in
+     * the list the event will not be added (it can be removed first to update
+     * it).
+     * 
+     * @param id
+     * @param arguments 
+     */
     public static void addSystemEvent(String id, Object... arguments) {
         String stringId = id;
         if (id.startsWith("session.")) {
@@ -150,6 +171,12 @@ public class EventLog extends JDialog {
     public static void addSystemEvent(String id, String title, String text) {
         if (main != null) {
             main.add(new Event(Event.Type.SYSTEM, id, title, text, null, null));
+        }
+    }
+    
+    public static void removeSystemEvent(String id) {
+        if (main != null) {
+            main.remove(new Event(Event.Type.SYSTEM, id, null, null, null, null));
         }
     }
     

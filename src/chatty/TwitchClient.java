@@ -264,7 +264,6 @@ public class TwitchClient {
         usercolorManager = new UsercolorManager(settings);
         usericonManager = new UsericonManager(settings);
         customCommands = new CustomCommands(settings, api, this);
-        customCommands.loadFromSettings();
         botNameManager = new BotNameManager(settings);
         settings.addSettingsListener(new SettingSaveListener());
 
@@ -415,6 +414,7 @@ public class TwitchClient {
         
         addCommands();
         g.addGuiCommands();
+        updateCustomCommands();
         
         // Request some stuff
         api.getEmotesBySets("0");
@@ -479,6 +479,10 @@ public class TwitchClient {
         } catch (SecurityException ex) {
             LOGGER.warning("Error setting drawing settings: "+ex.getLocalizedMessage());
         }
+    }
+    
+    public void updateCustomCommands() {
+        customCommands.update(commands);
     }
     
     /**

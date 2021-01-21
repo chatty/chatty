@@ -4635,7 +4635,7 @@ public class MainGui extends JFrame implements Runnable {
                 client.addressbook.setSomewhatUniqueCategories((String)value);
             }
             if (setting.equals("commands")) {
-                client.customCommands.loadFromSettings();
+                client.updateCustomCommands();
             }
             if (setting.equals("channelContextMenu")
                     || setting.equals("userContextMenu")

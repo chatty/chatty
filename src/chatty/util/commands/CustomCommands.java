@@ -1,9 +1,11 @@
 
 package chatty.util.commands;
 
+import chatty.Commands;
 import chatty.Helper;
 import chatty.Room;
 import chatty.TwitchClient;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
@@ -157,6 +159,21 @@ public class CustomCommands {
      */
     public synchronized boolean containsCommand(String command, Room room) {
         return getCommand(commands, command, room.getOwnerChannel()) != null;
+    }
+    
+    public void update(Commands regularCommands) {
+        loadFromSettings();
+        Set<String> nameCollisions = new HashSet<>();
+        for (String customCommandName : getCommandNames()) {
+            if (regularCommands.isCommand(customCommandName)) {
+                nameCollisions.add(customCommandName);
+            }
+        }
+        // Remove event when no longer necessary, also for updating event
+        EventLog.removeSystemEvent("session.settings.customCommandNameCollsision");
+        if (!nameCollisions.isEmpty()) {
+            EventLog.addSystemEvent("session.settings.customCommandNameCollsision", StringUtil.join(nameCollisions, ", ", s -> "/"+s));
+        }
     }
     
     /**
