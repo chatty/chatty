@@ -837,7 +837,9 @@ public class TwitchClient {
     }
     
     private void sendMessage(String channel, String text) {
-        sendMessage(channel, text, false);
+        if (c.onChannel(channel, true)) {
+            sendMessage(channel, text, false);
+        }
     }
     
     /**
@@ -1048,6 +1050,14 @@ public class TwitchClient {
         });
         commands.add("me", p -> {
             commandActionMessage(p.getChannel(), p.getArgs());
+        });
+        commands.add("say", p -> {
+            if (p.hasArgs()) {
+                sendMessage(p.getChannel(), p.getArgs());
+            }
+            else {
+                g.printLine(p.getRoom(), "Usage: /say <message>");
+            }
         });
         commands.add("msg", p -> {
             commandCustomMessage(p.getArgs());
