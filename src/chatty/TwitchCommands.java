@@ -65,10 +65,32 @@ public class TwitchCommands {
         "emoteonlyoff", "r9kbeta", "r9kbetaoff"
     }));
     
+    /**
+     * Other commands, only used for isCommand().
+     */
+    private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
+        "ban", "timeout", "fixmods", "host2", "raid", "unraid", "requests",
+        "to", "r9k", "r9koff", "host"
+    }));
+    
     private TwitchConnection c;
     
     public TwitchCommands(TwitchConnection c) {
         this.c = c;
+    }
+    
+    public static boolean isCommand(String command) {
+        command = StringUtil.toLowerCase(command);
+        if (SIMPLE_COMMANDS.contains(command)) {
+            return true;
+        }
+        if (NO_PARAMETER_COMMANDS.contains(command)) {
+            return true;
+        }
+        if (OTHER_COMMANDS.contains(command)) {
+            return true;
+        }
+        return false;
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {

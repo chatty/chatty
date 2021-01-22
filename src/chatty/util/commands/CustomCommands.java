@@ -5,6 +5,7 @@ import chatty.Commands;
 import chatty.Helper;
 import chatty.Room;
 import chatty.TwitchClient;
+import chatty.TwitchCommands;
 import chatty.gui.components.eventlog.EventLog;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -165,7 +166,8 @@ public class CustomCommands {
         loadFromSettings();
         Set<String> nameCollisions = new HashSet<>();
         for (String customCommandName : getCommandNames()) {
-            if (regularCommands.isCommand(customCommandName)) {
+            if (regularCommands.isCommand(customCommandName)
+                    || TwitchCommands.isCommand(customCommandName)) {
                 nameCollisions.add(customCommandName);
             }
         }
