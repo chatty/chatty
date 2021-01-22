@@ -24,6 +24,22 @@ public class Parameters {
         this.parameters = parameters;
         updateArgs();
     }
+    
+    /**
+     * Creates a copy containing the same String and Object parameters.
+     * 
+     * <p>
+     * Useful if the same base parameters should be available to several
+     * commands, but changes performed for one command should not affect
+     * following commands.
+     *
+     * @return 
+     */
+    public synchronized Parameters copy() {
+        Parameters result = new Parameters(new HashMap<>(parameters));
+        result.objectParameters.putAll(objectParameters);
+        return result;
+    }
 
     /**
      * Get a parameter with the given key. The key should be all-lowercase.
@@ -70,6 +86,21 @@ public class Parameters {
     public synchronized void put(String key, String value) {
         if (key != null && value != null && !value.isEmpty()) {
             parameters.put(key, value);
+            if (key.equals("args")) {
+                updateArgs();
+            }
+        }
+    }
+    
+    /**
+     * Remove a parameter. If the key doesn't exist in the current parameters
+     * nothing happens.
+     *
+     * @param key The key of the parameter to remove (may be null)
+     */
+    public synchronized void remove(String key) {
+        if (key != null) {
+            parameters.remove(key);
             if (key.equals("args")) {
                 updateArgs();
             }
@@ -148,7 +179,7 @@ public class Parameters {
         parameters.put("args", args);
         return new Parameters(parameters);
     }
-
+    
     @Override
     public synchronized String toString() {
         return parameters.toString();

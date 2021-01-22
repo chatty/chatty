@@ -813,7 +813,7 @@ public class GuiUtil {
     
     /**
      * Run in the EDT, either by running it directly if already in the EDT or
-     * by using SwingUtilities.invokeAndWait.
+     * by using {@link SwingUtilities#invokeAndWait(Runnable)}.
      * 
      * @param runnable What to execute
      * @param description Used for logging when an error occurs
@@ -829,6 +829,21 @@ public class GuiUtil {
             catch (Exception ex) {
                 LOGGER.warning("Failed to execute edtAndWait ("+description+"): "+ex);
             }
+        }
+    }
+    
+    /**
+     * Run in the EDT, either by running it directly if already in the EDT or
+     * by using {@link SwingUtilities#invokeLater(Runnable)}.
+     * 
+     * @param runnable 
+     */
+    public static void edt(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        }
+        else {
+            SwingUtilities.invokeLater(runnable);
         }
     }
     

@@ -312,6 +312,40 @@
         <dd>Outputs <code>a</code> and <code>|b|</code></dd>
     </dl>
     
+    <p>When using <code>/chain</code> with <a href="help-custom_commands.html">Custom Command</a>
+        replacements, consider the following:</p>
+    
+    <dl class="defList">
+        <dt><code>/chain /echo $(msg) | /echo abc</code></dt>
+        <dd>All replacements are performed before the <code>/chain</code>
+            command is executed, so anything in <code>$(msg)</code> is put in
+            first. If <code>$(msg)</code> contained <code>Hello World!</code>:<br />
+            <code>/chain /echo Hello World! | /echo abc</code></dd>
+        <dd>This means that if a replacement contains a <code>|</code> character
+            it would add an additional command. If <code>$(msg)</code> contained <code>Hello | World!</code>, then <code>World!</code> would be
+            separately entered into the inputbox (so it would output two <code>/echo</code>
+            info messages and send <code>World!</code> to chat):<br />
+            <code>/chain /echo Hello | World! | /echo abc</code></dd>
+        <dd>Since this could cause issues, any top-level replacement will escape
+            the <code>|</code> character automatically if the Custom Command
+            begins with the <code>/chain</code> command (so it would output
+            <code>Hello | World!</code> and <code>abc</code>):<br />
+            <code>/chain /echo Hello || World! | /echo abc</code></dd>
+        <dd>You can prevent this automatic escaping (if you are absolutely sure that
+            you want replacements to be able to insert any command) by adding
+            a backslash in front (this doesn't work when you enter the <code>/chain</code>
+            command directly into the inputbox):<br />
+            <code>\/chain /echo Hello | World! | /echo abc</code></dd>
+        
+        <dt><code>/chain /echo abc $(chain-test)</code></dt>
+        <dd>You can test this by using the <code>$(chain-test)</code> replacement.
+            This should (if e.g. added in the body of a Custom Command) output the following info message:<br />
+            <code>abc | /echo Test || Message</code></dd>
+        <dd>If you add a backslash in front, it will output two info messages:<br />
+            <code>abc</code><br />
+            <code>Test | Message</code></dd>
+    </dl>
+    
     <h2>
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>

@@ -48,7 +48,14 @@ public class Parser {
         Items items = new Items();
         while (reader.hasNext() && (to == null || !reader.peek().matches(to))) {
             if (accept("$")) {
-                items.add(specialThing());
+                Item item = specialThing();
+                if (to == null) {
+                    // Top-level item
+                    items.add(new SpecialEscape(item));
+                }
+                else {
+                    items.add(item);
+                }
             } else if (accept("\\")) {
                 if (reader.hasNext()) {
                     // Just read next character as literal
@@ -218,10 +225,10 @@ public class Parser {
      */
     private Item identifier() throws ParseException {
         String ref = readAll("[a-zA-Z0-9-_]");
-        Matcher m = Pattern.compile("([0-9]+)(-)?").matcher(ref);
         if (ref.isEmpty()) {
             error("Expected identifier", 1);
         }
+        Matcher m = Pattern.compile("([0-9]+)(-)?").matcher(ref);
         if (m.matches()) {
             int index = Integer.parseInt(m.group(1));
             if (index == 0) {

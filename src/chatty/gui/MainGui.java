@@ -3240,19 +3240,16 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void testHotkey() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Channel panel = channels.getLastActiveChannel();
-                if (panel != null) {
-                    panel.selectPreviousUser();
-                }
+        GuiUtil.edt(() -> {
+            Channel panel = channels.getLastActiveChannel();
+            if (panel != null) {
+                panel.selectPreviousUser();
             }
         });
     }
     
     public void printLine(final String line) {
-        SwingUtilities.invokeLater(() -> {
+        GuiUtil.edt(() -> {
             Channel panel = channels.getLastActiveChannel();
             if (panel != null) {
                 printInfo(panel, InfoMessage.createInfo(line));
@@ -3261,32 +3258,24 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printSystem(final String line) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Channel panel = channels.getActiveChannel();
-                if (panel != null) {
-                    printInfo(panel, InfoMessage.createSystem(line));
-                }
+        GuiUtil.edt(() -> {
+            Channel panel = channels.getActiveChannel();
+            if (panel != null) {
+                printInfo(panel, InfoMessage.createSystem(line));
             }
         });
     }
 
     public void printLine(final Room room, final String line) {
-        SwingUtilities.invokeLater(() -> {
-            printInfo(room, line, null);
-        });
+        printInfo(room, line, null);
     }
     
     public void printInfo(final Room room, final String line, MsgTags tags) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (room == null || room == Room.EMPTY) {
-                    printLine(line);
-                } else {
-                    printInfo(channels.getChannel(room), InfoMessage.createInfo(line, tags));
-                }
+        GuiUtil.edt(() -> {
+            if (room == null || room == Room.EMPTY) {
+                printLine(line);
+            } else {
+                printInfo(channels.getChannel(room), InfoMessage.createInfo(line, tags));
             }
         });
     }

@@ -1359,11 +1359,13 @@ public class TwitchClient {
                 g.printSystem("No valid commands");
             }
             for (String chainedCommand : commands) {
-                textInput(p.getRoom(), chainedCommand, p.getParameters());
+                // Copy parameters so changing args in commandInput() doesn't
+                // affect the following commands
+                textInput(p.getRoom(), chainedCommand, p.getParameters().copy());
             }
         });
     }
-        
+    
     /**
      * Executes the command with the given name, which can be a built-in or
      * Custom Command.
@@ -1769,6 +1771,10 @@ public class TwitchClient {
         }
         if (!customCommands.containsCommand(command, room)) {
             g.printLine("Custom command not found: "+command);
+            return;
+        }
+        if (CustomCommands.getCustomCommandCount(parameters) > 2) {
+            g.printLine(String.format("Stopped executing '%s' (too many nested Custom Commands)", command));
             return;
         }
         customCommands.command(command, parameters, room, result -> {

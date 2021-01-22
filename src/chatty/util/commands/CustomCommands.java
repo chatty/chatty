@@ -104,7 +104,17 @@ public class CustomCommands {
                 }
             }
         }
+        parameters.put("chain-test", "| /echo Test || Message");
         parameters.put("allow-request", "true");
+        if (command.getRaw() != null && command.getRaw().startsWith("/chain ")) {
+            parameters.put("escape-pipe", "true");
+        }
+        else {
+            // Need to remove, so it doesn't stay for chained commands which
+            // still use the same Parameters
+            parameters.remove("escape-pipe");
+        }
+        parameters.put("nested-custom-commands", String.valueOf(getCustomCommandCount(parameters) + 1));
         
         boolean performAsync = false;
         if (shouldPerformAsyncReplacement(command)) {
@@ -290,6 +300,11 @@ public class CustomCommands {
             commands.put(commandName, new HashMap<>());
         }
         commands.get(commandName).put(channel, parsedCommand);
+    }
+    
+    public static int getCustomCommandCount(Parameters parameters) {
+        String countString = parameters.get("nested-custom-commands");
+        return countString == null ? 0 : Integer.parseInt(countString);
     }
     
 }
