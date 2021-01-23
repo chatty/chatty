@@ -14,14 +14,24 @@ class Replacement implements Item {
 
     private final boolean isRequired;
     private final Item identifier;
+    private final Item args;
 
-    public Replacement(Item name, boolean isRequired) {
+    public Replacement(Item name, Item args, boolean isRequired) {
         this.identifier = name;
         this.isRequired = isRequired;
+        this.args = args;
     }
 
     @Override
     public String replace(Parameters parameters) {
+        if (args != null) {
+            String argsValue = args.replace(parameters);
+            if (argsValue == null) {
+                return null;
+            }
+            parameters = parameters.copy();
+            parameters.putArgs(argsValue);
+        }
         String value = identifier.replace(parameters);
         if (value != null && !value.isEmpty()) {
             return value;

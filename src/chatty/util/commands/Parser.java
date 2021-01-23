@@ -467,12 +467,16 @@ public class Parser {
     private Replacement replacement(boolean isRequired) throws ParseException {
         if (accept("(")) {
             Item identifier = identifier();
+            Item args = null;
+            if (accept(",")) {
+                args = param();
+            }
             expect(")");
-            return new Replacement(identifier, isRequired);
+            return new Replacement(identifier, args, isRequired);
         }
         else {
             Item identifier = tinyIdentifier();
-            return new Replacement(identifier, isRequired);
+            return new Replacement(identifier, null, isRequired);
         }
     }
     

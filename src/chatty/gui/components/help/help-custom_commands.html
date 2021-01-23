@@ -632,9 +632,23 @@
         creates a mention if the first parameter isn't equal to the current
         channel.</p>
     
-    <p class="note"><em>Note:</em> Custom identifiers always start with an
-        underscore and can themselves not contain replacements with custom
-        identifiers (well they technicially can, but they won't get replaced).</p>
+    <p>The data that can be accessed via replacements is the same as in the
+        command it is used in, so in this example the text provided after the
+        <code>/faq</code> is available via the <code>$1-</code> replacement.</p>
+    
+    <p>Optionally you can also provide a second parameter in a Custom Replacement
+        that overwrites the default value of the <code>$1-</code> replacement:</p>
+    
+    <p><code>/faq $(_m,$(custom-nick))FAQ: https://pastebin.com/KySx3KDu</code></p>
+    
+    <p>This will make whatever value is contained in <code>$(custom-nick)</code>
+        available in <code>$1-</code> instead of the default.</p>
+    
+    <p class="note"><em>Note:</em> Custom Replacement identifiers always start
+        with an underscore.</p>
+    <p class="note"><em>Note:</em> Custom Replacements don't work when placed
+        inside eachother. So for example in <code>_abc Abc: $(_m)</code> the <code>$(_m)</code> will
+        always be empty (whether it's defined in the Custom Commands list or not).</p>
     
     
     <h2><a name="menus">Custom Context Menus / User Dialog Buttons</a></h2>

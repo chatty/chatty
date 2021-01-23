@@ -74,6 +74,12 @@ class Identifier implements Item {
             value = getUserParameter(name.substring("my-".length()),
                     (User)parameters.getObject("localUser"));
         }
+        if (value == null && name.startsWith("_")) {
+            CustomCommand command = (CustomCommand)parameters.getObject(name);
+            if (command != null) {
+                value = command.replace(parameters);
+            }
+        }
         return value != null ? value : "";
     }
 

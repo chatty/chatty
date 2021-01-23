@@ -149,7 +149,7 @@ public class CustomCommands {
     
     private static void addCustomIdentifiers(Map<String, CustomCommand> commands, Parameters parameters) {
         for (Map.Entry<String, CustomCommand> entry : commands.entrySet()) {
-            parameters.put(entry.getKey(), entry.getValue().replace(parameters));
+            parameters.putObject(entry.getKey(), entry.getValue());
         }
     }
     
