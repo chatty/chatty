@@ -1026,7 +1026,8 @@ public class TwitchConnection {
             if (this != irc) {
                 return;
             }
-            if (tags.isValue("msg-id", "whisper_invalid_login")) {
+            String msg_id = tags.get("msg-id");
+            if (msg_id != null && msg_id.startsWith("whisper_")) {
                 listener.onInfo(text);
             } else if (onChannel(channel)) {
                 infoMessage(channel, text, tags);
