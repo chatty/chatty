@@ -96,7 +96,7 @@ public class ContextMenuHelper {
      */
     public static void addLivestreamerOptions(ContextMenu m) {
         if (enableLivestreamer) {
-            String livestreamerMenu = "Livestreamer";
+            String livestreamerMenu = "Streamlink";
             m.setSubMenuIcon(livestreamerMenu, ICON_COMMANDLINE);
             List<Quality> qualities = parseLivestreamerQualities(livestreamerQualities);
             for (Quality q : qualities) {

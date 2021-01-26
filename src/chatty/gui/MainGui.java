@@ -2399,7 +2399,7 @@ public class MainGui extends JFrame implements Runnable {
                 if (stream.equals("$active")) {
                     stream = channels.getActiveChannel().getStreamName();
                     if (stream == null) {
-                        printLine("Livestreamer: No channel open.");
+                        printLine("Streamlink: No channel open.");
                         return;
                     }
                 }
@@ -2407,7 +2407,7 @@ public class MainGui extends JFrame implements Runnable {
                     quality = split[1];
                 }
             }
-            printLine("Livestreamer: Opening stream..");
+            printLine("Streamlink: Opening stream..");
             livestreamerDialog.open(stream, quality);
         });
         client.commands.addEdt("help", p -> {

@@ -676,7 +676,6 @@ public class SettingsManager {
         settings.addBoolean("livestreamer", false);
         settings.addString("livestreamerQualities", "Best, Worst, Select");
         settings.addString("livestreamerCommand", "livestreamer");
-        settings.addBoolean("livestreamerUseAuth", false);
         settings.addBoolean("livestreamerShowDialog", true);
         settings.addBoolean("livestreamerAutoCloseDialog", true);
 
