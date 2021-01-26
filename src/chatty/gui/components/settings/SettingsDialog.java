@@ -94,6 +94,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final ImageSettings imageSettings;
     private final HotkeySettings hotkeySettings;
     private final NameSettings nameSettings;
+    private final HighlightSettings highlightSettings;
+    private final IgnoreSettings ignoreSettings;
     
     public enum Page {
         MAIN("Main", Language.getString("settings.page.main")),
@@ -250,8 +252,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new LookSettings(this), Page.LOOK.name);
         cards.add(new FontSettings(this), Page.FONTS.name);
         cards.add(new ColorSettings(this, settings), Page.CHATCOLORS.name);
-        cards.add(new HighlightSettings(this), Page.HIGHLIGHT.name);
-        cards.add(new IgnoreSettings(this), Page.IGNORE.name);
+        highlightSettings = new HighlightSettings(this);
+        cards.add(highlightSettings, Page.HIGHLIGHT.name);
+        ignoreSettings = new IgnoreSettings(this);
+        cards.add(ignoreSettings, Page.IGNORE.name);
         cards.add(new FilterSettings(this), Page.FILTER.name);
         msgColorSettings = new MsgColorSettings(this);
         cards.add(msgColorSettings, Page.MSGCOLORS.name);
@@ -401,6 +405,15 @@ public class SettingsDialog extends JDialog implements ActionListener {
                     showPanel(Page.USERICONS);
                     Usericon icon = (Usericon)parameter;
                     imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.id);
+                } else if (action.equals("selectHighlight")) {
+                    showPanel(Page.HIGHLIGHT);
+                    highlightSettings.selectItem((String) parameter);
+                } else if (action.equals("selectIgnore")) {
+                    showPanel(Page.IGNORE);
+                    ignoreSettings.selectItem((String) parameter);
+                } else if (action.equals("selectMsgColor")) {
+                    showPanel(Page.MSGCOLORS);
+                    msgColorSettings.selectItem((String) parameter);
                 }
             }
         });

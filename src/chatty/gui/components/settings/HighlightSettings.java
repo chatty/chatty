@@ -29,6 +29,7 @@ public class HighlightSettings extends SettingsPanel {
         return INFO_HEADER+SettingsUtil.getInfo("info-matching.html", type);
     }
     
+    private final ListSelector items;
     private final NoHighlightUsers noHighlightUsers;
     private final HighlightBlacklist highlightBlacklist;
     
@@ -90,7 +91,7 @@ public class HighlightSettings extends SettingsPanel {
         
         gbc = d.makeGbc(0,5,2,1);
         gbc.insets = new Insets(5,10,5,5);
-        ListSelector items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
+        items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
         items.setInfo(getMatchingHelp("highlight"));
         HighlighterTester tester = new HighlighterTester(d, true, "Highlight:");
         tester.setAddToBlacklistListener(e -> {
@@ -133,6 +134,10 @@ public class HighlightSettings extends SettingsPanel {
                 highlightBlacklistButton);
         
         SettingsUtil.addSubsettings(highlightMatches, highlightMatchesAll);
+    }
+    
+    public void selectItem(String item) {
+        items.setSelected(item);
     }
     
     private static class NoHighlightUsers extends JDialog {

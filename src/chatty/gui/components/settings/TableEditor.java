@@ -642,6 +642,10 @@ public class TableEditor<T> extends JPanel {
         setRowSelected(indexToView(modelIndex));
     }
     
+    protected void selectItem(int modelIndex) {
+        setRowSelected(indexToView(modelIndex));
+    }
+    
     /**
      * Remove the selected entry. If no entry is selected, nothing is done.
      * After removing, an appropriate remaining entry is selected.

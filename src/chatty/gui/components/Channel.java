@@ -73,7 +73,7 @@ public final class Channel extends JPanel {
         setName(room.getDisplayName());
         
         // Text Pane
-        text = new ChannelTextPane(main,styleManager);
+        text = new ChannelTextPane(main, styleManager);
         text.setContextMenuListener(contextMenuListener);
         
         setTextPreferredSizeTemporarily();

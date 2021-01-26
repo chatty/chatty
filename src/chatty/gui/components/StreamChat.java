@@ -78,7 +78,7 @@ public class StreamChat extends JDialog {
         
         public TextPane(MainGui main, StyleServer styleServer, boolean startAtBottom) {
             // Enables the "special" parameter to be able to remove old lines
-            super(main, styleServer, true, startAtBottom);
+            super(main, styleServer, ChannelTextPane.Type.STREAM_CHAT, startAtBottom);
             
             // Overriding constructor is required to set the custom context menu
             linkController.setContextMenuCreator(() -> new StreamChatContextMenu());

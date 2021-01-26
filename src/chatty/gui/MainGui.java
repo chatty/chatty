@@ -1717,6 +1717,15 @@ public class MainGui extends JFrame implements Runnable {
                 boolean selected = ((JMenuItem) e.getSource()).isSelected();
                 client.settings.setBoolean("historyVerticalZoom", selected);
             }
+            else if (cmd.startsWith("highlightSource.")) {
+                settingsDialog.showSettings("selectHighlight", cmd.substring("highlightSource.".length()));
+            }
+            else if (cmd.startsWith("ignoreSource.")) {
+                settingsDialog.showSettings("selectIgnore", cmd.substring("ignoreSource.".length()));
+            }
+            else if (cmd.startsWith("msgColorSource.")) {
+                settingsDialog.showSettings("selectMsgColor", cmd.substring("msgColorSource.".length()));
+            }
             else {
                 nameBasedStuff(e, channels.getActiveChannel().getStreamName());
             }
@@ -2998,14 +3007,16 @@ public class MainGui extends JFrame implements Runnable {
                 // Do stuff if ignored, without printing message
                 if (ignored) {
                     List<Match> ignoreMatches = null;
+                    Object ignoreSource = null;
                     if (!ignoredUser) {
                         // Text matches might not be valid if ignore was through
                         // ignored users list
                         ignoreMatches = ignoreList.getLastTextMatches();
+                        ignoreSource = ignoreList.getLastMatchItem();
                     }
                     ignoredMessages.addMessage(channel, user, text, action,
                             tagEmotes, bitsForEmotes, whisper, ignoreMatches,
-                            tags);
+                            ignoreSource, tags);
                     client.chatLog.message("ignored", user, text, action, channel);
                     ignoredMessagesHelper.ignoredMessage(channel);
                 }
@@ -3034,12 +3045,15 @@ public class MainGui extends JFrame implements Runnable {
                     if (highlighted) {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
+                        message.colorSource = highlighter.getColorSource();
+                        message.highlightSource = highlighter.getLastMatchItem();
                     }
                     if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
                         ColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, tags);
                         if (!colorItem.isEmpty()) {
                             message.color = colorItem.getForegroundIfEnabled();
                             message.backgroundColor = colorItem.getBackgroundIfEnabled();
+                            message.colorSource = colorItem;
                         }
                     }
                     
@@ -3326,6 +3340,8 @@ public class MainGui extends JFrame implements Runnable {
                     message.highlightMatches = highlighter.getLastTextMatches();
                     message.color = highlighter.getLastMatchColor();
                     message.bgColor = highlighter.getLastMatchBackgroundColor();
+                    message.colorSource = highlighter.getColorSource();
+                    message.highlightSource = highlighter.getLastMatchItem();
 
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(channel);
@@ -3344,6 +3360,7 @@ public class MainGui extends JFrame implements Runnable {
                     if (!colorItem.isEmpty()) {
                         message.color = colorItem.getForegroundIfEnabled();
                         message.bgColor = colorItem.getBackgroundIfEnabled();
+                        message.colorSource = colorItem;
                     }
                 }
                 // After colors and everything is set
@@ -3357,7 +3374,8 @@ public class MainGui extends JFrame implements Runnable {
                 channels.setChannelNewMessage(channel);
             }
         } else if (!message.isHidden()) {
-            ignoredMessages.addInfoMessage(channel.getRoom().getDisplayName(), message.text);
+            ignoredMessages.addInfoMessage(channel.getChannel(), message.text,
+                    ignoreList.getLastTextMatches(), ignoreList.getLastMatchItem());
             client.chatLog.info("ignored", message.text, channel.getChannel());
         }
         

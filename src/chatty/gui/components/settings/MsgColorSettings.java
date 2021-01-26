@@ -87,4 +87,8 @@ public class MsgColorSettings extends SettingsPanel {
         data.edit(item);
     }
     
+    public void selectItem(String item) {
+        data.setSelected(item);
+    }
+    
 }

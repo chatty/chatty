@@ -155,7 +155,11 @@ public class HighlightedMessages extends JDialog {
                 return styleServer.getColorCorrector();
             }
         };
-        messages = new TextPane(owner, modifiedStyleServer, () -> new HighlightsContextMenu(isDocked, autoOpen));
+        ChannelTextPane.Type textPaneType = settingName.equals("highlightDock")
+                                    ? ChannelTextPane.Type.HIGHLIGHTS
+                                    : ChannelTextPane.Type.IGNORED;
+        messages = new TextPane(owner, modifiedStyleServer, textPaneType,
+                () -> new HighlightsContextMenu(isDocked, autoOpen));
         messages.setContextMenuListener(new MyContextMenuListener());
         //messages.setLineWrap(true);
         //messages.setWrapStyleWord(true);
@@ -243,10 +247,11 @@ public class HighlightedMessages extends JDialog {
     
     public void addMessage(String channel, User user, String text, boolean action,
             TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches,
-            MsgTags tags) {
+            Object highlightSource, MsgTags tags) {
         messageAdded(channel);
         UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null, tags);
         message.whisper = whisper;
+        message.highlightSource = highlightSource;
         messages.printMessage(message);
     }
     
@@ -255,9 +260,12 @@ public class HighlightedMessages extends JDialog {
         messages.printInfoMessage(message);
     }
     
-    public void addInfoMessage(String channel, String text) {
+    public void addInfoMessage(String channel, String text, List<Match> highlightMatches, Object highlightSource) {
         messageAdded(channel);
-        messages.printLine(text);
+        InfoMessage message = InfoMessage.createInfo(text);
+        message.highlightMatches = highlightMatches;
+        message.highlightSource = highlightSource;
+        messages.printInfoMessage(message);
     }
     
     /**
@@ -362,8 +370,8 @@ public class HighlightedMessages extends JDialog {
      */
     static class TextPane extends ChannelTextPane {
         
-        public TextPane(MainGui main, StyleServer styleServer, Supplier<ContextMenu> contextMenuCreator) {
-            super(main, styleServer);
+        public TextPane(MainGui main, StyleServer styleServer, ChannelTextPane.Type type, Supplier<ContextMenu> contextMenuCreator) {
+            super(main, styleServer, type);
             linkController.setContextMenuCreator(contextMenuCreator);
         }
         

@@ -51,6 +51,8 @@ public class InfoMessage {
     public Color color;
     public Color bgColor;
     public List<Match> highlightMatches;
+    public Object colorSource;
+    public Object highlightSource;
     
     public InfoMessage(Type msgType, String text) {
         this(msgType, text, MsgTags.EMPTY);

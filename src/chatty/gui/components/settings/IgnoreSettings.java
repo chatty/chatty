@@ -23,6 +23,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  */
 public class IgnoreSettings extends SettingsPanel {
     
+    private final ListSelector items;
     private final IgnoredUsers ignoredUsers;
     
     public IgnoreSettings(SettingsDialog d) {
@@ -99,7 +100,7 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
-        ListSelector items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
+        items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
         items.setInfo(HighlightSettings.getMatchingHelp("ignore"));
         HighlighterTester tester = new HighlighterTester(d, false, "Ignore:");
         tester.setLinkLabelListener(d.getLinkLabelListener());
@@ -143,6 +144,10 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.insets = new Insets(1,5,5,30);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(blacklistButton, gbc);
+    }
+    
+    public void selectItem(String item) {
+        items.setSelected(item);
     }
     
     private static class IgnoredUsers extends JDialog {

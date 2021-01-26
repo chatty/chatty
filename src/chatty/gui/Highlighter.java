@@ -48,6 +48,7 @@ public class Highlighter {
     private final List<HighlightItem> items = new ArrayList<>();
     private final List<HighlightItem> blacklistItems = new ArrayList<>();
     private HighlightItem usernameItem;
+    private HighlightItem lastMatchItem;
     private Color lastMatchColor;
     private Color lastMatchBackgroundColor;
     private boolean lastMatchNoNotification;
@@ -115,6 +116,25 @@ public class Highlighter {
     
     public void setHighlightNextMessages(boolean highlight) {
         this.highlightNextMessages = highlight;
+    }
+    
+    public HighlightItem getLastMatchItem() {
+        return lastMatchItem;
+    }
+    
+    /**
+     * Get the last match if it has a foreground and/or background color.
+     * 
+     * @return 
+     */
+    public HighlightItem getColorSource() {
+        if (lastMatchItem != null) {
+            boolean itemHasColor = lastMatchItem.getColor() != null || lastMatchItem.getBackgroundColor() != null;
+            if (itemHasColor) {
+                return lastMatchItem;
+            }
+        }
+        return null;
     }
     
     /**
@@ -229,6 +249,7 @@ public class Highlighter {
     }
     
     private void fillLastMatchVariables(HighlightItem item, String text) {
+        lastMatchItem = item;
         lastMatchColor = item.getColor();
         lastMatchBackgroundColor = item.getBackgroundColor();
         lastMatchNoNotification = item.noNotification();
@@ -245,6 +266,7 @@ public class Highlighter {
      * some other situations.
      */
     public void resetLastMatchVariables() {
+        lastMatchItem = null;
         lastMatchColor = null;
         lastMatchBackgroundColor = null;
         lastMatchNoNotification = false;
@@ -1363,6 +1385,10 @@ public class Highlighter {
                 return or;
             }
             return !or;
+        }
+        
+        public String getRaw() {
+            return raw;
         }
         
         /**

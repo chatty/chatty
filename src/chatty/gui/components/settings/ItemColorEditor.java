@@ -59,6 +59,15 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
         }
     }
     
+    public void setSelected(String item) {
+        // Create dummy object to find index of item to select
+        T preset = itemCreator.createItem(item, Color.BLACK, true, Color.WHITE, true);
+        int index = data.indexOf(preset);
+        if (index != -1) {
+            super.selectItem(index);
+        }
+    }
+    
     public void setDefaultForeground(Color color) {
         colorRenderer.setDefaultForeground(color);
         editor.setDefaultForeground(color);

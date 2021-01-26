@@ -405,4 +405,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         return input;
     }
     
+    public void setSelected(String item) {
+        list.setSelectedValue(item, true);
+    }
+    
 }
