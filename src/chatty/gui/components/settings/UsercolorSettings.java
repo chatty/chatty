@@ -92,7 +92,7 @@ public class UsercolorSettings extends SettingsPanel {
         JCheckBox coloredNamesInUserlist = d.addSimpleBooleanSetting(
             "displayColoredNamesInUserlist",
             Language.getString("settings.label.displayColoredNamesInUserlist"),
-            "");
+            null);
         otherPanel.add(coloredNamesInUserlist, d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
     }
     

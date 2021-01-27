@@ -87,14 +87,14 @@ public class Request implements Item {
     public Set<String> getIdentifiersWithPrefix(String prefix) {
         // The caller can use this to check how replacements should be performed
         if (prefix.equals("-async-")) {
-            return Item.getIdentifiersWithPrefix(prefix, url, "-async-");
+            return Item.getIdentifiersWithPrefix(prefix, url, options, "-async-");
         }
-        return Item.getIdentifiersWithPrefix(prefix, url);
+        return Item.getIdentifiersWithPrefix(prefix, url, options);
     }
     
     @Override
     public Set<String> getRequiredIdentifiers() {
-        return Item.getRequiredIdentifiers(isRequired, url);
+        return Item.getRequiredIdentifiers(isRequired, url, options);
     }
     
     @Override
