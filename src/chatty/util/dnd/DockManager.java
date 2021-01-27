@@ -437,8 +437,7 @@ public class DockManager {
             t.content.setTargetPath(null);
             // Popout from dragging outside window
             Point location = MouseInfo.getPointerInfo().getLocation();
-            DockContent c = t != null ? t.content : currentlyActive;
-            popout(c, popoutTypeDrag, new Point(location.x - 80, location.y - 10), null);
+            popout(t.content, popoutTypeDrag, new Point(location.x - 80, location.y - 10), null);
         }
         main.stopDrag();
         for (DockPopout window : popouts) {
