@@ -6,6 +6,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.Match;
+import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
@@ -337,7 +338,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
         }
         if (warningIcon) {
             int size = tabs.getFontMetrics(tabs.getFont()).getHeight();
-            tabs.setIconAt(1, GuiUtil.getScaledIcon(UIManager.getIcon("OptionPane.warningIcon"), size, size));
+            Icon icon = GuiUtil.getFallbackIcon(UIManager.getIcon("OptionPane.warningIcon"), MainGui.class, "warning.png");
+            tabs.setIconAt(1, GuiUtil.getScaledIcon(icon, size, size));
         }
         else {
             tabs.setIconAt(1, null);
