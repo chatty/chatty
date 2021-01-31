@@ -829,8 +829,6 @@ public class MainGui extends JFrame implements Runnable {
                 
                 startUpdatingState();
                 
-                channels.setInitialFocus();
-                
                 windowStateManager.loadWindowStates();
                 windowStateManager.setWindowPosition(MainGui.this);
                 setVisible(true);

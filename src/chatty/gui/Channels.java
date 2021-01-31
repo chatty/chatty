@@ -112,7 +112,7 @@ public class Channels {
                     if (!focusChange) {
                         // Changing focus due to a focus change is dodgy, so don't
                         // do that
-                        setInitialFocus(c);
+                        setInitialFocus(c, true);
                     }
                 }
                 // This also resets lastActiveChannel if necessary
@@ -971,16 +971,29 @@ public class Channels {
     //==========================
     
     public void setInitialFocus() {
-        setInitialFocus(getActiveChannel());
+        setInitialFocus(getActiveChannel(), true);
     }
     
-    public void setInitialFocus(Channel channel) {
+    public void setInitialFocus(Channel channel, boolean later) {
         if (gui.getSettings().getLong("inputFocus") != 2) {
             if (channel == null) {
                 channel = getActiveChannel();
             }
             if (channel != null) {
-                channel.requestFocusInWindow();
+                Channel channel2 = channel;
+                if (later) {
+                    /**
+                     * After some actions invokeLater seems to be required,
+                     * otherwise the focus doesn't change and the request focus
+                     * function returns false (not entirely sure why).
+                     */
+                    SwingUtilities.invokeLater(() -> {
+                        channel2.requestFocusInWindow();
+                    });
+                }
+                else {
+                    channel2.requestFocusInWindow();
+                }
             }
         }
     }
@@ -1080,7 +1093,11 @@ public class Channels {
 
         @Override
         public void mouseClicked(Channel chan) {
-            setInitialFocus(chan);
+            /**
+             * Enabling the "later" option might take focus away from an opened
+             * context menu (which also triggers this event).
+             */
+            setInitialFocus(chan, false);
         }
     }
     

@@ -482,9 +482,24 @@ public class LinkController extends MouseAdapter {
             addMessageInfoItems(m, element);
         }
         if (m != null) {
-            m.show(e.getComponent(), e.getX(), e.getY());
+            JPopupMenu m2 = m;
+            /**
+             * Use invokeLater so the focus is already changed to this channel
+             * (if necessary), so that closing the menu will return focus to
+             * this channel.
+             */
+            SwingUtilities.invokeLater(() -> {
+                m2.show(e.getComponent(), e.getX(), e.getY());
+            });
         }
         popup.hide();
+        if (mouseClickedListener != null) {
+            /**
+             * Moving the mouse while right-clicking in a channel may not
+             * trigger the mouseClicked event, so do it here as well.
+             */
+            mouseClickedListener.mouseClicked(channel);
+        }
     }
     
     //=============
