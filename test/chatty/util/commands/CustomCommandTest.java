@@ -296,4 +296,24 @@ public class CustomCommandTest {
         assertEquals("UserName UserName @UserName UserName  UserName @UserName id", command.replace(parameters));
     }
     
+    @Test
+    public void testCustom() {
+        Parameters parameters = Parameters.create("ABC");
+        assertEquals("abc %lower(1) $lower(1)", CustomCommand.parseCustom("%lower(1) `%lower(1) $lower(1)", "%", "`").replace(parameters));
+        assertTrue(CustomCommand.parseCustom("%lower(1)", "%", "%").hasError());
+        assertTrue(CustomCommand.parseCustom("%lower(1)", "%", "").hasError());
+    }
+    
+    @Test
+    public void testLiteral() {
+        Parameters parameters = Parameters.create("ABC");
+        assertEquals("abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $'").replace(parameters));
+        assertEquals("abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $").replace(parameters));
+        assertEquals("abc / Quote: '", CustomCommand.parse("$lower(1) / $'Quote: ''").replace(parameters));
+        assertEquals("abc / Quote: ' / Dollar: $", CustomCommand.parse("$lower(1) / $'Quote: '' / Dollar: $'").replace(parameters));
+        assertEquals("abc / Dollar: $ / abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $' / $lower(1) / $'Dollar: $'").replace(parameters));
+        assertEquals("abc,123", CustomCommand.parse("$rand($'abc,123')").replace(parameters));
+        assertTrue(CustomCommand.parse("$rand($'abc,123)").hasError());
+    }
+    
 }

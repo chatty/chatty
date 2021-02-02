@@ -20,9 +20,14 @@ public class Parser {
     private final String input;
     private final StringReader reader;
     
-    public Parser(String text) {
+    private String escape = "\\";
+    private String special = "$";
+    
+    public Parser(String text, String special, String escape) {
         input = text;
         reader = new StringReader(text);
+        this.special = special;
+        this.escape = escape;
     }
     
     /**
@@ -32,6 +37,12 @@ public class Parser {
      * @throws ParseException 
      */
     Items parse() throws ParseException {
+        if (special.length() != 1 || escape.length() != 1) {
+            error("Special/escape must each be a single character", 0);
+        }
+        if (special.equals(escape)) {
+            error("Special and escape must not be equal", 0);
+        }
         return parse(null);
     }
     
@@ -47,7 +58,7 @@ public class Parser {
     private Items parse(String to) throws ParseException {
         Items items = new Items();
         while (reader.hasNext() && (to == null || !reader.peek().matches(to))) {
-            if (accept("$")) {
+            if (accept(special)) {
                 Item item = specialThing();
                 if (to == null) {
                     // Top-level item
@@ -56,7 +67,7 @@ public class Parser {
                 else {
                     items.add(item);
                 }
-            } else if (accept("\\")) {
+            } else if (accept(escape)) {
                 if (reader.hasNext()) {
                     // Just read next character as literal
                     items.add(reader.next());
@@ -100,12 +111,11 @@ public class Parser {
         return reader.hasNext() && reader.peek().equals(character);
     }
     
-    private boolean acceptMatch(String regex) {
+    private String acceptMatch(String regex) {
         if (reader.hasNext() && reader.peek().matches(regex)) {
-            reader.next();
-            return true;
+            return reader.next();
         }
-        return false;
+        return null;
     }
     
     /**
@@ -149,6 +159,8 @@ public class Parser {
         return "";
     }
     
+    private static final String QUOTES = "[\"`']";
+    
     /**
      * Parse stuff that occurs after a '$'.
      * 
@@ -156,7 +168,16 @@ public class Parser {
      * @throws ParseException 
      */
     private Item specialThing() throws ParseException {
-        boolean isRequired = accept("$");
+        String quote;
+        if ((quote = acceptMatch(QUOTES)) != null) {
+            return literal(quote);
+        }
+        // Not quite sure yet how this feature should work exactly
+//        String escapeCharacter = readOne("[^\\Q"+special+"\\Ea-zA-Z0-9()]");
+//        if (escapeCharacter.length() == 1) {
+//            return changedEscapeCharacter(escapeCharacter);
+//        }
+        boolean isRequired = accept(special);
         String type = functionName();
         if (type.isEmpty()) {
             return replacement(isRequired);
@@ -478,6 +499,39 @@ public class Parser {
             Item identifier = tinyIdentifier();
             return new Replacement(identifier, null, isRequired);
         }
+    }
+    
+    private Item literal(String quote) throws ParseException {
+        StringBuilder b = new StringBuilder();
+        while (reader.hasNext()) {
+            if (reader.peek().equals(quote)) {
+                reader.next();
+                if (reader.hasNext() && reader.peek().equals(quote)) {
+                    b.append(reader.next());
+                }
+                else {
+                    break;
+                }
+            }
+            else {
+                b.append(reader.next());
+            }
+        }
+        // Ending quote would have already been consumed
+        return new Literal(b.toString());
+    }
+    
+    private Item changedEscapeCharacter(String escapeCharacter) throws ParseException {
+        String quote = acceptMatch(QUOTES);
+        if (quote == null) {
+            error("Expected one of: "+QUOTES, 1);
+        }
+        String currentEscape = escape;
+        escape = escapeCharacter;
+        Item result = parse(quote);
+        expect(quote);
+        escape = currentEscape;
+        return result;
     }
     
     private String functionName() {

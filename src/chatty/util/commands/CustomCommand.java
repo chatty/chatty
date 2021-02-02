@@ -139,11 +139,19 @@ public class CustomCommand {
     }
     
     public static CustomCommand parse(String input) {
-        return parse(null, null, input);
+        return parseCustom(null, null, input, "$", "\\");
+    }
+    
+    public static CustomCommand parseCustom(String input, String special, String escape) {
+        return parseCustom(null, null, input, special, escape);
     }
 
     public static CustomCommand parse(String name, String chan, String input) {
-        Parser parser = new Parser(input);
+        return parseCustom(name, chan, input, "$", "\\");
+    }
+    
+    public static CustomCommand parseCustom(String name, String chan, String input, String special, String escape) {
+        Parser parser = new Parser(input, special, escape);
         try {
             return new CustomCommand(name, chan, parser.parse(), input);
         } catch (ParseException ex) {
@@ -172,6 +180,10 @@ public class CustomCommand {
      */
     private static String makeErrorMessage(String error, int pos, String input,
             boolean singleLine) {
+        if (pos == -1) {
+            // For errors before parsing started
+            return error;
+        }
         final int before = 30;
         final int after = 20;
         final String dotdot = "[..]";
