@@ -246,7 +246,9 @@ public class NotificationSettings extends SettingsPanel {
         //--------------------------
         // Info
         //--------------------------
-        soundSettings.add(new JLabel("Wav files that probably work are 8 to 48kHz and 8 or 16 bit."),
+        soundSettings.add(new JLabel("<html><body width='300px'>Wav files that probably work are uncompressed PCM, 8-48kHz, 8/16bit "
+                + "(e.g. exported in Audacity as WAV Signed 16-bit PCM). If the file plays silent (but the default ones work), try making "
+                + "the sound longer (for example add some silence)."),
                 d.makeGbc(0, 6, 2, 1));
         
         //======
