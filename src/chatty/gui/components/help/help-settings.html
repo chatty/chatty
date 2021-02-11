@@ -759,6 +759,13 @@
         <li><a href="#Highlight_Matching">Text Matching Prefixes</a></li>
         <li><a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> (e.g. matching by channel, user or message type)</li>
         <li><a href="#Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a> (e.g. changing resulting text color)</li>
+        <li><a href="#Matching_Presets">Presets</a></li>
+    </ul>
+    
+    <p>Also see:</p>
+    <ul>
+        <li><a href="#Highlight_Order">Order of Highlight Items</a></li>
+        <li><a href="#Highlight_Examples">Examples</a></li>
     </ul>
     
     <p>By default only regular chat messages are matched, however with the
@@ -983,7 +990,108 @@
         message to the Highlighted Messages window - then consider using Custom
         Message Colors instead.</p>
     
-    <h3>Order of items</h3>
+    <h3><a name="Matching_Presets">Presets</a></h3>
+    <p>There are different ways that allow you construct Highlight entries from
+        pre-defined parts or apply simple automatation instead of writing it all
+        manually:</p>
+    
+    <ul>
+        <li>The <code>preset:</code> prefix inserts a "Presets" list entry at
+            it's position (good for often used meta prefixes).</li>
+        <li>The <code>cc:/cc2:</code> prefixes modify all of the text after it
+            by allowing Custom Command syntax to be used (which allows you to
+            include entries from the "Presets" list or use functions).</li>
+        <li>The <code>ccf:</code> prefix modifies all of the text after it by
+            applying a function from the "Presets" list to it.</li>
+    </ul>
+    
+    <p>The "Presets" list can be accessed through the Highlights settings page.
+        Presets can be used from any setting that uses the Highlights format,
+        even though in this help it only refers to the Highlights list.</p>
+    
+    <p>The <strong>"preset:" prefix</strong> inserts an entry from
+        the "Presets" list. It could for example contain an entry with the name "m" that contains some meta prefixes:</p>
+    <p class="codeblock-compact"><code>m&nbsp;chanChat:mod config:!notify</code> &nbsp;("Presets" list)</p>
+    
+    <p>This could then be inserted into a Highlight list entry like this:</p>
+    <p class="codeblock-compact"><code>preset:m reg:&lt;some regex&gt;</code></p>
+    
+    <p>Prior to further parsing this would be expanded to:</p>
+    <p class="codeblock-compact"><code>chanCat:mod config:!notify reg:&lt;some regex&gt;</code></p>
+    
+    <p>You can also add an optional parameter, for example <code>preset:m|",silent"</code>,
+        which will be appended directly to the end if the inserted text:
+        <code>chanCat:mod config:!notify,silent reg:&lt;some regex&gt;</code>.
+        If the name of the preset begins with an underscore the parameter
+        will instead be provided to the preset in the <code>$1-</code>
+        replacement.</p>
+            
+    <p>The <strong>"cc:" prefix</strong> (short for "Custom Command") causes all following text to be
+        interpreted in the <a href="help-custom_commands.html#replacements">Custom Command</a> syntax, which means:</p>
+    
+    <ul>
+        <li>You can use replacements such as <code>$(m)</code> or <code>$(_m,&lt;text&gt;)</code>, whereas "m" or "_m" are
+            entries on the "Presets" list. Presets beginning with <code>_</code>
+            can contain Custom Commands replacements like <code>$1-</code>, which
+            allows working with the given <code>&lt;text&gt;</code> (so they act like functions).</li>
+        <li>Special characters such as <code>$</code> and <code>\</code> have to
+            be escaped with a backslash (<code>\$</code> and <code>\\</code>)
+            when intended to be used literally.</li>
+        <li>Presets are applied when the Highlight item is compiled,
+            which usually happens when it was changed, but also sometimes
+            automatically. While some Custom Command functions such as <code>$datetime()</code>
+            may be available, it is inadvisable to use them
+            since it would cause inconsistent results.</li>
+    </ul>
+    
+    <p>For example there could be a preset with the name "_t", that replaces
+        spaces in all of the given text <code>$1-</code> with underscores:</p>
+    <p class="codeblock-compact"><code>_t $replace($1-, ,_)</code> &nbsp;("Presets" list)</p>
+    
+    <p>This could then be used in a Highlight item:</p>
+    <p class="codeblock-compact"><code>cc:reg:\\w $(_t,abc test)</code> &nbsp;(note the escaped <code>\</code> and the <code>abc test</code> parameter)</p>
+    
+    <p>Prior to further parsing this would be modified to (due to being handled
+        like a Custom Command):</p>
+    <p class="codeblock-compact"><code>reg:\w abc_test</code></p>
+    
+    <p>The <strong>"cc2:" prefix</strong> does the same, except that you
+        must also specify a custom escaping (and optionally a replacement) character.
+        For example the following sets <code>~</code> as escape character (instead of <code>\</code>)
+                    and <code>§</code> as replacement character (instead of <code>$</code>).
+                    Anything after <code>|</code> is then interpreted in Custom Command syntax as above:</p>
+    <p class="codeblock-compact"><code>cc2:~§|reg:\w §(_t,abc test)</code></p>
+    
+    <p>The result is the same as the <code>cc:</code> example, but the <code>\w</code>
+        does not need the additional <code>\</code> in front, since <code>\</code>
+        is not a special Custom Command character anymore.</p>
+    
+    <p>The <strong><a name="Matching_ccf">"ccf:" prefix</a></strong> (short for
+        "Custom Command Function") applies a "Presets" list entry (whose name
+        should begin with <code>_</code> to be able to use Custom Command
+        replacements) to the entire following text, as if you wrapped the entire
+        text in a replacement. Example:</p>
+    <p class="codeblock-compact"><code>ccf:_t|reg:\w abc test</code></p>
+    
+    <p>This is equivalent to:</p>
+    <p class="codeblock-compact"><code>cc:$(_t,reg:\\w abc test)</code></p>
+    
+    <p>Both of these would give the entire text to <code>_t</code> (which is <code>$replace($1-, ,_)</code> as seen above) and then use the return value, so it changes to:</p>
+    <p class="codeblock-compact"><code>reg:\w_abc_test</code></p>
+    
+    <p>Using <code>ccf:</code> has the advantage that you don't have to
+        worry about potentially having to escape special characters,
+        since simply everything after the <code>|</code> is provided to <code>_t</code>
+        as a parameter without being interpreted in any special way.</p>
+    
+    <p><strong>Chaining several prefixes</strong> is possible, for example:</p>
+    <p class="codeblock-compact"><code>ccf:_test|preset:m reg:&lt;some regex&gt;</code></p>
+    <p>This would first apply the <code>_test</code> function to everything after
+        it, then insert the <code>m</code> preset (assuming the <code>_test</code>
+        function did not change the <code>preset:m</code>), then continue parsing the
+        result as a Highlight item.</p>
+    
+    <h3><a name="Highlight_Order">Order of Highlight items</a></h3>
     <p>When using prefixes that change the behaviour (like setting a color) the
         order of Highlight items may be important, since the settings of the
         first matching item (from the top of the list) will be used. Contrary to

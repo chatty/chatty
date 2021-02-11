@@ -98,6 +98,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final HighlightSettings highlightSettings;
     private final IgnoreSettings ignoreSettings;
     
+    private final MatchingPresets matchingPresets;
+    
     public enum Page {
         MAIN("Main", Language.getString("settings.page.main")),
         MESSAGES("Messages", Language.getString("settings.page.messages")),
@@ -279,7 +281,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
         nameSettings = new NameSettings(this);
         cards.add(nameSettings, Page.NAMES.name);
         cards.add(new StreamSettings(this), Page.STREAM.name);
-
+        
+        matchingPresets = new MatchingPresets(this);
+        
         // Track current settings page
         currentlyShown = Page.MAIN;
         selection.addTreeSelectionListener(e -> {
@@ -608,6 +612,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 settings.setSettingChanged(settingName);
             }
         }
+    }
+    
+    protected void showMatchingPresets() {
+        matchingPresets.setLocationRelativeTo(this);
+        matchingPresets.setVisible(true);
     }
     
     protected static GridBagConstraints makeGbc(int x, int y, int w, int h) {

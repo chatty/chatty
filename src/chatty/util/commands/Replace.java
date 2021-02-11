@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.StringUtil;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -57,6 +58,27 @@ public class Replace implements Item {
                     break;
                 case "regFirstRef":
                     result = itemValue.replaceFirst(searchValue, replaceValue);
+                    break;
+                case "regFunc":
+                case "regCustom":
+                    String typeValue2 = typeValue;
+                    result = StringUtil.replaceFunc(itemValue, searchValue, m -> {
+                        Parameters replaceParameters = parameters.copy();
+                        replaceParameters.putArgs(m.group());
+                        for (int i=1;i<=m.groupCount();i++) {
+                            replaceParameters.put("g"+i, m.group(i));
+                        }
+                        if (typeValue2.equals("regFunc")) {
+                            // Retrieve custom replacement to run
+                            CustomCommand c = (CustomCommand) parameters.getObject(replaceValue);
+                            if (c != null) {
+                                return c.replace(replaceParameters);
+                            }
+                            return "";
+                        }
+                        // Use replace Item directly, but with additional params
+                        return replace.replace(replaceParameters);
+                    });
                     break;
                 case "cs":
                     result = itemValue.replace(searchValue, replaceValue);

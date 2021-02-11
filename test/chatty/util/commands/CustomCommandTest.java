@@ -301,7 +301,10 @@ public class CustomCommandTest {
         Parameters parameters = Parameters.create("ABC");
         assertEquals("abc %lower(1) $lower(1)", CustomCommand.parseCustom("%lower(1) `%lower(1) $lower(1)", "%", "`").replace(parameters));
         assertTrue(CustomCommand.parseCustom("%lower(1)", "%", "%").hasError());
-        assertTrue(CustomCommand.parseCustom("%lower(1)", "%", "").hasError());
+        assertEquals("abc abc", CustomCommand.parseCustom("%lower(1) %lower(1)", "%", "").replace(parameters));
+        assertEquals("$lower(1)", CustomCommand.parseCustom("$lower(1)", "", "").replace(parameters));
+        assertEquals("$lower(1)", CustomCommand.parseCustom("%$lower(1)", "", "%").replace(parameters));
+        assertEquals("%$lower(1)", CustomCommand.parseCustom("%%$lower(1)", "", "%").replace(parameters));
     }
     
     @Test

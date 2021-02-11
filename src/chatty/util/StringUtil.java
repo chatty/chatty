@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -486,6 +487,54 @@ public class StringUtil {
             return 0;
         }
         return content.length();
+    }
+    
+    /**
+     * Gets the given substring or the fallback if an error occurs.
+     * 
+     * @param input Where to get the substring from
+     * @param start The start index (inclusive)
+     * @param end The end index (exclusive)
+     * @param fallback The fallback to use when an error occurs
+     * @return The substring or fallback
+     */
+    public static String substring(String input, int start, int end, String fallback) {
+        try {
+            return input.substring(start, end);
+        }
+        catch (Exception ex) {
+            return fallback;
+        }
+    }
+    
+    /**
+     * See {@link replaceFunc(String, Pattern, Function)}.
+     * 
+     * @param input
+     * @param regex
+     * @param func
+     * @return 
+     */
+    public static String replaceFunc(String input, String regex, Function<Matcher, String> func) {
+        return replaceFunc(input, Pattern.compile(regex), func);
+    }
+    
+    /**
+     * Calls the given function for every match to get the replacement.
+     * 
+     * @param input The text to apply the replace to
+     * @param pattern The Pattern object to use
+     * @param func The function to apply to each match
+     * @return The input with replacements performed
+     */
+    public static String replaceFunc(String input, Pattern pattern, Function<Matcher, String> func) {
+        StringBuffer b = new StringBuffer();
+        Matcher m = pattern.matcher(input);
+        while (m.find()) {
+            m.appendReplacement(b, Matcher.quoteReplacement(func.apply(m)));
+        }
+        m.appendTail(b);
+        return b.toString();
     }
     
     public static final void main(String[] args) {

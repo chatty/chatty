@@ -51,6 +51,10 @@ public class Parameters {
         return parameters.get(key);
     }
     
+    public synchronized boolean hasKey(String key) {
+        return parameters.containsKey(key);
+    }
+    
     /**
      * Check that all of the given parameters are not null or empty.
      * 

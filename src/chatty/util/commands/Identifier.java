@@ -74,10 +74,22 @@ class Identifier implements Item {
             value = getUserParameter(name.substring("my-".length()),
                     (User)parameters.getObject("localUser"));
         }
-        if (value == null && name.startsWith("_")) {
-            CustomCommand command = (CustomCommand)parameters.getObject(name);
+        if (value == null && name.startsWith("_") || parameters.hasKey("-presets-")) {
+            Object o = parameters.getObject(name);
+            CustomCommand command = null;
+            if (o instanceof CustomCommand) {
+                command = (CustomCommand) o;
+            }
+            String checkKey = "-"+name+"-";
             if (command != null) {
-                value = command.replace(parameters);
+                if (parameters.get(checkKey) == null) {
+                    Parameters subParameters = parameters.copy();
+                    subParameters.put(checkKey, "true");
+                    value = command.replace(subParameters);
+                }
+                else {
+                    value = "[recursion not allowed]";
+                }
             }
         }
         return value != null ? value : "";

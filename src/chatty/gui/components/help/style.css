@@ -55,6 +55,15 @@ code {
     padding: 0;
 }
 
+.codeblock-compact {
+    display: block;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    margin-bottom: -4px;
+    padding: 2px;
+}
+
 cite {
     background-color: #EEEEEE;
 }

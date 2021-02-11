@@ -153,9 +153,9 @@ public class MainGui extends JFrame implements Runnable {
     private EventLog eventLog;
     
     // Helpers
-    private final Highlighter highlighter = new Highlighter();
-    private final Highlighter ignoreList = new Highlighter();
-    private final Highlighter filter = new Highlighter();
+    private final Highlighter highlighter = new Highlighter("highlight");
+    private final Highlighter ignoreList = new Highlighter("ignore");
+    private final Highlighter filter = new Highlighter("filter");
     private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
@@ -935,9 +935,7 @@ public class MainGui extends JFrame implements Runnable {
         if (client.settings.getBoolean("maximized")) {
             setExtendedState(MAXIMIZED_BOTH);
         }
-        updateHighlight();
-        updateIgnore();
-        updateFilter();
+        updateMatchingPresets();
         updateHistoryRange();
         updateHistoryVerticalZoom();
         updateNotificationSettings();
@@ -1029,6 +1027,13 @@ public class MainGui extends JFrame implements Runnable {
     private void updateIgnore() {
         ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
         ignoreList.updateBlacklist(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
+    }
+    
+    private void updateMatchingPresets() {
+        Highlighter.HighlightItem.setGlobalPresets(Highlighter.HighlightItem.makePresets(client.settings.getList("matchingPresets")));
+        updateHighlight();
+        updateIgnore();
+        updateFilter();
     }
     
     private void updateFilter() {
@@ -4588,6 +4593,8 @@ public class MainGui extends JFrame implements Runnable {
                     BatchAction.queue(ignoreList, () -> {
                         updateIgnore();
                     });
+                } else if (setting.equals("matchingPresets")) {
+                    updateMatchingPresets();
                 } else if (setting.equals("filter")) {
                     updateFilter();
                 } else if (setting.equals("hotkeys")) {

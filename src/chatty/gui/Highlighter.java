@@ -11,6 +11,8 @@ import chatty.util.MiscUtil;
 import chatty.util.Pair;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.BadgeType;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -43,6 +45,8 @@ public class Highlighter {
     
     private static final int LAST_HIGHLIGHTED_TIMEOUT = 10*1000;
     
+    private final String type;
+    
     private final Map<String, Long> lastHighlighted = new HashMap<>();
     private final Map<String, HighlightItem> lastHighlightedItem = new HashMap<>();
     private final List<HighlightItem> items = new ArrayList<>();
@@ -59,6 +63,10 @@ public class Highlighter {
     // Settings
     private boolean highlightUsername;
     private boolean highlightNextMessages;
+    
+    public Highlighter(String type) {
+        this.type = type;
+    }
     
     /**
      * Clear current items and load the new ones.
@@ -78,7 +86,7 @@ public class Highlighter {
         into.clear();
         for (String item : newItems) {
             if (item != null && !item.isEmpty()) {
-                HighlightItem compiled = new HighlightItem(item);
+                HighlightItem compiled = new HighlightItem(item, type);
                 if (!compiled.hasError()) {
                     into.add(compiled);
                 }
@@ -429,14 +437,18 @@ public class Highlighter {
             }
         };
         
+        private static Map<String, CustomCommand> globalPresets;
+        
         //==========================
         // Properties
         //==========================
+        private final String usedForFeature;
         private Type appliesToType = Type.REGULAR;
         private final String raw;
         private final List<Item> matchItems = new ArrayList<>();
         private Pattern pattern;
         private List<HighlightItem> localBlacklistItems;
+        private final Map<String, CustomCommand> localPresets;
         
         //--------------------------
         // Meta settings
@@ -465,6 +477,7 @@ public class Highlighter {
         private String mainPrefix;
         private String error;
         private boolean patternWarning;
+        private List<Pair<String, String>> modifications = new ArrayList<>();
         
         //==========================
         // State (per match)
@@ -514,22 +527,57 @@ public class Highlighter {
         }
         
         /**
+         * Set the presets that are accessible by all Highlight item objects.
+         * 
+         * @param presets The presets (may be null or empty)
+         */
+        public static synchronized void setGlobalPresets(Map<String, CustomCommand> presets) {
+            HighlightItem.globalPresets = presets;
+        }
+        
+        public static synchronized Map<String, CustomCommand> getGlobalPresets() {
+            return HighlightItem.globalPresets;
+        }
+        
+        /**
          * Create a new item to match messages against.
          * 
          * @param item The string containing the match requirements
+         * @param type
          * @param invalidRegexLog Whether to add invalid regex warnings to the
          * debug log (this can be useful to disable for editing regex, where it
          * might otherwise spam a lot of debug messages)
+         * @param localPresets
          */
-        public HighlightItem(String item, boolean invalidRegexLog) {
+        public HighlightItem(String item, String type, boolean invalidRegexLog, Map<String, CustomCommand> localPresets) {
             raw = item;
             this.invalidRegexLog = invalidRegexLog;
+            this.localPresets = localPresets;
+            this.usedForFeature = type;
+            
+            Map<String, CustomCommand> presets = getPresets();
+            if (presets != null && type != null) {
+                CustomCommand ccf = presets.get("_global_"+type);
+                ccf = ccf != null ? ccf : presets.get("_global");
+                if (ccf != null) {
+                    item = item.trim();
+                    Parameters parameters = Parameters.create(item);
+                    String newItem = ccf.replace(parameters);
+                    modifications.add(new Pair<>(item, newItem));
+                    item = newItem;
+                }
+            }
             prepare(item);
         }
         
         public HighlightItem(String item) {
             // By default, log invalid regex warnings
-            this(item, true);
+            this(item, null, true, null);
+        }
+        
+        public HighlightItem(String item, String type) {
+            // By default, log invalid regex warnings
+            this(item, type, true, null);
         }
         
         /**
@@ -539,6 +587,11 @@ public class Highlighter {
          * @param item 
          */
         private void prepare(String item) {
+            if (modifications.size() > 20) {
+                pattern = NO_MATCH;
+                error = "Too many modifications (recursion?)";
+                return;
+            }
             item = item.trim();
             if (!findPatternPrefixAndCompile(item)) {
                 // If not a text matching prefix, search for other prefixes
@@ -727,7 +780,7 @@ public class Highlighter {
                     List<String> list = parseStringListPrefix(item, "blacklist:", s -> s);
                     List<HighlightItem> blItems = new ArrayList<>();
                     for (String entry : list) {
-                        HighlightItem hlItem = new HighlightItem(entry, invalidRegexLog);
+                        HighlightItem hlItem = new HighlightItem(entry, usedForFeature, invalidRegexLog, localPresets);
                         if (!hlItem.hasError()) {
                             blItems.add(hlItem);
                             if (hlItem.patternThrowsError()) {
@@ -746,6 +799,67 @@ public class Highlighter {
                             localBlacklistItems.addAll(blItems);
                         }
                     }
+                }
+                else if (item.startsWith("cc:")) {
+                    String value = item.substring("cc:".length());
+                    parseCustomCommandPrefix(null, value);
+                }
+                else if (item.startsWith("cc2:")) {
+                    String value = item.substring("cc2:".length());
+                    String[] split = value.split("\\|", 2);
+                    if (split.length != 2) {
+                        error = "Usage: cc2:<escapeChar>[replacementChar]|<remaining text>";
+                        pattern = NO_MATCH;
+                    }
+                    else {
+                        parseCustomCommandPrefix(split[0], split[1]);
+                    }
+                }
+                else if (item.startsWith("ccf:")) {
+                    String value = item.substring("ccf:".length());
+                    String[] split = value.split("\\|", 2);
+                    if (split.length != 2) {
+                        error = "Usage: ccf:<functionName>|<remaining text>";
+                        pattern = NO_MATCH;
+                    }
+                    else {
+                        String newItem = applyCustomCommandFunction(split[0], split[1]);
+                        modifications.add(new Pair<>(item, newItem));
+                        prepare(newItem);
+                    }
+                }
+                else if (item.startsWith("preset:")) {
+                    // Split prefix and remaining text
+                    List<String> split = StringUtil.split(item, ' ', '"', '"', 2, 0);
+                    String list = split.get(0).substring("preset:".length());
+                    String remaining = "";
+                    if (split.size() == 2) {
+                        remaining = split.get(1);
+                    }
+                    
+                    // Parse prefix
+                    String result = "";
+                    List<String> listSplit = StringUtil.split(list, ',', '"', '"', 0, 1);
+                    for (String part : listSplit) {
+                        if (!part.isEmpty()) {
+                            String[] valueSplit = part.split("\\|", 2);
+                            CustomCommand preset = getPresets().get(valueSplit[0]);
+                            if (preset != null) {
+                                String args = valueSplit.length == 2 ? valueSplit[1] : "";
+                                if (preset.getName().startsWith("_")) {
+                                    // Add args to parameters
+                                    result = StringUtil.append(result, " ", preset.replace(Parameters.create(args)));
+                                }
+                                else {
+                                    // Append args
+                                    result = StringUtil.append(result, " ", preset.replace(Parameters.create(""))+args);
+                                }
+                            }
+                        }
+                    }
+                    String newItem = StringUtil.append(result, " ", remaining);
+                    modifications.add(new Pair(item, newItem));
+                    prepare(newItem);
                 }
                 //--------------------------
                 // No prefix
@@ -923,6 +1037,65 @@ public class Highlighter {
                     p.accept(part);
                 }
             }
+        }
+        
+        /**
+         * Handles the prefixes "cc:" and "cc2:".
+         * 
+         * @param chars Custom escape and replacement characters
+         * @param commandText The text part that is parsed as Custom Command
+         */
+        private void parseCustomCommandPrefix(String chars, String commandText) {
+            String escape = StringUtil.substring(chars, 0, 1, null);
+            String special = StringUtil.substring(chars, 1, 2, null);
+            
+            CustomCommand main = CustomCommand.parseCustom(commandText, special, escape);
+            if (main.hasError()) {
+                error = "cc: prefix [" + main.getSingleLineError() + "]";
+                pattern = NO_MATCH;
+            }
+            else {
+                // Valid command, perform replacements
+                Parameters parameters = Parameters.create("");
+                // Search for custom replacements without "_" prefixed as well
+                // (for Identifier class)
+                parameters.put("-presets-", "true");
+                getPresets().forEach((n, c) -> parameters.putObject(n, c));
+                String result = main.replace(parameters);
+                if (result == null) {
+                    error = "cc: prefix [Required replacement]";
+                    pattern = NO_MATCH;
+                }
+                else {
+                    modifications.add(new Pair<>(commandText, result));
+                    prepare(result);
+                }
+            }
+        }
+        
+        private String applyCustomCommandFunction(String function, String text) {
+            Map<String, CustomCommand> r = getPresets();
+            if (function != null && r != null) {
+                CustomCommand f = r.get(function);
+                if (f != null) {
+                    Parameters fParameters = Parameters.create(text);
+                    text = f.replace(fParameters);
+                }
+            }
+            return text;
+        }
+        
+        /**
+         * Get the local presets if they are set, otherwise the global presets.
+         * 
+         * @return The presets, may be empty but never null
+         */
+        private Map<String, CustomCommand> getPresets() {
+            Map<String, CustomCommand> result = localPresets;
+            if (result == null) {
+                result = getGlobalPresets();
+            }
+            return result != null ? result : new HashMap<>();
         }
         
         /**
@@ -1186,6 +1359,16 @@ public class Highlighter {
         
         public String getMatchInfo() {
             StringBuilder result = new StringBuilder();
+            for (int i=0;i<modifications.size();i++) {
+                if (i > 5) {
+                    result.append("Shortened.. too many modifications.\n\n");
+                    break;
+                }
+                Pair<String, String> p = modifications.get(i);
+                result.append("Modified:\n");
+                result.append("   ").append(p.key).append("\n");
+                result.append("-> ").append(p.value).append("\n\n");
+            }
             result.append("Applies to: ").append(appliesToType.description).append("\n");
             if (pattern != null) {
                 result.append("Main regex: ").append(pattern).append("\n");
@@ -1435,6 +1618,31 @@ public class Highlighter {
         
         public String getReplacement() {
             return replacement;
+        }
+        
+        public static Map<String, CustomCommand> makePresets(Collection<String> input) {
+            Map<String, CustomCommand> result = new HashMap<>();
+            for (String value : input) {
+                String[] split = value.split(" ", 2);
+                if (split.length == 2) {
+                    String commandName = split[0].trim();
+                    String commandValue = split[1].trim();
+                    if (!commandName.isEmpty() && !commandValue.isEmpty() && !commandName.startsWith("#")) {
+                        CustomCommand command;
+                        if (commandName.startsWith("_")) {
+                            command = CustomCommand.parse(commandName, null, commandValue);
+                        }
+                        else {
+                            // No replacements, basicially not a CustomCommand
+                            command = CustomCommand.parseCustom(commandName, null, commandValue, "", "");
+                        }
+                        if (command != null && !command.hasError()) {
+                            result.put(command.getName(), command);
+                        }
+                    }
+                }
+            }
+            return result;
         }
         
     }

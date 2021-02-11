@@ -595,6 +595,12 @@ public class SettingsManager {
         settings.addList("filter", new ArrayList(), Setting.STRING);
         settings.addBoolean("filterEnabled", true);
         settings.addBoolean("filterOwnText", true);
+        
+        // Matching
+        List<String> matchingPresetsDefault = new ArrayList<>();
+        matchingPresetsDefault.add("_ohbot $replace($1-,$\"\\\\!\",$\"[\\W_]*?\",reg)");
+        matchingPresetsDefault.add("_special $replace($1-,$\"~([^~]+)~\",$replace($(g1),$\"(\\w)\",$\"($1[\\\\W_]*?)+\",regRef),regCustom)");
+        settings.addList("matchingPresets", matchingPresetsDefault, Setting.STRING);
 
         // Chat Logging
         settings.addString("logMode", "always");

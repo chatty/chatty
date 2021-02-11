@@ -157,4 +157,11 @@ public class StringUtilTest {
         assertArrayEquals(StringUtil.splitLines("a\n\rb"), new String[]{"a","","b"}); // Invalid linebreak
     }
     
+    @Test
+    public void testReplaceFunc() {
+        assertEquals("a b c ", StringUtil.replaceFunc("~abc~", "~([a-z]+)~", m -> {
+            return m.group(1).replaceAll("([a-z])", "$1 ");
+        }));
+    }
+    
 }

@@ -11,6 +11,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
+import chatty.util.commands.CustomCommand;
 import chatty.util.irc.MsgTags;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -26,7 +27,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -61,6 +64,8 @@ import javax.swing.text.StyledDocument;
  */
 public class HighlighterTester extends JDialog implements StringEditor {
     
+    public static Map<String, CustomCommand> testPresets;
+    
     private static final int MAX_INPUT_LENGTH = 50*1000;
 
     private final static String TEST_PRESET = "Enter test text.";
@@ -83,6 +88,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final MutableAttributeSet defaultAttr = new SimpleAttributeSet();
     private final MutableAttributeSet blacklistAttr = new SimpleAttributeSet();
     
+    private final String type;
+    
     private boolean editingBlacklistItem;
     private boolean allowEmpty;
     private String result;
@@ -98,6 +105,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     public HighlighterTester(Window owner, boolean showBlacklist, String type) {
         super(owner);
+        this.type = type;
         
         setTitle("Test and Edit");
         
@@ -115,7 +123,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         add(new JLabel("<html><body style='width:340px;padding:4px;'>"+SettingsUtil.getInfo("info-highlightTester.html", showBlacklist ? "blacklist" : "")),
                 GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.CENTER));
         
-        add(new JLabel(type),
+        add(new JLabel(Language.getString("settings.highlightTester."+type)),
                 GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
         
         gbc = GuiUtil.makeGbc(1, 1, 2, 1);
@@ -287,12 +295,17 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateSaveButton();
     }
     
+    private HighlightItem createItem(String value) {
+        return new HighlightItem(value, type, false,
+                testPresets != null ? testPresets : new HashMap<>());
+    }
+    
     private void updateItem() {
         String value = itemValue.getText();
         if (value.isEmpty()) {
             highlightItem = null;
         } else {
-            highlightItem = new HighlightItem(value, false);
+            highlightItem = createItem(value);
         }
         updateParseResult();
         updateInfoText();
@@ -308,7 +321,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             blacklistItem = null;
             addToBlacklistButton.setEnabled(false);
         } else {
-            blacklistItem = new HighlightItem(value, false);
+            blacklistItem = createItem(value);
             addToBlacklistButton.setEnabled(!blacklistItem.hasError());
         }
         updateParseResult();
@@ -364,7 +377,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (highlightItem == null) {
             testResult.setText("Empty item.");
         } else if (highlightItem.hasError()) {
-            testResult.setText("Invalid regex: "+highlightItem.getError());
+            testResult.setText("Error: "+highlightItem.getError());
         } else if (highlightItem.matchesTest(testInput.getText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
@@ -377,7 +390,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             }
         }
         if (blacklistItem != null && blacklistItem.hasError()) {
-            testResult.setText("Invalid blacklist pattern: "+blacklistItem.getError());
+            testResult.setText("Blacklist error: "+blacklistItem.getError());
         }
     }
 
@@ -477,21 +490,24 @@ public class HighlighterTester extends JDialog implements StringEditor {
             itemValue.requestFocusInWindow();
         }
         setTitle(title);
-        this.result = null;
+        result = null;
         infoText.setText(info);
-        if (editingBlacklistItem) {
-            blacklistValue.setText(preset);
-        } else {
-            itemValue.setText(preset);
-        }
-        updateItem();
-        updateBlacklistItem();
-        updateTestText();
+        parseResult.setText(null);
         revalidate();
         pack();
         // Caused issues for Notification editor for some reason
         SwingUtilities.invokeLater(() -> {
             setMinimumSize(getPreferredSize());
+            // Set after setting size, so that Parse Result does not affect it
+            if (editingBlacklistItem) {
+                blacklistValue.setText(preset);
+            }
+            else {
+                itemValue.setText(preset);
+            }
+            updateItem();
+            updateBlacklistItem();
+            updateTestText();
         });
         setMinimumSize(getPreferredSize());
         setLocationRelativeTo(getParent());
@@ -531,7 +547,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            HighlighterTester tester = new HighlighterTester(null, true, "Test:");
+            HighlighterTester tester = new HighlighterTester(null, true, "highlight");
             tester.setAddToBlacklistListener(e -> {
                 System.out.println(e);
             });

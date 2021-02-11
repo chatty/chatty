@@ -37,10 +37,10 @@ public class Parser {
      * @throws ParseException 
      */
     Items parse() throws ParseException {
-        if (special.length() != 1 || escape.length() != 1) {
+        if (special.length() > 1 || escape.length() > 1) {
             error("Special/escape must each be a single character", 0);
         }
-        if (special.equals(escape)) {
+        if (special.equals(escape) && !escape.isEmpty()) {
             error("Special and escape must not be equal", 0);
         }
         return parse(null);

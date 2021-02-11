@@ -1,0 +1,22 @@
+Each entry must consist of a name and a value, separated by a space. The name
+can have special meanings:
+
+<ul>
+    <li>Names beginning with an underscore "_" cause the entry to use the Custom
+        Command format, so it supports replacements, but also e.g. requires
+        escaping of special characters <code>$</code> and <code>\</code> when
+        intended to be used literally. Generally the <code>$1-</code>
+        replacement will contain the text given as a parameter when this Preset
+        is used.</li>
+    <li>Entries with other names are interpreted as plain text.</li>
+    <li>Entries where the name begins with "#" are entirely ignored.</li>
+    <li>An entry with the name <code>_global</code> will automatically be
+        applied to entries of the Highlight, Ignore and Filter list as if they
+        were prefixed with <code>ccf:_global|</code> (see <a href="help-settings:Matching_ccf">help</a>).
+        To only apply it to one of
+        them, use <code>_global_highlight</code>, <code>_global_ignore</code>
+        or <code>_global_filter</code>.</li>
+</ul>
+
+<p>These entries can be used in pretty much every setting that uses the <a href="help-settings:Highlight">Highlight</a>
+    format, not just the Highlight list. Read the <a href="help-settings:Matching_Presets">Presets help</a> for how to use them.</p>

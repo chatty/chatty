@@ -298,7 +298,7 @@ class NotificationEditor extends TableEditor<Notification> {
             optionsAssoc = new HashMap<>();
             
             channel = new SimpleStringSetting(20, true);
-            HighlighterTester matcherEditor = new HighlighterTester(dialog, false, "Match:");
+            HighlighterTester matcherEditor = new HighlighterTester(dialog, false, "notification");
             matcherEditor.setAllowEmpty(true);
             matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, matcherEditor);
             

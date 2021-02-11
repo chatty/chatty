@@ -25,6 +25,7 @@
             <a href="#replacements">Replacements</a>
             <ul>
                 <li><a href="#simple-replacements">Simple Replacements</a></li>
+                <li><a href="#escaping">Escaping / Literal Text</a></li>
                 <li><a href="#parameters-context">Pre-defined Parameters</a></li>
                 <li><a href="#functions">Functions</a></li>
                 <li><a href="#custom-replacements">Custom Replacements</a></li>
@@ -112,6 +113,7 @@
     <h2><a name="replacements">Replacements</a></h2>
     <ul>
         <li><a href="#simple-replacements">Simple Replacements</a></li>
+        <li><a href="#escaping">Escaping / Literal Text</a></li>
         <li><a href="#parameters-context">Pre-defined Parameters</a></li>
         <li><a href="#functions">Functions</a></li>
         <li><a href="#custom-replacements">Custom Replacements</a></li>
@@ -141,10 +143,34 @@
         parameter that is necessary for the command to make sense is actually
         being supplied.</p>
     
-    <p class="note"><em>Note:</em> If you want to use a dollar sign
-        <code>$</code> without it having a special meaning, you can escape it
-        with a backslash: <code>\$</code> . To use a backslash literally instead
-        of as an escaping character, it must be escaped as well: <code>\\</code> .</p>
+    <h3><a name="escaping">Escaping / Literal Text</a></h3>
+    <p>If you want to use a dollar sign <code>$</code> literally, without it
+        beginning a replacement, you can escape it with a backslash:
+        <code>\$</code>. A backslash will always interpret the following
+        character as a regular character without a special meaning, while
+        the backslash itself will not show up in the result.</p>
+    
+    <p>Example: <code>$replace($1-,(\\w+),(\$1\),regRef)</code></p>
+    <p>This <a href="#functions">function</a> (surrounds all
+            consecutive word characters with brackets) contains some escaping:</p>
+    <ul>
+        <li>The <code>(\\w+)</code> turns into the plain text <code>(\w+)</code>. The backslash needs to be escaped so
+            it actually shows up for the regex.</li>
+        <li>The <code>(\$1\)</code> turns into the plain text <code>($1)</code>. The dollar sign is used for the regex,
+            not an actual Custom Command replacement and the closing bracket
+            needs to be escaped here because the following function parameter is
+            optional, so the bracket would close the function.</li>
+    </ul>
+    
+    <p>Alternatively you can use <code>$"&lt;literal text&gt;"</code> which
+        interprets everything inside the quotes as literal text without any
+        special meaning. To use a quote inside the literal text, it can be
+        doubled: <code>$"This is a dollar sign: ""$"""</code> turns into the
+        plain text <code>This is a dollar sign: "$"</code>. Instead of <code>"</code>
+        you can also use <code>`</code> (backquote) or <code>'</code> (single quote):
+        <code>$`This is a dollar sign: "$"`</code> is equivalent to the above.</p>
+    
+    <p>The previous example could also be written like this: <code>$replace($1-,$"(\w+)",$"($1)",regRef)</code></p>
     
     <h3><a name="simple-replacements">Simple Replacements</a></h3>
     <p>A basic use of replacements is using the <strong>short notation</strong>
@@ -436,12 +462,20 @@
                 <li><em>Not specified</em> - Literal case-insensitive search</li>
                 <li><code>cs</code> - Literal case-sensitive search</li>
                 <li><code>reg</code> - Regular Expression search</li>
-                <li><code>regRef</code> - Regular Expression search, with references to groups (<code>\$1</code>) in the replacement</li>
+                <li><code>regRef</code> - Regular Expression search, with references to groups (<code>\$1</code>) in the replacement (<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#replaceAll-java.lang.String-java.lang.String-">replace parameter format</a>, when using regRef)</li>
                 <li><code>regFirst</code>, <code>refFirstRef</code> - Same as above, but only replace first occurence</li>
+                <li><code>regCustom</code> - Regular Expression search, the replace parameter has access to match values and is
+                    executed for each match (<code>$1-</code> full match, <code>$(g1)</code> first group in the search regex
+                    (if available), <code>$(g2)</code> second group, ..).</li>
+                <li><code>regFunc</code> - Regular Expression serach, the replace must be the name
+                    of a Custom Replacement which is called with the same values as <code>regCustom</code>
+                    (doesn't always work in Custom Commands, can use <code>regCustom</code>
+                    with e.g. <code>$(_&lt;name&gt;,$1-)</code> instead).</li>
             </ul>
         </dd>
         <dd><em>Example:</em> <code>$replace(A b and another B,b,bee)</code> turns into <code>A bee and another bee</code></dd>
         <dd><em>Example:</em> <code>$replace(Was timed out for 30 seconds,.*?(\\d+) seconds,Number of seconds: \$1,regRef)</code> turns into <code>Number of seconds: 30</code></dd>
+        <dd><em>Example:</em> <code>$replace($1-,$"~([a-z]+)~",<span style="text-decoration: underline">$replace($(g1),$"(\w)",$"$1+",regRef)</span>,regCustom)</code> adds <code>+</code> behind every character surrounded by <code>~</code> (the inner <code>$replace()</code> is in the <code>replace</code> parameter and executed for each match)</dd>
         
         <dt><code>$rand([output1],[output2],[output3],..)</code></dt>
         <dd>Randomly chooses one of the outputs.</dd>

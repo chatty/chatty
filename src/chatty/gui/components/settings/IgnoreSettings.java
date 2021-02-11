@@ -30,7 +30,7 @@ public class IgnoreSettings extends SettingsPanel {
         super(true);
         
         ignoredUsers = new IgnoredUsers(d);
-        HighlightBlacklist blacklist = new HighlightBlacklist(d, "Ignore", "ignoreBlacklist");
+        HighlightBlacklist blacklist = new HighlightBlacklist(d, "ignore", "ignoreBlacklist");
         
         JPanel base = addTitledPanel("Ignore Messages", 0, true);
         
@@ -102,7 +102,7 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.weightx = 1;
         items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
         items.setInfo(HighlightSettings.getMatchingHelp("ignore"));
-        HighlighterTester tester = new HighlighterTester(d, false, "Ignore:");
+        HighlighterTester tester = new HighlighterTester(d, false, "ignore");
         tester.setLinkLabelListener(d.getLinkLabelListener());
         tester.setAddToBlacklistListener(e -> {
             blacklist.addItem(e.getActionCommand());

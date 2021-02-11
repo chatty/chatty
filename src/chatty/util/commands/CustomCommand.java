@@ -151,6 +151,12 @@ public class CustomCommand {
     }
     
     public static CustomCommand parseCustom(String name, String chan, String input, String special, String escape) {
+        if (special == null) {
+            special = "$";
+        }
+        if (escape == null) {
+            escape = "\\";
+        }
         Parser parser = new Parser(input, special, escape);
         try {
             return new CustomCommand(name, chan, parser.parse(), input);
