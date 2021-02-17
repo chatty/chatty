@@ -443,6 +443,7 @@ public class Highlighter {
         // Properties
         //==========================
         private final String usedForFeature;
+        private final boolean applyPresets;
         private Type appliesToType = Type.REGULAR;
         private final String raw;
         private final List<Item> matchItems = new ArrayList<>();
@@ -523,6 +524,7 @@ public class Highlighter {
             addPatternPrefix(text -> "\\b"+Pattern.quote(text)+"\\b", "wcs:");
             addPatternPrefix(text -> Pattern.quote(text), "cs:");
             addPatternPrefix(text -> "(?iu)^"+Pattern.quote(text), "start:");
+            addPatternPrefix(text -> "(?iu)^"+Pattern.quote(text)+"\\b", "startw:");
             addPatternPrefix(text -> "(?iu)" + Pattern.quote(text), "text:");
         }
         
@@ -554,9 +556,10 @@ public class Highlighter {
             this.invalidRegexLog = invalidRegexLog;
             this.localPresets = localPresets;
             this.usedForFeature = type;
+            this.applyPresets = type == null || !type.isEmpty();
             
             Map<String, CustomCommand> presets = getPresets();
-            if (presets != null && type != null) {
+            if (presets != null && type != null && applyPresets) {
                 CustomCommand ccf = presets.get("_global_"+type);
                 ccf = ccf != null ? ccf : presets.get("_global");
                 if (ccf != null) {
@@ -823,9 +826,14 @@ public class Highlighter {
                         pattern = NO_MATCH;
                     }
                     else {
-                        String newItem = applyCustomCommandFunction(split[0], split[1]);
-                        modifications.add(new Pair<>(item, newItem));
-                        prepare(newItem);
+                        if (applyPresets) {
+                            String newItem = applyCustomCommandFunction(split[0], split[1]);
+                            modifications.add(new Pair<>(item, newItem));
+                            prepare(newItem);
+                        }
+                        else {
+                            prepare(split[1]);
+                        }
                     }
                 }
                 else if (item.startsWith("preset:")) {
@@ -835,6 +843,10 @@ public class Highlighter {
                     String remaining = "";
                     if (split.size() == 2) {
                         remaining = split.get(1);
+                    }
+                    if (!remaining.isEmpty() && !applyPresets) {
+                        prepare(remaining);
+                        return;
                     }
                     
                     // Parse prefix
@@ -860,6 +872,9 @@ public class Highlighter {
                     String newItem = StringUtil.append(result, " ", remaining);
                     modifications.add(new Pair(item, newItem));
                     prepare(newItem);
+                }
+                else if (item.startsWith("n:")) {
+                    parsePrefix(item, "n:");
                 }
                 //--------------------------
                 // No prefix
@@ -1046,6 +1061,10 @@ public class Highlighter {
          * @param commandText The text part that is parsed as Custom Command
          */
         private void parseCustomCommandPrefix(String chars, String commandText) {
+            if (!applyPresets) {
+                prepare(commandText);
+                return;
+            }
             String escape = StringUtil.substring(chars, 0, 1, null);
             String special = StringUtil.substring(chars, 1, 2, null);
             
@@ -1143,6 +1162,7 @@ public class Highlighter {
                     // Take entire remaining text
                     value = input.substring(fullPrefix.length());
                     mainPrefix = fullPrefix;
+                    textWithoutPrefix = value;
                 }
                 String completePattern = patternPrefixes.get(prefix).apply(value);
                 Pattern compiled = compilePattern(completePattern);
@@ -1355,6 +1375,23 @@ public class Highlighter {
          */
         public String getMainPrefix() {
             return mainPrefix;
+        }
+        
+        /**
+         * Get the section of the item that contains the meta prefixes, so the
+         * part before the main text prefix, if present, otherwise just the full
+         * item (trimmed for whitespace, so it may be shorter than in the
+         * original input).
+         *
+         * @return
+         */
+        public String getMetaPrefixes() {
+            String main = StringUtil.append(mainPrefix, "", textWithoutPrefix);
+            String full = raw.trim();
+            if (!StringUtil.isNullOrEmpty(main)) {
+                return full.substring(0, full.length() - main.length()).trim();
+            }
+            return full;
         }
         
         public String getMatchInfo() {
@@ -1570,6 +1607,11 @@ public class Highlighter {
             return !or;
         }
         
+        /**
+         * The original input used to create this item.
+         * 
+         * @return 
+         */
         public String getRaw() {
             return raw;
         }

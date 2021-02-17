@@ -935,12 +935,17 @@ public class MainGui extends JFrame implements Runnable {
         if (client.settings.getBoolean("maximized")) {
             setExtendedState(MAXIMIZED_BOTH);
         }
+        // Anything using highlighting format should be loaded after this
         updateMatchingPresets();
         updateHistoryRange();
         updateHistoryVerticalZoom();
         updateNotificationSettings();
         updateChannelsSettings();
         updateHighlightNextMessages();
+        
+        msgColorManager.loadFromSettings();
+        notificationManager.loadFromSettings();
+        client.usericonManager.init();
         
         // This should be done before updatePopoutSettings() because that method
         // will delete the attributes correctly depending on the setting
@@ -1020,13 +1025,17 @@ public class MainGui extends JFrame implements Runnable {
      * Tells the highlighter the current list of highlight-items from the settings.
      */
     private void updateHighlight() {
-        highlighter.update(StringUtil.getStringList(client.settings.getList("highlight")));
-        highlighter.updateBlacklist(StringUtil.getStringList(client.settings.getList("highlightBlacklist")));
+        BatchAction.queue(highlighter, () -> {
+            highlighter.update(StringUtil.getStringList(client.settings.getList("highlight")));
+            highlighter.updateBlacklist(StringUtil.getStringList(client.settings.getList("highlightBlacklist")));
+        });
     }
     
     private void updateIgnore() {
-        ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
-        ignoreList.updateBlacklist(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
+        BatchAction.queue(ignoreList, () -> {
+            ignoreList.update(StringUtil.getStringList(client.settings.getList("ignore")));
+            ignoreList.updateBlacklist(StringUtil.getStringList(client.settings.getList("ignoreBlacklist")));
+        });
     }
     
     private void updateMatchingPresets() {
@@ -1037,7 +1046,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateFilter() {
-        filter.update(StringUtil.getStringList(client.settings.getList("filter")));
+        BatchAction.queue(filter, () -> {
+            filter.update(StringUtil.getStringList(client.settings.getList("filter")));
+        });
     }
     
     private void updateCustomContextMenuEntries() {
@@ -4586,13 +4597,9 @@ public class MainGui extends JFrame implements Runnable {
             }
             if (type == Setting.LIST) {
                 if (setting.equals("highlight") || setting.equals("highlightBlacklist")) {
-                    BatchAction.queue(highlighter, () -> {
-                        updateHighlight();
-                    });
+                    updateHighlight();
                 } else if (setting.equals("ignore") || setting.equals("ignoreBlacklist")) {
-                    BatchAction.queue(ignoreList, () -> {
-                        updateIgnore();
-                    });
+                    updateIgnore();
                 } else if (setting.equals("matchingPresets")) {
                     updateMatchingPresets();
                 } else if (setting.equals("filter")) {

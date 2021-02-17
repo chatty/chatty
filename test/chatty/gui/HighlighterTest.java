@@ -1060,4 +1060,29 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "abc$1"));
     }
     
+    @Test
+    public void testNote() {
+        update();
+        updateBlacklist();
+        
+        update("n:abc blah");
+        assertTrue(highlighter.check(user, "blah"));
+        
+        update("n:\"abc blah\"");
+        assertTrue(highlighter.check(user, "blah"));
+        assertTrue(highlighter.check(user, "fawefeawf"));
+        
+        update("n:\"abc blah\" cs:ABC");
+        assertTrue(highlighter.check(user, "blahABCfeawfeawf"));
+        assertFalse(highlighter.check(user, "blah"));
+        assertFalse(highlighter.check(user, "fawefeawf"));
+        
+        update("cs:ABC n:\"abc blah\"");
+        assertTrue(highlighter.check(user, "blahABC n:\"abc blah\"feawfeawf"));
+        assertFalse(highlighter.check(user, "blahABC n:\"abcblah\"feawfeawf"));
+        assertFalse(highlighter.check(user, "blahABCfeawfeawf"));
+        assertFalse(highlighter.check(user, "blah"));
+        assertFalse(highlighter.check(user, "fawefeawf"));
+    }
+    
 }

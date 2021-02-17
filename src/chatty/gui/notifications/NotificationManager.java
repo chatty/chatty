@@ -54,7 +54,6 @@ public class NotificationManager {
         this.main = main;
         this.ab = ab;
         this.channelFavorites = channelFavorites;
-        loadFromSettings();
         settings.addSettingChangeListener((s, t, v) -> {
             if (s.equals(SETTING_NAME)) {
                 loadFromSettings();
@@ -80,7 +79,7 @@ public class NotificationManager {
         settings.putList(SETTING_NAME, entriesToSave);
     }
     
-    private synchronized void loadFromSettings() {
+    public synchronized void loadFromSettings() {
         List<List<Object>> entriesToLoad = settings.getList(SETTING_NAME);
         properties.clear();
         for (List<Object> l : entriesToLoad) {

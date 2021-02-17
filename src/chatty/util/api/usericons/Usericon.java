@@ -336,7 +336,7 @@ public class Usericon implements Comparable {
             }
             
             if (restrict.startsWith("$m:") && restrict.length() > "$m:".length()) {
-                match = new Highlighter.HighlightItem(restrict.substring("$m:".length()));
+                match = new Highlighter.HighlightItem(restrict.substring("$m:".length()), "badge");
             }
             else {
                 match = null;

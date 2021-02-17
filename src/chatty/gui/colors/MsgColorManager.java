@@ -31,7 +31,6 @@ public class MsgColorManager {
     
     public MsgColorManager(Settings settings) {
         this.settings = settings;
-        loadFromSettings();
     }
     
     /**
@@ -45,7 +44,7 @@ public class MsgColorManager {
      * <p>New format:<br />
      * <code>[id],[foreground]/[enabled]/[background]/[enabled]</p>
      */
-    private void loadFromSettings() {
+    public synchronized void loadFromSettings() {
         List<String> loadedList = new LinkedList<>();
         settings.getList(DATA_SETTING, loadedList);
         List<MsgColorItem> loadedData = new ArrayList<>();

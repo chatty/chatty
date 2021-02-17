@@ -16,6 +16,7 @@ import chatty.util.irc.MsgTags;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -26,18 +27,22 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -82,6 +87,13 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final LinkLabel infoText = new LinkLabel("", null);
     private final JTextArea parseResult = new JTextArea();
     private final JTabbedPane tabs = new JTabbedPane();
+    private final MatchOptions matchOptions = new MatchOptions();
+    private final JTextField metaPrefixes = new JTextField();
+    private final LinkLabel metaPrefixesLabel;
+    private final JLabel metaPrefixesError = new JLabel();
+    private final JTextField mainPrefix;
+    private final JTextField mainText = new JTextField();
+    private final LinkLabel textMatchLabel;
     
     private final MutableAttributeSet matchAttr1 = new SimpleAttributeSet();
     private final MutableAttributeSet matchAttr2 = new SimpleAttributeSet();
@@ -99,6 +111,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
      * Previous automatically set test text.
      */
     private String prevTestText;
+    
+    private boolean updating;
     
     private HighlightItem highlightItem;
     private HighlightItem blacklistItem;
@@ -120,31 +134,111 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         GridBagConstraints gbc;
         
-        add(new JLabel("<html><body style='width:340px;padding:4px;'>"+SettingsUtil.getInfo("info-highlightTester.html", showBlacklist ? "blacklist" : "")),
-                GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.CENTER));
+        gbc = GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(5, 5, 0, 5);
+        add(new JLabel("Full "+type+" item (you may edit it here or below):"),
+                gbc);
         
-        add(new JLabel(Language.getString("settings.highlightTester."+type)),
-                GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
-        
-        gbc = GuiUtil.makeGbc(1, 1, 2, 1);
+        gbc = GuiUtil.makeGbc(0, 2, 2, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         itemValue.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(itemValue, MAX_INPUT_LENGTH, false);
         add(itemValue, gbc);
         
+        gbc = GuiUtil.makeGbc(0, 3, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        add(new JSeparator(), gbc);
+        
+        //--------------------------
+        // Meta Prefixes
+        //--------------------------
+        JPanel metaPrefixesLabelPanel = new JPanel(new GridBagLayout());
+        gbc = GuiUtil.makeGbc(0, 4, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        metaPrefixesLabel = new LinkLabel("[help-settings:Highlight_Meta_Matching Meta Prefixes:]", null);
+        metaPrefixesLabel.setMargin(null);
+        metaPrefixesLabelPanel.add(metaPrefixesLabel, gbc);
+        
+        gbc = GuiUtil.makeGbc(1, 4, 1, 1);
+        gbc.insets = new Insets(0, 0, 0, 0);
+        metaPrefixesLabelPanel.add(metaPrefixesError, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 4, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        add(metaPrefixesLabelPanel, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 5, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        metaPrefixes.setFont(Font.decode(Font.MONOSPACED));
+        add(metaPrefixes, gbc);
+        
+        //--------------------------
+        // Text Match
+        //--------------------------
+        gbc = GuiUtil.makeGbc(0, 7, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(5, 5, 0, 5);
+        textMatchLabel = new LinkLabel("[help-settings:Highlight_Matching Text Match:]", null);
+        textMatchLabel.setMargin(null);
+        add(textMatchLabel, gbc);
+        
+        JPanel textMatchPanel = new JPanel();
+        textMatchPanel.setLayout(new GridBagLayout());
+        gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+        mainPrefix = new JTextField(8);
+        mainPrefix.setFont(Font.decode(Font.MONOSPACED));
+        mainPrefix.setEditable(false);
+        textMatchPanel.add(mainPrefix, gbc);
+        gbc = GuiUtil.makeGbc(1, 0, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        mainText.setFont(Font.decode(Font.MONOSPACED));
+        textMatchPanel.add(mainText, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 8, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        add(textMatchPanel, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 9, 2, 1);
+        gbc.insets = new Insets(0, 0, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        add(matchOptions, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 10, 2, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        add(new JSeparator(), gbc);
+        
+        //--------------------------
+        // Blacklist
+        //--------------------------
         if (showBlacklist) {
-            add(new JLabel("Blacklist:"),
-                    GuiUtil.makeGbc(0, 2, 1, 1));
+            gbc = GuiUtil.makeGbc(0, 11, 2, 1, GridBagConstraints.LINE_START);
+            gbc.insets = new Insets(5, 5, 0, 5);
+            JLabel blacklistLabel = new JLabel("Blacklist item:");
+            blacklistLabel.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "You can enter a single blacklist item here to test how it would affect text matches if it were on the blacklist."));
+            add(blacklistLabel,
+                    gbc);
 
-            gbc = GuiUtil.makeGbc(1, 2, 2, 1);
+            gbc = GuiUtil.makeGbc(0, 12, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             blacklistValue.setFont(Font.decode(Font.MONOSPACED));
             GuiUtil.installLengthLimitDocumentFilter(blacklistValue, MAX_INPUT_LENGTH, false);
             add(blacklistValue, gbc);
             
-            gbc = GuiUtil.makeGbc(1, 3, 2, 1);
+            gbc = GuiUtil.makeGbc(0, 13, 2, 1);
             gbc.insets = new Insets(0, 5, 4, 5);
             addToBlacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
             add(addToBlacklistButton, gbc);
@@ -160,10 +254,15 @@ public class HighlighterTester extends JDialog implements StringEditor {
             });
         }
         
-        add(new JLabel("Test:"),
-                GuiUtil.makeGbc(0, 4, 1, 1, GridBagConstraints.FIRST_LINE_END));
+        //--------------------------
+        // Test field
+        //--------------------------
+        gbc = GuiUtil.makeGbc(0, 14, 1, 1, GridBagConstraints.LINE_START);
+        gbc.insets = new Insets(5, 5, 0, 5);
+        add(new JLabel("Test on this text (non-text requirements ignored):"),
+                gbc);
         
-        gbc = GuiUtil.makeGbc(1, 4, 2, 1);
+        gbc = GuiUtil.makeGbc(0, 15, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -177,25 +276,28 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 gbc);
         
         add(testResult,
-                GuiUtil.makeGbc(1, 5, 2, 1, GridBagConstraints.WEST));
+                GuiUtil.makeGbc(0, 16, 2, 1, GridBagConstraints.WEST));
 
+        //--------------------------
+        // Main buttons
+        //--------------------------
         okButton.setMnemonic(KeyEvent.VK_S);
         cancelButton.setMnemonic(KeyEvent.VK_C);
-        gbc = GuiUtil.makeGbc(1, 6, 1, 1, GridBagConstraints.EAST);
+        gbc = GuiUtil.makeGbc(0, 21, 1, 1, GridBagConstraints.EAST);
         gbc.weightx = 1;
         add(okButton, gbc);
         add(cancelButton,
-                GuiUtil.makeGbc(2, 6, 1, 1, GridBagConstraints.EAST));
+                GuiUtil.makeGbc(1, 21, 1, 1, GridBagConstraints.EAST));
         
+        //--------------------------
+        // Help/Result
+        //--------------------------
         JPanel helpPanel = new JPanel();
         helpPanel.add(infoText);
         
         JPanel parseResultPanel = new JPanel(new BorderLayout());
         JLabel parseResultInfo = new JLabel(HighlightSettings.INFO_HEADER
-                + "This shows what requirements for a match Chatty has found "
-                + "in what you entered (each line's condition has to be "
-                + "satisified for a successful match, although for testing here "
-                + "non-text matching prefixes are ignored).");
+                + "Shows parsing information and the requirements for a match (each line's condition has to be satisified).");
         parseResultInfo.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         parseResultPanel.add(parseResultInfo,
                 BorderLayout.NORTH);
@@ -209,20 +311,27 @@ public class HighlighterTester extends JDialog implements StringEditor {
         tabs.add("Help", helpPanel);
         tabs.add("Parse Result", parseResultPanel);
         
-        gbc = GuiUtil.makeGbc(0, 7, 3, 1, GridBagConstraints.CENTER);
+        gbc = GuiUtil.makeGbc(0, 20, 3, 1, GridBagConstraints.CENTER);
         gbc.insets = new Insets(10, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
         add(tabs, gbc);
+        
+        //--------------------------
+        // Listeners and stuff
+        //--------------------------
+        matchOptions.setListener(p -> {
+            if (p != null) {
+                mainPrefix.setText(p);
+                constructValue();
+            }
+        });
         
         okButton.addActionListener(e -> {
             result = editingBlacklistItem ? blacklistValue.getText() : itemValue.getText();
             setVisible(false);
         });
         cancelButton.addActionListener(e -> setVisible(false));
-        
-        setModal(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        pack();
-        setMinimumSize(getPreferredSize());
         
         /**
          * Use DocumentFilter to be able to change the Document without
@@ -255,49 +364,78 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
         });
         
-        itemValue.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateItem();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateItem();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateItem();
-            }
+        addDocumentListener(itemValue, e -> {
+            updateItem();
         });
         
-        blacklistValue.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateBlacklistItem();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateBlacklistItem();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateBlacklistItem();
-            }
+        addDocumentListener(blacklistValue, e -> {
+            updateBlacklistItem();
+        });
+        
+        addDocumentListener(metaPrefixes, e -> {
+            constructValue();
+        });
+        
+        addDocumentListener(mainText, e -> {
+            constructValue();
         });
         
         updateEditIndicator();
         updateSaveButton();
+        
+        setModal(true);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        pack();
+        setMinimumSize(getPreferredSize());
+    }
+    
+    private static void addDocumentListener(JTextField textField, Consumer<DocumentEvent> action) {
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                action.accept(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                action.accept(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                action.accept(e);
+            }
+        });
     }
     
     private HighlightItem createItem(String value) {
         return new HighlightItem(value, type, false,
                 testPresets != null ? testPresets : new HashMap<>());
+    }
+    
+    private void constructValue() {
+        if (updating) {
+            return;
+        }
+        updating = true;
+        HighlightItem metaItem = new HighlightItem(metaPrefixes.getText(), "", false, null);
+        String mPrefixes = metaItem.getMetaPrefixes();
+        String mPrefixesExtra = metaItem.getRaw().substring(metaItem.getMetaPrefixes().length()).trim();
+        String newValue = mPrefixes;
+        if (!mPrefixesExtra.isEmpty()) {
+            metaPrefixesError.setText("Not a meta prefix: "+StringUtil.shortenTo(mPrefixesExtra, 20));
+        }
+        else {
+            metaPrefixesError.setText(null);
+        }
+        String main = "";
+        if (!mainText.getText().trim().isEmpty()) {
+            main = mainPrefix.getText()+mainText.getText();
+        }
+        newValue = StringUtil.append(newValue, " ", main);
+        itemValue.setText(newValue);
+        updating = false;
     }
     
     private void updateItem() {
@@ -312,6 +450,21 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateMatches(doc);
         updateSaveButton();
         updateTestText();
+        
+        if (!updating) {
+            // Empty type to disable presets
+            HighlightItem i = new HighlightItem(value, "", false, null);
+            updating = true;
+            String mPrefix = i.getMainPrefix();
+            if (StringUtil.isNullOrEmpty(mPrefix)) {
+                mPrefix = "text:";
+            }
+            mainPrefix.setText(mPrefix);
+            matchOptions.setPrefix(mPrefix);
+            mainText.setText(i.getTextWithoutPrefix());
+            metaPrefixes.setText(i.getMetaPrefixes());
+            updating = false;
+        }
 //        System.out.println(highlightItem.getMatchInfo());
     }
     
@@ -386,7 +539,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 testResult.setText("No match.");
             }
             else {
-                testResult.setText("No match, due to: "+failedReason);
+                testResult.setText("No match: "+failedReason);
             }
         }
         if (blacklistItem != null && blacklistItem.hasError()) {
@@ -518,6 +671,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
     @Override
     public void setLinkLabelListener(LinkLabelListener listener) {
         this.infoText.setListener(listener);
+        this.metaPrefixesLabel.setListener(listener);
+        this.textMatchLabel.setListener(listener);
     }
     
     public void setAddToBlacklistListener(ActionListener listener) {
@@ -525,6 +680,237 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (listener != null) {
             addToBlacklistButton.setVisible(true);
         }
+    }
+    
+    /**
+     * Provides a panel of checkboxes with options that can be selected to set
+     * a text matchting prefix. Checkboxes are automatically disabled to prevent
+     * combinations of options for which a prefix doesn't exist.
+     * 
+     * <p>Special checkboxes are "Other" (which is used for prefixes that aren't
+     * supported by this) and "Inverted" (which applies the same to all
+     * prefixes, supported or not).
+     */
+    private static class MatchOptions extends JPanel {
+        
+        private enum Prefix {
+            
+            /**
+             * Defines which properties each prefix stands for and thus the
+             * relationship between the checkbox selection and the prefixes (as
+             * well as which checkboxes are disabled based on which selection).
+             * The "Other" bit isn't used here, but only in the special OTHER
+             * constant.
+             * 
+             * Other, Regex, Case-sensitive, Word, Start
+             */
+            TEXT("text:", 0b0000),
+            CS("cs:", 0b0100),
+            W("w:", 0b0010),
+            WCS("wcs:", 0b0110),
+            START("start:", 0b0001),
+            STARTW("startw:", 0b0011),
+            REG("reg:", 0b1100),
+            REGI("regi:", 0b1000),
+            REGW("regw:", 0b1110),
+            REGWI("regwi:", 0b1010);
+
+            public final String name;
+            public final int options;
+            
+            Prefix(String prefix, int options) {
+                this.name = prefix;
+                this.options = options;
+            }
+            
+        }
+        
+        private static final int OTHER = 0b10000;
+        
+        private final JCheckBox regex = new JCheckBox("Regex");
+        private final JCheckBox caseSensitive = new JCheckBox("Case-sensitive");
+        private final JCheckBox word = new JCheckBox("Word");
+        private final JCheckBox start = new JCheckBox("Start");
+        private final JCheckBox inverted = new JCheckBox("Inverted");
+        private final JCheckBox other = new JCheckBox("Other");
+        
+        private final List<JCheckBox> checkboxes = new ArrayList<>();
+        
+        private Consumer<String> listener;
+        
+        /**
+         * True when setting the state of checkboxes that isn't initiated by the
+         * user, to prevent unwanted update notifications.
+         */
+        private boolean setInProgress;
+        
+        /**
+         * The prefix that was last set. This can be returned for unsupported
+         * "Other" prefixes.
+         */
+        private String lastSetPrefix;
+        
+        MatchOptions() {
+            setLayout(new FlowLayout(FlowLayout.LEADING, 5, 0));
+            
+            regex.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "Use Regular Expressions"));
+            caseSensitive.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "Case-sentitive text matching (e.g. 'Test' would not be the same as 'TEST')"));
+            word.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "The beginning and end must be at a word boundary (e.g. 'w:test' would match 'This is a test!' but not 'This is testing!')"));
+            start.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "The text must be at the beginning of the message (e.g. 'start:!quote' would match when '!quote' is at the beginning of the message)"));
+            inverted.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "The match is inverted (e.g. '!start:quote' would match when there is no '!quote' at the beginning of the message)"));
+            other.setToolTipText(SettingsUtil.addTooltipLinebreaks(
+                    "This is checked when prefixes that can't be selected here are used (unchecking switches the prefix and allows you to use the other checkboxes again)"));
+            
+            add(regex);
+            add(caseSensitive);
+            add(word);
+            add(start);
+            add(inverted);
+            add(other);
+            
+            /**
+             * Must be added in this order so that the Option "enabled"
+             * parameter matches.
+             */
+            checkboxes.add(start);
+            checkboxes.add(word);
+            checkboxes.add(caseSensitive);
+            checkboxes.add(regex);
+            checkboxes.add(other);
+            
+            for (JCheckBox check : checkboxes) {
+                check.addItemListener(e -> {
+                    updateSelected();
+                });
+            }
+            inverted.addItemListener(e -> updateSelected());
+        }
+        
+        /**
+         * Update based on the current selected state of the checkboxes.
+         */
+        private void updateSelected() {
+            if (listener != null && !setInProgress) {
+                updateDisabled();
+                listener.accept(getPrefix());
+            }
+        }
+        
+        /**
+         * Set a new selected state for the checkboxes.
+         * 
+         * @param selected 
+         */
+        private void setSelectedOptions(int selected) {
+            for (int i=0;i<checkboxes.size();i++) {
+                checkboxes.get(i).setSelected((selected & (1 << i)) != 0);
+            }
+            updateDisabled();
+        }
+        
+        /**
+         * Update which checkboxes should be disabled based on the currently
+         * selected checkboxes. Not all combinations of options have a prefix,
+         * so this disables all checkboxes that don't fit the current selection.
+         */
+        private void updateDisabled() {
+            setInProgress = true;
+            
+            // Find all options that also have the current selection selected
+            int enabled = getSelectedOptions();
+            int possibleOptions = enabled;
+            for (Prefix option : Prefix.values()) {
+                // Check if current selection bits are set (enabled 0 selects all)
+                if ((option.options & enabled) == enabled) {
+                    possibleOptions = possibleOptions | option.options;
+                }
+            }
+            
+            // Disable all options that don't fit the current selection
+            for (int i=0;i<checkboxes.size();i++) {
+                boolean optionPossible = (possibleOptions & (1 << i)) != 0;
+                checkboxes.get(i).setEnabled(optionPossible);
+                if (!optionPossible) {
+                    checkboxes.get(i).setSelected(false);
+                }
+            }
+            
+            setInProgress = false;
+        }
+        
+        /**
+         * Gets which options are currently selected.
+         * 
+         * @return An int with the appropriate bits set
+         */
+        private int getSelectedOptions() {
+            int selected = 0;
+            for (int i=0;i<checkboxes.size();i++) {
+                selected += checkboxes.get(i).isSelected() ? 1 << i : 0;
+            }
+            return selected;
+        }
+        
+        /**
+         * Sets the current prefix which may change the currently selected
+         * options. If the prefix is not supported, the "Other" option is
+         * selected and (aside from the "Inverted" option) the set prefix will
+         * be returned by {@link getPrefix()}.
+         * 
+         * @param prefix 
+         */
+        public void setPrefix(String prefix) {
+            setInProgress = true;
+            // Inverted
+            inverted.setSelected(prefix.startsWith("!"));
+            prefix = prefix.startsWith("!") ? prefix.substring(1) : prefix;
+            // Set prefix and options
+            this.lastSetPrefix = prefix;
+            boolean prefixFound = false;
+            for (Prefix p : Prefix.values()) {
+                if (p.name.equals(prefix)) {
+                    setSelectedOptions(p.options);
+                    prefixFound = true;
+                }
+            }
+            if (!prefixFound) {
+                setSelectedOptions(OTHER);
+            }
+            setInProgress = false;
+        }
+        
+        /**
+         * Get the prefix based on the currently selected options.
+         * 
+         * @return The current prefix
+         */
+        public String getPrefix() {
+            // Default to last set
+            String result = lastSetPrefix;
+            int selectedOptions = getSelectedOptions();
+            for (Prefix p : Prefix.values()) {
+                if (p.options == selectedOptions) {
+                    result = p.name;
+                }
+            }
+            return inverted.isSelected() ? "!"+result : result;
+        }
+        
+        /**
+         * The listener receives the current prefix when the selection changes
+         * (aside from changes like when the prefix is set).
+         * 
+         * @param listener 
+         */
+        public void setListener(Consumer<String> listener) {
+            this.listener = listener;
+        }
+        
     }
     
     public static final String TEST_INFO = "<html><body style='width:300px;font-weight:normal;'>"
@@ -547,13 +933,17 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            HighlighterTester.testPresets = Highlighter.HighlightItem.makePresets(Arrays.asList(new String[]{
+                "_test $replace($1-,$\"\\\\!\",$\"[\\W_]*?\",reg)"
+            }));
             HighlighterTester tester = new HighlighterTester(null, true, "highlight");
             tester.setAddToBlacklistListener(e -> {
                 System.out.println(e);
             });
             //tester.setDefaultCloseOperation(EXIT_ON_CLOSE);
             //tester.setEditingBlacklistItem(true);
-            System.out.println(tester.showDialog("Highlight Item", "regw:[a-z]+", TEST_INFO));
+            tester.setEditingBlacklistItem(true);
+            System.out.println(tester.showDialog("Highlight Item", "!start:abc", TEST_INFO));
             System.exit(0);
         });
     }

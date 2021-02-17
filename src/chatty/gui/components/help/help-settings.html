@@ -234,12 +234,12 @@
         where you can enter special restrictions the user has to match in order
         for the icon to be displayed. If you keep this empty, then no restriction
         is applied.</dd>
-        <dd>The most common restrictions would be (although most <a href="#Usercolors">Usercolors</a>
-            restrictions should work):
+        <dd>The most common restrictions would be:
             <ul>
                 <li>Just the username (e.g. <code>serenity</code>)</li>
                 <li>An addressbook category (e.g. <code>$cat:vip</code>, which would refer to
         the category <code>vip</code>)</li>
+                <li>Most other <a href="#Usercolors">Usercolors</a> restrictions</li>
             </ul>
         </dd>
         <dd>Specifying a <em>Type</em> other than <code>Addon</code> carries an
@@ -791,6 +791,7 @@
         <li><code>wcs:</code> is the same as <code>w:</code>, but case-sensitive.</li>
         <li><code>start:</code> to match at the start, so <code>start:!bet</code> will
             match messages starting with <code>!bet</code>.</li>
+        <li><code>startw:</code> is a combination of <code>start:</code> and <code>w:</code>.</li>
         <li><code>reg:</code> (and variations) to use a
             <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expression</a> (Regex), which are case-sensitive by default:
             <ul>
@@ -849,7 +850,7 @@
             prefixes), however you can enclose the prefix value (or part of it)
             in quotes. Two quotes can be used to add a literal quote. Example:
             <code>replacement:"text&nbsp;with&nbsp;""space"""</code> (meaning
-            the value is <code>text&nbsp;with&nbsp;"space"</code>)</li>
+            the value of <code>replacement:</code> is <code>text&nbsp;with&nbsp;"space"</code>)</li>
         <li>When a prefix can have several values, they must be comma-separated
             (without spaces). Example: <code>cat:category1,category2</code>.
             Commas in list values can be quoted as well for them to be used
@@ -981,7 +982,13 @@
             <ul>
                 <li><code>config:silent</code> - Disable sounds for this item</li>
                 <li><code>config:!notify</code> - Disable notifications for this item</li>
-            </ul></li>
+            </ul>
+        </li>
+        <li><code>n:</code> to provide a note that is ignored for matching.
+            Example: In <code>n:"Explains this entry" config:info startw:!quote</code>
+            only <code>config:info startw:!quote</code> will have an effect
+            (see <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a>
+            on how quoting works).</li>
     </ul>
     
     <p><em>Note:</em> If you're using the <code>color:</code> or <code>bgcolor:</code>
@@ -991,9 +998,9 @@
         Message Colors instead.</p>
     
     <h3><a name="Matching_Presets">Presets</a></h3>
-    <p>There are different ways that allow you construct Highlight entries from
-        pre-defined parts or apply simple automatation instead of writing it all
-        manually:</p>
+    <p>There are different ways that allow you to build Highlight items (or
+        settings using the same format) from pre-defined parts or apply
+        functions instead of writing it all manually:</p>
     
     <ul>
         <li>The <code>preset:</code> prefix inserts a "Presets" list entry at
@@ -1084,7 +1091,7 @@
         since simply everything after the <code>|</code> is provided to <code>_t</code>
         as a parameter without being interpreted in any special way.</p>
     
-    <p><strong>Chaining several prefixes</strong> is possible, for example:</p>
+    <p>You can <strong>chain several prefixes</strong>, for example:</p>
     <p class="codeblock-compact"><code>ccf:_test|preset:m reg:&lt;some regex&gt;</code></p>
     <p>This would first apply the <code>_test</code> function to everything after
         it, then insert the <code>m</code> preset (assuming the <code>_test</code>

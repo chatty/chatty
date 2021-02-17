@@ -5,7 +5,6 @@ import chatty.Addressbook;
 import chatty.User;
 import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
-import chatty.util.StringUtil;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 
@@ -21,7 +20,7 @@ public class MsgColorItem extends ColorItem {
             Color foreground, boolean foregroundEnabled,
             Color background, boolean backgroundEnabled) {
         super(item, foreground, foregroundEnabled, background, backgroundEnabled);
-        this.search = new Highlighter.HighlightItem(item);
+        this.search = new Highlighter.HighlightItem(item, "msgcolor");
     }
     
     public boolean matches(HighlightItem.Type type, String text, String channel,

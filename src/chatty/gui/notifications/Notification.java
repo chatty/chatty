@@ -236,7 +236,7 @@ public class Notification {
         this.channel = tempChannel == null || tempChannel.isEmpty() ? null : Helper.toChannel(tempChannel);
         this.matcher = StringUtil.trim(builder.matcher);
         if (matcher != null && !matcher.isEmpty()) {
-            this.matcherItem = new Highlighter.HighlightItem(matcher);
+            this.matcherItem = new Highlighter.HighlightItem(matcher, "notification");
         } else {
             this.matcherItem = null;
         }

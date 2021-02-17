@@ -61,7 +61,7 @@ public class UsercolorItem extends ColorItem {
         }
         
         if (id.startsWith("$m:") && id.length() > "$m:".length()) {
-            match = new Highlighter.HighlightItem(id.substring("$m:".length()));
+            match = new Highlighter.HighlightItem(id.substring("$m:".length()), "usercolor");
         }
         else {
             match = null;

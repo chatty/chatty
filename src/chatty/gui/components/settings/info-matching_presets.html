@@ -10,13 +10,17 @@ can have special meanings:
         is used.</li>
     <li>Entries with other names are interpreted as plain text.</li>
     <li>Entries where the name begins with "#" are entirely ignored.</li>
-    <li>An entry with the name <code>_global</code> will automatically be
-        applied to entries of the Highlight, Ignore and Filter list as if they
-        were prefixed with <code>ccf:_global|</code> (see <a href="help-settings:Matching_ccf">help</a>).
-        To only apply it to one of
-        them, use <code>_global_highlight</code>, <code>_global_ignore</code>
-        or <code>_global_filter</code>.</li>
+    <li>An entry with the name <code>_global_&lt;type&gt;</code> (where <code>&lt;type&gt;</code> can
+        be <code>highlight</code>, <code>ignore</code>, <code>filter</code>,
+        <code>msgcolor</code>, <code>usercolor</code>, <code>badge</code> or
+        <code>notification</code>) will automatically be applied to settings of
+        that type (or at least the part of it that uses Highlight-type matching)
+        as if it was prefixed with <code>ccf:_global_&lt;type&gt;|</code> (see <a href="help-settings:Matching_ccf">help</a>).
+        Use <code>_global</code> to apply to all of these (although specific type
+        takes precedence if present).</li>
 </ul>
 
 <p>These entries can be used in pretty much every setting that uses the <a href="help-settings:Highlight">Highlight</a>
-    format, not just the Highlight list. Read the <a href="help-settings:Matching_Presets">Presets help</a> for how to use them.</p>
+    format, not just the Highlight list, however note that a restart may be
+    required for changes to apply to settings that are not the Highlight, Ignore or Filter list.</p>
+<p>Read the <a href="help-settings:Matching_Presets">Presets help</a> for how to use the entries on this list.</p>

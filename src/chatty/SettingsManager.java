@@ -598,7 +598,9 @@ public class SettingsManager {
         
         // Matching
         List<String> matchingPresetsDefault = new ArrayList<>();
-        matchingPresetsDefault.add("_ohbot $replace($1-,$\"\\\\!\",$\"[\\W_]*?\",reg)");
+        matchingPresetsDefault.add("# _custom replaces \\! with [\\W_]*? (matches non-word characters and underscore 0 or more times)");
+        matchingPresetsDefault.add("_custom $replace($1-,$\"\\\\!\",$\"[\\W_]*?\",reg)");
+        matchingPresetsDefault.add("# _special replaces every letter of words surrounded by ~ with: (<letter>[\\W_]*?)+");
         matchingPresetsDefault.add("_special $replace($1-,$\"~([^~]+)~\",$replace($(g1),$\"(\\w)\",$\"($1[\\\\W_]*?)+\",regRef),regCustom)");
         settings.addList("matchingPresets", matchingPresetsDefault, Setting.STRING);
 
