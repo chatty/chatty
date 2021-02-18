@@ -125,6 +125,28 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "\\abc"));
         assertFalse(highlighter.check(user, "mäh"));
         
+        // startw:
+        update("startw:!bet ");
+        assertFalse(highlighter.check(user, "test"));
+        assertFalse(highlighter.check(user, " !bet test"));
+        assertFalse(highlighter.check(user, "!bett"));
+        assertTrue(highlighter.check(user3, "!bet abc"));
+        assertTrue(highlighter.check(user3, "!bet,abc"));
+        assertTrue(highlighter.check(user3, "!bet.abc"));
+        assertTrue(highlighter.check(user3, "!bet. abc"));
+        assertFalse(highlighter.check(user3, "!bet_abc"));
+        
+        update("startw: !bet ");
+        assertFalse(highlighter.check(user, "!bet test"));
+        assertTrue(highlighter.check(user, " !bet test"));
+        assertTrue(highlighter.check(user, " !bet"));
+        
+        update("startw:\\abc");
+        assertTrue(highlighter.check(user, "\\abc"));
+        assertTrue(highlighter.check(user, "\\abc d"));
+        assertFalse(highlighter.check(user, "abc"));
+        assertFalse(highlighter.check(user, "abcd"));
+        
         // w:
         update("w:Test");
         assertTrue(highlighter.check(user, "test message"));
