@@ -56,6 +56,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -87,13 +88,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     private final LinkLabel infoText = new LinkLabel("", null);
     private final JTextArea parseResult = new JTextArea();
     private final JTabbedPane tabs = new JTabbedPane();
-    private final MatchOptions matchOptions = new MatchOptions();
-    private final JTextField metaPrefixes = new JTextField();
-    private final LinkLabel metaPrefixesLabel;
-    private final JLabel metaPrefixesError = new JLabel();
-    private final JTextField mainPrefix;
-    private final JTextField mainText = new JTextField();
-    private final LinkLabel textMatchLabel;
+    private final ItemFields itemFields;
     
     private final MutableAttributeSet matchAttr1 = new SimpleAttributeSet();
     private final MutableAttributeSet matchAttr2 = new SimpleAttributeSet();
@@ -111,8 +106,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
      * Previous automatically set test text.
      */
     private String prevTestText;
-    
-    private boolean updating;
     
     private HighlightItem highlightItem;
     private HighlightItem blacklistItem;
@@ -134,9 +127,11 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         GridBagConstraints gbc;
         
+        JPanel main = new JPanel(new GridBagLayout());
+        
         gbc = GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(5, 5, 0, 5);
-        add(new JLabel("Full "+type+" item (you may edit it here or below):"),
+        main.add(new JLabel("Full "+type+" item (you may edit it here or below):"),
                 gbc);
         
         gbc = GuiUtil.makeGbc(0, 2, 2, 1);
@@ -144,80 +139,15 @@ public class HighlighterTester extends JDialog implements StringEditor {
         gbc.weightx = 1;
         itemValue.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(itemValue, MAX_INPUT_LENGTH, false);
-        add(itemValue, gbc);
+        main.add(itemValue, gbc);
         
-        gbc = GuiUtil.makeGbc(0, 3, 2, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        add(new JSeparator(), gbc);
-        
-        //--------------------------
-        // Meta Prefixes
-        //--------------------------
-        JPanel metaPrefixesLabelPanel = new JPanel(new GridBagLayout());
-        gbc = GuiUtil.makeGbc(0, 4, 1, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        metaPrefixesLabel = new LinkLabel("[help-settings:Highlight_Meta_Matching Meta Prefixes:]", null);
-        metaPrefixesLabel.setMargin(null);
-        metaPrefixesLabelPanel.add(metaPrefixesLabel, gbc);
-        
-        gbc = GuiUtil.makeGbc(1, 4, 1, 1);
-        gbc.insets = new Insets(0, 0, 0, 0);
-        metaPrefixesLabelPanel.add(metaPrefixesError, gbc);
-        
+        itemFields = new ItemFields(itemValue);
+        itemFields.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(1, 4, 1, 4)));
         gbc = GuiUtil.makeGbc(0, 4, 2, 1);
+        gbc.insets = new Insets(5, 14, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
-        gbc.insets = new Insets(5, 5, 0, 5);
-        add(metaPrefixesLabelPanel, gbc);
-        
-        gbc = GuiUtil.makeGbc(0, 5, 2, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        metaPrefixes.setFont(Font.decode(Font.MONOSPACED));
-        add(metaPrefixes, gbc);
-        
-        //--------------------------
-        // Text Match
-        //--------------------------
-        gbc = GuiUtil.makeGbc(0, 7, 2, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.insets = new Insets(5, 5, 0, 5);
-        textMatchLabel = new LinkLabel("[help-settings:Highlight_Matching Text Match:]", null);
-        textMatchLabel.setMargin(null);
-        add(textMatchLabel, gbc);
-        
-        JPanel textMatchPanel = new JPanel();
-        textMatchPanel.setLayout(new GridBagLayout());
-        gbc = GuiUtil.makeGbc(0, 0, 1, 1);
-        mainPrefix = new JTextField(8);
-        mainPrefix.setFont(Font.decode(Font.MONOSPACED));
-        mainPrefix.setEditable(false);
-        textMatchPanel.add(mainPrefix, gbc);
-        gbc = GuiUtil.makeGbc(1, 0, 1, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        mainText.setFont(Font.decode(Font.MONOSPACED));
-        textMatchPanel.add(mainText, gbc);
-        
-        gbc = GuiUtil.makeGbc(0, 8, 2, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        add(textMatchPanel, gbc);
-        
-        gbc = GuiUtil.makeGbc(0, 9, 2, 1);
-        gbc.insets = new Insets(0, 0, 5, 5);
-        gbc.anchor = GridBagConstraints.WEST;
-        add(matchOptions, gbc);
-        
-        gbc = GuiUtil.makeGbc(0, 10, 2, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        add(new JSeparator(), gbc);
+        main.add(itemFields, gbc);
         
         //--------------------------
         // Blacklist
@@ -228,7 +158,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             JLabel blacklistLabel = new JLabel("Blacklist item:");
             blacklistLabel.setToolTipText(SettingsUtil.addTooltipLinebreaks(
                     "You can enter a single blacklist item here to test how it would affect text matches if it were on the blacklist."));
-            add(blacklistLabel,
+            main.add(blacklistLabel,
                     gbc);
 
             gbc = GuiUtil.makeGbc(0, 12, 2, 1);
@@ -236,12 +166,12 @@ public class HighlighterTester extends JDialog implements StringEditor {
             gbc.weightx = 1;
             blacklistValue.setFont(Font.decode(Font.MONOSPACED));
             GuiUtil.installLengthLimitDocumentFilter(blacklistValue, MAX_INPUT_LENGTH, false);
-            add(blacklistValue, gbc);
+            main.add(blacklistValue, gbc);
             
             gbc = GuiUtil.makeGbc(0, 13, 2, 1);
             gbc.insets = new Insets(0, 5, 4, 5);
             addToBlacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-            add(addToBlacklistButton, gbc);
+            main.add(addToBlacklistButton, gbc);
             addToBlacklistButton.setVisible(false);
             addToBlacklistButton.addActionListener(e -> {
                 if (addToBlacklistListener != null) {
@@ -259,7 +189,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         //--------------------------
         gbc = GuiUtil.makeGbc(0, 14, 1, 1, GridBagConstraints.LINE_START);
         gbc.insets = new Insets(5, 5, 0, 5);
-        add(new JLabel("Test on this text (non-text requirements ignored):"),
+        main.add(new JLabel("Test on this text (non-text requirements ignored):"),
                 gbc);
         
         gbc = GuiUtil.makeGbc(0, 15, 2, 1);
@@ -272,12 +202,19 @@ public class HighlighterTester extends JDialog implements StringEditor {
         // Enable focus traversal keys
         GuiUtil.resetFocusTraversalKeys(testInput);
         GuiUtil.installLengthLimitDocumentFilter(testInput, 1000, false);
-        add(new JScrollPane(testInput),
+        main.add(new JScrollPane(testInput),
                 gbc);
         
-        add(testResult,
+        main.add(testResult,
                 GuiUtil.makeGbc(0, 16, 2, 1, GridBagConstraints.WEST));
 
+        gbc = GuiUtil.makeGbc(0, 10, 2, 1);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 2, 0, 2);
+        gbc.weightx = 1;
+        gbc.weighty = 0.5;
+        add(main, gbc);
+        
         //--------------------------
         // Main buttons
         //--------------------------
@@ -313,20 +250,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         gbc = GuiUtil.makeGbc(0, 20, 3, 1, GridBagConstraints.CENTER);
         gbc.insets = new Insets(10, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
+        gbc.weighty = 0.5;
         add(tabs, gbc);
         
         //--------------------------
         // Listeners and stuff
         //--------------------------
-        matchOptions.setListener(p -> {
-            if (p != null) {
-                mainPrefix.setText(p);
-                constructValue();
-            }
-        });
-        
         okButton.addActionListener(e -> {
             result = editingBlacklistItem ? blacklistValue.getText() : itemValue.getText();
             setVisible(false);
@@ -372,14 +303,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
             updateBlacklistItem();
         });
         
-        addDocumentListener(metaPrefixes, e -> {
-            constructValue();
-        });
-        
-        addDocumentListener(mainText, e -> {
-            constructValue();
-        });
-        
         updateEditIndicator();
         updateSaveButton();
         
@@ -414,30 +337,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 testPresets != null ? testPresets : new HashMap<>());
     }
     
-    private void constructValue() {
-        if (updating) {
-            return;
-        }
-        updating = true;
-        HighlightItem metaItem = new HighlightItem(metaPrefixes.getText(), "", false, null);
-        String mPrefixes = metaItem.getMetaPrefixes();
-        String mPrefixesExtra = metaItem.getRaw().substring(metaItem.getMetaPrefixes().length()).trim();
-        String newValue = mPrefixes;
-        if (!mPrefixesExtra.isEmpty()) {
-            metaPrefixesError.setText("Not a meta prefix: "+StringUtil.shortenTo(mPrefixesExtra, 20));
-        }
-        else {
-            metaPrefixesError.setText(null);
-        }
-        String main = "";
-        if (!mainText.getText().trim().isEmpty()) {
-            main = mainPrefix.getText()+mainText.getText();
-        }
-        newValue = StringUtil.append(newValue, " ", main);
-        itemValue.setText(newValue);
-        updating = false;
-    }
-    
     private void updateItem() {
         String value = itemValue.getText();
         if (value.isEmpty()) {
@@ -451,20 +350,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         updateSaveButton();
         updateTestText();
         
-        if (!updating) {
-            // Empty type to disable presets
-            HighlightItem i = new HighlightItem(value, "", false, null);
-            updating = true;
-            String mPrefix = i.getMainPrefix();
-            if (StringUtil.isNullOrEmpty(mPrefix)) {
-                mPrefix = "text:";
-            }
-            mainPrefix.setText(mPrefix);
-            matchOptions.setPrefix(mPrefix);
-            mainText.setText(i.getTextWithoutPrefix());
-            metaPrefixes.setText(i.getMetaPrefixes());
-            updating = false;
-        }
+        itemFields.update();
 //        System.out.println(highlightItem.getMatchInfo());
     }
     
@@ -671,8 +557,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     @Override
     public void setLinkLabelListener(LinkLabelListener listener) {
         this.infoText.setListener(listener);
-        this.metaPrefixesLabel.setListener(listener);
-        this.textMatchLabel.setListener(listener);
+        this.itemFields.setLinkLabelListener(listener);
     }
     
     public void setAddToBlacklistListener(ActionListener listener) {
@@ -680,6 +565,164 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (listener != null) {
             addToBlacklistButton.setVisible(true);
         }
+    }
+    
+    private static class ItemFields extends JPanel {
+        
+        private final JTextComponent item;
+        
+        private final JTextField metaPrefixes = new JTextField();
+        private final LinkLabel metaPrefixesLabel;
+        private final JLabel metaPrefixesError = new JLabel();
+        
+        private final LinkLabel textMatchLabel;
+        private final JTextField mainPrefix;
+        private final JTextField mainText = new JTextField();
+        private final MatchOptions matchOptions = new MatchOptions();
+        
+        private boolean updating;
+        
+        ItemFields(JTextComponent item) {
+            this.item = item;
+            
+            setLayout(new GridBagLayout());
+            
+            GridBagConstraints gbc;
+            
+            //--------------------------
+            // Meta Prefixes
+            //--------------------------
+            JPanel metaPrefixesLabelPanel = new JPanel(new GridBagLayout());
+            gbc = GuiUtil.makeGbc(0, 4, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(0, 0, 0, 0);
+            metaPrefixesLabel = new LinkLabel("[help-settings:Highlight_Meta_Matching Meta Prefixes:]", null);
+            metaPrefixesLabel.setMargin(null);
+            metaPrefixesLabelPanel.add(metaPrefixesLabel, gbc);
+
+            gbc = GuiUtil.makeGbc(1, 4, 1, 1);
+            gbc.insets = new Insets(0, 0, 0, 0);
+            metaPrefixesLabelPanel.add(metaPrefixesError, gbc);
+
+            gbc = GuiUtil.makeGbc(0, 4, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(5, 5, 0, 5);
+            add(metaPrefixesLabelPanel, gbc);
+
+            gbc = GuiUtil.makeGbc(0, 5, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            metaPrefixes.setFont(Font.decode(Font.MONOSPACED));
+            add(metaPrefixes, gbc);
+
+            //--------------------------
+            // Text Match
+            //--------------------------
+            gbc = GuiUtil.makeGbc(0, 7, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(5, 5, 0, 5);
+            textMatchLabel = new LinkLabel("[help-settings:Highlight_Matching Text Match:]", null);
+            textMatchLabel.setMargin(null);
+            add(textMatchLabel, gbc);
+
+            JPanel textMatchPanel = new JPanel();
+            textMatchPanel.setLayout(new GridBagLayout());
+            gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+            mainPrefix = new JTextField(8) {
+                
+                // Prevent field from shrinking in case of long text match
+                @Override
+                public Dimension getMinimumSize() {
+                    return getPreferredSize();
+                }
+                
+            };
+            mainPrefix.setFont(Font.decode(Font.MONOSPACED));
+            mainPrefix.setEditable(false);
+            textMatchPanel.add(mainPrefix, gbc);
+            gbc = GuiUtil.makeGbc(1, 0, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            mainText.setFont(Font.decode(Font.MONOSPACED));
+            textMatchPanel.add(mainText, gbc);
+
+            gbc = GuiUtil.makeGbc(0, 8, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(0, 0, 0, 0);
+            add(textMatchPanel, gbc);
+
+            gbc = GuiUtil.makeGbc(0, 9, 2, 1);
+            gbc.insets = new Insets(0, 0, 5, 5);
+            gbc.anchor = GridBagConstraints.WEST;
+            add(matchOptions, gbc);
+            
+            matchOptions.setListener(p -> {
+                if (p != null) {
+                    mainPrefix.setText(p);
+                    constructValue();
+                }
+            });
+            
+            addDocumentListener(metaPrefixes, e -> {
+                constructValue();
+            });
+
+            addDocumentListener(mainText, e -> {
+                constructValue();
+            });
+        }
+        
+        private void constructValue() {
+            if (updating) {
+                return;
+            }
+            updating = true;
+            HighlightItem metaItem = new HighlightItem(metaPrefixes.getText(), "", false, null);
+            String mPrefixes = metaItem.getMetaPrefixes();
+            String mPrefixesExtra = metaItem.getRaw().substring(metaItem.getMetaPrefixes().length()).trim();
+            String newValue = mPrefixes;
+            if (!mPrefixesExtra.isEmpty()) {
+                metaPrefixesError.setText("Not a meta prefix: " + StringUtil.shortenTo(mPrefixesExtra, 20));
+            }
+            else {
+                metaPrefixesError.setText(null);
+            }
+            String main = "";
+            if (!mainText.getText().trim().isEmpty()) {
+                main = mainPrefix.getText() + mainText.getText();
+            }
+            newValue = StringUtil.append(newValue, " ", main);
+            item.setText(newValue);
+            updating = false;
+        }
+        
+        public void setLinkLabelListener(LinkLabelListener listener) {
+            metaPrefixesLabel.setListener(listener);
+            textMatchLabel.setListener(listener);
+        }
+        
+        public void update() {
+            if (updating) {
+                return;
+            }
+            // Empty type to disable presets
+            HighlightItem i = new HighlightItem(item.getText(), "", false, null);
+            updating = true;
+            String mPrefix = i.getMainPrefix();
+            if (StringUtil.isNullOrEmpty(mPrefix)) {
+                mPrefix = "text:";
+            }
+            mainPrefix.setText(mPrefix);
+            matchOptions.setPrefix(mPrefix);
+            mainText.setText(i.getTextWithoutPrefix());
+            metaPrefixes.setText(i.getMetaPrefixes());
+            updating = false;
+        }
+        
     }
     
     /**

@@ -1402,7 +1402,6 @@ public class Highlighter {
                     break;
                 }
                 Pair<String, String> p = modifications.get(i);
-                result.append("Modified:\n");
                 result.append("   ").append(p.key).append("\n");
                 result.append("-> ").append(p.value).append("\n\n");
             }
