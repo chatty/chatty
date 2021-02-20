@@ -59,11 +59,13 @@ public class MsgColorManagerTest {
         
         // Load from settings
         MsgColorManager manager = new MsgColorManager(settings);
+        manager.loadFromSettings();
         checkData(manager.getData(), target);
         
         // Save to settings, then load again
         manager.setData(target);
         manager = new MsgColorManager(settings);
+        manager.loadFromSettings();
         checkData(manager.getData(), target);
     }
     
