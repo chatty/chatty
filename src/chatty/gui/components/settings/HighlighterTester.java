@@ -127,15 +127,23 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         GridBagConstraints gbc;
         
+        final Insets leftInsets = new Insets(5, 16, 5, 5);
+        
         JPanel main = new JPanel(new GridBagLayout());
         
-        gbc = GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
-        gbc.insets = new Insets(5, 5, 0, 5);
-        main.add(new JLabel("Full "+type+" item (you may edit it here or below):"),
+        gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(10, 5, 0, 5);
+        main.add(new JLabel("Full "+type+" item:"),
+                gbc);
+        
+        gbc = GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.EAST);
+        gbc.insets = new Insets(10, 5, 0, 5);
+        main.add(new JLabel("(You may edit it here or below.)"),
                 gbc);
         
         gbc = GuiUtil.makeGbc(0, 2, 2, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = leftInsets;
         gbc.weightx = 1;
         itemValue.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(itemValue, MAX_INPUT_LENGTH, false);
@@ -144,7 +152,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         itemFields = new ItemFields(itemValue);
         itemFields.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(1, 4, 1, 4)));
         gbc = GuiUtil.makeGbc(0, 4, 2, 1);
-        gbc.insets = new Insets(5, 14, 5, 5);
+        gbc.insets = leftInsets;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         main.add(itemFields, gbc);
@@ -154,7 +162,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         //--------------------------
         if (showBlacklist) {
             gbc = GuiUtil.makeGbc(0, 11, 2, 1, GridBagConstraints.LINE_START);
-            gbc.insets = new Insets(5, 5, 0, 5);
+            gbc.insets = new Insets(10, 5, 0, 5);
             JLabel blacklistLabel = new JLabel("Blacklist item:");
             blacklistLabel.setToolTipText(SettingsUtil.addTooltipLinebreaks(
                     "You can enter a single blacklist item here to test how it would affect text matches if it were on the blacklist."));
@@ -164,6 +172,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             gbc = GuiUtil.makeGbc(0, 12, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
+            gbc.insets = leftInsets;
             blacklistValue.setFont(Font.decode(Font.MONOSPACED));
             GuiUtil.installLengthLimitDocumentFilter(blacklistValue, MAX_INPUT_LENGTH, false);
             main.add(blacklistValue, gbc);
@@ -187,12 +196,20 @@ public class HighlighterTester extends JDialog implements StringEditor {
         //--------------------------
         // Test field
         //--------------------------
-        gbc = GuiUtil.makeGbc(0, 14, 1, 1, GridBagConstraints.LINE_START);
-        gbc.insets = new Insets(5, 5, 0, 5);
-        main.add(new JLabel("Test on this text (non-text requirements ignored):"),
+        gbc = GuiUtil.makeGbc(0, 14, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(10, 5, 0, 5);
+        JLabel testLabel = new JLabel("Test text:");
+        testLabel.setToolTipText("Non-text requirements are ignored for testing.");
+        main.add(testLabel,
                 gbc);
         
+//        gbc = GuiUtil.makeGbc(1, 14, 1, 1, GridBagConstraints.EAST);
+//        gbc.insets = new Insets(10, 5, 0, 5);
+//        main.add(new JLabel("(Non-text requirements ignored.)"),
+//                gbc);
+        
         gbc = GuiUtil.makeGbc(0, 15, 2, 1);
+        gbc.insets = leftInsets;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -205,12 +222,13 @@ public class HighlighterTester extends JDialog implements StringEditor {
         main.add(new JScrollPane(testInput),
                 gbc);
         
-        main.add(testResult,
-                GuiUtil.makeGbc(0, 16, 2, 1, GridBagConstraints.WEST));
+        gbc = GuiUtil.makeGbc(0, 16, 2, 1, GridBagConstraints.WEST);
+        gbc.insets = leftInsets;
+        main.add(testResult, gbc);
 
         gbc = GuiUtil.makeGbc(0, 10, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(0, 2, 0, 2);
+        gbc.insets = new Insets(0, 4, 0, 4);
         gbc.weightx = 1;
         gbc.weighty = 0.5;
         add(main, gbc);
@@ -504,7 +522,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         HighlightItem item = editingBlacklistItem ? blacklistItem : highlightItem;
         boolean matches = item != null && item.matchesAny(testInput.getText(), null);
         if (!matches && (testInput.getText().isEmpty() || testInput.getText().equals(prevTestText))) {
-            if (item != null) {
+            if (item != null && item.getTextWithoutPrefix().length() < 20) {
                 testInput.setText(TEST_PRESET_EXAMPLE+item.getTextWithoutPrefix());
             } else {
                 testInput.setText(TEST_PRESET);
@@ -985,7 +1003,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             });
             //tester.setDefaultCloseOperation(EXIT_ON_CLOSE);
             //tester.setEditingBlacklistItem(true);
-            tester.setEditingBlacklistItem(true);
+            tester.setEditingBlacklistItem(false);
             System.out.println(tester.showDialog("Highlight Item", "!start:abc", TEST_INFO));
             System.exit(0);
         });
