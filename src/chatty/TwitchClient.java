@@ -892,6 +892,9 @@ public class TwitchClient {
                             // If changed to parent msg-id, atMsg will be null
                             sendReply(channel, actualMsg, username, result.atMsgId, result.atMsg);
                         }
+                        else {
+                            g.insert(text, false);
+                        }
                         return true;
                     }
                 }
