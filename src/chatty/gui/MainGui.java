@@ -1425,6 +1425,8 @@ public class MainGui extends JFrame implements Runnable {
                 openHelp("help-whisper.html", ref);
             } else if (type.equals("help-laf")) {
                 openHelp("help-laf.html", ref);
+            } else if (type.equals("help-guide2")) {
+                openHelp("help-guide2.html", ref);
             } else if (type.equals("url")) {
                 UrlOpener.openUrlPrompt(MainGui.this, ref);
             } else if (type.equals("update")) {

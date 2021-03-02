@@ -33,12 +33,8 @@ import javax.swing.*;
  */
 public class TokenGetDialog extends JDialog implements ItemListener, ActionListener {
     
-    private static final String INFO = "<html><body>Request new login data ([help:login ?]):<br />"
-            + "1. Open the link below<br />"
-            + "2. Grant chat access for Chatty<br />"
-            + "3. Get redirected";
     private final JTextField urlField = new JTextField(20);
-    private final JLabel status = new JLabel();
+    private final LinkLabel status;
     private final JButton copyUrl = new JButton(Language.getString("openUrl.button.copy"));
     private final JButton openUrl = new JButton(Language.getString("openUrl.button.open", 1));
     private final JButton close = new JButton(Language.getString("dialog.button.close"));
@@ -104,6 +100,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         add(openUrl,gbc);
         
         // Status and Close Button
+        status = new LinkLabel("", owner.getLinkLabelListener());
         add(status,makeGridBagConstraints(0,y+3,2,1,GridBagConstraints.CENTER));
         gbc = makeGridBagConstraints(0,y+4,2,1,GridBagConstraints.EAST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -138,7 +135,11 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     }
     
     public void error(String errorMessage) {
-        setStatus("Error: "+errorMessage);
+        openUrl.setEnabled(true);
+        copyUrl.setEnabled(true);
+        urlField.setEnabled(true);
+        setStatus("Error: "+errorMessage+"<br />"
+                + "Read the [help-guide2: help] on how to proceed.");
     }
     
     public void tokenReceived() {
@@ -146,7 +147,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     }
     
     private void setStatus(String text) {
-        status.setText("<html><body style='width:150px;text-align:center'>"+text);
+        status.setText("<html><body style='width:250px;text-align:center'>"+text);
         pack();
     }
     
