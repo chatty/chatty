@@ -455,19 +455,24 @@
             referring to <code>Fremily</code> turns into <code>FREMILY</code>.</dd>
         
         <dt><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code>
-        <dd>Search and replace in text. Especially when using Regex, remember
-            escaping of <code>\</code> (<code>\\</code>) and <code>$</code> (<code>\$</code>).</dd>
+        <dd>Search and replace in text.</dd>
+        <dd>Especially when using Regex, remember
+            escaping <code>\</code> (<code>\\</code>) and <code>$</code> (<code>\$</code>)
+            when they should e.g. be used in regex rather than interpreted as special Custom Command characters.
+            Instead of escaping each special character individually, you can also
+            use <a href="#escaping">Literal Text</a>.</dd>
         <dd>Methods are:
             <ul style="margin-top:0">
                 <li><em>Not specified</em> - Literal case-insensitive search</li>
                 <li><code>cs</code> - Literal case-sensitive search</li>
                 <li><code>reg</code> - Regular Expression search</li>
-                <li><code>regRef</code> - Regular Expression search, with references to groups (<code>\$1</code>) in the replacement (<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#replaceAll-java.lang.String-java.lang.String-">replace parameter format</a>, when using regRef)</li>
+                <li><code>regRef</code> - Regular Expression search, with references to groups via <code>\$1</code><br />
+                    Note: The "replace" text basicially gets fed to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#replaceAll-java.lang.String-java.lang.String-">String.replaceAll()</a> method as "replacement". The <code>$1</code> in this case does not refer to a Custom Command replacement, but something that the replaceAll() method uses, so it needs to be escaped in the Custom Command function, either by using <code>\$1</code> or using <a href="#escaping">Literal Text</a>. In addition, if <code>$</code> or <code>\</code> should show up literally instead of being interpreted by the replaceAll() method then they need to be escaped again (e.g. <code>$replace(..,..,Dollar: \\\$1 Ref: \$1,regRef)</code>, whereas <code>Dollar: \$1 Ref: $1</code> would be given to the replaceAll() method).</li>
                 <li><code>regFirst</code>, <code>refFirstRef</code> - Same as above, but only replace first occurence</li>
                 <li><code>regCustom</code> - Regular Expression search, the replace parameter has access to match values and is
                     executed for each match (<code>$1-</code> full match, <code>$(g1)</code> first group in the search regex
-                    (if available), <code>$(g2)</code> second group, ..).</li>
-                <li><code>regFunc</code> - Regular Expression serach, the replace must be the name
+                    if available, <code>$(g2)</code> second group, ..).</li>
+                <li><code>regFunc</code> - Regular Expression search, the replace must be the name
                     of a Custom Replacement which is called with the same values as <code>regCustom</code>
                     (doesn't always work in Custom Commands, can use <code>regCustom</code>
                     with e.g. <code>$(_&lt;name&gt;,$1-)</code> instead).</li>

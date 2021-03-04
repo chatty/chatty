@@ -63,12 +63,11 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.14">Version 0.14</a> <a name="latest">(This one!) (2020-12-??)</a>
+        <a name="0.14">Version 0.14</a> <a name="latest">(This one!) (2021-03-04)</a>
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p><em>This is a pre-release test version. No complete release yet.</em></p>
-    
-    <p>This version features a more advanced drag&amp;drop functionality:</p>
+    <p>This version features (among other things) a more advanced drag&amp;drop
+        functionality:</p>
     
     <ul>
         <li>Tabs can be dragged to the edges of a chat to create a split view
@@ -77,15 +76,69 @@
         <li>Popouts also contain a tab pane now (if more than one tab is dragged
             into it).</li>
         <li>A popout can be opened through the tab context menu (as before) or
-            by dragging a tab outside of the window, either as a dialog or
-            separate window.</li>
-        <li>Tabs can be customized more, changing how which information is
-            displayed.</li>
-        <li>Relevant pages in the Settings are "Tabs" (Tab Info) and "Window"
-            (Popout).</li>
+            by dragging a tab outside of the window. Popouts can be opened
+            either as a dialog or separate window.</li>
+        <li>More customization of how information on tabs is displayed.</li>
         <li>The Highlighted and Ignored Messages dialogs can be docked as a tab
-            through their context menu.</li>
+            through their context menus.</li>
+        <li>Find relevant settings under "Tabs" and "Window".</li>
     </ul>
+    
+    <pre>
+### Custom Commands / Commands
+- Added `$"&lt;text&gt;"` to Custom Commands syntax, where everything inside the
+  quotes is interpreted as literal text (e.g. `$"This costs $30 dollars"`)
+- Added optional args parameter to Custom Replacements: `$(_m,[args])`, where
+  "args" is available in the "_m" replacement via `$1-` (like a function)
+- Changes to the /chain command:
+  - Automatically escape seperator character "|" in top-level replacements
+  - Fixed bug where the wrong parameters would be sometimes set
+- Added /say command
+- Added $request() method to perform GET requests
+- Improved $replace() function with more advanced replace options
+- Added identifiers to retrieve info about the local user
+- Prevent endless recursion that could happen in some cases
+- Added warning when Custom Commands have the same name as built-in commands
+
+### Matching (Highlight, Ignore etc.)
+- Added Presets that can be used in individual Matching items (various prefixes)
+- Improved Highlight editor
+- Added "n:" prefix for notes that are ignored for matching
+- Added "startw:" prefix
+- Added Highlight-style user-related matching to custom Usercolors/Badges
+- Added Ignore blacklist (to prevent message from being ignored)
+- Various blacklist improvements
+- Added "Message Info" context menu entry for chat messages showing which
+  Highlights or Custom Message Color item they were affected by (if any)
+- Improved Highlighted/Ignored messages dialogs (e.g. show bans/timeouts)
+
+### Users
+- Added date separator in User Dialog message history
+- Added setting for User Dialog message limit
+- Added user notes (via User Dialogs)
+- Added support for showing pronouns (disabled by default)
+- Added colored names in userlist (disabled by default, limited to users that
+  already talked)
+
+### Other Changes
+- Improved tab/popout handling (see description above)
+- Updated JTattoo Look&amp;Feels to fix some small tabs issues
+- Added "Join"-link for hosted channels
+- Keep message in input box after cancelling mention dialog
+- Account: Allow opening connect URL on error to make manual process easier
+- Always show whisper related info messages in active channel
+- Added setting for link color in info messages
+- Added FFZ per-channel bot recognition
+- Increased the maximum amount of followed streams that can be requested
+- Updated translations/texts
+- Updated help
+
+### Bugfixes
+- Fixed error in Highlight editor due to missing icon on some platforms
+- Fixed sub months in badge tooltips
+- Fixed token verified dialog showing when it shouldn't
+- Fixed website approved automod message showing as points reward
+    </pre>
     
     <h2>
         <a name="0.13.1">Version 0.13.1</a> (2020-11-17)
