@@ -148,6 +148,7 @@ public final class Channel extends JPanel {
             refreshBufferSize();
             setName(room.getDisplayName());
             updateContentData();
+            getDockContent().setId(room.getChannel());
             return true;
         }
         return false;

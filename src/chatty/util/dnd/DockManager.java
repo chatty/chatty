@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 /**
@@ -62,6 +63,7 @@ public class DockManager {
     //--------------------------
     private DockContent currentlyActive;
     private final Map<DockPopout, DockContent> active = new HashMap<>();
+    private final Map<String, DockPath> pathOnRemove = new HashMap<>();
     
     //--------------------------
     // Settings
@@ -314,11 +316,17 @@ public class DockManager {
             return;
         }
         
+        // Maybe don't set here, only extenerally?
+//        if (loadedLayout != null && content.getTargetPath() == null) {
+//            content.setTargetPath(loadedLayout.getPath(content.getId()));
+//        }
+        
         if (currentlyActive == null) {
             changedActiveContent(content, false);
         }
         else {
-            setTargetPath(content, currentlyActive);
+            // Maybe don't set here, only extenerally?
+//            setTargetPath(content, currentlyActive);
         }
         
         // Add content
@@ -327,10 +335,17 @@ public class DockManager {
             main.addContent(content);
         }
         else {
+            boolean added = false;
             for (DockPopout p : popouts) {
                 if (p.getId().equals(target.getPopoutId())) {
                     p.getBase().addContent(content);
+                    added = true;
                 }
+            }
+            if (!added) {
+                // Add in default location if popout not found (TODO: Optionally open popout)
+                content.setTargetPath(null);
+                main.addContent(content);
             }
         }
         
@@ -364,10 +379,22 @@ public class DockManager {
         if (!hasContent(content)) {
             return;
         }
+        pathOnRemove.put(content.getId(), content.getPath());
         removeActive(content);
         main.removeContent(content);
         applyToPopoutsSafe(p -> p.getBase().removeContent(content));
         listener.contentRemoved(content);
+    }
+    
+    /**
+     * Get the path for the given content id from the moment the content was
+     * last removed.
+     * 
+     * @param id The content id
+     * @return The path, may be null
+     */
+    public DockPath getPathOnRemove(String id) {
+        return pathOnRemove.get(id);
     }
     
     /**
@@ -515,6 +542,55 @@ public class DockManager {
         applyToPopoutsSafe(p -> p.getBase().removeContent(content));
         
         // Get existing or create new popout
+        DockPopout popout = getPopout(type);
+        popout.getBase().addContent(content);
+        
+        // Configure window
+        configureWindow(popout, location, size, -1);
+        popout.getWindow().setVisible(true);
+        SwingUtilities.invokeLater(() -> popout.getWindow().toFront());
+        
+        // Finish up
+        popouts.add(popout);
+        removeActive(content);
+        changedActiveContent(content, false);
+        listener.popoutOpened(popout, content);
+        
+        return popout;
+    }
+    
+    private DockPopout openPopout(PopoutType type, Point location, Dimension size, int state) {
+        DockPopout popout = getPopout(type);
+        configureWindow(popout, location, size, state);
+        popout.getWindow().setVisible(true);
+        SwingUtilities.invokeLater(() -> popout.getWindow().toFront());
+        popouts.add(popout);
+        listener.popoutOpened(popout, null);
+        return popout;
+    }
+    
+    private void configureWindow(DockPopout popout, Point location, Dimension size, int state) {
+        Window window = popout.getWindow();
+        if (size != null) {
+            window.setSize(size);
+        } else {
+            window.setSize(600, 400);
+        }
+        if (location != null) {
+            window.setLocation(location);
+        }
+        else {
+            window.setLocationByPlatform(true);
+        }
+        if (state != -1 && window instanceof Frame) {
+            ((Frame) window).setExtendedState(state);
+        }
+        if (popoutParent != null) {
+            window.setAlwaysOnTop(popoutParent.isAlwaysOnTop());
+        }
+    }
+    
+    private DockPopout getPopout(PopoutType type) {
         DockPopout popout = getUnusedPopout(type);
         if (popout == null) {
             // Need to create a new one
@@ -539,33 +615,6 @@ public class DockManager {
                 }
             });
         }
-        popout.getBase().addContent(content);
-        
-        // Configure window
-        Window window = popout.getWindow();
-        if (size != null) {
-            window.setSize(size);
-        } else {
-            window.setSize(600, 400);
-        }
-        if (location != null) {
-            window.setLocation(location);
-        }
-        else {
-            window.setLocationByPlatform(true);
-        }
-        if (popoutParent != null) {
-            window.setAlwaysOnTop(popoutParent.isAlwaysOnTop());
-        }
-        window.setVisible(true);
-        SwingUtilities.invokeLater(() -> window.toFront());
-        
-        // Finish up
-        popouts.add(popout);
-        removeActive(content);
-        changedActiveContent(content, false);
-        listener.popoutOpened(popout, content);
-        
         return popout;
     }
     
@@ -642,6 +691,53 @@ public class DockManager {
      */
     public void applySettings(DockChild child) {
         settings.forEach((type, value) -> child.setSetting(type, value));
+    }
+    
+    public DockLayout getLayout() {
+        List<DockLayoutPopout> result = new ArrayList<>();
+        
+        if (popoutParent != null) {
+            result.add(new DockLayoutPopout(null, popoutParent.getLocation(),
+                    popoutParent.getSize(), popoutParent.getExtendedState(),
+                    main.getLayoutElement()));
+        }
+        else {
+            result.add(new DockLayoutPopout(null, null, null, -1, main.getLayoutElement()));
+        }
+        for (DockPopout p : popouts) {
+            Window w = p.getWindow();
+            int state = -1;
+            if (w instanceof Frame) {
+                state = ((Frame) w).getExtendedState();
+            }
+            result.add(new DockLayoutPopout(p.getId(), w.getLocation(), w.getSize(), state, p.getBase().getLayoutElement()));
+        }
+        return new DockLayout(result);
+    }
+    
+    public void loadLayout(DockLayout layout) {
+        if (layout == null) {
+            return;
+        }
+        List<DockContent> currentContents = getContents();
+        currentContents.forEach(c -> c.setDockParent(null));
+        
+        // Close current popouts
+        applyToPopoutsSafe(p -> closePopout(p));
+        
+        for (DockLayoutPopout p : layout.main) {
+            if (p.id == null) {
+                main.createLayout(p.child, main);
+            }
+            else {
+                PopoutType type = p.id.startsWith("d") ? PopoutType.DIALOG : PopoutType.FRAME;
+                DockPopout popout = openPopout(type, p.location, p.size, p.state);
+                popout.getBase().createLayout(p.child, popout.getBase());
+            }
+        }
+        
+        // New layout, so previous paths should probably be reset
+        pathOnRemove.clear();
     }
     
 }

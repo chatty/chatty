@@ -1,6 +1,7 @@
 
 package chatty.util.dnd;
 
+import chatty.util.dnd.DockContent.DockContentPropertyListener.Property;
 import java.awt.Color;
 import java.util.HashSet;
 import java.util.Objects;
@@ -17,6 +18,8 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
 
     private final T component;
     private String title;
+    private String longTitle;
+    private String id;
     private final DockManager m;
     private final Set<DockContentPropertyListener> listeners;
     private Color foregroundColor;
@@ -54,7 +57,7 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
         }
         if (!newTitle.equals(title)) {
             title = newTitle;
-            listeners.forEach(l -> l.titleChanged(this));
+            listeners.forEach(l -> l.propertyChanged(Property.TITLE, this));
         }
     }
     
@@ -106,7 +109,7 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
     public void setForegroundColor(Color color) {
         if (!Objects.equals(color, foregroundColor)) {
             this.foregroundColor = color;
-            listeners.forEach(l -> l.foregroundColorChanged(this));
+            listeners.forEach(l -> l.propertyChanged(Property.TITLE, this));
         }
     }
 
@@ -127,7 +130,7 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
         }
         return null;
     }
-
+    
     @Override
     public void setTargetPath(DockPath path) {
         this.targetPath = path;
@@ -146,6 +149,29 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
     @Override
     public boolean canPopout() {
         return true;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String getLongTitle() {
+        return longTitle;
+    }
+
+    @Override
+    public void setLongTitle(String title) {
+        if (!Objects.equals(longTitle, title)) {
+            this.longTitle = title;
+            listeners.forEach(l -> l.propertyChanged(Property.LONG_TITLE, this));
+        }
     }
     
 }

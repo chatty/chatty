@@ -74,15 +74,21 @@ public class TabSettings extends SettingsPanel {
         other.add(tabLayoutSetting,
                 d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST));
         
+        SettingsUtil.addLabeledComponent(other, "tabsMaxWidth", 0, 4, 3, GridBagConstraints.WEST,
+                d.addSimpleLongSetting("tabsMaxWidth", 3, true));
+        
+        other.add(d.addSimpleBooleanSetting("tabsCloseEmpty"),
+                SettingsDialog.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
+        
         //----------------
         // Tabs Scrolling
         //----------------
         JCheckBox scroll = d.addSimpleBooleanSetting("tabsMwheelScrolling");
         JCheckBox scroll2 = d.addSimpleBooleanSetting("tabsMwheelScrollingAnywhere");
         other.add(scroll,
-                d.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST));
         other.add(scroll2,
-                d.makeGbcSub(0, 6, 4, 1, GridBagConstraints.WEST));
+                d.makeGbcSub(0, 7, 4, 1, GridBagConstraints.WEST));
 
         SettingsUtil.addSubsettings(scroll, scroll2);
 
@@ -100,6 +106,8 @@ public class TabSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         infoPanel.add(infoPanelTabs, gbc);
+        
+        infoPanel.add(d.addSimpleBooleanSetting("tabsChanTitles"), SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         //--------
         // Popout

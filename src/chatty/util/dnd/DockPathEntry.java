@@ -2,6 +2,7 @@
 package chatty.util.dnd;
 
 import chatty.util.dnd.DockDropInfo.DropType;
+import java.util.Objects;
 
 /**
  *
@@ -59,6 +60,43 @@ public class DockPathEntry {
             case TAB: return String.format("%s (%s)", type, index);
         }
         return "?";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockPathEntry other = (DockPathEntry) obj;
+        if (this.index != other.index) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        if (this.location != other.location) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + Objects.hashCode(this.type);
+        hash = 89 * hash + Objects.hashCode(this.location);
+        hash = 89 * hash + this.index;
+        hash = 89 * hash + Objects.hashCode(this.id);
+        return hash;
     }
     
 }

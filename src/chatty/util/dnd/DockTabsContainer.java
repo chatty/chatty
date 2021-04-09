@@ -7,7 +7,11 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -28,11 +32,38 @@ public class DockTabsContainer extends JPanel implements DockChild {
     private final DockTabs tabs;
     private boolean singleAllowed;
     private boolean singeAllowedLocked;
+    private JPanel emptyLayout;
+    private boolean keepEmpty = false;
     
     public DockTabsContainer() {
         setLayout(new BorderLayout());
         this.tabs = new DockTabs();
         this.tabs.setDockParent(this);
+        addEmptyLayout();
+    }
+    
+    private void addEmptyLayout() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JLabel info = new JLabel("Nothing here at the moment.");
+        info.setToolTipText("Drag&drop content here. In some cases content may also still be added automatically.");
+        info.setAlignmentX(0.5f);
+        JButton removeButton = new JButton("Remove");
+        removeButton.setToolTipText("Remove this empty content area.");
+        removeButton.setAlignmentX(0.5f);
+        removeButton.addActionListener(e -> {
+            if (isEmpty()) {
+                cleanUp();
+                parent.replace(DockTabsContainer.this, null);
+            }
+        });
+        panel.add(Box.createVerticalGlue());
+        panel.add(info);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(removeButton);
+        panel.add(Box.createVerticalGlue());
+        add(panel, BorderLayout.CENTER);
+        emptyLayout = panel;
     }
     
     /**
@@ -52,6 +83,10 @@ public class DockTabsContainer extends JPanel implements DockChild {
         this.singleAllowed = allowed;
     }
     
+    public boolean isSingleAllowed() {
+        return singleAllowed;
+    }
+    
     @Override
     public JComponent getComponent() {
         return this;
@@ -66,6 +101,11 @@ public class DockTabsContainer extends JPanel implements DockChild {
     public void replace(DockChild old, DockChild replacement) {
         if (replacement == null && !isEmpty()) {
             // If tabs are empty because it switched to single, don't do anything
+            return;
+        }
+        if (replacement == null && keepEmpty) {
+            remove(tabs);
+            addEmptyLayout();
             return;
         }
         if (old == tabs) {
@@ -105,6 +145,9 @@ public class DockTabsContainer extends JPanel implements DockChild {
 
     @Override
     public void addContent(DockContent content) {
+        if (emptyLayout != null) {
+            remove(emptyLayout);
+        }
         if (tabs.getTabCount() == 0) {
             // No content yet or one content in single mode
             if (singleContent == null && singleAllowed) {
@@ -136,7 +179,12 @@ public class DockTabsContainer extends JPanel implements DockChild {
             singleContent = null;
             this.validate();
             this.repaint();
-            parent.replace(this, null);
+            if (!keepEmpty) {
+                parent.replace(this, null);
+            }
+            else {
+                addEmptyLayout();
+            }
         }
         else if (tabs.containsContent(content)) {
             tabs.removeContent(content);
@@ -155,10 +203,10 @@ public class DockTabsContainer extends JPanel implements DockChild {
 
     @Override
     public DockDropInfo findDrop(DockImportInfo info) {
-        if (singleContent != null) {
+        if (singleContent != null || isEmpty()) {
             DockDropInfo.DropType location = DockDropInfo.determineLocation(this, info.getLocation(this), 30, 1200, 20);
             if (location == location.CENTER) {
-                return new DockDropInfo(this, DropType.TAB, DockDropInfo.makeRect(this, location, 40, 1200), 1);
+                return new DockDropInfo(this, DropType.TAB, DockDropInfo.makeRect(this, location, 40, 1200), isEmpty() ? 0 : 1);
             }
             return null;
         }
@@ -169,7 +217,16 @@ public class DockTabsContainer extends JPanel implements DockChild {
 
     @Override
     public void drop(DockTransferInfo info) {
-        tabs.drop(info);
+        if (isEmpty()) {
+            info.importInfo.content.setTargetPath(null);
+            
+            DockContent content = info.importInfo.content;
+            info.importInfo.source.removeContent(content);
+            addContent(content);
+        }
+        else {
+            tabs.drop(info);
+        }
     }
 
     @Override
@@ -204,6 +261,7 @@ public class DockTabsContainer extends JPanel implements DockChild {
     public void updateSingleAllowed() {
         if (!singeAllowedLocked) {
             setSingleAllowed(parent instanceof DockBase);
+            tabs.updateSingleAllowed();
         }
     }
     
@@ -254,6 +312,9 @@ public class DockTabsContainer extends JPanel implements DockChild {
         if (setting == DockSetting.Type.DEBUG) {
             setBorder(value == Boolean.TRUE ? BorderFactory.createLineBorder(Color.RED, 4) : null);
         }
+        if (setting == DockSetting.Type.KEEP_EMPTY) {
+            keepEmpty = DockSetting.getBoolean(value);
+        }
     }
     
     @Override
@@ -277,10 +338,20 @@ public class DockTabsContainer extends JPanel implements DockChild {
                 path.addParent(DockPathEntry.createTab(0));
             }
             else {
-                path.addParent(DockPathEntry.createTab(tabs.indexOfComponent(content.getComponent())));
+                path.addParent(DockPathEntry.createTab(tabs.getIndexByContent(content)));
             }
         }
         return parent.buildPath(path, this);
+    }
+
+    @Override
+    public DockLayoutElement getLayoutElement() {
+        return new DockLayoutTabs(DockUtil.getContentIds(getContents()));
+    }
+
+    @Override
+    public void cleanUp() {
+        tabs.cleanUp();
     }
 
 }

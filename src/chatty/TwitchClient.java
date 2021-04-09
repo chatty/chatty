@@ -941,6 +941,10 @@ public class TwitchClient {
         return c.isChannelOpen(channel);
     }
     
+    public boolean isChannelJoined(String channel) {
+        return c.onChannel(channel, false);
+    }
+    
     public boolean isUserlistLoaded(String channel) {
         return c.isUserlistLoaded(channel);
     }
@@ -3010,6 +3014,11 @@ public class TwitchClient {
         public void onInfo(String message) {
             g.printLine(message);
         }
+        
+        @Override
+        public void onJoinScheduled(String channel) {
+            g.joinScheduled(channel);
+        }
 
         @Override
         public void onJoinAttempt(Room room) {
@@ -3127,9 +3136,11 @@ public class TwitchClient {
             if (error == TwitchConnection.JoinError.NOT_REGISTERED) {
                 String validChannels = Helper.buildStreamsString(toJoin);
                 if (c.isOffline()) {
-                    g.openConnectDialog(validChannels);
+                    prepareConnectionWithChannel(validChannels);
                 }
-                g.printLine(Language.getString("chat.joinError.notConnected", validChannels));
+                else {
+                    g.printLine(Language.getString("chat.joinError.notConnected", validChannels));
+                }
             } else if (error == TwitchConnection.JoinError.ALREADY_JOINED) {
                 if (toJoin.size() == 1) {
                     g.switchToChannel(errorChannel);

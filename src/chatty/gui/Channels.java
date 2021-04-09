@@ -12,6 +12,8 @@ import chatty.util.Debugging;
 import chatty.util.IconManager;
 import chatty.util.KeyChecker;
 import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockLayout;
+import chatty.util.dnd.DockLayoutPopout;
 import chatty.util.dnd.DockListener;
 import chatty.util.dnd.DockManager;
 import chatty.util.dnd.DockPath;
@@ -32,13 +34,14 @@ import chatty.util.dnd.DockPopout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 /**
  * Managing the Channel objects in the main window and popouts, providing a
@@ -60,6 +63,14 @@ public class Channels {
      * Saves all added channels by name.
      */
     private final HashMap<String, Channel> channels = new HashMap<>();
+    
+    /**
+     * Saves channels that are in the process of being closed, so that they can
+     * still be used without opening it again (for example when a few messages
+     * still come in), without being in "channels" and appearing like properly
+     * open channels.
+     */
+    private final Map<String, Channel> closingChannels = new HashMap<>();
     
     /**
      * Saves attributes of closed popout dialogs.
@@ -139,7 +150,10 @@ public class Channels {
             
             @Override
             public void popoutClosing(DockPopout popout) {
-                if (KeyChecker.isPressed(KeyEvent.VK_SHIFT)) {
+                if (dock.getContents(popout).isEmpty()) {
+                    dock.closePopout(popout);
+                }
+                else if (KeyChecker.isPressed(KeyEvent.VK_SHIFT)) {
                     dock.closePopout(popout);
                 }
                 else if (KeyChecker.isPressed(KeyEvent.VK_CONTROL)) {
@@ -186,12 +200,11 @@ public class Channels {
 
         });
         // One-time settings
-        dock.setSetting(DockSetting.Type.POPOUT_ICONS, IconManager.getMainIcons());
+        dock.setSetting(DockSetting.Type.POPOUT_ICONS, IconManager.getPopoutIcons());
         dock.setSetting(DockSetting.Type.POPOUT_PARENT, gui);
         this.styleManager = styleManager;
         this.contextMenuListener = contextMenuListener;
         this.gui = gui;
-        addDefaultChannel();
         updateSettings();
         gui.getSettings().addSettingChangeListener((setting, type, value) -> {
             if (setting.startsWith("tab") || setting.equals("laf")) {
@@ -202,6 +215,13 @@ public class Channels {
         });
         KeyChecker.watch(KeyEvent.VK_SHIFT);
         KeyChecker.watch(KeyEvent.VK_CONTROL);
+    }
+    
+    public void init() {
+        if (gui.getSettings().getBoolean("restoreLayout")) {
+            loadLastSessionLayout();
+        }
+        checkDefaultChannel();
     }
     
     public DockManager getDock() {
@@ -232,6 +252,14 @@ public class Channels {
         dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
         dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
         dock.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
+        updateKeepEmptySetting();
+    }
+    
+    /**
+     * This may need to be reset to default in other places, hence a method.
+     */
+    private void updateKeepEmptySetting() {
+        dock.setSetting(DockSetting.Type.KEEP_EMPTY, !gui.getSettings().getBoolean("tabsCloseEmpty"));
     }
     
     private int getTabLayoutPolicyValue(String type) {
@@ -273,7 +301,162 @@ public class Channels {
                 (int) gui.getSettings().getLong("tabsMessage"),
                 (int) gui.getSettings().getLong("tabsHighlight"),
                 (int) gui.getSettings().getLong("tabsStatus"),
-                (int) gui.getSettings().getLong("tabsActive"));
+                (int) gui.getSettings().getLong("tabsActive"),
+                (int) gui.getSettings().getLong("tabsMaxWidth"));
+    }
+    
+    //==========================
+    // Layouts
+    //==========================
+    
+    public void saveLayout() {
+        gui.getSettings().mapPut("layouts", "", dock.getLayout().toList());
+    }
+    
+    private DockLayout lastLoadedLayout;
+    private final Set<String> openedSinceLayoutLoad = new HashSet<>();
+    
+    /**
+     * Switch from an open layout to another, optionally joining/leaving
+     * channels.
+     *
+     * @param layout The layout to switch to
+     */
+    public void changeLayout(DockLayout layout) {
+        if (layout == null) {
+            return;
+        }
+        List<DockContent> current = dock.getContents();
+        DockLayoutPopout mainWindow = layout.getMain();
+        
+        // Determine if main window would actually change
+        boolean offerMainChange = mainWindow != null && mainWindow.canChange(gui.getLocation(), gui.getSize(), gui.getExtendedState());
+        
+        // Show options (modal), check results afterwards
+        ChangeLayoutDialog d = new ChangeLayoutDialog(gui, current, layout, offerMainChange);
+        if (!d.shouldLoad()) {
+            return;
+        }
+        
+        //--------------------------
+        // Window/Layout
+        //--------------------------
+        if (d.loadMain()) {
+            gui.setLocation(mainWindow.location);
+            gui.setSize(mainWindow.size);
+            gui.setExtendedState(mainWindow.state);
+        }
+        
+        loadLayout(layout);
+        
+        //--------------------------
+        // Channels
+        //--------------------------
+        if (defaultChannel != null) {
+            addDefaultChannelToDock();
+            current.remove(defaultChannel.getDockContent());
+        }
+        else {
+            addDefaultChannel();
+        }
+        /**
+         * At this point the still joined channels still exist and message can
+         * be added to it, however they won't be re-added to the layout
+         * automatically (because that normally only happens when a new channel
+         * is created). The ones that should stay open are re-added further
+         * down.
+         * 
+         * The closing channels are added to a separate map that prevents them
+         * from being assumed to still be properly open (e.g. for removing
+         * default channel), but also prevents a new channel from being created
+         * when e.g. more messages come in before the channel is parted.
+         * 
+         * While the channel is being parted, this will prevent the channel from
+         * being opened again, but hopefully that's not an issue.
+         */
+        if (!d.getPartChannels().isEmpty()) {
+            for (String chan : d.getPartChannels()) {
+                Channel channel = channels.remove(chan);
+                if (channel != null) {
+                    closingChannels.put(chan, channel);
+                }
+                gui.client.closeChannel(chan);
+            }
+        }
+        /**
+         * Add all channels that should be open after loading the layout. This
+         * makes it easier to get the correct order when channels that are
+         * already open and channels that still need to be joined are mixed
+         * together.
+         */
+        if (!d.getAddChannels().isEmpty()) {
+            for (String id : d.getAddChannels()) {
+                boolean addedAlreadyJoined = false;
+                for (DockContent content : current) {
+                    if (content.getId().equals(id)) {
+                        setTargetPath(content);
+                        dock.addContent(content);
+                        addedAlreadyJoined = true;
+                    }
+                }
+                if (!addedAlreadyJoined) {
+                    // Add channel that will be joined
+                    getChannel(Room.createRegular(id));
+                }
+            }
+        }
+        
+        /**
+         * Join channels that need to be joined.
+         */
+        if (!d.getJoinChannels().isEmpty()) {
+            for (String channel : d.getJoinChannels()) {
+                channels.get(channel).getDockContent().setJoining(true);
+            }
+            gui.client.joinChannels(new HashSet<>(d.getJoinChannels()));
+        }
+        
+        Debugging.println("layout", "Loading layout.. Add: %s Join: %s Closing: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels);
+        
+        //--------------------------
+        // Non-channel panels
+        //--------------------------
+        /**
+         * Determine panels to close (that are open but not in the layout).
+         */
+        Set<String> closeExtra = new HashSet<>();
+        for (DockContent content : current) {
+            if (!layout.getContentIds().contains(content.getId())) {
+                closeExtra.add(content.getId());
+            }
+        }
+        /**
+         * Open/close panels. This simply attempts it with all content ids, but
+         * only those that are actually valid extra panels/dialogs will work.
+         */
+        for (String id : layout.getContentIds()) {
+            // Any entries whose id is not actually a registered docked dialog will simply be ignored
+            gui.dockedDialogs.openInDock(id);
+        }
+        for (String id : closeExtra) {
+            gui.dockedDialogs.closeFromDock(id);
+        }
+    }
+    
+    private void loadLastSessionLayout() {
+        DockLayout layout = DockLayout.fromList((List) gui.getSettings().mapGet("layouts", ""));
+        if (layout != null) {
+            loadLayout(layout);
+            for (String id : layout.getContentIds()) {
+                gui.dockedDialogs.openInDock(id);
+            }
+        }
+    }
+    
+    private void loadLayout(DockLayout layout) {
+        lastLoadedLayout = layout;
+        openedSinceLayoutLoad.clear();
+        dock.loadLayout(layout);
     }
     
     //==========================
@@ -383,6 +566,10 @@ public class Channels {
     // Add/remove
     //==========================
     
+    public void joinScheduled(String channel) {
+        getChannel(Room.createRegular(channel)).getDockContent().setJoining(true);
+    }
+    
     public Channel getChannel(Room room) {
         String channelName = room.getChannel();
         return getChannel(room, getTypeFromChannelName(channelName));
@@ -412,10 +599,16 @@ public class Channels {
     public Channel getChannel(Room room, Channel.Type type) {
         Channel panel = channels.get(room.getChannel());
         if (panel == null) {
+            panel = closingChannels.get(room.getChannel());
+        }
+        if (panel == null) {
             panel = addChannel(room, type);
         }
         else if (panel.setRoom(room)) {
             Debugging.println("Updating Channel Name to " + panel.getName());
+        }
+        if (panel.getDockContent().isJoining()) {
+            panel.getDockContent().setJoining(!gui.client.isChannelJoined(panel.getDockContent().getId()));
         }
         return panel;
     }
@@ -425,6 +618,7 @@ public class Channels {
      */
     private void addDefaultChannel() {
         defaultChannel = createChannel(Room.EMPTY, Channel.Type.NONE);
+        defaultChannel.getDockContent().setId("-default-");
         addDefaultChannelToDock();
     }
     
@@ -438,9 +632,29 @@ public class Channels {
         setTargetPath(content, gui.getSettings().getString("tabsOpen"));
     }
     
+    /**
+     * Should use this instead of adding content to the dock directly, so that
+     * the correct target path is set (for docked dialogs).
+     * 
+     * @param content 
+     */
+    public void addContent(DockContent content) {
+        setTargetPath(content);
+        dock.addContent(content);
+    }
+    
     private void setTargetPath(DockContent content, String target) {
+        DockPath layoutPath = getLayoutPath(content.getId());
+        
         content.setTargetPath(null);
-        if (target.equals("active")) {
+        if (layoutPath != null) {
+            content.setTargetPath(layoutPath);
+        }
+        else if (dock.getPathOnRemove(content.getId()) != null) {
+            // TODO: Add setting for this
+            content.setTargetPath(dock.getPathOnRemove(content.getId()));
+        }
+        else if (target.equals("active")) {
             DockContent active = dock.getActiveContent();
             if (active != null) {
                 content.setTargetPath(active.getPath());
@@ -456,12 +670,21 @@ public class Channels {
                 }
             }
         }
-        // Main in default location
+        // Other "target" values, in default location
         if (content.getTargetPath() == null) {
             DockPath path = new DockPath(content);
             path.addParent(DockPathEntry.createPopout(null));
             content.setTargetPath(path);
         }
+        
+        openedSinceLayoutLoad.add(content.getId());
+    }
+    
+    private DockPath getLayoutPath(String id) {
+        if (lastLoadedLayout != null && !openedSinceLayoutLoad.contains(id)) {
+            return lastLoadedLayout.getPath(id);
+        }
+        return null;
     }
     
     /**
@@ -476,8 +699,10 @@ public class Channels {
         if (channels.get(room.getChannel()) != null) {
             return null;
         }
+        DockPath layoutPath = getLayoutPath(room.getChannel());
         Channel panel;
-        if (defaultChannel != null) {
+        if (defaultChannel != null
+                && (layoutPath == null || Objects.equals(defaultChannel.getDockContent().getPath(), layoutPath))) {
             // Reuse default channel
             panel = defaultChannel;
             defaultChannel = null;
@@ -518,6 +743,7 @@ public class Channels {
         channel.setScrollbarAlways(chatScrollbarAlaways);
         channel.setUserlistEnabled(defaultUserlistVisibleState);
         channel.getDockContent().setLive(liveStreams.contains(room.getStream()));
+        channel.getDockContent().setId(room.getChannel());
         updateSettings(channel);
         if (type == Channel.Type.SPECIAL || type == Channel.Type.WHISPER) {
             channel.setUserlistEnabled(false);
@@ -529,14 +755,16 @@ public class Channels {
     }
     
     public void removeChannel(final String channelName) {
-        Channel channel = channels.get(channelName);
-        if (channel == null) {
-            return;
+        Channel channel = channels.remove(channelName);
+        if (channel != null) {
+            // Removing will automatically run checkDefaultChannel()
+            dock.removeContent(channel.getDockContent());
+            channel.cleanUp();
         }
-        channels.remove(channelName);
-        // Removing will automatically run checkDefaultChannel()
-        dock.removeContent(channel.getDockContent());
-        channel.cleanUp();
+        Channel closingChannel = closingChannels.remove(channelName);
+        if (closingChannel != null) {
+            closingChannel.cleanUp();
+        }
     }
     
     private void removeContents(Collection<DockContent> contents) {
@@ -571,7 +799,15 @@ public class Channels {
              */
             if (dock.hasContent(defaultChannel.getDockContent())) {
                 if (!channels.isEmpty() && dock.getContents(null).size() > 1) {
+                    /**
+                     * Temp turn off closing empty stuff. This will be the case
+                     * always when removing the defaultChannel, not sure if this
+                     * causes any issues, but at least the user should be able
+                     * to manually close if it happens when it shouldn't.
+                     */
+                    dock.setSetting(DockSetting.Type.KEEP_EMPTY, true);
                     dock.removeContent(defaultChannel.getDockContent());
+                    updateKeepEmptySetting();
                     defaultChannel.cleanUp();
                     defaultChannel = null;
                 }
@@ -813,17 +1049,15 @@ public class Channels {
     }
     
     /**
-     * Returns all popouts with their currently active content.
+     * Returns all popouts with their currently active content. The active
+     * content may be null if the popout contains no content.
      * 
      * @return The popouts, without the main base (which would be null)
      */
     public Map<DockPopout, DockContent> getActivePopoutContent() {
         Map<DockPopout, DockContent> result = new HashMap<>();
         for (DockPopout popout : dock.getPopouts()) {
-            DockContent active = dock.getActiveContent(popout);
-            if (active != null) {
-                result.put(popout, active);
-            }
+            result.put(popout, dock.getActiveContent(popout));
         }
         return result;
     }
@@ -1224,6 +1458,153 @@ public class Channels {
         
         public boolean shouldSaveChoice() {
             return rememberChoice.isSelected();
+        }
+        
+    }
+    
+    private class ChangeLayoutDialog extends JDialog {
+        
+        private List<String> joinChannels = new ArrayList<>();
+        private List<String> addChannels = new ArrayList<>();
+        private List<String> partChannels = new ArrayList<>();
+        private JCheckBox changeMain;
+        private boolean load;
+        
+        ChangeLayoutDialog(Window parent, List<DockContent> current, DockLayout layout, boolean offerMainChange) {
+            super(parent);
+            setTitle("Load Layout");
+            setModal(true);
+            setResizable(false);
+            
+            setLayout(new GridBagLayout());
+            
+            List<String> currentChannelIds = new ArrayList<>();
+            for (DockContent content : current) {
+                if (content.getId().startsWith("#")) {
+                    currentChannelIds.add(content.getId());
+                }
+            }
+            
+            List<String> layoutChannelIds = new ArrayList<>();
+            for (String id : layout.getContentIds()) {
+                if (id.startsWith("#")) {
+                    layoutChannelIds.add(id);
+                }
+            }
+            
+            JCheckBox keepCurrentChannels = new JCheckBox(String.format("Keep current channels open (%d)", currentChannelIds.size()));
+            keepCurrentChannels.setEnabled(!currentChannelIds.isEmpty());
+            JCheckBox openLayoutChannels = new JCheckBox(String.format("Join channels in layout (%d)", layoutChannelIds.size()));
+            openLayoutChannels.setEnabled(!layoutChannelIds.isEmpty());
+            
+            changeMain = new JCheckBox("Load main window locaion and size");
+            changeMain.setEnabled(offerMainChange);
+            
+            JLabel result = new JLabel();
+            
+            GridBagConstraints gbc;
+            
+            gbc = GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
+            add(keepCurrentChannels, gbc);
+            gbc = GuiUtil.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST);
+            add(openLayoutChannels, gbc);
+            gbc = GuiUtil.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
+            add(result, gbc);
+            gbc = GuiUtil.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
+            add(changeMain, gbc);
+            
+            JButton loadLayout = new JButton("Load Layout");
+            loadLayout.addActionListener(e -> {
+                load = true;
+                setVisible(false);
+            });
+            
+            ItemListener checkboxListener = (ItemEvent e) -> {
+                joinChannels.clear();
+                addChannels.clear();
+                partChannels.clear();
+                if (openLayoutChannels.isSelected()) {
+                    for (String id : layoutChannelIds) {
+                        if (!currentChannelIds.contains(id)) {
+                            joinChannels.add(id);
+                        }
+                        addChannels.add(id);
+                    }
+                }
+                if (keepCurrentChannels.isSelected()) {
+                    for (String id : currentChannelIds) {
+                        if (!addChannels.contains(id)) {
+                            addChannels.add(id);
+                        }
+                    }
+                }
+                else {
+                    for (String id : currentChannelIds) {
+                        if (!addChannels.contains(id)) {
+                            partChannels.add(id);
+                        }
+                    }
+                }
+                result.setText(String.format("Join %d channels, Part %d channels",
+                        joinChannels.size(),
+                        partChannels.size()));
+            };
+            keepCurrentChannels.addItemListener(checkboxListener);
+            openLayoutChannels.addItemListener(checkboxListener);
+            keepCurrentChannels.setSelected(true);
+            openLayoutChannels.setSelected(true);
+            
+            JButton cancel = new JButton("Cancel");
+            cancel.addActionListener(e -> {
+                load = false;
+                setVisible(false);
+            });
+            
+            Icon icon = UIManager.getIcon("OptionPane.questionIcon");
+            if (icon != null) {
+                gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+                gbc.insets = new Insets(10, 10, 10, 10);
+                add(new JLabel(icon), gbc);
+            }
+            
+            gbc = GuiUtil.makeGbc(1, 0, 2, 1, GridBagConstraints.EAST);
+            add(new JLabel("<html><body width='250px'><p>Docked info dialogs ('Dock as tab'-option in their context menu) will be opened/closed to match the loaded layout, however non-docked dialogs are not affected.</p>"
+                    + "<p style='margin-top:5px;'>Channels will be joined/parted depending on the selection below.</p>"), gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 10, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            add(loadLayout, gbc);
+            
+            gbc = GuiUtil.makeGbc(2, 10, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            gbc.insets = new Insets(5, 5, 5, 10);
+            add(cancel, gbc);
+
+            pack();
+            setLocationRelativeTo(parent);
+            setVisible(true);
+        }
+        
+        public boolean shouldLoad() {
+            return load;
+        }
+        
+        public List<String> getJoinChannels() {
+            return joinChannels;
+        }
+        
+        public List<String> getPartChannels() {
+            return partChannels;
+        }
+        
+        public List<String> getAddChannels() {
+            return addChannels;
+        }
+        
+        public boolean loadMain() {
+            return changeMain.isSelected();
         }
         
     }

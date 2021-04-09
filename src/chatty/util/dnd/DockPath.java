@@ -3,6 +3,7 @@ package chatty.util.dnd;
 
 import chatty.util.dnd.DockPathEntry.Type;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Stores the path to a certain child or content. Each entry may contain data
@@ -54,9 +55,38 @@ public class DockPath {
         return content;
     }
     
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+    
     @Override
     public String toString() {
         return String.format("%s (%s)", list, content);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DockPath other = (DockPath) obj;
+        if (!Objects.equals(this.list, other.list)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.list);
+        return hash;
     }
     
 }

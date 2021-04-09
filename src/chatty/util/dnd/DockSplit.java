@@ -38,6 +38,10 @@ public class DockSplit extends JSplitPane implements DockChild {
         this.left = left;
         this.right = right;
     }
+    
+    public DockSplit(int orientation) {
+        super(orientation);
+    }
 
     @Override
     public JComponent getComponent() {
@@ -50,6 +54,13 @@ public class DockSplit extends JSplitPane implements DockChild {
     
     public DockChild getRightChild() {
         return right;
+    }
+    
+    public void setChildren(DockChild left, DockChild right) {
+        setLeftComponent(left.getComponent());
+        setRightComponent(right.getComponent());
+        this.left = left;
+        this.right = right;
     }
 
     @Override
@@ -283,6 +294,17 @@ public class DockSplit extends JSplitPane implements DockChild {
         }
         path.addParent(DockPathEntry.createSplit(type));
         return parent.buildPath(path, this);
+    }
+
+    @Override
+    public DockLayoutElement getLayoutElement() {
+        return new DockLayoutSplit(left.getLayoutElement(), right.getLayoutElement(), getDividerLocation(), getOrientation());
+    }
+
+    @Override
+    public void cleanUp() {
+        left.cleanUp();
+        right.cleanUp();
     }
     
 }

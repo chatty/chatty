@@ -129,6 +129,8 @@ public interface DockChild {
      */
     public DockPath buildPath(DockPath path, DockChild child);
     
+    public DockLayoutElement getLayoutElement();
+    
     /**
      * All content contained in this component (should be ordered the way it is
      * displayed).
@@ -157,5 +159,7 @@ public interface DockChild {
      * @param value 
      */
     public void setSetting(DockSetting.Type setting, Object value);
+    
+    public void cleanUp();
     
 }

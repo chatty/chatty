@@ -6,8 +6,11 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -19,6 +22,9 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -28,6 +34,8 @@ public class Test {
     
     private static int counter = 0;
     private static DockManager m;
+    private static DockLayout savedLayout;
+    private static String savedLayoutJson;
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -92,6 +100,53 @@ public class Test {
                 }
             };
             menu.add(new JMenuItem(action2));
+            
+            menu.add(new JMenuItem(new AbstractAction("Save Layout") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    savedLayout = m.getLayout();
+                    savedLayoutJson = JSONArray.toJSONString(m.getLayout().toList());
+                    for (DockContent c : m.getContents()) {
+                        System.out.println(c.getId()+" "+savedLayout.getPath(c.getId()));
+                    }
+                    System.out.println(savedLayout);
+                    System.out.println(savedLayout.toList());
+                    System.out.println(DockLayout.fromList(savedLayout.toList()));
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction("Load Layout") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        DockLayout layout = savedLayout;
+                        
+                        // Load from JSON test
+                        JSONParser parser = new JSONParser();
+                        JSONArray list = (JSONArray) parser.parse(savedLayoutJson);
+                        System.out.println(savedLayoutJson);
+                        layout = DockLayout.fromList(list);
+                        
+                        List<DockContent> currentContents = m.getContents();
+                        m.loadLayout(layout);
+                        for (DockContent c : currentContents) {
+                            c.setTargetPath(layout.getPath(c.getId()));
+                            m.addContent(c);
+                        }
+                    }
+                    catch (ParseException ex) {
+                        Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }));
+            menu.add(new JCheckBoxMenuItem(new AbstractAction("Keep Empty") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
+                    System.out.println(item.isSelected());
+                    m.setSetting(DockSetting.Type.KEEP_EMPTY, item.isSelected());
+                }
+            }));
+            
             menubar.add(menu);
             frame.setJMenuBar(menubar);
             
@@ -114,7 +169,8 @@ public class Test {
         JTextPane text = new JTextPane();
         panel.add(text, BorderLayout.CENTER);
         text.setText("Test Text " + counter);
-        DockContentContainer content = new DockContentContainer("Test " + ThreadLocalRandom.current().nextLong(10000000), new JScrollPane(panel), m);
+        DockContentContainer content = new DockContentContainer("Test " + counter, new JScrollPane(panel), m);
+        content.setId("c"+counter);
         text.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {

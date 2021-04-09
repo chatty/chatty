@@ -2,6 +2,8 @@
 package chatty.gui.components;
 
 import chatty.Chatty;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.LinkListener;
 import chatty.gui.UrlOpener;
@@ -17,11 +19,15 @@ import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -66,27 +72,29 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     private String statusText = "";
     private String gameText = "";
     
+    private final DockedDialogHelper helper;
+    
     /**
      * The time the stream of the current StreamInfo started. This is -1 if the
      * stream is offline or the StreamInfo is invalid, or no time was received.
      */
     private long timeStarted = -1;
     
-    public ChannelInfoDialog(Frame owner) {
+    public ChannelInfoDialog(Frame owner, DockedDialogManager dockedDialogs) {
         super(owner);
         
-        setLayout(new GridBagLayout());
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         
         GridBagConstraints gbc;
         
         // Status
         gbc = makeGbc(0,0,1,1);
         gbc.anchor = GridBagConstraints.WEST;
-        add(statusLabel,gbc);
+        mainPanel.add(statusLabel,gbc);
         
         gbc = makeGbc(1,0,1,1);
         gbc.anchor = GridBagConstraints.EAST;
-        add(onlineSince, gbc);
+        mainPanel.add(onlineSince, gbc);
         
         title.setEditable(false);
         title.setLinkListener(new MyLinkListener());
@@ -97,17 +105,17 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         gbc = makeGbc(0,1,2,1);
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(scroll,gbc);
+        mainPanel.add(scroll,gbc);
 
         // Game
         gbc = makeGbc(0,2,1,1);
         gbc.anchor = GridBagConstraints.WEST;
-        add(gameLabel,gbc);
+        mainPanel.add(gameLabel,gbc);
         
         game.setEditable(false);
         gbc = makeGbc(0,3,2,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(game,gbc);
+        mainPanel.add(game,gbc);
         
         gbc = makeGbc(0, 2, 2, 1);
         gbc.anchor = GridBagConstraints.EAST;
@@ -164,7 +172,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         gbc = makeGbc(0,4,1,1);
         gbc.insets = new Insets(3,5,3,3);
         gbc.anchor = GridBagConstraints.WEST;
-        add(historyLabel,gbc);
+        mainPanel.add(historyLabel,gbc);
         
         history.setListener(this);
         history.setForegroundColor(game.getForeground());
@@ -176,7 +184,49 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         gbc.insets = new Insets(4,4,4,4);
         gbc.weightx = 1;
         gbc.weighty = 1;
-        add(history,gbc);
+        mainPanel.add(history,gbc);
+        
+        add(mainPanel);
+        
+        if (dockedDialogs != null) {
+            DockContent content = new DockContentContainer("Channel Info", mainPanel, dockedDialogs.getDockManager());
+            content.setId("-channelInfo-");
+            helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+                @Override
+                public void setVisible(boolean visible) {
+                    ChannelInfoDialog.super.setVisible(visible);
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return ChannelInfoDialog.super.isVisible();
+                }
+
+                @Override
+                public void addComponent(Component comp) {
+                    add(comp);
+                }
+
+                @Override
+                public void removeComponent(Component comp) {
+                    remove(comp);
+                }
+
+                @Override
+                public Window getWindow() {
+                    return ChannelInfoDialog.this;
+                }
+
+                @Override
+                public DockContent getContent() {
+                    return content;
+                }
+            });
+            helper.installContextMenu(this);
+        }
+        else {
+            helper = null;
+        }
         
         Timer timer = new Timer(30000, new ActionListener() {
 
@@ -192,6 +242,34 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         setMinimumSize(new Dimension(200,0));
         
         GuiUtil.installEscapeCloseOperation(this);
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        if (helper != null) {
+            helper.setVisible(visible, true);
+        }
+        else {
+            super.setVisible(visible);
+        }
+    }
+    
+    @Override
+    public boolean isVisible() {
+        if (helper != null) {
+            return helper.isVisible();
+        }
+        else {
+            return super.isVisible();
+        }
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+        if (helper != null) {
+            helper.getContent().setLongTitle(title);
+        }
     }
     
     /**

@@ -28,7 +28,15 @@ public interface DockContent {
      */
     public String getTitle();
     
+    public String getLongTitle();
+    
+    public void setLongTitle(String title);
+    
     public DockPath getPath();
+    
+    public String getId();
+    
+    public void setId(String id);
     
     public void setTargetPath(DockPath path);
     
@@ -63,9 +71,11 @@ public interface DockContent {
     
     public interface DockContentPropertyListener {
         
-        public void titleChanged(DockContent content);
-        public void foregroundColorChanged(DockContent content);
+        public enum Property {
+            TITLE, LONG_TITLE, FOREGROUND
+        }
         
+        public void propertyChanged(Property property, DockContent content);
     }
     
 }

@@ -4,6 +4,7 @@ package chatty.gui.components;
 import chatty.ChannelFavorites;
 import chatty.ChannelFavorites.ChangeListener;
 import chatty.Helper;
+import chatty.gui.DockedDialogHelper;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.JListActionHelper.Action;
 import chatty.gui.components.menus.ContextMenuListener;
@@ -70,6 +71,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private JPopupMenu lastContextMenu;
     private LiveStreamsDialog.Sorting currentSorting;
     private boolean favFirst;
+    private DockedDialogHelper dockedHelper;
     
     private final ElapsedTime lastCheckedET = new ElapsedTime();
     private final ElapsedTime lastRepaintedET = new ElapsedTime();
@@ -117,6 +119,10 @@ public class LiveStreamsList extends JList<StreamInfo> {
             }
         });
         updateGameFavs(settings);
+    }
+    
+    public void setDockedDialogHelper(DockedDialogHelper helper) {
+        this.dockedHelper = helper;
     }
     
     private void updateGameFavs(Settings settings) {
@@ -322,7 +328,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
 
         JListActionHelper.install(this, (a, l, s) -> {
             if (a == Action.CONTEXT_MENU) {
-                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true, favFirst);
+                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true, favFirst, dockedHelper.isDocked());
                 m.setSorting(currentSorting.key);
                 for (ContextMenuListener cml : contextMenuListeners) {
                     m.addContextMenuListener(cml);

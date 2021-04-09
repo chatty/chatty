@@ -108,9 +108,7 @@ public class DockBase extends JPanel implements DockChild {
             child.setDockParent(newChildSplit);
             
             // Exchange child
-            remove(child.getComponent());
-            child = newChildSplit;
-            add(child.getComponent(), BorderLayout.CENTER);
+            exchangeChild(newChildSplit);
             // Divider
             DockSplit split = newChildSplit;
             split.setDividerLocation(0.5);
@@ -171,6 +169,7 @@ public class DockBase extends JPanel implements DockChild {
             replacement.setDockParent(this);
             child = replacement;
             add(child.getComponent(), BorderLayout.CENTER);
+            revalidate();
         }
     }
 
@@ -246,6 +245,57 @@ public class DockBase extends JPanel implements DockChild {
     @Override
     public String toString() {
         return "DockBase";
+    }
+
+    @Override
+    public DockLayoutElement getLayoutElement() {
+        return child.getLayoutElement();
+    }
+
+    @Override
+    public void cleanUp() {
+        child.cleanUp();
+    }
+
+    public DockChild createLayout(DockLayoutElement element, DockChild parent) {
+        DockChild newChild = null;
+        if (element instanceof DockLayoutSplit) {
+            DockLayoutSplit s = (DockLayoutSplit) element;
+            
+            DockSplit split = new DockSplit(s.orientation);
+            DockChild left = createLayout(s.left, split);
+            DockChild right = createLayout(s.right, split);
+            split.setChildren(left, right);
+            split.setDockParent(parent);
+            split.setDividerLocation(s.dividerLocation);
+            split.setResizeWeight(0.5);
+            
+            newChild = split;
+        }
+        else if (element instanceof DockLayoutTabs) {
+            DockLayoutTabs t = (DockLayoutTabs) element;
+            
+            DockTabsContainer tabs = new DockTabsContainer();
+            tabs.setDockParent(parent);
+            
+            newChild = tabs;
+        }
+        if (newChild != null) {
+            child.cleanUp();
+            newChild.setBase(this);
+            exchangeChild(newChild);
+            if (parent == this) {
+                applySettings(child);
+                revalidate();
+            }
+        }
+        return newChild;
+    }
+    
+    private void exchangeChild(DockChild newChild) {
+        remove(child.getComponent());
+        child = newChild;
+        add(child.getComponent(), BorderLayout.CENTER);
     }
     
 }

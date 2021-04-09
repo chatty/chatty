@@ -7,6 +7,8 @@ import java.awt.Window;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -104,6 +106,16 @@ public class DockUtil {
     public static void preserveDividerLocation(JSplitPane split) {
         int location = split.getDividerLocation();
         SwingUtilities.invokeLater(() -> split.setDividerLocation(location));
+    }
+    
+    public static List<String> getContentIds(List<DockContent> contents) {
+        List<String> ids = new ArrayList<>();
+        for (DockContent c : contents) {
+            if (c.getId() != null) {
+                ids.add(c.getId());
+            }
+        }
+        return ids;
     }
     
 }

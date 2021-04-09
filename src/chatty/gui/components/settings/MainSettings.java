@@ -68,6 +68,9 @@ public class MainSettings extends SettingsPanel {
             channels.setEnabled(channelsEnabled);
         });
         
+        gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
+        startSettingsPanel.add(d.addSimpleBooleanSetting("restoreLayout"), gbc);
+        
         //==========
         // Language
         //==========

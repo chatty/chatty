@@ -26,7 +26,7 @@ public class StreamInfosContextMenu extends ContextMenu {
     private static final ImageIcon GAME_FAV_ICON = new ImageIcon(ContextMenu.class.getResource("/chatty/gui/game.png"));
     
     public StreamInfosContextMenu(List<StreamInfo> selected, boolean liveStreams,
-            boolean favFirst) {
+            boolean favFirst, boolean docked) {
         this.streamInfos = selected;
         List<String> streams = new ArrayList<>();
         for (StreamInfo info : selected) {
@@ -61,6 +61,8 @@ public class StreamInfosContextMenu extends ContextMenu {
             addItem("showRemovedList", Language.getString("streams.cm.removedStreams"));
             addSeparator();
             addItem("manualRefreshStreams", Language.getString("streams.cm.refresh"));
+            addSeparator();
+            addCheckboxItem("dockToggleDocked", "Dock as tab", docked);
         }
     }
     

@@ -79,7 +79,7 @@ public class IconManager {
         public enum Type {
 
             ALL("all"), MAIN("main"), TRAY("tray"), NOTIFICATION("notif"),
-            LIVE("live"), HELP("help"), DEBUG("debug");
+            LIVE("live"), HELP("help"), DEBUG("debug"), POPOUT("popout");
             
             public final String id;
 
@@ -255,6 +255,18 @@ public class IconManager {
         windowIcons.add(createDefaultImage("app_debug_16.png"));
         windowIcons.add(createDefaultImage("app_debug_64.png"));
         windowIcons.add(createDefaultImage("app_debug_128.png"));
+        return windowIcons;
+    }
+    
+    public static List<Image> getPopoutIcons() {
+        List<Image> result = getCustomIcons(Type.POPOUT);
+        if (!result.isEmpty()) {
+            return result;
+        }
+        ArrayList<Image> windowIcons = new ArrayList<>();
+        windowIcons.add(createDefaultImage("app_popout_16.png"));
+        windowIcons.add(createDefaultImage("app_popout_64.png"));
+        windowIcons.add(createDefaultImage("app_popout_128.png"));
         return windowIcons;
     }
     

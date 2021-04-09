@@ -4,6 +4,8 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.LaF;
 import chatty.gui.MainGui;
@@ -19,6 +21,8 @@ import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.colors.ColorCorrectionNew;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -26,6 +30,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -47,6 +52,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.Timer;
@@ -94,8 +100,7 @@ public class FollowersDialog extends JDialog {
     private final MainGui main;
     private final Type type;
     private final ContextMenuListener contextMenuListener;
-    
-    private final MyContextMenu mainContextMenu = new MyContextMenu();
+    private final DockedDialogHelper helper;
     
     private final MyRenderer timeRenderer = new MyRenderer(MyRenderer.Type.TIME);
     private final MyRenderer timeRenderer2 = new MyRenderer(MyRenderer.Type.USER_TIME);
@@ -130,27 +135,26 @@ public class FollowersDialog extends JDialog {
     private boolean showRegistered;
 
     public FollowersDialog(Type type, MainGui owner, final TwitchApi api,
-            ContextMenuListener contextMenuListener) {
+            ContextMenuListener contextMenuListener, DockedDialogManager dockedDialogs) {
         super(owner);
         
         this.contextMenuListener = contextMenuListener;
         this.type = type;
         this.main = owner;
         this.api = api;
-        
-        // Layout
-        setLayout(new GridBagLayout());
+
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         
         GridBagConstraints gbc;
         gbc = GuiUtil.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
         total.setToolTipText("Total number of "+type);
-        add(total, gbc);
+        mainPanel.add(total, gbc);
         
         gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(0, 6, 3, 5);
         gbc.weightx = 1;
         stats.setToolTipText(type+" in the last 7 days (Week), 24 hours (Day) and Hour (based on the current list)");
-        add(stats, gbc);
+        mainPanel.add(stats, gbc);
         
         gbc = GuiUtil.makeGbc(0, 2, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -169,11 +173,11 @@ public class FollowersDialog extends JDialog {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFont(table.getFont().deriveFont(Font.BOLD));
         table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight()+2);
-        add(new JScrollPane(table), gbc);
+        mainPanel.add(new JScrollPane(table), gbc);
         
         gbc = GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(2, 5, 5, 5);
-        add(loadInfo, gbc);
+        mainPanel.add(loadInfo, gbc);
         
         // Timer
         Timer timer = new Timer(REFRESH_TIMER, new ActionListener() {
@@ -218,7 +222,7 @@ public class FollowersDialog extends JDialog {
             }
         });
         // Add to content pane, seems to work better than adding to "this"
-        getContentPane().addMouseListener(new MouseAdapter() {
+        mainPanel.addMouseListener(new MouseAdapter() {
             
             @Override
             public void mousePressed(MouseEvent e) {
@@ -231,10 +235,64 @@ public class FollowersDialog extends JDialog {
             }
         });
         
+        add(mainPanel);
+        
+        DockContent content = new DockContentContainer(type.name, mainPanel, dockedDialogs.getDockManager());
+        content.setId(type == Type.FOLLOWERS ? "-followers-" : "-subscribers-");
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            @Override
+            public void setVisible(boolean visible) {
+                FollowersDialog.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return FollowersDialog.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return FollowersDialog.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+        });
+        
         pack();
         setSize(300,400);
         
         GuiUtil.installEscapeCloseOperation(this);
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        helper.setVisible(visible, true);
+    }
+    
+    @Override
+    public boolean isVisible() {
+        return helper.isVisible();
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+        if (helper != null) {
+            helper.getContent().setLongTitle(title);
+        }
     }
     
     public void setCompactMode(boolean compactMode) {
@@ -320,7 +378,7 @@ public class FollowersDialog extends JDialog {
     
     private void openMainContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
-            mainContextMenu.show(e.getComponent(), e.getX(), e.getY());
+            new MyContextMenu(helper.isDocked()).show(e.getComponent(), e.getX(), e.getY());
         }
     }
     
@@ -785,10 +843,12 @@ public class FollowersDialog extends JDialog {
     
     private class MyContextMenu extends ContextMenu {
 
-        public MyContextMenu() {
+        public MyContextMenu(boolean isDocked) {
             final String saveMenu = "Export list to file";
             addItem("saveSimple", "Names only", saveMenu);
             addItem("saveVerbose", "Names and dates", saveMenu);
+            addSeparator();
+            addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
         }
         
         @Override
@@ -798,6 +858,7 @@ public class FollowersDialog extends JDialog {
             } else if (e.getActionCommand().equals("saveVerbose")) {
                 saveToFile(false);
             }
+            helper.menuAction(e);
         }
         
     }

@@ -10,8 +10,10 @@ import chatty.util.Replacer;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.commands.Parameters;
+import chatty.util.dnd.DockLayout;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.FileManager.SaveResult;
+import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -954,6 +956,18 @@ public class Helper {
             }
         }
         return b.toString();
+    }
+    
+    public static Map<String, DockLayout> getLayoutsFromSettings(Settings settings) {
+        Map<String, DockLayout> layouts = new HashMap<>();
+        Map<String, List> values = settings.getMap("layouts");
+        for (Map.Entry<String, List> entry : values.entrySet()) {
+            DockLayout layout = DockLayout.fromList(entry.getValue());
+            if (layout != null) {
+                layouts.put(entry.getKey(), layout);
+            }
+        }
+        return layouts;
     }
     
 }

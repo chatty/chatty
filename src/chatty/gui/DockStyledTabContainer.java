@@ -7,6 +7,7 @@ import chatty.util.dnd.DockTabComponent;
 import com.jtattoo.plaf.AbstractLookAndFeel;
 import com.jtattoo.plaf.BaseTabbedPaneUI;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.Objects;
@@ -62,6 +63,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
         private int statusSetting;
         private boolean isActive;
         private int activeSetting;
+        private boolean isJoining;
         
         //--------------------------
         // Properties
@@ -145,13 +147,25 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
                 update();
             }
         }
+
+        public void setJoining(boolean isJoining) {
+            if (isJoining != this.isJoining) {
+                this.isJoining = isJoining;
+                update();
+            }
+        }
         
-        public void setSettings(int liveSetting, int messageSetting, int highlightSetting, int statusSetting, int activeSetting) {
+        public boolean isJoining() {
+            return isJoining;
+        }
+        
+        public void setSettings(int liveSetting, int messageSetting, int highlightSetting, int statusSetting, int activeSetting, int maxWidth) {
             this.liveSetting = liveSetting;
             this.messageSetting = messageSetting;
             this.highlightSetting = highlightSetting;
             this.statusSetting = statusSetting;
             this.activeSetting = activeSetting;
+            tab.setMaxWidth(maxWidth);
             update();
         }
         
@@ -187,6 +201,9 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             tab.setBorder(border);
             tab.setFont(defaultFont.deriveFont(fontStyle));
             // Color
+            if (isJoining && foreground != null) {
+                foreground = new Color(foreground.getRed(), foreground.getGreen(), foreground.getBlue(), 140);
+            }
             if (!Objects.equals(foreground, tab.getForeground())) {
                 tab.setForeground(foreground);
             }
@@ -278,6 +295,8 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
         }
 
         private class TabComponent extends JLabel implements DockTabComponent {
+            
+            private int maxWidth;
             
             @Override
             public void paintComponent(Graphics g) {
@@ -383,7 +402,20 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             public JComponent getComponent() {
                 return this;
             }
-
+            
+            public void setMaxWidth(int maxWidth) {
+                this.maxWidth = maxWidth;
+            }
+            
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                if (maxWidth > 0 && d.width > maxWidth) {
+                    return new Dimension(maxWidth, d.height);
+                }
+                return d;
+            }
+            
         }
 
     }

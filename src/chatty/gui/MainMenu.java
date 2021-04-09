@@ -4,6 +4,7 @@ package chatty.gui;
 import chatty.Chatty;
 import chatty.lang.Language;
 import chatty.gui.components.settings.SettingsUtil;
+import chatty.util.dnd.DockLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
@@ -46,6 +47,7 @@ public class MainMenu extends JMenuBar {
     protected final JMenu srlStreams = new JMenu("Races with..");
     private final JMenu extra = new JMenu(Language.getString("menubar.menu.extra"));
     private final JMenu help = new JMenu(Language.getString("menubar.menu.help"));
+    protected final JMenu layoutsMenu = new JMenu("Layouts");
     
     private final JMenuItem highlights;
     private final JMenuItem ignored;
@@ -80,6 +82,7 @@ public class MainMenu extends JMenuBar {
         help.addActionListener(actionListener);
         
         view.addMenuListener((MenuListener)itemListener);
+        layoutsMenu.addMenuListener((MenuListener)itemListener);
         
         main.setMnemonic(KeyEvent.VK_M);
         view.setMnemonic(KeyEvent.VK_V);
@@ -136,6 +139,8 @@ public class MainMenu extends JMenuBar {
         addItem(view, "dialog.eventLog");
         view.addSeparator();
         addItem(view, "dialog.search");
+        view.addSeparator();
+        view.add(layoutsMenu);
         
         //----------
         // Channels
@@ -385,6 +390,25 @@ public class MainMenu extends JMenuBar {
                 addItem(srlStreams, "srlRace4"+chan, chan);
             }
         }
+    }
+    
+    public void updateLayouts(Map<String, DockLayout> layouts) {
+        // Remove last session layout
+        layouts.remove("");
+        
+        layoutsMenu.removeAll();
+        if (!layouts.isEmpty()) {
+            for (Map.Entry<String, DockLayout> entry : layouts.entrySet()) {
+                JMenu submenu = new JMenu(entry.getKey());
+                addItem(submenu, "layouts.load."+entry.getKey(), "Load").setToolTipText("Load this layout (you'll still have the chance to cancel loading)");
+                submenu.addSeparator();
+                addItem(submenu, "layouts.remove."+entry.getKey(), "Remove");
+                addItem(submenu, "layouts.save."+entry.getKey(), "Overwrite").setToolTipText("");
+                layoutsMenu.add(submenu);
+            }
+            layoutsMenu.addSeparator();
+        }
+        addItem(layoutsMenu, "layouts.add", "Add");
     }
     
     //==========================

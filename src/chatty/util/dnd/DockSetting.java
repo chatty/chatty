@@ -57,6 +57,8 @@ public class DockSetting {
         
         DIVIDER_SIZE,
         
+        KEEP_EMPTY,
+        
         POPOUT_TYPE,
         
         POPOUT_TYPE_DRAG,

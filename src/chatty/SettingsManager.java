@@ -420,8 +420,9 @@ public class SettingsManager {
         settings.addMap("windows", new HashMap<>(), Setting.STRING);
         settings.addLong("restoreMode", WindowStateManager.RESTORE_ON_START);
         settings.addBoolean("restoreOnlyIfOnScreen", true);
-        settings.addLong("highlightDock", 0);
-        settings.addLong("ignoreDock", 0);
+        settings.addMap("dock", new HashMap<>(), Setting.LONG);
+        settings.addMap("layouts", new HashMap<>(), Setting.LIST);
+        settings.addBoolean("restoreLayout", true);
 
         // Popouts
         settings.addBoolean("popoutSaveAttributes", true);
@@ -451,6 +452,9 @@ public class SettingsManager {
         settings.addLong("tabsStatus", 32);
         settings.addLong("tabsActive", 128);
         settings.addLong("tabsPopoutDrag", 2);
+        settings.addLong("tabsMaxWidth", 200);
+        settings.addBoolean("tabsCloseEmpty", true);
+        settings.addBoolean("tabsChanTitles", false);
         
         // Chat Window
         settings.addBoolean("chatScrollbarAlways", false);
