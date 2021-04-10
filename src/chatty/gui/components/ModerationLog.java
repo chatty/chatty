@@ -4,9 +4,8 @@ package chatty.gui.components;
 import chatty.gui.DockedDialogHelper;
 import chatty.gui.DockedDialogManager;
 import chatty.gui.MainGui;
+import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
-import chatty.util.Debugging;
-import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockContentContainer;
@@ -168,7 +167,7 @@ public class ModerationLog extends JDialog {
                 DateTime.currentTime(),
                 data.created_by,
                 data.moderation_action,
-                StringUtil.join(data.args," "));
+                ModLogInfo.makeArgs(data));
         
         if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);

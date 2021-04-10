@@ -4,9 +4,9 @@ package chatty.util.chatlog;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
-import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.pubsub.ModeratorActionData;
@@ -175,7 +175,7 @@ public class ChatLog {
             writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
                     data.created_by,
                     data.moderation_action,
-                    data.args.isEmpty() ? "" : " "+StringUtil.join(data.args, " ")));
+                    data.args.isEmpty() ? "" : " "+ModLogInfo.makeArgs(data)));
         }
     }
 

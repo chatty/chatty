@@ -2278,7 +2278,9 @@ public class TwitchClient {
             if (message.data != null) {
                 if (message.data instanceof ModeratorActionData) {
                     ModeratorActionData data = (ModeratorActionData) message.data;
-                    if (data.stream != null) {
+                    // A regular mod action that doesn't contain a mod action should be ignored
+                    boolean empty = data.type == ModeratorActionData.Type.OTHER && data.moderation_action.isEmpty() && data.args.isEmpty();
+                    if (data.stream != null && !empty) {
                         String channel = Helper.toChannel(data.stream);
                         g.printModerationAction(data, data.created_by.equals(c.getUsername()));
                         chatLog.modAction(data);

@@ -39,7 +39,15 @@ public class ModLogInfo extends InfoMessage {
         return String.format("[ModAction] %s: /%s %s",
                 data.created_by,
                 data.moderation_action,
-                StringUtil.join(data.args, " "));
+                makeArgs(data));
+    }
+    
+    public static String makeArgs(ModeratorActionData data) {
+        if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED && data.args.size() == 3) {
+            return String.format("%s (%s): %s",
+                    data.args.get(0), data.args.get(2), data.args.get(1));
+        }
+        return StringUtil.join(data.args, " ");
     }
     
     @Override
