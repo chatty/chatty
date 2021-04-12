@@ -664,7 +664,7 @@ public class Requests {
     }
     
     public static String filterToken(String input, String token) {
-        if (input != null && token != null) {
+        if (input != null && !StringUtil.isNullOrEmpty(token)) {
             return input.replace(token, "<token>");
         }
         return input;

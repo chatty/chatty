@@ -296,10 +296,14 @@ public class DockTabs extends JTabbedPane implements DockChild {
      */
     @Override
     public void removeContent(DockContent content) {
+        /**
+         * Remove listener first, since removing the comp could trigger events
+         * (e.g. tab change setting a new long title).
+         */
+        content.removeListener(dockContentListener);
         JComponent comp = getComponentByContent(content);
         assoc.remove(comp);
         remove(comp);
-        content.removeListener(dockContentListener);
         if (getTabCount() == 0) {
             parent.replace(this, null);
         }
