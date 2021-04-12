@@ -254,7 +254,7 @@ public class Buttons {
             JButton button = entry.getKey();
             CustomCommand command = entry.getValue();
             boolean allParams = !command.hasError() &&
-                    parameters.getIdentifiers().containsAll(command.getRequiredIdentifiers());
+                    parameters.notEmpty(command.getRequiredIdentifiers());
             button.setEnabled(allParams);
         }
     }

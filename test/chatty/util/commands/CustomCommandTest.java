@@ -319,4 +319,18 @@ public class CustomCommandTest {
         assertTrue(CustomCommand.parse("$rand($'abc,123)").hasError());
     }
     
+    @Test
+    public void testParameters() {
+        User user = new User("username", "User Name", Room.EMPTY);
+        Parameters parameters = Parameters.create("");
+        
+        assertFalse(parameters.notEmpty("custom-nick", "full-nick2"));
+        assertEquals(parameters.get("display-nick"), null);
+        
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertTrue(parameters.notEmpty("custom-nick", "full-nick2"));
+        assertEquals(parameters.get("display-nick"), "User Name");
+    }
+    
 }
