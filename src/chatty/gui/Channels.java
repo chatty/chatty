@@ -1326,12 +1326,24 @@ public class Channels {
     private class MyMouseClickedListener implements MouseClickedListener {
 
         @Override
-        public void mouseClicked(Channel chan) {
+        public void mouseClicked(Channel chan, boolean onlyChangeChan) {
             /**
              * Enabling the "later" option might take focus away from an opened
              * context menu (which also triggers this event).
+             * 
+             * For opening context menu (onlyChangeChan enabled) only set focus
+             * when changing channel is necessary. This prevents focus shifting
+             * away, which - if text is selected - would remove the selection
+             * visibility and possibly break copying text.
              */
-            setInitialFocus(chan, false);
+            if (onlyChangeChan) {
+                if (getActiveChannel() != chan) {
+                    setInitialFocus(chan, false);
+                }
+            }
+            else {
+                setInitialFocus(chan, false);
+            }
         }
     }
     

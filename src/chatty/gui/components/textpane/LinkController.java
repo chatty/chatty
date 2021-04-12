@@ -247,10 +247,11 @@ public class LinkController extends MouseAdapter {
         if (mouseClickedListener != null
                 && e.getClickCount() == 1
                 && !e.isAltDown()
-                && !e.isAltGraphDown()) {
+                && !e.isAltGraphDown()
+                && e.getButton() == MouseEvent.BUTTON1) {
             // Doing this on mousePressed would prevent selection of text,
             // because this is used to change the focus to the input
-            mouseClickedListener.mouseClicked(channel);
+            mouseClickedListener.mouseClicked(channel, false);
         }
     }
     
@@ -466,7 +467,14 @@ public class LinkController extends MouseAdapter {
         else if (usericon != null) {
             m = new UsericonContextMenu(usericon, contextMenuListener);
         }
-        else if (selectedText != null) {
+        else if (!StringUtil.isNullOrEmpty(selectedText) && ((JTextPane) e.getSource()).hasFocus()) {
+            /**
+             * Text will stay selected when the focus shifts aways, but won't be
+             * selected visually anymore. This can be confusing when
+             * right-clicking directly back into the channel, since there won't
+             * be any text visibly selected but still open this menu. So check
+             * focus first.
+             */
             m = new TextSelectionMenu((JTextComponent)e.getSource(), false);
         }
         else {
@@ -487,6 +495,12 @@ public class LinkController extends MouseAdapter {
              * Use invokeLater so the focus is already changed to this channel
              * (if necessary), so that closing the menu will return focus to
              * this channel.
+             * 
+             * This helps prevent the following bug: Have Channel Info open,
+             * click into top chat of a split pane (to focus it), right-click
+             * into the bottom chat (-> Channel Info switches to bottom
+             * channel), press ESC to close context menu (-> Channel Info
+             * switches back to top channel instead of the one clicked in).
              */
             SwingUtilities.invokeLater(() -> {
                 m2.show(e.getComponent(), e.getX(), e.getY());
@@ -495,10 +509,16 @@ public class LinkController extends MouseAdapter {
         popup.hide();
         if (mouseClickedListener != null) {
             /**
-             * Moving the mouse while right-clicking in a channel may not
-             * trigger the mouseClicked event, so do it here as well.
+             * Triggering the mouseClicked event here may be necessary to switch
+             * channel focus.
+             *
+             * This was also added because the mouseClicked (in this class, not
+             * the one being called) does not get triggered when moving the
+             * mouse while right-clicking, however now that one is restricted to
+             * triggering only on left-click anyway, in order to handle opening
+             * context menus differently.
              */
-            mouseClickedListener.mouseClicked(channel);
+            mouseClickedListener.mouseClicked(channel, true);
         }
     }
     
