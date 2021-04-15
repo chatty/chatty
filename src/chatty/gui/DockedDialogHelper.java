@@ -41,14 +41,16 @@ public class DockedDialogHelper {
     private final DockContent content;
     private final Channels channels;
     private final Settings settings;
+    private final MainGui gui;
     
     private boolean isDocked;
     private boolean autoOpen;
     private boolean autoOpenActivity;
     
-    public DockedDialogHelper(DockedDialog dialog, Channels channels, Settings settings) {
+    public DockedDialogHelper(DockedDialog dialog, MainGui gui, Channels channels, Settings settings) {
         this.dialog = dialog;
         this.content = dialog.getContent();
+        this.gui = gui;
         this.channels = channels;
         this.settings = settings;
     }
@@ -78,6 +80,17 @@ public class DockedDialogHelper {
             }
             dialog.setVisible(visible);
         }
+        if (visible) {
+            /**
+             * This will run the method that would normally be used to open the
+             * window. This will of course likely run this method again, but
+             * only if visible is not already true (guard-condition at the top).
+             * 
+             * If already opened through the open method, then it will be run
+             * twice, but that shouldn't be an issue.
+             */
+            gui.openWindow(dialog.getWindow());
+        }
     }
     
     public boolean isVisible() {
@@ -96,6 +109,7 @@ public class DockedDialogHelper {
         }
         // Always update value, even if not currently visible
         isDocked = docked;
+        dialog.dockedChanged();
     }
     
     public void toggleDock() {
@@ -103,6 +117,7 @@ public class DockedDialogHelper {
             channels.getDock().removeContent(content);
             dialog.addComponent(content.getComponent());
             isDocked = false;
+            gui.setWindowPosition(dialog.getWindow());
             dialog.setVisible(true);
         }
         else {
@@ -113,6 +128,7 @@ public class DockedDialogHelper {
             dialog.setVisible(false);
         }
         saveSettings();
+        dialog.dockedChanged();
     }
     
     public void menuAction(ActionEvent e) {
@@ -205,7 +221,7 @@ public class DockedDialogHelper {
         
     }
     
-    public interface DockedDialog {
+    public static abstract class DockedDialog {
         
         /**
          * Must set dialog visibility (super method, since the dialog's method
@@ -213,7 +229,7 @@ public class DockedDialogHelper {
          * 
          * @param visible 
          */
-        public void setVisible(boolean visible);
+        public abstract void setVisible(boolean visible);
         
         /**
          * Must get dialog visibility (super method, since the dialog's method
@@ -221,28 +237,28 @@ public class DockedDialogHelper {
          * 
          * @return 
          */
-        public boolean isVisible();
+        public abstract boolean isVisible();
         
         /**
          * Add the content component to the dialog.
          * 
          * @param comp 
          */
-        public void addComponent(Component comp);
+        public abstract void addComponent(Component comp);
         
         /**
          * Remove the content component from the dialog.
          * 
          * @param comp 
          */
-        public void removeComponent(Component comp);
+        public abstract void removeComponent(Component comp);
         
         /**
          * Get the dialog object itself.
          * 
          * @return 
          */
-        public Window getWindow();
+        public abstract Window getWindow();
         
         /**
          * Get the DockContent for this dialog. This is probably a JPanel that
@@ -250,8 +266,11 @@ public class DockedDialogHelper {
          * 
          * @return 
          */
-        public DockContent getContent();
+        public abstract DockContent getContent();
     
+        public void dockedChanged() {
+            
+        }
     }
     
 }

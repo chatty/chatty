@@ -743,6 +743,10 @@ public class ViewerHistory extends JComponent {
         verticalZoom = zoom;
         repaint();
     }
+    
+    public void setDocked(boolean docked) {
+        contextMenu.setDocked(docked);
+    }
 
     public void addContextMenuListener(ContextMenuListener l) {
         contextMenu.addContextMenuListener(l);

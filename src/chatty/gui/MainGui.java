@@ -253,7 +253,7 @@ public class MainGui extends JFrame implements Runnable {
         add(channels.getComponent(), BorderLayout.CENTER);
         channels.setChangeListener(new ChannelChangeListener());
         
-        dockedDialogs = new DockedDialogManager(channels, client.settings);
+        dockedDialogs = new DockedDialogManager(this, channels, client.settings);
         
         highlightedMessages = new HighlightedMessages(this, styleManager,
                 Language.getString("highlightedDialog.title"),
@@ -1139,6 +1139,10 @@ public class MainGui extends JFrame implements Runnable {
         channels.saveLayout();
     }
     
+    public void setWindowPosition(Window window) {
+        windowStateManager.setWindowPosition(window, getActiveWindow());
+    }
+    
     /**
      * Reopen some windows if enabled.
      */
@@ -1155,31 +1159,46 @@ public class MainGui extends JFrame implements Runnable {
      */
     private void reopenWindow(Window window) {
         if (windowStateManager.shouldReopen(window)) {
-            if (window == liveStreamsDialog) {
-                openLiveStreamsDialog();
-            } else if (window == highlightedMessages) {
-                openHighlightedMessages(false);
-            } else if (window == ignoredMessages) {
-                openIgnoredMessages(false);
-            } else if (window == channelInfoDialog) {
-                openChannelInfoDialog();
-            } else if (window == addressbookDialog) {
-                openAddressbook(null);
-            } else if (window == adminDialog) {
-                openChannelAdminDialog();
-            } else if (window == emotesDialog) {
-                openEmotesDialog();
-            } else if (window == followerDialog) {
-                openFollowerDialog();
-            } else if (window == subscribersDialog) {
-                openSubscriberDialog();
-            } else if (window == moderationLog) {
-                openModerationLog();
-            } else if (window == streamChat) {
-                openStreamChat();
-            } else if (window == autoModDialog) {
-                openAutoModDialog();
-            }
+            openWindow(window);
+        }
+    }
+    
+    public void openWindow(Window window) {
+        if (window == liveStreamsDialog) {
+            openLiveStreamsDialog();
+        }
+        else if (window == highlightedMessages) {
+            openHighlightedMessages(false);
+        }
+        else if (window == ignoredMessages) {
+            openIgnoredMessages(false);
+        }
+        else if (window == channelInfoDialog) {
+            openChannelInfoDialog();
+        }
+        else if (window == addressbookDialog) {
+            openAddressbook(null);
+        }
+        else if (window == adminDialog) {
+            openChannelAdminDialog();
+        }
+        else if (window == emotesDialog) {
+            openEmotesDialog();
+        }
+        else if (window == followerDialog) {
+            openFollowerDialog();
+        }
+        else if (window == subscribersDialog) {
+            openSubscriberDialog();
+        }
+        else if (window == moderationLog) {
+            openModerationLog();
+        }
+        else if (window == streamChat) {
+            openStreamChat();
+        }
+        else if (window == autoModDialog) {
+            openAutoModDialog();
         }
     }
     

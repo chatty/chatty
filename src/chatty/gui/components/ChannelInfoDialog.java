@@ -8,6 +8,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.LinkListener;
 import chatty.gui.UrlOpener;
 import chatty.gui.components.admin.StatusHistoryEntry;
+import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
@@ -33,6 +34,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -45,13 +47,17 @@ import javax.swing.*;
  */
 public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener {
 
-    private static final String STATUS_LABEL_TEXT = Language.getString("channelInfo.status")+":";
-    private static final String STATUS_LABEL_TEXT_HISTORY = Language.getString("channelInfo.history")+":";
-    
     private static final String GAME_LABEL_TEXT = Language.getString("channelInfo.playing")+":";
     private static final String GAME_LABEL_TEXT_VOD = "VOD / "+Language.getString("channelInfo.playing")+":";
     
-    private final JLabel statusLabel = new JLabel(STATUS_LABEL_TEXT);
+    private final JLabel statusLabel = new JLabel() {
+        
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(1, super.getMinimumSize().height);
+        }
+        
+    };
     private final ExtendedTextPane title = new ExtendedTextPane();
     
     private final JLabel onlineSince = new JLabel();
@@ -90,6 +96,8 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         // Status
         gbc = makeGbc(0,0,1,1);
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.5;
         mainPanel.add(statusLabel,gbc);
         
         gbc = makeGbc(1,0,1,1);
@@ -221,8 +229,13 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
                 public DockContent getContent() {
                     return content;
                 }
+                
+                @Override
+                public void dockedChanged() {
+                    updateDocked();
+                }
             });
-            helper.installContextMenu(this);
+            helper.installContextMenu(mainPanel);
         }
         else {
             helper = null;
@@ -268,7 +281,8 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     public void setTitle(String title) {
         super.setTitle(title);
         if (helper != null) {
-            helper.getContent().setLongTitle(title);
+            // TODO: Separate way to enable/disable extra title, because this could also be useful for dialog/window title
+//            helper.getContent().setLongTitle(title);
         }
     }
     
@@ -317,6 +331,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
         currentStreamInfo = streamInfo;
         updateOnlineTime(streamInfo);
+        updateStatusLabel();
     }
     
     /**
@@ -443,6 +458,31 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         }
     }
     
+    private void updateStatusLabel() {
+        if (helper != null && helper.isDocked() && currentStreamInfo != null) {
+            if (historyItemSelected) {
+                statusLabel.setText(String.format("%s (%s):",
+                        Language.getString("channelInfo.history"),
+                        currentStreamInfo.stream));
+            }
+            else {
+                statusLabel.setText(String.format("%s (%s):",
+                        Language.getString("channelInfo.status"),
+                        currentStreamInfo.stream));
+            }
+        }
+        else {
+            if (historyItemSelected) {
+                statusLabel.setText(String.format("%s:",
+                        Language.getString("channelInfo.history")));
+            }
+            else {
+                statusLabel.setText(String.format("%s:",
+                        Language.getString("channelInfo.status")));
+            }
+        }
+    }
+    
     private static String formatTime(long time, long time2) {
         return formatDuration(time2 - time);
     }
@@ -466,7 +506,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         historyItemSelected = true;
         title.setText(item.getTitle());
         game.setText(item.getGame());
-        statusLabel.setText(STATUS_LABEL_TEXT_HISTORY);
+        updateStatusLabel();
         updateStreamType(item.getStreamType());
         updateOnlineTime(item);
         setCommunities(item.getCommunities());
@@ -478,7 +518,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         historyItemSelected = false;
         this.title.setText(statusText);
         this.game.setText(gameText);
-        statusLabel.setText(STATUS_LABEL_TEXT);
+        updateStatusLabel();
         updateStreamType(currentStreamInfo.getStreamType());
         updateOnlineTime(currentStreamInfo);
         setCommunities(currentStreamInfo.getCommunities());
@@ -493,8 +533,21 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         history.setVerticalZoom(verticalZoom);
     }
     
+    public void updateDocked() {
+        history.setDocked(helper.isDocked());
+        updateStatusLabel();
+    }
+    
     public void addContextMenuListener(ContextMenuListener listener) {
-        history.addContextMenuListener(listener);
+        history.addContextMenuListener(new ContextMenuAdapter(listener) {
+            
+            @Override
+            public void menuItemClicked(ActionEvent e) {
+                super.menuItemClicked(e);
+                helper.menuAction(e);
+            }
+            
+        });
         title.setContextMenuListener(listener);
     }
     

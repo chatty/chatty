@@ -19,9 +19,11 @@ public class DockedDialogManager {
 
     private final Map<String, DockedDialogHelper> dialogs = new HashMap<>();
     private final Channels channels;
+    private final MainGui gui;
     private final Settings settings;
     
-    public DockedDialogManager(Channels channels, Settings settings) {
+    public DockedDialogManager(MainGui gui, Channels channels, Settings settings) {
+        this.gui = gui;
         this.channels = channels;
         this.settings = settings;
     }
@@ -31,7 +33,7 @@ public class DockedDialogManager {
     }
     
     public DockedDialogHelper createHelper(DockedDialogHelper.DockedDialog dialog) {
-        DockedDialogHelper helper = new DockedDialogHelper(dialog, channels, settings);
+        DockedDialogHelper helper = new DockedDialogHelper(dialog, gui, channels, settings);
         register(helper);
         return helper;
     }

@@ -22,6 +22,8 @@ public class HistoryContextMenu extends ContextMenu {
         addSeparator(RANGE_MENU);
         addRadioItem("historyRange-1", Language.getString("channelInfo.viewers.cm.timeRange.all"), RANGE_MENU, RANGE_MENU);
         addCheckboxItem("toggleVerticalZoom", Language.getString("channelInfo.viewers.cm.verticalZoom"), false);
+        addSeparator();
+        addCheckboxItem("dockToggleDocked", "Dock as tab", false);
     }
     
     private String format(int hours) {
@@ -45,6 +47,10 @@ public class HistoryContextMenu extends ContextMenu {
     
     public void setZoom(boolean zoom) {
         getItem("toggleVerticalZoom").setSelected(zoom);
+    }
+    
+    public void setDocked(boolean docked) {
+        getItem("dockToggleDocked").setSelected(docked);
     }
     
 }
