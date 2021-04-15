@@ -14,6 +14,24 @@ public class JSONUtil {
     
     /**
      * Gets the String value for the given key.
+     *
+     * @param data The JSONObject
+     * @param key The key
+     * @param errorValue Value to return when there is no value for the key or
+     * it's not a String (or it's null)
+     * @return The String value, or errorValue if there is no value for this key
+     * or it's not a String
+     */
+    public static String getString(JSONObject data, Object key, String errorValue) {
+        Object value = data.get(key);
+        if (value != null && value instanceof String) {
+            return (String)value;
+        }
+        return errorValue;
+    }
+    
+    /**
+     * Gets the String value for the given key.
      * 
      * @param data The JSONObject
      * @param key The key
@@ -21,11 +39,7 @@ public class JSONUtil {
      * it's not a String
      */
     public static String getString(JSONObject data, Object key) {
-        Object value = data.get(key);
-        if (value != null && value instanceof String) {
-            return (String)value;
-        }
-        return null;
+        return getString(data, key, null);
     }
     
     public static List<String> getStringList(JSONObject data, Object key) {
