@@ -109,7 +109,7 @@ public class DockContentContainer<T extends JComponent> implements DockContent {
     public void setForegroundColor(Color color) {
         if (!Objects.equals(color, foregroundColor)) {
             this.foregroundColor = color;
-            listeners.forEach(l -> l.propertyChanged(Property.TITLE, this));
+            listeners.forEach(l -> l.propertyChanged(Property.FOREGROUND, this));
         }
     }
 
