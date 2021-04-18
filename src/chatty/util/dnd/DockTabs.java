@@ -402,7 +402,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
 
     @Override
     public boolean isContentVisible(DockContent content) {
-        return getSelectedComponent() == getComponentByContent(content);
+        return getSelectedComponent() != null && getSelectedComponent() == getComponentByContent(content);
     }
 
     @Override
