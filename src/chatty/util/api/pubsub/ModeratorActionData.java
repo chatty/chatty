@@ -1,6 +1,7 @@
 
 package chatty.util.api.pubsub;
 
+import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import java.util.ArrayList;
@@ -153,11 +154,37 @@ public class ModeratorActionData extends MessageData {
             created_by = JSONUtil.getString(data, "requester_login", "");
             args.clear();
             args.add(JSONUtil.getString(data, "text", ""));
+            String expireTime = getTime(JSONUtil.getString(data, "expires_at"), null);
+            if (expireTime != null) {
+                if (moderation_action.startsWith("delete")) {
+                    args.add("(would have expired in "+expireTime+")");
+                }
+                else {
+                    args.add("(expires in "+expireTime+")");
+                }
+            }
+            if (!JSONUtil.getBoolean(data, "from_automod", true)) {
+                args.add("[manual]");
+            }
         }
         
         String stream = Helper.getStreamFromTopic(topic, userIds);
         
         return new ModeratorActionData(msgType, topic, message, stream, moderation_action, args, created_by, msgId);
+    }
+    
+    private static String getTime(String value, String errorValue) {
+        if (StringUtil.isNullOrEmpty(value)) {
+            return errorValue;
+        }
+        try {
+            long datetime = DateTime.parseDatetime(value);
+            long duration = Math.abs(System.currentTimeMillis() - datetime);
+            return DateTime.duration(duration, 0, 1, 0, DateTime.Formatting.COMPACT);
+        }
+        catch (IllegalArgumentException ex) {
+            return errorValue;
+        }
     }
     
     public String getCommandAndParameters() {
