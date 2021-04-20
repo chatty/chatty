@@ -31,6 +31,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import chatty.util.dnd.DockPopout;
+import chatty.util.dnd.DockUtil;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -359,12 +360,12 @@ public class Channels {
         else {
             addDefaultChannel();
         }
+        
         /**
-         * At this point the still joined channels still exist and message can
+         * At this point the still joined channels still exist and messages can
          * be added to it, however they won't be re-added to the layout
          * automatically (because that normally only happens when a new channel
-         * is created). The ones that should stay open are re-added further
-         * down.
+         * is created). The ones that should stay open are re-added here.
          * 
          * The closing channels are added to a separate map that prevents them
          * from being assumed to still be properly open (e.g. for removing
@@ -374,73 +375,110 @@ public class Channels {
          * While the channel is being parted, this will prevent the channel from
          * being opened again, but hopefully that's not an issue.
          */
-        if (!d.getPartChannels().isEmpty()) {
-            for (String chan : d.getPartChannels()) {
-                Channel channel = channels.remove(chan);
-                if (channel != null) {
-                    closingChannels.put(chan, channel);
-                }
-                gui.client.closeChannel(chan);
+        
+        /**
+         * Add everything from the loaded layout first (depending on options
+         * selected in the dialog).
+         * 
+         * All types of content (channels, dialogs) are handled in the same
+         * loop so that the order they are in can be retained. Currently open
+         * channels that are not in the layout of course don't have a defined
+         * order, so they are just appened in the next loop.
+         */
+        for (String id : layout.getContentIds()) {
+            DockContent currentContent = DockUtil.getContentById(current, id);
+            if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) { // Regular
+                handleContent(id, currentContent, d.getAddChannels().contains(id));
+            }
+            else if (getTypeFromChannelName(id) != Channel.Type.NONE) { // Whisper, ..
+                handleContent(id, currentContent, true);
+            }
+            else { // Other content
+                handleContent(id, currentContent, true);
             }
         }
+        
         /**
-         * Add all channels that should be open after loading the layout. This
-         * makes it easier to get the correct order when channels that are
-         * already open and channels that still need to be joined are mixed
-         * together.
+         * Add currently open channels not in the layout (depending on options),
+         * clear up everything else not in the layout.
          */
-        if (!d.getAddChannels().isEmpty()) {
-            for (String id : d.getAddChannels()) {
-                boolean addedAlreadyJoined = false;
-                for (DockContent content : current) {
-                    if (content.getId().equals(id)) {
-                        setTargetPath(content);
-                        dock.addContent(content);
-                        addedAlreadyJoined = true;
-                    }
+        for (DockContent currentContent : current) {
+            String id = currentContent.getId();
+            boolean inLayout = layout.getContentIds().contains(id);
+            // If in layout, the above loop would have already handled it
+            if (!inLayout) {
+                if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) { // Regular
+                    handleContent(id, currentContent, d.getAddChannels().contains(id));
                 }
-                if (!addedAlreadyJoined) {
-                    // Add channel that will be joined
-                    getChannel(Room.createRegular(id));
+                else if (getTypeFromChannelName(id) != Channel.Type.NONE) { // Whisper, ..
+                    handleContent(id, currentContent, false);
+                }
+                else { // Other content
+                    // If not in layout (all of these), then undock
+                    handleContent(id, currentContent, false);
                 }
             }
         }
         
         /**
-         * Join channels that need to be joined.
+         * Join channels that need to be joined. Their tab will already have
+         * been opened.
          */
         if (!d.getJoinChannels().isEmpty()) {
             for (String channel : d.getJoinChannels()) {
+                // The joining state will be shown on the tab (reduced opacity)
                 channels.get(channel).getDockContent().setJoining(true);
             }
             gui.client.joinChannels(new HashSet<>(d.getJoinChannels()));
         }
         
-        Debugging.println("layout", "Loading layout.. Add: %s Join: %s Closing: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels);
-        
-        //--------------------------
-        // Non-channel panels
-        //--------------------------
-        /**
-         * Determine panels to close (that are open but not in the layout).
-         */
-        Set<String> closeExtra = new HashSet<>();
-        for (DockContent content : current) {
-            if (!layout.getContentIds().contains(content.getId())) {
-                closeExtra.add(content.getId());
+        Debugging.println("layout", "Loading layout.. Add: %s Join: %s Closing: %s Channels: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels, channels);
+    }
+    
+    /**
+     * Handle content with the given id, either add or remove.
+     * 
+     * @param id The content id
+     * @param currentContent If content for the id already exists, this is it
+     * @param add If true the content should be added, otherwise cleaned up
+     */
+    private void handleContent(String id, DockContent currentContent, boolean add) {
+        if (getTypeFromChannelName(id) != Channel.Type.NONE) {
+            //--------------------------
+            // Any channel (regular, whisper)
+            //--------------------------
+            if (add) {
+                if (currentContent != null) {
+                    // Reuse existing content
+                    setTargetPath(currentContent);
+                    dock.addContent(currentContent);
+                }
+                else {
+                    // Create/add new channel (works if it doesn't exist)
+                    getChannel(Room.createRegular(id));
+                }
+            }
+            else {
+                // Close, if necessary
+                Channel channel = channels.remove(id);
+                if (channel != null) {
+                    closingChannels.put(id, channel);
+                }
+                gui.client.closeChannel(id);
             }
         }
-        /**
-         * Open/close panels. This simply attempts it with all content ids, but
-         * only those that are actually valid extra panels/dialogs will work.
-         */
-        for (String id : layout.getContentIds()) {
-            // Any entries whose id is not actually a registered docked dialog will simply be ignored
-            gui.dockedDialogs.openInDock(id);
+        else {
+            //--------------------------
+            // Other content (dialogs)
+            //--------------------------
+            if (add) {
+                gui.dockedDialogs.openInDock(id);
+            }
+            else {
+                gui.dockedDialogs.closeFromDock(id);
+            }
         }
-        for (String id : closeExtra) {
-            gui.dockedDialogs.closeFromDock(id);
-        }
+        
     }
     
     private void loadLastSessionLayout() {
@@ -448,7 +486,17 @@ public class Channels {
         if (layout != null) {
             loadLayout(layout);
             for (String id : layout.getContentIds()) {
-                gui.dockedDialogs.openInDock(id);
+                if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) {
+                    // Don't open regular channels
+                }
+                else if (getTypeFromChannelName(id) != Channel.Type.NONE) {
+                    // Always open whisper etc.
+                    handleContent(id, null, true);
+                }
+                else {
+                    // Always open docked dialogs
+                    handleContent(id, null, true);
+                }
             }
         }
     }

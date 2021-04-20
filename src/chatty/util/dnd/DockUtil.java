@@ -8,6 +8,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
@@ -116,6 +117,22 @@ public class DockUtil {
             }
         }
         return ids;
+    }
+    
+    /**
+     * Get the DockContent with the given id from the Collection.
+     * 
+     * @param contents The Collection to get the DockContent from
+     * @param id The id of the DockContent to find
+     * @return The DockContent, or null if none could be found
+     */
+    public static DockContent getContentById(Collection<DockContent> contents, String id) {
+        for (DockContent content : contents) {
+            if (content.getId().equals(id)) {
+                return content;
+            }
+        }
+        return null;
     }
     
 }
