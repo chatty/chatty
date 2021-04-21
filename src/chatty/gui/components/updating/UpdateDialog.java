@@ -122,6 +122,10 @@ public class UpdateDialog extends JDialog {
         gbc = GuiUtil.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
         add(enableCheckBeta, gbc);
         
+        LinkLabel releaseNotes = new LinkLabel("[help-releases:top Release notes]", linkLabelListener);
+        gbc = GuiUtil.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST);
+        add(releaseNotes, gbc);
+        
         //gbc = GuiUtil.makeGbc(0, 5, 1, 1);
         //gbc.fill = GridBagConstraints.HORIZONTAL;
         //gbc.weightx = 1;
@@ -213,7 +217,7 @@ public class UpdateDialog extends JDialog {
         setTitle("You are up-to-date!");
         
         String main = HTML_PREFIX + ("<div style='font-size:1.2em;padding-left:10px;padding-right:10px;'>"
-                + "You&nbsp;are&nbsp;running&nbsp;the&nbsp;latest&nbsp;version"
+                + "You&nbsp;are&nbsp;running&nbsp;the&nbsp;[help-releases:top latest&nbsp;version]"
                 + "</div>");
         if (newerBeta) {
             main += "<div style='margin:5px'>There is a newer beta version though!</div>";

@@ -1534,6 +1534,9 @@ public class MainGui extends JFrame implements Runnable {
                 case "help-guide2":
                     openHelp("help-guide2.html", ref);
                     break;
+                case "help-releases":
+                    openHelp("help-releases.html", ref);
+                    break;
                 case "url":
                     UrlOpener.openUrlPrompt(MainGui.this, ref);
                     break;
