@@ -212,7 +212,9 @@ public class UpdateDialog extends JDialog {
     private void setVersion(Release release, boolean newerBeta) {
         setTitle("You are up-to-date!");
         
-        String main = HTML_PREFIX+"<div style='font-size:1.2em;padding-left:10px;padding-right:10px;'>You are running the latest version</div>".replaceAll(" ", "&nbsp;");
+        String main = HTML_PREFIX + ("<div style='font-size:1.2em;padding-left:10px;padding-right:10px;'>"
+                + "You&nbsp;are&nbsp;running&nbsp;the&nbsp;latest&nbsp;version"
+                + "</div>");
         if (newerBeta) {
             main += "<div style='margin:5px'>There is a newer beta version though!</div>";
         }
