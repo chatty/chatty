@@ -122,10 +122,10 @@ public class UpdateDialog extends JDialog {
         gbc = GuiUtil.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
         add(enableCheckBeta, gbc);
         
-        gbc = GuiUtil.makeGbc(0, 5, 1, 1);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.insets = new Insets(1, 12, 5, 5);
+        //gbc = GuiUtil.makeGbc(0, 5, 1, 1);
+        //gbc.fill = GridBagConstraints.HORIZONTAL;
+        //gbc.weightx = 1;
+        //gbc.insets = new Insets(1, 12, 5, 5);
         //add(new JLabel(BETA_INFO), gbc);
         
         closeButton = new JButton(Language.getString("dialog.button.close"));
