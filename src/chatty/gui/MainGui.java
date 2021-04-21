@@ -1509,32 +1509,44 @@ public class MainGui extends JFrame implements Runnable {
     private class MyLinkLabelListener implements LinkLabelListener {
         @Override
         public void linkClicked(String type, String ref) {
-            if (type.equals("help")) {
-                openHelp(ref);
-            } else if (type.equals("help-settings")) {
-                openHelp("help-settings.html", ref);
-            } else if (type.equals("help-commands")) {
-                openHelp("help-custom_commands.html", ref);
-            } else if (type.equals("help-admin")) {
-                openHelp("help-admin.html", ref);
-            } else if (type.equals("help-livestreamer")) {
-                openHelp("help-livestreamer.html", ref);
-            } else if (type.equals("help-whisper")) {
-                openHelp("help-whisper.html", ref);
-            } else if (type.equals("help-laf")) {
-                openHelp("help-laf.html", ref);
-            } else if (type.equals("help-guide2")) {
-                openHelp("help-guide2.html", ref);
-            } else if (type.equals("url")) {
-                UrlOpener.openUrlPrompt(MainGui.this, ref);
-            } else if (type.equals("update")) {
-                if (ref.equals("show")) {
-                    openUpdateDialog();
-                }
-            } else if (type.equals("announcement")) {
-                if (ref.equals("show")) {
-                    //newsDialog.showDialog();
-                }
+            switch (type) {
+                case "help":
+                    openHelp(ref);
+                    break;
+                case "help-settings":
+                    openHelp("help-settings.html", ref);
+                    break;
+                case "help-commands":
+                    openHelp("help-custom_commands.html", ref);
+                    break;
+                case "help-admin":
+                    openHelp("help-admin.html", ref);
+                    break;
+                case "help-livestreamer":
+                    openHelp("help-livestreamer.html", ref);
+                    break;
+                case "help-whisper":
+                    openHelp("help-whisper.html", ref);
+                    break;
+                case "help-laf":
+                    openHelp("help-laf.html", ref);
+                    break;
+                case "help-guide2":
+                    openHelp("help-guide2.html", ref);
+                    break;
+                case "url":
+                    UrlOpener.openUrlPrompt(MainGui.this, ref);
+                    break;
+                case "update":
+                    if (ref.equals("show")) {
+                        openUpdateDialog();
+                    }
+                    break;
+                case "announcement":
+                    if (ref.equals("show")) {
+                        //newsDialog.showDialog();
+                    }
+                    break;
             }
         }
     }
