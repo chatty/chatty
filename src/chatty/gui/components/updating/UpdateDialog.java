@@ -330,7 +330,7 @@ public class UpdateDialog extends JDialog {
         settings.addLong("versionLastChecked", 0L);
         
         LinkLabelListener linkLabelListener = (type, ref) -> {
-            System.out.println("Link clicked: "+ref);
+            System.out.println("Link clicked: " + type + ":" + ref);
         };
         
         Releases data = testReleases();
