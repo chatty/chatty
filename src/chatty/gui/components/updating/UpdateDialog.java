@@ -271,7 +271,8 @@ public class UpdateDialog extends JDialog {
                     + "<small>(Downloads, closes Chatty and runs the setup: "+asset.getName()+")</small></div>");
         }
         downloadsInfo.setVisible(true);
-        downloadsInfo.setText("<html><body style='padding:0 10 0 10;'><p>Direct downloads (manual install):</p>"+makeDownloadLinks(latest));
+        downloadsInfo.setText("<html><body style='padding:0px 10px 0px 10px;'><p>Direct downloads (manual install):</p>"
+                + makeDownloadLinks(latest));
     }
     
     private String makeDownloadLinks(Release release) {
