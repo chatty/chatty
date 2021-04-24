@@ -549,6 +549,9 @@ public class HighlighterTester extends JDialog implements StringEditor {
         setTitle(title);
         result = null;
         infoText.setText(info);
+        // Reset so it doesn't affect sizing
+        itemValue.setText(null);
+        blacklistValue.setText(null);
         parseResult.setText(null);
         revalidate();
         pack();
