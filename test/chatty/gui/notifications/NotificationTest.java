@@ -21,15 +21,41 @@ public class NotificationTest {
         assertTrue(notification.matchesChannel(null));
         assertTrue(notification.matchesChannel("#foobar"));
         assertTrue(notification.matchesChannel("#fooBAR"));
+        assertTrue(notification.matchesChannel("foobar"));
+        assertTrue(notification.matchesChannel("Foobar"));
         notification = createStreamStatusNotification("#fOOBAR");
         assertTrue(notification.matchesChannel(null));
         assertTrue(notification.matchesChannel("#foobar"));
         assertTrue(notification.matchesChannel("#FOObar"));
+        assertTrue(notification.matchesChannel("foobar"));
+        assertTrue(notification.matchesChannel("fooBar"));
     }
 
-    private Notification createStreamStatusNotification(String channel) {
+    @Test
+    public void testThatMultipleChannelMatchingWorks() {
+        Notification notification = createStreamStatusNotification(" FOO, bar ,baZ ");
+        assertTrue(notification.matchesChannel("foo"));
+        assertTrue(notification.matchesChannel("bar"));
+        assertTrue(notification.matchesChannel("baz"));
+        assertTrue(notification.matchesChannel("#foo"));
+        assertTrue(notification.matchesChannel("#bar"));
+        assertTrue(notification.matchesChannel("#baz"));
+        assertTrue(notification.matchesChannel("#FOO"));
+        assertTrue(notification.matchesChannel("#baR"));
+        notification = createStreamStatusNotification("#fOO ,#BAR, #BAZ");
+        assertTrue(notification.matchesChannel("foo"));
+        assertTrue(notification.matchesChannel("bar"));
+        assertTrue(notification.matchesChannel("baz"));
+        assertTrue(notification.matchesChannel("#foo"));
+        assertTrue(notification.matchesChannel("#bar"));
+        assertTrue(notification.matchesChannel("#baz"));
+        assertTrue(notification.matchesChannel("#FOO"));
+        assertTrue(notification.matchesChannel("#baR"));
+    }
+
+    private Notification createStreamStatusNotification(String channels) {
         Notification.Builder builder = new Notification.Builder(Notification.Type.STREAM_STATUS)
-                .setChannel(channel);
+                .setChannels(channels);
         return new Notification(builder);
     }
 }
