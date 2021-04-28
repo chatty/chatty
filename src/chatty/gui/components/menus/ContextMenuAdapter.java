@@ -7,6 +7,7 @@ import chatty.gui.components.Channel;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
+import chatty.util.dnd.DockContent;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 
@@ -97,6 +98,13 @@ public class ContextMenuAdapter implements ContextMenuListener {
     public void textMenuItemClick(ActionEvent e, String selected) {
         if (listener != null) {
             listener.textMenuItemClick(e, selected);
+        }
+    }
+
+    @Override
+    public void tabMenuItemClicked(ActionEvent e, DockContent content) {
+        if (listener != null) {
+            listener.tabMenuItemClicked(e, content);
         }
     }
     

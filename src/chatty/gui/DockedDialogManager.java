@@ -1,11 +1,16 @@
 
 package chatty.gui;
 
+import chatty.gui.components.menus.TabContextMenu;
 import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
 import chatty.util.dnd.DockManager;
 import chatty.util.settings.Settings;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 /**
  * Info Panels that can be docked are registered in this, so settings can be
@@ -26,14 +31,53 @@ public class DockedDialogManager {
         this.gui = gui;
         this.channels = channels;
         this.settings = settings;
+        settings.addSettingChangeListener((setting, type, value) -> {
+            if (setting.equals("tabsMessage")) {
+                SwingUtilities.invokeLater(() -> loadTabSettings());
+            }
+        });
     }
     
     public DockManager getDockManager() {
         return channels.getDock();
     }
     
+    public DockContent createContent(JComponent component, String title, String id) {
+        DockContent content = new DockContentContainer(title, component, channels.getDock()) {
+            
+            @Override
+            public JPopupMenu getContextMenu() {
+                return getPopupMenu(this);
+            }
+            
+        };
+        content.setId(id);
+        return content;
+    }
+    
+    public DockStyledTabContainer createStyledContent(JComponent component, String title, String id) {
+        DockStyledTabContainer content = new DockStyledTabContainer(component, title, getDockManager()) {
+            
+            @Override
+            public JPopupMenu getContextMenu() {
+                return getPopupMenu(this);
+            }
+            
+        };
+        content.setId(id);
+        return content;
+    }
+    
+    private JPopupMenu getPopupMenu(DockContent content) {
+        return new TabContextMenu(gui.contextMenuListener,
+                content,
+                Channels.getCloseTabs(channels, content, settings.getBoolean("closeTabsSameType")),
+                settings);
+    }
+    
     public DockedDialogHelper createHelper(DockedDialogHelper.DockedDialog dialog) {
         DockedDialogHelper helper = new DockedDialogHelper(dialog, gui, channels, settings);
+        helper.loadTabSettings();
         register(helper);
         return helper;
     }
@@ -45,6 +89,12 @@ public class DockedDialogManager {
     public void loadSettings() {
         for (DockedDialogHelper helper : dialogs.values()) {
             helper.loadSettings();
+        }
+    }
+    
+    public void loadTabSettings() {
+        for (DockedDialogHelper helper : dialogs.values()) {
+            helper.loadTabSettings();
         }
     }
     

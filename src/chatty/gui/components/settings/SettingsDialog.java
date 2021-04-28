@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -879,7 +882,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected SimpleTableEditor addStringMapSetting(String name, int width, int height) {
-        SimpleTableEditor<String> table = new SimpleTableEditor<String>(this) {
+        SimpleTableEditor<String> table = new SimpleTableEditor<String>(this, String.class) {
 
             @Override
             protected String valueFromString(String input) {
@@ -892,15 +895,66 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected SimpleTableEditor addLongMapSetting(String name, int width, int height) {
-        SimpleTableEditor<Long> table = new SimpleTableEditor<Long>(this) {
+        SimpleTableEditor<Long> table = new SimpleTableEditor<Long>(this, Long.class) {
 
             @Override
             protected Long valueFromString(String input) {
-                return Long.valueOf(input);
+                try {
+                    return Long.valueOf(input);
+                }
+                catch (NumberFormatException ex) {
+                    return (long)0;
+                }
             }
         };
         table.setValueFilter("[^0-9]");
         table.setPreferredSize(new Dimension(width, height));
+        table.setTableEditorEditAllHandler(new TableEditor.TableEditorEditAllHandler<SimpleTableEditor.MapItem<Long>>() {
+            
+            private final Pattern PARSE_LINE = Pattern.compile("(.*) (-?[0-9]+)");
+            
+            @Override
+            public String toString(List<SimpleTableEditor.MapItem<Long>> data) {
+                StringBuilder b = new StringBuilder();
+                for (SimpleTableEditor.MapItem<Long> entry : data) {
+                    b.append(entry.key).append(" ").append(entry.value).append("\n");
+                }
+                return b.toString();
+            }
+
+            @Override
+            public List<SimpleTableEditor.MapItem<Long>> toData(String input) {
+                List<SimpleTableEditor.MapItem<Long>> result = new ArrayList<>();
+                String[] split = StringUtil.splitLines(input);
+                for (String line : split) {
+                    Matcher m = PARSE_LINE.matcher(line);
+                    if (m.matches()) {
+                        try {
+                            result.add(new SimpleTableEditor.MapItem(m.group(1), Long.valueOf(m.group(2))));
+                        }
+                        catch (NumberFormatException ex) {
+                            // Don't add
+                        }
+                    }
+                }
+                return result;
+            }
+
+            @Override
+            public StringEditor getEditor() {
+                return null;
+            }
+
+            @Override
+            public String getEditorTitle() {
+                return "Edit all entries";
+            }
+
+            @Override
+            public String getEditorHelp() {
+                return null;
+            }
+        });
         mapSettings.put(name, table);
         return table;
     }

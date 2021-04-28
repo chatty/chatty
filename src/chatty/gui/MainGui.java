@@ -171,7 +171,7 @@ public class MainGui extends JFrame implements Runnable {
     private final WindowListener windowListener = new MyWindowListener();
     private final UserListener userListener = new MyUserListener();
     private final LinkLabelListener linkLabelListener = new MyLinkLabelListener();
-    private final ContextMenuListener contextMenuListener = new MyContextMenuListener();
+    protected final ContextMenuListener contextMenuListener = new MyContextMenuListener();
     
     public MainGui(TwitchClient client) {
         this.client = client;
@@ -1859,6 +1859,64 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         
+        @Override
+        public void tabMenuItemClicked(ActionEvent e, DockContent content) {
+            String cmd = e.getActionCommand();
+            if (cmd.equals("closeChannel")) {
+                content.remove();
+            }
+            else if (cmd.startsWith("tabsPosTab")) {
+                long pos = Long.parseLong(cmd.substring("tabsPosTab".length()));
+                getSettings().mapPut("tabsPos", content.getId(), pos);
+                getSettings().setSettingChanged("tabsPos");
+            }
+            else if (cmd.startsWith("tabsPosType")) {
+                long pos = Long.parseLong(cmd.substring("tabsPosType".length()));
+                getSettings().mapPut("tabsPos", content.getId().substring(0, 1), pos);
+                getSettings().setSettingChanged("tabsPos");
+            }
+            else if (cmd.equals("tabsSort")) {
+                channels.sortContent(null);
+            }
+            else if (cmd.equals("tabsAutoSort")) {
+                client.settings.toggleBoolean("tabsAutoSort");
+            }
+            else if (cmd.equals("popoutChannel")) {
+                // TabContextMenu
+                channels.popout(content, false);
+            }
+            else if (cmd.equals("popoutChannelWindow")) {
+                // TabContextMenu
+                channels.popout(content, true);
+            }
+            else if (cmd.startsWith("closeAllTabs")) {
+                // TabContextMenu
+                Collection<DockContent> chans = Channels.getCloseTabs(channels, content, client.settings.getBoolean("closeTabsSameType")).get(cmd);
+                if (chans != null) {
+                    for (DockContent c : chans) {
+                        c.remove();
+                    }
+                }
+            }
+            else if (cmd.equals("tabsCloseSameType")) {
+                client.settings.toggleBoolean("closeTabsSameType");
+            }
+            else {
+                Channel channel = content instanceof Channels.DockChannelContainer
+                                  ? ((Channels.DockChannelContainer)content).getContent()
+                                  : null;
+                if (channel != null) {
+                    if (cmd.startsWith("command")) {
+                        customCommand(channel.getRoom(), e,
+                                Parameters.create(channel.getStreamName()));
+                    }
+                    else {
+                        nameBasedStuff(e, channel.getStreamName());
+                    }
+                }
+            }
+        }
+        
         /**
          * ChannelContextMenu, with Channel context.
          */
@@ -1877,23 +1935,6 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (cmd.equals("closeChannel")) {
                 client.closeChannel(channel.getChannel());
-            }
-            else if (cmd.equals("popoutChannel")) {
-                // TabContextMenu
-                channels.popout(channel.getDockContent(), false);
-            }
-            else if (cmd.equals("popoutChannelWindow")) {
-                // TabContextMenu
-                channels.popout(channel.getDockContent(), true);
-            }
-            else if (cmd.startsWith("closeAllTabs")) {
-                // TabContextMenu
-                Collection<Channel> chans = Channels.getCloseTabsChans(channels, channel).get(cmd);
-                if (chans != null) {
-                    for (Channel c : chans) {
-                        client.closeChannel(c.getChannel());
-                    }
-                }
             }
             else if (cmd.equals("joinHostedChannel")) {
                 client.command(channel.getRoom(), "joinhosted");
@@ -4866,6 +4907,11 @@ public class MainGui extends JFrame implements Runnable {
             }
             else if (LaF.shouldUpdate(setting)) {
                 updateLaF();
+            }
+            else if (setting.equals("tabsPos")) {
+                if (client.settings.getBoolean("tabsAutoSort")) {
+                    channels.sortContent(null);
+                }
             }
         }
     }

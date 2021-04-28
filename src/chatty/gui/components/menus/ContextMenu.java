@@ -218,6 +218,10 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         return subMenus.containsKey(name);
     }
     
+    public void registerSubmenu(JMenu menu) {
+        subMenus.put(menu.getText(), menu);
+    }
+    
     private JMenu getSubmenu(String name, int pos) {
         if (subMenus.get(name) == null) {
             JMenu menu = new JMenu(name);

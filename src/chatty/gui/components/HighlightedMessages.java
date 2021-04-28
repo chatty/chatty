@@ -13,6 +13,7 @@ import chatty.gui.MainGui;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenu;
+import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
@@ -55,9 +56,6 @@ import javax.swing.text.SimpleAttributeSet;
  */
 public class HighlightedMessages extends JDialog {
     
-    public final static int DOCKED = 1 << 0;
-    public final static int AUTO_OPEN = 1 << 1;
-    
     private final TextPane messages;
     private final DockedDialogHelper helper;
     private String currentChannel;
@@ -73,9 +71,6 @@ public class HighlightedMessages extends JDialog {
     
     private final String title;
     private final String label;
-    
-    private final ContextMenuListener contextMenuListener;
-    private final Settings settings;
     
     // Dock
     private final DockStyledTabContainer content;
@@ -96,8 +91,6 @@ public class HighlightedMessages extends JDialog {
         super(owner);
         this.title = title;
         this.label = label;
-        this.contextMenuListener = contextMenuListener;
-        this.settings = owner.getSettings();
         updateTitle();
         
         this.addComponentListener(new MyVisibleListener());
@@ -157,7 +150,22 @@ public class HighlightedMessages extends JDialog {
                                     : ChannelTextPane.Type.IGNORED;
         messages = new TextPane(owner, modifiedStyleServer, textPaneType,
                 () -> new HighlightsContextMenu(isDocked(), autoOpenActivity()));
-        messages.setContextMenuListener(new MyContextMenuListener());
+        messages.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
+            
+            @Override
+            public void menuItemClicked(ActionEvent e) {
+                switch (e.getActionCommand()) {
+                    case "clearHighlights":
+                        clear();
+                        break;
+                    default:
+                        break;
+                }
+                helper.menuAction(e);
+                super.menuItemClicked(e);
+            }
+            
+        });
         //messages.setLineWrap(true);
         //messages.setWrapStyleWord(true);
         //messages.setEditable(false);
@@ -166,8 +174,8 @@ public class HighlightedMessages extends JDialog {
         messages.setScrollPane(scroll);
         
         add(scroll);
-        content = new DockStyledTabContainer(scroll, shortTitle, dockedDialogs.getDockManager());
-        content.setId(settingName.equals("highlightDock") ? "-highlight-" : "-ignore-");
+        content = dockedDialogs.createStyledContent(scroll, shortTitle,
+                settingName.equals("highlightDock") ? "-highlight-" : "-ignore-");
         
         helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
             
@@ -206,13 +214,6 @@ public class HighlightedMessages extends JDialog {
         setPreferredSize(new Dimension(400,300));
         
         pack();
-        
-        updateTabSettings(owner.getSettings().getLong("tabsMessage"));
-        owner.getSettings().addSettingChangeListener((setting, type, value) -> {
-            if (setting.equals("tabsMessage")) {
-                SwingUtilities.invokeLater(() -> updateTabSettings((Long)value));
-            }
-        });
     }
     
     private boolean isDocked() {
@@ -221,10 +222,6 @@ public class HighlightedMessages extends JDialog {
     
     private boolean autoOpenActivity() {
         return helper.autoOpenActivity();
-    }
-    
-    private void updateTabSettings(long value) {
-        content.setSettings(0, (int)value, 0, 0, 0, -1);
     }
     
     @Override
@@ -355,67 +352,6 @@ public class HighlightedMessages extends JDialog {
             setText("");
         }
         
-    }
-    
-    private class MyContextMenuListener implements ContextMenuListener {
-        
-        @Override
-        public void menuItemClicked(ActionEvent e) {
-            switch (e.getActionCommand()) {
-                case "clearHighlights":
-                    clear();
-                    break;
-                default:
-                    break;
-            }
-            helper.menuAction(e);
-            contextMenuListener.menuItemClicked(e);
-        }
-
-        @Override
-        public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
-            contextMenuListener.userMenuItemClicked(e, user, msgId, autoModMsgId);
-        }
-
-        @Override
-        public void urlMenuItemClicked(ActionEvent e, String url) {
-            contextMenuListener.urlMenuItemClicked(e, url);
-        }
-
-        @Override
-        public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
-            contextMenuListener.streamsMenuItemClicked(e, streams);
-        }
-
-        @Override
-        public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos) {
-            contextMenuListener.streamInfosMenuItemClicked(e, streamInfos);
-        }
-
-        @Override
-        public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
-            contextMenuListener.emoteMenuItemClicked(e, emote);
-        }
-
-        @Override
-        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
-            contextMenuListener.usericonMenuItemClicked(e, usericon);
-        }
-
-        @Override
-        public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
-            contextMenuListener.roomsMenuItemClicked(e, rooms);
-        }
-
-        @Override
-        public void channelMenuItemClicked(ActionEvent e, Channel channel) {
-            contextMenuListener.channelMenuItemClicked(e, channel);
-        }
-
-        @Override
-        public void textMenuItemClick(ActionEvent e, String selected) {
-            contextMenuListener.textMenuItemClick(e, selected);
-        }
     }
     
     /**

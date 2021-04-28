@@ -211,6 +211,11 @@ public class AddressbookDialog extends JDialog {
         public void allItemsChanged(List<AddressbookEntry> newItems) {
             addressbook.setEntries(newItems);
         }
+
+        @Override
+        public void itemsSet() {
+            
+        }
         
     }
     

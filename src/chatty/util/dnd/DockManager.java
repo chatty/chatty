@@ -740,4 +740,9 @@ public class DockManager {
         pathOnRemove.clear();
     }
     
+    public void sortContent(DockContent content) {
+        main.sortContent(content);
+        popouts.forEach(w -> w.getBase().sortContent(content));
+    }
+    
 }

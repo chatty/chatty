@@ -15,8 +15,10 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JScrollBar;
@@ -45,6 +47,8 @@ public class ModerationLog extends JDialog {
     
     private String currentChannel;
     private String currentLoadedChannel;
+    
+    private final Set<String> unread = new HashSet<>();
 
     public ModerationLog(MainGui owner, DockedDialogManager dockedDialogs) {
         super(owner);
@@ -54,8 +58,7 @@ public class ModerationLog extends JDialog {
         scroll.setPreferredSize(new Dimension(300, 200));
         add(scroll, BorderLayout.CENTER);
         
-        DockContent content = new DockContentContainer("Mod Actions", scroll, dockedDialogs.getDockManager());
-        content.setId("-modlog-");
+        DockContent content = dockedDialogs.createStyledContent(scroll, "Mod Actions", "-modlog-");
         helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
             @Override
             public void setVisible(boolean visible) {
@@ -127,7 +130,16 @@ public class ModerationLog extends JDialog {
     }
     
     public void setChannel(String channel) {
+        if (helper.isContentVisible()) {
+            unread.remove(channel);
+        }
         if (channel != null && !channel.equals(currentChannel)) {
+            if (unread.contains(channel)) {
+                helper.setNewMessage();
+            }
+            else {
+                helper.resetNewMessage();
+            }
             currentChannel = channel;
             setTitle("Moderation Actions ("+channel+")");
 
@@ -171,6 +183,12 @@ public class ModerationLog extends JDialog {
         
         if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);
+            // Only set for current channel (automatically checks for visible)
+            helper.setNewMessage();
+        }
+        // Should be added for non-active channels, so on switch it can be set
+        if (!helper.isContentVisible()) {
+            unread.add(channel);
         }
         
         if (!cache.containsKey(channel)) {

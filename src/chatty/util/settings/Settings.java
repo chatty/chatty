@@ -180,6 +180,11 @@ public class Settings {
         return set(settingName, value, Setting.BOOLEAN);
     }
     
+    public int toggleBoolean(String settingName) {
+        boolean currentValue = getBoolean(settingName);
+        return set(settingName, !currentValue, Setting.BOOLEAN);
+    }
+    
     public int setLong(String settingName, long value) {
         return set(settingName, value, Setting.LONG);
     }
@@ -376,6 +381,15 @@ public class Settings {
         }
     }
 
+    public long mapGetLong(String settingName, Object key, long def) {
+        synchronized(LOCK) {
+            Object obj = getMapInternal(settingName).get(key);
+            if (obj == null) {
+                return def;
+            }
+            return (Long)obj;
+        }
+    }
     
     /**
      * Puts a {@code key}-{@code value} pair into the {@code Map} with the name
@@ -705,12 +719,22 @@ public class Settings {
             setSettingChanged(setting);
             return "Setting '"+setting+"' (List) set to "+getList(setting);
         }
-        else if (isMapSetting(setting) && isOfSubtype(setting, Setting.STRING)) {
+        else if (isMapSetting(setting)
+                && (isOfSubtype(setting, Setting.STRING) || isOfSubtype(setting, Setting.LONG))) {
             String[] mapParameters = parameter.split(" ", 2);
             if (mapParameters.length != 2) {
                 return "Invalid number of parameters to set map value.";
             }
-            mapPut(setting, mapParameters[0], mapParameters[1]);
+            Object value = mapParameters[1];
+            if (isOfSubtype(setting, Setting.LONG)) {
+                try {
+                    value = Long.valueOf(mapParameters[1]);
+                }
+                catch (NumberFormatException ex) {
+                    return "Invalid value (must be numeric).";
+                }
+            }
+            mapPut(setting, mapParameters[0], value);
             setSettingChanged(setting);
             return "Setting '"+setting+"' (Map) set to "+getMap(setting);
         }

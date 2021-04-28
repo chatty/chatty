@@ -278,6 +278,7 @@ public class TableEditor<T> extends JPanel {
         table.setModel(model);
         if (sortingMode == SORTING_MODE_SORTED) {
             sorter = new TableRowSorter<>(model);
+            sorter.setSortsOnUpdates(true);
             table.setRowSorter(sorter);
             sorter.toggleSortOrder(0);
         }
@@ -305,6 +306,10 @@ public class TableEditor<T> extends JPanel {
     protected final void setColumnWidth(int column, int size) {
         table.getColumnModel().getColumn(column).setPreferredWidth(size);
     }
+    
+    public TableRowSorter<ListTableModel<T>> getSorter() {
+        return sorter;
+    }
 
     /**
      * Set the data for this table.
@@ -314,6 +319,9 @@ public class TableEditor<T> extends JPanel {
     public void setData(List<T> data) {
         this.data.setData(data);
         updateButtons();
+        if (listener != null) {
+            listener.itemsSet();
+        }
     }
     
     /**
@@ -871,6 +879,8 @@ public class TableEditor<T> extends JPanel {
         public void itemEdited(T oldItem, T newItem);
         
         public void allItemsChanged(List<T> newItems);
+        
+        public void itemsSet();
         
         /**
          * Called when the user requested the data in the table to be refreshed.

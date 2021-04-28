@@ -162,4 +162,12 @@ public interface DockChild {
     
     public void cleanUp();
     
+    /**
+     * Sort all tab panes contained in this child based on current tab order.
+     * 
+     * @param content If given only this content will be resorted, otherwise
+     * (null) all tabs are sorted
+     */
+    public void sortContent(DockContent content);
+    
 }

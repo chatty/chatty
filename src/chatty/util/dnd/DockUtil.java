@@ -135,4 +135,22 @@ public class DockUtil {
         return null;
     }
     
+    /**
+     * Return a new list containing only the content that has an id starting
+     * with the given prefix.
+     * 
+     * @param input The input list (not modified)
+     * @param prefix The prefix
+     * @return The new list (could be empty, never null)
+     */
+    public static List<DockContent> getContentsByPrefix(List<DockContent> input, String prefix) {
+        List<DockContent> result = new ArrayList<>();
+        for (DockContent content : input) {
+            if (content.getId().startsWith(prefix)) {
+                result.add(content);
+            }
+        }
+        return result;
+    }
+    
 }

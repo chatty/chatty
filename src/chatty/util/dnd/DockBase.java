@@ -297,5 +297,10 @@ public class DockBase extends JPanel implements DockChild {
         child = newChild;
         add(child.getComponent(), BorderLayout.CENTER);
     }
+
+    @Override
+    public void sortContent(DockContent content) {
+        child.sortContent(content);
+    }
     
 }

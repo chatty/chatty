@@ -306,5 +306,11 @@ public class DockSplit extends JSplitPane implements DockChild {
         left.cleanUp();
         right.cleanUp();
     }
+
+    @Override
+    public void sortContent(DockContent content) {
+        left.sortContent(content);
+        right.sortContent(content);
+    }
     
 }

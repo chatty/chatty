@@ -441,6 +441,8 @@ public class SettingsManager {
 
         // Tabs
         settings.addString("tabOrder", "normal");
+        settings.addMap("tabsPos", new HashMap<>(), Setting.LONG);
+        settings.addBoolean("tabsAutoSort", true);
         settings.addString("tabsOpen", "active2");
         settings.addBoolean("tabsMwheelScrolling", false);
         settings.addBoolean("tabsMwheelScrollingAnywhere", true);
@@ -454,6 +456,7 @@ public class SettingsManager {
         settings.addLong("tabsPopoutDrag", 2);
         settings.addLong("tabsMaxWidth", 200);
         settings.addBoolean("tabsCloseEmpty", true);
+        settings.addBoolean("closeTabsSameType", true);
         settings.addBoolean("tabsChanTitles", false);
         
         // Chat Window

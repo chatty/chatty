@@ -354,4 +354,11 @@ public class DockTabsContainer extends JPanel implements DockChild {
         tabs.cleanUp();
     }
 
+    @Override
+    public void sortContent(DockContent content) {
+        if (!tabs.isEmpty()) {
+            tabs.sortContent(content);
+        }
+    }
+
 }

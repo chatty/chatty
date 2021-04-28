@@ -102,6 +102,10 @@ public class DockedDialogHelper {
         }
     }
     
+    public boolean isContentVisible() {
+        return channels.getDock().isContentVisible(content);
+    }
+    
     public void setDocked(boolean docked) {
         if (isDocked != docked && isVisible()) {
             // Will make change visible as well, so only do if already visible
@@ -165,9 +169,27 @@ public class DockedDialogHelper {
         autoOpenActivity = MiscUtil.isBitEnabled(value, AUTO_OPEN);
     }
     
+    public void loadTabSettings() {
+        if (content instanceof DockStyledTabContainer) {
+            ((DockStyledTabContainer)content).setSettings(0, (int)settings.getLong("tabsMessage"), 0, 0, 0, -1);
+        }
+    }
+    
     public void setActivity() {
         if (autoOpenActivity) {
             setVisible(true, false);
+        }
+    }
+    
+    public void setNewMessage() {
+        if (isDocked() && !channels.getDock().isContentVisible(content) && content instanceof DockStyledTabContainer) {
+            ((DockStyledTabContainer)content).setNewMessage(true);
+        }
+    }
+    
+    public void resetNewMessage() {
+        if (content instanceof DockStyledTabContainer) {
+            ((DockStyledTabContainer)content).setNewMessage(false);
         }
     }
     

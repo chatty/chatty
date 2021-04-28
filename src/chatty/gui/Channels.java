@@ -7,6 +7,7 @@ import chatty.Room;
 import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.TabContextMenu;
+import chatty.gui.components.settings.TabSettings;
 import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.IconManager;
@@ -32,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import chatty.util.dnd.DockPopout;
 import chatty.util.dnd.DockUtil;
+import chatty.util.settings.Settings;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -249,6 +251,32 @@ public class Channels {
         dock.setSetting(DockSetting.Type.TAB_SCROLL, gui.getSettings().getBoolean("tabsMwheelScrolling"));
         dock.setSetting(DockSetting.Type.TAB_SCROLL_ANYWHERE, gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
         dock.setSetting(DockSetting.Type.TAB_ORDER, getTabOrderValue(gui.getSettings().getString("tabOrder")));
+        boolean alphabetical = gui.getSettings().getString("tabOrder").equals("alphabetical");
+        dock.setSetting(DockSetting.Type.TAB_COMPARATOR, new Comparator<DockContent>() {
+            @Override
+            public int compare(DockContent o1, DockContent o2) {
+                long o1Pos = getPos(o1);
+                long o2Pos = getPos(o2);
+                if (o1Pos < o2Pos) {
+                    return -1;
+                }
+                if (o1Pos > o2Pos) {
+                    return 1;
+                }
+                if (alphabetical) {
+                    return o1.getTitle().compareToIgnoreCase(o2.getTitle());
+                }
+                return 0;
+            }
+            
+            private long getPos(DockContent content) {
+                long pos = gui.getSettings().mapGetLong("tabsPos", content.getId(), 0);
+                if (pos == 0) {
+                    pos = gui.getSettings().mapGetLong("tabsPos", content.getId().substring(0, 1), 0);
+                }
+                return pos;
+            }
+        });
         dock.setSetting(DockSetting.Type.FILL_COLOR, UIManager.getColor("TextField.selectionBackground"));
         dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
         dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
@@ -1212,11 +1240,11 @@ public class Channels {
         return result;
     }
     
-    public Collection<Channel> getTabsRelativeTo(Channel chan, int direction) {
-        List<Channel> result = new ArrayList<>();
-        for (DockContent c : dock.getContentsRelativeTo(chan.getDockContent(), direction)) {
-            if (c.getComponent() instanceof Channel) {
-                result.add((Channel)c.getComponent());
+    public Collection<DockContent> getTabsRelativeTo(DockContent relativeToContent, int direction, String prefix) {
+        List<DockContent> result = new ArrayList<>();
+        for (DockContent content : dock.getContentsRelativeTo(relativeToContent, direction)) {
+            if (content.getId().startsWith(prefix)) {
+                result.add(content);
             }
         }
         return result;
@@ -1333,39 +1361,58 @@ public class Channels {
      * Creates a map of channels for different closing options.
      * 
      * @param channels
-     * @param channel
+     * @param activeContent
+     * @param sameType
      * @return 
      */
-    public static Map<String, Collection<Channel>> getCloseTabsChans(Channels channels, Channel channel) {
-        Map<String, Collection<Channel>> result = new HashMap<>();
-        result.put("closeAllTabsButCurrent", channels.getTabsRelativeTo(channel, 0));
-        result.put("closeAllTabsToLeft", channels.getTabsRelativeTo(channel, -1));
-        result.put("closeAllTabsToRight", channels.getTabsRelativeTo(channel, 1));
+    public static Map<String, Collection<DockContent>> getCloseTabs(Channels channels, DockContent activeContent, boolean sameType) {
+        String prefix = sameType ? activeContent.getId().substring(0, 1) : "";
+        Map<String, Collection<DockContent>> result = new HashMap<>();
+        result.put("closeAllTabsButCurrent", channels.getTabsRelativeTo(activeContent, 0, prefix));
+        result.put("closeAllTabsToLeft", channels.getTabsRelativeTo(activeContent, -1, prefix));
+        result.put("closeAllTabsToRight", channels.getTabsRelativeTo(activeContent, 1, prefix));
         
-        Collection<Channel> all = channels.getTabsRelativeTo(channel, 0);
-        all.add(channel);
+        Collection<DockContent> all = channels.getTabsRelativeTo(activeContent, 0, prefix);
+        all.add(activeContent);
         result.put("closeAllTabs", all);
-        Collection<Channel> allOffline = new ArrayList<>();
-        for (Channel c : all) {
-            if (!c.getDockContent().isLive()) {
+        Collection<DockContent> allOffline = new ArrayList<>();
+        for (DockContent c : all) {
+            if (isChanOffline(c)) {
                 allOffline.add(c);
             }
         }
         result.put("closeAllTabsOffline", allOffline);
         
-        Collection<Channel> all2 = channels.getChannels();
-        all2.remove(channel);
+        Collection<DockContent> all2 = DockUtil.getContentsByPrefix(channels.getDock().getContents(), prefix);
+        all2.remove(activeContent);
         result.put("closeAllTabs2ButCurrent", all2);
         
-        Collection<Channel> all2Offline = new ArrayList<>();
-        result.put("closeAllTabs2", channels.getChannels());
-        for (Channel c : channels.getChannels()) {
-            if (!c.getDockContent().isLive()) {
+        Collection<DockContent> all2Offline = new ArrayList<>();
+        result.put("closeAllTabs2", DockUtil.getContentsByPrefix(channels.getDock().getContents(), prefix));
+        for (DockContent c : DockUtil.getContentsByPrefix(channels.getDock().getContents(), prefix)) {
+            if (isChanOffline(c)) {
                 all2Offline.add(c);
             }
         }
         result.put("closeAllTabs2Offline", all2Offline);
         return result;
+    }
+    
+    /**
+     * Checks if the given DockContent is offline, that is, if it is an actual
+     * channel that can be live, but is not live.
+     * 
+     * @param content
+     * @return 
+     */
+    private static boolean isChanOffline(DockContent content) {
+        if (content instanceof DockChannelContainer) {
+            Channel channel = ((DockChannelContainer) content).getContent();
+            if (channel.getType() == Channel.Type.CHANNEL) {
+                return !channel.getDockContent().isLive();
+            }
+        }
+        return false;
     }
     
     /**
@@ -1405,6 +1452,34 @@ public class Channels {
         }
     }
     
+    public void sortContent(String id) {
+        if (id == null) {
+            dock.sortContent(null);
+        }
+        else {
+            DockContent content = DockUtil.getContentById(dock.getContents(), id);
+            if (content != null) {
+                dock.sortContent(content);
+            }
+        }
+    }
+    
+    public static long getTabPos(Settings settings, String id) {
+        return settings.mapGetLong("tabsPos", id, 0);
+    }
+    
+    public static Map<Long, List<String>> getTabPosIds(Settings settings) {
+        Map<String, Long> tabsPos = settings.getMap("tabsPos");
+        Map<Long, List<String>> result = new HashMap<>();
+        for (Map.Entry<String, Long> entry : tabsPos.entrySet()) {
+            if (!result.containsKey(entry.getValue())) {
+                result.put(entry.getValue(), new ArrayList<>());
+            }
+            result.get(entry.getValue()).add(TabSettings.tabPosLabel(entry.getKey()));
+        }
+        return result;
+    }
+    
     /**
      * The container used to add a Channel to the DockManager.
      */
@@ -1424,7 +1499,11 @@ public class Channels {
         
         @Override
         public JPopupMenu getContextMenu() {
-            return new TabContextMenu(listener, (Channel) getComponent(), Channels.getCloseTabsChans(channels, (Channel) getComponent()));
+            Channel channel = (Channel) getComponent();
+            return new TabContextMenu(listener,
+                    channel.getDockContent(),
+                    Channels.getCloseTabs(channels, channel.getDockContent(), channels.gui.getSettings().getBoolean("closeTabsSameType")),
+                    channels.gui.getSettings());
         }
         
         @Override
