@@ -228,6 +228,13 @@ public class LiveStreamsDialog extends JFrame {
         list.setDockedDialogHelper(helper);
     }
     
+    public boolean isDocked() {
+        if (helper != null) {
+            return helper.isDocked();
+        }
+        return false;
+    }
+    
     @Override
     public void setVisible(boolean visible) {
         helper.setVisible(visible, true);

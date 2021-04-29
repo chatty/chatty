@@ -4989,7 +4989,8 @@ public class MainGui extends JFrame implements Runnable {
                 saveState(e.getComponent());
                 if (isMinimized()) {
                     if (liveStreamsDialog.isVisible()
-                            && client.settings.getBoolean("hideStreamsOnMinimize")) {
+                            && client.settings.getBoolean("hideStreamsOnMinimize")
+                            && !liveStreamsDialog.isDocked()) {
                         liveStreamsDialog.setVisible(false);
                         liveStreamsHidden = true;
                     }

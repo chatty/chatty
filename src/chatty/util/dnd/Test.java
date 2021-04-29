@@ -80,6 +80,7 @@ public class Test {
             });
 //            m.setSetting(DockSetting.Type.TAB_PLACEMENT, "left");
             m.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
+            m.setSetting(DockSetting.Type.POPOUT_PARENT, frame);
             frame.add(m.getBase(), BorderLayout.CENTER);
             
             JMenuBar menubar = new JMenuBar();
