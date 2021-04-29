@@ -45,7 +45,7 @@ public class TestContextMenu extends ContextMenu {
         }
         addSeparator();
         for (CommandMenuItem item : items) {
-            JMenuItem mItem = addCommandItem(item);
+            JMenuItem mItem = addCommandItem(item, CommandMenuItems.getMenuParameters(item));
             // Still requires menus to have it as well, otherwise it doesn't make much sense
 //            if (item.hasKey()) {
 //                mItem.setMnemonic(KeyEvent.getExtendedKeyCodeForChar(item.getKey().toLowerCase().charAt(0)));

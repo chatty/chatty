@@ -3,6 +3,9 @@ package chatty.gui.components.menus;
 
 import chatty.Helper;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.CustomCommands;
+import chatty.util.commands.Parameters;
+import chatty.util.settings.Settings;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +28,7 @@ public class CommandMenuItems {
     }
     
     private static final Map<MenuType, List<CommandMenuItem>> commands = new HashMap<>();
+    public static CustomCommands customCommands;
     
     public static void setCommands(MenuType type, String data) {
         List<CommandMenuItem> parsed = parse(data);
@@ -35,9 +39,22 @@ public class CommandMenuItems {
         List<CommandMenuItem> c = commands.get(type);
         if (c != null) {
             for (CommandMenuItem item : c) {
-                menu.addCommandItem(item);
+                menu.addCommandItem(item, getMenuParameters(item));
             }
         }
+    }
+    
+    public static Parameters getMenuParameters(CommandMenuItem item) {
+        Parameters parameters = null;
+        if (ContextMenuHelper.settings != null
+                && ContextMenuHelper.settings.getBoolean("menuCommandLabels")) {
+            parameters = Parameters.create("");
+            parameters.putObject("settings", ContextMenuHelper.settings);
+            if (item.hasValidLabelCommand() && customCommands != null) {
+                customCommands.addCustomIdentifierParametersForCommand(item.getLabelCommand(), parameters);
+            }
+        }
+        return parameters;
     }
     
     public static List<CommandMenuItem> parse(String input) {

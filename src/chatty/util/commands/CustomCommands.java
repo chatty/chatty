@@ -122,16 +122,9 @@ public class CustomCommands {
         }
         
         // Collect commands for custom replacements
-        Set<String> customIdentifiers = command.getIdentifiersWithPrefix("_");
-        Map<String, CustomCommand> customIdentifiersCommands = new HashMap<>();
-        for (String identifier : customIdentifiers) {
-            CustomCommand identifierCommand = getCommand(replacements, identifier, room.getOwnerChannel());
-            if (identifierCommand != null) {
-                customIdentifiersCommands.put(identifier, identifierCommand);
-                if (shouldPerformAsyncReplacement(identifierCommand)) {
-                    performAsync = true;
-                }
-            }
+        Map<String, CustomCommand> customIdentifiersCommands = getCustomIdentifierCommands(command, room.getOwnerChannel());
+        if (containsAsyncReplacement(customIdentifiersCommands.values())) {
+            performAsync = true;
         }
         
         // Actual replacement taking place
@@ -147,10 +140,35 @@ public class CustomCommands {
         }
     }
     
+    public void addCustomIdentifierParametersForCommand(CustomCommand command, Parameters parameters) {
+        Map<String, CustomCommand> customIdentifiersCommands = getCustomIdentifierCommands(command, null);
+        addCustomIdentifiers(customIdentifiersCommands, parameters);
+    }
+    
+    private Map<String, CustomCommand> getCustomIdentifierCommands(CustomCommand command, String channel) {
+        Map<String, CustomCommand> customIdentifiersCommands = new HashMap<>();
+        for (String identifier : command.getIdentifiersWithPrefix("_")) {
+            CustomCommand identifierCommand = getCommand(replacements, identifier, channel);
+            if (identifierCommand != null) {
+                customIdentifiersCommands.put(identifier, identifierCommand);
+            }
+        }
+        return customIdentifiersCommands;
+    }
+    
     private static void addCustomIdentifiers(Map<String, CustomCommand> commands, Parameters parameters) {
         for (Map.Entry<String, CustomCommand> entry : commands.entrySet()) {
             parameters.putObject(entry.getKey(), entry.getValue());
         }
+    }
+        
+    private boolean containsAsyncReplacement(Collection<CustomCommand> commands) {
+        for (CustomCommand command : commands) {
+            if (shouldPerformAsyncReplacement(command)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static boolean shouldPerformAsyncReplacement(CustomCommand command) {

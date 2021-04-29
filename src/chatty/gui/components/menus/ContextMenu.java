@@ -4,6 +4,7 @@ package chatty.gui.components.menus;
 import chatty.Helper;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -121,7 +122,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         return addItem(action, text, -1, parent, icon);
     }
 
-    public JMenuItem addCommandItem(CommandMenuItem item) {
+    public JMenuItem addCommandItem(CommandMenuItem item, Parameters parameters) {
         if (item.getCommand() == null && item.getLabel() == null) {
             addSeparator(item.getPos(), item.getParent());
         } else if (item.getCommand() == null) {
@@ -129,7 +130,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             addKey(item, menu);
         } else {
             commands.put(item.getId(), item.getCommand());
-            JMenuItem mItem = addItem(item.getId(), item.getLabel(), item.getPos(), item.getParent(), null);
+            JMenuItem mItem = addItem(item.getId(), item.getLabel(parameters), item.getPos(), item.getParent(), null);
             mItem.setToolTipText(StringUtil.shortenTo("<html><body>Command: <code>"+Helper.htmlspecialchars_encode(item.getCommand().getRaw())+"</code>", 100));
             addKey(item, mItem);
         }

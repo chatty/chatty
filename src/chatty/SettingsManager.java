@@ -341,6 +341,7 @@ public class SettingsManager {
         settings.addString("textContextMenu", "-\n" +
                 "Translate=/openUrlPrompt https://translate.google.com/#view=home&op=translate&sl=auto&tl=en&text=$$urlencode($(msg))");
         settings.addString("adminContextMenu", "!title=!title $(title)\n!game=!game $(game)");
+        settings.addBoolean("menuCommandLabels", false);
         
         settings.addBoolean("closeUserDialogOnAction", true);
         settings.addBoolean("openUserDialogByMouse", true);

@@ -1066,6 +1066,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateCustomContextMenuEntries() {
+        CommandMenuItems.customCommands = client.customCommands;
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.CHANNEL, client.settings.getString("channelContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.USER, client.settings.getString("userContextMenu"));
         CommandMenuItems.setCommands(CommandMenuItems.MenuType.STREAMS, client.settings.getString("streamsContextMenu"));
