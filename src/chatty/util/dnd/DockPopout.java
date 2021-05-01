@@ -17,6 +17,6 @@ public interface DockPopout {
     
     public String getId();
     
-    public void setId();
+    public void setId(String id);
     
 }

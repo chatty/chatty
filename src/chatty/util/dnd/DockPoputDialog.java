@@ -43,7 +43,7 @@ public class DockPoputDialog extends JDialog implements DockPopout {
     }
 
     @Override
-    public void setId() {
+    public void setId(String id) {
         this.id = id;
     }
     

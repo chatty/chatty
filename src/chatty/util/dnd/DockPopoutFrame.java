@@ -40,7 +40,7 @@ public class DockPopoutFrame extends JFrame implements DockPopout {
     }
 
     @Override
-    public void setId() {
+    public void setId(String id) {
         this.id = id;
     }
 
