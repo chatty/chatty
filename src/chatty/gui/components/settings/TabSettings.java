@@ -410,6 +410,9 @@ public class TabSettings extends SettingsPanel {
         else if (value.equals("$")) {
             return "Whisper Tabs ($)";
         }
+        else if (value.equals(Channels.DEFAULT_CHANNEL_ID)) {
+            return String.format("'%s' tab", Language.getString("tabs.noChannel"));
+        }
         return value;
     }
     

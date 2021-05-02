@@ -86,6 +86,14 @@ public class Channels {
      * placeholder for when the main window does not contain a channel.
      */
     private Channel defaultChannel;
+    
+    /**
+     * The content id for the default channel. This should preferably not be
+     * changed, since it could be saved in layouts. It may be displayed in tab
+     * order settings, so it's chosen to be somewhat similiar to the tab title.
+     */
+    public static final String DEFAULT_CHANNEL_ID = "-nochannel-";
+    
     private final StyleManager styleManager;
     private final ContextMenuListener contextMenuListener;
     private final MouseClickedListener mouseClickedListener = new MyMouseClickedListener();
@@ -250,7 +258,16 @@ public class Channels {
         dock.setSetting(DockSetting.Type.TAB_PLACEMENT, getTabPlacementValue(gui.getSettings().getString("tabsPlacement")));
         dock.setSetting(DockSetting.Type.TAB_SCROLL, gui.getSettings().getBoolean("tabsMwheelScrolling"));
         dock.setSetting(DockSetting.Type.TAB_SCROLL_ANYWHERE, gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
-        dock.setSetting(DockSetting.Type.TAB_ORDER, getTabOrderValue(gui.getSettings().getString("tabOrder")));
+        dock.setSetting(DockSetting.Type.TAB_ORDER, DockSetting.TabOrder.INSERTION);
+        dock.setSetting(DockSetting.Type.FILL_COLOR, UIManager.getColor("TextField.selectionBackground"));
+        dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
+        dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
+        dock.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
+        updateTabComparator();
+        updateKeepEmptySetting();
+    }
+    
+    private void updateTabComparator() {
         boolean alphabetical = gui.getSettings().getString("tabOrder").equals("alphabetical");
         dock.setSetting(DockSetting.Type.TAB_COMPARATOR, new Comparator<DockContent>() {
             @Override
@@ -277,11 +294,6 @@ public class Channels {
                 return pos;
             }
         });
-        dock.setSetting(DockSetting.Type.FILL_COLOR, UIManager.getColor("TextField.selectionBackground"));
-        dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
-        dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
-        dock.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
-        updateKeepEmptySetting();
     }
     
     /**
@@ -342,6 +354,7 @@ public class Channels {
         gui.getSettings().mapPut("layouts", "", dock.getLayout().toList());
     }
     
+    private boolean loadingLayout;
     private DockLayout lastLoadedLayout;
     private final Set<String> openedSinceLayoutLoad = new HashSet<>();
     
@@ -367,6 +380,9 @@ public class Channels {
             return;
         }
         
+        loadingLayout = true;
+        Debugging.println("layout", "Loading layout.. (%s)", layout);
+        
         //--------------------------
         // Window/Layout
         //--------------------------
@@ -381,13 +397,8 @@ public class Channels {
         //--------------------------
         // Channels
         //--------------------------
-        if (defaultChannel != null) {
-            addDefaultChannelToDock();
-            current.remove(defaultChannel.getDockContent());
-        }
-        else {
-            addDefaultChannel();
-        }
+        // Disable the normal tab order (tabs should be ordered as added)
+        dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
         
         /**
          * At this point the still joined channels still exist and messages can
@@ -415,7 +426,15 @@ public class Channels {
          */
         for (String id : layout.getContentIds()) {
             DockContent currentContent = DockUtil.getContentById(current, id);
-            if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) { // Regular
+            if (id.equals(DEFAULT_CHANNEL_ID)) {
+                if (defaultChannel != null) {
+                    addDefaultChannelToDock();
+                }
+                else {
+                    addDefaultChannel();
+                }
+            }
+            else if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) { // Regular
                 handleContent(id, currentContent, d.getAddChannels().contains(id));
             }
             else if (getTypeFromChannelName(id) != Channel.Type.NONE) { // Whisper, ..
@@ -460,7 +479,12 @@ public class Channels {
             gui.client.joinChannels(new HashSet<>(d.getJoinChannels()));
         }
         
-        Debugging.println("layout", "Loading layout.. Add: %s Join: %s Closing: %s Channels: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels, channels);
+        // Enable the normal tab order again
+        updateTabComparator();
+        loadingLayout = false;
+        checkDefaultChannel();
+        
+        Debugging.println("layout", "Finished loading layout. Add: %s Join: %s Closing: %s Channels: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels, channels);
     }
     
     /**
@@ -471,6 +495,7 @@ public class Channels {
      * @param add If true the content should be added, otherwise cleaned up
      */
     private void handleContent(String id, DockContent currentContent, boolean add) {
+        Debugging.println("layout", "Handle %s (%s) [%s]", id, add, currentContent);
         if (getTypeFromChannelName(id) != Channel.Type.NONE) {
             //--------------------------
             // Any channel (regular, whisper)
@@ -513,9 +538,18 @@ public class Channels {
         DockLayout layout = DockLayout.fromList((List) gui.getSettings().mapGet("layouts", ""));
         if (layout != null) {
             loadLayout(layout);
+            loadingLayout = true;
+            dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
             for (String id : layout.getContentIds()) {
-                if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) {
-                    // Don't open regular channels
+                if (id.equals(DEFAULT_CHANNEL_ID)) {
+                    addDefaultChannel();
+                }
+                else if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) {
+                    if (gui.getSettings().getLong("onStart") == 3) {
+                        // Load previously open channels (they will be joined otherwise)
+                        handleContent(id, null, true);
+                        channels.get(id).getDockContent().setJoining(true);
+                    }
                 }
                 else if (getTypeFromChannelName(id) != Channel.Type.NONE) {
                     // Always open whisper etc.
@@ -526,6 +560,8 @@ public class Channels {
                     handleContent(id, null, true);
                 }
             }
+            loadingLayout = false;
+            updateTabComparator();
         }
     }
     
@@ -694,7 +730,7 @@ public class Channels {
      */
     private void addDefaultChannel() {
         defaultChannel = createChannel(Room.EMPTY, Channel.Type.NONE);
-        defaultChannel.getDockContent().setId("-default-");
+        defaultChannel.getDockContent().setId(DEFAULT_CHANNEL_ID);
         addDefaultChannelToDock();
     }
     
@@ -778,7 +814,7 @@ public class Channels {
         DockPath layoutPath = getLayoutPath(room.getChannel());
         Channel panel;
         if (defaultChannel != null
-                && (layoutPath == null || Objects.equals(defaultChannel.getDockContent().getPath(), layoutPath))) {
+                && (layoutPath == null)) {
             // Reuse default channel
             panel = defaultChannel;
             defaultChannel = null;
@@ -854,6 +890,18 @@ public class Channels {
      * empty and any other channels are presently added.
      */
     private void checkDefaultChannel() {
+        if (loadingLayout) {
+            /**
+             * While changing layouts there may be some inconsistent state (e.g.
+             * channels containing channels that are already being removed), so
+             * ignore this for now.
+             */
+            return;
+        }
+        Debugging.println("defaultchannel", "Default channel: %s Chans: %s Main Contents: %s",
+                defaultChannel != null ? "Present" : "-",
+                channels.size(),
+                dock.getContents(null).size());
         if (defaultChannel == null) {
             /**
              * Currently no default channel, check if it should be added
@@ -886,6 +934,7 @@ public class Channels {
                     updateKeepEmptySetting();
                     defaultChannel.cleanUp();
                     defaultChannel = null;
+                    Debugging.println("defaultchannel", "Default channel removed");
                 }
             }
         }
@@ -1524,7 +1573,7 @@ public class Channels {
         @Override
         public void setTitle(String title) {
             if (title.isEmpty()) {
-                title = "No channel";
+                title = Language.getString("tabs.noChannel");
             }
             super.setTitle(title);
         }
