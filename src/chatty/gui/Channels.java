@@ -57,7 +57,7 @@ import javax.swing.JLabel;
  * @author tduva
  */
 public class Channels {
-
+    
     private final MainGui gui;
             
     private ChangeListener changeListener;
@@ -401,6 +401,21 @@ public class Channels {
         dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
         
         /**
+         * Always add at first, since other active channels may not be available
+         * depending on the order stuff is opened.
+         * 
+         * Since this is added after loading the layout (which removes all
+         * content) it will stay added until it is re-added for proper tab order
+         * (when in layout) or removed at the end if not necessary anymore.
+         */
+        if (defaultChannel != null) {
+            addDefaultChannelToDock();
+        }
+        else {
+            addDefaultChannel();
+        }
+        
+        /**
          * At this point the still joined channels still exist and messages can
          * be added to it, however they won't be re-added to the layout
          * automatically (because that normally only happens when a new channel
@@ -427,12 +442,9 @@ public class Channels {
         for (String id : layout.getContentIds()) {
             DockContent currentContent = DockUtil.getContentById(current, id);
             if (id.equals(DEFAULT_CHANNEL_ID)) {
-                if (defaultChannel != null) {
-                    addDefaultChannelToDock();
-                }
-                else {
-                    addDefaultChannel();
-                }
+                // Remove first to fix tab order
+                dock.removeContent(defaultChannel.getDockContent());
+                addDefaultChannelToDock();
             }
             else if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) { // Regular
                 handleContent(id, currentContent, d.getAddChannels().contains(id));
@@ -462,6 +474,8 @@ public class Channels {
                 }
                 else { // Other content
                     // If not in layout (all of these), then undock
+                    // Only works for stuff that is registered with the docked
+                    // dialog manager, so not for -nochannel-
                     handleContent(id, currentContent, false);
                 }
             }
@@ -538,11 +552,22 @@ public class Channels {
         DockLayout layout = DockLayout.fromList((List) gui.getSettings().mapGet("layouts", ""));
         if (layout != null) {
             loadLayout(layout);
+            
+            /**
+             * Always add default channel first since depending on the order
+             * stuff is opened there may not be an active channel when needed.
+             * 
+             * Loading layout removes all content, so add after that.
+             */
+            addDefaultChannel();
+            
             loadingLayout = true;
             dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
             for (String id : layout.getContentIds()) {
                 if (id.equals(DEFAULT_CHANNEL_ID)) {
-                    addDefaultChannel();
+                    // Default channel should be added at this point, so remove first for proper tab order
+                    dock.removeContent(defaultChannel.getDockContent());
+                    addDefaultChannelToDock();
                 }
                 else if (getTypeFromChannelName(id) == Channel.Type.CHANNEL) {
                     if (gui.getSettings().getLong("onStart") == 3) {

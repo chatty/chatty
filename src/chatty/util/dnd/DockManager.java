@@ -738,6 +738,9 @@ public class DockManager {
             }
         }
         
+        currentlyActive = null;
+        active.clear();
+        
         // New layout, so previous paths should probably be reset
         pathOnRemove.clear();
     }
