@@ -44,18 +44,34 @@
     </h2>
     <h3>Startup</h3>
     <p>You can select what will happen when you start Chatty:</p>
-    <ul>
-        <li><strong>Do nothing</strong> - Just do nothing special</li>
-        <li><strong>Open connect dialog</strong> - Open dialog to connect</li>
-        <li><strong>Connect and join specified channels</strong> - Connect
-        immediately and join the channels specified in the field below. You can
-        define several channels by seperating them with a comma.</li>
-        <li><strong>Connect and join previously open channels</strong> - Connect
-        immediately and join the channels you had open when you closed Chatty.</li>
-        <li><strong>Connect and join favorited channels</strong> - Connect
-        immediately and join the channels that are favorited in the Channel
-        Favorites/History dialog.</li>
-    </ul>
+    <dl class="dl-settings">
+        <dt>Do nothing</dt>
+        <dd>Just do nothing special, can join channel manually afterwards.</dd>
+        
+        <dt>Open connect dialog</dt>
+        <dd>Open dialog to connect.</dd>
+        
+        <dt>Connect and join specified channels</dt>
+        <dd>Connect immediately and join the channels specified in the field
+            below. You can define several channels by seperating them with a
+            comma.</dd>
+        <dd>Can include Addressbook categories, e.g. <code>[vip]</code> to join
+            all entries associated with the "vip" category. Can restrict to just
+            channel entries <code>[vip #]</code> (would only get Addressbook
+            entries such as "#joshimuz") or non-channel entries <code>[vip !#]</code>
+            (entries such as "joshimuz"). This can also be used in some other
+            places for joining channels.</dd>
+        
+        <dt>Connect and join previously open channels</dt>
+        <dd>Connect immediately and join the channels you had open when you
+            closed Chatty.</dd>
+        <dd>This works especially way together with the restore layout option
+            enabled.</dd>
+        
+        <dt>Connect and join favorited channels</dt>
+        <dd>Connect immediately and join the channels that are favorited in the
+            Channel Favorites/History dialog.</dd>
+    </dl>
     
     <h3>Directory</h3>
     <div class="moreInfo">More information: <a href="help-guide_folders.html">Settings and other files</a></div>
