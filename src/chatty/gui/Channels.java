@@ -551,6 +551,8 @@ public class Channels {
     private void loadLastSessionLayout() {
         DockLayout layout = DockLayout.fromList((List) gui.getSettings().mapGet("layouts", ""));
         if (layout != null) {
+            loadingLayout = true;
+            
             loadLayout(layout);
             
             /**
@@ -560,8 +562,6 @@ public class Channels {
              * Loading layout removes all content, so add after that.
              */
             addDefaultChannel();
-            
-            loadingLayout = true;
             dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
             for (String id : layout.getContentIds()) {
                 if (id.equals(DEFAULT_CHANNEL_ID)) {
