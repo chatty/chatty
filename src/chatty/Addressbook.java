@@ -70,13 +70,15 @@ public class Addressbook {
         this.fileName = fileName;
         this.importFileName = importFilename;
         this.settings = settings;
-        settings.addSettingsListener(new SettingsListener() {
+        if (settings != null) {
+            settings.addSettingsListener(new SettingsListener() {
 
-            @Override
-            public void aboutToSaveSettings(Settings settings) {
-                saveToSettings();
-            }
-        });
+                @Override
+                public void aboutToSaveSettings(Settings settings) {
+                    saveToSettings();
+                }
+            });
+        }
     }
     
     /**
@@ -616,6 +618,16 @@ public class Addressbook {
         return false;
     }
     
+    public synchronized Set<String> getNamesByCategory(String category) {
+        Set<String> result = new HashSet<>();
+        for (AddressbookEntry entry : entries.values()) {
+            if (entry.hasCategory(category)) {
+                result.add(entry.getName());
+            }
+        }
+        return result;
+    }
+    
     /**
      * Returns all entries.
      * 
@@ -849,7 +861,7 @@ public class Addressbook {
     }
     
     private void saveOnChange() {
-        if (settings.getBoolean("abSaveOnChange")) {
+        if (settings != null && settings.getBoolean("abSaveOnChange")) {
             saveToFile();
         }
     }

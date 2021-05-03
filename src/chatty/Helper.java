@@ -42,6 +42,12 @@ public class Helper {
     }
     
     /**
+     * This is a bit ugly since the other functions here don't rely on external
+     * data like this, but it works.
+     */
+    public static Addressbook addressbook;
+    
+    /**
      * Parses comma-separated channels from a String.
      * 
      * @param channels The list channels to parse
@@ -54,13 +60,39 @@ public class Helper {
         for (String part : parts) {
             String channel = part.trim();
             if (isValidChannel(channel)) {
-                if (prepend && !channel.startsWith("#")) {
-                    channel = "#"+channel;
+                addValidChannel(channel, prepend, result);
+            }
+            else if (channel.startsWith("[") && channel.endsWith("]") && channel.length() > 2 && addressbook != null) {
+                String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
+                String cat = catSplit[0];
+                boolean noChans = false;
+                boolean onlyChans = false;
+                if (catSplit.length > 1) {
+                    if (catSplit[1].equals("#")) {
+                        onlyChans = true;
+                    }
+                    else if (catSplit[1].equals("!#")) {
+                        noChans = true;
+                    }
                 }
-                result.add(StringUtil.toLowerCase(channel));
+                for (String name : addressbook.getNamesByCategory(cat)) {
+                    if ((!noChans || !name.startsWith("#"))
+                            && (!onlyChans || name.startsWith("#"))) {
+                        addValidChannel(name, prepend, result);
+                    }
+                }
             }
         }
         return result;
+    }
+    
+    private static void addValidChannel(String channel, boolean prepend, Collection<String> collection) {
+        if (isValidChannel(channel)) {
+            if (prepend && !channel.startsWith("#")) {
+                channel = "#" + channel;
+            }
+            collection.add(StringUtil.toLowerCase(channel));
+        }
     }
     
     public static String[] parseChannels(String channels, boolean prepend) {

@@ -3,6 +3,7 @@ package chatty;
 
 import chatty.util.StringUtil;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -224,6 +225,45 @@ public class HelperTest {
     
     private static void chainedTest(String input, String[] result) {
         assertArrayEquals(Helper.getChainedCommands(input).toArray(), result);
+    }
+    
+    @Test
+    public void parseChannelsFromStringTest() {
+        parseChannelsTest("", true);
+        parseChannelsTest("$abc", true);
+        parseChannelsTest("#jaf-jiaefw,", true);
+        parseChannelsTest("#abc", true, "#abc");
+        parseChannelsTest("abc", true, "#abc");
+        parseChannelsTest("abc", false, "abc");
+        parseChannelsTest("#abc, abc", true, "#abc");
+        parseChannelsTest("#abc, abc", false, "#abc", "abc");
+        parseChannelsTest("#abc,abc", false, "#abc", "abc");
+        parseChannelsTest(" #abc,     abc ", false, "#abc", "abc");
+        parseChannelsTest(" #abc,     \nabc ", false, "#abc", "abc");
+        parseChannelsTest(" #abc, $##afwe, abc, # ", false, "#abc", "abc");
+        
+        Addressbook ab = new Addressbook(null, null, null);
+        ab.add("#chan", "cat");
+        ab.add("user", "cat");
+        ab.add("#chan2", "cat2");
+        ab.add("user2", "cat2");
+        
+        parseChannelsTest("[cat]", true);
+        Helper.addressbook = ab;
+        parseChannelsTest("[cat]", false, "#chan", "user");
+        parseChannelsTest("[cat]", true, "#chan", "#user");
+        parseChannelsTest("[cat ]", true, "#chan", "#user");
+        parseChannelsTest("[cat #]", true, "#chan");
+        parseChannelsTest("[cat !#]", true, "#user");
+        parseChannelsTest("[cat2]", true, "#chan2", "#user2");
+        parseChannelsTest("#chan, [cat2]", true, "#chan", "#chan2", "#user2");
+        parseChannelsTest("#chan, [cat2], #chan3", true, "#chan", "#chan2", "#user2", "#chan3");
+        Helper.addressbook = null;
+        parseChannelsTest("#chan, [cat2], #chan3", true, "#chan", "#chan3");
+    }
+    
+    private static void parseChannelsTest(String input, boolean prepend, String... result) {
+        assertEquals(new HashSet<>(Arrays.asList(result)), Helper.parseChannelsFromString(input, prepend));
     }
     
 }
