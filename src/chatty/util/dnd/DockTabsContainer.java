@@ -4,6 +4,7 @@ package chatty.util.dnd;
 import chatty.util.dnd.DockDropInfo.DropType;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -64,6 +65,21 @@ public class DockTabsContainer extends JPanel implements DockChild {
         panel.add(Box.createVerticalGlue());
         add(panel, BorderLayout.CENTER);
         emptyLayout = panel;
+    }
+    
+    /**
+     * Prevent the tab pane from asserting too much vertical space when a lot of
+     * tabs are added (at least it seems as if each tab adds to the minimum
+     * height, tested in horizontal/top tab layout).
+     *
+     * Of course this would also do the same for other components in the tab
+     * pane that could prevent resizing of split panes.
+     *
+     * @return
+     */
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(0, 0);
     }
     
     /**
