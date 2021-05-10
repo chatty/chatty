@@ -355,6 +355,15 @@ public class HighlighterTest {
         assertFalse(highlighter.check(null, "mäh"));
         update("config:info user:testUser");
         assertFalse(highlighter.check(Type.INFO, "abc", null, ab, null, null, MsgTags.EMPTY));
+        
+        update("!user:testUSER");
+        assertFalse(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(user2, "abc"));
+        update("!user:testuser2");
+        assertTrue(highlighter.check(user, "abc"));
+        assertFalse(highlighter.check(user2, "abc"));
+        update("config:info !user:testUser");
+        assertFalse(highlighter.check(Type.INFO, "abc", null, ab, null, null, MsgTags.EMPTY));
 
         // reuser:
         update("reuser:test.*");

@@ -630,6 +630,13 @@ public class Highlighter {
                         return p.matcher(user.getName()).matches();
                     });
                 }
+                else if (item.startsWith("!user:")) {
+                    // Not sure why user: uses a Pattern, but this should do as well
+                    String username = parsePrefix(item, "!user:").toLowerCase(Locale.ENGLISH);
+                    addUserItem("Not Username", username, user -> {
+                        return !user.getName().equals(username);
+                    });
+                }
                 else if (item.startsWith("reuser:")) {
                     Pattern p = compilePattern(parsePrefix(item, "reuser:").toLowerCase(Locale.ENGLISH));
                     addUserItem("Username (Regex)", p, user -> {
