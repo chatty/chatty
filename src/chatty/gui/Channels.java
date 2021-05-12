@@ -288,7 +288,7 @@ public class Channels {
             
             private long getPos(DockContent content) {
                 long pos = gui.getSettings().mapGetLong("tabsPos", content.getId(), 0);
-                if (pos == 0) {
+                if (pos == 0 && !content.getId().isEmpty()) {
                     pos = gui.getSettings().mapGetLong("tabsPos", content.getId().substring(0, 1), 0);
                 }
                 return pos;
