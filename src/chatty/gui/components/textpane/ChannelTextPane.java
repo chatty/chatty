@@ -25,6 +25,7 @@ import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.Pair;
+import chatty.util.RepeatMsgHelper;
 import chatty.util.ReplyManager;
 import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
@@ -140,6 +141,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, GENERAL_LINK,
+        REPEAT_MESSAGE_COUNT,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_FOREGROUND, CUSTOM_COLOR_SOURCE,
@@ -592,6 +594,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         }
         finishLine();
         
+        int repeatMsg = RepeatMsgHelper.getRepeatMsg(message.tags);
+        if (repeatMsg > 1) {
+            changeInfo(getLastLine(doc), (attributes) -> {
+                attributes.addAttribute(Attribute.REPEAT_MESSAGE_COUNT, repeatMsg);
+            });
+        }
+        
         lastUsers.add(new MentionCheck(user));
     }
     
@@ -922,6 +931,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             // Make text based on current attributes
             //---------------------------------------
             String text = "";
+            Integer repeatMsgCount = (Integer)attributes.getAttribute(Attribute.REPEAT_MESSAGE_COUNT);
+            if (repeatMsgCount != null && repeatMsgCount > 1) {
+                text += String.format("(x%d)", repeatMsgCount);
+            }
+            
             Integer banCount = (Integer)attributes.getAttribute(Attribute.BAN_MESSAGE_COUNT);
             if (banCount != null && banCount > 1) {
                 text += String.format("(%d)", banCount);

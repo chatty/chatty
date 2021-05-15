@@ -91,4 +91,20 @@ public class UserTest {
         assertTrue(otherTypes.maxLinesExceeded());
     }
     
+    @Test
+    public void testSimilarMessages() {
+        User user = new User("", Room.EMPTY);
+        user.addMessage("first line", false, "");
+        user.addMessage("second line", true, "");
+        user.addMessage("third line", false, "");
+        assertEquals(1, user.getNumberOfSimilarChatMessages("first line 2", 600, 0.8f));
+        assertEquals(0, user.getNumberOfSimilarChatMessages("first line 2", 600, 1f));
+        assertEquals(3, user.getNumberOfSimilarChatMessages("first line 2", 600, 0f));
+        assertEquals(3, user.getNumberOfSimilarChatMessages("line", 600, 0.5f));
+        user.addMessage("first line 2", false, "");
+        assertEquals(2, user.getNumberOfSimilarChatMessages("first line 2", 600, 0.8f));
+        assertEquals(2, user.getNumberOfSimilarChatMessages("first                                   line 2", 600, 0.8f));
+        assertEquals(0, user.getNumberOfSimilarChatMessages("FIRST                                   LINE 2", 600, 0.8f));
+    }
+    
 }

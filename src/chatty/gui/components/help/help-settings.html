@@ -698,6 +698,26 @@
             new message hasn't been added for a while. This is mostly for saving
             memory when Chatty is running continuously for a long time.</dd>
     </dl>
+    
+    <h3><a name="RepeatMsg">Repeated Chat Message Detection</a></h3>
+    <p>This feature uses the user's message history (based on what is visible
+        in the User Dialog when clicking on a user) to determine if the user has
+        sent the same (or similar) message before. If a repeated message has
+        been detected (depending on the settings) the number of repeated
+        messages is added behind the message in chat, e.g. "(x4)".</p>
+    
+    <p>In addition, the <code>config:repeatedmsg</code> <a href="#Highlight_Meta_Matching">Matching prefix</a>
+        can be used in e.g. the Highlight list, Message Colors list or to restrict a Notification to trigger only on repeated messages.</p>
+    
+    <p>Restricting detection uses <a href="#Highlight">Highlight Matching</a>,
+        so <code>!status:M</code> can be used to exclude mods, but a lot more
+        could be used, for example <code>mystatus:M</code> to restrict to
+        channels you are a mod in or <code>reg:.{10,}</code> to only check
+        for messages at least 10 characters long.</p>
+    
+    <p>Note that this feature may affect performance in very busy chats, since each
+        received message has to be compared against multiple messages (depending
+        on the user's available history and these settings).</p>
 
     <h2>
         <a name="Names">Names</a>
@@ -769,8 +789,13 @@
         <code>Highlight Blacklist</code> settings can be used to prevent some of
         those Highlights.</p>
     
-    <p>The following sections list different kinds of prefixes that can modify
-        the behaviour of the system:</p>
+    <p><em>Note:</em> Highlight-style matching can be used in various other
+        settings as well, although not all prefixes are always available.</p>
+    
+    <p>There is a <a href="https://www.youtube.com/watch?v=55n7ZWaaRIg">video tutorial</a>
+        that explains how this works.</p>
+    
+    <p>There are various prefixes that affect matching and Highlighting behaviour:</p>
     <ul>
         <li><a href="#Highlight_Matching">Text Matching Prefixes</a></li>
         <li><a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> (e.g. matching by channel, user or message type)</li>
@@ -944,6 +969,13 @@
                 <li><code>config:firstmsg</code> - Restrict matching to the
                     first message of this user in this channel during the
                     current session (first message in User Dialog)</li>
+                <li><code>config:repeatedmsg</code> - Matches if a user repeats
+                    the same message (this requires the <a href="#RepeatMsg">Repetition Detection</a> in
+                    the Moderation settings to be enabled). Can optionally
+                    restrict how many repetitions are required for this to
+                    match, for example <code>config:repeatmsg|4</code> requires
+                    4 repeated messages (can't be lower than the Repetition
+                    Detection setting).</li>
                 <li><code>config:info</code> - This item applies to info
                     messages instead of regular user messages</li>
                 <li><code>config:any</code> - This item applies to both info

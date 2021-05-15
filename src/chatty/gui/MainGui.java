@@ -157,6 +157,7 @@ public class MainGui extends JFrame implements Runnable {
     private final Highlighter highlighter = new Highlighter("highlight");
     private final Highlighter ignoreList = new Highlighter("ignore");
     private final Highlighter filter = new Highlighter("filter");
+    private final RepeatMsgHelper repeatMsg;
     private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
@@ -176,6 +177,7 @@ public class MainGui extends JFrame implements Runnable {
     public MainGui(TwitchClient client) {
         this.client = client;
         msgColorManager = new MsgColorManager(client.settings);
+        repeatMsg = new RepeatMsgHelper(client.settings);
         SwingUtilities.invokeLater(this);
     }
     
@@ -957,6 +959,7 @@ public class MainGui extends JFrame implements Runnable {
         updateNotificationSettings();
         updateChannelsSettings();
         updateHighlightNextMessages();
+        repeatMsg.loadSettings();
         
         msgColorManager.loadFromSettings();
         notificationManager.loadFromSettings();
@@ -3114,10 +3117,11 @@ public class MainGui extends JFrame implements Runnable {
         printMessage(user, text, action, MsgTags.EMPTY);
     }
     
-    public void printMessage(User user, String text, boolean action, MsgTags tags) {
+    public void printMessage(User user, String text, boolean action, MsgTags tags0) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                MsgTags tags = tags0;
                 Channel chan;
                 String channel = user.getChannel();
                 boolean whisper = false;
@@ -3153,6 +3157,9 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 // If channel was changed from the given one, change accordingly
                 channel = chan.getChannel();
+                
+                // Adds a tag if repeated msg is detected according to settings
+                tags = repeatMsg.check(user, localUser, text, tags);
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);

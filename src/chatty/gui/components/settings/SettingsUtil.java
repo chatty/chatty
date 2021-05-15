@@ -25,16 +25,22 @@ public class SettingsUtil {
     public static void addSubsettings(JCheckBox control, Component... subs) {
         control.addItemListener(e -> {
             for (Component sub : subs) {
-                sub.setEnabled(control.isSelected() && control.isEnabled());
+                if (sub != control) {
+                    sub.setEnabled(control.isSelected() && control.isEnabled());
+                }
             }
         });
         control.addPropertyChangeListener("enabled", e -> {
             for (Component sub : subs) {
-                sub.setEnabled(control.isSelected() && control.isEnabled());
+                if (sub != control) {
+                    sub.setEnabled(control.isSelected() && control.isEnabled());
+                }
             }
         });
         for (Component sub : subs) {
-            sub.setEnabled(false);
+            if (sub != control) {
+                sub.setEnabled(false);
+            }
         }
     }
     
@@ -122,10 +128,18 @@ public class SettingsUtil {
     }
     
     public static void addLabeledComponent(JPanel panel, String labelSettingName, int x, int y, int w, int labelAlign, JComponent component) {
+        addLabeledComponent(panel, labelSettingName, x, y, w, labelAlign, component, false);
+    }
+    
+    public static void addLabeledComponent(JPanel panel, String labelSettingName, int x, int y, int w, int labelAlign, JComponent component, boolean stretchComponent) {
         JLabel label = createLabel(labelSettingName);
         label.setLabelFor(component);
         panel.add(label, SettingsDialog.makeGbc(x, y, 1, 1, labelAlign));
-        panel.add(component, SettingsDialog.makeGbc(x+1, y, w, 1, GridBagConstraints.WEST));
+        GridBagConstraints gbc = SettingsDialog.makeGbc(x+1, y, w, 1, GridBagConstraints.WEST);
+        if (stretchComponent) {
+            gbc.fill = GridBagConstraints.BOTH;
+        }
+        panel.add(component, gbc);
     }
     
     public static JPanel createPanel(String settingName, JComponent... settingComponent) {

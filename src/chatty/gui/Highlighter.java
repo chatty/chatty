@@ -9,6 +9,7 @@ import chatty.User;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.Pair;
+import chatty.util.RepeatMsgHelper;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.BadgeType;
 import chatty.util.commands.CustomCommand;
@@ -766,6 +767,45 @@ public class Highlighter {
                         else if (part.equals("firstmsg")) {
                             addUserItem("First Message of User", null, user -> {
                                 return user.getNumberOfMessages() == 0;
+                            });
+                        }
+                        else if (part.startsWith("repeatedmsg")) {
+//                            String options = parsePrefix(item, "repeatmsg:");
+//                            String[] split = options.split("/");
+//                            int minRepeat = 2;
+//                            float minSimilarity = 0.8f;
+//                            int timeframe = 3600;
+//                            for (String option : split) {
+//                                Pattern timeframePattern = Pattern.compile("([0-9]+)([smhd])");
+//                                Matcher timeframeMatcher = timeframePattern.matcher(item);
+//                                if (timeframeMatcher.matches()) {
+//                                    timeframe = Integer.parseInt(timeframeMatcher.group(1)) * CommandMenuItems.getFactor(timeframeMatcher.group(2));
+//                                }
+//                                else if (option.matches("[0-9]+")) {
+//                                    minRepeat = Integer.parseInt(option);
+//                                }
+//                                else if (option.matches("[0-9]+\\.[0-9]+")) {
+//                                    minSimilarity = Float.parseFloat(option);
+//                                }
+//                            }
+//                            int minRepeat2 = minRepeat;
+//                            int timeframe2 = timeframe;
+//                            float minSimilarity2 = minSimilarity;
+                            String[] split = part.split("\\|");
+                            int requiredMsgNumber;
+                            if (split.length == 2 && split[1].matches("[0-9]+")) {
+                                requiredMsgNumber = Integer.parseInt(split[1]);
+                            }
+                            else {
+                                // Tag won't be set if general setting isn't satisified, so this is just no further requirement
+                                requiredMsgNumber = 1;
+                            }
+                            matchItems.add(new Item("Repeated User Message", null, false) {
+
+                                @Override
+                                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
+                                    return tags != null && RepeatMsgHelper.getRepeatMsg(tags) >= requiredMsgNumber;
+                                }
                             });
                         }
                         else if (part.equals("hl")) {

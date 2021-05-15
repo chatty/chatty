@@ -615,6 +615,13 @@ public class SettingsManager {
         matchingPresetsDefault.add("# _special replaces every letter of words surrounded by ~ with: (<letter>[\\W_]*?)+");
         matchingPresetsDefault.add("_special $replace($1-,$\"~([^~]+)~\",$replace($(g1),$\"(\\w)\",$\"($1[\\\\W_]*?)+\",regRef),regCustom)");
         settings.addList("matchingPresets", matchingPresetsDefault, Setting.STRING);
+        
+        // Repeated Messages
+        settings.addBoolean("repeatMsg", false);
+        settings.addLong("repeatMsgSim", 80);
+        settings.addLong("repeatMsgRep", 2);
+        settings.addLong("repeatMsgTime", 3600);
+        settings.addString("repeatMsgMatch", "!status:M");
 
         // Chat Logging
         settings.addString("logMode", "always");

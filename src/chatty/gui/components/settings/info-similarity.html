@@ -1,0 +1,10 @@
+First the length is compared, so that messages of wildly different lengths don't
+have to go through the more costly text comparison method. The length check is
+quite lenient as to not catch too many messages, so over 100% is possible.
+<br /><br />
+If the length check passes, an algorithm based on Dice's coefficient is used for
+a fuzzy comparison, while ignoring whitespace altogether. Some messages can
+appear as 100% identical even if they aren't, such as "aba" and "bab" (since it
+splits them into "ab" and "ba" and compares their number of occurences).
+<br /><br />
+Whitespace is ignored for these comparisons.

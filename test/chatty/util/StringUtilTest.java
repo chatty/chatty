@@ -164,4 +164,21 @@ public class StringUtilTest {
         }));
     }
     
+    @Test
+    public void testSimilarity() {
+        assertEquals(1, StringUtil.getSimilarity("", ""), 0);
+        assertEquals(0, StringUtil.getSimilarity("a", ""), 0);
+        assertEquals(0, StringUtil.getSimilarity("a", "b"), 0);
+        assertEquals(0.6, StringUtil.getSimilarity("abc", "ab"), 0.1);
+        assertEquals(0.8, StringUtil.getSimilarity("abcd", "abc"), 0.1);
+        assertEquals(0.83, StringUtil.getSimilarity("This is a longer message", "This is a message that's longer"), 0.1);
+        
+        assertTrue(StringUtil.checkSimilarity("", "", 0));
+        assertTrue(StringUtil.checkSimilarity("", "", 1));
+        assertTrue(StringUtil.checkSimilarity("a", "", 0));
+        assertFalse(StringUtil.checkSimilarity("a", "", 0.1f));
+        
+        assertTrue(StringUtil.checkSimilarity("This is a longer message", "This is a message that's longer", 0.8f));
+    }
+    
 }

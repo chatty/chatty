@@ -4,17 +4,14 @@ Matches text anywhere in the message (case insensitive). For example
 <p>[help-settings:Highlight_Matching Text Matching Prefixes] can be put in front
     of the match text (anything after the prefix will be interpreted as text):</p>
 <ul style='margin-left:30px'>
-    <li><code>text:Bets open</code> - Same as using no prefix, but can be useful
-        if it could be a prefix, like <code>text:start:abc</code> (matches 'start:abc')</li>
-    <li><code>cs:Bets open</code> - Case-sensitive match</li>
-    <li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>
-    <li><code>wcs:Clip</code> - Same, but case-sensitive</li>
     <li><code>start:!slot</code> - Message beginning with '!slot'</li>
-    <li><code>reg:(?i)^!\\w+$</code> - Regular expression, anywhere</li>
+    <li><code>w:Clip</code> - 'Clip' as a word, so e.g. not 'Clipped'</li>
 </ul>
 [help-settings:Highlight_Meta_Matching Meta Prefixes] can be put in front of
 Text Matching Prefixes and eachother (separated by a space). They can restrict
 by user, channel, message type and more.
+<br /><br />More information in the help, [url:https://www.youtube.com/watch?v=55n7ZWaaRIg this video tutorial]
+and the following examples:
 <br />
 <!--#START:highlight#-->
 <dl>
@@ -23,11 +20,12 @@ by user, channel, message type and more.
     <dt><code>config:info [Notification]</code></dt>
     <dd>Matches info messages containing '[Notification]', so all 
         sub notifications</dd>
+    <dt><code>config:firstmsg</code></dt>
+    <dd>Matches the first message of a user in the current session</dd>
 </dl>
 <!--#END:highlight#-->
 
 <!--#START:filter#-->
-Examples:
 <dl>
     <dt><code>user:Nightbot replacement:H: reg:Hours Watched:\\s</code></dt>
     <dd>Replace 'Hours Watched: ' with 'H:' (in messages by Nightbot).</dd>
@@ -42,17 +40,24 @@ are matched. To ignore a message entirely use the Ignore feature.
 <!--#END:filter#-->
 
 <!--#START:ignore#-->
-Example: <code>chan:joshimuz start:!bet</code>
+<dl>
+    <dt><code>user:botimuz cs:Bets open</code></dt>
+    <dd>Matches the user Botimuz saying 'Bets open' (case sensitive)</dd>
+    <dt><code>config:info [Notification]</code></dt>
+    <dd>Matches info messages containing '[Notification]', so all 
+        sub notifications</dd>
+</dl>
 <!--#END:ignore#-->
 
 <!--#START:msgColors#-->
-Examples:
 <dl>
     <dt><code>user:botimuz</code></dt>
     <dd>Match all regular messages by user 'Botimuz'</dd>
     <dt><code>config:info [Notification]</code></dt>
     <dd>Match all info messages containing '[Notification]', so 
         basicially all subscriber notifications</dd>
+    <dt><code>config:firstmsg</code></dt>
+    <dd>Matches the first message of a user in the current session</dd>
 </dl>
 <p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the 
     default color will be used.</p>

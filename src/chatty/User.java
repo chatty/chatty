@@ -485,6 +485,26 @@ public class User implements Comparable<User> {
         return new ArrayList<>(lines);
     }
     
+    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, long timeframe, float minSimilarity) {
+        compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg);
+        int result = 0;
+        long checkUntilTime = System.currentTimeMillis() - timeframe * 1000;
+        for (int i=lines.size() - 1; i>=0; i--) {
+            Message m = lines.get(i);
+            if (m instanceof TextMessage) {
+                TextMessage msg = (TextMessage)m;
+                if (msg.getTime() < checkUntilTime) {
+                    break;
+                }
+                String text = StringUtil.prepareForSimilarityComparison(msg.text);
+                if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity)) {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
+    
     public synchronized TextMessage getMessage(String msgId) {
         if (msgId == null) {
             return null;
