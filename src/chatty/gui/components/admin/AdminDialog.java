@@ -2,6 +2,8 @@
 package chatty.gui.components.admin;
 
 import chatty.Chatty;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
@@ -9,6 +11,7 @@ import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResultCode;
+import chatty.util.dnd.DockContent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,13 +67,15 @@ public class AdminDialog extends JDialog {
     // Current access (not currentChannel specific)
     private boolean commercialAccess;
     private boolean editorAccess;
+    
+    private final DockContent content;
+    protected final DockedDialogHelper helper;
 
-    public AdminDialog(MainGui main, TwitchApi api) {
+    public AdminDialog(MainGui main, TwitchApi api, DockedDialogManager dockedDialogs) {
         super(main);
         setTitle("Channel Admin - No Channel");
         this.main = main;
         this.api = api;
-        setResizable(false);
         addWindowListener(new WindowClosingListener());
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -80,9 +85,9 @@ public class AdminDialog extends JDialog {
         statusPanel = new StatusPanel(this, main, api);
         commercialPanel = new CommercialPanel(main);
         
-        setLayout(new GridBagLayout());
-        
         GridBagConstraints gbc;
+        
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         
         // Add to tab pane
         tabs = new JTabbedPane();
@@ -97,25 +102,28 @@ public class AdminDialog extends JDialog {
         tabs.addTab(Language.getString("admin.tab.commercial"), commercialPanel);
         gbc = makeGbc(0,0,2,1);
         gbc.insets = new Insets(0,0,0,0);
-        add(tabs, gbc);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        mainPanel.add(tabs, gbc);
         
         
         gbc = makeGbc(0,1,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
-        add(infoText, gbc);
+        mainPanel.add(infoText, gbc);
         
         gbc = makeGbc(1,1,1,1);
         //gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.EAST;
         close.setMnemonic(KeyEvent.VK_C);
-        add(close,gbc);
+        mainPanel.add(close,gbc);
         
+        
+        add(mainPanel, BorderLayout.CENTER);
         
         close.addActionListener(actionListener);
-        
-        
         
         
         finishDialog();
@@ -123,6 +131,58 @@ public class AdminDialog extends JDialog {
         startUpdateTimer();
         
         GuiUtil.installEscapeCloseOperation(this);
+        
+        content = dockedDialogs.createContent(mainPanel, "Admin", "-admin-");
+        
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            
+            @Override
+            public void setVisible(boolean visible) {
+                AdminDialog.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return AdminDialog.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp, BorderLayout.CENTER);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return AdminDialog.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+            
+            @Override
+            public void dockedChanged() {
+                updateTabTitle();
+            }
+            
+        });
+        helper.installContextMenu(tabs);
+        helper.installContextMenu(mainPanel);
+        helper.installContextMenu(infoText);
+    }
+    
+    @Override
+    public boolean isVisible() {
+        if (helper != null) {
+            return helper.isVisible();
+        }
+        return super.isVisible();
     }
     
     /**
@@ -151,8 +211,6 @@ public class AdminDialog extends JDialog {
         if (isVisible()) {
             statusPanel.update();
             commercialPanel.update();
-            // In case the text is going to be too big, breaking the dialog
-            finishDialog();
         }
         commercialPanel.checkScheduled();
     }
@@ -233,6 +291,16 @@ public class AdminDialog extends JDialog {
             //update.setEnabled(true);
         }
         setTitle(Language.getString("admin.title", currentChannel));
+        updateTabTitle();
+    }
+    
+    private void updateTabTitle() {
+        if (helper.isDocked()) {
+            tabs.setTitleAt(0, currentChannel+": "+Language.getString("admin.tab.status"));
+        }
+        else {
+            tabs.setTitleAt(0, Language.getString("admin.tab.status"));
+        }
     }
 
     /**
@@ -283,14 +351,14 @@ public class AdminDialog extends JDialog {
     private void close() {
         commercialPanel.saveSettings();
         if (commercialPanel.checkOnClose()) {
-            super.setVisible(false);
+            helper.setVisible(false, false);
         }
     }
     
     @Override
     public void setVisible(boolean state) {
         if (state) {
-            super.setVisible(true);
+            helper.setVisible(true, true);
         } else {
             close();
         }

@@ -230,6 +230,10 @@ public class DockedDialogHelper {
         }
     }
     
+    public void addToContextMenu(ContextMenu menu) {
+        menu.addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
+    }
+    
     private class MyContextMenu extends ContextMenu {
 
         public MyContextMenu() {

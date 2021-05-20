@@ -229,7 +229,6 @@ public class MainGui extends JFrame implements Runnable {
         userInfoDialog = new UserInfoManager(this, client.settings, contextMenuListener);
         aboutDialog = new About();
         setHelpWindowIcons();
-        adminDialog = new AdminDialog(this, client.api);
         favoritesDialog = new FavoritesDialog(this, client.channelFavorites, contextMenuListener);
         GuiUtil.installEscapeCloseOperation(favoritesDialog);
         joinDialog = new JoinDialog(this);
@@ -274,6 +273,7 @@ public class MainGui extends JFrame implements Runnable {
                 this, client.api, contextMenuListener, dockedDialogs);
         channelInfoDialog = new ChannelInfoDialog(this, dockedDialogs);
         channelInfoDialog.addContextMenuListener(contextMenuListener);
+        adminDialog = new AdminDialog(this, client.api, dockedDialogs);
         liveStreamsDialog = new LiveStreamsDialog(contextMenuListener, client.channelFavorites, client.settings, dockedDialogs);
         setLiveStreamsWindowIcons();
         

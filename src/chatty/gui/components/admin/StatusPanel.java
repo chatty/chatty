@@ -324,21 +324,28 @@ public class StatusPanel extends JPanel {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            CommandActionEvent c = (CommandActionEvent)e;
-                            Parameters params = Parameters.create("");
-                            params.put("title", status.getText());
-                            params.put("game", game.getText());
-                            params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
-                                return ((StreamTag) o).getId();
-                            }));
-                            params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
-                                return ((StreamTag) o).getDisplayName();
-                            }));
-                            main.anonCustomCommand(Room.createRegular(Helper.toChannel(currentChannel)), c.getCommand(), params);
-                            addCurrentToHistory();
+                            if (e instanceof CommandActionEvent) {
+                                // Command Context Menu
+                                CommandActionEvent c = (CommandActionEvent)e;
+                                Parameters params = Parameters.create("");
+                                params.put("title", status.getText());
+                                params.put("game", game.getText());
+                                params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
+                                    return ((StreamTag) o).getId();
+                                }));
+                                params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
+                                    return ((StreamTag) o).getDisplayName();
+                                }));
+                                main.anonCustomCommand(Room.createRegular(Helper.toChannel(currentChannel)), c.getCommand(), params);
+                                addCurrentToHistory();
+                            }
+                            // Dock item
+                            parent.helper.menuAction(e);
                         }
                     };
                     CommandMenuItems.addCommands(CommandMenuItems.MenuType.ADMIN, m);
+                    m.addSeparator();
+                    parent.helper.addToContextMenu(m);
                     m.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
                 }
             }
@@ -367,7 +374,6 @@ public class StatusPanel extends JPanel {
             }
             streamTags.setText(StringUtil.join(currentStreamTags, ", "));
         }
-        parent.pack();
     }
     
     private void putTags() {
