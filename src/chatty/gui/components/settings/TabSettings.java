@@ -102,7 +102,7 @@ public class TabSettings extends SettingsPanel {
         mainPanel.add(SettingsUtil.createLabel("settings.string.tabsOpen"),
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
 
-        mainPanel.add(d.addComboStringSetting("tabsOpen", false, "main", "active", "active2"),
+        mainPanel.add(d.addComboStringSetting("tabsOpen", false, "main", "active", "active2", "activeChan"),
                 d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
         
         //--------------------------
@@ -160,7 +160,7 @@ public class TabSettings extends SettingsPanel {
         infoPanelTabs.addTab("New Stream Status", new TabInfoOptions("tabsStatus", d));
         infoPanelTabs.addTab("New Message", new TabInfoOptions("tabsMessage", d));
         infoPanelTabs.addTab("New Highlight", new TabInfoOptions("tabsHighlight", d));
-        infoPanelTabs.addTab("Active Tab", new TabInfoOptions("tabsActive", d));
+        infoPanelTabs.addTab("Active Channel", new TabInfoOptions("tabsActive", d));
         
         gbc = SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.BOTH;

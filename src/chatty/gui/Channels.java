@@ -811,6 +811,11 @@ public class Channels {
                 }
             }
         }
+        else if (target.equalsIgnoreCase("activeChan")) {
+            if (lastActiveChannel != null) {
+                content.setTargetPath(lastActiveChannel.getDockContent().getPath());
+            }
+        }
         // Other "target" values, in default location
         if (content.getTargetPath() == null) {
             DockPath path = new DockPath(content);
