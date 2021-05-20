@@ -399,6 +399,7 @@ public class Channels {
         //--------------------------
         // Disable the normal tab order (tabs should be ordered as added)
         dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
+        dock.setSetting(DockSetting.Type.KEEP_EMPTY, true);
         
         /**
          * Always add at first, since other active channels may not be available
@@ -495,6 +496,7 @@ public class Channels {
         
         // Enable the normal tab order again
         updateTabComparator();
+        updateKeepEmptySetting();
         loadingLayout = false;
         checkDefaultChannel();
         
@@ -563,6 +565,7 @@ public class Channels {
              */
             addDefaultChannel();
             dock.setSetting(DockSetting.Type.TAB_COMPARATOR, null);
+            dock.setSetting(DockSetting.Type.KEEP_EMPTY, true);
             for (String id : layout.getContentIds()) {
                 if (id.equals(DEFAULT_CHANNEL_ID)) {
                     // Default channel should be added at this point, so remove first for proper tab order
@@ -587,6 +590,7 @@ public class Channels {
             }
             loadingLayout = false;
             updateTabComparator();
+            updateKeepEmptySetting();
         }
     }
     
