@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +34,20 @@ public class DateTime {
     public static final long HOUR = MINUTE * 60;
     public static final long DAY = HOUR * 24;
     public static final long YEAR = DAY * 365;
+    
+    /**
+     * Update the timezone for the formatters. These may be initialized before
+     * the default timezone is set (e.g. from this class being used for logging
+     * or other stuff), so probably need to update them.
+     *
+     * @param tz The timezone to set
+     */
+    public static void setTimeZone(TimeZone tz) {
+        FULL_DATETIME.setTimeZone(tz);
+        SDF.setTimeZone(tz);
+        SDF2.setTimeZone(tz);
+        SDF3.setTimeZone(tz);
+    }
     
     public static int currentHour12Hour() {
         Calendar cal = Calendar.getInstance();

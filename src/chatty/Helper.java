@@ -925,6 +925,7 @@ public class Helper {
             MainSettings.DEFAULT_TIMEZONE = TimeZone.getDefault();
             TimeZone tz = TimeZone.getTimeZone(input);
             TimeZone.setDefault(tz);
+            DateTime.setTimeZone(tz);
             LOGGER.info(String.format("[Timezone] Set to %s [%s]", tz.getDisplayName(), input));
         }
     }
