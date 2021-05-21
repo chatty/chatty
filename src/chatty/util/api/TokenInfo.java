@@ -23,6 +23,7 @@ public class TokenInfo {
         FOLLOW("user_follows_edit", "follow"),
         SUBSCRIPTIONS("user_subscriptions", "subscriptions"),
         CHAN_MOD("channel:moderate", "chanMod"),
+        AUTOMOD("moderator:manage:automod", "automod"),
         POINTS("channel:read:redemptions", "points");
         
         public String scope;

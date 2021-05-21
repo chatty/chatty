@@ -9,6 +9,8 @@ import chatty.gui.components.menus.AutoModContextMenu;
 import chatty.util.DateTime;
 import chatty.util.MiscUtil;
 import chatty.util.api.TwitchApi;
+import chatty.util.api.TwitchApi.AutoModAction;
+import chatty.util.api.TwitchApi.AutoModActionResult;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
 import java.awt.Component;
@@ -254,23 +256,28 @@ public class AutoModDialog extends JDialog {
     /**
      * Result of an API request to approve/deny a message.
      * 
+     * @param action
+     * @param msgId
      * @param result
-     * @param msgId 
      */
-    public void requestResult(String result, String msgId) {
+    public void requestResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result) {
         Item changedItem = findItemByMsgId(msgId);
         if (changedItem != null) {
             changedItem.setRequestPending(false);
-            if (result.equals("approved")) {
+            if (result == AutoModActionResult.SUCCESS && action == AutoModAction.ALLOW) {
                 changedItem.setStatus(Item.STATUS_APPROVED);
-            } else if (result.equals("denied")) {
+            }
+            else if (result == AutoModActionResult.SUCCESS && action == AutoModAction.DENY) {
                 changedItem.setStatus(Item.STATUS_DENIED);
-            } else if (changedItem.status <= Item.STATUS_NONE) {
-                if (result.equals("400")) {
+            }
+            else if (changedItem.status <= Item.STATUS_NONE) {
+                if (result == AutoModActionResult.ALREADY_PROCESSED) {
                     changedItem.setStatus(Item.STATUS_HANDLED);
-                } else if (result.equals("404")) {
+                }
+                else if (result == AutoModActionResult.NOT_FOUND) {
                     changedItem.setStatus(Item.STATUS_NA);
-                } else {
+                }
+                else {
                     changedItem.setStatus(Item.STATUS_ERROR);
                 }
             }

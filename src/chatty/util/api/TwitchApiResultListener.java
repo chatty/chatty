@@ -43,5 +43,5 @@ public interface TwitchApiResultListener {
      */
     void followResult(String message);
     
-    void autoModResult(String result, String msgId);
+    void autoModResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result);
 }

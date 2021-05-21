@@ -988,6 +988,7 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.setCheerBackground(HtmlColors.decode(client.settings.getString("backgroundColor")));
         
         client.api.setToken(client.settings.getString("token"));
+        client.api.setLocalUserId(client.settings.getString("userid"));
         if (client.settings.getList("scopes").isEmpty()) {
             client.api.checkToken();
         }
@@ -3749,14 +3750,9 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void autoModRequestResult(final String result, final String msgId) {
-        SwingUtilities.invokeLater(new Runnable() {
-            
-            @Override
-            public void run() {
-                autoModDialog.requestResult(result, msgId);
-            }
-            
+    public void autoModRequestResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result) {
+        SwingUtilities.invokeLater(() -> {
+            autoModDialog.requestResult(action, msgId, result);
         });
     }
     
@@ -4824,6 +4820,8 @@ public class MainGui extends JFrame implements Runnable {
                     userInfoDialog.setUserDefinedButtonsDef(client.settings.getString("timeoutButtons"));
                 } else if (setting.equals("token")) {
                     client.api.setToken((String)value);
+                } else if (setting.equals("userid")) {
+                    client.api.setLocalUserId((String)value);
                 } else if (setting.equals("emoji")) {
                     emoticons.addEmoji((String)value);
                 } else if (setting.equals("cheersType")) {

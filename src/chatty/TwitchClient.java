@@ -2464,9 +2464,9 @@ public class TwitchClient {
         }
 
         @Override
-        public void autoModResult(String result, String msgId) {
-            g.autoModRequestResult(result, msgId);
-            autoModCommandHelper.requestResult(result, msgId);
+        public void autoModResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result) {
+            g.autoModRequestResult(action, msgId, result);
+            autoModCommandHelper.requestResult(action, msgId, result);
         }
 
         @Override

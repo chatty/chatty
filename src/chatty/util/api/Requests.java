@@ -12,6 +12,8 @@ import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamTagManager.StreamTagListener;
 import chatty.util.api.StreamTagManager.StreamTagPutListener;
 import chatty.util.api.StreamTagManager.StreamTagsResult;
+import chatty.util.api.TwitchApi.AutoModAction;
+import chatty.util.api.TwitchApi.AutoModActionResult;
 import chatty.util.api.TwitchApi.GameSearchListener;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.TwitchApi.StreamMarkerResult;
@@ -453,29 +455,23 @@ public class Requests {
         }
     }
     
-    public void autoMod(String action, String msgId, String token) {
-        if (!action.equals("approve") && !action.equals("deny")) {
-            return;
-        }
-        String url = "https://api.twitch.tv/kraken/chat/twitchbot/"+action;
+    public void autoMod(AutoModAction action, String msgId, String token, String localUserId) {
+        String url = "https://api.twitch.tv/helix/moderation/automod/message";
         JSONObject data = new JSONObject();
+        data.put("user_id", localUserId);
         data.put("msg_id", msgId);
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setData(data.toJSONString(), "POST");
-        request.setToken(token);
-        execute(request, r -> {
-            if (r.responseCode == 204) {
-                if (action.equals("approve")) {
-                    listener.autoModResult("approved", msgId);
-                } else if (action.equals("deny")) {
-                    listener.autoModResult("denied", msgId);
+        data.put("action", action == AutoModAction.ALLOW ? "ALLOW" : "DENY");
+        
+        newApi.add(url, "POST", data.toJSONString(), token, (text, responseCode) -> {
+            boolean handled = false;
+            for (AutoModActionResult result : AutoModActionResult.values()) {
+                if (responseCode == result.responseCode) {
+                    listener.autoModResult(action, msgId, result);
+                    handled = true;
                 }
-            } else if (r.responseCode == 404) {
-                listener.autoModResult("404", msgId);
-            } else if (r.responseCode == 400) {
-                listener.autoModResult("400", msgId);
-            } else {
-                listener.autoModResult("error", msgId);
+            }
+            if (!handled) {
+                listener.autoModResult(action, msgId, AutoModActionResult.OTHER_ERROR);
             }
         });
     }

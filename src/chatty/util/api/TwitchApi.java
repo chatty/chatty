@@ -53,6 +53,7 @@ public class TwitchApi {
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
     protected volatile String defaultToken;
+    protected volatile String localUserId;
 
     protected final Requests requests;
 
@@ -281,6 +282,10 @@ public class TwitchApi {
         this.defaultToken = token;
     }
     
+    public void setLocalUserId(String userId) {
+        this.localUserId = userId;
+    }
+    
     /**
      * When access was denied when doing an authenticated request. Check the
      * token maybe subsequently.
@@ -502,12 +507,34 @@ public class TwitchApi {
     // AutoMod
     //---------
     
+    public enum AutoModAction {
+        ALLOW, DENY
+    }
+    
+    public enum AutoModActionResult {
+        SUCCESS(204, ""),
+        ALREADY_PROCESSED(400, "Message already handled"),
+        BAD_AUTH(401, "Access denied (check Main - Account for access)"),
+        UNAUTHORIZED(403, "Access denied"),
+        NOT_FOUND(404, "Invalid message id"),
+        OTHER_ERROR(-1, "Unknown error");
+        
+        public final int responseCode;
+        public final String errorMessage;
+        
+        AutoModActionResult(int responseCode, String errorMessage) {
+            this.responseCode = responseCode;
+            this.errorMessage = errorMessage;
+        }
+        
+    }
+    
     public void autoModApprove(String msgId) {
-        requests.autoMod("approve", msgId, defaultToken);
+        requests.autoMod(AutoModAction.ALLOW, msgId, defaultToken, localUserId);
     }
     
     public void autoModDeny(String msgId) {
-        requests.autoMod("deny", msgId, defaultToken);
+        requests.autoMod(AutoModAction.DENY, msgId, defaultToken, localUserId);
     }
 
     //---------------

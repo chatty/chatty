@@ -40,26 +40,18 @@ public class AutoModCommandHelper {
         api.autoModDeny(msgId);
     }
 
-    public void requestResult(String result, String msgId) {
+    public void requestResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result) {
         if (pendingApprove.containsKey(msgId)) {
-            if (!result.equals("approved")) {
-                gui.printSystem("[AutoMod/Approve] Error: "+makeError(result));
+            if (result != TwitchApi.AutoModActionResult.SUCCESS) {
+                gui.printSystem("[AutoMod/Approve] Error: "+result.errorMessage);
             }
             pendingApprove.remove(msgId);
         }
         if (pendingDeny.containsKey(msgId)) {
-            if (!result.equals("denied")) {
-                gui.printSystem("[AutoMod/Deny] Error: "+makeError(result));
+            if (result != TwitchApi.AutoModActionResult.SUCCESS) {
+                gui.printSystem("[AutoMod/Deny] Error: "+result.errorMessage);
             }
             pendingDeny.remove(msgId);
-        }
-    }
-    
-    private String makeError(String result) {
-        switch (result) {
-            case "404": return "Message not/no longer available.";
-            case "400": return "Message already handled.";
-            default: return "Unknown error.";
         }
     }
     
