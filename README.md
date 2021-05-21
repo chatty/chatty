@@ -136,7 +136,7 @@ Images / Other
 		go-previous.png, go-home.png, go-web.png,
 		image-icon.png, commandline.png, edit-copy.png, sort.png,
 		edit-all.png (edited), reply.png (edited)`
-  * Source: <http://tango.freedesktop.org>/Tango_Icon_Library
+  * Source: <http://tango.freedesktop.org/Tango_Icon_Library>
   * License: Released into the Public Domain
 
 * Misc Icons from NUVOLA ICON THEME for KDE 3.x
