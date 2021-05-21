@@ -119,7 +119,7 @@ public class ModerationSettings extends SettingsPanel {
         repeatMsgPanel.add(testSim,
                 SettingsDialog.makeGbc(2, 3, 2, 1, GridBagConstraints.EAST));
         
-        repeatMsgPanel.add(new LinkLabel("Tip: Add <code>config:repeatmsg</code> to e.g. [help:Highlight Highlight] list to match on detected repetition.",
+        repeatMsgPanel.add(new LinkLabel("Tip: Add <code>config:repeatedmsg</code> to e.g. [help:Highlight Highlight] list to match on detected repetition.",
                 d.getSettingsHelpLinkLabelListener()),
                 SettingsDialog.makeGbc(0, 5, 4, 1));
     }
