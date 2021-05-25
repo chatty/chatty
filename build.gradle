@@ -124,6 +124,29 @@ task release(group: 'build') {
 
 test {
     useJUnitPlatform() // enable JUnit 5
+
+    testLogging { // add stdout logging for running `./gradlew test`
+        lifecycle {
+            events 'failed'
+            exceptionFormat 'full'
+
+            afterSuite { description, result ->
+                if (!description.parent) { // will match the outermost suite
+                    def stats = "${result.testCount} tests run, ${result.successfulTestCount} successes, " +
+                        "${result.failedTestCount} failures, ${result.skippedTestCount} ignored"
+                    println('-' * stats.length())
+                    println("Testing result for ${project.name}: ${result.resultType}")
+                    println(stats)
+                    println('-' * stats.length())
+                }
+            }
+        }
+    }
+
+    reports {
+        junitXml.enabled = true
+        html.enabled = true // see ./build/reports/tests/test/index.html
+    }
 }
 
 //--------
