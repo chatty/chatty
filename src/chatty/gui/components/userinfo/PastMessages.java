@@ -154,7 +154,7 @@ public class PastMessages extends JTextArea {
                 b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
                 b.append("Filtered by AutoMod");
                 if (!StringUtil.isNullOrEmpty(ma.reason)) {
-                    b.append(" (").append(ma.reason).append(")");
+                    b.append(" [").append(ma.reason).append("]");
                 }
                 b.append(": ").append(ma.message);
                 b.append("\n");

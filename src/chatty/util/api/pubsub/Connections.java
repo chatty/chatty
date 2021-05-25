@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Connections {
     
-    private static final int MAX_CONNECTIONS = 2;
+    private static final int MAX_CONNECTIONS = 6;
     
     private final List<PubSub> connections;
     private final URI server;
@@ -101,6 +101,15 @@ public class Connections {
         for (PubSub c : connections) {
             c.sendPing();
         }
+    }
+    
+    /**
+     * Only for testing. May cause issues.
+     * 
+     * @param text 
+     */
+    public synchronized void simulate(String text) {
+        connections.get(0).handleReceived(text);
     }
     
     private MessageHandler createHandler(int id) {

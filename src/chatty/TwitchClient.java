@@ -1658,6 +1658,8 @@ public class TwitchClient {
             args.add("tduva");
             ModeratorActionData data = new ModeratorActionData("", "", "", room.getStream(), "denied_automod_message", args, "asdas", "TEST");
             g.printModerationAction(data, false);
+        } else if (command.equals("simulatepubsub")) {
+            pubsub.simulate(parameter);
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
