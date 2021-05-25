@@ -175,7 +175,7 @@ public class ChatLog {
             writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
                     data.created_by,
                     data.moderation_action,
-                    data.args.isEmpty() ? "" : " "+ModLogInfo.makeArgs(data)));
+                    data.args.isEmpty() ? "" : " "+ModLogInfo.makeArgsText(data)));
         }
     }
 
