@@ -221,8 +221,7 @@ public class Notification {
     public final long soundVolume;
     public final int soundCooldown;
     public final int soundInactiveCooldown;
-    public int soundFileDelay;
-    
+
     // State
     private long lastMatched;
     private long lastSoundPlayed;
