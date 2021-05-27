@@ -40,15 +40,24 @@ public class OtherBadges {
                 return false;
             }
         };
-        if (forcedRefresh || !cache.load()) {
-            String url = "https://tduva.com/res/badges";
-            //url = "http://127.0.0.1/twitch/badges/badges";
-            UrlRequest request = new UrlRequest(url);
-            request.setLabel("Other Badges");
-            request.async((result, responseCode) -> {
-                cache.dataReceived(result, forcedRefresh);
-            });
-        }
+        /**
+         * Always run in separate thread, since loading from cache would run
+         * badge image loading in GUI thread.
+         *
+         * A solution similar to emotes might be better, where the images load
+         * on demand, but this will do for now.
+         */
+        new Thread(() -> {
+            if (forcedRefresh || !cache.load()) {
+                String url = "https://tduva.com/res/badges";
+                //url = "http://127.0.0.1/twitch/badges/badges";
+                UrlRequest request = new UrlRequest(url);
+                request.setLabel("Other Badges");
+                request.async((result, responseCode) -> {
+                    cache.dataReceived(result, forcedRefresh);
+                });
+            }
+        }).start();
     }
     
     private static List<Usericon> parseUsericons(String json) {

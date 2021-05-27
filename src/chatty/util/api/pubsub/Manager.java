@@ -98,6 +98,15 @@ public class Manager {
         }
     }
     
+    /**
+     * Only for testing. May cause issues.
+     * 
+     * @param input 
+     */
+    public void simulate(String input) {
+        c.simulate(input);
+    }
+    
     
     //==========================
     // Topics / various
@@ -127,6 +136,7 @@ public class Manager {
     public void listenModLog(String username, String token) {
         this.token = token;
         addTopic(new ModLog(username));
+        addTopic(new AutoMod(username));
     }
     
     /**
@@ -136,6 +146,7 @@ public class Manager {
      */
     public void unlistenModLog(String username) {
         removeTopic(new ModLog(username));
+        removeTopic(new AutoMod(username));
     }
     
     public void listenPoints(String username, String token) {
@@ -370,6 +381,23 @@ public class Manager {
             String userId = getUserId(stream);
             if (userId != null && localUserId != null) {
                 return "chat_moderator_actions."+localUserId+"."+userId;
+            }
+            return null;
+        }
+        
+    }
+    
+    private class AutoMod extends StreamTopic {
+
+        AutoMod(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make() {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                return "automod-queue."+localUserId+"."+userId;
             }
             return null;
         }

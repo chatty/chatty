@@ -179,7 +179,7 @@ public class ModerationLog extends JDialog {
                 DateTime.currentTime(),
                 data.created_by,
                 data.moderation_action,
-                ModLogInfo.makeArgs(data));
+                ModLogInfo.makeArgsText(data));
         
         if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);

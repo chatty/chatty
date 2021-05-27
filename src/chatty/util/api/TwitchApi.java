@@ -40,7 +40,6 @@ public class TwitchApi {
     
     protected final StreamInfoManager streamInfoManager;
     protected final EmoticonManager2 emoticonManager2;
-    protected final CheerEmoticonManager cheersManager;
     protected final CheerEmoticonManager2 cheersManager2;
     protected final FollowerManager followerManager;
     protected final FollowerManager subscriberManager;
@@ -61,7 +60,6 @@ public class TwitchApi {
             StreamInfoListener streamInfoListener) {
         this.resultListener = apiResultListener;
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
-        cheersManager = new CheerEmoticonManager(apiResultListener);
         cheersManager2 = new CheerEmoticonManager2(this, resultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);

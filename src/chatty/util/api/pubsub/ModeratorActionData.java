@@ -173,6 +173,117 @@ public class ModeratorActionData extends MessageData {
         return new ModeratorActionData(msgType, topic, message, stream, moderation_action, args, created_by, msgId);
     }
     
+    public static ModeratorActionData decodeAutoMod(String topic, String message, Map<String, String> userIds) throws ParseException {
+        JSONParser parser = new JSONParser();
+        JSONObject root = (JSONObject)parser.parse(message);
+        
+        String type = JSONUtil.getString(root, "type", "");
+        if (!type.equals("automod_caught_message")) {
+            throw new RuntimeException("Unknown AutoMod type: "+type);
+        }
+        
+        JSONObject data = (JSONObject) root.get("data");
+        JSONObject msg = (JSONObject) data.get("message");
+        
+        //--------------------------
+        // General
+        //--------------------------
+        String msgId = JSONUtil.getString(msg, "id", "");
+        String created_by = JSONUtil.getString(data, "resolver_login", "");
+        
+        // Use mod action names from old topic where possible
+        String moderation_action = "";
+        switch (JSONUtil.getString(data, "status")) {
+            case "PENDING":
+                moderation_action = "automod_rejected";
+                break;
+            case "DENIED":
+                moderation_action = "denied_automod_message";
+                break;
+            case "ALLOWED":
+                moderation_action = "approved_automod_message";
+                break;
+            case "EXPIRED":
+                moderation_action = "automod_message_expired";
+                break;
+            default:
+                moderation_action = "unknown_automod_action";
+        }
+        
+        //--------------------------
+        // Args
+        //--------------------------
+        // username, msg, additional..
+        List<String> args = new ArrayList<>();
+        
+        Object senderObj = msg.get("sender");
+        if (senderObj instanceof JSONObject) {
+            JSONObject sender = (JSONObject) senderObj;
+            args.add(JSONUtil.getString(sender, "login"));
+        }
+        else {
+            args.add("");
+        }
+        
+        // Add content info (msg)
+        Object contentObj = msg.get("content");
+        String fragmentsInfo = null;
+        if (contentObj instanceof JSONObject) {
+            JSONObject content = (JSONObject) contentObj;
+            args.add(JSONUtil.getString(content, "text"));
+            
+            // Fragements info is additional info, but is retrieved from here
+            try {
+                fragmentsInfo = buildAutomodFragments((JSONArray)content.get("fragments"));
+            }
+            catch (Exception ex) {
+                // Keep framgents info empty
+            }
+        }
+        else {
+            args.add("");
+        }
+        
+        // Add additional info
+        Object contentClassObj = data.get("content_classification");
+        if (contentClassObj instanceof JSONObject) {
+            JSONObject contentClass = (JSONObject) contentClassObj;
+            args.add(String.format("%s%s; %s",
+                    JSONUtil.getString(contentClass, "category", ""),
+                    JSONUtil.getInteger(contentClass, "level", 0),
+                    fragmentsInfo));
+        }
+        
+        // Build data
+        String stream = Helper.getStreamFromTopic(topic, userIds);
+        return new ModeratorActionData(type, topic, message, stream, moderation_action, args, created_by, msgId);
+    }
+    
+    private static String buildAutomodFragments(JSONArray fragments) {
+        StringBuilder b = new StringBuilder();
+        for (Object o : fragments) {
+            JSONObject fragment = (JSONObject) o;
+            String text = JSONUtil.getString(fragment, "text");
+            if (fragment.containsKey("automod")) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append("\"").append(text).append("\":");
+                JSONObject topics = (JSONObject)((JSONObject) fragment.get("automod")).get("topics");
+                boolean first = true;
+                for (Object o2 : topics.keySet()) {
+                    if (!first) {
+                        b.append("/");
+                    }
+                    first = false;
+                    String key = (String) o2;
+                    b.append(key).append(topics.get(key));
+                }
+            }
+        }
+        return b.toString();
+    }
+    
     private static String getTime(String value, String errorValue) {
         if (StringUtil.isNullOrEmpty(value)) {
             return errorValue;
