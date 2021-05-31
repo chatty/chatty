@@ -157,7 +157,7 @@ public class MainGui extends JFrame implements Runnable {
     private final Highlighter highlighter = new Highlighter("highlight");
     private final Highlighter ignoreList = new Highlighter("ignore");
     private final Highlighter filter = new Highlighter("filter");
-    private final RepeatMsgHelper repeatMsg;
+    public final RepeatMsgHelper repeatMsg;
     private final MsgColorManager msgColorManager;
     private StyleManager styleManager;
     private TrayIconManager trayIcon;
@@ -3161,6 +3161,13 @@ public class MainGui extends JFrame implements Runnable {
                 
                 // Adds a tag if repeated msg is detected according to settings
                 tags = repeatMsg.check(user, localUser, text, tags);
+                if (Chatty.DEBUG && !tags.hasValue("id")) {
+                    /**
+                     * Could be weird to add for non-testing since the message
+                     * can't actually be deleted or whatever.
+                     */
+                    tags = MsgTags.addTag(tags, "id", String.valueOf(User.MSG_ID++));
+                }
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);

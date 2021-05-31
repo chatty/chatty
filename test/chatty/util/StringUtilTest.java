@@ -172,13 +172,21 @@ public class StringUtilTest {
         assertEquals(0.6, StringUtil.getSimilarity("abc", "ab"), 0.1);
         assertEquals(0.8, StringUtil.getSimilarity("abcd", "abc"), 0.1);
         assertEquals(0.83, StringUtil.getSimilarity("This is a longer message", "This is a message that's longer"), 0.1);
+        assertEquals(0.25, StringUtil.getSimilarity("night", "nacht"), 0.01);
+        assertEquals(0.25, StringUtil.getSimilarity2("night", "nacht"), 0.01);
+        assertEquals(0.5, StringUtil.getSimilarity("aa", "aaaa"), 0.01);
+        assertEquals(1, StringUtil.getSimilarity2("aa", "aaaa"), 0.01);
         
-        assertTrue(StringUtil.checkSimilarity("", "", 0));
-        assertTrue(StringUtil.checkSimilarity("", "", 1));
-        assertTrue(StringUtil.checkSimilarity("a", "", 0));
-        assertFalse(StringUtil.checkSimilarity("a", "", 0.1f));
+        assertEquals(1, StringUtil.checkSimilarity("", "", 0, 1), 0);
+        assertEquals(1, StringUtil.checkSimilarity("", "", 1, 1), 0);
+        assertEquals(0, StringUtil.checkSimilarity("a", "", 0, 1), 0);
+        assertEquals(0, StringUtil.checkSimilarity("a", "", 0.1f, 1), 0);
         
-        assertTrue(StringUtil.checkSimilarity("This is a longer message", "This is a message that's longer", 0.8f));
+        assertEquals(0, StringUtil.checkSimilarity("aa", "aaaa", 0.6f, 1), 0.1);
+        assertEquals(0.5, StringUtil.checkSimilarity("aa", "aaaa", 0.5f, 1), 0.01);
+        assertEquals(1, StringUtil.checkSimilarity("aa", "aaaa", 0.6f, 2), 0.1);
+        
+        assertTrue(StringUtil.checkSimilarity("This is a longer message", "This is a message that's longer", 0.8f, 1) > 0);
     }
     
 }

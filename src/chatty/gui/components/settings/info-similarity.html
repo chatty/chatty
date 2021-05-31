@@ -1,10 +1,14 @@
-First the length is compared, so that messages of wildly different lengths don't
-have to go through the more costly text comparison method. The length check is
-quite lenient as to not catch too many messages, so over 100% is possible.
+Both comparison algorithms are based on Dice's coefficient. Each message is
+split into two-long overlapping parts, which are then compared. Whitespace is
+entirely ignored.
+<ul>
+    <li>Strict: Message length and the number of parts equals to
+        both messages determine similarity.</li>
+    <li>Lenient: Same as Strict, but it doesn't matter how
+        often each unique part is repeated within the same message.</li>
+</ul>
+A very simple example that illustrates the difference is calculating the similarity between "aa" and
+"aaaa". With the Strict method they are 50% similar and with the Lenient method they are equal.
 <br /><br />
-If the length check passes, an algorithm based on Dice's coefficient is used for
-a fuzzy comparison, while ignoring whitespace altogether. Some messages can
-appear as 100% identical even if they aren't, such as "aba" and "bab" (since it
-splits them into "ab" and "ba" and compares their number of occurences).
-<br /><br />
-Whitespace is ignored for these comparisons.
+Even with the Strict method some messages can appear equal even if they aren't, such as "aba" and "bab" (since it
+splits them into "ab" and "ba" and compares if they occur in both messages).

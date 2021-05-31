@@ -4,6 +4,7 @@ package chatty.gui.components.userinfo;
 import chatty.Helper;
 import chatty.User;
 import chatty.gui.GuiUtil;
+import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
@@ -41,7 +42,7 @@ public class UserInfo extends JDialog {
     }
     
     private final InfoPanel infoPanel;
-    private final PastMessages pastMessages = new PastMessages();
+    private final PastMessages pastMessages;
 
     private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
     private final JCheckBox pinnedDialog = new JCheckBox(Language.getString("userDialog.setting.pin"));
@@ -170,6 +171,12 @@ public class UserInfo extends JDialog {
         //==========================
         // Message log
         //==========================
+        if (parent instanceof MainGui) {
+            pastMessages = new PastMessages(((MainGui) parent).repeatMsg);
+        }
+        else {
+            pastMessages = new PastMessages(null);
+        }
         pastMessages.setRows(4);
         pastMessages.setPreferredSize(pastMessages.getPreferredSize());
         JScrollPane scrollPane = new JScrollPane(pastMessages);

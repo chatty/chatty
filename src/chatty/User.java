@@ -43,6 +43,8 @@ public class User implements Comparable<User> {
         new NamedColor("SpringGreen", 0, 255, 127)
     };
     
+    public static volatile int MSG_ID;
+    
     private int maxLines = 100;
     
     //========
@@ -485,7 +487,7 @@ public class User implements Comparable<User> {
         return new ArrayList<>(lines);
     }
     
-    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, long timeframe, float minSimilarity) {
+    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, int method, long timeframe, float minSimilarity, int minLen) {
         compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg);
         int result = 0;
         long checkUntilTime = System.currentTimeMillis() - timeframe * 1000;
@@ -496,9 +498,11 @@ public class User implements Comparable<User> {
                 if (msg.getTime() < checkUntilTime) {
                     break;
                 }
-                String text = StringUtil.prepareForSimilarityComparison(msg.text);
-                if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity)) {
-                    result++;
+                if (msg.text.length() >= minLen) {
+                    String text = StringUtil.prepareForSimilarityComparison(msg.text);
+                    if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity, method) > 0) {
+                        result++;
+                    }
                 }
             }
         }

@@ -10,10 +10,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -565,16 +567,28 @@ public class StringUtil {
      * @param a One String (must not be null)
      * @param b Another String (must not be null)
      * @param min The minimum similarity score the Strings need to reach
-     * @return true if the Strings reach at least min similiarty score
+     * @param method The comparison algorithm (1 or 2)
+     * @return The score if the Strings reach at least min similiarty score, 0
+     * otherwise
      */
-    public static boolean checkSimilarity(String a, String b, float min) {
+    public static float checkSimilarity(String a, String b, float min, int method) {
         if (a.isEmpty() && b.isEmpty()) {
-            return true;
+            return 1;
         }
-        if (getLengthSimilarity(a, b) >= min) {
-            return getSimilarity(a, b) >= min;
+        
+        float sim;
+        if (method == 2) {
+            sim = getSimilarity2(a, b);
         }
-        return false;
+        else {
+            if (getLengthSimilarity(a, b) >= min) {
+                sim = getSimilarity(a, b);
+            }
+            else {
+                sim = 0;
+            }
+        }
+        return sim >= min ? sim : 0;
     }
     
     public static float getLengthSimilarity(String a, String b) {
@@ -634,13 +648,13 @@ public class StringUtil {
         // First String
         //--------------------------
         // Create a map of bigram counts for the first String
-        Map<Long, Integer> m = new HashMap<>(a.length());
+        Map<Integer, Integer> m = new HashMap<>(a.length());
         for (int i = 0; i < a.length() - 1; i++) {
             /**
              * Encoding two chars in one int seemed to have slightly better
              * performance than creating a lot of Strings.
              */
-            Long part = (long) (a.charAt(i) + (a.charAt(i + 1) << 16));
+            Integer part = (a.charAt(i) + (a.charAt(i + 1) << 16));
             m.put(part, m.getOrDefault(part, 0) + 1);
         }
         //--------------------------
@@ -649,7 +663,7 @@ public class StringUtil {
         // Count how many of the bigrams appear in both Strings
         int count = 0;
         for (int i = 0; i < b.length() - 1; i++) {
-            Long part = (long) (b.charAt(i) + (b.charAt(i + 1) << 16));
+            Integer part = (b.charAt(i) + (b.charAt(i + 1) << 16));
             int c = m.getOrDefault(part, 0);
             if (c > 0) {
                 count++;
@@ -661,6 +675,46 @@ public class StringUtil {
          * by the number of total possible bigrams.
          */
         return 2f * count / (a.length() + b.length() - 2);
+    }
+    
+    /**
+     * Based on {@link getSimilarity(String, String)}, but doesn't allow
+     * duplicate bigrams, so it doesn't matter how often a bigram occurs in a
+     * Strings, but rather only whether it occurs at all, which makes it more
+     * lenient to differences in repetitions within a String.
+     *
+     * @param a One String (must not be null)
+     * @param b Another String (must not be null)
+     * @return A float between 0 (not at all similiar) and 1.
+     */
+    public static float getSimilarity2(String a, String b) {
+        if (a.isEmpty() && b.isEmpty()) {
+            return 1;
+        }
+        if (a.isEmpty() || b.isEmpty()) {
+            return 0;
+        }
+        if (a.equals(b)) {
+            return 1;
+        }
+        if (a.length() < 2 || b.length() < 2) {
+            return 0;
+        }
+        Set<Integer> setA = new HashSet<>();
+        Set<Integer> setB = new HashSet<>();
+        for (int i=0;i<a.length() - 1; i++) {
+            Integer part = (a.charAt(i) + (a.charAt(i+1) << 16));
+            setA.add(part);
+        }
+        int count = 0;
+        for (int i=0;i<b.length() - 1; i++) {
+            Integer part = (b.charAt(i) + (b.charAt(i+1) << 16));
+            // Count if first occurence in b and also occured in a
+            if (setB.add(part) && setA.contains(part)) {
+                count++;
+            }
+        }
+        return 2f*count / (setA.size() + setB.size());
     }
     
     public static final void main(String[] args) {

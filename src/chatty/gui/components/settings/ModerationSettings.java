@@ -14,14 +14,17 @@ import java.awt.Window;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -52,11 +55,8 @@ public class ModerationSettings extends SettingsPanel {
         blah.add(d.addSimpleBooleanSetting("showAutoMod", "Show messages rejected by AutoMod", ""),
                 d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST));
         
-        blah.add(new JLabel("<html><body style='width:300px;'>"
-                + "To approve messages open <code>Extra - AutoMod</code>. "
-                + "You can also set a custom hotkey to open dialogs (go "
-                + "to <code>Hotkeys</code> settings, add a new item and select "
-                + "<code>Dialog: AutoMod Dialog</code> as action)."),
+        blah.add(new JLabel(SettingConstants.HTML_PREFIX
+                + "To approve/deny AutoMod messages in chat use their context menu (right-click) or the User Dialog (left-click). You can also open <code>Extra - AutoMod</code>."),
                 d.makeGbc(1, 6, 2, 1, GridBagConstraints.CENTER));
         
         
@@ -97,14 +97,20 @@ public class ModerationSettings extends SettingsPanel {
         repeatMsgPanel.add(repeatMsg,
                 SettingsDialog.makeGbc(0, 0, 4, 1, GridBagConstraints.WEST));
         
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgRep", 0, 1, 1, GridBagConstraints.EAST,
-                d.addSimpleLongSetting("repeatMsgRep", 4, true));
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgMethod", 0, 1, 1, GridBagConstraints.EAST,
+                d.addComboLongSetting("repeatMsgMethod", 1, 2));
         
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgSim", 2, 1, 1, GridBagConstraints.EAST,
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgSim", 2, 2, 1, GridBagConstraints.EAST,
                 d.addSimpleLongSetting("repeatMsgSim", 4, true));
         
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgTime", 0, 3, 1, GridBagConstraints.EAST,
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgRep", 2, 3, 1, GridBagConstraints.EAST,
+                d.addSimpleLongSetting("repeatMsgRep", 4, true));
+        
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgTime", 0, 2, 1, GridBagConstraints.EAST,
                 d.addSimpleLongSetting("repeatMsgTime", 4, true));
+        
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgLen", 0, 3, 1, GridBagConstraints.EAST,
+                d.addSimpleLongSetting("repeatMsgLen", 4, true));
         
         SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgMatch", 0, 4, 3, GridBagConstraints.EAST,
                 d.addSimpleStringSetting("repeatMsgMatch", 20, true), true);
@@ -117,14 +123,27 @@ public class ModerationSettings extends SettingsPanel {
             new TestSimilarity(d).setVisible(true);
         });
         repeatMsgPanel.add(testSim,
-                SettingsDialog.makeGbc(2, 3, 2, 1, GridBagConstraints.EAST));
+                SettingsDialog.makeGbc(2, 1, 2, 1, GridBagConstraints.EAST));
         
         repeatMsgPanel.add(new LinkLabel("Tip: Add <code>config:repeatedmsg</code> to e.g. [help:Highlight Highlight] list to match on detected repetition.",
                 d.getSettingsHelpLinkLabelListener()),
-                SettingsDialog.makeGbc(0, 5, 4, 1));
+                SettingsDialog.makeGbc(0, 6, 4, 1));
     }
     
     private static class TestSimilarity extends JDialog {
+        
+        private static final String DEFAULT_EXAMPLE_A = "Have you already checked out Chatty's YouTube channel? Might have some useful video guides.";
+        private static final String DEFAULT_EXAMPLE_B = "Chatty's YouTube channel might have some useful video guides. Have you checked it out yet?";
+        
+        private static final Map<String, String> EXAMPLES = new LinkedHashMap<>();
+        
+        static {
+            EXAMPLES.put(DEFAULT_EXAMPLE_A+"|"+DEFAULT_EXAMPLE_B, "Default");
+            EXAMPLES.put("How is it going?|How is it going??????????", "Questionmarks");
+            EXAMPLES.put("Kappa Kappa Kappa Kappa FrankerZ Kappa Kappa Kappa Kappa|Kappa Kappa Kappa FrankerZ", "Emote Repetition");
+            EXAMPLES.put("aa|aaaaaaaa", "aaaaaaa");
+            EXAMPLES.put("How much wood could a woodchuck chuck if a woodchuck could chuck wood?|How much wood indeed?", "Wood?");
+        }
         
         private final JTextArea m1;
         private final JTextArea m2;
@@ -144,8 +163,8 @@ public class ModerationSettings extends SettingsPanel {
             m1.setWrapStyleWord(true);
             m2.setLineWrap(true);
             m2.setWrapStyleWord(true);
-            m1.setText("Have you already checked out Chatty's YouTube channel? Might have some useful video guides.");
-            m2.setText("Chatty's YouTube channel might have some useful video guides. Have you checked it out yet?");
+            m1.setText(DEFAULT_EXAMPLE_A);
+            m2.setText(DEFAULT_EXAMPLE_B);
             
             DocumentListener listener = new DocumentListener() {
                 @Override
@@ -166,25 +185,40 @@ public class ModerationSettings extends SettingsPanel {
             m1.getDocument().addDocumentListener(listener);
             m2.getDocument().addDocumentListener(listener);
             
-            GridBagConstraints gbc = SettingsDialog.makeGbc(0, 0, 1, 1);
+            GridBagConstraints gbc = SettingsDialog.makeGbc(0, 0, 2, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
             add(new JScrollPane(m1), gbc);
-            gbc = SettingsDialog.makeGbc(0, 1, 1, 1);
+            gbc = SettingsDialog.makeGbc(0, 1, 2, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
             add(new JScrollPane(m2), gbc);
             
-            add(new JLabel(SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-similarity.html", null)), SettingsDialog.makeGbc(0, 3, 1, 1));
+            add(new JLabel(SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-similarity.html", null)),
+                    SettingsDialog.makeGbc(0, 4, 2, 1));
             
             label = new JLabel("Result");
-            add(label, SettingsDialog.makeGbc(0, 2, 1, 1));
+            add(label, SettingsDialog.makeGbc(0, 2, 2, 1));
+            
+            gbc = SettingsDialog.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
+            gbc.weightx = 1;
+            add(new JLabel("Examples:"), gbc);
+            ComboStringSetting selectExample = new ComboStringSetting(EXAMPLES);
+            gbc = SettingsDialog.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
+            gbc.weightx = 1;
+            add(selectExample, gbc);
+            selectExample.addActionListener(e -> {
+                String example = selectExample.getSettingValue();
+                String[] split = example.split("\\|");
+                m1.setText(split[0]);
+                m2.setText(split[1]);
+            });
             
             JButton closeButton = new JButton(Language.getString("dialog.button.close"));
             closeButton.addActionListener(e -> dispose());
-            gbc = SettingsDialog.makeGbc(0, 4, 1, 1);
+            gbc = SettingsDialog.makeGbc(0, 5, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(closeButton, gbc);
             
@@ -198,8 +232,16 @@ public class ModerationSettings extends SettingsPanel {
             String a = StringUtil.prepareForSimilarityComparison(m1.getText());
             String b = StringUtil.prepareForSimilarityComparison(m2.getText());
             int similarity = Math.round(StringUtil.getSimilarity(a, b) * 100);
+            int similarity2 = Math.round(StringUtil.getSimilarity2(a, b) * 100);
             int lengthSimilarity = Math.round(StringUtil.getLengthSimilarity(a, b) * 100);
-            label.setText(String.format("Length Similarity: %s%% Text Similarity: %s%%", lengthSimilarity, similarity));
+            if (lengthSimilarity < similarity) {
+                label.setText(String.format("Strict: %s%%* - Lenient: %s%%",
+                        similarity, similarity2));
+            }
+            else {
+                label.setText(String.format("Strict: %s%% - Lenient: %s%%",
+                        similarity, similarity2));
+            }
         }
         
     }

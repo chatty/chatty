@@ -3,15 +3,21 @@ package chatty.gui.components.userinfo;
 
 import chatty.User;
 import chatty.util.DateTime;
+import chatty.util.RepeatMsgHelper;
 import chatty.util.StringUtil;
+import chatty.util.colors.ColorCorrectionNew;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 
 /**
  *
@@ -23,10 +29,18 @@ public class PastMessages extends JTextArea {
     
     private String currentMessageIdMessage;
     
-    public PastMessages() {
+    private final RepeatMsgHelper repeatHelper;
+    
+    private final Map<Integer, Integer> highlights = new HashMap<>();
+    private int highlightStart;
+    private final DefaultHighlighter.DefaultHighlightPainter highlightPainter;
+    
+    public PastMessages(RepeatMsgHelper repeat) {
         setEditable(false);
         setLineWrap(true);
         setWrapStyleWord(true);
+        this.repeatHelper = repeat;
+        highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(ColorCorrectionNew.offset(getBackground(), 0.8f));
     }
     
     public String getCurrentMessage() {
@@ -36,8 +50,26 @@ public class PastMessages extends JTextArea {
     public void update(User user, String currentMessageId) {
         setText(null);
         if (user != null) {
+            highlights.clear();
             setText(makeLines(user, currentMessageId));
+            
+            for (Map.Entry<Integer, Integer> entry : highlights.entrySet()) {
+                try {
+                    getHighlighter().addHighlight(entry.getKey(), entry.getValue(), highlightPainter);
+                }
+                catch (BadLocationException ex) {
+                    // Ignore
+                }
+            }
         }
+    }
+    
+    private void startHighlight(int pos) {
+        highlightStart = pos;
+    }
+    
+    private void endHighlight(int pos) {
+        highlights.put(highlightStart, pos);
     }
     
     private String makeLines(User user, String currentMessageId) {
@@ -50,6 +82,7 @@ public class PastMessages extends JTextArea {
             b.append(user.getMaxNumberOfLines());
             b.append(" lines are saved>\n");
         }
+        String currentMsgText = user.getMessageText(currentMessageId);
         List<User.Message> messages = user.getMessages();
         int currentDay = 0;
         for (User.Message m : messages) {
@@ -65,13 +98,24 @@ public class PastMessages extends JTextArea {
             // Messages
             if (m instanceof User.TextMessage) {
                 User.TextMessage tm = (User.TextMessage)m;
+                int simPercentage = 0;
                 if (!StringUtil.isNullOrEmpty(currentMessageId)
                         && currentMessageId.equals(tm.id)) {
+                    startHighlight(b.length());
                     b.append(">");
+                    endHighlight(b.length());
                     //singleMessage.setText(SINGLE_MESSAGE_CHECK+" ("+StringUtil.shortenTo(tm.text, 14)+")");
                     currentMessageIdMessage = tm.text;
                 }
+                else if (currentMsgText != null) {
+                    simPercentage = repeatHelper.getPercentage(user, tm.text, currentMsgText);
+                }
                 b.append(DateTime.format(m.getTime(), timestampFormat));
+                if (simPercentage > 0) {
+                    startHighlight(b.length() + 1);
+                    b.append(" [").append(simPercentage).append("%]");
+                    endHighlight(b.length());
+                }
                 if (tm.action) {
                     b.append("* ");
                 } else {
