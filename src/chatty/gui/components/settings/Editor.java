@@ -5,6 +5,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
+import chatty.util.LineNumbers;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -96,7 +97,9 @@ public class Editor implements StringEditor {
         input.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, false);
         GuiUtil.resetFocusTraversalKeys(input);
-        dialog.add(new JScrollPane(input), gbc);
+        JScrollPane scroll = new JScrollPane(input);
+        scroll.setRowHeaderView(new LineNumbers(input));
+        dialog.add(scroll, gbc);
         
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);
         gbc.insets = new Insets(5, 8, 8, 8);
