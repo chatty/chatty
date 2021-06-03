@@ -335,7 +335,7 @@ public class LiveStreamsDialog extends JFrame {
     
     private void openChannelInfoDialog(StreamInfo info) {
         if (!channelInfo.isVisible()) {
-            channelInfo.setLocationRelativeTo(LiveStreamsDialog.this);
+            channelInfo.setLocationRelativeTo(helper.getContent().getComponent());
         }
         channelInfo.set(info);
         channelInfo.setVisible(true);
