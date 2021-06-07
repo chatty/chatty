@@ -18,6 +18,7 @@ import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -479,7 +480,7 @@ public class Highlighter {
         private String mainPrefix;
         private String error;
         private boolean patternWarning;
-        private List<Pair<String, String>> modifications = new ArrayList<>();
+        private List<Modification> modifications = new ArrayList<>();
         
         //==========================
         // State (per match)
@@ -567,7 +568,7 @@ public class Highlighter {
                     item = item.trim();
                     Parameters parameters = Parameters.create(item);
                     String newItem = ccf.replace(parameters);
-                    modifications.add(new Pair<>(item, newItem));
+                    modifications.add(new Modification(item, newItem, ccf.getName()));
                     item = newItem;
                 }
             }
@@ -875,7 +876,7 @@ public class Highlighter {
                     else {
                         if (applyPresets) {
                             String newItem = applyCustomCommandFunction(split[0], split[1]);
-                            modifications.add(new Pair<>(item, newItem));
+                            modifications.add(new Modification(item, newItem, "ccf:"));
                             prepare(newItem);
                         }
                         else {
@@ -917,7 +918,7 @@ public class Highlighter {
                         }
                     }
                     String newItem = StringUtil.append(result, " ", remaining);
-                    modifications.add(new Pair(item, newItem));
+                    modifications.add(new Modification(item, newItem, "preset:"));
                     prepare(newItem);
                 }
                 else if (item.startsWith("n:")) {
@@ -1133,7 +1134,7 @@ public class Highlighter {
                     pattern = NO_MATCH;
                 }
                 else {
-                    modifications.add(new Pair<>(commandText, result));
+                    modifications.add(new Modification(commandText, result, "cc:"));
                     prepare(result);
                 }
             }
@@ -1448,9 +1449,9 @@ public class Highlighter {
                     result.append("Shortened.. too many modifications.\n\n");
                     break;
                 }
-                Pair<String, String> p = modifications.get(i);
-                result.append("   ").append(p.key).append("\n");
-                result.append("-> ").append(p.value).append("\n\n");
+                Modification p = modifications.get(i);
+                result.append(String.join("", Collections.nCopies(p.source.length()+3, " "))).append(p.from).append("\n");
+                result.append("[").append(p.source).append("] ").append(p.to).append("\n\n");
             }
             result.append("Applies to: ").append(appliesToType.description).append("\n");
             if (pattern != null) {
@@ -1870,6 +1871,19 @@ public class Highlighter {
             return result;
         }
 
+    }
+
+    private static class Modification {
+
+        public final String from;
+        public final String to;
+        public final String source;
+        
+        public Modification(String from, String to, String source) {
+            this.from = from;
+            this.to = to;
+            this.source = source;
+        }
     }
     
 }
