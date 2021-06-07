@@ -1244,10 +1244,10 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    private void loadLayout(String layoutName) {
+    private void loadLayout(String layoutName, int options) {
         DockLayout layout = DockLayout.fromList((List) client.settings.mapGet("layouts", layoutName));
         if (layout != null) {
-            channels.changeLayout(layout);
+            channels.changeLayout(layout, options);
         }
         else {
             printSystem("Layout not found: "+layoutName);
@@ -1258,7 +1258,7 @@ public class MainGui extends JFrame implements Runnable {
         if (!StringUtil.isNullOrEmpty(layoutName)) {
             boolean save = true;
             if (ask && client.settings.mapGet("layouts", layoutName) != null) {
-                int result = JOptionPane.showConfirmDialog(rootPane, "Overwrite saved layout "+layoutName+" with current layout?", "Save layout", JOptionPane.YES_NO_OPTION);
+                int result = JOptionPane.showConfirmDialog(rootPane, "Overwrite layout "+layoutName+"?", "Save layout", JOptionPane.YES_NO_OPTION);
                 save = result == 0;
             }
             if (save) {
@@ -1682,7 +1682,7 @@ public class MainGui extends JFrame implements Runnable {
                 addLayout(null);
             } else if (cmd.startsWith("layouts.load.")) {
                 String layoutName = cmd.substring("layouts.load.".length());
-                loadLayout(layoutName);
+                loadLayout(layoutName, -1);
             } else if (cmd.startsWith("layouts.save.")) {
                 String layoutName = cmd.substring("layouts.save.".length());
                 saveLayout(layoutName, true);
@@ -2619,23 +2619,47 @@ public class MainGui extends JFrame implements Runnable {
         });
         client.commands.addEdt("layouts", p -> {
             if (p.hasArgs()) {
-                String[] split = p.getArgs().split(" ", 2);
-                if (split.length < 2) {
+                String args = p.getArgs().trim();
+                String command = null;
+                String layoutName = null;
+                int options = -1;
+                String[] split = args.split(" ", 2);
+                if (split.length == 2) {
+                    command = split[0];
+                    if (split[1].startsWith("-")) {
+                        String[] optionsSplit = split[1].split(" ");
+                        if (optionsSplit.length == 2) {
+                            if (!optionsSplit[0].equals("--")) {
+                                options = Channels.makeLoadLayoutOptions(
+                                        optionsSplit[0].contains("c"),
+                                        optionsSplit[0].contains("l"),
+                                        optionsSplit[0].contains("m"));
+                            }
+                            layoutName = optionsSplit[1];
+                        }
+                    }
+                    else {
+                        layoutName = split[1];
+                    }
+                }
+                if (command == null || layoutName == null) {
                     printSystem("Invalid parameters.");
                 }
-                switch (split[0]) {
-                    case "add":
-                        addLayout(split[1]);
-                        break;
-                    case "save":
-                        saveLayout(split[1], false);
-                        break;
-                    case "load":
-                        loadLayout(split[1]);
-                        break;
-                    case "remove":
-                        removeLayout(split[1], false);
-                        break;
+                else {
+                    switch (command) {
+                        case "add":
+                            addLayout(layoutName);
+                            break;
+                        case "save":
+                            saveLayout(layoutName, false);
+                            break;
+                        case "load":
+                            loadLayout(layoutName, options);
+                            break;
+                        case "remove":
+                            removeLayout(layoutName, false);
+                            break;
+                    }
                 }
             }
         });

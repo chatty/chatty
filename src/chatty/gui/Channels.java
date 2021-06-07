@@ -12,6 +12,7 @@ import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.IconManager;
 import chatty.util.KeyChecker;
+import chatty.util.MiscUtil;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockLayout;
 import chatty.util.dnd.DockLayoutPopout;
@@ -40,11 +41,13 @@ import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * Managing the Channel objects in the main window and popouts, providing a
@@ -363,8 +366,11 @@ public class Channels {
      * channels.
      *
      * @param layout The layout to switch to
+     * @param options Options for loading the layout, encoded by {@link makeLoadLayoutOptions(boolean, boolean, boolean)},
+     * will be used if not -1, which will also not show the dialog, if -1 then
+     * the default options will be used
      */
-    public void changeLayout(DockLayout layout) {
+    public void changeLayout(DockLayout layout, int options) {
         if (layout == null) {
             return;
         }
@@ -374,9 +380,22 @@ public class Channels {
         // Determine if main window would actually change
         boolean offerMainChange = mainWindow != null && mainWindow.canChange(gui.getLocation(), gui.getSize(), gui.getExtendedState());
         
+        boolean showDialog = options == -1;
+        
         // Show options (modal), check results afterwards
-        ChangeLayoutDialog d = new ChangeLayoutDialog(gui, current, layout, offerMainChange);
-        if (!d.shouldLoad()) {
+        ChangeLayoutDialog d = new ChangeLayoutDialog(gui,
+                current,
+                layout,
+                offerMainChange,
+                options != -1 ? options : gui.getSettings().getInt("layoutsOptions"));
+        if (showDialog) {
+            d.setVisible(true);
+        }
+        // At this point the dialog was closed again (or never open)
+        if (d.saveOptions()) {
+            gui.getSettings().setLong("layoutsOptions", d.getOptions());
+        }
+        if (!d.shouldLoad() && showDialog) {
             return;
         }
         
@@ -451,7 +470,7 @@ public class Channels {
                 handleContent(id, currentContent, d.getAddChannels().contains(id));
             }
             else if (getTypeFromChannelName(id) != Channel.Type.NONE) { // Whisper, ..
-                handleContent(id, currentContent, true);
+                handleContent(id, currentContent, d.getAddChannels().contains(id));
             }
             else { // Other content
                 handleContent(id, currentContent, true);
@@ -471,7 +490,7 @@ public class Channels {
                     handleContent(id, currentContent, d.getAddChannels().contains(id));
                 }
                 else if (getTypeFromChannelName(id) != Channel.Type.NONE) { // Whisper, ..
-                    handleContent(id, currentContent, false);
+                    handleContent(id, currentContent, d.getAddChannels().contains(id));
                 }
                 else { // Other content
                     // If not in layout (all of these), then undock
@@ -487,11 +506,15 @@ public class Channels {
          * been opened.
          */
         if (!d.getJoinChannels().isEmpty()) {
+            Set<String> toJoin = new HashSet<>();
             for (String channel : d.getJoinChannels()) {
-                // The joining state will be shown on the tab (reduced opacity)
-                channels.get(channel).getDockContent().setJoining(true);
+                if (channel.startsWith("#")) {
+                    // The joining state will be shown on the tab (reduced opacity)
+                    channels.get(channel).getDockContent().setJoining(true);
+                    toJoin.add(channel);
+                }
             }
-            gui.client.joinChannels(new HashSet<>(d.getJoinChannels()));
+            gui.client.joinChannels(new HashSet<>(toJoin));
         }
         
         // Enable the normal tab order again
@@ -1684,15 +1707,22 @@ public class Channels {
         
     }
     
+    private static final int LAYOUT_OPTION_CURRENT_CHANS = 1 << 0;
+    private static final int LAYOUT_OPTION_LAYOUT_CHANS = 1 << 1;
+    private static final int LAYOUT_OPTION_MAIN = 1 << 2;
+    
     private class ChangeLayoutDialog extends JDialog {
         
-        private List<String> joinChannels = new ArrayList<>();
-        private List<String> addChannels = new ArrayList<>();
-        private List<String> partChannels = new ArrayList<>();
-        private JCheckBox changeMain;
+        private final List<String> joinChannels = new ArrayList<>();
+        private final List<String> addChannels = new ArrayList<>();
+        private final List<String> partChannels = new ArrayList<>();
+        private final JCheckBox changeMain;
+        private final JCheckBox keepCurrentChannels;
+        private final JCheckBox openLayoutChannels;
+        private final JCheckBox rememberSettings;
         private boolean load;
         
-        ChangeLayoutDialog(Window parent, List<DockContent> current, DockLayout layout, boolean offerMainChange) {
+        ChangeLayoutDialog(Window parent, List<DockContent> current, DockLayout layout, boolean offerMainChange, int options) {
             super(parent);
             setTitle("Load Layout");
             setModal(true);
@@ -1702,49 +1732,36 @@ public class Channels {
             
             List<String> currentChannelIds = new ArrayList<>();
             for (DockContent content : current) {
-                if (content.getId().startsWith("#")) {
+                if (content.getId().startsWith("#") || content.getId().startsWith("$")) {
                     currentChannelIds.add(content.getId());
                 }
             }
             
             List<String> layoutChannelIds = new ArrayList<>();
             for (String id : layout.getContentIds()) {
-                if (id.startsWith("#")) {
+                if (id.startsWith("#") || id.startsWith("$")) {
                     layoutChannelIds.add(id);
                 }
             }
             
-            JCheckBox keepCurrentChannels = new JCheckBox(String.format("Keep current channels open (%d)", currentChannelIds.size()));
+            keepCurrentChannels = new JCheckBox(String.format("Keep current channels open (%d)", currentChannelIds.size()));
             keepCurrentChannels.setEnabled(!currentChannelIds.isEmpty());
-            JCheckBox openLayoutChannels = new JCheckBox(String.format("Join channels in layout (%d)", layoutChannelIds.size()));
+            
+            openLayoutChannels = new JCheckBox(String.format("Join channels in layout (%d)", layoutChannelIds.size()));
             openLayoutChannels.setEnabled(!layoutChannelIds.isEmpty());
             
-            changeMain = new JCheckBox("Load main window locaion and size");
+            changeMain = new JCheckBox("Load main window location and size");
             changeMain.setEnabled(offerMainChange);
+            
+            rememberSettings = new JCheckBox("Remember current selection");
             
             JLabel result = new JLabel();
             
-            GridBagConstraints gbc;
-            
-            gbc = GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
-            add(keepCurrentChannels, gbc);
-            gbc = GuiUtil.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST);
-            add(openLayoutChannels, gbc);
-            gbc = GuiUtil.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
-            add(result, gbc);
-            gbc = GuiUtil.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
-            add(changeMain, gbc);
-            
-            JButton loadLayout = new JButton("Load Layout");
-            loadLayout.addActionListener(e -> {
-                load = true;
-                setVisible(false);
-            });
-            
-            ItemListener checkboxListener = (ItemEvent e) -> {
+            Runnable updateResults = () -> {
                 joinChannels.clear();
                 addChannels.clear();
                 partChannels.clear();
+                // Layout
                 if (openLayoutChannels.isSelected()) {
                     for (String id : layoutChannelIds) {
                         if (!currentChannelIds.contains(id)) {
@@ -1753,6 +1770,7 @@ public class Channels {
                         addChannels.add(id);
                     }
                 }
+                // Current
                 if (keepCurrentChannels.isSelected()) {
                     for (String id : currentChannelIds) {
                         if (!addChannels.contains(id)) {
@@ -1767,14 +1785,46 @@ public class Channels {
                         }
                     }
                 }
-                result.setText(String.format("Join %d channels, Part %d channels",
+                result.setText(String.format("Open %d channels, Close %d channels",
                         joinChannels.size(),
                         partChannels.size()));
             };
+            
+            GridBagConstraints gbc;
+            
+            JPanel optionsPanel = new JPanel(new GridBagLayout());
+            optionsPanel.setBorder(BorderFactory.createEtchedBorder());
+            
+            gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(1, 5, 1, 5);
+            optionsPanel.add(keepCurrentChannels, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(1, 5, 1, 5);
+            optionsPanel.add(openLayoutChannels, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(2, 5, 5, 5);
+            optionsPanel.add(result, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST);
+            optionsPanel.add(changeMain, gbc);
+            
+            JButton loadLayout = new JButton("Load Layout");
+            loadLayout.addActionListener(e -> {
+                load = true;
+                setVisible(false);
+            });
+            
+            ItemListener checkboxListener = (ItemEvent e) -> updateResults.run();
             keepCurrentChannels.addItemListener(checkboxListener);
             openLayoutChannels.addItemListener(checkboxListener);
-            keepCurrentChannels.setSelected(true);
-            openLayoutChannels.setSelected(true);
+            
+            keepCurrentChannels.setSelected(MiscUtil.isBitEnabled(options, LAYOUT_OPTION_CURRENT_CHANS));
+            openLayoutChannels.setSelected(MiscUtil.isBitEnabled(options, LAYOUT_OPTION_LAYOUT_CHANS));
+            changeMain.setSelected(MiscUtil.isBitEnabled(options, LAYOUT_OPTION_MAIN));
+            
+            updateResults.run();
             
             JButton cancel = new JButton("Cancel");
             cancel.addActionListener(e -> {
@@ -1793,6 +1843,14 @@ public class Channels {
             add(new JLabel("<html><body width='250px'><p>Docked info dialogs ('Dock as tab'-option in their context menu) will be opened/closed to match the loaded layout, however non-docked dialogs are not affected.</p>"
                     + "<p style='margin-top:5px;'>Channels will be joined/parted depending on the selection below.</p>"), gbc);
             
+            gbc = GuiUtil.makeGbc(1, 5, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(optionsPanel, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 11, 2, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(3, 5, 3, 5);
+            add(rememberSettings, gbc);
+            
             gbc = GuiUtil.makeGbc(1, 10, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
@@ -1806,9 +1864,10 @@ public class Channels {
 
             pack();
             setLocationRelativeTo(parent);
-            setVisible(true);
+            
+            GuiUtil.installEscapeCloseOperation(this);
         }
-        
+    
         public boolean shouldLoad() {
             return load;
         }
@@ -1829,6 +1888,22 @@ public class Channels {
             return changeMain.isSelected();
         }
         
+        public int getOptions() {
+            return makeLoadLayoutOptions(keepCurrentChannels.isSelected(), openLayoutChannels.isSelected(), changeMain.isSelected());
+        }
+
+        private boolean saveOptions() {
+            return rememberSettings.isSelected();
+        }
+        
+    }
+    
+    public static int makeLoadLayoutOptions(boolean keepCurrentChannels,
+                                            boolean openLayoutChannels,
+                                            boolean changeMain) {
+        return (keepCurrentChannels ? LAYOUT_OPTION_CURRENT_CHANS : 0)
+                | (openLayoutChannels ? LAYOUT_OPTION_LAYOUT_CHANS : 0)
+                | (changeMain ? LAYOUT_OPTION_MAIN : 0);
     }
     
 }

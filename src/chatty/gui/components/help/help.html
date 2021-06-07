@@ -12,6 +12,7 @@
                 <strong>General usage</strong>
                 <ul class="menu">
                     <li><a href="#title">Title and Tabs</a></li>
+                    <li><a href="#layouts">Layouts and Tabs</a></li>
                     <li><a href="#shortcuts">Hotkeys</a></li>
                     <li><a href="#commands">Commands</a></li>
                     <li><a href="#login">Twitch Login</a></li>
@@ -129,6 +130,89 @@
     <p>Note that the stream status (title/game, offline) can take a few minutes
         to update, since it has to be requested from the Twitch API (which is
         also heavily cached).</p>
+    
+    <h2>
+        <a name="layouts">Layouts and Tabs</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>A layout is the arrangement of tabs in the Chatty window and popouts,
+        which can be saved and restored later. Other GUI elements that aren't a
+        tab (e.g. the Settings Dialog or Emotes Dialog) are not considered a
+        part of a layout in this sense, so their location and size is determined
+        in other ways.</p>
+    
+    <p>You can open several tabs, which can be of basicially two different types:</p>
+    <ul>
+        <li>Channels and Whisper Tabs, which open as tabs by default.</li>
+        <li>Docked Dialogs, which open as a separate dialog by default, but can
+            be docked as a tab through their context menu (usually right-click).
+            This includes for example the Channel Info, Admin Panel and more.
+            <br /><br />
+            Note that these will only be considered as being part of the layout
+            when in their docked state. When not docked, these dialogs will use
+            the old system, which is affected by the settings under "Main - Settings - Window - Dialogs Location/Size".</li>
+    </ul>
+    <p>You can use drag&amp;drop on tabs in various ways:</p>
+    <ul>
+        <li>Move a tab within the same tab pane to change their order.</li>
+        <li>Move a tab to another tab pane.</li>
+        <li>Drop a tab in the middle of another tab pane to move it to that tab
+            pane.</li>
+        <li>Drop a tab on the side of another tab pane to create a split pane,
+            containing two tab panes side-by-side.</li>
+        <li>Drop a tab outside of any Chatty window to open it in a popout
+            (depending on the settings under "Main - Settings - Tabs").</li>
+    </ul>
+    <p>You can also open the tab context menu (right-click) to perform various
+        actions such as opening a popout or closing the tab.</p>
+    
+    <h3>Save and Load Layouts</h3>
+    <p>You can save the current tabs, splits and popouts in a layout under
+        "View - Layouts". Saving a layout is a snapshot of the current state, so
+        if you make any changes that you wish to be saved, you'll have to save
+        it again (add a new layout or overwrite an existing one).</p>
+    
+    <p>If enabled ("Main - Settings - Main") the layout will automatically be
+        restored when restarting Chatty, which is separate from saving layouts
+        manually.</p>
+    
+    <p>Aside from loading layouts through the menu, you can also use commands:</p>
+    
+    <dl class="dl-settings">
+        <dt><code>/layouts add &lt;name&gt;</code></dt>
+        <dd>Add a new layout with the current state. If the layout already
+            exists, you will be asked whether you want to overwrite it. Example:
+            <code>/layouts add abc</code></dd>
+        
+        <dt><code>/layouts save &lt;name&gt;</code></dt>
+        <dd>Adds a new layout with the current state or overwrites it if the
+            layout already exists (without asking).</dd>
+        
+        <dt><code>/layouts remove &lt;name&gt;</code></dt>
+        <dd>Removes the given layout.</dd>
+        
+        <dt><code>/layouts load [-clm] &lt;name&gt;</code></dt>
+        <dd>Loads the given layout.</dd>
+        <dd>If no options are given (e.g. <code>/layouts load abc</code>) it
+            will open the load layout dialog.</dd>
+        <dd>Options can be given to define how to load the layout, which also
+            loads the layout immediately without showing the dialog. The options
+            are equivalent to what you can select in the dialog:
+            <ul>
+                <li><code>c</code> to keep the current channels open</li>
+                <li><code>l</code> to open the channels from the layout</li>
+                <li><code>m</code> to load the main window location/size</li>
+            </ul>
+            For example <code>/layouts load -c abc</code> keeps the current channels
+            open, but does not join the channels in the layout. The options can
+            also be empty, for example <code>/layouts load - abc</code> will not
+            open any channels or keep any channels open (but the rest of the
+            layout such as docked dialogs is still loaded).
+        </dd>
+        <dd>You can use <code>/layouts load -- -abc</code> if your layout name
+            begins with a <code>-</code> (in this case "-abc"), which opens the
+            dialog just as if you hadn't provided any options at all.</dd>
+    </dl>
     
     <h2>
         <a name="shortcuts">Hotkeys</a>
