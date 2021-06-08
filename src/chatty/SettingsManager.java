@@ -425,6 +425,7 @@ public class SettingsManager {
         settings.addMap("layouts", new HashMap<>(), Setting.LIST);
         settings.addLong("layoutsOptions", 3);
         settings.addBoolean("restoreLayout", true);
+        settings.addBoolean("restoreLayoutWhisper", false);
 
         // Popouts
         settings.addBoolean("popoutSaveAttributes", true);

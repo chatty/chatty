@@ -604,7 +604,7 @@ public class Channels {
                 }
                 else if (getTypeFromChannelName(id) != Channel.Type.NONE) {
                     // Always open whisper etc.
-                    handleContent(id, null, true);
+                    handleContent(id, null, gui.getSettings().getBoolean("restoreLayoutWhisper"));
                 }
                 else {
                     // Always open docked dialogs

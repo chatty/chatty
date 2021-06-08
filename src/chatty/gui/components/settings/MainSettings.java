@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -68,8 +69,15 @@ public class MainSettings extends SettingsPanel {
             channels.setEnabled(channelsEnabled);
         });
         
+        JCheckBox restoreLayout = d.addSimpleBooleanSetting("restoreLayout");
         gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
-        startSettingsPanel.add(d.addSimpleBooleanSetting("restoreLayout"), gbc);
+        startSettingsPanel.add(restoreLayout, gbc);
+        
+        JCheckBox restoreLayoutWhisper = d.addSimpleBooleanSetting("restoreLayoutWhisper");
+        gbc = d.makeGbcSub(0, 4, 2, 1, GridBagConstraints.WEST);
+        startSettingsPanel.add(restoreLayoutWhisper, gbc);
+        
+        SettingsUtil.addSubsettings(restoreLayout, restoreLayoutWhisper);
         
         //==========
         // Language
