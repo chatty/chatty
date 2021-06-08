@@ -215,7 +215,7 @@ public class LivestreamerDialog extends JDialog {
      */
     public void open(String stream, String quality) {
         if (stream != null) {
-            String url = "twitch.tv/" + stream;
+            String url = "https://twitch.tv/" + stream;
             if (!Helper.isValidChannel(stream)) {
                 url = stream;
             }
