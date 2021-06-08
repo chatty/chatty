@@ -32,7 +32,7 @@ to whatever license terms it is under (like retaining copyright notices) and to
 detail that in the Pull Request.
 
 Obviously, I won't be able to accept all contributions, for example I may
-already be working on something similiar. If you plan to put more than a little
+already be working on something similar. If you plan to put more than a little
 effort into a Pull Request, consider asking first if what you're doing has a
 chance of being added.
 
