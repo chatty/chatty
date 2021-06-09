@@ -242,6 +242,69 @@ public class StringUtil {
         return b.toString();
     }
     
+    /**
+     * Removes all whitespace and the characters in the given sorted char array
+     * from the String.
+     * 
+     * <p>
+     * The function {@link getCharsFromString(String)} is recommended to make
+     * the char array, since characters outside the BMP would not be seen as a
+     * single character, but instead as their surrogates, so it could remove
+     * parts of other characters as well.
+     * </p>
+     * <p>
+     * This method was chosen for the performance and to keep it simple for it's
+     * use-case, where most likely only ASCII characters are being removed. If
+     * required, another function that removes codepoints could be added.
+     * </p>
+     * <p>
+     * If the array is not sorted, the result is undefined, as per
+     * {@link Arrays#binarySearch(char[], char)}.
+     * </p>
+     *
+     * @param input The input String
+     * @param chars Characters that are removed, must be sorted, can be null
+     * @return 
+     */
+    public static String removeWhitespaceAndMore(String input, char[] chars) {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (!Character.isWhitespace(c)
+                    && (chars == null || Arrays.binarySearch(chars, c) < 0)) {
+                b.append(c);
+            }
+        }
+        return b.toString();
+    }
+    
+    /**
+     * Adds all unique chars that are not a surrogate from the given String to a
+     * sorted array.
+     * 
+     * @param chars
+     * @return 
+     */
+    public static char[] getCharsFromString(String chars) {
+        // Collect all unique non-surrogate characters
+        Set<Character> unique = new HashSet<>();
+        for (int i = 0; i < chars.length(); i++) {
+            char c = chars.charAt(i);
+            if (!Character.isSurrogate(c)) {
+                unique.add(c);
+            }
+        }
+        // Move to sorted array
+        char[] result = new char[unique.size()];
+        int index = 0;
+        for (Character c : unique) {
+            result[index] = c;
+            index++;
+        }
+        Arrays.sort(result);
+        return result;
+    }
+    
     public static String append(String a, String sep, String b) {
         if (a == null || a.isEmpty()) {
             return b;
@@ -602,8 +665,8 @@ public class StringUtil {
      * @param input
      * @return 
      */
-    public static String prepareForSimilarityComparison(String input) {
-        return removeWhitespace(input);
+    public static String prepareForSimilarityComparison(String input, char[] chars) {
+        return removeWhitespaceAndMore(input, chars);
     }
     
     /**

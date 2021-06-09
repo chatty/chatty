@@ -2,23 +2,19 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.gui.RegexDocumentFilter;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
-import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.EAST;
-import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Window;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,6 +23,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.DocumentFilter;
 
 /**
  *
@@ -36,30 +34,35 @@ public class ModerationSettings extends SettingsPanel {
     
     public ModerationSettings(final SettingsDialog d) {
         
-        JPanel blah = addTitledPanel(Language.getString("settings.section.modInfos"), 0);
+        //==========================
+        // Mod Infos
+        //==========================
+        JPanel modInfoPanel = addTitledPanel(Language.getString("settings.section.modInfos"), 0);
         
         JCheckBox showModActions = d.addSimpleBooleanSetting("showModActions");
         JCheckBox showModActionsRestrict = d.addSimpleBooleanSetting("showModActionsRestrict");
         
         SettingsUtil.addSubsettings(showModActions, showModActionsRestrict);
         
-        blah.add(showModActions,
+        modInfoPanel.add(showModActions,
                 d.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST));
         
-        blah.add(showModActionsRestrict,
+        modInfoPanel.add(showModActionsRestrict,
                 d.makeGbcSub(0, 1, 3, 1, GridBagConstraints.WEST));
         
-        blah.add(d.addSimpleBooleanSetting("showActionBy"),
+        modInfoPanel.add(d.addSimpleBooleanSetting("showActionBy"),
                 d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
-        blah.add(d.addSimpleBooleanSetting("showAutoMod", "Show messages rejected by AutoMod", ""),
+        modInfoPanel.add(d.addSimpleBooleanSetting("showAutoMod", "Show messages rejected by AutoMod", ""),
                 d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST));
         
-        blah.add(new JLabel(SettingConstants.HTML_PREFIX
-                + "To approve/deny AutoMod messages in chat use their context menu (right-click) or the User Dialog (left-click). You can also open <code>Extra - AutoMod</code>."),
+        modInfoPanel.add(new JLabel(SettingConstants.HTML_PREFIX
+                + "Approve/deny AutoMod messages in chat through their context menu (right-click) or the User Dialog (left-click) or <code>Extra - AutoMod</code>."),
                 d.makeGbc(1, 6, 2, 1, GridBagConstraints.CENTER));
         
-        
+        //==========================
+        // User Dialog
+        //==========================
         JPanel userInfo = addTitledPanel(Language.getString("settings.section.userDialog"), 1);
         
         userInfo.add(d.addSimpleBooleanSetting(
@@ -90,7 +93,9 @@ public class ModerationSettings extends SettingsPanel {
         userInfo.add(SettingsUtil.createLabel("banReasonsInfo", true),
                 d.makeGbc(0, 7, 2, 1));
         
-        
+        //==========================
+        // Repeated Messages
+        //==========================
         JPanel repeatMsgPanel = addTitledPanel(Language.getString("settings.section.repeatMsg"), 2);
         
         JCheckBox repeatMsg = d.addSimpleBooleanSetting("repeatMsg");
@@ -112,15 +117,24 @@ public class ModerationSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgLen", 0, 3, 1, GridBagConstraints.EAST,
                 d.addSimpleLongSetting("repeatMsgLen", 4, true));
         
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgMatch", 0, 4, 3, GridBagConstraints.EAST,
-                d.addSimpleStringSetting("repeatMsgMatch", 20, true), true);
+        JTextField ignoredChars = d.addSimpleStringSetting("repeatMsgIgnored", 4, true);
+        ((AbstractDocument) ignoredChars.getDocument()).setDocumentFilter(TestSimilarity.IGNORED_CHARS_FILTER);
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgIgnored", 0, 4, 1, GridBagConstraints.EAST,
+                ignoredChars);
         
+        EditorStringSetting editor = d.addEditorStringSetting("repeatMsgMatch", 10, true, "Restrict detection", false, SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-restriction-repeat.html", null));
+        editor.setShowInfoByDefault(true);
+        editor.setLinkLabelListener(d.getLinkLabelListener());
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgMatch", 0, 5, 3, GridBagConstraints.EAST,
+                editor, true);
+        
+        // All components added before this will be sub settings
         SettingsUtil.addSubsettings(repeatMsg, repeatMsgPanel.getComponents());
         
         JButton testSim = new JButton("Test Similarity");
         testSim.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         testSim.addActionListener(e -> {
-            new TestSimilarity(d).setVisible(true);
+            new TestSimilarity(d, ignoredChars.getText()).setVisible(true);
         });
         repeatMsgPanel.add(testSim,
                 SettingsDialog.makeGbc(2, 1, 2, 1, GridBagConstraints.EAST));
@@ -130,7 +144,16 @@ public class ModerationSettings extends SettingsPanel {
                 SettingsDialog.makeGbc(0, 6, 4, 1));
     }
     
+    /**
+     * Dialog to test similarity settings.
+     */
     private static class TestSimilarity extends JDialog {
+        
+        /**
+         * Remove all characters that are not in the BMP (except surrogates, so
+         * do remove those).
+         */
+        public static DocumentFilter IGNORED_CHARS_FILTER = new RegexDocumentFilter("[^\u0000-\uD7FF\uE000-\uFFFF]");
         
         private static final String DEFAULT_EXAMPLE_A = "Have you already checked out Chatty's YouTube channel? Might have some useful video guides.";
         private static final String DEFAULT_EXAMPLE_B = "Chatty's YouTube channel might have some useful video guides. Have you checked it out yet?";
@@ -148,8 +171,9 @@ public class ModerationSettings extends SettingsPanel {
         private final JTextArea m1;
         private final JTextArea m2;
         private final JLabel label;
+        private final JTextField ignoredChars;
         
-        public TestSimilarity(Window parent) {
+        public TestSimilarity(Window parent, String ignoredCharsValue) {
             super(parent);
             setTitle("Test Similarity");
             
@@ -165,6 +189,9 @@ public class ModerationSettings extends SettingsPanel {
             m2.setWrapStyleWord(true);
             m1.setText(DEFAULT_EXAMPLE_A);
             m2.setText(DEFAULT_EXAMPLE_B);
+            ignoredChars = new JTextField(10);
+            ignoredChars.setText(ignoredCharsValue);
+            ((AbstractDocument)ignoredChars.getDocument()).setDocumentFilter(IGNORED_CHARS_FILTER);
             
             DocumentListener listener = new DocumentListener() {
                 @Override
@@ -184,29 +211,49 @@ public class ModerationSettings extends SettingsPanel {
             };
             m1.getDocument().addDocumentListener(listener);
             m2.getDocument().addDocumentListener(listener);
+            ignoredChars.getDocument().addDocumentListener(listener);
             
-            GridBagConstraints gbc = SettingsDialog.makeGbc(0, 0, 2, 1);
+            GridBagConstraints gbc = SettingsDialog.makeGbc(0, 1, 2, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
             add(new JScrollPane(m1), gbc);
-            gbc = SettingsDialog.makeGbc(0, 1, 2, 1);
+            gbc = SettingsDialog.makeGbc(0, 2, 2, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
             add(new JScrollPane(m2), gbc);
             
+            JPanel ignorePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+            
+            ignorePanel.add(new JLabel("Ignored characters:"));
+            ignorePanel.add(ignoredChars);
+            
+            JButton ignoredCharsLoad = new JButton("Reset");
+            ignoredCharsLoad.addActionListener(e -> ignoredChars.setText(ignoredCharsValue));
+            JButton ignoredCharsClear = new JButton("Clear");
+            ignoredCharsClear.addActionListener(e -> ignoredChars.setText(null));
+            
+            ignoredCharsLoad.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            ignoredCharsClear.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            
+            ignorePanel.add(ignoredCharsLoad);
+            ignorePanel.add(ignoredCharsClear);
+            
+            gbc = SettingsDialog.makeGbc(0, 0, 2, 1);
+            add(ignorePanel, gbc);
+            
             add(new JLabel(SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-similarity.html", null)),
-                    SettingsDialog.makeGbc(0, 4, 2, 1));
+                    SettingsDialog.makeGbc(0, 5, 2, 1));
             
             label = new JLabel("Result");
-            add(label, SettingsDialog.makeGbc(0, 2, 2, 1));
+            add(label, SettingsDialog.makeGbc(0, 3, 2, 1));
             
-            gbc = SettingsDialog.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
+            gbc = SettingsDialog.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST);
             gbc.weightx = 1;
             add(new JLabel("Examples:"), gbc);
             ComboStringSetting selectExample = new ComboStringSetting(EXAMPLES);
-            gbc = SettingsDialog.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
+            gbc = SettingsDialog.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
             gbc.weightx = 1;
             add(selectExample, gbc);
             selectExample.addActionListener(e -> {
@@ -218,7 +265,7 @@ public class ModerationSettings extends SettingsPanel {
             
             JButton closeButton = new JButton(Language.getString("dialog.button.close"));
             closeButton.addActionListener(e -> dispose());
-            gbc = SettingsDialog.makeGbc(0, 5, 2, 1);
+            gbc = SettingsDialog.makeGbc(0, 6, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(closeButton, gbc);
             
@@ -229,8 +276,9 @@ public class ModerationSettings extends SettingsPanel {
         }
         
         private void update() {
-            String a = StringUtil.prepareForSimilarityComparison(m1.getText());
-            String b = StringUtil.prepareForSimilarityComparison(m2.getText());
+            char[] ignoredCharacters = StringUtil.getCharsFromString(ignoredChars.getText());
+            String a = StringUtil.prepareForSimilarityComparison(m1.getText(), ignoredCharacters);
+            String b = StringUtil.prepareForSimilarityComparison(m2.getText(), ignoredCharacters);
             int similarity = Math.round(StringUtil.getSimilarity(a, b) * 100);
             int similarity2 = Math.round(StringUtil.getSimilarity2(a, b) * 100);
             int lengthSimilarity = Math.round(StringUtil.getLengthSimilarity(a, b) * 100);
@@ -247,7 +295,7 @@ public class ModerationSettings extends SettingsPanel {
     }
     
     public static void main(String[] args) {
-        new TestSimilarity(null).setVisible(true);
+        new TestSimilarity(null, "?").setVisible(true);
     }
     
 }

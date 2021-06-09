@@ -625,6 +625,7 @@ public class SettingsManager {
         settings.addLong("repeatMsgLen", 20);
         settings.addLong("repeatMsgTime", 3600);
         settings.addLong("repeatMsgMethod", 1);
+        settings.addString("repeatMsgIgnored", "");
         settings.addString("repeatMsgMatch", "!status:M");
 
         // Chat Logging

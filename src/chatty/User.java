@@ -487,8 +487,8 @@ public class User implements Comparable<User> {
         return new ArrayList<>(lines);
     }
     
-    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, int method, long timeframe, float minSimilarity, int minLen) {
-        compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg);
+    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, int method, long timeframe, float minSimilarity, int minLen, char[] ignoredChars) {
+        compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg, ignoredChars);
         int result = 0;
         long checkUntilTime = System.currentTimeMillis() - timeframe * 1000;
         for (int i=lines.size() - 1; i>=0; i--) {
@@ -499,7 +499,7 @@ public class User implements Comparable<User> {
                     break;
                 }
                 if (msg.text.length() >= minLen) {
-                    String text = StringUtil.prepareForSimilarityComparison(msg.text);
+                    String text = StringUtil.prepareForSimilarityComparison(msg.text, ignoredChars);
                     if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity, method) > 0) {
                         result++;
                     }

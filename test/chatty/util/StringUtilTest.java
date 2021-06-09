@@ -189,4 +189,31 @@ public class StringUtilTest {
         assertTrue(StringUtil.checkSimilarity("This is a longer message", "This is a message that's longer", 0.8f, 1) > 0);
     }
     
+    @Test
+    public void testRemoveWhitespaceAndMore() {
+        assertEquals("", StringUtil.removeWhitespaceAndMore("!!", new char[]{'!'}));
+        assertEquals("abc", StringUtil.removeWhitespaceAndMore("abc!", new char[]{'!'}));
+        assertEquals("abc↗", StringUtil.removeWhitespaceAndMore("!abc!↗", new char[]{'!'}));
+        assertEquals("abc", StringUtil.removeWhitespaceAndMore("!abc!↗", new char[]{'!', '↗'}));
+        assertEquals("🐱", StringUtil.removeWhitespaceAndMore("!🐱!↗", new char[]{'!', '↗'}));
+        // Array not sorted correctly, result is undefined, so not sure if this test works
+//        assertEquals("!🐱!", StringUtil.removeWhitespaceAndMore("!🐱!↗", new char[]{'↗', '!'}));
+        
+        /**
+         * Specifying a surrogate character directly would remove it, but most
+         * of the time that would probably not be what is wanted.
+         * 
+         * StringUtil.getCharsFromString() can be used to ignore surrogates,
+         * which excludes all chracters outside the BMP. This can be ok if the
+         * use-case doesn't require it.
+         */
+        assertEquals("🐱", StringUtil.removeWhitespaceAndMore("!🐱!↗", StringUtil.getCharsFromString("!↗")));
+        assertEquals("🐱", StringUtil.removeWhitespaceAndMore("!🐱!↗", StringUtil.getCharsFromString("↗!")));
+        assertEquals("🐱", StringUtil.removeWhitespaceAndMore("!🐱!↗", StringUtil.getCharsFromString("↗!🐱abc")));
+        assertEquals("!🐱!↗", StringUtil.removeWhitespaceAndMore("!🐱!↗", StringUtil.getCharsFromString("🐱")));
+        assertEquals("!🐱!↗", StringUtil.removeWhitespaceAndMore("!🐱!↗", StringUtil.getCharsFromString("\uD83D")));
+        // Surrogate directly specified, leaves the other surrogate
+        assertEquals("!\uDC31!↗", StringUtil.removeWhitespaceAndMore("!🐱!↗", new char[]{'\uD83D'}));
+    }
+    
 }

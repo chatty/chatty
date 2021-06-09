@@ -116,6 +116,12 @@ public class EditorStringSetting extends JPanel implements StringSetting {
         this.info = info;
     }
     
+    public void setShowInfoByDefault(boolean show) {
+        if (editor instanceof Editor) {
+            ((Editor) editor).setShowInfoByDefault(show);
+        }
+    }
+    
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);

@@ -24,6 +24,7 @@ public class RepeatMsgHelper {
     private int minLen;
     private float minSim;
     private int method;
+    private char[] ignoredChars;
     
     public RepeatMsgHelper(Settings settings) {
         this.settings = settings;
@@ -55,7 +56,7 @@ public class RepeatMsgHelper {
         if (!matcher.matches(Highlighter.HighlightItem.Type.REGULAR, text, user, localUser, tags)) {
             return tags;
         }
-        int repCount = user.getNumberOfSimilarChatMessages(text, method, time, minSim, minLen) + 1;
+        int repCount = user.getNumberOfSimilarChatMessages(text, method, time, minSim, minLen, ignoredChars) + 1;
         if (repCount >= minRep) {
             // Plus one count to include the current message
             return MsgTags.addTag(tags, TAGS_KEY, String.valueOf(repCount));
@@ -78,8 +79,8 @@ public class RepeatMsgHelper {
         if (a.length() < minLen || b.length() < minLen) {
             return 0;
         }
-        a = StringUtil.prepareForSimilarityComparison(a);
-        b = StringUtil.prepareForSimilarityComparison(b);
+        a = StringUtil.prepareForSimilarityComparison(a, ignoredChars);
+        b = StringUtil.prepareForSimilarityComparison(b, ignoredChars);
         float sim = StringUtil.checkSimilarity(a, b, minSim, method);
         return (int)Math.floor(sim * 100);
     }
@@ -105,6 +106,7 @@ public class RepeatMsgHelper {
             minSim = settings.getLong("repeatMsgSim") / 100f;
             minLen = settings.getInt("repeatMsgLen");
             method = settings.getInt("repeatMsgMethod");
+            ignoredChars = StringUtil.getCharsFromString(settings.getString("repeatMsgIgnored"));
         }
         else {
             matcher = null;
