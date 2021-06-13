@@ -451,8 +451,8 @@ public class UserInfo extends JDialog {
         banReasons.reset();
         singleMessage.setSelected(false);
         setUser(user, msgId, autoModMsgId, localUsername);
-        closeButton.requestFocusInWindow();
         setVisible(true);
+        closeButton.requestFocusInWindow();
     }
     
     /**
