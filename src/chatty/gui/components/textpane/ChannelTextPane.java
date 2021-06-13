@@ -1549,7 +1549,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
 
                         disable();
 
-                        channel.getInput().setText("@" + userFromElement.getDisplayNick() + " ");
+                        channel.getInput().setText("@@" + userFromElement.getDisplayNick() + " ");
                         channel.getInput().requestFocus();
                     }
                 }
