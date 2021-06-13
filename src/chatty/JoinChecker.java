@@ -26,7 +26,7 @@ public class JoinChecker {
      * How long to wait before trying to join again in seconds (based on the
      * number of attempts per channel).
      */
-    private static final int[] DELAY = new int[]{4, 30, 30, 30, 120, 120, 300};
+    private static final int[] DELAY = new int[]{10, 30, 30, 30, 86400};
     
     private final Irc irc;
     

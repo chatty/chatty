@@ -2,6 +2,7 @@
 package chatty.gui.notifications;
 
 import chatty.Addressbook;
+import chatty.ChannelFavorites;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.Room;
@@ -15,10 +16,13 @@ import static chatty.gui.notifications.Notification.State.CHANNEL_NOT_ACTIVE;
 import static chatty.gui.notifications.Notification.State.CHANNEL_OR_APP_NOT_ACTIVE;
 import static chatty.gui.notifications.Notification.State.OFF;
 import chatty.gui.notifications.Notification.Type;
+import chatty.gui.notifications.Notification.TypeOption;
+import chatty.util.DateTime;
 import chatty.util.Sound;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,17 +40,20 @@ public class NotificationManager {
     private final Settings settings;
     private final MainGui main;
     private final Addressbook ab;
+    private final ChannelFavorites channelFavorites;
     
     private final List<Notification> properties = new ArrayList<>();
     private static final String SETTING_NAME = "notifications";
     public static final String COLOR_PRESETS_SETTING_NAME = "nColorPresets";
 
     public NotificationManager(MainGui main,
-            Settings settings, Addressbook ab) {
+                               Settings settings,
+                               Addressbook ab,
+                               ChannelFavorites channelFavorites) {
         this.settings = settings;
         this.main = main;
         this.ab = ab;
-        loadFromSettings();
+        this.channelFavorites = channelFavorites;
         settings.addSettingChangeListener((s, t, v) -> {
             if (s.equals(SETTING_NAME)) {
                 loadFromSettings();
@@ -65,17 +72,17 @@ public class NotificationManager {
     }
     
     private void saveToSettings() {
-        List<List> entriesToSave = new ArrayList<>();
+        List<List<Object>> entriesToSave = new ArrayList<>();
         for (Notification p : properties) {
             entriesToSave.add(p.toList());
         }
         settings.putList(SETTING_NAME, entriesToSave);
     }
     
-    private synchronized void loadFromSettings() {
-        List<List> entriesToLoad = settings.getList(SETTING_NAME);
+    public synchronized void loadFromSettings() {
+        List<List<Object>> entriesToLoad = settings.getList(SETTING_NAME);
         properties.clear();
-        for (List l : entriesToLoad) {
+        for (List<Object> l : entriesToLoad) {
             Notification p = Notification.fromList(l);
             if (p != null) {
                 properties.add(p);
@@ -84,22 +91,40 @@ public class NotificationManager {
     }
     
     public void streamInfoChanged(String channel, StreamInfo info) {
-        check(Type.STREAM_STATUS, "#"+info.getStream(), null, info.getFullStatus(), n -> {
-            if (info.getOnline() || !n.hasOption("noOffline")) {
-                return new NotificationData("[Status] "+channel, info.getFullStatus());
-            } 
+        check(Type.STREAM_STATUS, "#"+info.getStream(), null, null, null, n -> {
+            boolean liveReq = !n.hasOption(TypeOption.LIVE) || info.getOnline();
+            boolean newReq = !n.hasOption(TypeOption.NEW_STREAM) || info.getTimeStartedWithPicnicAgo() < 15*60*1000;
+            boolean nowLiveReq = !n.hasOption(TypeOption.NOW_LIVE) || info.getPrevLastOnlineAgoSecs() > 15*60;
+            boolean gameFavReq = !n.hasOption(TypeOption.FAV_GAME) || settings.listContains("gameFavorites", info.getGame());
+            if (liveReq && newReq && nowLiveReq && gameFavReq) {
+                String title;
+                if (info.getOnline() && !n.hasOption(TypeOption.NO_UPTIME)) {
+                    title = String.format("[Status] %2$s (%1$s)",
+                            DateTime.agoUptimeCompact2(info.getTimeStartedWithPicnic()),
+                            info.getCapitalizedName());
+                } else {
+                    title = String.format("[Status] %s",
+                            info.getCapitalizedName());
+                }
+                MsgTags tags = MsgTags.create(
+                        "title", title,
+                        "game", info.getGame());
+                if (n.matches(info.getFullStatus(), channel, ab, null, null, tags)) {
+                    return new NotificationData(title, info.getFullStatus());
+                }
+            }
             return null;
         });
     }
     
-    public void highlight(User user, String message, boolean noNotify,
+    public void highlight(User user, User localUser, String message, MsgTags tags, boolean noNotify,
             boolean noSound, boolean isOwnMessage, boolean isWhisper,
             boolean hasBits) {
-        check(null, user.getChannel(), user, message, noNotify, noSound, n -> {
-            if (isOwnMessage && !n.hasOption("own")) {
+        check(null, user.getChannel(), user, localUser, message, tags, noNotify, noSound, n -> {
+            if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
-            if (!hasBits && n.hasOption("bits")) {
+            if (!hasBits && n.hasOption(TypeOption.CONTAINS_BITS)) {
                 return null;
             }
             if (n.type == Type.HIGHLIGHT) {
@@ -128,9 +153,9 @@ public class NotificationManager {
      * @param noSound 
      */
     public void infoHighlight(Room room, String message, boolean noNotify,
-            boolean noSound) {
+            boolean noSound, User localUser) {
         String channel = room != null ? room.getChannel() : null;
-        check(null, channel, null, message, noNotify, noSound,  n -> {
+        check(null, channel, null, localUser, message, MsgTags.EMPTY, noNotify, noSound,  n -> {
             boolean hasChannel = channel != null && !channel.isEmpty();
             if (n.type == Type.HIGHLIGHT) {
                 String title;
@@ -161,9 +186,9 @@ public class NotificationManager {
      * @param room May be null or empty
      * @param text 
      */
-    public void info(Room room, String text) {
+    public void info(Room room, String text, User localUser) {
         String channel = room != null ? room.getChannel() : null;
-        check(Type.INFO, channel, null, text, n -> {
+        check(Type.INFO, channel, null, localUser, text, n -> {
             String title;
             if (channel == null || channel.isEmpty()) {
                 title = "[Info]";
@@ -174,13 +199,13 @@ public class NotificationManager {
         });
     }
     
-    public void message(User user, String message, boolean isOwnMessage,
-            boolean hasBits) {
-        check(Type.MESSAGE, user.getChannel(), user, message, n -> {
-            if (isOwnMessage && !n.hasOption("own")) {
+    public void message(User user, User localUser, String message, MsgTags tags,
+            boolean isOwnMessage, boolean hasBits) {
+        check(Type.MESSAGE, user.getChannel(), user, localUser, message, tags, n -> {
+            if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
-            if (!hasBits && n.hasOption("bits")) {
+            if (!hasBits && n.hasOption(TypeOption.CONTAINS_BITS)) {
                 return null;
             }
             String title = String.format("[Message] %s in %s",
@@ -189,9 +214,9 @@ public class NotificationManager {
         });
     }
     
-    public void whisper(User user, String message, boolean isOwnMessage) {
-        check(Type.WHISPER, null, user, message, n -> {
-            if (isOwnMessage && !n.hasOption("own")) {
+    public void whisper(User user, User localUser, String message, boolean isOwnMessage) {
+        check(Type.WHISPER, null, user, localUser, message, n -> {
+            if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
             String title = String.format("[Whisper] %s",
@@ -201,7 +226,7 @@ public class NotificationManager {
     }
     
     public void userJoined(User user) {
-        check(Type.JOIN, user.getChannel(), user, user.getName(), n -> {
+        check(Type.JOIN, user.getChannel(), user, null, user.getName(), n -> {
             String title = String.format("[Join] %s in %s",
                     getDisplayName(user), user.getChannel());
             return new NotificationData(title, "");
@@ -209,7 +234,7 @@ public class NotificationManager {
     }
     
     public void userLeft(User user) {
-        check(Type.PART, user.getChannel(), user, user.getName(), n -> {
+        check(Type.PART, user.getChannel(), user, null, user.getName(), n -> {
             String title = String.format("[Part] %s in %s",
                     getDisplayName(user), user.getChannel());
             return new NotificationData(title, "");
@@ -232,14 +257,14 @@ public class NotificationManager {
         });
     }
     
-    public void newSubscriber(User user, String systemMsg, String message) {
+    public void newSubscriber(User user, User localUser, String systemMsg, String message) {
         final String text;
         if (message != null && !message.isEmpty()) {
             text = systemMsg + " [" + message + "]";
         } else {
             text = systemMsg;
         }
-        check(Type.SUBSCRIBER, user.getChannel(), user, text, c -> {
+        check(Type.SUBSCRIBER, user.getChannel(), user, localUser, text, c -> {
             String title = String.format("[Subscriber] %s in %s",
                     user.getDisplayNick(),
                     user.getChannel());
@@ -272,16 +297,21 @@ public class NotificationManager {
     }
     
     private void check(Type type, String channel, NotificationChecker c) {
-        check(type, channel, null, null, false, false, c);
+        check(type, channel, null, null, null, MsgTags.EMPTY, false, false, c);
     }
     
-    private void check(Type type, String channel, User user, String message,
+    private void check(Type type, String channel, User user, User localUser, String message,
             NotificationChecker c) {
-        check(type, channel, user, message, false, false, c);
+        check(type, channel, user, localUser, message, MsgTags.EMPTY, false, false, c);
     }
     
-    private void check(Type type, String channel, User user,
-            String message, boolean noNotify, boolean noSound,
+    private void check(Type type, String channel, User user, User localUser, String message,
+            MsgTags tags, NotificationChecker c) {
+        check(type, channel, user, localUser, message, tags, false, false, c);
+    }
+    
+    private void check(Type type, String channel, User user, User localUser,
+            String message, MsgTags tags, boolean noNotify, boolean noSound,
             NotificationChecker c) {
         boolean shown = false;
         boolean played = false;
@@ -289,7 +319,9 @@ public class NotificationManager {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
-                    && n.matches(message, channel, ab, user)) {
+                    && n.matches(message, channel, ab, user, localUser, tags)
+                    && (!n.hasOption(TypeOption.FAV_CHAN) || channelFavorites.isFavorite(channel))
+                    && !hideOnStart(n)) {
                 
                 NotificationData d = c.check(n);
                 if (d != null) {
@@ -303,10 +335,12 @@ public class NotificationManager {
                             && !noSound
                             && checkRequirements(n.soundState, channel)
                             && n.hasSound()) {
+                        // Don't remember why it's not using the playSound()
+                        // return value, but this is the behavior now
                         played = true;
                         // This may not actually play the sound, if waiting for
                         // cooldown
-                        playSound(n, channel);
+                        playSound(n);
                     }
                     n.setMatched();
                 }
@@ -320,7 +354,7 @@ public class NotificationManager {
         return true;
     }
     
-    private boolean playSound(Notification n, String channel) {
+    private boolean playSound(Notification n) {
         // Check stuff, return true only if played
         if (!settings.getBoolean("sounds")) {
             return false;
@@ -344,6 +378,11 @@ public class NotificationManager {
             // Do nothing further (already logged)
         }
         return true;
+    }
+    
+    private boolean hideOnStart(Notification n) {
+        boolean enabled = settings.getBoolean("nHideOnStart") || n.hasOption(TypeOption.HIDE_ON_START);
+        return enabled && Chatty.uptimeSeconds() < 120;
     }
 
     /**

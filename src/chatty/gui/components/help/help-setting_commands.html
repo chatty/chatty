@@ -57,8 +57,7 @@
                 <li>For Addressbook related settings, see <a href="help-addressbook.html#advanced">Addressbook Help</a>.</li>
             </ul>
     
-    <p>Settings with a <span class="settingExclusive">slightly darker background color</span>
-    are settings that are not available in the Settings Dialog and can only be
+    <p>Some settings are not available in the Settings Dialog and can only be
     changed via commands (and sometimes also commandline options). Settings with
     a <span class="settingNoCommandEdit">lighter color</span> can't (or are not recommended to) be changed
     via setting commands, but are added to the list because their value can be
@@ -78,8 +77,8 @@
         <a href="#cm">Copy Messages</a> |
         <a href="#openurl">Open URL Command</a>
     </p>
-            <table class="settings" style="border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #EEE">
+            <table class="settings" cellspacing="1">
+                <tr>
                     <th>Setting</th>
                     <th>Type</th>
                     <th>Values</th>
@@ -155,7 +154,7 @@
             </table>
     
             <h3><a name="laf">Look and Feel</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -187,7 +186,7 @@
                     <td>Theme properties</td>
                     <td><em>empty</em></td>
                     <td>This setting can be used to directly set your own
-                        <a href="http://www.jtattoo.net/ThemeProps.html">JTattoo Theme properties</a>.</td>
+                        <a href="help-laf.html#custom">JTattoo Theme properties</a>.</td>
                 </tr>
             </table>
             <p><em>Note:</em> You may need to restart Chatty for Look and Feel
@@ -195,7 +194,7 @@
             
             <h3><a name="font">Font</a></h3>
             
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -255,7 +254,7 @@
             versions before 0.7.3).</p>
             
             <h3><a name="time">Time</a> <span style="font-size:0.5em;">Dr. Freeman..</span></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -293,7 +292,7 @@
             
             
             <h3><a name="server">Server/Connection Settings</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -381,7 +380,7 @@
             </table>
             
             <h3><a name="chat">Chat</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -415,7 +414,7 @@
             </table>
             
             <h3><a name="window">Window</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -452,10 +451,28 @@
                         on the tabpane where nothing else can be scrolled (mainly
                         the inputbox).</td>
                 </tr>
+                <tr>
+                    <td class="setting">icons</td>
+                    <td>List[String]</td>
+                    <td>Path to an image file (can be relative to working
+                        directory)</td>
+                    <td><em>empty</em></td>
+                    <td>Replaces the default window (and notification) icons.
+                        For better quality several images of different sizes can
+                        be provided. The default icons are 16x16, 64x64 and
+                        128x128 pixels. Check "Extra - Debug window" to see
+                        which images successfully loaded.<br />
+                        Each path may be prefixed with a type in square brackets
+                        that restricts this image to replacing only certain
+                        icons in the program (paths with no prefix apply to
+                        everyting, except types that do have a prefixed path):
+                        main, tray, notif, live, help, debug, popout<br />
+                        Example: <code>[tray]C:\chatty_tray.png</code></td>
+                </tr>
             </table>
             
             <h3><a name="streamchat">Stream Chat</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -498,7 +515,7 @@
             </table>
             
             <h3><a name="streamhighlights">Stream Highlights</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -519,7 +536,7 @@
                     <td colspan="2">Boolean</td>
                     <td>false</td>
                     <td>If this is enabled, Chatty sends a message to chat when
-                    a moderator uses the !hghlight command. Otherwise
+                    a moderator uses the !highlight command. Otherwise
                     the response to the command is only shown locally.</td>
                 </tr>
                 <tr class="settingExclusive">
@@ -535,7 +552,7 @@
             
             
             <h3><a name="debugging">Debugging</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -559,7 +576,7 @@
             </table>
             
             <h3><a name="bots">Bot Badges</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -597,7 +614,7 @@
             
             <h3><a name="cm">Copy Messages</a></h3>
             <p>This can automatically copy all incoming messages into the clipboard.</p>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>
@@ -639,7 +656,7 @@
             
             
             <h3><a name="openurl">Open URL Command</a></h3>
-            <table class="settings">
+            <table class="settings" cellspacing="1">
                 <tr style="border-bottom: 1px solid #EEE">
                     <th>Setting</th>
                     <th>Type</th>

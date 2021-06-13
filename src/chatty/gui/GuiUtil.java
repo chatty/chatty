@@ -10,14 +10,16 @@ import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Frame;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
@@ -28,21 +30,30 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -59,7 +70,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -73,6 +83,7 @@ public class GuiUtil {
     
     public final static Insets NORMAL_BUTTON_INSETS = new Insets(2, 14, 2, 14);
     public final static Insets SMALL_BUTTON_INSETS = new Insets(-1, 10, -1, 10);
+    public final static Insets SMALLER_BUTTON_INSETS = new Insets(0, 4, 0, 4);
     public final static Insets SPECIAL_BUTTON_INSETS = new Insets(2, 12, 2, 6);
     public final static Insets SPECIAL_SMALL_BUTTON_INSETS = new Insets(-1, 12, -1, 6);
     
@@ -115,17 +126,7 @@ public class GuiUtil {
         JOptionPane p = new JOptionPane(message, messageType, optionType);
         p.setOptions(options);
         final JDialog d = p.createDialog(parent, title);
-        d.setAutoRequestFocus(false);
-        d.setFocusableWindowState(false);
-        // Make focusable after showing the dialog, so that it can be focused
-        // by the user, but doesn't steal focus from the user when it opens.
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                d.setFocusableWindowState(true);
-            }
-        });
+        setNonAutoFocus(d);
         d.setVisible(true);
         // Find index of result
         Object value = p.getValue();
@@ -135,6 +136,22 @@ public class GuiUtil {
             }
         }
         return -1;
+    }
+    
+    /**
+     * Configure the given window to not take focus immediately. It will be
+     * able to take focus afterwards.
+     * 
+     * @param w 
+     */
+    public static void setNonAutoFocus(Window w) {
+        w.setAutoRequestFocus(false);
+        w.setFocusableWindowState(false);
+        // Make focusable after showing the dialog, so that it can be focused
+        // by the user, but doesn't steal focus from the user when it opens.
+        SwingUtilities.invokeLater(() -> {
+            w.setFocusableWindowState(true);
+        });
     }
     
     public static void showNonModalMessage(Component parent, String title, String message, int type) {
@@ -192,7 +209,7 @@ public class GuiUtil {
         }
         // Use screen the mouse is on
         Rectangle screen = getEffectiveScreenBounds(MouseInfo.getPointerInfo().getDevice().getDefaultConfiguration());
-        Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
+        Point mouseLocation = new Point(MouseInfo.getPointerInfo().getLocation());
         int width = c.getWidth();
         int height = c.getHeight();
         
@@ -219,8 +236,72 @@ public class GuiUtil {
         c.setLocation(mouseLocation);
     }
     
+    /**
+     * Changes the given x,y position (if necessary) so that an object with the
+     * given Dimension would stay within the given bounds Rectangle (if the
+     * coordinates refer to the upper left corner).
+     * 
+     * @param bounds
+     * @param size
+     * @param x
+     * @param y
+     * @return A new Point object containing the changed coordinates
+     */
+    public static Point getLocationWithinBounds(Rectangle bounds, Dimension size, int x, int y) {
+        // Bottom
+        if (y + size.height > bounds.y + bounds.height) {
+            y = bounds.y + bounds.height - size.height;
+        }
+        
+        // Top (after Bottom, to ensure access to titlebar)
+        if (y < bounds.y) {
+            y = bounds.y;
+        }
+        
+        // Right
+        if (x + size.width > bounds.x + bounds.width) {
+            x = bounds.x + bounds.width - size.width;
+        }
+        
+        // Left
+        if (x < bounds.x) {
+            x = bounds.x;
+        }
+        
+        return new Point(x, y);
+    }
+    
+    /**
+     * Set the location of the given Window to be centered on the given
+     * Component. The difference to window.setLocationRelativeTo() is that it
+     * doesn't move the window horizontally when moving it vertically.
+     *
+     * @param w
+     * @param source 
+     */
+    public static void setLocationRelativeTo(Window w, Component source) {
+        if (source == null || !source.isShowing()) {
+            w.setLocationRelativeTo(source);
+        }
+        Dimension wSize = w.getSize();
+        Dimension sourceSize = source.getSize();
+        Point location = source.getLocationOnScreen();
+        int x = location.x + (sourceSize.width / 2) - (wSize.width / 2);
+        int y = location.y + (sourceSize.height / 2) - (wSize.height / 2);
+        
+        Rectangle bounds = getEffectiveScreenBounds(source);
+        w.setLocation(getLocationWithinBounds(bounds, w.getSize(), x, y));
+    }
+    
+    /**
+     * Get the bounds for the given GraphicsConfiguration, with insets (e.g.
+     * taskbar) removed.
+     * 
+     * @param config
+     * @return 
+     */
     public static Rectangle getEffectiveScreenBounds(GraphicsConfiguration config) {
-        Rectangle bounds = config.getBounds();
+        Rectangle bounds = new Rectangle(config.getBounds());
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(config);
         Debugging.println("screenbounds", "%s %s", bounds, insets);
         bounds.x += insets.left;
@@ -228,6 +309,21 @@ public class GuiUtil {
         bounds.width -= insets.right + insets.left;
         bounds.height -= insets.bottom + insets.top;
         return bounds;
+    }
+    
+    /**
+     * Get the bounds of the screen of the given Component, with screen insets
+     * (e.g. taskbar) removed.
+     * 
+     * @param c
+     * @return 
+     */
+    public static Rectangle getEffectiveScreenBounds(Component c) {
+        GraphicsConfiguration config = c.getGraphicsConfiguration();
+        if (config == null) {
+            return null;
+        }
+        return getEffectiveScreenBounds(config);
     }
     
     /**
@@ -253,21 +349,34 @@ public class GuiUtil {
                 Thread.sleep(10);
                 window.setLocation(original);
             } catch (InterruptedException ex) {
-                Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
+                Thread.currentThread().interrupt();
+                // No action required
             }
         }
     }
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame dialog = new JFrame();
-            dialog.setSize(100, 100);
-            dialog.setLocationRelativeTo(null);
-            dialog.setVisible(true);
-            JButton button = new JButton("Shake");
-            button.addActionListener(e -> shake(dialog, 2, 2));
-            dialog.add(button);
-            dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            try {
+                JFrame dialog = new JFrame();
+                dialog.setSize(100, 100);
+                dialog.setLocationRelativeTo(null);
+                dialog.setVisible(true);
+                JButton button = new JButton("Shake");
+                ImageIcon a = new ImageIcon(new URL("https://cdn.betterttv.net/emote/58487cc6f52be01a7ee5f205/1x"));
+                ImageIcon b = new ImageIcon(new URL("https://static-cdn.jtvnw.net/emoticons/v1/123171/1.0"));
+                button.addActionListener(e -> shake(dialog, 2, 2));
+                dialog.add(button, BorderLayout.NORTH);
+                LinkedHashMap<ImageIcon, Integer> map = new LinkedHashMap<>();
+                map.put(b, 0);
+                map.put(a, -8);
+                Debugging.command("overlayframe");
+                dialog.add(new JLabel("text", overlay(map), 0), BorderLayout.CENTER);
+                dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            }
+            catch (MalformedURLException ex) {
+                Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
+            }
         });
     }
     
@@ -435,7 +544,21 @@ public class GuiUtil {
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), DefaultEditorKit.selectAllAction);
     }
     
-    public static void showCommandNotification(String commandText, String title,
+    /**
+     * Executes a process with the given commandText, with some parameters
+     * replaced. The resulting command will be split into arguments by spaces,
+     * although sections can be quoted to group them together. Escaped quotes
+     * (\") are ignored.
+     * 
+     * If the commandText isn't a valid CustomCommand, nothing will be executed.
+     * 
+     * @param commandText A command in CustomCommand format
+     * @param title The title of the notification
+     * @param message The message of the notification
+     * @param channel The associated channel (may be null)
+     * @return A result message intended for output to the user while testing
+     */
+    public static String showCommandNotification(String commandText, String title,
             String message, String channel) {
         CustomCommand command = CustomCommand.parse(commandText);
 
@@ -443,8 +566,16 @@ public class GuiUtil {
         param.put("title", title.replace("\"", "\\\""));
         param.put("message", message.replace("\"", "\\\""));
         param.put("channel", channel);
-
-        ProcessManager.execute(command.replace(param), "Notification");
+        param.put("chan", channel);
+        
+        if (command.hasError()) {
+            LOGGER.warning("Notification command error: "+command.getSingleLineError());
+            return "Error: "+command.getSingleLineError();
+        } else {
+            String resultCommand = command.replace(param);
+            ProcessManager.execute(resultCommand, "Notification");
+            return "Running: "+resultCommand;
+        }
     }
     
     /**
@@ -501,6 +632,11 @@ public class GuiUtil {
                 //System.out.println(evt.getPropertyName()+": "+oldV+" -> "+newV);
             }
         });
+    }
+    
+    public static void resetFocusTraversalKeys(Component comp) {
+        comp.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        comp.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
     }
     
     public static void focusTest() {
@@ -571,6 +707,162 @@ public class GuiUtil {
             ad.setDocumentFilter(filter);
         } else {
             throw new IllegalArgumentException("Textcomponent not using AbstractDocument");
+        }
+    }
+    
+    /**
+     * Set the height of the target component to the height of the source
+     * component, by using preferred size.
+     * 
+     * @param target The component to change the size on
+     * @param source The component to retrieve the height from
+     */
+    public static void matchHeight(JComponent target, JComponent source) {
+        target.setPreferredSize(
+                new Dimension(
+                        target.getPreferredSize().width,
+                        source.getPreferredSize().height
+                ));
+    }
+    
+    public static ImageIcon getScaledIcon(Icon icon, int w, int h) {
+        BufferedImage img = new BufferedImage(
+                icon.getIconWidth(),
+                icon.getIconHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
+    }
+    
+    /**
+     * If the given icon is null, load icon with the given name instead.
+     * 
+     * @param icon The icon
+     * @param c Load the fallback icon relative to this class
+     * @param name The file name in the JAR
+     * @return The given icon, or the fallback icon loaded from the JAR
+     */
+    public static Icon getFallbackIcon(Icon icon, Class c, String name) {
+        if (icon == null) {
+            return getIcon(c, name);
+        }
+        return icon;
+    }
+    
+    public static ImageIcon getIcon(Object o, String name) {
+        return getIcon(o.getClass(), name);
+    }
+    
+    public static ImageIcon getIcon(Class c, String name) {
+        return new ImageIcon(Toolkit.getDefaultToolkit().createImage(c.getResource(name)));
+    }
+    
+    /**
+     * Combine the two given icons horizontally into a new icon.
+     * 
+     * @param a The left icon in the resulting icon
+     * @param b The right icon in the resulting icon
+     * @param space Space between the icons in pixels
+     * @return The new icon
+     */
+    public static ImageIcon combineIcons(ImageIcon a, ImageIcon b, int space) {
+        int width = a.getIconWidth() + b.getIconWidth() + space;
+        int height = Math.max(a.getIconHeight(), b.getIconHeight());
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.drawImage(a.getImage(), 0, 0, null);
+        g.drawImage(b.getImage(), a.getIconWidth() + space, 0, null);
+        g.dispose();
+        return new ImageIcon(img);
+    }
+    
+    public static ImageIcon createEmptyIcon(int width, int height) {
+        BufferedImage res = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        return new ImageIcon(res);
+    }
+    
+    public static ImageIcon overlay(LinkedHashMap<ImageIcon, Integer> overlay) {
+        if (overlay == null || overlay.isEmpty()) {
+            return null;
+        }
+        if (overlay.size() == 1) {
+            return overlay.entrySet().iterator().next().getKey();
+        }
+        ImageIcon base = null;
+        int width = 0;
+        int height = 0;
+        int oh = 0;
+        Iterator<Map.Entry<ImageIcon, Integer>> it = overlay.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<ImageIcon, Integer> entry = it.next();
+            ImageIcon icon = entry.getKey();
+            if (base == null) {
+                base = entry.getKey();
+            }
+            width = Integer.max(width, icon.getIconWidth());
+            height = Integer.max(height, icon.getIconHeight());
+            int offset = Math.abs((int)(entry.getValue()/100.0*icon.getIconHeight()));
+            int inclOffset = icon.getIconHeight()+offset;
+            if (inclOffset > height) {
+                oh += inclOffset - height;
+                height = inclOffset;
+            }
+        }
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        Iterator<Map.Entry<ImageIcon, Integer>> it2 = overlay.entrySet().iterator();
+        while (it2.hasNext()) {
+            Map.Entry<ImageIcon, Integer> entry = it2.next();
+            ImageIcon icon = entry.getKey();
+            int offset = (int)(entry.getValue()/100.0*icon.getIconHeight());
+            g.drawImage(icon.getImage(),
+                    (width - icon.getIconWidth()) / 2,
+                    (height - icon.getIconHeight()) / 2 + offset + oh,
+                    null);
+        }
+        if (Debugging.isEnabled("overlayframe")) {
+            g.setColor(Color.BLACK);
+            g.drawRect(0, 0, width - 1, height - 1);
+        }
+        g.dispose();
+        return new ImageIcon(img);
+    }
+    
+    /**
+     * Run in the EDT, either by running it directly if already in the EDT or
+     * by using {@link SwingUtilities#invokeAndWait(Runnable)}.
+     * 
+     * @param runnable What to execute
+     * @param description Used for logging when an error occurs
+     */
+    public static void edtAndWait(Runnable runnable, String description) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        }
+        else {
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            }
+            catch (Exception ex) {
+                LOGGER.warning("Failed to execute edtAndWait ("+description+"): "+ex);
+            }
+        }
+    }
+    
+    /**
+     * Run in the EDT, either by running it directly if already in the EDT or
+     * by using {@link SwingUtilities#invokeLater(Runnable)}.
+     * 
+     * @param runnable 
+     */
+    public static void edt(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        }
+        else {
+            SwingUtilities.invokeLater(runnable);
         }
     }
     

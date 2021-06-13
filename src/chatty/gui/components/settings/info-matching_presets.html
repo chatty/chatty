@@ -1,0 +1,26 @@
+Each entry must consist of a name and a value, separated by a space. The name
+can have special meanings:
+
+<ul>
+    <li>Names beginning with an underscore "_" cause the entry to use the Custom
+        Command format, so it supports replacements, but also e.g. requires
+        escaping of special characters <code>$</code> and <code>\</code> when
+        intended to be used literally. Generally the <code>$1-</code>
+        replacement will contain the text given as a parameter when this Preset
+        is used.</li>
+    <li>Entries with other names are interpreted as plain text.</li>
+    <li>Entries where the name begins with "#" are entirely ignored.</li>
+    <li>An entry with the name <code>_global_&lt;type&gt;</code> (where <code>&lt;type&gt;</code> can
+        be <code>highlight</code>, <code>ignore</code>, <code>filter</code>,
+        <code>msgcolor</code>, <code>usercolor</code>, <code>badge</code> or
+        <code>notification</code>) will automatically be applied to settings of
+        that type (or at least the part of it that uses Highlight-type matching)
+        as if it was prefixed with <code>ccf:_global_&lt;type&gt;|</code> (see <a href="help-settings:Matching_ccf">help</a>).
+        Use <code>_global</code> to apply to all of these (although specific type
+        takes precedence if present).</li>
+</ul>
+
+<p>These entries can be used in pretty much every setting that uses the <a href="help-settings:Highlight">Highlight</a>
+    format, not just the Highlight list, however note that a restart may be
+    required for changes to apply to settings that are not the Highlight, Ignore or Filter list.</p>
+<p>Read the <a href="help-settings:Matching_Presets">Presets help</a> for how to use the entries on this list.</p>

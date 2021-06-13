@@ -7,7 +7,7 @@ This is a bundled version of Chatty, which includes:
   subdirectory, which is used to run Chatty without having to have Java
   installed on the system
 * Some additional fallback fonts
-* The Chatty.exe and some helper libraries
+* The Chatty.exe and some helper libraries to launch Chatty
 
 Advantages
 ----------
@@ -28,7 +28,7 @@ Use and configure
 =================
 
 Execute the Chatty.exe to start the Chatty with the bundled runtime. The
-working directory should be the `app` directory.
+working directory is always set to the `app` directory.
 
 You can add/remove JVM and Chatty commandline options in the `app/Chatty.cfg`
 file. For example add `-cd` to the `ArgOptions` section to save settings to

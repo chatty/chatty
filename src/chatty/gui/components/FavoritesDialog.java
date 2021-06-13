@@ -10,6 +10,7 @@ import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.lang.Language;
 import chatty.gui.components.menus.RoomsContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.util.BitEncoder;
 import chatty.util.DateTime;
 import java.awt.GridBagConstraints;
@@ -103,6 +104,7 @@ public class FavoritesDialog extends JDialog {
             }
         });
         GuiUtil.installLengthLimitDocumentFilter(input, 8000, false);
+        TextSelectionMenu.install(input);
         
         // Table
         data = new MyTableModel();
@@ -112,8 +114,8 @@ public class FavoritesDialog extends JDialog {
         table.setRowSorter(rowSorter);
         sorter = new CustomSorter(rowSorter);
         setupTable();
-        
-        
+
+        input.setToolTipText(Language.getString("favorites.input.tip"));
         gbc = makeGbc(0,0,2,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(input, gbc);
@@ -148,10 +150,7 @@ public class FavoritesDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(cancelButton, gbc);
 
-        removeFromFavoritesButton.setToolTipText("Remove selected channel(s) "
-                + "from favorites only");
-        removeButton.setToolTipText("Remove selected channel(s) from favorites "
-                + "and history");
+        removeButton.setToolTipText(Language.getString("favorites.button.remove.tip"));
         
         ActionListener actionListener = new ActionListener() {
 
@@ -339,6 +338,12 @@ public class FavoritesDialog extends JDialog {
         data.setData(favorites.getAll());
         setVisible(true);
         return result;
+    }
+    
+    public void updateData() {
+        if (isVisible()) {
+            data.setData(favorites.getAll());
+        }
     }
     
     /**

@@ -24,12 +24,12 @@ public class ImageSettings extends SettingsPanel {
         
         GridBagConstraints gbc;
         
-        JPanel usericons = addTitledPanel(Language.getString("settings.section.usericons"), 0, true);
+        JPanel usericons = addTitledPanel(Language.getString("settings.section.usericons"), 0, false);
+        JPanel custom = addTitledPanel(Language.getString("settings.section.customUsericons"), 1, true);
 
         JCheckBox usericonsEnabled = d.addSimpleBooleanSetting("usericonsEnabled");
         JCheckBox botBadgeEnabled = d.addSimpleBooleanSetting("botBadgeEnabled");
-        JCheckBox customUsericonsEnabled = d.addSimpleBooleanSetting("customUsericonsEnabled",
-                "Enable Custom Usericons (table)", "");
+        JCheckBox customUsericonsEnabled = d.addSimpleBooleanSetting("customUsericonsEnabled");
         
         //==================
         // General Settings
@@ -44,7 +44,7 @@ public class ImageSettings extends SettingsPanel {
         // Custom Usericons
         //==================
         gbc = d.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST);
-        usericons.add(customUsericonsEnabled, gbc);
+        custom.add(customUsericonsEnabled, gbc);
         
         usericonsData = new UsericonEditor(d, d.getLinkLabelListener());
         usericonsData.setPreferredSize(new Dimension(150, 250));
@@ -52,18 +52,13 @@ public class ImageSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
-        usericons.add(usericonsData, gbc);
+        custom.add(usericonsData, gbc);
         
         gbc = d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
-        usericons.add(new JLabel("Tip: Add a Usericon with no image to hide badges of that type"), gbc);
+        custom.add(new JLabel(Language.getString("settings.customUsericons.info")), gbc);
         
-        // Usericons enabled state
-        customUsericonsEnabled.setEnabled(false);
-        botBadgeEnabled.setEnabled(false);
-        usericonsEnabled.addItemListener(e -> {
-            customUsericonsEnabled.setEnabled(usericonsEnabled.isSelected());
-            botBadgeEnabled.setEnabled(usericonsEnabled.isSelected());
-        });
+        SettingsUtil.addSubsettings(usericonsEnabled, customUsericonsEnabled, botBadgeEnabled);
+        SettingsUtil.addSubsettings(customUsericonsEnabled, usericonsData);
     }
     
     public void setData(List<Usericon> data) {

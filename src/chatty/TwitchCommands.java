@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.UrlOpener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -48,7 +49,7 @@ public class TwitchCommands {
         "unban", "untimeout", "delete", "clear",
         "followers", "followersoff", "subscribers", "subscribersoff", "slow", "slowoff",
         "emoteonly", "emoteonlyoff", "r9kbeta", "r9kbetaoff",
-        "vip", "unvip", "vips", "mod", "unmod", "mods",
+        "vip", "unvip", "vips", "mod", "unmod", "mods", "commercial",
         "host", "unhost",
         "color"
     }));
@@ -64,10 +65,32 @@ public class TwitchCommands {
         "emoteonlyoff", "r9kbeta", "r9kbetaoff"
     }));
     
+    /**
+     * Other commands, only used for isCommand().
+     */
+    private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
+        "ban", "timeout", "fixmods", "host2", "raid", "unraid", "requests",
+        "to", "r9k", "r9koff", "host"
+    }));
+    
     private TwitchConnection c;
     
     public TwitchCommands(TwitchConnection c) {
         this.c = c;
+    }
+    
+    public static boolean isCommand(String command) {
+        command = StringUtil.toLowerCase(command);
+        if (SIMPLE_COMMANDS.contains(command)) {
+            return true;
+        }
+        if (NO_PARAMETER_COMMANDS.contains(command)) {
+            return true;
+        }
+        if (OTHER_COMMANDS.contains(command)) {
+            return true;
+        }
+        return false;
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {
@@ -80,11 +103,17 @@ public class TwitchCommands {
         if (command.equals("r9koff")) {
             command = "r9kbetaoff";
         }
-        if (SIMPLE_COMMANDS.contains(command)) {
+        if (command.equals("host") && parameter == null) {
+            commandHostmode2(Helper.toChannel(c.getUsername()), Helper.toStream(channel));
+        }
+        else if (SIMPLE_COMMANDS.contains(command)) {
             // Simple commands that don't require any special handling for
             // decent output
             if (onChannel(channel, true)) {
-                String message = Language.getString("chat.twitchcommands."+command, false);
+                parameter = StringUtil.trim(parameter);
+                // Get custom message for this command, if available
+                String message = Language.getStringNull("chat.twitchcommands."+command,
+                        !StringUtil.isNullOrEmpty(parameter) ? parameter : "default");
                 if (parameter == null || parameter.trim().isEmpty()
                         || NO_PARAMETER_COMMANDS.contains(command)) {
                     // No parameter
@@ -114,6 +143,14 @@ public class TwitchCommands {
         }
         else if (command.equals("unraid")) {
             commandUnraid(channel);
+        }
+        else if (command.equals("requests")) {
+            if (Helper.isRegularChannelStrict(channel)) {
+                UrlOpener.openUrl("https://www.twitch.tv/popout/"+Helper.toStream(channel)+"/reward-queue");
+            }
+            else {
+                printLine(channel, "Invalid channel to open reward queue for");
+            }
         }
         else {
             return false;

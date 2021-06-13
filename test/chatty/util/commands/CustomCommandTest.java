@@ -1,6 +1,9 @@
 
 package chatty.util.commands;
 
+import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import java.util.Arrays;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -259,6 +262,75 @@ public class CustomCommandTest {
         CustomCommand.parse(" $ ");
         CustomCommand.parse(" $join(");
         CustomCommand.parse(" $join( ");
+    }
+    
+    @Test
+    public void testUser() {
+        User user = new User("username", "User Name", Room.EMPTY);
+
+        Parameters parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        CustomCommand command = CustomCommand.parse("$(nick) $(display-nick) $(full-nick) $(custom-nick) $(special-nick) $(display-nick2) $(full-nick2) $(user-id)");
+        assertEquals("username User Name User Name User Name true User Name (username) User Name (username) ", command.replace(parameters));
+        
+        user.setModerator(true);
+        user.setCustomNick("custom");
+        user.setDisplayNick("asdas");
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("username asdas @custom custom true asdas (username) @custom (username) ", command.replace(parameters));
+        
+        user.setId("id");
+        user.setDisplayNick("UserName");
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("UserName UserName @custom custom  UserName @custom id", command.replace(parameters));
+        
+        user.setCustomNick(null);
+        parameters = Parameters.create("");
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertEquals("UserName UserName @UserName UserName  UserName @UserName id", command.replace(parameters));
+    }
+    
+    @Test
+    public void testCustom() {
+        Parameters parameters = Parameters.create("ABC");
+        assertEquals("abc %lower(1) $lower(1)", CustomCommand.parseCustom("%lower(1) `%lower(1) $lower(1)", "%", "`").replace(parameters));
+        assertTrue(CustomCommand.parseCustom("%lower(1)", "%", "%").hasError());
+        assertEquals("abc abc", CustomCommand.parseCustom("%lower(1) %lower(1)", "%", "").replace(parameters));
+        assertEquals("$lower(1)", CustomCommand.parseCustom("$lower(1)", "", "").replace(parameters));
+        assertEquals("$lower(1)", CustomCommand.parseCustom("%$lower(1)", "", "%").replace(parameters));
+        assertEquals("%$lower(1)", CustomCommand.parseCustom("%%$lower(1)", "", "%").replace(parameters));
+    }
+    
+    @Test
+    public void testLiteral() {
+        Parameters parameters = Parameters.create("ABC");
+        assertEquals("abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $'").replace(parameters));
+        assertEquals("abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $").replace(parameters));
+        assertEquals("abc / Quote: '", CustomCommand.parse("$lower(1) / $'Quote: ''").replace(parameters));
+        assertEquals("abc / Quote: ' / Dollar: $", CustomCommand.parse("$lower(1) / $'Quote: '' / Dollar: $'").replace(parameters));
+        assertEquals("abc / Dollar: $ / abc / Dollar: $", CustomCommand.parse("$lower(1) / $'Dollar: $' / $lower(1) / $'Dollar: $'").replace(parameters));
+        assertEquals("abc,123", CustomCommand.parse("$rand($'abc,123')").replace(parameters));
+        assertTrue(CustomCommand.parse("$rand($'abc,123)").hasError());
+    }
+    
+    @Test
+    public void testParameters() {
+        User user = new User("username", "User Name", Room.EMPTY);
+        Parameters parameters = Parameters.create("");
+        
+        assertFalse(parameters.notEmpty("custom-nick", "full-nick2"));
+        assertEquals(parameters.get("display-nick"), null);
+        
+        Helper.addUserParameters(user, null, null, parameters);
+        
+        assertTrue(parameters.notEmpty("custom-nick", "full-nick2"));
+        assertEquals(parameters.get("display-nick"), "User Name");
     }
     
 }

@@ -22,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 /**
@@ -144,8 +145,7 @@ public class BanReasons extends JPanel {
                 }
             });
             
-            // TODO: Disable for now until it can be configured
-//            combo.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("R"), combo);
+            updateHotkey();
             combo.getActionMap().put(combo, new AbstractAction() {
 
                 @Override
@@ -242,6 +242,14 @@ public class BanReasons extends JPanel {
         public void removeCustomInput() {
             remove(customReasonInput);
             revalidate();
+        }
+        
+        public void updateHotkey() {
+            combo.getInputMap(WHEN_IN_FOCUSED_WINDOW).clear();
+            KeyStroke openReasonsHotkey = KeyStroke.getKeyStroke(settings.getString("banReasonsHotkey"));
+            if (openReasonsHotkey != null) {
+                combo.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(openReasonsHotkey, combo);
+            }
         }
         
     }

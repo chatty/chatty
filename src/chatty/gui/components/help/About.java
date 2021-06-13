@@ -3,7 +3,9 @@ package chatty.gui.components.help;
 
 import chatty.Chatty;
 import chatty.gui.UrlOpener;
+import chatty.util.UrlRequest;
 import chatty.util.WrapHistory;
+import chatty.util.api.CachedManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,7 +29,10 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.html.HTMLDocument;
 
 /**
  * Simple Frame that shows a HTML page as About/Help.
@@ -51,6 +56,8 @@ public class About extends JFrame implements ActionListener {
     private String currentPage = "";
     private final WrapHistory<HistoryItem> history = new WrapHistory<>(20);
     
+    private String patreonHtml;
+    
     public About() {
         setTitle("About/Help - Chatty");
         
@@ -61,6 +68,8 @@ public class About extends JFrame implements ActionListener {
         textPane.setEditable(false);
         // Explicitly set to white, as long as the HTML pages themselves are
         textPane.setBackground(Color.WHITE);
+        // Prevent scrolling when changing HTML
+        ((DefaultCaret)textPane.getCaret()).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         textPane.addHyperlinkListener(new HyperlinkListener() {
 
             @Override
@@ -151,7 +160,7 @@ public class About extends JFrame implements ActionListener {
         updateHistoryButtons();
         
         add(scroll);
-        scroll.setPreferredSize(new Dimension(680,400));
+        scroll.setPreferredSize(new Dimension(680,500));
         open(null, null);
         
         // Close button
@@ -171,6 +180,25 @@ public class About extends JFrame implements ActionListener {
 
         pack();
         
+        CachedManager m = new CachedManager(Chatty.getCacheDirectory()+"patreon", 60*60*24*3, "Patreon") {
+            
+            @Override
+            public boolean handleData(String data) {
+                if (data != null) {
+                    patreonHtml = data;
+                    return true;
+                }
+                return false;
+            }
+        };
+        if (!m.load()) {
+            UrlRequest request = new UrlRequest("https://tduva.com/res/patrons");
+            request.async((result, responseCode) -> {
+                if (responseCode == 200 && result != null) {
+                    m.dataReceived(result, false);
+                }
+            });
+        }
     }
     
     private JButton makeButton(String image, String action, String tooltip) {
@@ -192,8 +220,9 @@ public class About extends JFrame implements ActionListener {
         try {
             textPane.setPage(getClass().getResource(page));
             currentPage = page;
-        } catch (IOException ex) {
-            LOGGER.warning("Invalid page: "+page+" ("+ex.getLocalizedMessage()+")");
+        }
+        catch (IOException ex) {
+            LOGGER.warning("Invalid page: " + page + " (" + ex.getLocalizedMessage() + ")");
         }
     }
 
@@ -294,10 +323,22 @@ public class About extends JFrame implements ActionListener {
      * page.
      */
     private void pageLoaded() {
+        HTMLDocument doc = (HTMLDocument) textPane.getDocument();
+        Element patreonElement = doc.getElement("patreon");
+        if (patreonElement != null) {
+            try {
+                doc.setInnerHTML(patreonElement, patreonHtml);
+            }
+            catch (Exception ex) {
+                LOGGER.warning("Error changing HTML: " + ex);
+            }
+        }
+        
         if (scrollPositionAfterLoad != -1) {
             scrollbar.setValue(scrollPositionAfterLoad);
             scrollPositionAfterLoad = -1;
-        } else if (referenceAfterLoad != null) {
+        }
+        else if (referenceAfterLoad != null) {
             jumpTo(referenceAfterLoad);
             referenceAfterLoad = null;
         }

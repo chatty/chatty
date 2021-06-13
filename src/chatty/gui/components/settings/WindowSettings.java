@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.WindowStateManager;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -53,6 +54,9 @@ public class WindowSettings extends SettingsPanel {
         minimizing.add(d.addSimpleBooleanSetting("trayIconAlways"),
                 d.makeGbc(2, 1, 1, 1, GridBagConstraints.WEST));
         
+        minimizing.add(d.addSimpleBooleanSetting("singleClickTrayOpen"),
+                d.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST));
+        
         minimizing.add(d.addSimpleBooleanSetting("hideStreamsOnMinimize"),
                 d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
         
@@ -79,20 +83,16 @@ public class WindowSettings extends SettingsPanel {
                 d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("inputEnabled"),
-                d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));   
+                d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
+        
+        SettingsUtil.addLabeledComponent(other, "inputFocus", 0, 7, 1, WEST,
+                d.addComboLongSetting("inputFocus", 0, 1, 2));
         
         //--------
         // Popout
         //--------
         JPanel popout = addTitledPanel("Popout", 3);
-        
-        popout.add(d.addSimpleBooleanSetting("popoutSaveAttributes", "Restore location/size",
-                "Save and restore the location and size of popout dialogs during the same session"),
-                d.makeGbc(0,0,1,1));
-        popout.add(d.addSimpleBooleanSetting("popoutCloseLastChannel", "Close popout when only channel",
-                "Automatically close a popout if the last channel in the main window is closed"),
-                d.makeGbc(1, 0, 1, 1));
-        
+        popout.add(new JLabel("Moved to 'Tabs'"));
     }
     
 }

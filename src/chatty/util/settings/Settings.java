@@ -2,15 +2,10 @@
 package chatty.util.settings;
 
 import chatty.Logging;
-import chatty.util.MiscUtil;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import chatty.util.settings.FileManager.SaveResult;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -35,20 +30,18 @@ public class Settings {
      * Holds all settings of different Types. TreeMap to have setting names
      * lookup case-insenstive while still retaining the case for display.
      */
-    private final Map<String,Setting> settings = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+    private final Map<String,Setting> settings = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     private final Set<SettingChangeListener> listeners = new HashSet<>();
     private final Set<SettingsListener> settingsListeners = new HashSet<>();
     private final String defaultFile;
+    private final FileManager fileManager;
     private final Set<String> files = new HashSet<>();
     
     private static final Logger LOGGER = Logger.getLogger(Settings.class.getName());
     
-    private static final Charset CHARSET = Charset.forName("UTF-8");
-    
-    private boolean saved;
-    
-    public Settings(String path) {
+    public Settings(String path, FileManager fileManager) {
         this.defaultFile = path;
+        this.fileManager = fileManager;
     }
     
     public void addSettingChangeListener(SettingChangeListener listener) {
@@ -187,6 +180,11 @@ public class Settings {
         return set(settingName, value, Setting.BOOLEAN);
     }
     
+    public int toggleBoolean(String settingName) {
+        boolean currentValue = getBoolean(settingName);
+        return set(settingName, !currentValue, Setting.BOOLEAN);
+    }
+    
     public int setLong(String settingName, long value) {
         return set(settingName, value, Setting.LONG);
     }
@@ -316,7 +314,14 @@ public class Settings {
     public long getLong(String setting) {
         return ((Number)(get(setting, Setting.LONG))).longValue();
     }
+    
+    public int getInt(String setting) {
+        return ((Number)(get(setting, Setting.LONG))).intValue();
+    }
 
+    public long getLongDefault(String settingName) {
+        return (Long)get(settingName, Setting.LONG, true);
+    }
 
     /**
      * Return a {@code HashMap} with a copy of the data of this setting.
@@ -376,6 +381,15 @@ public class Settings {
         }
     }
 
+    public long mapGetLong(String settingName, Object key, long def) {
+        synchronized(LOCK) {
+            Object obj = getMapInternal(settingName).get(key);
+            if (obj == null) {
+                return def;
+            }
+            return (Long)obj;
+        }
+    }
     
     /**
      * Puts a {@code key}-{@code value} pair into the {@code Map} with the name
@@ -705,12 +719,22 @@ public class Settings {
             setSettingChanged(setting);
             return "Setting '"+setting+"' (List) set to "+getList(setting);
         }
-        else if (isMapSetting(setting) && isOfSubtype(setting, Setting.STRING)) {
+        else if (isMapSetting(setting)
+                && (isOfSubtype(setting, Setting.STRING) || isOfSubtype(setting, Setting.LONG))) {
             String[] mapParameters = parameter.split(" ", 2);
             if (mapParameters.length != 2) {
                 return "Invalid number of parameters to set map value.";
             }
-            mapPut(setting, mapParameters[0], mapParameters[1]);
+            Object value = mapParameters[1];
+            if (isOfSubtype(setting, Setting.LONG)) {
+                try {
+                    value = Long.valueOf(mapParameters[1]);
+                }
+                catch (NumberFormatException ex) {
+                    return "Invalid value (must be numeric).";
+                }
+            }
+            mapPut(setting, mapParameters[0], value);
             setSettingChanged(setting);
             return "Setting '"+setting+"' (Map) set to "+getMap(setting);
         }
@@ -774,10 +798,12 @@ public class Settings {
         }
         if (isListSetting(setting)) {
             listClear(setting);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' is now empty.";
         }
         if (isMapSetting(setting)) {
             mapClear(setting);
+            setSettingChanged(setting);
             return "Setting '"+setting+"' is now empty.";
         }
         return settingInvalidMessage(setting);
@@ -864,6 +890,7 @@ public class Settings {
                 settingMap.put(key, value);
             }
         }
+        setting.setValueSet();
     }
     
     private void listFromJson(List list, SubtypeSetting setting) {
@@ -874,6 +901,7 @@ public class Settings {
                 settingList.add(value);
             }
         }
+        setting.setValueSet();
     }
     
     
@@ -899,82 +927,76 @@ public class Settings {
     /**
      * Saves the settings to a file as JSON.
      * 
-     * @throws IOException 
+     * @param force
+     * @return 
      */
-    public void saveSettingsToJson() {
+    public List<SaveResult> saveSettingsToJson(boolean force) {
+        List<SaveResult> result = new ArrayList<>();
         aboutToSaveSettings();
         synchronized(LOCK) {
             System.out.println("Saving settings to JSON.");
-            saveSettingsToJson(defaultFile);
+            result.add(saveSettingsToJson(defaultFile, force));
             for (String fileName : files) {
-                saveSettingsToJson(fileName);
+                result.add(saveSettingsToJson(fileName, force));
             }
         }
+        return result;
     }
     
-    private void saveSettingsToJson(String fileName) {
+    private SaveResult saveSettingsToJson(String fileName, boolean force) {
         String json = settingsToJson(fileName);
-        Path file = Paths.get(fileName);
-        if (json == null) {
-            try {
-                if (Files.exists(file)) {
-                    LOGGER.info("Removing unused file: "+fileName);
-                    Files.delete(file);
-                }
-            } catch (NoSuchFileException ex) {
-                // Don't need to remove non-existing file
-            } catch (IOException ex) {
-                LOGGER.warning("Error removing unused file: "+ex);
-            }
-        } else {
-            LOGGER.info("Saving settings to file: "+fileName);
-            try {
-                Path tempFile = Paths.get(fileName + "-temp");
-                try (BufferedWriter writer = Files.newBufferedWriter(tempFile, CHARSET)) {
-                    writer.write(json);
-                }
-                MiscUtil.moveFile(tempFile, file);
-            } catch (IOException ex) {
-                LOGGER.warning("Error saving settings to file: " + ex);
-                System.out.println("Error saving settings to file: " + ex);
-            }
-        }
+        SaveResult result = fileManager.save(fileName, json, force);
+        return result;
     }
 
     /**
      * Loads the settings from a JSON file.
+     * 
+     * @return true if the loading succeeded or the file didn't exist, false
+     * otherwise (the file not existing isn't really an error)
      */
-    public void loadSettingsFromJson() {
+    public boolean loadSettingsFromJson() {
         synchronized(LOCK) {
-            loadSettingsFromJson(defaultFile);
+            boolean success = loadSettingsFromJson(defaultFile);
             for (String fileName : files) {
-                loadSettingsFromJson(fileName);
-            }
-        }
-    }
-    
-    private void loadSettingsFromJson(String fileName) {
-        LOGGER.info("Loading settings from file: "+fileName);
-        Path file = Paths.get(fileName);
-        
-        try (BufferedReader reader = Files.newBufferedReader(file, CHARSET)) {
-            String input = reader.readLine();
-            if (input != null) {
-                try {
-                    settingsFromJson(input);
-                } catch (ParseException ex) {
-                    logParseError(fileName, input, ex);
+                if (!loadSettingsFromJson(fileName)) {
+                    success = false;
                 }
-            } else {
-                LOGGER.warning("Settings file empty: "+fileName);
-                LOGGER.log(Logging.USERINFO, "Settings file empty, using default settings ("+fileName+")");
             }
-        } catch (IOException ex) {
-            LOGGER.warning("Error loading settings from file: "+ex);
+            return success;
         }
     }
     
-    private static void logParseError(String fileName, String input, ParseException ex) {
+    /**
+     * Load settings from the given file id (as known in fileManager).
+     * 
+     * @param fileId
+     * @return true if the loading succeeded or the file didn't exist, false
+     * otherwise (the file not existing isn't really an error)
+     */
+    private boolean loadSettingsFromJson(String fileId) {
+        LOGGER.info("Loading settings from file: "+fileId);
+        try {
+            String input = fileManager.load(fileId);
+            try {
+                settingsFromJson(input);
+            }
+            catch (ParseException ex) {
+                logParseError(fileId, input, ex);
+                return false;
+            }
+        }
+        catch (FileNotFoundException | NoSuchFileException ex) {
+            LOGGER.warning("File not found: "+ex);
+        }
+        catch (IOException ex) {
+            LOGGER.warning("Error loading settings from file: "+ex);
+            return false;
+        }
+        return true;
+    }
+    
+    private static void logParseError(String fileId, String input, ParseException ex) {
         int pos = ex.getPosition();
         int start = pos - 10;
         int end = pos + 10;
@@ -983,7 +1005,7 @@ public class Settings {
         String excerpt = input.substring(start, pos) + "@" + input.substring(pos, end);
         LOGGER.warning("Error parsing settings: " + ex + "[" + excerpt + "]");
         LOGGER.log(Logging.USERINFO, String.format("Settings file corrupt, using default settings (%s) [%s]",
-                fileName,
+                fileId,
                 excerpt));
     }
     
@@ -991,6 +1013,10 @@ public class Settings {
         synchronized(LOCK) {
             return new HashSet<>(settings.keySet());
         }
+    }
+
+    public FileManager getFileManager() {
+        return fileManager;
     }
     
 }

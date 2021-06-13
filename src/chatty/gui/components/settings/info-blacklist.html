@@ -1,0 +1,15 @@
+<p>Any text regions matched by items in this list will never trigger a Highlight
+(or, for the Ignore Blacklist, will never cause a message to be ignored).</p>
+
+<p style="margin-top: 8px;">For example if the Highlight list contains <code>kerbo</code>, it would highlight the message 
+"<code>Welcome :) kerboHowdy</code>", however if <code>kerboHowdy</code> was blacklisted it would 
+prevent that Highlight. If instead <code>Welcome</code> was blacklisted, it would not prevent that
+Highlight.</p>
+
+<p style="margin-top: 8px;">Blacklist entries having only non-main text matches such as <code>+start:!clip</code> or
+non-text matches such as <code>cat:vip</code> will prevent matches on the entire text region,
+so <code>+text:Welcome</code> would prevent the above match.</p>
+
+<p style="margin-top: 8px;">Adding the <code>config:block</code> prefix will prevent Highlights altogether, if the blacklist entry matches.
+For example if <code>config:block Welcome</code> was blacklisted, it would prevent all Highlights of messages that contain "<code>Welcome</code>",
+even non-text matches.</p>

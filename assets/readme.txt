@@ -18,9 +18,6 @@ Installation
 No real need for installation, just extract the Chatty_*.zip file into a
 folder and start the Chatty.jar with Java.
 
-If you want to use Global Hotkey support for Windows, you also need the JIntellitype.dll in the
-folder you execute Chatty from.
-
 Starting Chatty
 ---------------
 
@@ -42,10 +39,13 @@ This also allows you to add launch options, for example defining the channel to 
 If you create a shortcut like this, make sure you set the working directory correctly
 (specified in a field labeled "Run in" or similar). This can be important for some features.
 
-You may also need to specify the full path to Java if just "javaw -jar" doesn't work, for
-example:
+You may also need to specify the full path to Java if just "javaw -jar" doesn't work:
 
 	C:\Windows\System32\javaw.exe -jar "C:\Program Files (x86)\Chatty\Chatty.jar"
+
+Or to use a specific JRE:
+
+	C:\Program Files\Java\jre1.8.0_261\bin\javaw.exe -jar "<Path to Chatty.jar>"
 
 Settings
 --------
@@ -54,13 +54,14 @@ Settings are saved in a ".chatty" subfolder of your user directory by default. Y
 find out where the settings are saved to by entering "/dir" in Chatty.
 
 You can change this location to your current working directory by using the "-cd" launch
-option or to a specified directory by using the "-d <dir>" launch option (the dir has to
-exist already).
+option, to a specified directory by using the "-d <dir>" launch option (the dir has to
+exist already) or to a directory located next to the Chatty.jar by using the "-portable"
+launch option.
 
 Logfile
 -------
 
-There is a /debuglogs subfolder in the settings directory which contains a
+There is a /debuglogs subdirectory in the settings directory which contains a
 number of different debug logs. There is more information on them in the help.
 
 More Help

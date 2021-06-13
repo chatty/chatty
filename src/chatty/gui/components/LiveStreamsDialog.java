@@ -1,21 +1,32 @@
 
 package chatty.gui.components;
 
+import chatty.ChannelFavorites;
 import chatty.Chatty;
+import chatty.Helper;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LiveStreamsList.ListDataChangedListener;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.lang.Language;
 import chatty.util.api.StreamInfo;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
+import chatty.util.settings.Settings;
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Comparator;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 /**
  *
@@ -74,7 +85,6 @@ public class LiveStreamsDialog extends JFrame {
     
     
     private final ChannelInfoDialog channelInfo;
-    private static final String BASE_TITLE = "Live Streams";
     
     private final JScrollPane scroll;
     private final LiveStreamsList list;
@@ -86,7 +96,11 @@ public class LiveStreamsDialog extends JFrame {
     
     private boolean liveStreamListSelected = true;
     
-    public LiveStreamsDialog(ContextMenuListener listener) {
+    private final DockedDialogHelper helper;
+    
+    public LiveStreamsDialog(ContextMenuListener listener,
+            ChannelFavorites favs, Settings settings,
+            DockedDialogManager dockedDialogs) {
         
         setTitle("Live Streams");
         setPreferredSize(new Dimension(280,350));
@@ -100,10 +114,10 @@ public class LiveStreamsDialog extends JFrame {
             }
         };
         // Create list
-        list = new LiveStreamsList(localLiveStreamListener);
+        list = new LiveStreamsList(localLiveStreamListener, favs, settings);
         list.addContextMenuListener(listener);
         list.addContextMenuListener(localCml);
-        setSorting(Sorting.RECENT);
+        setSorting(Sorting.RECENT, true);
         list.addListDataChangedListener(new ListDataChangedListener() {
 
             @Override
@@ -163,19 +177,86 @@ public class LiveStreamsDialog extends JFrame {
         
         
         
-        channelInfo = new ChannelInfoDialog(this);
+        channelInfo = new ChannelInfoDialog(this, null);
         GuiUtil.installEscapeCloseOperation(channelInfo);
         channelInfo.addContextMenuListener(listener);
         
         // Add to dialog
         cardLayout = new CardLayout();
-        setLayout(cardLayout);
+        JPanel mainPanel = new JPanel(cardLayout);
         scroll = new JScrollPane(list);
         scroll.getVerticalScrollBar().setUnitIncrement(20);
-        add(scroll);
-        add(removedList);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        mainPanel.add(scroll);
+        mainPanel.add(removedList);
+        add(mainPanel);
         pack();
-    };
+        
+        DockContent content = new DockContentContainer("Live", mainPanel, dockedDialogs.getDockManager());
+        content.setId("-liveStreams-");
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            @Override
+            public void setVisible(boolean visible) {
+                LiveStreamsDialog.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return LiveStreamsDialog.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return LiveStreamsDialog.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+        });
+        list.setDockedDialogHelper(helper);
+    }
+    
+    public boolean isDocked() {
+        if (helper != null) {
+            return helper.isDocked();
+        }
+        return false;
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        helper.setVisible(visible, true);
+    }
+    
+    @Override
+    public boolean isVisible() {
+        if (helper != null) {
+            return helper.isVisible();
+        }
+        else {
+            return super.isVisible();
+        }
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+        if (helper != null) {
+            helper.getContent().setLongTitle(title);
+        }
+    }
     
     /**
      * Adds the given stream info to the list, if valid and online, or sets
@@ -193,10 +274,10 @@ public class LiveStreamsDialog extends JFrame {
      * 
      * @param sorting 
      */
-    public void setSorting(String sorting) {
+    public void setSorting(String sorting, boolean favFirst) {
         Sorting s = Sorting.fromKey(sorting);
         if (s != null) {
-            setSorting(s);
+            setSorting(s, favFirst);
         }
     }
     
@@ -214,10 +295,10 @@ public class LiveStreamsDialog extends JFrame {
      * 
      * @param mode 
      */
-    private void setSorting(Sorting s) {
+    private void setSorting(Sorting s, boolean favFirst) {
         titleSorting = s.getLabel();
         updateTitle();
-        list.setComparator(s);
+        list.setComparator(s, favFirst);
     }
     
     private void updateTitle() {
@@ -248,12 +329,13 @@ public class LiveStreamsDialog extends JFrame {
             } else if (cmd.equals("showRemovedList")) {
                 switchList();
             }
+            helper.menuAction(e);
         }
     }
     
     private void openChannelInfoDialog(StreamInfo info) {
         if (!channelInfo.isVisible()) {
-            channelInfo.setLocationRelativeTo(LiveStreamsDialog.this);
+            channelInfo.setLocationRelativeTo(helper.getContent().getComponent());
         }
         channelInfo.set(info);
         channelInfo.setVisible(true);
@@ -262,7 +344,7 @@ public class LiveStreamsDialog extends JFrame {
     private void switchList() {
         liveStreamListSelected = !liveStreamListSelected;
         updateTitle();
-        cardLayout.next(getContentPane());
+        cardLayout.next(helper.getContent().getComponent());
     }
     
     /**

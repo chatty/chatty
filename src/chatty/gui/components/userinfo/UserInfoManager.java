@@ -1,6 +1,7 @@
 
 package chatty.gui.components.userinfo;
 
+import chatty.Room;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
@@ -8,6 +9,8 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.Point;
@@ -15,6 +18,7 @@ import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +39,12 @@ public class UserInfoManager {
     private final MainGui main;
     private final Settings settings;
     private final ContextMenuListener contextMenuListener;
+    private final UserInfoListener userInfoListener;
+    private final UserInfoRequester userInfoRequester;
     
     private String buttonsDef;
     private float fontSize;
+    private SimpleDateFormat timestampFormat;
     
     public UserInfoManager(final MainGui owner, Settings settings,
             final ContextMenuListener contextMenuListener) {
@@ -59,6 +66,25 @@ public class UserInfoManager {
             @Override
             public void componentResized(ComponentEvent e) {
 //                handleChanged(e.getComponent());
+            }
+        };
+        userInfoListener = new UserInfoListener() {
+
+            @Override
+            public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
+                main.anonCustomCommand(room, command, parameters);
+            }
+        };
+        userInfoRequester = new UserInfoRequester() {
+
+            @Override
+            public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {
+                return main.getSingleFollower(stream, streamId, user, userId, refresh);
+            }
+
+            @Override
+            public ChannelInfo getCachedChannelInfo(String channel, String id) {
+                return main.getCachedChannelInfo(channel, id);
             }
         };
     }
@@ -99,7 +125,7 @@ public class UserInfoManager {
         }
     }
     
-    public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername) {
+    public void show(Component owner, User user, String msgId, String autoModMsgId, String localUsername, boolean keepPosition) {
         UserInfo dialogToShow = getBestByUser(user);
         if (dialogToShow == null) {
             dialogToShow = getFirstUnpinned();
@@ -110,7 +136,7 @@ public class UserInfoManager {
             dialogs.add(dialogToShow);
             main.setWindowAttached(dialogToShow, true);
         }
-        if (settings.getBoolean("openUserDialogByMouse") && !dialogToShow.isPinned()) {
+        if (settings.getBoolean("openUserDialogByMouse") && !dialogToShow.isPinned() && !keepPosition) {
             GuiUtil.setLocationToMouse(dialogToShow);
         }
         saveLocationAndSize(dialogToShow);
@@ -155,9 +181,10 @@ public class UserInfoManager {
     }
     
     private UserInfo createNew() {
-        UserInfo dialog = new UserInfo(main, settings, contextMenuListener);
+        UserInfo dialog = new UserInfo(main, userInfoListener, userInfoRequester, settings, contextMenuListener);
         dialog.setUserDefinedButtonsDef(buttonsDef);
         dialog.setFontSize(fontSize);
+        dialog.setTimestampFormat(timestampFormat);
         return dialog;
     }
     
@@ -171,7 +198,12 @@ public class UserInfoManager {
         if (isLocationUsed(targetLocation)) {
             targetLocation.translate(20, 20);
         }
-        dialog.setSize(dummyWindow.getSize());
+        if (dummyWindow.getWidth() > 0) {
+            dialog.setSize(dummyWindow.getSize());
+        } else {
+            // Default size
+            dialog.setSize(400, 360);
+        }
         dialog.setLocation(targetLocation);
         dialog.addComponentListener(closeListener);
     }
@@ -219,6 +251,13 @@ public class UserInfoManager {
         if (dialog != null) {
             dummyWindow.setLocation(dialog.getLocation());
             dummyWindow.setSize(dialog.getSize());
+        }
+    }
+
+    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+        this.timestampFormat = timestampFormat;
+        for (UserInfo dialog : dialogs) {
+            dialog.setTimestampFormat(timestampFormat);
         }
     }
     

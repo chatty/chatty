@@ -9,6 +9,9 @@ import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -56,7 +59,7 @@ public class StreamHighlightHelper {
      * @param line The content of the message
      * @return A response to either echo or send to the channel
      */
-    public String modCommand(User user, String line) {
+    public String modCommand(User user, String line, MsgTags tags) {
         //---------
         // Channel
         //---------
@@ -85,14 +88,14 @@ public class StreamHighlightHelper {
             return null;
         }
         HighlightItem item = new Highlighter.HighlightItem(match);
-        if (!item.matches(HighlightItem.Type.REGULAR, line, user)) {
+        if (!item.matches(HighlightItem.Type.REGULAR, line, user, null, tags)) {
             return null;
         }
         //---------------------------------------
         // All challenges successfully completed
         //---------------------------------------
         String comment = line.substring(command.length()).trim();
-        return addHighlight(channel, "["+user.getDisplayNick()+"] "+comment);
+        return addHighlight(channel, "["+user.getDisplayNick()+"] "+comment, user);
     }
     
     /**
@@ -103,9 +106,10 @@ public class StreamHighlightHelper {
      * 
      * @param channel The channel to add the highlight for
      * @param comment The comment to add (can be null or empty for no comment)
+     * @param chatUser The user that executed the chat command (or null)
      * @return A textual response to adding the highlight
      */
-    public String addHighlight(String channel, String comment) {
+    public String addHighlight(String channel, String comment, User chatUser) {
         if (channel == null || channel.isEmpty() || !Helper.isRegularChannel(channel)) {
             return "Failed adding stream highlight (no channel).";
         }
@@ -146,8 +150,28 @@ public class StreamHighlightHelper {
                 if (!comment.isEmpty()) {
                     shortComment = "(" + StringUtil.shortenTo(comment, 30) + ")";
                 }
-                return "Added stream highlight"+(createdMarker ? "/marker" : "")
-                        +" for " + channel + " [" + streamTime + "] " + shortComment;
+                
+                // Parameters
+                Parameters params = Parameters.create("");
+                params.put("added", "highlight"+(createdMarker ? "/marker" : ""));
+                params.put("chan", channel);
+                params.put("uptime", streamTime);
+                params.put("comment", shortComment);
+                params.put("fullcomment", comment.isEmpty() ? "" : "("+comment+")");
+                if (chatUser != null) {
+                    params.put("chatuser", chatUser.getRegularDisplayNick());
+                    params.putObject("user", chatUser);
+                }
+                
+                // Command
+                String template = settings.getString("streamHighlightResponseMsg");
+                CustomCommand cc = CustomCommand.parse(template);
+                String result = cc.replace(params);
+                if (StringUtil.isNullOrEmpty(StringUtil.trim(result))) {
+                    // Use default in case of error or empty command
+                    result = CustomCommand.parse(settings.getStringDefault("streamHighlightResponseMsg")).replace(params);
+                }
+                return result;
             }
             return "Failed adding stream highlight (write error)."+(createdMarker ? " (Created Stream Marker)" : "");
         }

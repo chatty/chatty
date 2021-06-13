@@ -1,0 +1,13 @@
+This can restrict which messages are checked for repetition. Once a message
+has passed this test, it will be compared against previous messages of the same user
+(even ones that would not pass this test, if you match on the message text).
+<br /><br />
+Examples:
+<ul>
+    <li><code>!status:M</code> - Don't check messages of mods</li>
+    <li><code>!status:Mv</code> - Don't check messages of mods or VIPs</li>
+    <li><code>mystatus:M</code> - Only in channels where you are mod</li>
+</ul>
+You can also combine prefixes: <code>!status:M mystatus:M</code>
+<br /><br />
+More Information: [url:https://www.youtube.com/watch?v=55n7ZWaaRIg Video tutorial], [help-settings:Highlight_Meta_Matching Meta Prefixes]

@@ -1,10 +1,10 @@
 import java.util.regex.Matcher
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "2.0.4"
+    id "com.github.johnrengelman.shadow" version "6.0.0"
+    id "org.gradle.crypto.checksum" version "1.1.0"
+    id "java"
 }
-
-apply plugin: 'java'
 
 // This seems to fix non-ASCII characters in the code not appearing correctly after compiling
 compileJava.options.encoding = 'UTF-8'
@@ -54,21 +54,20 @@ def extractVersion = { ->
 version = extractVersion()
 
 dependencies {
-    // Take the .jar files from the assets/lib directory and add them to the compile-time classpath
-    compile fileTree(dir: 'assets/lib', include: ['*.jar'])
+    implementation fileTree(dir: 'assets/lib', include: ['*.jar'])
+    implementation 'net.java.dev.jna:jna:5.5.0'
+    implementation 'net.java.dev.jna:jna-platform:5.5.0'
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 // The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
 // installed. It allows you to specify the project's Gradle version for everyone that has checked out the project.
 wrapper {
-    gradleVersion = '2.13'
+    gradleVersion = '6.5.1'
 }
 
 jar {
-    archiveName = "${archivesBaseName}.jar"
-
     manifest {
         attributes(
                 'Main-Class': mainClass,
@@ -81,9 +80,8 @@ jar {
 // dependencies. This removes the need for a separate 'libs' directory when Chatty is installed.
 shadowJar {
     // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
-    classifier = null
-
-    version = null
+    classifier = ''
+    archiveVersion = ''
 
     manifest {
         inheritFrom project.tasks.jar.manifest
@@ -103,37 +101,13 @@ task allPlatformsZip(type: Zip, group: 'build') {
         exclude 'lib'
     }
 
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}.zip"
-}
-
-task hotkey32Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype32.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_32bit.zip"
-}
-
-task hotkey64Zip(type: Zip, group: 'build') {
-    dependsOn shadowJar
-
-    with allPlatformsZip
-
-    from 'assets/lib/dlls/JIntellitype64.dll'
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
-
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_hotkey_64bit.zip"
+    destinationDirectory = releasesDir
+    archiveFileName = "${archivesBaseName}_${project.version}.zip"
 }
 
 // Builds all the release zips
 task releaseZips(group: 'build') {
-    dependsOn allPlatformsZip, hotkey32Zip, hotkey64Zip
+    dependsOn allPlatformsZip
 }
 
 // Builds the full project, runs the unit tests and packages the release zips.
@@ -158,7 +132,7 @@ task javapackager(type: Exec, group: 'build') {
     if (project.hasProperty('javapackagerPath')) {
         def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
         command << "-Bicon=assets-bundle/Chatty.ico"
-        command << "-BappVersion=${version}"
+        command << "-BappVersion=${project.version}"
         command << "-BjvmProperties=sun.java2d.d3d=false"
         command << "-BjvmOptions=-Xmx400M"
         if (project.hasProperty('jrePath')) {
@@ -185,8 +159,8 @@ task windowsZip(type: Zip, group: 'build') {
     }
     from 'assets-bundle/readme-bundle.txt'
 
-    destinationDir = releasesDir
-    archiveName = "${archivesBaseName}_${version}_win_standalone.zip"
+    destinationDirectory = releasesDir
+    archiveFileName = "${archivesBaseName}_${project.version}_win_standalone.zip"
 }
 
 task releaseWindows(group: 'build') {
@@ -205,7 +179,7 @@ def prepareSetupFile(file, to) {
             from("setup/"+file) {
                 rename(file, "setup.iss")
                 expand([
-                    applicationVersion: version,
+                    applicationVersion: project.version,
                     code: new File('setup/_functions.iss-part').getText('UTF-8'),
                     setup: new File('setup/_common.iss-part').getText('UTF-8')
                 ])
@@ -230,8 +204,6 @@ task innosetup(type: Exec, group: 'build') {
             from ('assets') {
                 exclude 'lib'
     	    }
-            from('assets/lib/dlls/JIntellitype32.dll')
-            from('assets/lib/dlls/JIntellitype64.dll')
             from('assets-bundle/Chatty.ico')
             into("${innosetupDir}/pack")
         }
@@ -257,15 +229,10 @@ task innosetupStandalone(type: Exec, group: 'build') {
                 exclude 'lib'
 	        into 'app'
             }
-            from ('assets/lib/dlls/JIntellitype32.dll') {
-                into 'app'
-            }
-            rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
             from ('assets-bundle/fallback-fonts') {
                 into 'runtime/lib/fonts/fallback'
             }
             from 'assets-bundle/readme-bundle.txt'
-            from('assets-bundle/Chatty.ico')
             into("${innosetupDir2}/pack")
         }
         def command = [innosetupPath, "/Q", "${innosetupDir2}\\setup.iss"]
@@ -276,3 +243,18 @@ task innosetupStandalone(type: Exec, group: 'build') {
 task releaseWinSetups(group: 'build') {
     dependsOn releaseWindows, innosetup, innosetupStandalone, build
 }
+
+//---------
+// Checksum
+//---------
+
+import org.gradle.crypto.checksum.Checksum
+
+task createChecksums(type: Checksum) {
+    files = layout.files { releasesDir.listFiles() }.filter { File f ->
+        f.name.endsWith(".exe") || f.name.endsWith(".zip")
+    }
+    outputDir = new File(releasesDir, "v"+version)
+    algorithm = Checksum.Algorithm.SHA256
+}
+

@@ -5,6 +5,7 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
+import chatty.util.LineNumbers;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -46,6 +47,7 @@ public class Editor implements StringEditor {
     private final JDialog dialog;
     private final JLabel label;
     private final JTextArea input;
+    private final JScrollPane scrollpane;
     private final JButton okButton = new JButton(Language.getString("dialog.button.save"));
     private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
     private final JButton testButton = new JButton(Language.getString("dialog.button.test"));
@@ -56,6 +58,7 @@ public class Editor implements StringEditor {
     private DataFormatter<String> formatter;
     private Tester tester;
     private boolean allowEmpty;
+    private boolean showInfoByDefault;
 
     private String result;
 
@@ -95,7 +98,9 @@ public class Editor implements StringEditor {
         // Use monospaced font for easier editing of some kinds of text
         input.setFont(Font.decode(Font.MONOSPACED));
         GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, false);
-        dialog.add(new JScrollPane(input), gbc);
+        GuiUtil.resetFocusTraversalKeys(input);
+        scrollpane = new JScrollPane(input);
+        dialog.add(scrollpane, gbc);
         
         gbc = GuiUtil.makeGbc(0, 4, 3, 1);
         gbc.insets = new Insets(5, 8, 8, 8);
@@ -154,10 +159,13 @@ public class Editor implements StringEditor {
      */
     public String showDialog(String title, String preset, String info) {
         input.setText(preset);
-        label.setText(title+":");
+        label.setText(title);
         this.info.setText(info);
         if (info == null) {
             this.info.setVisible(false);
+        }
+        else {
+            this.info.setVisible(showInfoByDefault);
         }
         toggleInfoButton.setVisible(info != null);
         toggleInfoButton.setSelected(this.info.isVisible());
@@ -217,6 +225,11 @@ public class Editor implements StringEditor {
      */
     public final void setAllowLinebreaks(boolean allow) {
         GuiUtil.installLengthLimitDocumentFilter(input, INPUT_LENGTH_LIMIT, allow);
+        scrollpane.setRowHeaderView(allow ? new LineNumbers(input) : null);
+    }
+    
+    public final void setShowInfoByDefault(boolean show) {
+        this.showInfoByDefault = show;
     }
     
     private String format(String input) {
@@ -345,7 +358,23 @@ public class Editor implements StringEditor {
         }
     }
     
+    /**
+     * Test a String value. This could for example show a popup containing
+     * information about the given value (whether it parses correctly, it's
+     * resulting properties) or another GUI element that represents the given
+     * value in some way.
+     */
     public interface Tester {
+        
+        /**
+         * 
+         * @param parent The parent window
+         * @param component The component that triggered the tester
+         * @param x 
+         * @param y 
+         * @param value The value to test
+         * @return Changed value or null to keep it the same
+         */
         public String test(Window parent, Component component, int x, int y, String value);
     }
 

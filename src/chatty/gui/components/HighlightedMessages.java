@@ -3,27 +3,51 @@ package chatty.gui.components;
 
 import chatty.Room;
 import chatty.User;
+import chatty.gui.Channels;
+import chatty.gui.DockStyledTabContainer;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
+import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.StyleServer;
+import chatty.gui.components.menus.ContextMenu;
+import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
+import chatty.gui.components.textpane.InfoMessage;
+import chatty.gui.components.textpane.MyStyleConstants;
+import chatty.util.Debugging;
+import chatty.util.MiscUtil;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
+import chatty.util.colors.ColorCorrector;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
+import chatty.util.irc.MsgTags;
+import chatty.util.settings.Settings;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 
 /**
  * Window showing all highlighted (or ignored) messages.
@@ -33,6 +57,7 @@ import javax.swing.text.MutableAttributeSet;
 public class HighlightedMessages extends JDialog {
     
     private final TextPane messages;
+    private final DockedDialogHelper helper;
     private String currentChannel;
     private int currentChannelMessageCount = 0;
     
@@ -47,7 +72,8 @@ public class HighlightedMessages extends JDialog {
     private final String title;
     private final String label;
     
-    private final ContextMenuListener contextMenuListener;
+    // Dock
+    private final DockStyledTabContainer content;
     
     /**
      * Creates a new dialog.
@@ -60,17 +86,86 @@ public class HighlightedMessages extends JDialog {
      * @param contextMenuListener
      */
     public HighlightedMessages(MainGui owner, StyleServer styleServer,
-            String title, String label, ContextMenuListener contextMenuListener) {
+            String title, String shortTitle, String label, ContextMenuListener contextMenuListener,
+            DockedDialogManager dockedDialogs, String settingName) {
         super(owner);
         this.title = title;
         this.label = label;
-        this.contextMenuListener = contextMenuListener;
         updateTitle();
         
         this.addComponentListener(new MyVisibleListener());
         
-        messages = new TextPane(owner, styleServer);
-        messages.setContextMenuListener(new MyContextMenuListener());
+        /**
+         * Modify a couple of things to remove highlight foreground/background.
+         */
+        StyleServer modifiedStyleServer = new StyleServer() {
+
+            @Override
+            public Color getColor(String type) {
+                if (type.equals("highlight")) {
+                    return styleServer.getColor("foreground");
+                }
+                else if (type.equals("highlightBackground")) {
+                    return styleServer.getColor("background");
+                }
+                return styleServer.getColor(type);
+            }
+
+            @Override
+            public MutableAttributeSet getStyle(String type) {
+                if (type.equals("highlight")) {
+                    return getStyle("standard");
+                }
+                if (type.equals("paragraph")) {
+                    MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
+                    MyStyleConstants.setHighlightBackground(attr, null);
+                    return attr;
+                }
+                if (type.equals("settings")) {
+                    MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
+                    // For crossing out messages for timeouts, but never show separate message
+                    attr.addAttribute(ChannelTextPane.Setting.SHOW_BANMESSAGES, false);
+                    return attr;
+                }
+                return styleServer.getStyle(type);
+            }
+
+            @Override
+            public Font getFont(String type) {
+                return styleServer.getFont(type);
+            }
+
+            @Override
+            public SimpleDateFormat getTimestampFormat() {
+                return styleServer.getTimestampFormat();
+            }
+
+            @Override
+            public ColorCorrector getColorCorrector() {
+                return styleServer.getColorCorrector();
+            }
+        };
+        ChannelTextPane.Type textPaneType = settingName.equals("highlightDock")
+                                    ? ChannelTextPane.Type.HIGHLIGHTS
+                                    : ChannelTextPane.Type.IGNORED;
+        messages = new TextPane(owner, modifiedStyleServer, textPaneType,
+                () -> new HighlightsContextMenu(isDocked(), autoOpenActivity()));
+        messages.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
+            
+            @Override
+            public void menuItemClicked(ActionEvent e) {
+                switch (e.getActionCommand()) {
+                    case "clearHighlights":
+                        clear();
+                        break;
+                    default:
+                        break;
+                }
+                helper.menuAction(e);
+                super.menuItemClicked(e);
+            }
+            
+        });
         //messages.setLineWrap(true);
         //messages.setWrapStyleWord(true);
         //messages.setEditable(false);
@@ -79,23 +174,108 @@ public class HighlightedMessages extends JDialog {
         messages.setScrollPane(scroll);
         
         add(scroll);
+        content = dockedDialogs.createStyledContent(scroll, shortTitle,
+                settingName.equals("highlightDock") ? "-highlight-" : "-ignore-");
+        
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            
+            @Override
+            public void setVisible(boolean visible) {
+                HighlightedMessages.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return HighlightedMessages.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return HighlightedMessages.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+            
+        });
         
         setPreferredSize(new Dimension(400,300));
         
         pack();
     }
     
-    public void addMessage(String channel, User user, String text, boolean action,
-            TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches) {
+    private boolean isDocked() {
+        return helper.isDocked();
+    }
+    
+    private boolean autoOpenActivity() {
+        return helper.autoOpenActivity();
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        setVisible(visible, true);
+    }
+    
+    public void setVisible(boolean visible, boolean switchTo) {
+        helper.setVisible(visible, switchTo);
+        if (visible) {
+            newCount = 0;
+        }
+    }
+    
+    @Override
+    public boolean isVisible() {
+        return helper.isVisible();
+    }
+    
+    public void addMessage(String channel, UserMessage message) {
         messageAdded(channel);
-        UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null);
-        message.whisper = whisper;
         messages.printMessage(message);
     }
     
-    public void addInfoMessage(String channel, String text) {
+    public void addMessage(String channel, User user, String text, boolean action,
+            TagEmotes emotes, int bits, boolean whisper, List<Match> highlightMatches,
+            Object highlightSource, MsgTags tags) {
         messageAdded(channel);
-        messages.printLine(text);
+        UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null, tags);
+        message.whisper = whisper;
+        message.highlightSource = highlightSource;
+        messages.printMessage(message);
+    }
+    
+    public void addInfoMessage(String channel, InfoMessage message) {
+        messageAdded(channel);
+        messages.printInfoMessage(message);
+    }
+    
+    public void addInfoMessage(String channel, String text, List<Match> highlightMatches, Object highlightSource) {
+        messageAdded(channel);
+        InfoMessage message = InfoMessage.createInfo(text);
+        message.highlightMatches = highlightMatches;
+        message.highlightSource = highlightSource;
+        messages.printInfoMessage(message);
+    }
+    
+    /**
+     * This should be fine as long as the text pane only searches for lines
+     * containing the same User object, so it doesn't affect messages with the
+     * same username from another channel.
+     */
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        messages.userBanned(user, duration, reason, targetMsgId);
     }
     
     private void messageAdded(String channel) {
@@ -110,6 +290,10 @@ public class HighlightedMessages extends JDialog {
         updateTitle();
         if (!isVisible()) {
             newCount++;
+        }
+        helper.setActivity();
+        if (helper.isDocked() && !content.isContentVisible()) {
+            content.setNewMessage(true);
         }
     }
     
@@ -159,66 +343,15 @@ public class HighlightedMessages extends JDialog {
      */
     static class TextPane extends ChannelTextPane {
         
-        public TextPane(MainGui main, StyleServer styleServer) {
-            super(main, styleServer);
-            linkController.setDefaultContextMenu(new HighlightsContextMenu());
+        public TextPane(MainGui main, StyleServer styleServer, ChannelTextPane.Type type, Supplier<ContextMenu> contextMenuCreator) {
+            super(main, styleServer, type);
+            linkController.setContextMenuCreator(contextMenuCreator);
         }
         
         public void clear() {
             setText("");
         }
         
-    }
-    
-    private class MyContextMenuListener implements ContextMenuListener {
-        
-        @Override
-        public void menuItemClicked(ActionEvent e) {
-            if (e.getActionCommand().equals("clearHighlights")) {
-                clear();
-            }
-            contextMenuListener.menuItemClicked(e);
-        }
-
-        @Override
-        public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
-            contextMenuListener.userMenuItemClicked(e, user, msgId, autoModMsgId);
-        }
-
-        @Override
-        public void urlMenuItemClicked(ActionEvent e, String url) {
-            contextMenuListener.urlMenuItemClicked(e, url);
-        }
-
-        @Override
-        public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
-            contextMenuListener.streamsMenuItemClicked(e, streams);
-        }
-
-        @Override
-        public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos) {
-            contextMenuListener.streamInfosMenuItemClicked(e, streamInfos);
-        }
-
-        @Override
-        public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
-            contextMenuListener.emoteMenuItemClicked(e, emote);
-        }
-
-        @Override
-        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
-            contextMenuListener.usericonMenuItemClicked(e, usericon);
-        }
-
-        @Override
-        public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
-            contextMenuListener.roomsMenuItemClicked(e, rooms);
-        }
-
-        @Override
-        public void channelMenuItemClicked(ActionEvent e, Channel channel) {
-            contextMenuListener.channelMenuItemClicked(e, channel);
-        }
     }
     
     /**

@@ -10,7 +10,7 @@
         | <a href="#Chat_Colors">Chat Colors</a>
         | <a href="#Message_Colors">Message Colors</a>
         | <a href="#Usercolors">Usercolors</a>
-        | <a href="#Usericons">Usericons</a>
+        | <a href="#Usericons">Badges</a>
         | <a href="#Emoticons">Emoticons</a>
         | <a href="#Fonts">Fonts</a>
         | <a href="#Chat">Chat</a>
@@ -44,18 +44,37 @@
     </h2>
     <h3>Startup</h3>
     <p>You can select what will happen when you start Chatty:</p>
-    <ul>
-        <li><strong>Do nothing</strong> - Just do nothing special</li>
-        <li><strong>Open connect dialog</strong> - Open dialog to connect</li>
-        <li><strong>Connect and join specified channels</strong> - Connect
-        immediately and join the channels specified in the field below. You can
-        define several channels by seperating them with a comma.</li>
-        <li><strong>Connect and join previously open channels</strong> - Connect
-        immediately and join the channels you had open when you closed Chatty.</li>
-        <li><strong>Connect and join favorited channels</strong> - Connect
-        immediately and join the channels that are favorited in the Channel
-        Favorites/History dialog.</li>
-    </ul>
+    <dl class="dl-settings">
+        <dt>Do nothing</dt>
+        <dd>Just do nothing special, can join channel manually afterwards.</dd>
+        
+        <dt>Open connect dialog</dt>
+        <dd>Open dialog to connect.</dd>
+        
+        <dt>Connect and join specified channels</dt>
+        <dd>Connect immediately and join the channels specified in the field
+            below. You can define several channels by seperating them with a
+            comma.</dd>
+        <dd>Can include Addressbook categories, e.g. <code>[vip]</code> to join
+            all entries associated with the "vip" category. Can restrict to just
+            channel entries <code>[vip #]</code> (would only get Addressbook
+            entries such as "#joshimuz") or non-channel entries <code>[vip !#]</code>
+            (entries such as "joshimuz"). This can also be used in some other
+            places for joining channels.</dd>
+        
+        <dt>Connect and join previously open channels</dt>
+        <dd>Connect immediately and join the channels you had open when you
+            closed Chatty.</dd>
+        <dd>This works especially way together with the restore layout option
+            enabled.</dd>
+        
+        <dt>Connect and join favorited channels</dt>
+        <dd>Connect immediately and join the channels that are favorited in the
+            Channel Favorites/History dialog.</dd>
+    </dl>
+    
+    <h3>Directory</h3>
+    <div class="moreInfo">More information: <a href="help-guide_folders.html">Settings and other files</a></div>
     
     <h2>
         <a name="Look">Look</a>
@@ -149,6 +168,9 @@
         <li><code>$color:&lt;color code or name&gt;</code> - A Html color code or name (names
             as hardcoded into Chatty, may be different from other programs), e.g. <code>$color:Blue</code> for blue,
             which can be used to replace colors</li>
+        <li><code>$defaultColor</code> - Users that don't have a color set and have the default assigned color (somewhat random)</li>
+        <li><code>$m:&lt;item&gt;</code> - Specify user-related <a href="#Highlight_Meta_Matching">Highlight Matching</a> prefixes, such as
+            <code>$m:config:b|partner</code> to match users with a partner badge</li>
     </ul>
     
     <p>The order of the
@@ -167,27 +189,22 @@
     
     
     <h2>
-        <a name="Usericons">Usericons</a>
+        <a name="Usericons">Badges</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <h3>Usericon Settings</h3>
+    <h3>Badge Settings</h3>
     <ul>
-        <li><strong>Show Usericons</strong>: Shows badges as images instead of
+        <li><strong>Show Badges</strong>: Shows badges as images instead of
         just text</li>
-        <li><strong>Enable Custom Usericons</strong>: Use the custom icons
+        <li><strong>Enable Custom Badges</strong>: Use the custom icons
         defined in the table below</li>
-        <li><strong>Enable Bot Badge</strong>: Enables showing of the bot badge
+        <li><strong>Show Bot Badge</strong>: Enables showing of the bot badge
         for known bots. Chatty shows a single bot badge for all known bots. The
         list of bot names comes from different sources: The <code>botNames</code>
-        setting, the BTTV API and the FFZ API.
-        <ul>
-            <li><strong>BTTV</strong>: Use botnames from the BTTV API</li>
-            <li><strong>FFZ</strong>: Use botnames from the FFZ API</li>
-        </ul>
-        </li>
+        setting, the BTTV API and the FFZ API. (See also: <a href="help-setting_commands.html#bots">Setting Commands</a>)</li>
     </ul>
     
-    <h3><a name="CustomUsericons">Custom Usericons</a></h3>
+    <h3><a name="CustomUsericons">Custom Badges</a></h3>
     <p>Add entries to the table to show additional icons (<code>Addon</code>-Type)
         or replace the default icons (all other Types).</p>
     <p>The order of the entries can matter, they are looked at from the top:</p>
@@ -201,7 +218,7 @@
             matches is used.</li>
     </ul>
     
-    <h3>Custom Usericon Properties</h3>
+    <h3>Custom Badges Properties</h3>
     <dl class="dl-settings">
         <dt>Type</dt>
         <dd>A type of <code>Addon</code> will add an additional badge. All
@@ -231,11 +248,16 @@
         <dt>Restriction</dt>
         <dd>This is similiar to the <a href="#Usercolors">Usercolors</a> settings,
         where you can enter special restrictions the user has to match in order
-        for the icon to be displayed. What makes the most sense in this case is
-        probably just entering a username (e.g. <code>serenity</code>) or an
-        addressbook category (e.g. <code>$cat:vip</code>, which would refer to
-        the category <code>vip</code>). If you keep this empty, then no restriction
+        for the icon to be displayed. If you keep this empty, then no restriction
         is applied.</dd>
+        <dd>The most common restrictions would be:
+            <ul>
+                <li>Just the username (e.g. <code>serenity</code>)</li>
+                <li>An addressbook category (e.g. <code>$cat:vip</code>, which would refer to
+        the category <code>vip</code>)</li>
+                <li>Most other <a href="#Usercolors">Usercolors</a> restrictions</li>
+            </ul>
+        </dd>
         <dd>Specifying a <em>Type</em> other than <code>Addon</code> carries an
         implicit restriction, since e.g. the default moderator icons are only
         displayed if the user is a moderator.</dd>
@@ -301,7 +323,7 @@
             you can specify the new badge id/version yourself.</dd>
         
         <dd><em>Note:</em> The order of Addon-badges relative to eachother is
-            determined by the order they are added to the Custom Usericon table.</dd>
+            determined by the order they are added to the Custom Badges table.</dd>
         
         <dt>Image File</dt>
         <dd>The image to use. Must be a <code>.png</code> and is recommended to
@@ -313,7 +335,7 @@
             it and rescan to update the list.</dd>
         <dd>The <em>special image file name</em> <code>$default</code> will use
             the default image file, that would be shown without defining
-            Custom Usericons. This can be useful if you e.g. want to replace all
+            Custom Badges. This can be useful if you e.g. want to replace all
             Badge Types, except for one, so you can define that one to use the
             default.</dd>
         <dd><em>Tip:</em> You should also be able to manually enter the full
@@ -676,6 +698,26 @@
             new message hasn't been added for a while. This is mostly for saving
             memory when Chatty is running continuously for a long time.</dd>
     </dl>
+    
+    <h3><a name="RepeatMsg">Repeated Chat Message Detection</a></h3>
+    <p>This feature uses the user's message history (based on what is visible
+        in the User Dialog when clicking on a user) to determine if the user has
+        sent the same (or similar) message before. If a repeated message has
+        been detected (depending on the settings) the number of repeated
+        messages is added behind the message in chat, e.g. "(x4)".</p>
+    
+    <p>In addition, the <code>config:repeatedmsg</code> <a href="#Highlight_Meta_Matching">Matching prefix</a>
+        can be used in e.g. the Highlight list, Message Colors list or to restrict a Notification to trigger only on repeated messages.</p>
+    
+    <p>Restricting detection uses <a href="#Highlight">Highlight Matching</a>,
+        so <code>!status:M</code> can be used to exclude mods, but a lot more
+        could be used, for example <code>mystatus:M</code> to restrict to
+        channels you are a mod in or <code>reg:.{10,}</code> to only check
+        for messages at least 10 characters long.</p>
+    
+    <p>Note that this feature may affect performance in very busy chats, since each
+        received message has to be compared against multiple messages (depending
+        on the user's available history and these settings).</p>
 
     <h2>
         <a name="Names">Names</a>
@@ -747,12 +789,24 @@
         <code>Highlight Blacklist</code> settings can be used to prevent some of
         those Highlights.</p>
     
-    <p>The following sections list different kinds of prefixes that can modify
-        the behaviour of the system:</p>
+    <p><em>Note:</em> Highlight-style matching can be used in various other
+        settings as well, although not all prefixes are always available.</p>
+    
+    <p>There is a <a href="https://www.youtube.com/watch?v=55n7ZWaaRIg">video tutorial</a>
+        that explains how this works.</p>
+    
+    <p>There are various prefixes that affect matching and Highlighting behaviour:</p>
     <ul>
         <li><a href="#Highlight_Matching">Text Matching Prefixes</a></li>
         <li><a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> (e.g. matching by channel, user or message type)</li>
         <li><a href="#Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a> (e.g. changing resulting text color)</li>
+        <li><a href="#Matching_Presets">Presets</a></li>
+    </ul>
+    
+    <p>Also see:</p>
+    <ul>
+        <li><a href="#Highlight_Order">Order of Highlight Items</a></li>
+        <li><a href="#Highlight_Examples">Examples</a></li>
     </ul>
     
     <p>By default only regular chat messages are matched, however with the
@@ -765,6 +819,10 @@
         the search text to modify the matching behaviour: <code>[text-prefix:]&lt;search&nbsp;text&gt;</code></p>
     
     <ul>
+        <li><code>text:</code> is the same as without a prefix, but can be useful
+            to make sure the text isn't interpreted as a prefix, for example
+            <code>text:start:Let's go</code> would match <code>start:Let's go</code>
+            anywhere in the message (case insensitive).</li>
         <li><code>cs:</code> makes it case-sensitive, so <code>cs:test</code>
             matches <code>test</code> but not <code>Test</code>.</li>
         <li><code>w:</code> matches at word boundaries, e.g. <code>w:anna</code>
@@ -774,6 +832,7 @@
         <li><code>wcs:</code> is the same as <code>w:</code>, but case-sensitive.</li>
         <li><code>start:</code> to match at the start, so <code>start:!bet</code> will
             match messages starting with <code>!bet</code>.</li>
+        <li><code>startw:</code> is a combination of <code>start:</code> and <code>w:</code>.</li>
         <li><code>reg:</code> (and variations) to use a
             <a href="https://en.wikipedia.org/wiki/Regular_expression">Regular Expression</a> (Regex), which are case-sensitive by default:
             <ul>
@@ -801,34 +860,79 @@
         </li>
     </ul>
     
+    <p>All Text Matching Prefixes can be inverted (matches when it doesn't find
+        the search text) by prepending an exclamation mark, for example: <code>!start:!bet all</code>.
+        See the <a href="#Highlight_Prefix-blacklist"><code>blacklist:</code> Prefix description</a>
+        for further information on the differences between blacklisting and
+        negated matches.</p>
+    
+    <p>Additionally, several Text Matching Prefixes can be specified by prepending
+        a plus sign. In this case the value cannot contain spaces or must be
+        quoted. Example: <code>+!start:"!bet all" regi:Regular search text</code></p>
+    
+    <p>Only the main search text (no prefix or using any of the non-modified
+        Text Matching Prefixes) will mark Highlight matches in chat.</p>
+    
     <h3><a name="Highlight_Meta_Matching">Meta Prefixes (Matching)</a></h3>
-    <p>The following prefix don't match on the text itself, but define other
+    <p>The following prefixes don't match on the text itself, but define other
         things that should or should not trigger a Highlight. You can place one
         or several of these prefixes before the search text (separated by
         spaces):
-        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
+        <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search&nbsp;text&gt;</code></p>
+    
+    <p>Notes:</p>
+    <ul>
+        <li>When specifying several prefixes, all of them have to match in order
+            for the Highlight to trigger.</li>
+        <li>The same prefix can appear several times with different values (e.g.
+            <code>cat:category1 cat:category2</code>).</li>
+        <li>Prefixes can normally not contain spaces (it wouldn't be clear
+            whether the space is part of the prefix value or a separator between
+            prefixes), however you can enclose the prefix value (or part of it)
+            in quotes. Two quotes can be used to add a literal quote. Example:
+            <code>replacement:"text&nbsp;with&nbsp;""space"""</code> (meaning
+            the value of <code>replacement:</code> is <code>text&nbsp;with&nbsp;"space"</code>)</li>
+        <li>When a prefix can have several values, they must be comma-separated
+            (without spaces). Example: <code>cat:category1,category2</code>.
+            Commas in list values can be quoted as well for them to be used
+            literally instead of as a separator.</li>
+    </ul>
+    
+    <p>Possible matching prefixes:</p>
     <ul>
         <li><code>user:</code> to specify one exact username (case-insensitive)
             which should highlight only if this user send the message, doesn't
             search in the message itself.</li>
+        <li><code>!user:</code> to specify one exact username (case-insensitive)
+            which the message must not be from.</li>
         <li><code>reuser:</code> to specify a regex to match usernames against.
             Behaves like the <code>regm:</code>/<code>re:</code> prefix, in that
             it always tries to match the entire username. Example:
             <code>reuser:(?i)a.*</code> would match all names starting with "a".</li>
-        <li><code>cat:</code> to specify a category the user who send the message
-        should be in (as defined in the <a href="help.html#addressbook">Addressbook</a>).</li>
-        <li><code>!cat:</code> to specify a category the user who send the message
-        can NOT be in.</li>
-        <li><code>chan:</code> to specify one or more channels the message has
-        to be send in to match (several channels are specified as comma-separated
-        list, without spaces).</li>
-        <li><code>!chan:</code> to specify one or more channels the message must
-        NOT be send in to match.</li>
-        <li><code>chanCat:</code> to specify one category the channel the message
-        was send in has to be in (as defined in the <a href="help.html#addressbook">Addressbook</a>
-        with the name of the channel, including leading #).</li>
-        <li><code>!chanCat:</code> to specify one category the channel the message
-        was send in can NOT be in.</li>
+        <li><code>cat:</code> - One or several (comma separated) <a href="help.html#addressbook">Addressbook</a>
+            categories. The user who send the message must be in at least one of them.
+            Example: <code>cat:friends,family</code> (the user must be in "friends" or "family", or both)</li>
+        <li><code>!cat:</code> - One or several Addressbook categories.
+            The user who send the message must <em>not</em> be in at least one of them.</li>
+        <li><code>chan:</code> - One or several channels the message must
+            have been sent in. Example: <code>chan:joshimuz,tirean</code></li>
+        <li><code>!chan:</code> - One or several channels the message must
+            <em>not</em> have been sent in.</li>
+        <li><code>chanCat:</code> - One or several <a href="help.html#addressbook">Addressbook</a>
+            categories. The channel the message was send in must be in at least
+            one of those categories (added to the Addressbook with the name of
+            the channel, including leading #, e.g. <code>#esl_csgo</code>).</li>
+        <li><code>!chanCat:</code> - One or several Addressbook categories. The
+            channel the message was send in must <em>not</em> be in at least one
+            of them. Example: <code>!chanCat:modding,important</code> (if
+            channel has both, the match fails), <code>!chanCat:modding !chanCat:important</code>
+            (if channel has one or both, the match fails)</li>
+        <li><code>chanCat2:</code> / <code>!chanCat2:</code> - Same as <code>chanCat:</code> / <code>!chanCat:</code>,
+            except that it looks up the channel in the Addressbook both in the
+            channel and user format. Example: <code>chanCat2:abc</code> in the
+            channel #joshimuz will look for the <code>abc</code> category under
+            both <code>#joshimuz</code> and <code>joshimuz</code> as if they
+            were one.</li>
         <li><code>status:</code> to specify that the user has to have one of the
             given status codes (case-sensitive):
             <ul>
@@ -845,23 +949,68 @@
                     (so Broadcaster/Moderator/Global Moderator/Admin/Staff combined)</li>
                 <li><code>v</code> VIP</li>
             </ul>
-            For example: <code>status:st</code> matches
-        all subscriber and turbo users.</li>
+            For example: <code>status:sv</code> matches users that are either a
+            subscriber or a VIP (or both). <code>status:s&nbsp;status:v</code>
+            matches users that are <em>both</em> a subscriber and VIP at the
+            same time.</li>
         <li><code>!status:</code> to specify that the user must NOT have any of
             the given status codes (see <code>status:</code> for codes). For example:
             <code>!status:stM</code> matches all 'normal' users that have no
             badge by default (NOT a Subscriber, Turbo User or any kind of Moderator).</li>
+        <li><code>mystatus:</code> / <code>!mystatus</code> for the same as
+            <code>status:</code> / <code>!status:</code>, except for yourself.
+            Example: <code>mystatus:bm</code> to match only when you are the
+            broadcaster or a moderator. Note that your user status is only
+            updated on channel join and when sending a message, so e.g. if you
+            get modded while already in the channel it will not be recognized
+            until after you have sent a message.</li>
         <li><code>config:</code> to specify on or more options (separated by comma, no spaces):
             <ul>
                 <li><code>config:firstmsg</code> - Restrict matching to the
                     first message of this user in this channel during the
                     current session (first message in User Dialog)</li>
+                <li><code>config:repeatedmsg</code> - Matches if a user repeats
+                    the same message (this requires the <a href="#RepeatMsg">Repetition Detection</a> in
+                    the Moderation settings to be enabled). Can optionally
+                    restrict how many repetitions are required for this to
+                    match, for example <code>config:repeatedmsg|4</code> requires
+                    4 repeated messages (can't be lower than the Repetition
+                    Detection setting).</li>
                 <li><code>config:info</code> - This item applies to info
                     messages instead of regular user messages</li>
                 <li><code>config:any</code> - This item applies to both info
                     messages and regular user messages</li>
+                <li><code>config:hl</code> - Restrict matching to user messages
+                    highlighted by using channel points</li>
+                <li><code>config:b|id/version</code> - Match a Twitch Badge
+                    (version optional, if several are specified in the same
+                    <code>config:</code> prefix, only one has to match).</li>
+                <li><code>config:t|key=value</code> or <code>config:t|key=reg:value</code> -
+                    Match a message tag (value optional, if several are
+                    specified in the same <code>config:</code> prefix, only one
+                    has to match), prefix value with <code>reg:</code> to use
+                    regex matching on the value.</li>
+                <li><code>config:url</code> - Message must contain a URL (same
+                    as what is made clickable)</li>
             </ul>
         </li>
+        <li><a name="Highlight_Prefix-blacklist"><code>blacklist:</code></a> to specify one or more text patterns
+            (separated by comma) that will prevent the overall match if they
+            encompass the entire text match. Example: <code>blacklist:"!bet all" start:!bet</code>
+            will match all messages starting with <code>!bet</code> but will not
+            match <code>!bet all</code>. Can use any regular Text Matching Prefix.<br /><br />
+            This is of course similiar to using a negated text match, like
+            <code>+!text:"!bet all" start:!bet</code>, however the blacklist is
+            "passive", so while <code>+!text:"!bet all"</code> will match only
+            if <code>!bet all</code> is not present anywhere, <code>blacklist:"!bet all"</code>
+            (by itself) will <em>always</em> match because it is not actually
+            a requirement itself, it just modifies text matching requirements,
+            so technicially there is no requirement for a match.<br /><br />
+            Additionally, a negated match like <code>+!text:!cheesecake reg:^!\w+</code>
+            will prevent the match if <code>!cheesecake</code> appears anywhere
+            in the message, while <code>blacklist:!cheesecake reg:^!\w+</code>
+            will only prevent the match when it fully encompasses the regular
+            text match, so only when the message starts with <code>!cheesecake</code>.</li>
     </ul>
     
     <h3><a name="Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a></h3>
@@ -870,6 +1019,8 @@
         prefixes before the search text (separated by spaces):
         <code>[meta-prefix:value]&nbsp;[..]&nbsp;[text-prefix:]&lt;search text&gt;</code></p>
 
+    <p>See <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a> notes for quoting special characters.</p>
+    
     <ul>
         <li><code>color:</code> to specify a color other than the default
             Highlight color for displaying this Highlight (HTML Color Codes as
@@ -881,7 +1032,13 @@
             <ul>
                 <li><code>config:silent</code> - Disable sounds for this item</li>
                 <li><code>config:!notify</code> - Disable notifications for this item</li>
-            </ul></li>
+            </ul>
+        </li>
+        <li><code>n:</code> to provide a note that is ignored for matching.
+            Example: In <code>n:"Explains this entry" config:info startw:!quote</code>
+            only <code>config:info startw:!quote</code> will have an effect
+            (see <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a>
+            on how quoting works).</li>
     </ul>
     
     <p><em>Note:</em> If you're using the <code>color:</code> or <code>bgcolor:</code>
@@ -890,7 +1047,108 @@
         message to the Highlighted Messages window - then consider using Custom
         Message Colors instead.</p>
     
-    <h3>Order of items</h3>
+    <h3><a name="Matching_Presets">Presets</a></h3>
+    <p>There are different ways that allow you to build Highlight items (or
+        settings using the same format) from pre-defined parts or apply
+        functions instead of writing it all manually:</p>
+    
+    <ul>
+        <li>The <code>preset:</code> prefix inserts a "Presets" list entry at
+            it's position (good for often used meta prefixes).</li>
+        <li>The <code>cc:/cc2:</code> prefixes modify all of the text after it
+            by allowing Custom Command syntax to be used (which allows you to
+            include entries from the "Presets" list or use functions).</li>
+        <li>The <code>ccf:</code> prefix modifies all of the text after it by
+            applying a function from the "Presets" list to it.</li>
+    </ul>
+    
+    <p>The "Presets" list can be accessed through the Highlights settings page.
+        Presets can be used from any setting that uses the Highlights format,
+        even though in this help it only refers to the Highlights list.</p>
+    
+    <p>The <strong>"preset:" prefix</strong> inserts an entry from
+        the "Presets" list. It could for example contain an entry with the name "m" that contains some meta prefixes:</p>
+    <p class="codeblock-compact"><code>m&nbsp;chanChat:mod config:!notify</code> &nbsp;("Presets" list)</p>
+    
+    <p>This could then be inserted into a Highlight list entry like this:</p>
+    <p class="codeblock-compact"><code>preset:m reg:&lt;some regex&gt;</code></p>
+    
+    <p>Prior to further parsing this would be expanded to:</p>
+    <p class="codeblock-compact"><code>chanCat:mod config:!notify reg:&lt;some regex&gt;</code></p>
+    
+    <p>You can also add an optional parameter, for example <code>preset:m|",silent"</code>,
+        which will be appended directly to the end if the inserted text:
+        <code>chanCat:mod config:!notify,silent reg:&lt;some regex&gt;</code>.
+        If the name of the preset begins with an underscore the parameter
+        will instead be provided to the preset in the <code>$1-</code>
+        replacement.</p>
+            
+    <p>The <strong>"cc:" prefix</strong> (short for "Custom Command") causes all following text to be
+        interpreted in the <a href="help-custom_commands.html#replacements">Custom Command</a> syntax, which means:</p>
+    
+    <ul>
+        <li>You can use replacements such as <code>$(m)</code> or <code>$(_m,&lt;text&gt;)</code>, whereas "m" or "_m" are
+            entries on the "Presets" list. Presets beginning with <code>_</code>
+            can contain Custom Commands replacements like <code>$1-</code>, which
+            allows working with the given <code>&lt;text&gt;</code> (so they act like functions).</li>
+        <li>Special characters such as <code>$</code> and <code>\</code> have to
+            be escaped with a backslash (<code>\$</code> and <code>\\</code>)
+            when intended to be used literally.</li>
+        <li>Presets are applied when the Highlight item is compiled,
+            which usually happens when it was changed, but also sometimes
+            automatically. While some Custom Command functions such as <code>$datetime()</code>
+            may be available, it is inadvisable to use them
+            since it would cause inconsistent results.</li>
+    </ul>
+    
+    <p>For example there could be a preset with the name "_t", that replaces
+        spaces in all of the given text <code>$1-</code> with underscores:</p>
+    <p class="codeblock-compact"><code>_t $replace($1-, ,_)</code> &nbsp;("Presets" list)</p>
+    
+    <p>This could then be used in a Highlight item:</p>
+    <p class="codeblock-compact"><code>cc:reg:\\w $(_t,abc test)</code> &nbsp;(note the escaped <code>\</code> and the <code>abc test</code> parameter)</p>
+    
+    <p>Prior to further parsing this would be modified to (due to being handled
+        like a Custom Command):</p>
+    <p class="codeblock-compact"><code>reg:\w abc_test</code></p>
+    
+    <p>The <strong>"cc2:" prefix</strong> does the same, except that you
+        must also specify a custom escaping (and optionally a replacement) character.
+        For example the following sets <code>~</code> as escape character (instead of <code>\</code>)
+                    and <code>§</code> as replacement character (instead of <code>$</code>).
+                    Anything after <code>|</code> is then interpreted in Custom Command syntax as above:</p>
+    <p class="codeblock-compact"><code>cc2:~§|reg:\w §(_t,abc test)</code></p>
+    
+    <p>The result is the same as the <code>cc:</code> example, but the <code>\w</code>
+        does not need the additional <code>\</code> in front, since <code>\</code>
+        is not a special Custom Command character anymore.</p>
+    
+    <p>The <strong><a name="Matching_ccf">"ccf:" prefix</a></strong> (short for
+        "Custom Command Function") applies a "Presets" list entry (whose name
+        should begin with <code>_</code> to be able to use Custom Command
+        replacements) to the entire following text, as if you wrapped the entire
+        text in a replacement. Example:</p>
+    <p class="codeblock-compact"><code>ccf:_t|reg:\w abc test</code></p>
+    
+    <p>This is equivalent to:</p>
+    <p class="codeblock-compact"><code>cc:$(_t,reg:\\w abc test)</code></p>
+    
+    <p>Both of these would give the entire text to <code>_t</code> (which is <code>$replace($1-, ,_)</code> as seen above) and then use the return value, so it changes to:</p>
+    <p class="codeblock-compact"><code>reg:\w_abc_test</code></p>
+    
+    <p>Using <code>ccf:</code> has the advantage that you don't have to
+        worry about potentially having to escape special characters,
+        since simply everything after the <code>|</code> is provided to <code>_t</code>
+        as a parameter without being interpreted in any special way.</p>
+    
+    <p>You can <strong>chain several prefixes</strong>, for example:</p>
+    <p class="codeblock-compact"><code>ccf:_test|preset:m reg:&lt;some regex&gt;</code></p>
+    <p>This would first apply the <code>_test</code> function to everything after
+        it, then insert the <code>m</code> preset (assuming the <code>_test</code>
+        function did not change the <code>preset:m</code>), then continue parsing the
+        result as a Highlight item.</p>
+    
+    <h3><a name="Highlight_Order">Order of Highlight items</a></h3>
     <p>When using prefixes that change the behaviour (like setting a color) the
         order of Highlight items may be important, since the settings of the
         first matching item (from the top of the list) will be used. Contrary to
@@ -1107,6 +1365,10 @@
         whitelist</li>
         <li><strong>off</strong> - Log no channels whatsoever</li>
     </ul>
+    
+    <p><em>Tip:</em> Add <code>$_whisper_</code> to the whitelist or blacklist
+        to affect all whispers that are output in the "One Window" tab or
+        "Per User" tabs.</p>
     
     <h3>Other Settings</h3>
     <dl class="dl-settings">
@@ -1639,7 +1901,7 @@
     and <code>/get port</code>.</p>
     
     <h3>Login Settings</h3>
-    <p>Manage the actual login data under <code>Main Menu - Login..</code>.</p>
+    <p>Manage the actual login data under <code>Main Menu - Account</code>.</p>
     
     <dl class="dl-settings">
         <dt>Allow <code>-token</code> parameter to override existing token</dt>
@@ -1647,14 +1909,14 @@
             the <code>-token</code> parameter sets the login token used in
             Chatty. If a token is already saved in Chatty, then the <code>-token</code>
             parameter will have no effect, unless this setting is enabled.</dd>
-        <dd>Overriding the token can be any issue if external programs like the
+        <dd>Overriding the token can be an issue if external programs like the
             Livestreamer GUI provide a token that has less access than the one
             already saved in Chatty (e.g. doesn't allow you to change your
             stream title).</dd>
         <dd>If the saved token is already marked as a token set through the
             <code>-token</code> parameter, then it will be overriden anyway.</dd>
         <dd>If a token set through the <code>-token</code> parameter is in use,
-            it will be shown as such in the <code>Main Menu - Login..</code>
+            it will be shown as such in the <code>Main Menu - Account</code>
             dialog.</dd>
     </dl>
     
@@ -1788,7 +2050,7 @@
         case no prefix is required.</p>
 
     <p><em>Example:</em> Add <code>chatty</code> as <em>Key</em> and
-        <code>http://chatty.github.io</code> as <em>Value</em> and then in the
+        <code>https://chatty.github.io</code> as <em>Value</em> and then in the
         inputbox type <code>.chatty</code> (notice the dot in front) and press
         <kbd>TAB</kbd> to complete it to the URL.</p>
                 
@@ -1887,10 +2149,6 @@
         setting in the main menu under <code>Extra - Options</code> or
         use setting commands to change the <code>globalHotkeysEnabled</code>
         setting directly.</p>
-
-    <p>If a dialog pops up that tells you that <strong>global hotkeys
-            have not been properly initialized</strong>, check out the
-        <a href="help-troubleshooting.html#jintellitype">Troubleshooting</a> page.</p>
 
     <h3>Adding/Editing hotkeys</h3>
     <p>When adding or changing a hotkey you have the following options:</p>

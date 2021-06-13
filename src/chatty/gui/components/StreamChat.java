@@ -6,8 +6,10 @@ import chatty.User;
 import chatty.gui.MainGui;
 import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
+import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
+import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -40,7 +42,17 @@ public class StreamChat extends JDialog {
         setTitle("Stream Chat");
 
         textPane = new TextPane(g, styles, startAtBottom);
-        textPane.setContextMenuListener(new MyContextMenuListener());
+        textPane.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
+            
+            @Override
+            public void menuItemClicked(ActionEvent e) {
+                if (e.getActionCommand().equals("clearHighlights")) {
+                    textPane.clearAll();
+                }
+                super.menuItemClicked(e);
+            }
+            
+        });
         JScrollPane scroll = new JScrollPane(textPane);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         textPane.setScrollPane(scroll);
@@ -77,66 +89,12 @@ public class StreamChat extends JDialog {
         
         public TextPane(MainGui main, StyleServer styleServer, boolean startAtBottom) {
             // Enables the "special" parameter to be able to remove old lines
-            super(main, styleServer, true, startAtBottom);
+            super(main, styleServer, ChannelTextPane.Type.STREAM_CHAT, startAtBottom);
             
             // Overriding constructor is required to set the custom context menu
-            linkController.setDefaultContextMenu(new HighlightsContextMenu());
+            linkController.setContextMenuCreator(() -> new StreamChatContextMenu());
         }
         
-    }
-    
-    /**
-     * Redirect everything to the normal listener except the clear event.
-     */
-    private class MyContextMenuListener implements ContextMenuListener {
-        
-        @Override
-        public void menuItemClicked(ActionEvent e) {
-            if (e.getActionCommand().equals("clearHighlights")) {
-                textPane.clearAll();
-            }
-            contextMenuListener.menuItemClicked(e);
-        }
-
-        @Override
-        public void userMenuItemClicked(ActionEvent e, User user, String msgId, String autoModMsgId) {
-            contextMenuListener.userMenuItemClicked(e, user, msgId, autoModMsgId);
-        }
-
-        @Override
-        public void urlMenuItemClicked(ActionEvent e, String url) {
-            contextMenuListener.urlMenuItemClicked(e, url);
-        }
-
-        @Override
-        public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams) {
-            contextMenuListener.streamsMenuItemClicked(e, streams);
-        }
-
-        @Override
-        public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos) {
-            contextMenuListener.streamInfosMenuItemClicked(e, streamInfos);
-        }
-
-        @Override
-        public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
-            contextMenuListener.emoteMenuItemClicked(e, emote);
-        }
-
-        @Override
-        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
-            contextMenuListener.usericonMenuItemClicked(e, usericon);
-        }
-
-        @Override
-        public void roomsMenuItemClicked(ActionEvent e, Collection<Room> rooms) {
-            contextMenuListener.roomsMenuItemClicked(e, rooms);
-        }
-
-        @Override
-        public void channelMenuItemClicked(ActionEvent e, Channel channel) {
-            contextMenuListener.channelMenuItemClicked(e, channel);
-        }
     }
     
 }

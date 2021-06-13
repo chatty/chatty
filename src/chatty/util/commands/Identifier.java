@@ -1,7 +1,9 @@
 
 package chatty.util.commands;
 
+import chatty.User;
 import chatty.util.StringUtil;
+import chatty.util.api.usericons.Usericon;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,7 +19,7 @@ class Identifier implements Item {
     public Identifier(String name) {
         this.name = StringUtil.toLowerCase(name);
     }
-
+    
     /**
      * Return the parameter or an empty value if the parameter doesn't exist
      * (returning null would indicate a required parameter, which can't be
@@ -29,6 +31,24 @@ class Identifier implements Item {
     @Override
     public String replace(Parameters parameters) {
         String value = parameters.get(name);
+        if (value == null && name.startsWith("_") || parameters.hasKey("-presets-")) {
+            Object o = parameters.getObject(name);
+            CustomCommand command = null;
+            if (o instanceof CustomCommand) {
+                command = (CustomCommand) o;
+            }
+            String checkKey = "-"+name+"-";
+            if (command != null) {
+                if (parameters.get(checkKey) == null) {
+                    Parameters subParameters = parameters.copy();
+                    subParameters.put(checkKey, "true");
+                    value = command.replace(subParameters);
+                }
+                else {
+                    value = "[recursion not allowed]";
+                }
+            }
+        }
         return value != null ? value : "";
     }
 

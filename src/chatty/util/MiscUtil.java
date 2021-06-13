@@ -61,6 +61,31 @@ public class MiscUtil {
         return true;
     }
     
+    public static boolean openFile(String path, Component parent) {
+        try {
+            File file = new File(path);
+            Desktop.getDesktop().open(file);
+        } catch (Exception ex) {
+            if (parent != null) {
+                JOptionPane.showMessageDialog(parent, "Opening folder failed.\n"+ex.getLocalizedMessage());
+            }
+            return false;
+        }
+        return true;
+    }
+    
+    public static boolean openFilePrompt(String path, Component parent) {
+        int chosenOption = JOptionPane.showOptionDialog(parent,
+                path,
+                "Open in default application?",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, new String[]{"Open File", "Cancel"}, 0);
+        if (chosenOption == 0) {
+            return openFile(path, parent);
+        }
+        return false;
+    }
+    
     /**
      * Parses the command line arguments from the main method into a Map.
      * Arguments that start with a dash "-" are interpreted as key, everything
@@ -243,6 +268,28 @@ public class MiscUtil {
             result.add(part);
         }
         return result;
+    }
+    
+    /**
+     * Add items from the source Set to the target Set until the target contains
+     * limit entries or the source is exhausted.
+     * 
+     * @param <T>
+     * @param source The Set to take items from (only read), must be non-null
+     * @param target The Set to add items to, must be non-null
+     * @param limit The amount of items that are at most allowed to be in target
+     */
+    public static <T> void addLimited(Set<T> source, Set<T> target, int limit) {
+        for (T item : source) {
+            if (target.size() >= limit) {
+                return;
+            }
+            target.add(item);
+        }
+    }
+    
+    public static boolean isBitEnabled(int value, int bit) {
+        return (value & bit) != 0;
     }
     
 }

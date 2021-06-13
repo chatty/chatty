@@ -2,6 +2,7 @@
 package chatty.gui.components.admin;
 
 import chatty.gui.MainGui;
+import chatty.gui.components.WrapLayout;
 import static chatty.gui.components.admin.AdminDialog.hideableLabel;
 import static chatty.gui.components.admin.AdminDialog.makeGbc;
 import chatty.gui.components.settings.DurationSetting;
@@ -65,10 +66,10 @@ public class CommercialPanel extends JPanel {
         
         setLayout(new GridBagLayout());
         
-        gbc = makeGbc(0,1,1,1);
-        add(new JLabel("Run commercial: "), gbc);
         gbc = makeGbc(1,1,4,1);
         gbc.insets = new Insets(5,5,0,5);
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         add(createCommercialButtons(), gbc);
         
         gbc = makeGbc(1,2,1,1);
@@ -77,6 +78,8 @@ public class CommercialPanel extends JPanel {
         gbc = makeGbc(2,2,1,1);
         gbc.insets = new Insets(0,5,5,5);
         gbc.anchor = GridBagConstraints.WEST;
+        // Prevent 0 size when dialog size reduced
+        commercialDelay.setMinimumSize(commercialDelay.getPreferredSize());
         add(commercialDelay, gbc);
         
         gbc = makeGbc(3,2,1,1);
@@ -88,7 +91,7 @@ public class CommercialPanel extends JPanel {
         add(lastCommercialInfo, gbc);
 
         commercialResult = new JLabel("...");
-        gbc = makeGbc(0,3,5,1);
+        gbc = makeGbc(1,3,4,1);
         gbc.insets = new Insets(3,5,15,5);
         add(commercialResult, gbc);
         
@@ -191,6 +194,7 @@ public class CommercialPanel extends JPanel {
     private JPanel createCommercialButtons() {
         ButtonGroup g = new NoneSelectedButtonGroup();
         JPanel panel = new JPanel();
+        panel.setLayout(new WrapLayout(WrapLayout.LEFT));
         ActionListener listener = new ActionListener() {
 
             @Override

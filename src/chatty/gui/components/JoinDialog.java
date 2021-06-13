@@ -4,6 +4,7 @@ package chatty.gui.components;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.lang.Language;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -62,11 +63,14 @@ public class JoinDialog extends JDialog {
             }
         });
         GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
+        TextSelectionMenu.install(channels);
         
         GridBagConstraints gbc;
         
         gbc = makeGbc(0,0,1,1);
-        add(new JLabel(Language.getString("join.channel")), gbc);
+        JLabel label = new JLabel(Language.getString("join.channel"));
+        label.setLabelFor(channels);
+        add(label, gbc);
         
         gbc = makeGbc(1,0,2,1);
         gbc.insets = new Insets(5,5,5,5);

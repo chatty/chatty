@@ -1,0 +1,70 @@
+<dl>
+    <dt>
+    [help-commands:commands-list Format 1]: Add several names from the
+    [help-commands: Custom Command] list or timeout actions per line (no parameters):</dt>
+    <dd><code>/Command1 /Command2 30s 10m 6h 1d</code></dd>
+    <!--#START:!userDialog#-->
+    <dd><code>/Command1 | /Command2</code> (vertical bar) to add [help-commands:separators separator] between items.</dd>
+    <!--#END:!userDialog#-->
+
+    <dt>[help-commands:inline-commands Format 2]: Define a Custom Command
+        directly (without adding it to the Custom Commands list), one per line:</dt>
+    <dd><code>Slap=/me slaps $$1 around a bit with a large trout</code></dd>
+
+    <!--#START:userDialog#-->
+    <dt>Buttons in different [help-commands:submenus rows]:</dt>
+    <dd>Put <code>@&lt;row name&gt;</code> on it's own line and prepend <code>.</code>
+        on following lines.</dd>
+    <dd><code>@a1</code> (default row), <code>@b1</code> (default bottom row,
+        also via <code>//Command1</code>), anything starting with <code>@a</code>
+        is another top row, bottom row otherwise</dd>
+    <dd><code>@a2<br />./Command1 /Command2<br />.Spoiler=/timeout $$1 600 no
+        spoilers</code></dd>
+
+    <dt>[help-commands:shortcuts Shortcuts] which can be triggered when the User
+        Dialog has focus:</dt>
+    <dd><code>/Ban[B] /Unban[U] 5s[1] 10m[2] 1d[3]<br />Slap[B]=/me slaps $$1
+            around a bit with a large trout</code></dd>
+    <!--#END:userDialog#-->
+
+    <!--#START:!userDialog#-->
+    <dt>Add custom [help-commands:submenus submenus]:</dt>
+    <dd><code>@&lt;menu name&gt;</code> on it's own line and prepend <code>.</code> on following lines.
+    <dd><code>@Rules<br />./No_Spam /No_Spoilers<br />.Spoiler=/timeout $$1 600 no spoilers</code></dd>
+    <!--#END:!userDialog#-->
+
+    <!--#START:userDialog#-->
+    <dt>Parameters (User Dialog):</dt>
+    <dd><code>$1</code> Name of user, <code>$2-</code> Ban reason (if selected)
+        ([help-commands:parameters-context more..])</dd>
+    <!--#END:userDialog#-->
+
+    <!--#START:streamsMenu#-->
+    <dt>Parameters (Streams Context Menu):</dt>
+    <dd><code>$1-</code> Names of the selected streams ([help-commands:parameters-context more..])</dd>
+    <!--#END:streamsMenu#-->
+
+    <!--#START:channelMenu#-->
+    <dt>Parameters (Channel Context Menu):</dt>
+    <dd><code>$1</code> Name of currently active channel (without leading #)
+        ([help-commands:parameters-context more..])</dd>
+    <!--#END:channelMenu#-->
+
+    <!--#START:userMenu#-->
+    <dt>[help-commands:replacements Parameters] (User Context Menu):</dt>
+    <dd><code>$1</code> Name of the user ([help-commands:parameters-context more..])</dd>
+    <!--#END:userMenu#-->
+    
+    <!--#START:textMenu#-->
+    <dt>Parameters (Selected Text Context Menu):</dt>
+    <dd><code>$1-</code> or <code>$(msg)</code> Selected text
+        ([help-commands:parameters-context more..])</dd>
+    <!--#END:textMenu#-->
+    
+    <!--#START:adminMenu#-->
+    <dt>Parameters (Admin Context Menu):</dt>
+    <dd><code>$(title)</code>, <code>$(game)</code>
+        ([help-commands:parameters-context more..])</dd>
+    <!--#END:adminMenu#-->
+</dl>
+<p>Check out [url:https://www.youtube.com/user/chattyclient YouTube] for video tutorials.</p>

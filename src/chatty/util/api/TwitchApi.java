@@ -2,8 +2,8 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.CachedBulkManager;
 import chatty.util.StringUtil;
-import chatty.util.TwitchEmotes.EmotesetInfo;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamTagManager.StreamTagListener;
@@ -39,9 +39,7 @@ public class TwitchApi {
     private final TwitchApiResultListener resultListener;
     
     protected final StreamInfoManager streamInfoManager;
-    protected final EmoticonManager emoticonManager;
     protected final EmoticonManager2 emoticonManager2;
-    protected final CheerEmoticonManager cheersManager;
     protected final CheerEmoticonManager2 cheersManager2;
     protected final FollowerManager followerManager;
     protected final FollowerManager subscriberManager;
@@ -49,10 +47,12 @@ public class TwitchApi {
     protected final UserIDs userIDs;
     protected final ChannelInfoManager channelInfoManager;
     protected final StreamTagManager communitiesManager;
+    protected final CachedBulkManager<Req, Boolean> m;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
     protected volatile String defaultToken;
+    protected volatile String localUserId;
 
     protected final Requests requests;
 
@@ -60,8 +60,6 @@ public class TwitchApi {
             StreamInfoListener streamInfoListener) {
         this.resultListener = apiResultListener;
         this.streamInfoManager = new StreamInfoManager(this, streamInfoListener);
-        emoticonManager = new EmoticonManager(apiResultListener);
-        cheersManager = new CheerEmoticonManager(apiResultListener);
         cheersManager2 = new CheerEmoticonManager2(this, resultListener);
         followerManager = new FollowerManager(Follower.Type.FOLLOWER, this, resultListener);
         subscriberManager = new FollowerManager(Follower.Type.SUBSCRIBER, this, resultListener);
@@ -71,45 +69,94 @@ public class TwitchApi {
         userIDs = new UserIDs(this);
         communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
+        m = new CachedBulkManager<>(new CachedBulkManager.Requester<Req, Boolean>() {
+
+            @Override
+            public void request(CachedBulkManager<Req, Boolean> manager, Set<Req> asap, Set<Req> normal, Set<Req> backlog) {
+                Set<Req> requests = manager.makeAndSetRequested(asap, normal, backlog, 1);
+                Req req = requests.iterator().next();
+                if (req.request != null) {
+                    req.request.run();
+                }
+            }
+        }, "[Api] ", CachedBulkManager.NONE);
     }
     
+    private static class Req {
+        
+        public final String key;
+        public final Runnable request;
+        
+        public Req(String key, Runnable request) {
+            this.key = key;
+            this.request = request;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Req other = (Req) obj;
+            if (!Objects.equals(this.key, other.key)) {
+                return false;
+            }
+            return true;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + Objects.hashCode(this.key);
+            return hash;
+        }
+        
+    }
+    
+    protected void setReceived(String key) {
+        m.setResult(new Req(key, null), Boolean.TRUE);
+    }
+    
+    protected void setError(String key) {
+        m.setError(new Req(key, null));
+    }
+    
+    protected void setNotFound(String key) {
+        m.setNotFound(new Req(key, null));
+    }
     
     //=================
     // Chat / Emoticons
     //=================
     
-    public void requestCheerEmoticons(boolean forcedUpdate) {
-        if (forcedUpdate || !cheersManager.load(false)) {
-            requests.requestCheerEmoticons(forcedUpdate);
-        }
-    }
-    
-    public void getEmotesBySets(Integer... emotesets) {
+    public void getEmotesBySets(String... emotesets) {
         getEmotesBySets(new HashSet<>(Arrays.asList(emotesets)));
     }
     
-    public void getEmotesBySets(Set<Integer> emotesets) {
+    public void getEmotesBySets(Set<String> emotesets) {
         emoticonManager2.addEmotesets(emotesets);
     }
     
-    public void getEmotesByStreams(String... streams) {
-        emoticonManager2.addStreams(new HashSet<>(Arrays.asList(streams)));
+    private static final Object USER_EMOTES_UNIQUE = new Object();
+    
+    public void getUserEmotes(String userId) {
+        m.query(USER_EMOTES_UNIQUE,
+                null,
+                CachedBulkManager.ASAP | CachedBulkManager.WAIT | CachedBulkManager.REFRESH,
+                new Req("userEmotes", () -> {
+                    requests.requestUserEmotes(userId);
+                }));
     }
     
     public void refreshEmotes() {
         emoticonManager2.refresh();
     }
     
-    public void refreshEmotesOld() {
-        requests.requestEmoticons(true);
-    }
-    
     public void requestEmotesNow() {
         emoticonManager2.requestNow();
-    }
-    
-    public void setEmotesetInfo(EmotesetInfo info) {
-        emoticonManager2.setEmotesetInfo(info);
     }
     
     public void getGlobalBadges(boolean forceRefresh) {
@@ -122,20 +169,6 @@ public class TwitchApi {
     
     public void getCheers(String room, boolean forceRefresh) {
         cheersManager2.request(room, forceRefresh);
-    }
-    
-    public void requestRoomsNow(String channel) {
-        if (!Helper.isRegularChannel(channel)) {
-            return;
-        }
-        String room = Helper.toStream(channel);
-        getUserIdAsap(r -> {
-            if (r.hasError()) {
-                resultListener.roomsInfo(new RoomsInfo(room, null));
-            } else {
-                requests.requestRooms(r.getId(room), room);
-            }
-        }, room);
     }
     
     //====================
@@ -158,10 +191,6 @@ public class TwitchApi {
                 }
             }, stream);
         }
-    }
-
-    public void getChatInfo(String stream) {
-        requests.requestChatInfo(stream);
     }
     
     public void getFollowers(String stream) {
@@ -225,6 +254,16 @@ public class TwitchApi {
         return streamInfoManager.getStreamInfo(stream, streams);
     }
     
+    /**
+     * Only return already cached StreamInfo, never create a new one.
+     * 
+     * @param stream
+     * @return The StreamInfo object, or null if none exists
+     */
+    public StreamInfo getCachedStreamInfo(String stream) {
+        return streamInfoManager.getCachedStreamInfo(stream);
+    }
+    
     public void getFollowedStreams(String token) {
         streamInfoManager.getFollowedStreams(token);
     }
@@ -239,6 +278,10 @@ public class TwitchApi {
     
     public void setToken(String token) {
         this.defaultToken = token;
+    }
+    
+    public void setLocalUserId(String userId) {
+        this.localUserId = userId;
     }
     
     /**
@@ -462,12 +505,34 @@ public class TwitchApi {
     // AutoMod
     //---------
     
+    public enum AutoModAction {
+        ALLOW, DENY
+    }
+    
+    public enum AutoModActionResult {
+        SUCCESS(204, ""),
+        ALREADY_PROCESSED(400, "Message already handled"),
+        BAD_AUTH(401, "Access denied (check Main - Account for access)"),
+        UNAUTHORIZED(403, "Access denied"),
+        NOT_FOUND(404, "Invalid message id"),
+        OTHER_ERROR(-1, "Unknown error");
+        
+        public final int responseCode;
+        public final String errorMessage;
+        
+        AutoModActionResult(int responseCode, String errorMessage) {
+            this.responseCode = responseCode;
+            this.errorMessage = errorMessage;
+        }
+        
+    }
+    
     public void autoModApprove(String msgId) {
-        requests.autoMod("approve", msgId, defaultToken);
+        requests.autoMod(AutoModAction.ALLOW, msgId, defaultToken, localUserId);
     }
     
     public void autoModDeny(String msgId) {
-        requests.autoMod("deny", msgId, defaultToken);
+        requests.autoMod(AutoModAction.DENY, msgId, defaultToken, localUserId);
     }
 
     //---------------

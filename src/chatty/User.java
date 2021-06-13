@@ -12,25 +12,19 @@ import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Represents a single user on a specific channel.
  * 
  * @author tduva
  */
-public class User implements Comparable {
-    
-    private static final Pattern SPLIT_EMOTESET = Pattern.compile("[^0-9]");
-    
-    private static final Set<Integer> EMPTY_EMOTESETS = new HashSet<>();
-    
+public class User implements Comparable<User> {
+
     private static final NamedColor[] defaultColors = {
         new NamedColor("Red", 255, 0, 0),
         new NamedColor("Blue", 0, 0, 255),
@@ -49,12 +43,14 @@ public class User implements Comparable {
         new NamedColor("SpringGreen", 0, 255, 127)
     };
     
-    private static final int MAXLINES = 100;
+    public static volatile int MSG_ID;
+    
+    private int maxLines = 100;
     
     //========
     // Basics
     //========
-    private final long createdAt = System.currentTimeMillis();
+    private long firstSeen = -1;
     private volatile String id;
     private Room room;
     
@@ -96,6 +92,7 @@ public class User implements Comparable {
      * Current badges id/version. Map gets replaced, not modified.
      */
     private Map<String, String> twitchBadges;
+    private short subMonths;
     private volatile UsericonManager iconManager;
     
     //===========
@@ -108,18 +105,10 @@ public class User implements Comparable {
     private boolean hasCorrectedColor;
     private boolean hasCustomColor;
     
-    //===========
-    // Emoticons
-    //===========
-    /**
-     * Current emotesets. Set gets modified. Only the local User should have
-     * this set nowadays, so by default no value.
-     */
-    private Set<Integer> emoteSets;
-    
     //========
     // Status
     //========
+    private boolean localUser;
     private boolean online;
     private boolean isModerator;
     private boolean isBroadcaster;
@@ -207,12 +196,24 @@ public class User implements Comparable {
         return twitchBadges != null && twitchBadges.containsKey(id);
     }
     
-    public List<Usericon> getBadges(boolean botBadgeEnabled) {
+    public synchronized boolean hasTwitchBadge(String id, String version) {
+        return twitchBadges != null && twitchBadges.containsKey(id) && twitchBadges.get(id).equals(version);
+    }
+    
+    public List<Usericon> getBadges(boolean botBadgeEnabled, boolean pointsHl, boolean channelLogo) {
         Map<String, String> badges = getTwitchBadges();
         if (iconManager != null) {
-            return iconManager.getBadges(badges, this, botBadgeEnabled);
+            return iconManager.getBadges(badges, this, botBadgeEnabled, pointsHl, channelLogo);
         }
         return null;
+    }
+    
+    public synchronized void setSubMonths(short months) {
+        this.subMonths = months;
+    }
+    
+    public synchronized short getSubMonths() {
+        return subMonths;
     }
     
     /**
@@ -288,16 +289,30 @@ public class User implements Comparable {
         }
     }
     
-    public long getCreatedAt() {
-        return createdAt;
+    public synchronized long getFirstSeen() {
+        return firstSeen;
+    }
+    
+    public synchronized void setFirstSeen() {
+        if (firstSeen == -1) {
+            firstSeen = System.currentTimeMillis();
+        }
     }
     
     public synchronized int getNumberOfMessages() {
         return numberOfMessages;
     }
     
+    public synchronized int getNumberOfLines() {
+        return numberOfLines;
+    }
+    
     public synchronized int getMaxNumberOfLines() {
-        return MAXLINES;
+        return maxLines;
+    }
+    
+    public synchronized void setMaxNumberOfLines(int num) {
+        this.maxLines = num;
     }
     
     /**
@@ -307,7 +322,7 @@ public class User implements Comparable {
      * @return 
      */
     public synchronized boolean linesCleared() {
-        return lines.size() < MAXLINES && lines.size() < numberOfLines;
+        return lines.size() < maxLines && lines.size() < numberOfLines;
     }
     
     /**
@@ -318,7 +333,7 @@ public class User implements Comparable {
      * @return 
      */
     public synchronized boolean maxLinesExceeded() {
-        return lines.size() == MAXLINES && lines.size() < numberOfLines;
+        return lines.size() == maxLines && lines.size() < numberOfLines;
     }
     
     /**
@@ -329,6 +344,7 @@ public class User implements Comparable {
      * @param id 
      */
     public synchronized void addMessage(String line, boolean action, String id) {
+        setFirstSeen();
         addLine(new TextMessage(System.currentTimeMillis(), line, action, id));
         numberOfMessages++;
     }
@@ -355,15 +371,18 @@ public class User implements Comparable {
     }
     
     public synchronized void addSub(String message, String text) {
+        setFirstSeen();
         addLine(new SubMessage(System.currentTimeMillis(), message, text));
     }
     
     public synchronized void addInfo(String message, String text) {
+        setFirstSeen();
         addLine(new InfoMessage(System.currentTimeMillis(), message, text));
     }
     
     public synchronized void addModAction(ModeratorActionData data) {
-        addLine(new ModAction(System.currentTimeMillis(), data.getCommandAndParameters()));
+        setFirstSeen();
+        addLine(new ModAction(System.currentTimeMillis(), data.moderation_action+" "+ModLogInfo.makeArgsText(data)));
     }
     
     private List<ModeratorActionData> cachedBanInfo;
@@ -384,7 +403,7 @@ public class User implements Comparable {
         }
     }
     
-    private static final int BAN_INFO_WAIT = 500;
+    private static final int BAN_INFO_WAIT = 1000;
     
     private synchronized void replayCachedBanInfo() {
         if (cachedBanInfo == null) {
@@ -441,8 +460,8 @@ public class User implements Comparable {
         return false;
     }
     
-    public synchronized void addAutoModMessage(String line, String id) {
-        addLine(new AutoModMessage(line, id));
+    public synchronized void addAutoModMessage(String line, String id, String reason) {
+        addLine(new AutoModMessage(line, id, reason));
     }
     
     /**
@@ -452,7 +471,7 @@ public class User implements Comparable {
      */
     private void addLine(Message line) {
         lines.add(line);
-        if (lines.size() > MAXLINES) {
+        if (lines.size() > maxLines) {
             lines.remove(0);
         }
         numberOfLines++;
@@ -466,6 +485,28 @@ public class User implements Comparable {
      */
     public synchronized List<Message> getMessages() {
         return new ArrayList<>(lines);
+    }
+    
+    public synchronized int getNumberOfSimilarChatMessages(String compareMsg, int method, long timeframe, float minSimilarity, int minLen, char[] ignoredChars) {
+        compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg, ignoredChars);
+        int result = 0;
+        long checkUntilTime = System.currentTimeMillis() - timeframe * 1000;
+        for (int i=lines.size() - 1; i>=0; i--) {
+            Message m = lines.get(i);
+            if (m instanceof TextMessage) {
+                TextMessage msg = (TextMessage)m;
+                if (msg.getTime() < checkUntilTime) {
+                    break;
+                }
+                if (msg.text.length() >= minLen) {
+                    String text = StringUtil.prepareForSimilarityComparison(msg.text, ignoredChars);
+                    if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity, method) > 0) {
+                        result++;
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     public synchronized TextMessage getMessage(String msgId) {
@@ -488,6 +529,26 @@ public class User implements Comparable {
         return msg != null ? msg.text : null;
     }
     
+    public synchronized AutoModMessage getAutoModMessage(String msgId) {
+        if (msgId == null) {
+            return null;
+        }
+        for (Message msg : lines) {
+            if (msg instanceof AutoModMessage) {
+                AutoModMessage autoModMsg = (AutoModMessage) msg;
+                if (msgId.equals(autoModMsg.id)) {
+                    return autoModMsg;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public String getAutoModMessageText(String msgId) {
+        AutoModMessage msg = getAutoModMessage(msgId);
+        return msg != null ? msg.message : null;
+    }
+    
     public synchronized int clearMessagesIfInactive(long duration) {
         if (!lines.isEmpty()
                 && System.currentTimeMillis() - getLastLineTime() >= duration) {
@@ -496,6 +557,12 @@ public class User implements Comparable {
             return size;
         }
         return 0;
+    }
+    
+    public synchronized void clearMessages() {
+        lines.clear();
+        numberOfMessages = 0;
+        numberOfLines = 0;
     }
     
     private long getLastLineTime() {
@@ -640,6 +707,22 @@ public class User implements Comparable {
     }
     
     /**
+     * Only return custom or corrected color.
+     * 
+     * @return The color, or null if no custom or corrected color is set
+     */
+    public synchronized Color getDisplayColor2() {
+        Color color = getColor();
+        if (hasCustomColor) {
+            return color;
+        }
+        if (hasCorrectedColor) {
+            return correctedColor;
+        }
+        return null;
+    }
+    
+    /**
      * Returns the original Twitch Chat color, either the color received from
      * Twitch Chat, or the default color if none was received yet.
      * 
@@ -731,12 +814,7 @@ public class User implements Comparable {
     }
 
     @Override
-    public synchronized int compareTo(Object o) {
-        if (!(o instanceof User)) {
-            return 0;
-        }
-        User u = (User)o;
-        
+    public synchronized int compareTo(User u) {
         int broadcaster = 16;
         int admin = 8;
         int moderator = 4;
@@ -795,6 +873,14 @@ public class User implements Comparable {
         } else {
             setModerator(false);
         }
+    }
+    
+    public synchronized boolean isLocalUser() {
+        return localUser;
+    }
+    
+    public synchronized boolean sameUser(User user) {
+        return user != null && user.getChannel().equals(getChannel()) && user.getName().equals(nick);
     }
     
     /**
@@ -865,6 +951,14 @@ public class User implements Comparable {
     
     public synchronized boolean isVip() {
         return isVip;
+    }
+    
+    public synchronized boolean setLocalUser(boolean localUser) {
+        if (this.localUser != localUser) {
+            this.localUser = localUser;
+            return true;
+        }
+        return false;
     }
     
     public synchronized boolean setModerator(boolean mod) {
@@ -966,62 +1060,6 @@ public class User implements Comparable {
             return "@"+result;
         }
         return result;
-    }
-    
-    /**
-     * Sets the set of emoticons available for this user.
-     * 
-     * Splits at any character that is not a number, but usually it should
-     * be a string like: [1,5,39]
-     * 
-     * @param newEmoteSets 
-     */
-    public synchronized void setEmoteSets(String newEmoteSets) {
-        if (emoteSets == null) {
-            emoteSets = new HashSet<>();
-        }
-        emoteSets.clear();
-        if (newEmoteSets == null) {
-            return;
-        }
-        String[] split = SPLIT_EMOTESET.split(newEmoteSets);
-        for (String emoteSet : split) {
-            if (!emoteSet.isEmpty()) {
-                try {
-                    emoteSets.add(Integer.parseInt(emoteSet));
-                } catch (NumberFormatException ex) {
-                    // Do nothing, invalid emoteset, just don't add it
-                }
-            }
-        }
-    }
-    
-    /**
-     * Set new emotesets.
-     * 
-     * @param newEmotesets Non-null Set of emotesets, may be empty
-     */
-    public synchronized void setEmoteSets(Set<Integer> newEmotesets) {
-        if (emoteSets == null) {
-            emoteSets = new HashSet<>();
-        }
-        emoteSets.clear();
-        emoteSets.addAll(newEmotesets);
-    }
-    
-    /**
-     * Gets a Set of Integer containing the emotesets available to this user.
-     * Defensive copying because it might be iterated over while being modified
-     * concurrently. The resulting Set must not be modified, since it could also
-     * be the shared empty Set.
-     * 
-     * @return 
-     */
-    public synchronized Set<Integer> getEmoteSet() {
-        if (emoteSets == null || emoteSets.isEmpty()) {
-            return EMPTY_EMOTESETS;
-        }
-        return new HashSet<>(emoteSets);
     }
     
     public synchronized int getActivityScore() {
@@ -1175,6 +1213,9 @@ public class User implements Comparable {
     
     public static class ModAction extends Message {
 
+        /**
+         * For display, may be formatted differently depending on the command.
+         */
         public final String commandAndParameters;
         
         public ModAction(long time, String commandAndParameters) {
@@ -1188,11 +1229,13 @@ public class User implements Comparable {
         
         public final String message;
         public final String id;
+        public final String reason;
         
-        public AutoModMessage(String message, String id) {
+        public AutoModMessage(String message, String id, String reason) {
             super(System.currentTimeMillis());
             this.message = message;
             this.id = id;
+            this.reason = reason;
         }
         
     }

@@ -159,7 +159,7 @@ public class SpeedrunsLive {
     
     private class SpeedrunsLiveRequest extends UrlRequest {
 
-        private final static String URL = "http://api.speedrunslive.com/races";
+        private final static String URL = "https://api.speedrunslive.com/races";
         //private final static String URL = "http://127.0.0.1/twitch/races";
         
         /**

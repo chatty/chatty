@@ -1,7 +1,10 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
+import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -103,19 +106,23 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         }
     }
     
-    protected JMenuItem addItem(String action, String text) {
+    public JMenuItem addItem(String action, String text) {
         return addItem(action, text, -1, null, null);
     }
 
-    protected JMenuItem addItem(String action, String text, ImageIcon icon) {
+    public JMenuItem addItem(String action, String text, ImageIcon icon) {
         return addItem(action, text, -1, null, icon);
     }
-
-    protected JMenuItem addItem(String action, String text, String parent) {
+    
+    public JMenuItem addItem(String action, String text, String parent) {
         return addItem(action, text, -1, parent, null);
     }
+    
+    public JMenuItem addItem(String action, String text, String parent, ImageIcon icon) {
+        return addItem(action, text, -1, parent, icon);
+    }
 
-    public JMenuItem addCommandItem(CommandMenuItem item) {
+    public JMenuItem addCommandItem(CommandMenuItem item, Parameters parameters) {
         if (item.getCommand() == null && item.getLabel() == null) {
             addSeparator(item.getPos(), item.getParent());
         } else if (item.getCommand() == null) {
@@ -123,7 +130,8 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             addKey(item, menu);
         } else {
             commands.put(item.getId(), item.getCommand());
-            JMenuItem mItem = addItem(item.getId(), item.getLabel(), item.getPos(), item.getParent(), null);
+            JMenuItem mItem = addItem(item.getId(), item.getLabel(parameters), item.getPos(), item.getParent(), null);
+            mItem.setToolTipText(StringUtil.shortenTo("<html><body>Command: <code>"+Helper.htmlspecialchars_encode(item.getCommand().getRaw())+"</code>", 100));
             addKey(item, mItem);
         }
         return null;
@@ -143,11 +151,11 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         return e;
     }
     
-    protected void addCheckboxItem(String action, String text, boolean selected) {
+    public void addCheckboxItem(String action, String text, boolean selected) {
         items.put(action, add(makeCheckboxItem(action, text, selected)));
     }
     
-    protected void addCheckboxItem(String action, String text, String parent, boolean selected) {
+    public void addCheckboxItem(String action, String text, String parent, boolean selected) {
         if (parent != null) {
             JMenuItem item = makeCheckboxItem(action, text, selected);
             getSubmenu(parent).add(item);
@@ -209,6 +217,10 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
     
     private boolean isSubmenu(String name) {
         return subMenus.containsKey(name);
+    }
+    
+    public void registerSubmenu(JMenu menu) {
+        subMenus.put(menu.getText(), menu);
     }
     
     private JMenu getSubmenu(String name, int pos) {

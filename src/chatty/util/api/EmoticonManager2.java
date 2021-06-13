@@ -2,8 +2,6 @@
 package chatty.util.api;
 
 import chatty.util.MiscUtil;
-import chatty.util.TwitchEmotes.Emoteset;
-import chatty.util.TwitchEmotes.EmotesetInfo;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -42,38 +40,18 @@ public class EmoticonManager2 {
     /**
      * Emotesets to be included in the next request.
      */
-    private final Set<Integer> pendingEmotesets = new HashSet<>();
+    private final Set<String> pendingEmotesets = new HashSet<>();
     
     /**
      * Emotesets already requested, kept for possible refresh request.
      */
-    private final Set<Integer> requestedEmotesets = new HashSet<>();
+    private final Set<String> requestedEmotesets = new HashSet<>();
     
-    /**
-     * Stream names pending to be resolved into an emoteset.
-     */
-    private final Set<String> pendingStreams = new HashSet<>();
-    
-    /**
-     * Stream names which were not able to be resolved, but kept in case
-     * emotesetInfo is updated (to try again).
-     */
-    private final Set<String> backlogStreams = new HashSet<>();
-    
-    private final Set<Integer> erroredEmotesets = new HashSet<>();
+    private final Set<String> erroredEmotesets = new HashSet<>();
     
     private long lastRequestTime;
     
-    private int retryBackoff = 20;
-    
-    //--------------------------
-    // Changing Data References
-    //--------------------------
-    /**
-     * Used to resolve stream names to emotesets.
-     */
-    private EmotesetInfo emotesetInfo = EmotesetInfo.EMPTY;
-    
+    private int errorRetrySeconds = 20;
     
     public EmoticonManager2(TwitchApiResultListener listener, Requests requests) {
         this.requests = requests;
@@ -93,12 +71,8 @@ public class EmoticonManager2 {
     // Request Emotesets
     //-------------------
     
-    public synchronized void addStreams(Set<String> streams) {
-        this.pendingStreams.addAll(streams);
-    }
-    
-    public synchronized void addEmotesets(Set<Integer> emotesetsToAdd) {
-        for (int emoteset : emotesetsToAdd) {
+    public synchronized void addEmotesets(Set<String> emotesetsToAdd) {
+        for (String emoteset : emotesetsToAdd) {
             addEmoteset(emoteset);
         }
     }
@@ -109,8 +83,21 @@ public class EmoticonManager2 {
      * 
      * @param emotesets 
      */
-    public synchronized void addError(Set<Integer> emotesets) {
+    public synchronized void addError(Set<String> emotesets) {
         erroredEmotesets.addAll(emotesets);
+    }
+    
+    /**
+     * Adding to already requested emotesets, which means they are not requested
+     * by this, except when refreshing.
+     * 
+     * @param emotesets 
+     */
+    public synchronized void addRequested(Set<String> emotesets) {
+        requestedEmotesets.addAll(emotesets);
+        // Remove from error for now (they may be added again if requested for
+        // some reason, but at least now they shouldn't be done again)
+        erroredEmotesets.removeAll(emotesets);
     }
     
     public synchronized void requestNow() {
@@ -118,7 +105,6 @@ public class EmoticonManager2 {
     }
     
     public synchronized void refresh() {
-        checkStreams();
         checkErrored();
         
         // Request both pending and already requested emotesets
@@ -130,7 +116,6 @@ public class EmoticonManager2 {
      */
     private synchronized void checkRequest() {
         //System.out.println("checkRequest"+pendingEmotesets+" "+requestedEmotesets);
-        checkStreams();
         checkErrored();
         
         if (!pendingEmotesets.isEmpty()) {
@@ -140,7 +125,7 @@ public class EmoticonManager2 {
     
     private synchronized void performRequest(boolean includeAll) {
         // Always add pending
-        Set<Integer> toRequest = new HashSet<>(pendingEmotesets);
+        Set<String> toRequest = new HashSet<>(pendingEmotesets);
         pendingEmotesets.clear();
         
         // Add errored if available
@@ -155,46 +140,10 @@ public class EmoticonManager2 {
         // All of these are being requested, so remember as such
         requestedEmotesets.addAll(toRequest);
         
-        for (Set<Integer> split : MiscUtil.splitSetByLimit(toRequest, MAX_NUMBER_OF_SETS_IN_REQUEST)) {
+        for (Set<String> split : MiscUtil.splitSetByLimit(toRequest, MAX_NUMBER_OF_SETS_IN_REQUEST)) {
             requests.requestEmotesets(split);
         }
         lastRequestTime = System.currentTimeMillis();
-    }
-    
-    //----------------------------
-    // Stream -> Emoteset Related
-    //----------------------------
-    /**
-     * Set new EmotesetInfo. Will only be set if non-null and different object,
-     * and if so, try to resolve previously failed stream names again.
-     * 
-     * @param info 
-     */
-    public synchronized void setEmotesetInfo(EmotesetInfo info) {
-        if (info != null && this.emotesetInfo != info) {
-            this.emotesetInfo = info;
-            pendingStreams.addAll(backlogStreams);
-            backlogStreams.clear();
-        }
-    }
-    
-    /**
-     * Resolve any pending stream names to emotesets and add them to be
-     * requested.
-     */
-    private synchronized void checkStreams() {
-        //System.out.println("checkStreams:"+pendingStreams+" "+backlogStreams);
-        for (String stream : pendingStreams) {
-            Set<Emoteset> sets = emotesetInfo.getEmotesetsByStream(stream);
-            if (sets != null) {
-                for (Emoteset set : sets) {
-                    addEmoteset(set.emoteset_id);
-                }
-            } else {
-                backlogStreams.add(stream);
-            }
-        }
-        pendingStreams.clear();
     }
     
     //---------
@@ -203,14 +152,12 @@ public class EmoticonManager2 {
     private synchronized void checkErrored() {
         if (!erroredEmotesets.isEmpty()) {
             long ago = System.currentTimeMillis() - lastRequestTime;
-            if (ago > 30*60*1000) {
-                retryBackoff = 20;
-            }
-            if (ago > retryBackoff*1000) {
+            if (ago > errorRetrySeconds*1000) {
                 LOGGER.info("Retrying requesting emotes: "+erroredEmotesets);
                 pendingEmotesets.addAll(erroredEmotesets);
                 erroredEmotesets.clear();
-                retryBackoff *= 4;
+                errorRetrySeconds *= 4;
+                errorRetrySeconds = Math.min(errorRetrySeconds, 60*60);
             }
         }
     }
@@ -224,8 +171,8 @@ public class EmoticonManager2 {
      * 
      * @param emoteset 
      */
-    private void addEmoteset(int emoteset) {
-        if (emoteset >= 0 && !requestedEmotesets.contains(emoteset)) {
+    private void addEmoteset(String emoteset) {
+        if (emoteset != null && !emoteset.isEmpty() && !requestedEmotesets.contains(emoteset)) {
             pendingEmotesets.add(emoteset);
         }
     }

@@ -67,13 +67,31 @@ public class QueuedApi {
         thread.start();
     }
     
+    /**
+     * Perform a request.
+     * 
+     * @param url
+     * @param requestMethod
+     * @param token
+     * @param listener 
+     */
     public void add(String url, String requestMethod, String token,
             ResultListener listener) {
         Request request = new Request(url);
         request.setToken(token);
+        request.setRequestType(requestMethod);
         addRequest(1, request, listener);
     }
     
+    /**
+     * Perform a request with JSON data.
+     * 
+     * @param url
+     * @param requestMethod Only set if jsonData is not null
+     * @param jsonData
+     * @param token
+     * @param listener 
+     */
     public void add(String url, String requestMethod, String jsonData,
             String token, ResultListener listener) {
         Request request = new Request(url);

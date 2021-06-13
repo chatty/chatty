@@ -1,12 +1,15 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.GuiUtil;
+import chatty.lang.Language;
 import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +17,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -29,6 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -48,6 +54,12 @@ public class TableEditor<T> extends JPanel {
     
     public static final int SORTING_MODE_MANUAL = 0;
     public static final int SORTING_MODE_SORTED = 1;
+    
+    private static final String BUTTON_ADD_TIP = Language.getString("settings.listSelector.button.add.tip");
+    private static final String BUTTON_REMOVE_TIP = Language.getString("settings.listSelector.button.remove.tip");
+    private static final String BUTTON_EDIT_TIP = Language.getString("settings.listSelector.button.edit.tip");
+    private static final String BUTTON_UP_TIP = Language.getString("settings.listSelector.button.moveUp.tip");
+    private static final String BUTTON_DOWN_TIP = Language.getString("settings.listSelector.button.moveDown.tip");
     
     private final ButtonAction buttonActionListener = new ButtonAction();
     
@@ -73,11 +85,14 @@ public class TableEditor<T> extends JPanel {
     private final JButton moveUp = new JButton();
     private final JButton moveDown = new JButton();
     private final JButton refresh = new JButton();
+    private final JButton editAll = new JButton();
     
     private final JTextField filterInput = new JTextField();
     
-    private TableEditorListener listener;
-    private TableContextMenu contextMenu;
+    private TableEditorListener<T> listener;
+    private TableContextMenu<T> contextMenu;
+    private TableEditorEditAllHandler<T> editAllHandler;
+    private StringEditor allEditor;
 
     /**
      * 
@@ -145,6 +160,17 @@ public class TableEditor<T> extends JPanel {
                 removeSelected();
             }
         });
+        table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "editItems");
+        table.getActionMap().put("editItems", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editSelectedItem();
+            }
+        });
+        
+        // Set to default, so that TAB can be used to leave the table
+        GuiUtil.resetFocusTraversalKeys(table);
         
         table.addKeyListener(new KeyAdapter() {
 
@@ -163,17 +189,18 @@ public class TableEditor<T> extends JPanel {
         searchTimer.setRepeats(true);
 
         // Buttons Configuration
-        configureButton(add, "list-add.png", "Add new item (after selected)");
-        configureButton(edit, "edit.png", "Edit selected item (double-click)");
-        configureButton(remove, "list-remove.png", "Remove selected item");
-        configureButton(moveUp, "go-up.png", "Move selected item up");
-        configureButton(moveDown, "go-down.png", "Move selected item down");
+        configureButton(add, "list-add.png", BUTTON_ADD_TIP);
+        configureButton(edit, "edit.png", BUTTON_EDIT_TIP);
+        configureButton(remove, "list-remove.png", BUTTON_REMOVE_TIP);
+        configureButton(moveUp, "go-up.png", BUTTON_UP_TIP);
+        configureButton(moveDown, "go-down.png", BUTTON_DOWN_TIP);
         configureButton(refresh, "view-refresh.png", "Refresh data");
+        configureButton(editAll, "edit-all.png", Language.getString("settings.listSelector.button.editAll.tip"));
         
         // Layout
         setLayout(new GridBagLayout());
         GridBagConstraints gbc;
-        gbc = makeGbc(0, 0, 2, 7);
+        gbc = makeGbc(0, 0, 2, 8);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -182,13 +209,13 @@ public class TableEditor<T> extends JPanel {
         // Filter
         
         if (sortingMode == SORTING_MODE_SORTED) {
-            gbc = makeGbc(0, 7, 1, 1);
+            gbc = makeGbc(0, 8, 1, 1);
             gbc.insets = new Insets(0,2,0,1);
             JLabel filterInputLabel = new JLabel("Filter: ");
             filterInputLabel.setLabelFor(filterInput);
             add(filterInputLabel, gbc);
             
-            gbc = makeGbc(1, 7, 1, 1);
+            gbc = makeGbc(1, 8, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             add(filterInput, gbc);
@@ -234,6 +261,10 @@ public class TableEditor<T> extends JPanel {
             add(refresh, gbc);
         }
         
+        gbc = makeGbc(2, 6, 1, 1);
+        add(editAll, gbc);
+        editAll.setVisible(false);
+        
         updateButtons();
     }
     
@@ -247,6 +278,7 @@ public class TableEditor<T> extends JPanel {
         table.setModel(model);
         if (sortingMode == SORTING_MODE_SORTED) {
             sorter = new TableRowSorter<>(model);
+            sorter.setSortsOnUpdates(true);
             table.setRowSorter(sorter);
             sorter.toggleSortOrder(0);
         }
@@ -274,6 +306,10 @@ public class TableEditor<T> extends JPanel {
     protected final void setColumnWidth(int column, int size) {
         table.getColumnModel().getColumn(column).setPreferredWidth(size);
     }
+    
+    public TableRowSorter<ListTableModel<T>> getSorter() {
+        return sorter;
+    }
 
     /**
      * Set the data for this table.
@@ -283,6 +319,9 @@ public class TableEditor<T> extends JPanel {
     public void setData(List<T> data) {
         this.data.setData(data);
         updateButtons();
+        if (listener != null) {
+            listener.itemsSet();
+        }
     }
     
     /**
@@ -320,6 +359,16 @@ public class TableEditor<T> extends JPanel {
      */
     public final void setTableEditorListener(TableEditorListener<T> listener) {
         this.listener = listener;
+    }
+    
+    /**
+     * Setting a handler enables the "Edit all entries"-button.
+     * 
+     * @param handler 
+     */
+    public final void setTableEditorEditAllHandler(TableEditorEditAllHandler<T> handler) {
+        this.editAllHandler = handler;
+        editAll.setVisible(handler != null);
     }
     
     @Override
@@ -384,7 +433,7 @@ public class TableEditor<T> extends JPanel {
         String filterText = filterInput.getText();
         RowFilter<ListTableModel<T>, Object> rf = null;
         try {
-            rf = RowFilter.regexFilter(filterText, 0);
+            rf = RowFilter.regexFilter("(?ui)"+Pattern.quote(filterText));
         } catch (PatternSyntaxException ex) {
             return;
         }
@@ -430,6 +479,22 @@ public class TableEditor<T> extends JPanel {
             moveUp.setEnabled(false);
             moveDown.setEnabled(false);
         }
+        editAll.setEnabled(!currentlyFiltering);
+        if (enabled) {
+            String item = getSelectedRowText();
+            if (item != null) {
+                remove.setToolTipText(BUTTON_REMOVE_TIP+": "+item);
+                edit.setToolTipText(BUTTON_EDIT_TIP+": "+item);
+                moveUp.setToolTipText(BUTTON_UP_TIP+": "+item);
+                moveDown.setToolTipText(BUTTON_DOWN_TIP+": "+item);
+            }
+            else {
+                remove.setToolTipText(BUTTON_REMOVE_TIP);
+                edit.setToolTipText(BUTTON_EDIT_TIP);
+                moveUp.setToolTipText(BUTTON_UP_TIP);
+                moveDown.setToolTipText(BUTTON_DOWN_TIP);
+            }
+        }
     }
     
     /**
@@ -440,6 +505,27 @@ public class TableEditor<T> extends JPanel {
     private void setRowSelected(int viewIndex) {
         table.getSelectionModel().setSelectionInterval(viewIndex, viewIndex);
         scrollToRow(viewIndex);
+    }
+    
+    private String getSelectedRowText() {
+        int index = table.getSelectedRow();
+        if (index == -1) {
+            return null;
+        }
+        int modelIndex = indexToModel(index);
+        if (modelIndex == -1) {
+            return null;
+        }
+        List<String> parts = new ArrayList<>();
+        for (int column=0; column < data.getColumnCount(); column++) {
+            String part = String.valueOf(data.getValueAt(modelIndex, column));
+            // Avoid duplicates, since several columns could return the same
+            // object
+            if (!parts.contains(part)) {
+                parts.add(part);
+            }
+        }
+        return StringUtil.join(parts, ", ");
     }
     
     private void scrollToSelection() {
@@ -564,6 +650,10 @@ public class TableEditor<T> extends JPanel {
         setRowSelected(indexToView(modelIndex));
     }
     
+    protected void selectItem(int modelIndex) {
+        setRowSelected(indexToView(modelIndex));
+    }
+    
     /**
      * Remove the selected entry. If no entry is selected, nothing is done.
      * After removing, an appropriate remaining entry is selected.
@@ -622,6 +712,36 @@ public class TableEditor<T> extends JPanel {
         }
     }
     
+    protected void editAll() {
+        if (editAllHandler == null) {
+            return;
+        }
+        String preset = editAllHandler.toString(data.getData());
+        if (allEditor == null) {
+            allEditor = editAllHandler.getEditor();
+        }
+        // Create default if none provided
+        if (allEditor == null) {
+            Editor defaultEditor = new Editor(SwingUtilities.getWindowAncestor(this));
+            defaultEditor.setAllowLinebreaks(true);
+            defaultEditor.setAllowEmpty(true);
+            allEditor = defaultEditor;
+        }
+        String result = allEditor.showDialog(editAllHandler.getEditorTitle(), preset, editAllHandler.getEditorHelp());
+        if (result != null) {
+            List<T> changedEntries = editAllHandler.toData(result);
+            if (changedEntries != null) {
+                if (listener != null) {
+                    listener.allItemsChanged(changedEntries);
+                }
+                data.setData(changedEntries);
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Input invalid, no entries changed");
+            }
+        }
+    }
+    
     /**
      * Convert a view index to model index.
      *
@@ -668,6 +788,8 @@ public class TableEditor<T> extends JPanel {
                 if (listener != null) {
                     listener.refreshData();
                 }
+            } else if (e.getSource() == editAll) {
+                editAll();
             }
         }
     }
@@ -756,16 +878,77 @@ public class TableEditor<T> extends JPanel {
          */
         public void itemEdited(T oldItem, T newItem);
         
+        public void allItemsChanged(List<T> newItems);
+        
+        public void itemsSet();
+        
         /**
          * Called when the user requested the data in the table to be refreshed.
          */
         public void refreshData();
     }
     
+    /**
+     * Used for the "Edit all entries"-button, to transform the current entries
+     * into a String and back.
+     * 
+     * @param <T> 
+     */
+    public static interface TableEditorEditAllHandler<T> {
+        
+        /**
+         * Turn the given entries into a String.
+         * 
+         * @param data The entries
+         * @return A non-null String that represents the entries, and that will
+         * construct equal entries when given to {@link toData(String)}
+         */
+        public String toString(List<T> data);
+        
+        /**
+         * Turn the given String into entries.
+         * 
+         * @param input A string containing the information needed to construct
+         * entries
+         * @return A list of entries, or null if the input is invalid, which
+         * means the table entries will not be changed
+         */
+        public List<T> toData(String input);
+        
+        /**
+         * Optionally create a StringEditor, so it can be configured as needed.
+         * If none is provided, a default one will be created. The editor will
+         * be created and cached when it is first used.
+         * 
+         * @return A StringEditor, or null
+         */
+        public StringEditor getEditor();
+        
+        /**
+         * Get the title/description of the action being performed in the
+         * editor.
+         * 
+         * @return 
+         */
+        public String getEditorTitle();
+        
+        /**
+         * Get the help being displayed in the editor.
+         * 
+         * @return 
+         */
+        public String getEditorHelp();
+        
+    }
+    
     private void search(char input) {
         // Reset search on backspace
         if (input == '\b') {
             resetSearch();
+            return;
+        }
+        // Prevent stuff like ESC and TAB, could probably be better though
+        if (!Character.isLetterOrDigit(input) && input != '_' && input != '#') {
             return;
         }
         

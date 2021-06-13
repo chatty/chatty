@@ -7,8 +7,10 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.MainGui;
 import chatty.User;
+import chatty.gui.Channels.DockChannelContainer;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
@@ -53,6 +55,8 @@ public final class Channel extends JPanel {
     private final MainGui main;
     private Type type;
     
+    private DockChannelContainer content;
+    
     private boolean userlistEnabled = true;
     private int previousUserlistWidth;
     private int userlistMinWidth;
@@ -69,7 +73,7 @@ public final class Channel extends JPanel {
         setName(room.getDisplayName());
         
         // Text Pane
-        text = new ChannelTextPane(main,styleManager);
+        text = new ChannelTextPane(main, styleManager);
         text.setContextMenuListener(contextMenuListener);
         
         setTextPreferredSizeTemporarily();
@@ -90,7 +94,7 @@ public final class Channel extends JPanel {
 
         
         // User list
-        users = new UserList(contextMenuListener, main.getUserListener());
+        users = new UserList(contextMenuListener, main.getUserListener(), main.getSettings());
         updateUserlistSettings();
         userlist = new JScrollPane(users);
         
@@ -104,14 +108,31 @@ public final class Channel extends JPanel {
         input = new ChannelEditBox(40);
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
+        input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
         // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
         GuiUtil.installLengthLimitDocumentFilter(input, 500, false);
+        TextSelectionMenu.install(input);
 
         // Add components
         add(mainPane, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
+    }
+    
+    public DockChannelContainer getDockContent() {
+        return content;
+    }
+    
+    public void setDockContent(DockChannelContainer content) {
+        this.content = content;
+        updateContentData();
+    }
+    
+    private void updateContentData() {
+        if (content != null) {
+            content.setTitle(getName());
+        }
     }
     
     public void init() {
@@ -119,25 +140,6 @@ public final class Channel extends JPanel {
         
         input.requestFocusInWindow();
         setStyles();
-        
-        input.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                if (onceOffEditListener != null && room != Room.EMPTY) {
-                    onceOffEditListener.edited(room.getChannel());
-                    onceOffEditListener = null;
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
     }
     
     public boolean setRoom(Room room) {
@@ -145,6 +147,8 @@ public final class Channel extends JPanel {
             this.room = room;
             refreshBufferSize();
             setName(room.getDisplayName());
+            updateContentData();
+            getDockContent().setId(room.getChannel());
             return true;
         }
         return false;
@@ -249,13 +253,7 @@ public final class Channel extends JPanel {
 
     @Override
     public boolean requestFocusInWindow() {
-        // Invoke later, because otherwise it wouldn't get focus for some
-        // reason.
-        SwingUtilities.invokeLater(() -> {
-            input.requestFocusInWindow();
-        });
         return input.requestFocusInWindow();
-        
     }
     
     
@@ -379,6 +377,16 @@ public final class Channel extends JPanel {
     }
     
     /**
+     * Return 0 size, so resizing in a split pane works.
+     * 
+     * @return 
+     */
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(0, 0);
+    }
+    
+    /**
      * Toggle visibility for the text input box.
      */
     public final void toggleInput() {
@@ -409,6 +417,10 @@ public final class Channel extends JPanel {
         }
         userlistEnabled = enable;
         revalidate();
+    }
+    
+    public void setCompletionEnabled(boolean enabled) {
+        input.setCompletionEnabled(enabled);
     }
     
     /**
@@ -442,20 +454,9 @@ public final class Channel extends JPanel {
         return text.getSelectedUser();
     }
     
-        
     @Override
     public String toString() {
         return String.format("%s '%s'", type, room);
-    }
-    
-    private OnceOffEditListener onceOffEditListener;
-    
-    public void setOnceOffEditListener(OnceOffEditListener listener) {
-        onceOffEditListener = listener;
-    }
-    
-    public interface OnceOffEditListener {
-        public void edited(String channel);
     }
     
 }

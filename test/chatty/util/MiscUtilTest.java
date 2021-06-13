@@ -109,4 +109,32 @@ public class MiscUtilTest {
         assertEquals(MiscUtil.splitSetByLimit(test2, 2), target2);
         assertEquals(MiscUtil.splitSetByLimit(test2, 100), target2);
     }
+    
+    @Test
+    public void testAddLimited() {
+        Set<String> source = new HashSet<>();
+        source.add("abc");
+        
+        Set<String> target = new HashSet<>();
+        
+        MiscUtil.addLimited(source, target, 0);
+        assertEquals(target.size(), 0);
+        
+        MiscUtil.addLimited(source, target, 1);
+        assertEquals(target.size(), 1);
+        
+        for (int i=0;i<20;i++) {
+            source.add(String.valueOf(i));
+        }
+        
+        MiscUtil.addLimited(source, target, 10);
+        assertEquals(target.size(), 10);
+        
+        MiscUtil.addLimited(source, target, 20);
+        assertEquals(target.size(), 20);
+        
+        MiscUtil.addLimited(source, target, 30);
+        assertEquals(target.size(), 21);
+    }
+    
 }

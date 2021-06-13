@@ -2,6 +2,7 @@
 package chatty.util.ffz;
 
 import chatty.Helper;
+import chatty.util.RetryManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
@@ -30,19 +31,9 @@ public class FrankerFaceZ {
     
     // State
     private boolean botNamesRequested;
-    
-    /**
-     * The channels that have already been requested in this session.
-     */
-    private final Set<String> alreadyRequested
-            = Collections.synchronizedSet(new HashSet<String>());
-    
-    /**
-     * The channels whose request is currently pending. Channels get removed
-     * from here again once the request result is received.
-     */
-    private final Set<String> requestPending
-            = Collections.synchronizedSet(new HashSet<String>());
+    private String botBadgeId = null;
+    // stream -> roomBadges(badgeId -> names)
+    private final Map<String, Map<String, Set<String>>> roomBadgeUsernames = new HashMap<>();
 
     /**
      * Feature Friday
@@ -73,6 +64,10 @@ public class FrankerFaceZ {
     
     public String getWsStatus() {
         return ws.getStatus();
+    }
+    
+    public boolean isWsConnected() {
+        return ws.isConnected();
     }
     
     public void joined(String room) {
@@ -173,19 +168,29 @@ public class FrankerFaceZ {
     private synchronized void request(final Type type, final String stream,
             String id, boolean forcedUpdate) {
         final String url = getUrl(type, id);
-        if (requestPending.contains(url)
-                || (alreadyRequested.contains(url) && !forcedUpdate)) {
-            return;
+        if (forcedUpdate) {
+            requestNow(type, stream, id, url);
         }
-        alreadyRequested.add(url);
-        requestPending.add(url);
-        
+        else {
+            RetryManager.getInstance().retry(url, k -> requestNow(type, stream, id, url));
+        }
+    }
+    
+    private void requestNow(final Type type, final String stream, String id, String url) {
         // Create request and run it in a separate thread
         UrlRequest request = new UrlRequest();
         request.setLabel("FFZ/"+stream);
         request.setUrl(url);
         request.async((result, responseCode) -> {
-            requestPending.remove(url);
+            if (Integer.toString(responseCode).startsWith("4")) {
+                RetryManager.getInstance().setNotFound(url);
+            }
+            else if (responseCode != 200 && result == null) {
+                RetryManager.getInstance().setError(url);
+            }
+            else {
+                RetryManager.getInstance().setSuccess(url);
+            }
             parseResult(type, stream, id, result);
         });
     }
@@ -246,6 +251,7 @@ public class FrankerFaceZ {
         } else if (type == Type.ROOM) {
             // If type is ROOM, stream should be available
             emotes = FrankerFaceZParsing.parseRoomEmotes(result, stream);
+            addRoomBadgeUsernames(stream, FrankerFaceZParsing.parseRoomBadges(result));
             Usericon modIcon = FrankerFaceZParsing.parseModIcon(result, stream);
             if (modIcon != null) {
                 usericons.add(modIcon);
@@ -268,7 +274,7 @@ public class FrankerFaceZ {
         EmoticonUpdate emotesUpdate;
         if (type == Type.FEATURE_FRIDAY) {
             emotesUpdate = new EmoticonUpdate(emotes, Emoticon.Type.FFZ,
-                     Emoticon.SubType.FEATURE_FRIDAY, null);
+                     Emoticon.SubType.FEATURE_FRIDAY, null, null);
         } else {
             emotesUpdate = new EmoticonUpdate(emotes);
         }
@@ -338,6 +344,7 @@ public class FrankerFaceZ {
         listener.channelEmoticonsReceived(new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.FEATURE_FRIDAY,
+                null,
                 null));
     }
 
@@ -351,8 +358,55 @@ public class FrankerFaceZ {
             if (result != null && responseCode == 200) {
                 Set<String> botNames = FrankerFaceZParsing.getBotNames(result);
                 LOGGER.info("|[FFZ Bots] Found " + botNames.size() + " names");
-                listener.botNamesReceived(botNames);
+                listener.botNamesReceived(null, botNames);
+                synchronized(roomBadgeUsernames) {
+                    // Find bot badge id, so it can be used for room badges
+                    botBadgeId = FrankerFaceZParsing.getBotBadgeId(result);
+                }
+                updateRoomBotNames();
             }
         });
     }
+    
+    /**
+     * Cache room badges, so bot names can be retrieved from it.
+     * 
+     * @param stream
+     * @param names 
+     */
+    private void addRoomBadgeUsernames(String stream, Map<String, Set<String>> names) {
+        if (stream == null || names == null || names.isEmpty()) {
+            return;
+        }
+        synchronized(roomBadgeUsernames) {
+            roomBadgeUsernames.put(stream, names);
+        }
+        updateRoomBotNames();
+    }
+    
+    /**
+     * Check the cached room badges for the bot badge id and add the bot names
+     * if present. Clear cached badges afterwards since they don't have any
+     * other use at the moment.
+     */
+    private void updateRoomBotNames() {
+        Map<String, Set<String>> result = new HashMap<>();
+        synchronized (roomBadgeUsernames) {
+            if (botBadgeId != null) {
+                for (Map.Entry<String, Map<String, Set<String>>> room : roomBadgeUsernames.entrySet()) {
+                    String stream = room.getKey();
+                    Set<String> names = room.getValue().get(botBadgeId);
+                    if (names != null) {
+                        result.put(stream, names);
+                    }
+                }
+                roomBadgeUsernames.clear();
+            }
+        }
+        for (Map.Entry<String, Set<String>> entry : result.entrySet()) {
+            LOGGER.info("|[FFZ Bots] ("+entry.getKey()+"): Found " + entry.getValue().size() + " names");
+            listener.botNamesReceived(entry.getKey(), entry.getValue());
+        }
+    }
+    
 }

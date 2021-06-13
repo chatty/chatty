@@ -1,17 +1,24 @@
 
 package chatty.gui.components;
 
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.MainGui;
+import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
-import chatty.util.Debugging;
-import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.dnd.DockContent;
+import chatty.util.dnd.DockContentContainer;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JScrollBar;
@@ -34,21 +41,78 @@ public class ModerationLog extends JDialog {
     private final JTextArea log;
     private final JScrollPane scroll;
     
+    private final DockedDialogHelper helper;
+    
     private final Map<String, List<String>> cache = new HashMap<>();
     
     private String currentChannel;
     private String currentLoadedChannel;
+    
+    private final Set<String> unread = new HashSet<>();
 
-    public ModerationLog(MainGui owner) {
+    public ModerationLog(MainGui owner, DockedDialogManager dockedDialogs) {
         super(owner);
         log = createLogArea();
-        setTitle("Moderator Actions");
         
         scroll = new JScrollPane(log);
         scroll.setPreferredSize(new Dimension(300, 200));
         add(scroll, BorderLayout.CENTER);
         
+        DockContent content = dockedDialogs.createStyledContent(scroll, "Mod Actions", "-modlog-");
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            @Override
+            public void setVisible(boolean visible) {
+                ModerationLog.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return ModerationLog.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp, BorderLayout.CENTER);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return ModerationLog.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+        });
+        helper.installContextMenu(log);
+        
+        setTitle("Moderator Actions");
+        
         pack();
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        helper.setVisible(visible, true);
+    }
+
+    @Override
+    public boolean isVisible() {
+        return helper.isVisible();
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+        if (helper != null) {
+            helper.getContent().setLongTitle(title);
+        }
     }
 
     private static JTextArea createLogArea() {
@@ -66,7 +130,16 @@ public class ModerationLog extends JDialog {
     }
     
     public void setChannel(String channel) {
+        if (helper.isContentVisible()) {
+            unread.remove(channel);
+        }
         if (channel != null && !channel.equals(currentChannel)) {
+            if (unread.contains(channel)) {
+                helper.setNewMessage();
+            }
+            else {
+                helper.resetNewMessage();
+            }
             currentChannel = channel;
             setTitle("Moderation Actions ("+channel+")");
 
@@ -106,10 +179,16 @@ public class ModerationLog extends JDialog {
                 DateTime.currentTime(),
                 data.created_by,
                 data.moderation_action,
-                StringUtil.join(data.args," "));
+                ModLogInfo.makeArgsText(data));
         
         if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);
+            // Only set for current channel (automatically checks for visible)
+            helper.setNewMessage();
+        }
+        // Should be added for non-active channels, so on switch it can be set
+        if (!helper.isContentVisible()) {
+            unread.add(channel);
         }
         
         if (!cache.containsKey(channel)) {

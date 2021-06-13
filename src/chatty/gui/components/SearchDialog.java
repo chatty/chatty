@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
@@ -27,15 +29,17 @@ import javax.swing.Timer;
  */
 public class SearchDialog extends JDialog {
     
-    private static final Color COLOR_NORMAL = Color.WHITE;
+    private static final Color COLOR_NORMAL = new JLabel().getBackground();
     private static final Color COLOR_NO_RESULT = new Color(255,165,80);
     
-    private static final int NO_RESULT_COLOR_TIME = 1000;
+    private static final int NO_RESULT_COLOR_TIME = 300;
     
     private final Timer timer;
     private final JTextField searchText = new JTextField(20);
     private final JButton searchButton = new JButton(Language.getString("searchDialog.button.search"));
     //private final JCheckBox highlightAll = new JCheckBox("Highlight all occurences");
+    
+    private Channel chan;
     
     private static final Map<Window, SearchDialog> created = new HashMap<>();
     
@@ -47,10 +51,11 @@ public class SearchDialog extends JDialog {
             GuiUtil.installEscapeCloseOperation(dialog);
             created.put(owner, dialog);
         }
+        dialog.setChannel(channel);
         dialog.setVisible(true);
     }
     
-    public SearchDialog(final MainGui g, final Window owner) {
+    private SearchDialog(final MainGui g, final Window owner) {
         super(owner);
         setTitle(Language.getString("searchDialog.title"));
         setResizable(false);
@@ -66,6 +71,7 @@ public class SearchDialog extends JDialog {
         add(searchText, gbc);
         gbc.gridx = 1;
         searchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        searchButton.setFocusable(false);
         add(searchButton, gbc);
 
         timer = new Timer(NO_RESULT_COLOR_TIME, new ActionListener() {
@@ -80,7 +86,7 @@ public class SearchDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!g.search(owner, searchText.getText())) {
+                if (!g.search(chan, searchText.getText())) {
                     searchText.setBackground(COLOR_NO_RESULT);
                     timer.restart();
                 }
@@ -92,13 +98,17 @@ public class SearchDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                g.resetSearch(owner);
+                g.resetSearch(chan);
                 searchText.setText(null);
                 searchText.setBackground(COLOR_NORMAL);
             }
         });
         
         pack();
+    }
+    
+    public void setChannel(Channel chan) {
+        this.chan = chan;
     }
     
 }

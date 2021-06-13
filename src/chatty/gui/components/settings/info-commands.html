@@ -1,0 +1,17 @@
+<dl>
+    <dt>Each entry is one [help-commands: Custom Command]:</dt>
+    <dd><code>/commandName Text to 'enter into the chat inputbox'</code></dd>
+    
+    <dt>[help-commands:replacements Replacements] (replaced when executing the command):</dt>
+    <dd><code>$1</code> first command argument (optional, <code>$$1</code> required),
+        <code>$2-</code> all from second argument, <code>$(stream)</code> named
+        parameter ([help-commands:parameters-context more..])</dd>
+    <dd><code>$urlencode($1-)</code> [help-commands:functions function] to change the input</dd>
+    
+    <dt>Escaping (special characters interpreted literally):</dt>
+    <dd>Prepend a backslash <code>\</code> to escape the subsequent character.</dd>
+    <dd><code>\$1</code> outputs <code>$1</code> instead of being replaced,
+        <code>\\</code> outputs <code>\</code></dd>
+</dl>
+<p>Check out the [help-commands: help] for more information, or
+    [url:https://www.youtube.com/user/chattyclient YouTube] for video tutorials.</p>

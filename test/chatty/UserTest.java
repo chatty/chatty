@@ -82,13 +82,37 @@ public class UserTest {
         assertTrue(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());
         for (int i=0;i<99;i++) {
-            otherTypes.addAutoModMessage(null, null);
+            otherTypes.addAutoModMessage(null, null, null);
         }
         assertTrue(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());
         otherTypes.addBan(0, null, null);
         assertFalse(otherTypes.linesCleared());
         assertTrue(otherTypes.maxLinesExceeded());
+    }
+    
+    @Test
+    public void testSimilarMessages() {
+        User user = new User("", Room.EMPTY);
+        user.addMessage("first line", false, "");
+        user.addMessage("second line", true, "");
+        user.addMessage("third line", false, "");
+        user.addMessage("third line!!!!!!!!", false, "");
+        assertEquals(1, user.getNumberOfSimilarChatMessages("first line 2", 1, 600, 0.8f, 0, new char[0]));
+        assertEquals(0, user.getNumberOfSimilarChatMessages("first line 2", 1, 600, 1f, 0, new char[0]));
+        assertEquals(4, user.getNumberOfSimilarChatMessages("first line 2", 1, 600, 0f, 0, new char[0]));
+        assertEquals(3, user.getNumberOfSimilarChatMessages("line", 1, 600, 0.5f, 0, new char[0]));
+        user.addMessage("first line 2", false, "");
+        assertEquals(2, user.getNumberOfSimilarChatMessages("first line 2", 1, 600, 0.8f, 0, new char[0]));
+        assertEquals(2, user.getNumberOfSimilarChatMessages("first                                   line 2", 1, 600, 0.8f, 0, new char[0]));
+        assertEquals(0, user.getNumberOfSimilarChatMessages("FIRST                                   LINE 2", 1, 600, 0.8f, 0, new char[0]));
+        assertEquals(1, user.getNumberOfSimilarChatMessages("third line", 1, 600, 0.8f, 0, new char[0]));
+        assertEquals(2, user.getNumberOfSimilarChatMessages("third line", 2, 600, 0.8f, 0, new char[0]));
+        assertEquals(3, user.getNumberOfSimilarChatMessages("third line", 2, 600, 0.2f, 11, new char[0]));
+        assertEquals(2, user.getNumberOfSimilarChatMessages("third line", 2, 600, 0.2f, 12, new char[0]));
+        assertEquals(1, user.getNumberOfSimilarChatMessages("third line", 2, 600, 0.2f, 18, new char[0]));
+        assertEquals(0, user.getNumberOfSimilarChatMessages("third line", 2, 600, 0.2f, 19, new char[0]));
+        assertEquals(2, user.getNumberOfSimilarChatMessages("third line", 1, 600, 0.8f, 0, new char[]{'!'}));
     }
     
 }

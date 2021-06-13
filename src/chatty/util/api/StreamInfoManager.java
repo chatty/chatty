@@ -57,7 +57,7 @@ public class StreamInfoManager {
     /**
      * The maximum number of requests for followed streams in the set delay.
      */
-    private static final int FOLLOWED_STREAMS_REQUEST_LIMIT = 3;
+    private static final int FOLLOWED_STREAMS_REQUEST_LIMIT = 8;
     
     /**
      * Number of requests made to get followed streams. This is used as a
@@ -121,23 +121,34 @@ public class StreamInfoManager {
         if (!prevToken.equals(token)) {
             followsRequestErrors = 0;
         }
+        // For a manual refresh, the delay is reset
         if (checkTimePassed(followsRequestedET, UPDATE_FOLLOWS_DELAY,
                 followsRequestErrors)) {
             prevToken = token;
             followsRequestedET.set();
+            // This is only reset here, otherwise only increased
             followedStreamsRequests = 1;
-            api.requests.requestFollowedStreams(token, null);
+            api.requests.requestFollowedStreams(token, 0);
         }
     }
     
-    private void getFollowedStreamsNext(String url) {
-        if (url != null && followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
+    /**
+     * In order to return more than 100 followed streams, several requests may
+     * be necessary.
+     * <p>
+     * On the first request the value of {@code followedStreamsRequests} is set
+     * to 1 (in getFollowedStreams() when enough time has passed), whereas
+     * request results may call this for the next request (if number of results
+     * is equal to the limit).
+     */
+    private void getFollowedStreamsNext() {
+        if (followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
+            int offset = FOLLOWED_STREAMS_LIMIT*followedStreamsRequests;
+            api.requests.requestFollowedStreams(prevToken, offset);
             followedStreamsRequests++;
-            api.requests.requestFollowedStreams(prevToken, url);
         } else {
-            LOGGER.warning("Followed streams: Not getting next url '"+url+"' "
-                    + "(requests: "+followedStreamsRequests+", "
-                    + "limit: "+FOLLOWED_STREAMS_REQUEST_LIMIT+")");
+            LOGGER.warning("Followed streams: Not getting next url "
+                    + "(limit reached: "+FOLLOWED_STREAMS_REQUEST_LIMIT+")");
         }
     }
     
@@ -173,6 +184,10 @@ public class StreamInfoManager {
             api.requests.requestStreamInfo(stream);
         }
         return cached;
+    }
+    
+    public synchronized StreamInfo getCachedStreamInfo(String stream) {
+        return cachedStreamInfo.get(StringUtil.toLowerCase(stream));
     }
     
     /**
@@ -334,15 +349,12 @@ public class StreamInfoManager {
     }
     
     protected synchronized void requestResultFollows(String result, int responseCode) {
-        //System.out.println(result);
         if (responseCode == 200 && result != null) {
             int count = parseStreams(result, null);
             LOGGER.info("Got "+count+" (limit: "+FOLLOWED_STREAMS_LIMIT+") followed streams.");
-            // TODO
-//            if (count == FOLLOWED_STREAMS_LIMIT) {
-//                String nextUrl = getNextUrl(result);
-//                getFollowedStreamsNext(nextUrl);
-//            }
+            if (count == FOLLOWED_STREAMS_LIMIT) {
+                getFollowedStreamsNext();
+            }
             followsRequestErrors = 0;
         } else if (responseCode == 401) {
             followsRequestErrors += 4;
@@ -367,23 +379,28 @@ public class StreamInfoManager {
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(json);
-
-            JSONObject stream = (JSONObject) root.get("stream");
-
-            if (stream == null) {
+            
+            /**
+             * See Requests.requestStreamInfoById().
+             */
+            JSONArray streams = (JSONArray) root.get("streams");
+            if (streams.size() == 0) {
                 streamInfo.setOffline();
-            } else {
+            }
+            else {
+                JSONObject stream = (JSONObject) streams.get(0);
+
                 StreamInfo result = parseStream(stream, false);
                 if (result == null || result != streamInfo) {
                     LOGGER.warning("Error parsing stream ("
-                            +streamInfo.getStream()+"): "+json);
+                            + streamInfo.getStream() + "): " + json);
                     streamInfo.setUpdateFailed();
                 }
             }
         }
-        catch (ParseException ex) {
+        catch (Exception ex) {
             streamInfo.setUpdateFailed();
-            LOGGER.warning("Error parsing stream info: "+ex.getLocalizedMessage());
+            LOGGER.warning("Error parsing stream info: "+ex);
         }
         
     }
@@ -456,6 +473,12 @@ public class StreamInfoManager {
             return -1;
         }
     }
+    
+    /**
+     * If uptime is greater than 10 years, it's probably not valid. Streams that
+     * just started appear to sometimes return a wrong start time.
+     */
+    private static final long VALID_UPTIME_LIMIT = 10*365*24*60*60*1000;
 
     /**
      * Parse a stream object into a StreamInfo object. This gets the name of the
@@ -481,8 +504,8 @@ public class StreamInfoManager {
         StreamType streamType;
         long timeStarted = -1;
         String userId = null;
-        List<String> community_ids;
         boolean noChannelObject = false;
+        String logo;
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewers");
@@ -522,6 +545,7 @@ public class StreamInfoManager {
                 LOGGER.warning("Error parsing StreamInfo: no channel object ("+name+")");
                 noChannelObject = true;
             }
+            logo = JSONUtil.getString(channel, "logo");
         } catch (ClassCastException ex) {
             LOGGER.warning("Error parsing StreamInfo: unpexected type");
             return null;
@@ -539,6 +563,10 @@ public class StreamInfoManager {
         // Try to parse created_at
         try {
             timeStarted = DateTime.parseDatetime((String) stream.get("created_at"));
+            if (timeStarted + VALID_UPTIME_LIMIT < System.currentTimeMillis()) {
+                LOGGER.warning("Warning: Stream created_at for "+name+" seems invalid ("+stream.get("created_at")+")");
+                timeStarted = -1;
+            }
         } catch (Exception ex) {
             LOGGER.warning("Warning parsing StreamInfo: could not parse created_at ("+ex+")");
         }
@@ -563,6 +591,9 @@ public class StreamInfoManager {
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);
+        }
+        if (logo != null) {
+            streamInfo.setLogo(logo);
         }
         
         // Community (if cached, will immediately set Community correct again

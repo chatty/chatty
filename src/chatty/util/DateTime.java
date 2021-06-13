@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.time.Month;
 import java.time.MonthDay;
@@ -13,7 +14,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Stuff to do with dates/time.
@@ -30,6 +34,20 @@ public class DateTime {
     public static final long HOUR = MINUTE * 60;
     public static final long DAY = HOUR * 24;
     public static final long YEAR = DAY * 365;
+    
+    /**
+     * Update the timezone for the formatters. These may be initialized before
+     * the default timezone is set (e.g. from this class being used for logging
+     * or other stuff), so probably need to update them.
+     *
+     * @param tz The timezone to set
+     */
+    public static void setTimeZone(TimeZone tz) {
+        FULL_DATETIME.setTimeZone(tz);
+        SDF.setTimeZone(tz);
+        SDF2.setTimeZone(tz);
+        SDF3.setTimeZone(tz);
+    }
     
     public static int currentHour12Hour() {
         Calendar cal = Calendar.getInstance();
@@ -89,10 +107,15 @@ public class DateTime {
     }
     
     public static String formatAccountAgeCompact(long time) {
+        return formatAccountAgeCompact(time, false);
+    }
+    
+    public static String formatAccountAgeCompact(long time, boolean moreCompact) {
+        Formatting compact = moreCompact ? Formatting.COMPACT : Formatting.VERBOSE;
         if (System.currentTimeMillis() - time >= YEAR*1000) {
-            return ago(time, 0, 1, 0, Formatting.LAST_ONE_EXACT, Formatting.VERBOSE);
+            return ago(time, 0, 1, 0, Formatting.LAST_ONE_EXACT, compact);
         }
-        return ago(time, 0, 1, 0, Formatting.VERBOSE);
+        return ago(time, 0, 1, 0, compact);
     }
     
     public static String formatAccountAgeVerbose(long time) {
@@ -143,6 +166,13 @@ public class DateTime {
 
     public static String agoSingleCompact(long time) {
         return DateTime.ago(time, 0, 1, 0);
+    }
+    
+    public static String agoSingleCompactAboveMinute(long time) {
+        if (System.currentTimeMillis() - time > 60*1000) {
+            return DateTime.ago(time, 0, 1, 0);
+        }
+        return "now";
     }
     
     public static String agoSingleVerbose(long time) {
@@ -331,13 +361,55 @@ public class DateTime {
         return odt.toInstant().toEpochMilli();
     }
     
+    private static final Pattern AM_PM_CUSTOM = Pattern.compile("'a:(.*?)\\/(.*?)'");
+    
+    public static SimpleDateFormat createSdfAmPm(String format) {
+        Matcher m = AM_PM_CUSTOM.matcher(format);
+        if (m.find()) {
+            String[] amPm = new String[]{m.group(1), m.group(2)};
+            format = m.replaceAll("");
+            
+            SimpleDateFormat sdf = new SimpleDateFormat(format);
+            DateFormatSymbols symbols = sdf.getDateFormatSymbols();
+            symbols.setAmPmStrings(amPm);
+            sdf.setDateFormatSymbols(symbols);
+            return sdf;
+        }
+        return new SimpleDateFormat(format);
+    }
+    
+    public static String formatMonthsVerbose(int months) {
+        if (months < 12) {
+            return months+" months";
+        }
+        return months+" months, "+formatMonths(months);
+    }
+    
+    public static String formatMonths(int months) {
+        if (months < 12) {
+            return months+" months";
+        }
+        int y = months / 12;
+        int m = months % 12;
+        if (m == 0) {
+            return String.format("%d %s",
+                y,
+                y == 1 ? "year" : "years");
+        }
+        return String.format("%d %s %d %s",
+                y,
+                y == 1 ? "year" : "years",
+                m,
+                m == 1 ? "month" : "months");
+    }
+    
     public static final void main(String[] args) {
 //        System.out.println("'"+dur(HOUR*2+1, Formatting.COMPACT, 0, -2, 2, 2, 2)+"'");
 //        System.out.println("'"+duration(1000*MINUTE*1+1000, Formatting.COMPACT, N, 0, 0, 0, 2)+"'");
         //System.out.println(agoSingleVerbose(System.currentTimeMillis() ));
         //System.out.println(ago(System.currentTimeMillis() - 1000*60*60*25));
 //        System.out.println(duration(1000*(HOUR*2), 0, 0, 0, 1, Formatting.LAST_ONE_EXACT));
-        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*110)));
+//        System.out.println(agoUptimeCompact(System.currentTimeMillis() - 1000*(MINUTE*110)));
         int a = 1 << 4;
         int b = 1 << 5;
         int c = 1 << 1;
@@ -356,13 +428,13 @@ public class DateTime {
 //        } catch (ParseException ex) {
 //            Logger.getLogger(DateTime.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-        System.out.println(TimeUnit.HOURS.toMillis(1));
-        
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 2500*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - DAY*3*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - YEAR*1*1000));
-        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
-        System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
+//        System.out.println(TimeUnit.HOURS.toMillis(1));
+//        
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 2500*1000));
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - DAY*3*1000));
+        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - YEAR*1*1000, true));
+//        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
+//        System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
     }
     
 }

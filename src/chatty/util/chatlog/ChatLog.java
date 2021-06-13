@@ -4,12 +4,14 @@ package chatty.util.chatlog;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
-import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -30,10 +32,12 @@ public class ChatLog {
     private static final Logger LOGGER = Logger.getLogger(ChatLog.class.getName());
     
     private SimpleDateFormat sdf;
+    private CustomCommand messageTemplate;
     
     private final Map<String, Compact> compactForChannels;
     
     private final Settings settings;
+    private final Path path;
     
     /**
      * Reference to the LogManager. This is null if the log path was invalid and
@@ -44,7 +48,7 @@ public class ChatLog {
     public ChatLog(Settings settings) {
         this.settings = settings;
 
-        Path path = getPath();
+        path = createPath();
         if (path == null) {
             log = null;
         } else {
@@ -57,11 +61,17 @@ public class ChatLog {
         try {
             String timestamp = settings.getString("logTimestamp");
             if (!timestamp.equals("off")) {
-                sdf = new SimpleDateFormat(timestamp+" ");
+                sdf = new SimpleDateFormat(timestamp);
             }
         } catch (IllegalArgumentException ex) {
             sdf = null;
         }
+        CustomCommand c = CustomCommand.parse(settings.getString("logMessageTemplate"));
+        if (c.hasError()) {
+            LOGGER.warning("Error in logMessageTemplate: "+c.getSingleLineError());
+            c = CustomCommand.parse(settings.getStringDefault("logMessageTemplate"));
+        }
+        this.messageTemplate = c;
     }
     
     /**
@@ -71,7 +81,7 @@ public class ChatLog {
      * @return The Path to write the log files to, or null if the path could not
      * be created
      */
-    private Path getPath() {
+    private Path createPath() {
         String pathToUse = Chatty.getUserDataDirectory()+"logs";
         String customPath = settings.getString("logPath");
         if (!customPath.isEmpty()) {
@@ -85,31 +95,74 @@ public class ChatLog {
         }
     }
     
+    /**
+     * The base log path. Could be null if creating the path failed.
+     * 
+     * @return The path, or null if no valid path is set
+     */
+    public Path getPath() {
+        return path;
+    }
+    
     public void start() {
         if (log != null) {
             log.start();
         }
     }
-
-    public void message(String channel, User user, String message, boolean action) {
-        if (isSettingEnabled("logMessage") && isChanEnabled(channel)) {
-            String line;
-            String name = user.getFullNick();
-            if (!user.hasRegularDisplayNick()) {
-                name += " ("+user.getName()+")";
-            }
-            if (action) {
-                line = timestamp()+"<"+name+">* "+message;
-            } else {
-                line = timestamp()+"<"+name+"> "+message;
-            }
-            writeLine(channel, line);
+    
+    public void bits(String channel, User user, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        if (isSettingEnabled("logBits") && isChanEnabled(channel)) {
+            writeLine(channel, String.format("%sBITS: %s (%d)",
+                    timestamp(),
+                    user.getRegularDisplayNick(),
+                    amount));
         }
     }
+    
+    /**
+     * Log a regular chat message.
+     * 
+     * @param channel The channel to log to (normally the channel received in,
+     * highlighted/ignore messages could be different)
+     * @param user The user that sent the message
+     * @param message The message text
+     * @param action Whether the message is an action message
+     * @param includedChannel Channel name to include in the log line (probably
+     * due to it being logged into another file, like highlighted), can be null
+     */
+    public void message(String channel, User user, String message, boolean action, String includedChannel) {
+        if (isSettingEnabled("logMessage") && isChanEnabled(channel)) {
+            Parameters param = messageParam(
+                            user,
+                            message,
+                            action,
+                            settings,
+                            timestamp(includedChannel, false));
+            String line = messageTemplate.replace(param);
+            if (line != null && !line.isEmpty()) {
+                writeLine(channel, line);
+            }
+        }
+    }
+    
+    public static Parameters messageParam(User user, String message, boolean action, Settings settings, String timestamp) {
+        Parameters p = Parameters.create("");
+        Helper.addUserParameters(user, null, null, p);
+        p.put("msg", message);
+        if (action) {
+            p.put("action", "true");
+        }
+        p.put("timestamp", timestamp);
+        p.putObject("settings", settings);
+        return p;
+    }
 
-    public void info(String channel, String message) {
+    public void info(String channel, String message, String includedChannel) {
         if (isSettingEnabled("logInfo") && isChanEnabled(channel)) {
-            writeLine(channel, timestamp()+message);
+            writeLine(channel, timestamp(includedChannel, true)+message);
         }
     }
     
@@ -122,7 +175,7 @@ public class ChatLog {
             writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
                     data.created_by,
                     data.moderation_action,
-                    data.args.isEmpty() ? "" : " "+StringUtil.join(data.args, " ")));
+                    data.args.isEmpty() ? "" : " "+ModLogInfo.makeArgsText(data)));
         }
     }
 
@@ -215,10 +268,23 @@ public class ChatLog {
     }
     
     private String timestamp() {
-        if (sdf == null) {
+        return timestamp(null, true);
+    }
+    
+    private String timestamp(String includedChannel, boolean appendSpace) {
+        String space = appendSpace ? " " : "";
+        if (includedChannel != null) {
+            if (sdf != null) {
+                return DateTime.currentTime(sdf)+"["+includedChannel+"]"+space;
+            }
+            return "["+includedChannel+"]"+space;
+        }
+        else {
+            if (sdf != null) {
+                return DateTime.currentTime(sdf)+space;
+            }
             return "";
         }
-        return DateTime.currentTime(sdf);
     }
     
     /**
@@ -247,18 +313,40 @@ public class ChatLog {
         if (channel == null || channel.isEmpty()) {
             return false;
         }
+        
+        // Check non-channel files (not affected by logMode, seems already
+        // separate enough to handle it separately from channels)
+        if (channel.equals("highlighted")) {
+            return settings.getBoolean("logHighlighted2");
+        }
+        if (channel.equals("ignored")) {
+            return settings.getBoolean("logIgnored2");
+        }
+        
+        // Check channel files (whispers also fall under this because it allows
+        // setting it for individual $username channels)
         String mode = settings.getString("logMode");
         if (mode.equals("off")) {
             return false;
         }
-        if (mode.equals("always")) {
+        else if (mode.equals("always")) {
             return true;
         }
-        if (mode.equals("blacklist") && !settings.listContains("logBlacklist", channel)) {
-            return true;
+        else if (mode.equals("blacklist")) {
+            if (!settings.listContains("logBlacklist", channel)) {
+                return true;
+            }
+            if (channel.startsWith("$") && !settings.listContains("logBlacklist", "$_whisper_")) {
+                return true;
+            }
         }
-        if (mode.equals("whitelist") && settings.listContains("logWhitelist", channel)) {
-            return true;
+        else if (mode.equals("whitelist")) {
+            if (settings.listContains("logWhitelist", channel)) {
+                return true;
+            }
+            if (channel.startsWith("$") && settings.listContains("logWhitelist", "$_whisper_")) {
+                return true;
+            }
         }
         return false;
     }

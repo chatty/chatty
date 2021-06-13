@@ -3,10 +3,13 @@ package chatty.util.api.usericons;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.GuiUtil;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
 import chatty.util.settings.Settings;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,12 +41,13 @@ public class UsericonManager {
     private final List<Usericon> customIcons = new ArrayList<>();
     
     private final List<Usericon> thirdParty = new ArrayList<>();
+    
+    private final Map<String, Usericon> channelLogos = new HashMap<>();
 
     private final Settings settings;
     
     public UsericonManager(Settings settings) {
         this.settings = settings;
-        init();
     }
     
     public synchronized void addDefaultIcons(List<Usericon> icons) {
@@ -67,6 +71,37 @@ public class UsericonManager {
     }
     
     /**
+     * Add or update (if the size doesn't match) the channel logo for the given
+     * channel. If the size is not valid, all logos are removed.
+     * 
+     * The logos are currently only used for the Stream Chat.
+     *
+     * @param channel Must not be null
+     * @param url Must not be null
+     * @param sizeSetting 
+     */
+    public synchronized void updateChannelLogo(String channel, String url, String sizeSetting) {
+        int size = -1;
+        try {
+            size = Integer.parseInt(sizeSetting);
+        } catch (NumberFormatException ex) {
+            // Just leave at default -1
+        }
+        if (size <= 0) {
+            channelLogos.clear();
+            return;
+        }
+        Usericon existing = channelLogos.get(channel);
+        if (existing == null || existing.targetImageSize.width != size) {
+            Usericon icon = UsericonFactory.createChannelLogo(channel, url, size);
+            if (icon != null) {
+                LOGGER.info("Added StreamChat channel logo: "+icon);
+                channelLogos.put(channel, icon);
+            }
+        }
+    }
+    
+    /**
      * Run in EDT to avoid very obscure bug where all window contents would be
      * white and/or unresponsive, when using addColor() when creating fallback
      * icons.
@@ -74,14 +109,10 @@ public class UsericonManager {
      * This may not affect the creation of Twitch icons, because that is done
      * when the GUI is already created. (Possibly, it's a strange bug.)
      */
-    private void init() {
-        SwingUtilities.invokeLater(new Runnable() {
-            
-            @Override
-            public void run() {
-                addFallbackIcons();
-                loadFromSettings();
-            }
+    public void init() {
+        GuiUtil.edt(() -> {
+            addFallbackIcons();
+            loadFromSettings();
         });
     }
     
@@ -98,6 +129,7 @@ public class UsericonManager {
         addFallbackIcon(Usericon.Type.TURBO, "icon_turbo.png");
         addFallbackIcon(Usericon.Type.GLOBAL_MOD, "icon_globalmod.png");
         addFallbackIcon(Usericon.Type.BOT, "icon_bot.png");
+        addFallbackIcon(Usericon.Type.HL, "icon_hl.png");
 //        addFallbackIcon(Usericon.Type.RESUB, "icon_sub.png");
 //        addFallbackIcon(Usericon.Type.NEWSUB, "icon_sub.png");
 //        List<Usericon> test = new ArrayList<>();
@@ -135,7 +167,8 @@ public class UsericonManager {
         return result;
     }
     
-    public synchronized List<Usericon> getBadges(Map<String, String> badgesDef, User user, boolean botBadgeEnabled) {
+    public synchronized List<Usericon> getBadges(Map<String, String> badgesDef,
+            User user, boolean botBadgeEnabled, boolean pointsHl, boolean channelLogo) {
         List<Usericon> icons = getTwitchBadges(badgesDef, user);
         if (user.isBot() && botBadgeEnabled) {
             Usericon icon = getIcon(Usericon.Type.BOT, null, null, user);
@@ -145,6 +178,15 @@ public class UsericonManager {
         }
         addThirdPartyIcons(icons, user);
         addAddonIcons(icons, user);
+        if (pointsHl) {
+            Usericon icon = getIcon(Usericon.Type.HL, null, null, user);
+            if (icon != null) {
+                icons.add(0, icon);
+            }
+        }
+        if (channelLogo && channelLogos.containsKey(user.getChannel())) {
+            icons.add(0, channelLogos.get(user.getChannel()));
+        }
         return icons;
     }
 
@@ -357,12 +399,20 @@ public class UsericonManager {
                 }
             }
         }
-        // Only check if restriction to usernames is set
-        if (icon.usernames != null) {
-            if (!icon.usernames.contains(user.getName())) {
+        // Username/id restriction (can fail only if non-null)
+        boolean usernameR = icon.usernames == null || (user.getName() != null && icon.usernames.contains(user.getName()));
+        boolean useridR = icon.userids == null || (user.getId() != null  && icon.userids.contains(user.getId()));
+        if (icon.usernames != null && icon.userids != null) {
+            // Both are set, so either one may match to not fail
+            if (!usernameR && !useridR) {
                 return false;
             }
         }
+        else if (!usernameR || !useridR) {
+            // Only one set, which also failed
+            return false;
+        }
+        
         // Now check for the other restriction
         if (icon.restriction == null) {
             return true;
@@ -374,6 +424,10 @@ public class UsericonManager {
             }
         } else if (icon.matchType == Usericon.MatchType.CATEGORY) {
             if (user.hasCategory(icon.category)) {
+                return true;
+            }
+        } else if (icon.matchType == Usericon.MatchType.MATCH) {
+            if (icon.match.matches(user)) {
                 return true;
             }
         } else if (icon.matchType == Usericon.MatchType.STATUS) {
@@ -390,7 +444,10 @@ public class UsericonManager {
     
     private boolean iconsMatchesAdvancedType(Usericon icon,
             Usericon.Type requestedType, String id, String version) {
-        if (icon.type == requestedType) {
+        if (icon.type == Type.ALL) {
+            return true;
+        }
+        else if (icon.type == requestedType) {
             if (icon.badgeType.matchesLenient(id, version)) {
                 return true;
             }

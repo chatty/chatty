@@ -1,10 +1,9 @@
 
 package chatty.util;
 
-import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.api.Emoticon;
-import java.util.Collections;
+import chatty.util.api.TwitchApi;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -22,25 +21,16 @@ public class BTTVEmotes {
     
     private static final Logger LOGGER = Logger.getLogger(BTTVEmotes.class.getName());
     
-    private static final String URL = "https://api.betterttv.net/2/emotes";
-    //private static final String URL = "http://127.0.0.1/twitch/emotes.json";
-    
-    private static final String URL_CHANNEL = "https://api.betterttv.net/2/channels/";
-    
-    private static final int CACHE_EXPIRES_AFTER = 60 * 60 * 24;
-    private static final String FILE = Chatty.getCacheDirectory() + "bttvemotes";
+    private static final String URL_GLOBAL = "https://api.betterttv.net/3/cached/emotes/global";
+    private static final String URL_CHANNEL = "https://api.betterttv.net/3/cached/users/twitch/";
+    private static final String TEMPLATE = "https://cdn.betterttv.net/emote/{{id}}/{{image}}";
     
     private final EmoticonListener listener;
-    private final SimpleCache cache;
+    private final TwitchApi api;
     
-    private final Set<String> requestPending =
-            Collections.synchronizedSet(new HashSet<String>());
-    private final Set<String> alreadyRequested =
-            Collections.synchronizedSet(new HashSet<String>());
-    
-    public BTTVEmotes(EmoticonListener listener) {
+    public BTTVEmotes(EmoticonListener listener, TwitchApi api) {
         this.listener = listener;
-        this.cache = new SimpleCache("BTTV", FILE, CACHE_EXPIRES_AFTER);
+        this.api = api;
     }
     
     public synchronized void requestEmotes(String channel, boolean forcedUpdate) {
@@ -48,52 +38,51 @@ public class BTTVEmotes {
         if (!Helper.isValidStream(stream) && !"$global$".equals(stream)) {
             return;
         }
-        if (!forcedUpdate && alreadyRequested.contains(stream)) {
-            return;
-        }
         if (stream.equals("$global$")) {
-            loadGlobal(forcedUpdate);
+            request("$global$", null, forcedUpdate);
         } else {
-            request(stream);
+            api.getUserId(r -> {
+                if (!r.hasError()) {
+                    request(stream, r.getId(stream), forcedUpdate);
+                }
+            }, stream);
         }
     }
     
-    private void loadGlobal(boolean forcedUpdate) {
-        String cached = null;
-        if (!forcedUpdate) {
-            cached = cache.load();
+    private void request(String stream, String id, boolean forceRefresh) {
+        String url = getUrlForStream(id);
+        if (forceRefresh) {
+            requestNow(url, stream);
         }
-        if (cached != null) {
-            loadEmotes(cached, null);
-        } else {
-            request("$global$");
+        else {
+            RetryManager.getInstance().retry(url, k -> {
+                requestNow(url, stream);
+            });
         }
     }
     
-    private void request(final String stream) {
-        if (requestPending.contains(stream)) {
-            return;
-        }
-        String url = getUrlForStream(stream);
-        alreadyRequested.add(stream);
-        requestPending.add(stream);
+    private void requestNow(String url, String stream) {
         UrlRequest request = new UrlRequest(url);
         request.setLabel("BTTV");
         request.async((result, responseCode) -> {
-            if (responseCode == 200) {
-                if (loadEmotes(result, stream) > 0 && stream.equals("$global$")) {
-                    cache.save(result);
-                }
+            if (responseCode == 200 && result != null) {
+                loadEmotes(result, stream);
+                RetryManager.getInstance().setSuccess(url);
             }
-            requestPending.remove(stream);
+            else if (String.valueOf(responseCode).startsWith("4")) {
+                RetryManager.getInstance().setNotFound(url);
+            }
+            else {
+                RetryManager.getInstance().setError(url);
+            }
         });
     }
     
-    private String getUrlForStream(String stream) {
-        if (stream.equals("$global$")) {
-            return URL;
+    private String getUrlForStream(String id) {
+        if (id == null) {
+            return URL_GLOBAL;
         }
-        return URL_CHANNEL+stream;
+        return URL_CHANNEL+id;
     }
     
     /**
@@ -106,11 +95,19 @@ public class BTTVEmotes {
      * @return 
      */
     private int loadEmotes(String json, String streamRestriction) {
+        Set<Emoticon> emotes;
+        Set<String> bots = new HashSet<>();
         if (streamRestriction != null && streamRestriction.equals("$global$")) {
             streamRestriction = null;
         }
-        Set<Emoticon> emotes = parseEmotes(json, streamRestriction);
-        Set<String> bots = parseBots(json);
+        
+        if (streamRestriction == null) {
+            emotes = parseGlobalEmotes(json);
+        }
+        else {
+            emotes = parseChannelEmotes(json, streamRestriction);
+            bots = parseBots(json);
+        }
         LOGGER.info("|[BTTV] Found " + emotes.size() + " emotes / "+bots.size()+" bots");
         listener.receivedEmoticons(emotes);
         listener.receivedBotNames(streamRestriction, bots);
@@ -145,6 +142,37 @@ public class BTTVEmotes {
         return result;
     }
     
+    private static Set<Emoticon> parseGlobalEmotes(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONArray root = (JSONArray)parser.parse(json);
+            if (root != null) {
+                return parseEmotes(root, null);
+            }
+        }
+        catch (Exception ex) {
+            LOGGER.warning("|[BTTV] Error parsing global emotes: "+ex);
+        }
+        return new HashSet<>();
+    }
+    
+    private static Set<Emoticon> parseChannelEmotes(String json, String streamRestriction) {
+        Set<Emoticon> result = new HashSet<>();
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject)parser.parse(json);
+            if (root != null) {
+                
+                result.addAll(parseEmotes((JSONArray)root.get("channelEmotes"), streamRestriction));
+                result.addAll(parseEmotes((JSONArray)root.get("sharedEmotes"), streamRestriction));
+            }
+        }
+        catch (Exception ex) {
+            LOGGER.warning("|[BTTV] Error parsing channel emotes: "+ex);
+        }
+        return result;
+    }
+    
     /**
      * Parse emotes from the given JSON.
      * 
@@ -152,30 +180,19 @@ public class BTTVEmotes {
      * @param channelRestriction
      * @return 
      */
-    private static Set<Emoticon> parseEmotes(String json, String channelRestriction) {
+    private static Set<Emoticon> parseEmotes(JSONArray data, String channelRestriction) {
         Set<Emoticon> emotes = new HashSet<>();
-        if (json == null) {
-            return emotes;
-        }
-        JSONParser parser = new JSONParser();
         try {
-            JSONObject root = (JSONObject)parser.parse(json);
-            String urlTemplate = (String)root.get("urlTemplate");
-            if (urlTemplate == null || urlTemplate.isEmpty()) {
-                LOGGER.warning("No URL Template");
-                return emotes;
-            }
-            JSONArray emotesArray = (JSONArray)root.get("emotes");
-            for (Object o : emotesArray) {
+            for (Object o : data) {
                 if (o instanceof JSONObject) {
-                    Emoticon emote = parseEmote((JSONObject)o, urlTemplate,
+                    Emoticon emote = parseEmote((JSONObject)o, TEMPLATE,
                             channelRestriction);
                     if (emote != null) {
                         emotes.add(emote);
                     }
                 }
             }
-        } catch (ParseException | ClassCastException ex) {
+        } catch (ClassCastException ex) {
             // ClassCastException is also caught in parseEmote(), so it won't
             // quit completely when one emote is invalid.
             LOGGER.warning("|[BTTV] Error parsing emotes: "+ex);
@@ -193,9 +210,15 @@ public class BTTVEmotes {
      */
     private static Emoticon parseEmote(JSONObject o, String urlTemplate, String channelRestriction) {
         try {
-            String url = urlTemplate;
             String code = (String)o.get("code");
-            String sourceChannel = (String)o.get("channel");
+            JSONObject user = (JSONObject)o.get("user");
+            String userName = null;
+            if (user != null) {
+                userName = JSONUtil.getString(user, "name");
+            }
+            else {
+                userName = channelRestriction;
+            }
             String id = (String)o.get("id");
             String imageType = null;
             if (o.get("imageType") instanceof String) {
@@ -207,8 +230,8 @@ public class BTTVEmotes {
             }
 
             Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.BTTV,
-                    code, url);
-            builder.setCreator(sourceChannel);
+                    code, urlTemplate);
+            builder.setCreator(userName);
             builder.setLiteral(true);
             builder.setStringId(id);
             if (channelRestriction != null) {
@@ -267,7 +290,7 @@ public class BTTVEmotes {
                         // This also includes "night"
                         return false;
                     } else {
-                        builder.setEmoteset(((Number) emoticon_set).intValue());
+                        builder.setEmoteset(String.valueOf(((Number) emoticon_set).intValue()));
                         return true;
                     }
                 }

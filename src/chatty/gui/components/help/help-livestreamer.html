@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html>
-	<title>Chatty - Livestreamer / Streamlink</title>
+	<title>Chatty - Streamlink</title>
         <link rel="stylesheet" type="text/css" href="style.css" />
 <body>
     <div id="backlink"><a href="help.html">To main help page</a></div>
-    <h1><a name="top">Livestreamer / Streamlink</a></h1>
+    <h1><a name="top">Streamlink</a></h1>
     <p>
         <a href="#usage">Usage</a> | 
         <a href="#settings">Settings</a> | 
         <a href="#troubleshooting">Troubleshooting</a>
     </p>
-    <p><a href="https://github.com/chrippa/livestreamer">Livestreamer</a>
+    <p><a href="https://streamlink.github.io/">Streamlink</a>
     is a commandline program that can be used to watch streams in a player like
     VLC Player. It has to be downloaded and installed separately from Chatty.</p>
     
-    <p><strong>Note:</strong> Since Livestreamer doesn't appear to be developed anymore, there is an
-        updated fork called <a href="https://streamlink.github.io/">Streamlink</a>, which works the same way. If you want to
-        use Streamlink with Chatty, simply change the <code>Base command</code>
-        to <code>streamlink</code> (or, as with Livestreamer, put the whole path to the program
-        if that is required in your case). Currently Streamlink appears to be using the
-        same commandline interface, so everything should work as usual (after
-        changing the <code>Base command</code>). If they do change the
-        interface, changes in Chatty may be required.</p>
+    <p><strong>Note:</strong> Streamlink is a fork of <a href="https://github.com/chrippa/livestreamer">Livestreamer</a>
+        and more up-to-date, but mostly works the same way. If you want to use
+        Streamlink with Chatty you may have to change the <code>Base command</code>
+        to <code>streamlink</code> (or, as with Livestreamer, put the whole path
+        to the program if that is required in your case). Currently Streamlink
+        appears to be using the same commandline interface, so everything should
+        work as usual (after changing the <code>Base command</code>). If they do
+        change the interface, changes in Chatty may be required.</p>
 
     <h2><a name="usage">Usage</a></h2>
-    <p>You can open the Livestreamer dialog that Chatty provides via 
-    <code>Extra - Livestreamer</code>, where you can directly run Livestreamer
+    <p>You can open the Streamlink dialog that Chatty provides via 
+    <code>Extra - Streamlink</code>, where you can directly run Streamlink
     and change some settings.</p>
     
     <p>Each time you open a stream via the dialog or a context menu, a tab is
-    added to the dialog where the output of the Livestreamer process is
+    added to the dialog where the output of the Streamlink process is
     redirected to. If you open a stream with the same stream name and quality you already
     have open in a tab whose process isn't currently running, then that tab will
     be reused.</p>
 
     <p>The tab of a stream is automatically closed when you close the Video
-    Player opened by Livestreamer, if the dialog isn't currently open. Otherwise
+    Player opened by Streamlink, if the dialog isn't currently open. Otherwise
     you have to close it yourself by using the <code>Close</code>-button on the
     top right, which turns into an <code>End process</code>-button as long as
     the process is still running. The <code>Retry</code>-button can be used to
@@ -43,25 +43,25 @@
     stream, but you want to retry now because you know it's come online).</p>
     
     <h2><a name="settings">Settings</a></h2>
-    <p>The settings can be changed in the Livestreamer dialog.</p>
+    <p>The settings can be changed in the Streamlink dialog.</p>
     <dl class="dl-settings">
         <dt>Enable context menu entry</dt>
-        <dd>Adds a Livestreamer submenu to all context menus that can be used to
+        <dd>Adds a Streamlink submenu to all context menus that can be used to
             open streams (for example right-click on channel, username or Live
             Streams dialog).</dd>
         
         <dt>Show dialog when opening stream</dt>
-        <dd>Auto-opens the Livestreamer Dialog when you open a stream out of a
+        <dd>Auto-opens the Streamlink Dialog when you open a stream out of a
             context menu.</dd>
         
         <dt>Auto close dialog when starting player</dt>
-        <dd>Auto-closes the Livestreamer Dialog when the text <code>Starting player</code>
+        <dd>Auto-closes the Streamlink Dialog when the text <code>Starting player</code>
             comes up in the log.</dd>
         
         <dt>Context menu qualities</dt>
         <dd>You can customize which quality options appear in the context menu.
             The options you enter here are directly given as a parameter to
-            Livestreamer, except <code>Select</code> which tells Chatty you want
+            Streamlink, except <code>Select</code> which tells Chatty you want
             to select a quality in the dialog.</dd>
         <dd>Separate qualities by space or comma, add a <code>|</code> (vertical
             bar) to add a separator to the menu.</dd>
@@ -78,70 +78,53 @@
             </ul>
         </dd>
         
-        <dt>Base command (Livestreamer path and parameters)</dt>
-        <dd>This must contain the Livestreamer executable, including any
+        <dt>Base command (Streamlink path and parameters)</dt>
+        <dd>This must contain the Streamlink executable, including any
             commandline options that you always want to be included when running
-            Livestreamer out of Chatty.</dd>
+            Streamlink out of Chatty.</dd>
         <dd>The URL and quality are automatically appended to this when running
-            Livestreamer, so the overall command that is executed is build like
+            Streamlink, so the overall command that is executed is build like
             this:
             <code>&lt;Base&nbsp;command&gt; &lt;url&gt;&nbsp;&lt;quality&gt;</code>.</dd>
         <dd>You can use the variables <code>$stream</code>, <code>$url</code>
             and <code>$quality</code> in this setting (see Examples).</dd>
-        <dd>The default is just <code>livestreamer</code>, which is sufficient
-            if Livestreamer is correctly included in the systems PATH variable,
+        <dd>The default is just <code>streamlink</code>, which is sufficient
+            if Streamlink is correctly included in the systems PATH variable,
             but you may also specify the full path.</dd>
         <dd>Remember to surround the path or any parameters with quotes if they
             contain spaces, so the commandline knows they belong together.</dd>
         <dd><em>Examples:</em>
             <ul class="example-list">
-                <li><code>"C:\My&nbsp;Programs\Livestreamer\livestreamer.exe"</code><br />
-                    (specify full path to the Livestreamer executable)</li>
-                <li><code>"C:\My Programs\Livestreamer\livestreamer.exe" --player "C:\Program Files\MPC-HC\mpc-hc64.exe"</code><br />
-                    (specify full path to Livestreamer and use a different player)</li>
-                <li><code>/usr/local/bin/livestreamer</code><br />
-                    (this might work on Linux/Mac if it can't find Livestreamer
+                <li><code>"C:\My&nbsp;Programs\Streamlink\streamlink.exe"</code><br />
+                    (specify full path to the Streamlink executable)</li>
+                <li><code>"C:\My Programs\Streamlink\streamlink.exe" --player "C:\Program Files\MPC-HC\mpc-hc64.exe"</code><br />
+                    (specify full path to Streamlink and use a different player)</li>
+                <li><code>/usr/local/bin/streamlink</code><br />
+                    (this might work on Linux/Mac if it can't find Streamlink
                     without the full path)</li>
-                <li><code>livestreamer -p "C:\Program Files (x86)\VideoLAN\VLC\vlc.exe --meta-title $stream/$quality"</code><br />
+                <li><code>streamlink -p "C:\Program Files (x86)\VideoLAN\VLC\vlc.exe --meta-title $stream/$quality"</code><br />
                     (change VLC Player window title to something more descriptive)</li>
             </ul>
         </dd>
         
-        <dt>Use Authorization (Twitch Oauth Token)</dt>
-        <dd>Tell Livestreamer to authenticate at Twitch with your Chatty access
+        <dt><span class="del">Use Authorization (Twitch Oauth Token)</span></dt>
+        <dd>Tell Streamlink to authenticate at Twitch with your Chatty access
             token.</dd>
-        <dd>Enabling this may help if you get an error when running Livestreamer
-            (Bad Request).</dd>
-        <dd>This is necessary for sub-only streams.</dd>
+        <dd>This option has been <a href="https://streamlink.github.io/changelog.html#streamlink-2-0-0-2020-12-22">removed</a>
+            from Streamlink and thus also from Chatty.</dd>
     </dl>
     
     <h2><a name="troubleshooting">Troubleshooting</a></h2>
-    <h3>Bad Request</h3>
-    <p>Recently Twitch changed their API to require a Client ID being supplied,
-        which Livestreamer doesn't do by default, so you may get a Bad Request
-        error. You can fix this either by:</p>
-    <ul>
-        <li>Enabling the <code>Use Authorization</code> setting to authenticate
-            with Twitch, which makes the Twitch API derive the Client ID from
-            the access token.</li>
-        <li>Adding a Client ID to the <code>Base command</code>, for eaxmple to
-            add Livestreamer's Client ID:<br />
-            <code>livestreamer --http-header Client-ID=ewvlchtxgqq88ru9gmfp1gmyt6h2b93</code>
-        </li>
-    </ul>
-    <p>If you're using Streamlink this shouldn't be an issue for you since it
-        has been updated accordingly.</p>
-    
-    <h3>Can't run Livestreamer</h3>
+    <h3>Can't run Streamlink</h3>
     <p>If you get an error like <code>Error: java.io.IOException: Cannot run
             program "&lt;...&gt;": CreateProcess error=2 [..]</code>, then
-    Chatty probably can't find Livestreamer on your system.</p>
+    Chatty probably can't find Streamlink on your system.</p>
     
     <p>To solve this, first make sure that
-    you actually have Livestreamer installed. You need to install it on you own, it does
+    you actually have Streamlink installed. You need to install it on you own, it does
     not come bundled with Chatty. If you are sure it is installed (and you maybe can
     run it from the commandline just fine), you may have to tell Chatty the full
-    path to the Livestreamer executable for it to work by entering it in the
+    path to the Streamlink executable for it to work by entering it in the
     <code>Base command</code> field. See the <a href="#settings">Settings section</a> above for examples
     and help on that.</p>
 </body>

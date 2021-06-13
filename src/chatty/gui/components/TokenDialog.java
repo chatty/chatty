@@ -9,9 +9,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 /**
@@ -20,25 +26,25 @@ import javax.swing.SwingUtilities;
  */
 public class TokenDialog extends JDialog {
     
-    private final static String OK_IMAGE = "<img style='vertical-align:bottom' src='"+TokenDialog.class.getResource("ok.png").toString()+"'>";
-    private final static String NO_IMAGE = "<img src='"+TokenDialog.class.getResource("no.png").toString()+"'>";
+    private final static ImageIcon OK_IMAGE = new ImageIcon(TokenDialog.class.getResource("ok.png"));
+    private final static ImageIcon NO_IMAGE = new ImageIcon(TokenDialog.class.getResource("no.png"));
     
-    JLabel nameLabel = new JLabel(Language.getString("login.accountName"));
-    JLabel name = new JLabel("<no account>");
-    LinkLabel accessLabel;
-    JLabel access = new JLabel("<none>");
+    private final JLabel nameLabel = new JLabel(Language.getString("login.accountName"));
+    private final JLabel name = new JLabel("<no account>");
+    private final LinkLabel accessLabel;
+    private final JPanel access;
     
-    JLabel info = new JLabel("<html><body style='width:200px'>");
-    JButton deleteToken = new JButton(Language.getString("login.button.removeLogin"));
-    JButton requestToken = new JButton(Language.getString("login.button.requestLogin"));
-    JButton verifyToken = new JButton(Language.getString("login.button.verifyLogin"));
-    private final LinkLabel tokenInfo;
+    private final Map<String, JLabel> accessScopes = new HashMap<>();
+    
+    private final JButton deleteToken = new JButton(Language.getString("login.button.removeLogin"));
+    private final JButton requestToken = new JButton(Language.getString("login.button.requestLogin"));
+    private final JButton verifyToken = new JButton(Language.getString("login.button.verifyLogin"));
     private final LinkLabel foreignTokenInfo;
     private final LinkLabel otherInfo;
-    JButton done = new JButton(Language.getString("dialog.button.close"));
+    private final JButton done = new JButton(Language.getString("dialog.button.close"));
     
-    String currentUsername = "";
-    String currentToken = "";
+    private String currentUsername = "";
+    private String currentToken = "";
     
     public TokenDialog(MainGui owner) {
         super(owner, Language.getString("login.title"), true);
@@ -48,7 +54,6 @@ public class TokenDialog extends JDialog {
         
         accessLabel = new LinkLabel("Access: [help:login (help)]", owner.getLinkLabelListener());
         //tokenInfo = new JLabel();
-        tokenInfo = new LinkLabel("", owner.getLinkLabelListener());
         foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
                     + "Login data set externally with -token parameter.", owner.getLinkLabelListener());
         foreignTokenInfo.setVisible(false);
@@ -62,18 +67,27 @@ public class TokenDialog extends JDialog {
         
         add(accessLabel, makeGridBagConstraints(0,2,1,1,GridBagConstraints.WEST));
         
+        access = new JPanel();
+        access.setLayout(new GridBagLayout());
+        GridBagConstraints gbc2 = new GridBagConstraints();
+        gbc2.anchor = GridBagConstraints.WEST;
+        for (TokenInfo.Scope scope : TokenInfo.Scope.values()) {
+            JLabel label = new JLabel(scope.label);
+            label.setToolTipText(scope.description);
+            accessScopes.put(scope.scope, label);
+            gbc2.gridy++;
+            access.add(label, gbc2);
+        }
         gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.CENTER,new Insets(0,5,5,5));
         add(access, gbc);
         
         gbc = makeGridBagConstraints(0, 4, 2, 1, GridBagConstraints.WEST);
         add(otherInfo, gbc);
         
-        gbc = makeGridBagConstraints(0,5,2,1,GridBagConstraints.WEST);
-        add(tokenInfo, gbc);
-        
         gbc = makeGridBagConstraints(0,6,2,1,GridBagConstraints.WEST);
         add(foreignTokenInfo, gbc);
         
+        deleteToken.setToolTipText(Language.getString("login.button.removeLogin.tip"));
         gbc = makeGridBagConstraints(0,7,1,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(deleteToken, gbc);
@@ -146,21 +160,15 @@ public class TokenDialog extends JDialog {
         access.setVisible(!empty);
         accessLabel.setVisible(!empty);
 
-        StringBuilder b = new StringBuilder("<html><body style='line-height:28px;'>");
         for (TokenInfo.Scope s : TokenInfo.Scope.values()) {
+            JLabel label = accessScopes.get(s.scope);
             boolean enabled = scopes.contains(s.scope);
             if (enabled) {
-                b.append(OK_IMAGE);
-                b.append("&nbsp;");
-                b.append(s.label);
+                label.setIcon(OK_IMAGE);
             } else {
-                b.append(NO_IMAGE);
-                b.append("&nbsp;");
-                b.append("<span style='text-decoration:line-through'>").append(s.label).append("</span>");
+                label.setIcon(NO_IMAGE);
             }
-            b.append("<br />");
         }
-        access.setText(b.toString());
         update();
     }
     
@@ -168,7 +176,7 @@ public class TokenDialog extends JDialog {
      * Change status to verifying token.
      */
     public void verifyingToken() {
-        setTokenInfo(Language.getString("login.verifyingLogin"));
+//        setTokenInfo(Language.getString("login.verifyingLogin"));
         verifyToken.setEnabled(false);
     }
     
@@ -179,21 +187,12 @@ public class TokenDialog extends JDialog {
      * @param result 
      */
     public void tokenVerified(boolean valid, String result) {
-        setTokenInfo(result);
+        if (isVisible()) {
+            // Only show when verifying while the token dialog is open
+            JOptionPane.showMessageDialog(this, result);
+        }
         verifyToken.setEnabled(true);
         update();
-    }
-    
-    private void setTokenInfo(String info) {
-        tokenInfo.setText("<html><body style='width:170px'>"+info);
-        pack();
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                pack();
-            }
-        });
     }
     
     public void setForeignToken(boolean foreign) {

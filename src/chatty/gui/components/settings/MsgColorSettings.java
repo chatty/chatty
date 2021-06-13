@@ -4,9 +4,12 @@ package chatty.gui.components.settings;
 import chatty.gui.colors.MsgColorItem;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
+import chatty.util.colors.HtmlColors;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -20,18 +23,6 @@ public class MsgColorSettings extends SettingsPanel {
     private static final String INFO_TEXT = "<html><body>"
             + "Customize message colors based on Highlighting rules. "
             + "[help:Message_Colors More information..]";
-    
-    private static final String INFO = HighlightSettings.INFO
-            + "Examples:"
-            + "<dl>"
-            + "<dt><code>user:botimuz</code></dt>"
-            + "<dd>Match all regular messages by user 'Botimuz'</dd>"
-            + "<dt><code>config:info [Notification]</code></dt>"
-            + "<dd>Match all info messages containing '[Notification]', so "
-            + "basicially all subscriber notifications</dd>"
-            + "</dl>"
-            + "<p><em>Note:</em> Unticking the 'Enabled'-checkbox means that the "
-            + "default color will be used.</p>";
     
     private final ItemColorEditor<MsgColorItem> data;
     
@@ -55,7 +46,55 @@ public class MsgColorSettings extends SettingsPanel {
                     return new MsgColorItem(id,
                             foreground, foregroundEnabled,
                             background, backgroundEnabled);
-                }, true, new LinkLabel(INFO, d.getLinkLabelListener()));
+                }, true, new LinkLabel(HighlightSettings.getMatchingHelp("msgColors"), d.getLinkLabelListener()));
+        data.setTableEditorEditAllHandler(new TableEditor.TableEditorEditAllHandler<MsgColorItem>() {
+            @Override
+            public String toString(List<MsgColorItem> data) {
+                StringBuilder b = new StringBuilder();
+                for (MsgColorItem item : data) {
+                    b.append(HtmlColors.getNamedColorString(item.getForeground()));
+                    b.append(",");
+                    b.append(item.getForegroundEnabled() ? "1" : "0");
+                    b.append(",");
+                    b.append(HtmlColors.getNamedColorString(item.getBackground()));
+                    b.append(",");
+                    b.append(item.getBackgroundEnabled() ? "1" : "0");
+                    b.append(",");
+                    b.append(item.getId());
+                    b.append("\n");
+                }
+                return b.toString();
+            }
+
+            @Override
+            public List<MsgColorItem> toData(String input) {
+                List<MsgColorItem> result = new ArrayList<>();
+                for (String line : StringUtil.splitLines(input)) {
+                    String[] split = line.split(",", 5);
+                    if (split.length == 5 && !split[4].isEmpty()) {
+                        result.add(new MsgColorItem(split[4], HtmlColors.decode(split[0]), split[1].equals("1"), HtmlColors.decode(split[2]), split[3].equals("1")));
+                    }
+                }
+                return result;
+            }
+
+            @Override
+            public StringEditor getEditor() {
+                return null;
+            }
+
+            @Override
+            public String getEditorTitle() {
+                return "Edit all entries";
+            }
+
+            @Override
+            public String getEditorHelp() {
+                return "Each line must contain:<br />"
+                        + "<code>[foreground],[1/0],[background],[1/0],[match]</code><br />"
+                        + "(<code>1</code> to enable foreground/background)";
+            }
+        });
         data.setPreferredSize(new Dimension(1,150));
         gbc = d.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -69,10 +108,13 @@ public class MsgColorSettings extends SettingsPanel {
         main.add(info, d.makeGbc(0, 2, 1, 1));
         
         other.add(d.addSimpleBooleanSetting("msgColorsPrefer"),
-                d.makeGbc(0, 9, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        other.add(d.addSimpleBooleanSetting("msgColorsLinks"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         other.add(d.addSimpleBooleanSetting("actionColored"),
-                d.makeGbc(0, 10, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
         
     }
     
@@ -94,6 +136,10 @@ public class MsgColorSettings extends SettingsPanel {
     
     public void editItem(String item) {
         data.edit(item);
+    }
+    
+    public void selectItem(String item) {
+        data.setSelected(item);
     }
     
 }

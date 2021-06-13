@@ -1,11 +1,17 @@
 
 package chatty.gui.components.admin;
 
+import chatty.Helper;
+import chatty.Room;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import static chatty.gui.components.admin.AdminDialog.hideableLabel;
 import static chatty.gui.components.admin.AdminDialog.makeGbc;
+import chatty.gui.components.menus.CommandActionEvent;
+import chatty.gui.components.menus.CommandMenuItems;
+import chatty.gui.components.menus.ContextMenu;
+import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
@@ -13,20 +19,27 @@ import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamTagManager;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -159,6 +172,8 @@ public class StatusPanel extends JPanel {
                 statusEdited();
             }
         });
+        GuiUtil.resetFocusTraversalKeys(status);
+        status.getAccessibleContext().setAccessibleName(Language.getString("admin.input.title"));
         GuiUtil.installLengthLimitDocumentFilter(status, 500, false);
         gbc = makeGbc(0,2,3,1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -166,6 +181,7 @@ public class StatusPanel extends JPanel {
         gbc.weighty = 1;
         add(new JScrollPane(status), gbc);
         
+        game.getAccessibleContext().setAccessibleName(Language.getString("admin.input.game"));
         game.setEditable(false);
         gbc = makeGbc(0,3,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -179,10 +195,12 @@ public class StatusPanel extends JPanel {
         add(selectGame, gbc);
 
         removeGame.setMargin(SMALL_BUTTON_INSETS);
+        removeGame.getAccessibleContext().setAccessibleName(Language.getString("admin.button.removeGame2"));
         gbc = makeGbc(2,3,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(removeGame,gbc);
         
+        streamTags.getAccessibleContext().setAccessibleName(Language.getString("admin.input.tags"));
         streamTags.setEditable(false);
         streamTags.setBackground(game.getBackground());
         streamTags.setBorder(game.getBorder());
@@ -199,6 +217,7 @@ public class StatusPanel extends JPanel {
         add(selectTags, gbc);
         
         removeTags.setMargin(SMALL_BUTTON_INSETS);
+        removeTags.getAccessibleContext().setAccessibleName(Language.getString("admin.button.removeTags2"));
         gbc = makeGbc(2,4,1,1);
         gbc.anchor = GridBagConstraints.NORTH;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -207,6 +226,7 @@ public class StatusPanel extends JPanel {
         gbc = makeGbc(0,5,3,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         update.setMnemonic(KeyEvent.VK_U);
+        update.setToolTipText(Language.getString("admin.button.update.tip"));
         add(update, gbc);
         
         gbc = makeGbc(0,6,3,1);
@@ -277,6 +297,59 @@ public class StatusPanel extends JPanel {
         historyButton.addActionListener(actionListener);
         addToHistoryButton.addActionListener(actionListener);
         update.addActionListener(actionListener);
+        
+        addContextMenu(this);
+        addContextMenu(update);
+        addContextMenu(game);
+        addContextMenu(streamTags);
+        TextSelectionMenu.install(status);
+    }
+    
+    private void addContextMenu(JComponent comp) {
+        comp.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                openContextMenu(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openContextMenu(e);
+            }
+            
+            private void openContextMenu(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    ContextMenu m = new ContextMenu() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (e instanceof CommandActionEvent) {
+                                // Command Context Menu
+                                CommandActionEvent c = (CommandActionEvent)e;
+                                Parameters params = Parameters.create("");
+                                params.put("title", status.getText());
+                                params.put("game", game.getText());
+                                params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
+                                    return ((StreamTag) o).getId();
+                                }));
+                                params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
+                                    return ((StreamTag) o).getDisplayName();
+                                }));
+                                main.anonCustomCommand(Room.createRegular(Helper.toChannel(currentChannel)), c.getCommand(), params);
+                                addCurrentToHistory();
+                            }
+                            // Dock item
+                            parent.helper.menuAction(e);
+                        }
+                    };
+                    CommandMenuItems.addCommands(CommandMenuItems.MenuType.ADMIN, m);
+                    m.addSeparator();
+                    parent.helper.addToContextMenu(m);
+                    m.show(e.getComponent(), e.getPoint().x, e.getPoint().y);
+                }
+            }
+        });
     }
     
     public void changeChannel(String channel) {
@@ -301,7 +374,6 @@ public class StatusPanel extends JPanel {
             }
             streamTags.setText(StringUtil.join(currentStreamTags, ", "));
         }
-        parent.pack();
     }
     
     private void putTags() {
@@ -358,16 +430,20 @@ public class StatusPanel extends JPanel {
             statusPutResult = Language.getString("admin.infoUpdated");
         } else {
             if (result == TwitchApi.RequestResultCode.ACCESS_DENIED) {
-                statusPutResult = "Changing info: Access denied";
+                statusPutResult = "Update: Access denied/Failed";
+                int over = status.getText().length() - 140;
+                if (over > 0) {
+                    statusPutResult = "Update: Failed (Title "+over+" characters too long?)";
+                }
                 updated.setText("Error: Access denied");
             } else if (result == TwitchApi.RequestResultCode.FAILED) {
-                statusPutResult = "Changing info: Unknown error";
+                statusPutResult = "Update: Unknown error";
                 updated.setText("Error: Unknown error");
             } else if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
-                statusPutResult = "Changing info: Channel not found.";
+                statusPutResult = "Update: Channel not found.";
                 updated.setText("Error: Channel not found.");
             } else if (result == TwitchApi.RequestResultCode.INVALID_STREAM_STATUS) {
-                statusPutResult = "Changing info: Invalid title/game (possibly bad language)";
+                statusPutResult = "Update: Invalid title/game (possibly bad language)";
                 updated.setText("Error: Invalid title/game");
             }
         }
@@ -383,6 +459,10 @@ public class StatusPanel extends JPanel {
      */
     protected void setPutResult(String result) {
         hideableLabel(putResult, result);
+    }
+    
+    protected void dialogOpened() {
+        setPutResult("");
     }
     
     /**

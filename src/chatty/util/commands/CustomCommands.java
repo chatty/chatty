@@ -1,9 +1,12 @@
 
 package chatty.util.commands;
 
+import chatty.Commands;
 import chatty.Helper;
 import chatty.Room;
 import chatty.TwitchClient;
+import chatty.TwitchCommands;
+import chatty.gui.components.eventlog.EventLog;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
@@ -15,12 +18,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
- * Managing custom commands, that return the text they are defined with, which
- * can then be entered like text in the input box. Custom commands are
- * case-insensitive.
+ * Manages named Custom Commands and provides additional methods like adding
+ * parameters to anonymous Custom Commands.
  * 
  * @author tduva
  */
@@ -42,32 +45,53 @@ public class CustomCommands {
     }
     
     /**
-     * Returns the text associated with the given command, inserting the given
-     * parameters as defined.
+     * Build the text based on the command with the given name and the
+     * parameters. The result is returned to the result function on the same
+     * thread as this is called, unless the command contains any async
+     * replacements.
      * 
-     * @param commandName The command
-     * @param parameters The parameters, each separated by a space from eachother
-     * @param channel
-     * @return A {@code String} as result of the command, or {@code null} if the
-     * command doesn't exist or the number of parameters were invalid
+     * <p>If a command with the given name does not exist, null is returned to
+     * the result function.
+     * 
+     * <p>This will add additional default parameters.
+     *
+     * @param commandName The command name
+     * @param parameters The parameters (must not be null)
+     * @param room The room the channel is in (must not be null)
+     * @param result Function that will be called with the result string
      */
-    public synchronized String command(String commandName, Parameters parameters, Room room) {
+    public void command(String commandName, Parameters parameters, Room room, Consumer<String> result) {
         CustomCommand command = getCommand(commands, commandName, room.getOwnerChannel());
         if (command != null) {
-            return command(command, parameters, room);
+            command(command, parameters, room, result);
         }
-        return null;
+        else {
+            result.accept(null);
+        }
     }
     
-    public synchronized String command(CustomCommand command, Parameters parameters, Room room) {
-        // Add some more parameters
-        parameters.put("chan", Helper.toStream(room.getChannel()));
-        parameters.put("stream", room.getStream());
+    /**
+     * Build the text based on the given command and the parameters. The result
+     * is returned to the result function on the same thread as this is called,
+     * unless the command ocntains any async replacements.
+     * 
+     * <p>This will add additional default parameters.
+     * 
+     * @param command The command (must not be null)
+     * @param parameters The parameters (must not be null)
+     * @param room The room
+     * @param result The result function
+     */
+    public void command(CustomCommand command, Parameters parameters, Room room, Consumer<String> result) {
+        // Add some default parameters
+        addChans(room, parameters);
         Set<String> chans = new HashSet<>();
         client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
         parameters.put("chans", StringUtil.join(chans, " "));
+        parameters.put("hostedchan", client.getHostedChannel(room.getChannel()));
+        parameters.putObject("localUser", client.getLocalUser(room.getChannel()));
+        parameters.putObject("settings", client.settings);
         if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {
-            System.out.println("request");
             String stream = Helper.toValidStream(room.getStream());
             StreamInfo streamInfo = api.getStreamInfo(stream, null);
             if (streamInfo.isValid()) {
@@ -80,19 +104,82 @@ public class CustomCommands {
                 }
             }
         }
+        parameters.put("chain-test", "| /echo Test || Message");
+        parameters.put("allow-request", "true");
+        if (command.getRaw() != null && command.getRaw().startsWith("/chain ")) {
+            parameters.put("escape-pipe", "true");
+        }
+        else {
+            // Need to remove, so it doesn't stay for chained commands which
+            // still use the same Parameters
+            parameters.remove("escape-pipe");
+        }
+        parameters.put("nested-custom-commands", String.valueOf(getCustomCommandCount(parameters) + 1));
         
-        // Add parameters for custom replacements
-        Set<String> customIdentifiers = command.getIdentifiersWithPrefix("_");
-        for (String identifier : customIdentifiers) {
-            CustomCommand replacement = getCommand(replacements, identifier, room.getOwnerChannel());
-            if (replacement != null) {
-                parameters.put(identifier, replacement.replace(parameters));
+        boolean performAsync = false;
+        if (shouldPerformAsyncReplacement(command)) {
+            performAsync = true;
+        }
+        
+        // Collect commands for custom replacements
+        Map<String, CustomCommand> customIdentifiersCommands = getCustomIdentifierCommands(command, room.getOwnerChannel());
+        if (containsAsyncReplacement(customIdentifiersCommands.values())) {
+            performAsync = true;
+        }
+        
+        // Actual replacement taking place
+        if (performAsync) {
+            new Thread(() -> {
+                addCustomIdentifiers(customIdentifiersCommands, parameters);
+                result.accept(command.replace(parameters));
+            }, "CustomCommand").start();
+        }
+        else {
+            addCustomIdentifiers(customIdentifiersCommands, parameters);
+            result.accept(command.replace(parameters));
+        }
+    }
+    
+    public void addCustomIdentifierParametersForCommand(CustomCommand command, Parameters parameters) {
+        Map<String, CustomCommand> customIdentifiersCommands = getCustomIdentifierCommands(command, null);
+        addCustomIdentifiers(customIdentifiersCommands, parameters);
+    }
+    
+    private Map<String, CustomCommand> getCustomIdentifierCommands(CustomCommand command, String channel) {
+        Map<String, CustomCommand> customIdentifiersCommands = new HashMap<>();
+        for (String identifier : command.getIdentifiersWithPrefix("_")) {
+            CustomCommand identifierCommand = getCommand(replacements, identifier, channel);
+            if (identifierCommand != null) {
+                customIdentifiersCommands.put(identifier, identifierCommand);
             }
         }
-
-        return command.replace(parameters);
+        return customIdentifiersCommands;
     }
-
+    
+    private static void addCustomIdentifiers(Map<String, CustomCommand> commands, Parameters parameters) {
+        for (Map.Entry<String, CustomCommand> entry : commands.entrySet()) {
+            parameters.putObject(entry.getKey(), entry.getValue());
+        }
+    }
+        
+    private boolean containsAsyncReplacement(Collection<CustomCommand> commands) {
+        for (CustomCommand command : commands) {
+            if (shouldPerformAsyncReplacement(command)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static boolean shouldPerformAsyncReplacement(CustomCommand command) {
+        return !command.getIdentifiersWithPrefix("-async-").isEmpty();
+    }
+    
+    public static void addChans(Room room, Parameters parameters) {
+        parameters.put("chan", Helper.toStream(room.getChannel()));
+        parameters.put("stream", room.getStream());
+    }
+    
     /**
      * Checks if the given command exists (case-insensitive).
      * 
@@ -103,49 +190,86 @@ public class CustomCommands {
         return getCommand(commands, command, room.getOwnerChannel()) != null;
     }
     
+    public void update(Commands regularCommands) {
+        loadFromSettings();
+        Set<String> nameCollisions = new HashSet<>();
+        for (String customCommandName : getCommandNames()) {
+            if (regularCommands.isCommand(customCommandName)
+                    || TwitchCommands.isCommand(customCommandName)) {
+                nameCollisions.add(customCommandName);
+            }
+        }
+        // Remove event when no longer necessary, also for updating event
+        EventLog.removeSystemEvent("session.settings.customCommandNameCollsision");
+        if (!nameCollisions.isEmpty()) {
+            EventLog.addSystemEvent("session.settings.customCommandNameCollsision", StringUtil.join(nameCollisions, ", ", s -> "/"+s));
+        }
+    }
+    
     /**
-     * Load the commands from the settings. Everything before the first space
-     * is interpreted as command name, removing a leading "/" if present.
-     * Everything else is used as the command parameters.
+     * Load the commands from the settings.
      */
     public synchronized void loadFromSettings() {
         List<String> commandsToLoad = settings.getList("commands");
         commands.clear();
         replacements.clear();
-        for (String c : commandsToLoad) {
-            if (c != null && !c.isEmpty()) {
-                String[] split = c.split(" ", 2);
-                if (split.length == 2) {
-                    String commandName = split[0];
-                    if (commandName.startsWith("/")) {
-                        commandName = commandName.substring(1);
+        for (String entry : commandsToLoad) {
+            CustomCommand command = parseCommandWithName(entry);
+            if (command != null) {
+                // Always has non-empty name at this point
+                if (!command.hasError()) {
+                    String commandName = command.getName();
+                    String chan = command.getChan();
+                    if (commandName.startsWith("_") && commandName.length() > 1) {
+                        addCommand(replacements, commandName, chan, command);
                     }
-                    commandName = StringUtil.toLowerCase(commandName.trim());
-                    String chan = null;
-                    if (commandName.contains("#")) {
-                        String[] splitChan = commandName.split("#", 2);
-                        commandName = splitChan[0];
-                        chan = splitChan[1];
+                    else {
+                        addCommand(commands, commandName, chan, command);
                     }
-                    
-                    // Trim when loading, to ensure consistent behaviour
-                    // (in-line menu commands and Test-button parsing trim too)
-                    String commandValue = split[1].trim();
-                    if (!commandName.isEmpty()) {
-                        CustomCommand parsedCommand = CustomCommand.parse(commandValue);
-                        if (parsedCommand.getError() == null) {
-                            if (commandName.startsWith("_") && commandName.length() > 1) {
-                                addCommand(replacements, commandName, chan, parsedCommand);
-                            } else {
-                                addCommand(commands, commandName, chan, parsedCommand);
-                            }
-                        } else {
-                            LOGGER.warning("Error parsing custom command: "+parsedCommand.getError());
-                        }
-                    }
+                }
+                else {
+                    LOGGER.warning("Error parsing custom command: " + command.getError());
                 }
             }
         }
+    }
+    
+    /**
+     * Parses a Custom Command in "commands" setting format.
+     * 
+     * 
+     * 
+     * @param c Non-empty line
+     * @return The CustomCommand (maybe with parsing errors), with name set, or
+     * null if no name or command is found
+     */
+    public static CustomCommand parseCommandWithName(String c) {
+        if (c != null && !c.isEmpty()) {
+            // Trim to ensure consistent behaviour between setting loading and
+            // Test-button
+            c = c.trim();
+            String[] split = c.split(" ", 2);
+            if (split.length == 2) {
+                String commandName = split[0];
+                if (commandName.startsWith("/")) {
+                    commandName = commandName.substring(1);
+                }
+                commandName = StringUtil.toLowerCase(commandName.trim());
+                String chan = null;
+                if (commandName.contains("#")) {
+                    String[] splitChan = commandName.split("#", 2);
+                    commandName = splitChan[0];
+                    chan = splitChan[1];
+                }
+
+                // Trim again, to ensure consistent behaviour
+                String commandValue = split[1].trim();
+                if (!commandName.isEmpty()) {
+                    return CustomCommand.parse(commandName, chan, commandValue);
+                }
+            }
+        }
+        return null;
     }
     
     public synchronized Collection<String> getCommandNames() {
@@ -162,7 +286,7 @@ public class CustomCommands {
      * @param channel The channel the command is run in
      * @return 
      */
-    private static CustomCommand getCommand(Map<String, Map<String, CustomCommand>> commands,
+    private synchronized static CustomCommand getCommand(Map<String, Map<String, CustomCommand>> commands,
             String commandName, String channel) {
         commandName = StringUtil.toLowerCase(commandName);
         channel = StringUtil.toLowerCase(Helper.toStream(channel));
@@ -194,6 +318,11 @@ public class CustomCommands {
             commands.put(commandName, new HashMap<>());
         }
         commands.get(commandName).put(channel, parsedCommand);
+    }
+    
+    public static int getCustomCommandCount(Parameters parameters) {
+        String countString = parameters.get("nested-custom-commands");
+        return countString == null ? 0 : Integer.parseInt(countString);
     }
     
 }

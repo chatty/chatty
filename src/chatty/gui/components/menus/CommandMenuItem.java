@@ -2,8 +2,10 @@
 package chatty.gui.components.menus;
 
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 /**
  *
@@ -11,10 +13,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CommandMenuItem {
     
+    private static final Logger LOGGER = Logger.getLogger(CommandMenuItem.class.getName());
+    
     private static final AtomicLong NEXT_ID = new AtomicLong();
     
     private final String id = "command"+NEXT_ID.getAndIncrement();
     private final String label;
+    private final CustomCommand labelCommand;
     private final CustomCommand command;
     private final String parent;
     private final int pos;
@@ -23,6 +28,7 @@ public class CommandMenuItem {
     public CommandMenuItem(String label, CustomCommand command, String parent,
             int pos, String key) {
         this.label = label;
+        this.labelCommand = label != null ? CustomCommand.parse(label) : null;
         this.command = command;
         this.parent = parent;
         this.pos = pos;
@@ -31,6 +37,26 @@ public class CommandMenuItem {
     
     public String getLabel() {
         return label;
+    }
+    
+    public String getLabel(Parameters parameters) {
+        if (parameters != null && labelCommand != null) {
+            CustomCommand cc = labelCommand;
+            if (cc.hasError()) {
+                LOGGER.info("Parse error: " + cc.getSingleLineError());
+                return "Parse error (see debug log)";
+            }
+            return cc.replace(parameters);
+        }
+        return label;
+    }
+    
+    public boolean hasValidLabelCommand() {
+        return labelCommand != null && !labelCommand.hasError();
+    }
+    
+    public CustomCommand getLabelCommand() {
+        return labelCommand;
     }
     
     public CustomCommand getCommand() {

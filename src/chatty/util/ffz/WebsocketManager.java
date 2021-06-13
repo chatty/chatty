@@ -10,11 +10,15 @@ import chatty.util.UrlRequest.FullResult;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.settings.Settings;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -34,7 +38,7 @@ public class WebsocketManager {
     
     private final Set<String> rooms = Collections.synchronizedSet(new HashSet<String>());
     private final Map<String, Set<Integer>> prevEmotesets = new HashMap<>();
-    private final WebsocketClient c;
+    private volatile FFZWS c;
     
     private final JSONParser parser = new JSONParser();
     private final FrankerFaceZListener listener;
@@ -59,68 +63,37 @@ public class WebsocketManager {
          * instance, so to be safe this usually shouldn't call anything that
          * creates a lock which may also access the WebsocketClient instance.
          */
-        c = new WebsocketClient(new WebsocketClient.MessageHandler() {
-
-            @Override
-            public void handleReceived(String text) {
-                listener.wsInfo("<-- "+text);
-            }
-            
-            @Override
-            public void handleSent(String sent) {
-                listener.wsInfo("--> "+sent);
-            }
-
-            @Override
-            public void handleCommand(int id, String command, String params,
-                    String originCommand) {
-                if (id == 1 && command.equals("ok")) {
-                    // ok ["uuid",serverTime]
-                    parseHelloResponse(params);
-                }
-                else if (command.equals("follow_sets")) {
-                    // follow_sets {\"sirstendec\": [3779]}
-                    parseFollowsets(params);
-                }
-                else if (command.equals("do_authorize")) {
-                    // do_authorize "string"
-                    parseDoAuthorize(params);
-                }
-                else if (originCommand.equals("update_follow_buttons")) {
-                    if (command.equals("ok")) {
-                        // ok {"updated_clients":1}
-                        parseFollowingResponse(params);
-                    }
-                    else if (command.equals("error")) {
-                        listener.wsUserInfo("Failed updating follow buttons: "+params);
-                    }
-                }
-            }
-
-            /**
-             * This is still locked with the WebsocketClient instance, which
-             * ensures this is completed before anything else can be send (e.g.
-             * by addRoom()).
-             */
-            @Override
-            public void handleConnect() {
-                setUser = null;
-                c.sendCommand("hello", JSONUtil.listToJSON(VERSION, false));
-                for (String room : getRooms()) {
-                    subRoom(room);
-                }
-                c.sendCommand("ready", "0");
-            }
-            
-        });
+        
     }
     
     private static String[] getServers() {
-        return new String[] {
-            "catbag.frankerfacez.com",
-            "andknuckles.frankerfacez.com",
-            "tuturu.frankerfacez.com"
-        };
+        String main = "socket.frankerfacez.com";
+        return new String[]{main};
+        // TODO: Run in separate thread, since this is slow in some cases
+//        try {
+//            InetAddress[] servers = InetAddress.getAllByName(main);
+//            String[] result = new String[servers.length];
+//            for (int i = 0; i < servers.length; i++) {
+//                String host = servers[i].getCanonicalHostName();
+//                /**
+//                 * Check that it's not an IP (not ideal, but should be ok), and
+//                 * fall back to the main host if needed. It needs the hostname
+//                 * for SSL host verification (which can be turned off, but I'd
+//                 * rather try it like this for now).
+//                 */
+//                if (host.contains("frankerfacez.com")) {
+//                    result[i] = host;
+//                } else {
+//                    result[i] = main;
+//                }
+//            }
+//            return result;
+//        } catch (Exception ex) {
+//            LOGGER.warning("Failed to resolve socket.frankerfacez.com (using host directly)");
+//            return new String[]{
+//                main
+//            };
+//        }
     }
     
     /**
@@ -135,18 +108,81 @@ public class WebsocketManager {
     }
     
     public String getStatus() {
-        return c.getStatus();
+        if (c != null) {
+            return c.getStatus();
+        }
+        return "Not connected";
+    }
+    
+    public boolean isConnected() {
+        return c != null && c.isOpen();
     }
     
     public void connect() {
-        if (!settings.getBoolean("ffz") || !settings.getBoolean("ffzEvent")) {
+        if (!settings.getBoolean("ffz") || !settings.getBoolean("ffzEvent")
+                || c != null) {
             return;
         }
-        c.connect(getServers());
+        try {
+            c = new FFZWS(new URI("wss://socket.frankerfacez.com"), new FFZWS.MessageHandler() {
+
+                @Override
+                public void handleReceived(String text) {
+                    listener.wsInfo("--> "+text);
+                }
+
+                @Override
+                public void handleSent(String sent) {
+                    listener.wsInfo("<-- "+sent);
+                }
+
+                @Override
+                public void handleCommand(int id, String command, String params, String originCommand) {
+                    if (id == 1 && command.equals("ok")) {
+                        // ok ["uuid",serverTime]
+                        parseHelloResponse(params);
+                    }
+                    else if (command.equals("follow_sets")) {
+                        // follow_sets {\"sirstendec\": [3779]}
+                        parseFollowsets(params);
+                    }
+                    else if (command.equals("do_authorize")) {
+                        // do_authorize "string"
+                        parseDoAuthorize(params);
+                    }
+                    else if (originCommand.equals("update_follow_buttons")) {
+                        if (command.equals("ok")) {
+                            // ok {"updated_clients":1}
+                            parseFollowingResponse(params);
+                        }
+                        else if (command.equals("error")) {
+                            listener.wsUserInfo("Failed updating follow buttons: "+params);
+                        }
+                    }
+                }
+
+                @Override
+                public void handleConnect() {
+                    setUser = null;
+                    c.sendCommand("hello", JSONUtil.listToJSON(VERSION, false));
+                    for (String room : getRooms()) {
+                        subRoom(room);
+                    }
+                    c.sendCommand("ready", "0");
+                }
+
+            });
+            c.init();
+        }
+        catch (URISyntaxException ex) {
+            Logger.getLogger(WebsocketManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void disconnect() {
-        c.disonnect();
+        if (c != null) {
+            c.disconnect();
+        }
     }
     
     /**
@@ -184,6 +220,9 @@ public class WebsocketManager {
     }
     
     public synchronized void setFollowing(String user, String room, String following) {
+        if (c == null) {
+            return;
+        }
         String[] split = following.split(",");
         JSONArray rooms = new JSONArray();
         for (String item : split) {
@@ -203,11 +242,15 @@ public class WebsocketManager {
     }
     
     private void subRoom(String room) {
-        c.sendCommand("sub", "\"room."+room+"\"");
+        if (c != null) {
+            c.sendCommand("sub", "\"room."+room+"\"");
+        }
     }
     
     private void unsubRoom(String room) {
-        c.sendCommand("unsub", "\"room."+room+"\"");
+        if (c != null) {
+            c.sendCommand("unsub", "\"room."+room+"\"");
+        }
     }
     
     private void parseHelloResponse(String json) {
@@ -297,7 +340,8 @@ public class WebsocketManager {
         EmoticonUpdate update = new EmoticonUpdate(result,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.EVENT,
-                room);
+                room,
+                null);
         listener.channelEmoticonsReceived(update);
     }
     
@@ -311,7 +355,8 @@ public class WebsocketManager {
         EmoticonUpdate update = new EmoticonUpdate(null,
                 Emoticon.Type.FFZ,
                 Emoticon.SubType.EVENT,
-                room);
+                room,
+                null);
         listener.channelEmoticonsReceived(update);
     }
     

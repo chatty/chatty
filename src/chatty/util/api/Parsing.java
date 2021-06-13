@@ -111,34 +111,5 @@ public class Parsing {
             return null;
         }
     }
-    
-    public static RoomsInfo parseRoomsInfo(String room, String json) {
-        return new RoomsInfo(room, parseRooms(json, room));
-    }
-    
-    private static Set<Room> parseRooms(String json, String stream) {
-        Set<Room> result = new HashSet<>();
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject root = (JSONObject)parser.parse(json);
-            JSONArray rooms = (JSONArray)root.get("rooms");
-            for (Object obj : rooms) {
-                JSONObject room = (JSONObject)obj;
-                String id = (String)room.get("_id");
-                String owner_id = (String)room.get("owner_id");
-                String name = (String)room.get("name");
-                String topic = (String)room.get("topic");
-                if (!StringUtil.isNullOrEmpty(id)
-                        && !StringUtil.isNullOrEmpty(owner_id)
-                        && !StringUtil.isNullOrEmpty(name)) {
-                    result.add(Room.createFromId(id, name, owner_id, "#"+stream, topic));
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.warning("Error parsing rooms: "+ex);
-            return null;
-        }
-        return result;
-    }
 
 }

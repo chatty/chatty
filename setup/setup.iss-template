@@ -2,15 +2,13 @@
 [Setup]
 AppName=Chatty
 AppVersion=${applicationVersion}
-DefaultDirName={pf}\\Chatty
+DefaultDirName={autopf}\\Chatty
 DefaultGroupName=Chatty
 OutputBaseFilename=Chatty_${applicationVersion}_win_setup
 ${setup}
 
 [Files]
 Source: "*"; DestDir: "{app}"; Excludes: "\\JIntellitype*.dll,\\sounds,\\img"; Flags: recursesubdirs; Components: main
-Source: "JIntellitype32.dll"; DestDir: "{app}"; DestName: "JIntellitype.dll"; Components: jintellitype\\32;
-Source: "JIntellitype64.dll"; DestDir: "{app}"; DestName: "JIntellitype.dll"; Components: jintellitype\\64;
 Source: "sounds/*"; DestDir: "{app}/sounds"; Components: examples
 Source: "img/*"; DestDir: "{app}/img"; Components: examples
 
@@ -22,16 +20,13 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 [Components]
 Name: main; Description: "Program files and Readme"; Types: install update custom; Flags: fixed
 Name: examples; Description: "Example sound/image files"; Types: install;
-Name: jintellitype; Description: "Global Hotkey Support (adds JIntellitype.dll)";
-Name: jintellitype\\32; Description: "For 32bit Java"; Flags: exclusive
-Name: jintellitype\\64; Description: "For 64bit Java"; Flags: exclusive
 Name: shortcut; Description: "Create Shortcut";
 Name: shortcut\\desktop; Description: "Desktop"; Types: install
 Name: shortcut\\startmenu; Description: "Startmenu"; Types: install
 
 [Icons]
-Name: "{commondesktop}\\Chatty"; Filename: "{app}\\Chatty.jar"; IconFilename: "{app}\\Chatty.ico"; Components: shortcut\\desktop
-Name: "{commonprograms}\\Chatty"; Filename: "{app}\\Chatty.jar"; IconFilename: "{app}\\Chatty.ico"; Components: shortcut\\startmenu
+Name: "{autodesktop}\\Chatty"; Filename: "{app}\\Chatty.jar"; IconFilename: "{app}\\Chatty.ico"; Components: shortcut\\desktop
+Name: "{autoprograms}\\Chatty"; Filename: "{app}\\Chatty.jar"; IconFilename: "{app}\\Chatty.ico"; Components: shortcut\\startmenu
 
 [Messages]
 BeveledLabel=Install or Update Chatty

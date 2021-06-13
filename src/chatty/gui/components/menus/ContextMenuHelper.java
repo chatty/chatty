@@ -65,6 +65,7 @@ public class ContextMenuHelper {
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
         m.addItem("stream", "Normal", streamSubmenu);
         m.addItem("streamPopout", "Popout", streamSubmenu);
+        m.addItem("streamChat", "Chat", streamSubmenu);
         m.addSeparator(streamSubmenu);
         m.addItem("streamsMultitwitchtv", "Multitwitch.tv", streamSubmenu);
         m.addItem("streamsSpeedruntv", "Speedrun.tv", streamSubmenu);
@@ -80,6 +81,9 @@ public class ContextMenuHelper {
             m.addSeparator(miscSubmenu);
             m.addItem("follow", Language.getString("channelCm.follow"), miscSubmenu);
             m.addItem("unfollow", Language.getString("channelCm.unfollow"), miscSubmenu);
+            m.addSeparator(miscSubmenu);
+            m.addItem("favoriteChannel", Language.getString("channelCm.favorite"), miscSubmenu);
+            m.addItem("unfavoriteChannel", Language.getString("channelCm.unfavorite"), miscSubmenu);
         }
         CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m);
     }
@@ -92,7 +96,7 @@ public class ContextMenuHelper {
      */
     public static void addLivestreamerOptions(ContextMenu m) {
         if (enableLivestreamer) {
-            String livestreamerMenu = "Livestreamer";
+            String livestreamerMenu = "Streamlink";
             m.setSubMenuIcon(livestreamerMenu, ICON_COMMANDLINE);
             List<Quality> qualities = parseLivestreamerQualities(livestreamerQualities);
             for (Quality q : qualities) {

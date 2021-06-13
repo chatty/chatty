@@ -141,7 +141,7 @@ public class Livestreamer extends Thread {
         return result.toArray(new String[result.size()]);
     }
     
-    private static String filterToken(String input) {
+    public static String filterToken(String input) {
         return input.replaceAll("--twitch-oauth-token \\w+", "--twitch-oauth-token <token>");
     }
     

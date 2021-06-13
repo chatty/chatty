@@ -26,15 +26,17 @@ public class FontChooser extends JDialog implements InputListListener,
     private final InputList fontList;
     private final InputList fontSizeList;
     
+    private final JCheckBox bold;
+    private final JCheckBox italic;
+    
     private static final String PREVIEW_TEXT = 
-              "<html><body style=\"margin: 4px;\">"
-            + "ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />"
-            + "abcdefghijklmnopqrstuvwxyz<br />"
-            + "1234567890<br />"
+              "ABCDEFGHIJKLMNOPQRSTUVWXYZ\n"
+            + "abcdefghijklmnopqrstuvwxyz\n"
+            + "1234567890\n"
             + "ÄÖÜäöüôàúåãë.,-\\/#+-µ[:]{}$";
     
     // Preview
-    private final FontPreviewLabel preview = new FontPreviewLabel(PREVIEW_TEXT);
+    private final JTextArea preview = new JTextArea();
     
     private final JTextField test = new JTextField();
 
@@ -63,13 +65,14 @@ public class FontChooser extends JDialog implements InputListListener,
      * Creates a FontChooser with the given Dialog as owner.
      * 
      * @param owner 
+     * @param fonts The fonts for selection (if null it gets system fonts)
+     * @param showStyles Whether to show the option for bold/italic
      */
-    public FontChooser(Dialog owner) {
+    public FontChooser(Dialog owner, String[] fonts, boolean showStyles) {
         super(owner, Language.getString("settings.chooseFont.title"), true);
         this.owner = owner;
 
         setLayout(new GridBagLayout());
-        setMinimumSize(new Dimension(300,500));
         
         ok.addActionListener(this);
         cancel.addActionListener(this);
@@ -77,30 +80,69 @@ public class FontChooser extends JDialog implements InputListListener,
         /*
          * Font selection (Panel)
          */
-        JPanel fontSelection = new JPanel(new GridLayout(1,2));
+        JPanel fontSelection = new JPanel(new GridBagLayout());
         
         // Create and fill font list
-        String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().
+        if (fonts == null) {
+            fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().
                 getAvailableFontFamilyNames();
+        }
 
-        fontList = new InputList(fonts);   
+        fontList = new InputList(fonts);
         
         // Create and fill font size list
         fontSizeList = new InputList(fontSizes, new IntegerVerifier());
+        fontSizeList.getList().setFixedCellWidth(60);
         
-        fontSelection.add(fontList);
-        fontSelection.add(fontSizeList);
+        bold = new JCheckBox(Language.getString("settings.chooseFont.bold"));
+        italic = new JCheckBox(Language.getString("settings.chooseFont.italic"));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1;
+        fontSelection.add(fontList, gbc);
+        gbc.gridwidth = 1;
+        gbc.gridx = 2;
+        gbc.weightx = 0;
+        fontSelection.add(fontSizeList, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0;
+        fontSelection.add(bold, gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1;
+        fontSelection.add(italic, gbc);
         fontSelection.setBorder(BorderFactory.createTitledBorder(Language.getString("settings.chooseFont.selectFont")));
+        
+        bold.setEnabled(showStyles);
+        italic.setEnabled(showStyles);
         
         // List listeners
         fontList.addInputListListener(this);
         fontSizeList.addInputListListener(this);
+        bold.addActionListener(e -> updateFont());
+        italic.addActionListener(e -> updateFont());
         
         /*
          * Font preview (Panel)
          */
+        preview.setText(PREVIEW_TEXT);
+        preview.setEditable(false);
+        // Transparent background
+        preview.setOpaque(false);
+        preview.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        preview.setRows(6);
+        preview.setLineWrap(true);
+        preview.setWrapStyleWord(true);
         JPanel fontPreview = new JPanel(new BorderLayout());
-        fontPreview.add(preview);
+        JScrollPane previewScroll = new JScrollPane(preview);
+        previewScroll.setBorder(null);
+        fontPreview.add(previewScroll);
         fontPreview.setBorder(BorderFactory.createTitledBorder(Language.getString("settings.chooseFont.preview")));
         
         /*
@@ -131,7 +173,6 @@ public class FontChooser extends JDialog implements InputListListener,
          * Add everything to the dialog
          */
         // Panels
-        GridBagConstraints gbc;
         gbc = makeGbc(0,0,2,1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
@@ -162,6 +203,7 @@ public class FontChooser extends JDialog implements InputListListener,
         add(cancel,gbc);
         
         pack();
+        setMinimumSize(getPreferredSize());
     }
     
     public String getFontName() {
@@ -172,6 +214,10 @@ public class FontChooser extends JDialog implements InputListListener,
         return font.getSize();
     }
     
+    public Font getSelectedFont() {
+        return font;
+    }
+    
     /**
      * Open the dialog with the given initial settings.
      * 
@@ -179,10 +225,18 @@ public class FontChooser extends JDialog implements InputListListener,
      * @param defaultFontSize
      * @return 
      */
-    public int showDialog(String defaultFont, int defaultFontSize) {
-        fontList.setValue(defaultFont);
-        fontSizeList.setValue(new Integer(defaultFontSize).toString());
+    public int showDialog(Font font, String msg) {
+        fontList.setValue(font.getName());
+        fontSizeList.setValue(String.valueOf(font.getSize()));
+        bold.setSelected(font.isBold());
+        italic.setSelected(font.isItalic());
+        if (msg != null) {
+            preview.setText(msg);
+        } else {
+            preview.setText(PREVIEW_TEXT);
+        }
         closeAction = ACTION_CANCEL;
+        setMinimumSize(getPreferredSize());
         setLocationRelativeTo(owner);
         setVisible(true);
         return closeAction;
@@ -203,12 +257,19 @@ public class FontChooser extends JDialog implements InputListListener,
         } catch (NumberFormatException ex) {
             // Just use the fallback font size
         }
-        font = new Font(fontName,Font.PLAIN,fontSize);
+        int style = Font.PLAIN;
+        if (bold.isSelected()) {
+            style = style | Font.BOLD;
+        }
+        if (italic.isSelected()) {
+            style = style | Font.ITALIC;
+        }
+        font = new Font(fontName, style, fontSize);
         preview.setFont(font);
     }
     
     private void updatePreviewText() {
-        preview.setText(PREVIEW_TEXT+"<br />"+test.getText());
+        preview.setText(PREVIEW_TEXT+"\n"+test.getText());
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -243,19 +304,6 @@ public class FontChooser extends JDialog implements InputListListener,
             closeAction = ACTION_OK;
         }
         setVisible(false);
-    }
-    
-    static class FontPreviewLabel extends JLabel {
-        
-        FontPreviewLabel(String previewText) {
-            setPreferredSize(new Dimension(300,100));
-            //setBackground(Color.WHITE);
-            //setForeground(Color.black);
-            //setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-            //setOpaque(true);
-            setText(previewText);
-        }
-        
     }
     
     /**
@@ -293,6 +341,10 @@ public class FontChooser extends JDialog implements InputListListener,
              */
             add(input, BorderLayout.NORTH);
             add(listScroll);
+        }
+        
+        public JList getList() {
+            return list;
         }
         
         public void addInputListListener(InputListListener listener) {

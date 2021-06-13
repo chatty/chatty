@@ -20,7 +20,11 @@ public class TokenInfo {
         EDIT_BROADCAST("user:edit:broadcast", "broadcast"),
         COMMERICALS("channel_commercial", "commercials"),
         SUBSCRIBERS("channel_subscriptions", "subscribers"),
-        FOLLOW("user_follows_edit", "follow");
+        FOLLOW("user_follows_edit", "follow"),
+        SUBSCRIPTIONS("user_subscriptions", "subscriptions"),
+        CHAN_MOD("channel:moderate", "chanMod"),
+        AUTOMOD("moderator:manage:automod", "automod"),
+        POINTS("channel:read:redemptions", "points");
         
         public String scope;
         public String label;
@@ -50,6 +54,14 @@ public class TokenInfo {
         this.name = name;
         this.userId = userId;
         valid = true;
+        /**
+         * Accept new chat scopes as well. Adding old "chat_login" scope for
+         * them, which is checked for. Kind of a hack, but should work well
+         * enough.
+         */
+        if (scopes.contains("chat:read") && scopes.contains("chat:edit")) {
+            scopes.add("chat_login");
+        }
         this.scopes = new HashSet<>(scopes);
     }
     

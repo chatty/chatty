@@ -141,6 +141,10 @@ public class Setting {
         return valueSet;
     }
     
+    public void setValueSet() {
+        this.valueSet = true;
+    }
+    
     /**
      * Set whether this setting should be saved to a file.
      * 

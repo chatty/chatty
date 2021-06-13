@@ -8,6 +8,8 @@ import chatty.gui.UserListener;
 import chatty.gui.UserlistModel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
+import chatty.util.settings.Settings;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -25,11 +27,12 @@ public class UserList extends JList<User> {
     private final UserlistModel<User> data;
     private final ContextMenuListener contextMenuListener;
     private final UserListener userListener;
-    
+
     private long displayNamesMode = SettingsManager.DISPLAY_NAMES_MODE_CAPITALIZED;
     
     public UserList(ContextMenuListener contextMenuListener,
-            UserListener userListener) {
+                    UserListener userListener,
+                    Settings settings) {
         data = new UserlistModel<>();
         this.setModel(data);
         this.setCellRenderer(new DefaultListCellRenderer() {
@@ -51,6 +54,14 @@ public class UserList extends JList<User> {
                 
                 User user = (User)value;
                 setText(Helper.makeDisplayNick(user, displayNamesMode));
+
+                if (!isSelected && settings.getBoolean("displayColoredNamesInUserlist")) {
+                    Color userColor = user.getDisplayColor2();
+                    if (userColor != null) {
+                        setForeground(userColor);
+                    }
+                }
+
                 return this;
             }
             

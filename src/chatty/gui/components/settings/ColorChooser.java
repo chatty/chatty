@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -65,9 +66,7 @@ public class ColorChooser extends JDialog {
         setLayout(new GridBagLayout());
         setResizable(false);
         
-        // Configure chooser
-        chooser.addChooserPanel(new NamedColorsPanel());
-        chooser.setPreviewPanel(preview);
+        configureChooser();
         
         // Add listener to update preview when a new color has been selected
         chooser.getSelectionModel().addChangeListener(new ChangeListener() {
@@ -119,6 +118,20 @@ public class ColorChooser extends JDialog {
     }
     
     /**
+     * When updating LaF, it doesn't add the panel back, so do it if necessary.
+     */
+    private void configureChooser() {
+        for (AbstractColorChooserPanel panel : chooser.getChooserPanels()) {
+            if (panel instanceof NamedColorsPanel) {
+                // Already configured
+                return;
+            }
+        }
+        chooser.addChooserPanel(new NamedColorsPanel());
+        chooser.setPreviewPanel(preview);
+    }
+    
+    /**
      * Update the preview with the new primary color. Use as foreground or
      * background depending on the type and use secondary color as the other
      * one.
@@ -165,9 +178,9 @@ public class ColorChooser extends JDialog {
      */
     public Color chooseColor(int type, Color presetColor, Color secondaryColor,
             String name, String text) {
+        configureChooser();
         
         // Update dialog
-        setLocationRelativeTo(getParent());
         returnNewColor = false;
         setTitle(Language.getString("settings.colorChooser.title", name));
         
@@ -180,6 +193,8 @@ public class ColorChooser extends JDialog {
         preview.setText(text);
         chooser.setColor(presetColor);
         updatePreview();
+        pack();
+        setLocationRelativeTo(getParent());
         
         setVisible(true);
         

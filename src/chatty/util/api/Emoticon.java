@@ -20,6 +20,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,10 +50,17 @@ public class Emoticon {
     
     private static final Logger LOGGER = Logger.getLogger(Emoticon.class.getName());
     
-    public static final int SET_GLOBAL = 0;
-    public static final int SET_UNDEFINED = -1;
-    public static final int SET_UNKNOWN = -2;
-    public static final int ID_UNDEFINED = -1;
+    public static final String SET_GLOBAL = "0";
+    
+    /**
+     * Undefined means an emoteset is not defined for this emote at all.
+     */
+    public static final String SET_NONE = null;
+    
+    /**
+     * Unknown means that an emoteset may be required, but it's not known.
+     */
+    public static final String SET_UNKNOWN = "";
     
     public static enum Type {
         TWITCH("Twitch"), FFZ("FFZ"), BTTV("BTTV"), CUSTOM("Custom"),
@@ -100,11 +108,10 @@ public class Emoticon {
     public final Type type;
     public final SubType subType;
     public final String code;
-    public final int emoteSet;
+    public final String emoteset;
     private final Set<String> streamRestrictions;
     public final String url;
     public final boolean literal;
-    public final int numericId;
     public final String stringId;
     public final String stringIdAlias;
     public final String urlX2;
@@ -143,8 +150,7 @@ public class Emoticon {
         private String emotesetInfo;
         private Set<String> streamRestrictions;
         private Set<String> infos;
-        private int emoteset = SET_UNDEFINED;
-        private int numericId = ID_UNDEFINED;
+        private String emoteset = SET_NONE;
         private String stringId = null;
         private String stringIdAlias = null;
         private String creator;
@@ -172,7 +178,7 @@ public class Emoticon {
             return this;
         }
         
-        public Builder setEmoteset(int emoteset) {
+        public Builder setEmoteset(String emoteset) {
             this.emoteset = emoteset;
             return this;
         }
@@ -189,11 +195,6 @@ public class Emoticon {
         
         public Builder setLiteral(boolean literal) {
             this.literal = literal;
-            return this;
-        }
-        
-        public Builder setNumericId(int id) {
-            this.numericId = id;
             return this;
         }
         
@@ -249,10 +250,10 @@ public class Emoticon {
      * @return The URL as a String or null if none could created or not of an
      * applicable type
      */
-    protected String getEmoteUrl(int factor) {
+    public String getEmoteUrl(int factor) {
         if (type == Type.TWITCH) {
-            if (numericId != ID_UNDEFINED) {
-                return getTwitchEmoteUrlById(numericId, factor);
+            if (stringId != null) {
+                return getTwitchEmoteUrlById(stringId, factor);
             }
         } else if (type == Type.BTTV && stringId != null) {
             return getBttvEmoteUrl(stringId, factor);
@@ -264,7 +265,7 @@ public class Emoticon {
         return null;
     }
     
-    public static String getTwitchEmoteUrlById(int id, int factor) {
+    public static String getTwitchEmoteUrlById(String id, int factor) {
         return "https://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
     }
     
@@ -303,7 +304,7 @@ public class Emoticon {
         this.code = code;
 
         this.type = builder.type;
-        this.emoteSet = builder.emoteset;
+        this.emoteset = builder.emoteset;
         this.url = Helper.checkHttpUrl(builder.url);
         this.urlX2 = Helper.checkHttpUrl(builder.urlX2);
         
@@ -335,7 +336,6 @@ public class Emoticon {
         this.stream = builder.stream;
         this.emotesetInfo = builder.emotesetInfo;
         this.literal = builder.literal;
-        this.numericId = builder.numericId;
         this.stringId = builder.stringId;
         this.stringIdAlias = builder.stringIdAlias;
         this.creator = builder.creator;
@@ -343,6 +343,16 @@ public class Emoticon {
         this.isAnimated = builder.isAnimated;
         this.subType = builder.subtype;
     }
+    
+    /**
+     * Some emote codes contain regex characters, while not being intended to be
+     * interpreted as regex (and others still consist of an actual regex).
+     * 
+     * This serves as a backup in case some aren't turned back into regex.
+     */
+    private static final Set<String> LITERAL = new HashSet<>(Arrays.asList(new String[]{
+        "8-)", ":|", ";)", ">(", ":\\", ":)", ":-)", "R)", ":(", ":-(", "B)", "B-)"
+    }));
     
     private void createMatcher() {
         if (matcher == null) {
@@ -361,8 +371,13 @@ public class Emoticon {
                  */
                 search = Pattern.quote(search)+"[\uFE0E\uFE0F]?";
             } else {
+                if (search.length() < 4) {
+                    // Turn some of the "smiley" emotes back into regex (they
+                    // still seem to be parsed with the regex serverside)
+                    search = Emoticons.toRegex(search);
+                }
                 // Any regular emotes should be separated by spaces
-                if (literal) {
+                if (literal || LITERAL.contains(search)) {
                     // Literal emotes come from a source that doesn't provide
                     // regex, but may contain regex special characters
                     search = Pattern.quote(search);
@@ -466,7 +481,11 @@ public class Emoticon {
     }
     
     public boolean hasGlobalEmoteset() {
-        return this.emoteSet == SET_GLOBAL || this.emoteSet == SET_UNDEFINED;
+        return isGlobalEmoteset(emoteset);
+    }
+    
+    public static boolean isGlobalEmoteset(String emoteset) {
+        return emoteset == null || emoteset.equals(SET_GLOBAL);
     }
     
     /**
@@ -531,7 +550,9 @@ public class Emoticon {
         } else {
             images.markStrong(resultImage);
         }
-        resultImage.addUser(user);
+        if (user != null) {
+            resultImage.addUser(user);
+        }
         return resultImage;
     }
     
@@ -590,7 +611,7 @@ public class Emoticon {
      */
     private String getCachedSizeId() {
         if (type == Type.TWITCH) {
-            return type+"."+numericId;
+            return type+"."+stringId;
         }
         if (type == Type.BTTV) {
             return type+"."+stringId;
@@ -615,7 +636,7 @@ public class Emoticon {
      * @param h The height
      */
     private void setCachedSize(int w, int h) {
-        if ((type == Type.TWITCH && numericId != ID_UNDEFINED)
+        if ((type == Type.TWITCH && stringId != null)
                 || (type == Type.BTTV && stringId != null)) {
             EmoticonSizeCache.setSize(getCachedSizeId(), w, h);
         }
@@ -851,7 +872,7 @@ public class Emoticon {
                 if (loadedIcon == null) {
                     image.setLoadingError();
                 } else {
-                    image.setImageIcon(loadedIcon);
+                    image.setImageIcon(loadedIcon, true);
                 }
                 image.setLoadingDone();
             } catch (InterruptedException | ExecutionException ex) {
@@ -873,12 +894,12 @@ public class Emoticon {
         return height;
     }
     
-    public boolean matchesUser(User user) {
+    public boolean matchesUser(User user, Set<String> accessToSets) {
         if (user == null) {
             return true;
         }
-        if (emoteSet > Emoticon.SET_GLOBAL
-                && !user.getEmoteSet().contains(emoteSet)) {
+        if (!hasGlobalEmoteset()
+                && (accessToSets == null || !accessToSets.contains(emoteset))) {
             return false;
         }
         if (hasStreamRestrictions()
@@ -910,7 +931,7 @@ public class Emoticon {
         if (!Objects.equals(this.code, other.code)) {
             return false;
         }
-        if (this.emoteSet != other.emoteSet) {
+        if (!Objects.equals(this.emoteset, other.emoteset)) {
             return false;
         }
         if (!Objects.equals(this.streamRestrictions, other.streamRestrictions)) {
@@ -921,12 +942,12 @@ public class Emoticon {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 59 * hash + Objects.hashCode(this.type);
-        hash = 59 * hash + Objects.hashCode(this.subType);
-        hash = 59 * hash + Objects.hashCode(this.code);
-        hash = 59 * hash + this.emoteSet;
-        hash = 59 * hash + Objects.hashCode(this.streamRestrictions);
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.type);
+        hash = 17 * hash + Objects.hashCode(this.subType);
+        hash = 17 * hash + Objects.hashCode(this.code);
+        hash = 17 * hash + Objects.hashCode(this.emoteset);
+        hash = 17 * hash + Objects.hashCode(this.streamRestrictions);
         return hash;
     }
 
@@ -962,6 +983,7 @@ public class Emoticon {
         
         private boolean loading = false;
         private boolean loadingError = false;
+        private boolean isLoaded = false;
         private volatile int loadingAttempts = 0;
         private long lastLoadingAttempt;
         private long lastUsed;
@@ -1043,16 +1065,22 @@ public class Emoticon {
         }
         
         private void setLoadingError() {
-            setImageIcon(new ImageIcon(getDefaultImage(true)));
+            setImageIcon(new ImageIcon(getDefaultImage(true)), false);
             loadingError = true;
         }
         
-        private void setImageIcon(ImageIcon newIcon) {
+        public void setImageIcon(ImageIcon newIcon, boolean success) {
+            if (icon == null) {
+                setDefaultIcon();
+            }
             boolean sizeChanged = icon.getIconWidth() != newIcon.getIconWidth()
                     || icon.getIconHeight() != newIcon.getIconHeight();
             Image oldImage = icon.getImage();
             icon.setImage(newIcon.getImage());
             icon.setDescription(newIcon.getDescription());
+            if (success) {
+                setLoaded();
+            }
             informUsers(oldImage, newIcon.getImage(), sizeChanged);
         }
         
@@ -1060,13 +1088,24 @@ public class Emoticon {
             this.loadedFrom = url;
         }
         
-
+        public boolean isAnimated() {
+            return Emoticon.this.isAnimated() ||
+                    (icon != null && icon.getDescription() != null && icon.getDescription().startsWith("GIF"));
+        }
         
         /**
          * Either error or successfully loaded.
          */
         private void setLoadingDone() {
             loading = false;
+        }
+        
+        private void setLoaded() {
+            isLoaded = true;
+        }
+        
+        public boolean isLoaded() {
+            return isLoaded;
         }
         
         private void addUser(EmoticonUser user) {
@@ -1090,6 +1129,10 @@ public class Emoticon {
          */
         private ImageIcon getDefaultIcon() {
             return new ImageIcon(getDefaultImage(false));
+        }
+        
+        public void setDefaultIcon() {
+            icon = getDefaultIcon();
         }
         
         /**

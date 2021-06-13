@@ -6,6 +6,7 @@ import chatty.util.DateTime;
 import chatty.util.ElapsedTime;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamTagManager.StreamTag;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -38,6 +39,8 @@ public class StreamInfo {
      */
     private String display_name;
     
+    private String logo;
+    
     private String userId;
     
     /**
@@ -54,6 +57,7 @@ public class StreamInfo {
     private List<StreamTag> communities;
     private long startedAt = -1;
     private final ElapsedTime lastOnlineET = new ElapsedTime();
+    private long prevLastOnlineAgoSecs;
     private long startedAtWithPicnic = -1;
     private boolean online = false;
     private StreamType streamType;
@@ -99,7 +103,7 @@ public class StreamInfo {
     private String currentFullStatus;
     private String prevFullStatus;
     
-    private final LinkedHashMap<Long,StreamInfoHistoryItem> history = new LinkedHashMap<>();
+    private final LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
     
     private int expiresAfter = 300;
     
@@ -212,15 +216,17 @@ public class StreamInfo {
             }
             recheckOffline = -1;
 
-            if (lastOnlineAgo() > MAX_PICNIC_LENGTH) {
+            if (getLastOnlineAgoSecs() > MAX_PICNIC_LENGTH
+                    || startedAtWithPicnic == -1) {
                 /**
-                 * Only update online time with PICNICs when offline time was
-                 * long enough (of course also depends on what stream data
-                 * Chatty has).
+                 * Only update (as in no more different PICNIC time from regular
+                 * uptime) when offline for long enough or previous value was
+                 * not valid.
                  */
                 this.startedAtWithPicnic = startedAt;
             }
             this.startedAt = startedAt;
+            this.prevLastOnlineAgoSecs = lastOnlineET.secondsElapsed();
             this.lastOnlineET.set();
             this.online = true;
 
@@ -424,6 +430,14 @@ public class StreamInfo {
         return !hasDisplayName() || capitalizedName != null;
     }
     
+    public synchronized void setLogo(String logo) {
+        this.logo = logo;
+    }
+    
+    public synchronized String getLogo() {
+        return logo;
+    }
+    
     public synchronized boolean setUserId(String userId) {
         if (this.userId == null || (!this.userId.equals(userId) && userId != null)) {
             this.userId = userId;
@@ -480,6 +494,27 @@ public class StreamInfo {
         return this.online;
     }
     
+//    public boolean wasOnline() {
+//        synchronized(history) {
+//            if (history.isEmpty()) {
+//                return false;
+//            }
+//            List<Long> keys = new ArrayList<>(history.keySet());
+//            // Start at 2nd to last item, since last would be the current
+//            for (int i = keys.size() - 2; i >= 0; i++) {
+//                Long time = keys.get(i);
+//                if (System.currentTimeMillis() - time > 5*60*1000) {
+//                    return false;
+//                }
+//                StreamInfoHistoryItem item = history.get(time);
+//                if (item.isOnline()) {
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
+    
     /**
      * The time the stream was started. As always, this may contain stale data
      * if the stream info is not valid or the stream offline.
@@ -518,7 +553,7 @@ public class StreamInfo {
      * @return The number of seconds that have passed since the stream was last
      * seen as online
      */
-    public synchronized long lastOnlineAgo() {
+    public synchronized long getLastOnlineAgoSecs() {
         return lastOnlineET.secondsElapsed();
     }
     
@@ -529,7 +564,15 @@ public class StreamInfo {
         return System.currentTimeMillis() - lastOnlineET.millisElapsed();
     }
     
-    
+    /**
+     * How many seconds ago has this stream been last seen online, from before
+     * the latest update.
+     * 
+     * @return 
+     */
+    public synchronized long getPrevLastOnlineAgoSecs() {
+        return prevLastOnlineAgoSecs;
+    }
     
     // Getters
     

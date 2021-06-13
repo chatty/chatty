@@ -1,0 +1,17 @@
+<p>The success message that gets output when adding a Stream Highlight (error messages can not be customized). The following parameters can be used:</p>
+
+<ul>
+    <li><code>$(added)</code> - "highlight" or "highlight/marker" depending on settings</li>
+    <li><code>$(chan)</code> - the channel name</li>
+    <li><code>$(uptime)</code> - the stream uptime</li>
+    <li><code>$(comment)</code> - shortened comment in parentheses</li>
+    <li><code>$(fullcomment)</code> - the entire comment in parentheses</li>
+    <li><code>$(chatuser)</code> - the user that executed the chat command, or empty if triggered locally</li>
+</ul>
+
+<p>Example:</p>
+
+<dl>
+    <dt><code>Added stream highlight [$(uptime)] $(comment) $if(chatuser,\(This is a mod-only command\))</code></dt>
+    <dd>Compared to default this omits some information, but adds a note about who can run the chat command (but only if actually ran from chat command, note escaping the parentheses as well).</dd>
+</dl>

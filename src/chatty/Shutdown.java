@@ -27,7 +27,7 @@ public class Shutdown implements Runnable {
         LOGGER.info("Shutdown");
         System.out.println("Shutdown");
         
-        client.saveSettings(true);
+        client.saveSettings(true, false);
         client.chatLog.close();
     }
 }

@@ -3,6 +3,7 @@ package chatty.gui.components;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Logging;
 import chatty.util.DateTime;
 import chatty.util.ElapsedTime;
 import chatty.util.LogUtil;
@@ -193,11 +194,11 @@ public class ErrorMessage extends JDialog {
         finishDialog();
     }
     
-    public int show(LogRecord error, LinkedList<LogRecord> previous) {
+    public int show(LogRecord error, LinkedList<LogRecord> previous, int openChans) {
         if (errorCount >= ERROR_LIMIT) {
             setTitle(errorCount+" Errors (stopped recording)");
         } else {
-            addError(error, previous);
+            addError(error, previous, openChans);
         }
         
         if (!isVisible()) {
@@ -224,17 +225,19 @@ public class ErrorMessage extends JDialog {
         return result;
     }
     
-    private void addError(LogRecord error, LinkedList<LogRecord> previous) {
+    private void addError(LogRecord error, LinkedList<LogRecord> previous,
+            int openChans) {
         errorCount++;
         String errorText = makeErrorText(error, previous);
         errors.add(errorText);
         if (errorCount == 1) {
             setTitle("Error");
-            debugMessage.setText(String.format("Error Report // %s / %s / %s / %s\n\n",
+            debugMessage.setText(String.format("Error Report // %s / %s / %s / %s / Chans: %d\n\n",
                     DateTime.fullDateTime(),
                     Chatty.chattyVersion(),
                     Helper.systemInfo(),
-                    LogUtil.getMemoryUsage()));
+                    LogUtil.getMemoryUsage(),
+                    openChans));
         } else {
             setTitle(errorCount+" Errors");
         }
@@ -247,15 +250,10 @@ public class ErrorMessage extends JDialog {
             // Should never be null, but since this may contain null and it
             // apparently happened before..
             if (r != null) {
-                b.append(DateTime.format(r.getMillis()));
-                b.append(" ");
-                b.append(r.getMessage());
-                b.append("\n");
+                b.append(Logging.formatRecordCompact(r));
             }
         }
-        b.append(DateTime.format(error.getMillis()));
-        b.append(" Unhandled Exception:\n");
-        b.append(error.getMessage());
+        b.append(Logging.formatRecordCompact(error));
         b.append("\n\n");
         return b.toString();
     }

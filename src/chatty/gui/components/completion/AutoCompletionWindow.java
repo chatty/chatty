@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -71,9 +69,9 @@ public class AutoCompletionWindow {
     private final MyRenderer listRenderer = new MyRenderer();
     private int startPos;
     private final JTextComponent textField;
-    private final BiConsumer<Integer, Boolean> clickListener;
+    private final BiConsumer<Integer, MouseEvent> clickListener;
     
-    public AutoCompletionWindow(JTextComponent textField, BiConsumer<Integer, Boolean> clickListener) {
+    public AutoCompletionWindow(JTextComponent textField, BiConsumer<Integer, MouseEvent> clickListener) {
         this.clickListener = clickListener;
         this.textField = textField;
         /**
@@ -221,11 +219,12 @@ public class AutoCompletionWindow {
          * Using getMagicCaretPosition() to get the location didn't always seem
          * to work, possibly depending on timing?
          */
-        Rectangle r = null;
+        Rectangle r;
         try {
             r = textField.modelToView(index);
         } catch (BadLocationException ex) {
-            Logger.getLogger(AutoCompletion.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("null lol");
+            return;
         }
 
         // No location found, so don't show window
@@ -345,6 +344,14 @@ public class AutoCompletionWindow {
 
                 list.scrollRectToVisible(list.getCellBounds(from, to));
             }
+        } else {
+            // Selection only
+            if (index == -1) {
+                list.removeSelectionInterval(0, listData.getSize());
+            }
+            else if (shownCount > 0) {
+                list.setSelectedIndex(index);
+            }
         }
     }
     
@@ -395,7 +402,7 @@ public class AutoCompletionWindow {
             public void mouseClicked(MouseEvent e) {
                 int index = list.locationToIndex(e.getPoint());
                 if (index != -1 && list.getCellBounds(index, index).contains(e.getPoint())) {
-                    clickListener.accept(index, e.isShiftDown());
+                    clickListener.accept(index, e);
                 }
             }
             
@@ -524,6 +531,8 @@ public class AutoCompletionWindow {
                     text.setText(item.getCode());
                 }
             }
+            panel.getAccessibleContext().setAccessibleName(item.getCode());
+            panel.getAccessibleContext().setAccessibleDescription(item.getInfo());
             
             ImageIcon image = item.getImage(list);
             icon.setIcon(image);

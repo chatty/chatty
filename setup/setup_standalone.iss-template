@@ -2,7 +2,7 @@
 [Setup]
 AppName=Chatty
 AppVersion=${applicationVersion}
-DefaultDirName={pf}\\Chatty
+DefaultDirName={autopf}\\Chatty
 DefaultGroupName=Chatty
 OutputBaseFilename=Chatty_${applicationVersion}_win_standalone_setup
 ${setup}
@@ -29,8 +29,8 @@ Name: shortcut\\desktop; Description: "Desktop"; Types: install
 Name: shortcut\\startmenu; Description: "Startmenu"; Types: install
 
 [Icons]
-Name: "{commondesktop}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\desktop
-Name: "{commonprograms}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\startmenu
+Name: "{autodesktop}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\desktop
+Name: "{autoprograms}\\Chatty"; Filename: "{app}\\Chatty.exe"; Components: shortcut\\startmenu
 
 [Messages]
 BeveledLabel=Install or Update Chatty

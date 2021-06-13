@@ -6,6 +6,7 @@ import chatty.lang.Language;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,6 +37,9 @@ public class CompletionSettings extends SettingsPanel {
         //========
         JPanel entries = addTitledPanel(Language.getString("settings.section.completion"), 0);
         
+        entries.add(d.addSimpleBooleanSetting("completionEnabled"),
+                SettingsDialog.makeGbc(0, 0, 4, 1, WEST));
+        
         //--------------
         // TAB/Shift-TAB
         //--------------
@@ -47,22 +51,22 @@ public class CompletionSettings extends SettingsPanel {
         tabChoices.put("custom", Language.getString("settings.completion.option.custom"));
 
         entries.add(new JLabel("TAB:"),
-                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
 
         entries.add(
                 d.addComboStringSetting("completionTab", 0, false, tabChoices),
-                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
         
         entries.add(new JLabel("Shift-TAB:"),
-                d.makeGbc(2, 0, 1, 1, GridBagConstraints.EAST));
+                d.makeGbc(2, 1, 1, 1, GridBagConstraints.EAST));
         
         entries.add(
                 d.addComboStringSetting("completionTab2", 0, false, tabChoices),
-                d.makeGbc(3, 0, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(3, 1, 1, 1, GridBagConstraints.WEST));
         
         entries.add(new JLabel("<html><body style='width:300px;padding-bottom:3px;'>"
                 + Language.getString("settings.completion.info")),
-                d.makeGbc(0, 1, 4, 1));
+                d.makeGbc(0, 2, 4, 1));
         
         Map<String, String> emotePrefixValues = new LinkedHashMap<>();
         emotePrefixValues.put("", Language.getString("settings.completionEmotePrefix.option.none"));
@@ -76,10 +80,10 @@ public class CompletionSettings extends SettingsPanel {
         preferEmojiTest.accept(":");
         prefix.addActionListener(e -> preferEmojiTest.accept(":"));
         
-        entries.add(d.createPanel("completionEmotePrefix",
+        entries.add(SettingsUtil.createPanel("completionEmotePrefix",
                 prefix,
                 mixed),
-                d.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 3, 4, 1, GridBagConstraints.WEST));
 
         //-------------------
         // Custom Completion
@@ -93,7 +97,7 @@ public class CompletionSettings extends SettingsPanel {
             customCompletionDialog.setVisible(true);
         });
         entries.add(editCustomCompletion,
-                d.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST));
         
         //=================
         // Localized Names
@@ -123,7 +127,7 @@ public class CompletionSettings extends SettingsPanel {
         final JTextField max = d.addSimpleLongSetting("completionMaxItemsShown", 3, true);
         numResults.add(popup);
         numResults.add(max);
-        numResults.add(d.createLabel("searchResults"));
+        numResults.add(SettingsUtil.createLabel("searchResults"));
         appearance.add(numResults, d.makeNoGapGbc(0, 0, 2, 1, GridBagConstraints.LINE_START));
         
         JPanel popupSettings = new JPanel(new GridBagLayout());

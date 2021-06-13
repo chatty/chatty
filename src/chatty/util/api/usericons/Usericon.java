@@ -2,17 +2,21 @@
 package chatty.util.api.usericons;
 
 import chatty.Helper;
+import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import chatty.util.ImageCache;
 import chatty.util.StringUtil;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -37,7 +41,7 @@ public class Usericon implements Comparable {
     
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
-            "$globalmod", "$anymod"));
+            "$globalmod", "$anymod", "$vip"));
     
     /**
      * The type determines whether it should replace any of the default icons
@@ -57,10 +61,14 @@ public class Usericon implements Comparable {
         GLOBAL_MOD(7, "Global Moderator", "GLM", "*", "global_mod", HtmlColors.decode("#0c6f20")),
         BOT(8, "Bot", "BOT", "^", null, null),
         TWITCH(9, "Twitch Badge", "TWB", null, null, null),
-        PRIME(10, "Prime", "TPR", "+", "premium", null),
+        PRIME(10, "Prime", "PRM", "+", "premium", null),
         BITS(11, "Bits", "BIT", "$", "bits", null),
         OTHER(12, "Other", "OTH", "'", null, null),
         VIP(13, "VIP", "VIP", "!", "vip", null),
+        HL(14, "Highlighted by channel points", "HL", "'", null, null),
+        CHANNEL_LOGO(15, "Channel Logo", "CHL", null, null, null),
+        FOUNDER(16, "Founder", "FND", "%", "founder", null),
+        ALL(17, "All Types", "ALL", "", null, null),
         UNDEFINED(-1, "Undefined", "UDF", null, null, null);
         
         public Color color;
@@ -97,7 +105,7 @@ public class Usericon implements Comparable {
      * restriction doesn't have to be parsed everytime.
      */
     public enum MatchType {
-        CATEGORY, UNDEFINED, ALL, STATUS, NAME, COLOR
+        CATEGORY, UNDEFINED, ALL, STATUS, NAME, COLOR, MATCH
     }
     
     /**
@@ -140,6 +148,11 @@ public class Usericon implements Comparable {
      * The URL the image is loaded from
      */
     public final URL url;
+    
+    /**
+     * If set, the image will be resized to this size
+     */
+    public final Dimension targetImageSize;
     
     /**
      * The restriction
@@ -192,6 +205,11 @@ public class Usericon implements Comparable {
     public final String category;
     
     /**
+     * Match user-related prefixes based on the Highlighting format.
+     */
+    public final Highlighter.HighlightItem match;
+    
+    /**
      * This is {@code true} if the channel restriction should be reversed, which
      * means all channels BUT the one specified should match.
      */
@@ -205,6 +223,7 @@ public class Usericon implements Comparable {
     public final String restrictionValue;
     
     public final Set<String> usernames;
+    public final Set<String> userids;
     
     public final boolean stop;
     public final boolean first;
@@ -258,11 +277,13 @@ public class Usericon implements Comparable {
         // Usernames Restriction
         //-----------------------
         this.usernames = builder.usernames;
+        this.userids = builder.userids;
 
         //----------------------
         // Image/Image Location
         //----------------------
         this.url = builder.url;
+        this.targetImageSize = builder.targetImageSize;
         
         // If no url is set, assume that no image is supposed to be used
         if (builder.url == null) {
@@ -314,6 +335,13 @@ public class Usericon implements Comparable {
                 category = null;
             }
             
+            if (restrict.startsWith("$m:") && restrict.length() > "$m:".length()) {
+                match = new Highlighter.HighlightItem(restrict.substring("$m:".length()), "badge");
+            }
+            else {
+                match = null;
+            }
+            
             if (restrict.startsWith("#") && restrict.length() == 7) {
                 colorRestriction = HtmlColors.decode(restrict, null);
             } else if (restrict.startsWith("$color:") && restrict.length() > 7) {
@@ -325,6 +353,8 @@ public class Usericon implements Comparable {
             // Save the type
             if (restrict.startsWith("$cat:") && restrict.length() > 5) {
                 matchType = MatchType.CATEGORY;
+            } else if (match != null) {
+                matchType = MatchType.MATCH;
             } else if (colorRestriction != null) {
                 matchType = MatchType.COLOR;
             } else if (statusDef.contains(restrict)) {
@@ -339,6 +369,7 @@ public class Usericon implements Comparable {
         } else {
             matchType = MatchType.UNDEFINED;
             category = null;
+            match = null;
             this.restriction = null;
             restrictionValue = null;
             colorRestriction = null;
@@ -366,11 +397,18 @@ public class Usericon implements Comparable {
         }
         ImageIcon icon = ImageCache.getImage(url, "usericon", CACHE_TIME);
         if (icon != null) {
+            if (targetImageSize != null) {
+                icon.setImage(getScaledImage(icon.getImage(), targetImageSize.width, targetImageSize.height));
+            }
             return icon;
         } else {
             LOGGER.warning("Could not load icon: " + url);
         }
         return null;
+    }
+    
+    private Image getScaledImage(Image img, int w, int h) {
+        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
     }
     
     /**
@@ -476,6 +514,28 @@ public class Usericon implements Comparable {
         return null;
     }
     
+    public static String makeBadgeInfo(Map<String, String> badgesDef) {
+        StringBuilder b = new StringBuilder();
+        for (String id : badgesDef.keySet()) {
+            String value = badgesDef.get(id);
+            Type type = typeFromBadgeId(id);
+            if (type != null) {
+                if (b.length() > 0) {
+                    b.append("|");
+                }
+                b.append(type.shortLabel);
+                if (value != null && !value.equals("1")) {
+                    b.append("/").append(value);
+                }
+            }
+        }
+        if (b.length() > 0) {
+            b.insert(0, "[");
+            b.append("]");
+        }
+        return b.toString();
+    }
+    
     
     public static class Builder {
 
@@ -492,7 +552,9 @@ public class Usericon implements Comparable {
         private String metaDescription = "";
         private String metaUrl = "";
         private Set<String> usernames;
+        private Set<String> userids;
         private String position;
+        private Dimension targetImageSize;
 
         public Builder(Usericon.Type type, int source) {
             this.type = type;
@@ -594,12 +656,26 @@ public class Usericon implements Comparable {
         }
         
         public Builder setUsernames(Collection<String> usernames) {
-            this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
+            if (usernames != null) {
+                this.usernames = Collections.unmodifiableSet(new HashSet<>(usernames));
+            }
+            return this;
+        }
+        
+        public Builder setUserids(Collection<String> userids) {
+            if (userids != null) {
+                this.userids = Collections.unmodifiableSet(new HashSet<>(userids));
+            }
             return this;
         }
         
         public Builder setPosition(String position) {
             this.position = position;
+            return this;
+        }
+        
+        public Builder setTargetImageSize(int width, int height) {
+            this.targetImageSize = new Dimension(width, height);
             return this;
         }
 

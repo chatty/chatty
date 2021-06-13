@@ -48,6 +48,11 @@ public class VersionTest {
         assertEquals(Version.compareVersions("0.8.4.1-b3", "0.8.4.1"), 1);
         assertEquals(Version.compareVersions("0.8.4.1beta3", "0.8.4.1"), 1);
         assertEquals(Version.compareVersions("0.8.4.1-beta3", "0.8.4.1"), 1);
+        assertEquals(Version.compareVersions("0.8.10", "0.8.9"), -1);
+        assertEquals(Version.compareVersions("0.12", "0.10.9"), -1);
+        assertEquals(Version.compareVersions("0.22", "0.10.9"), -1);
+        assertEquals(Version.compareVersions("0.9", "0.10.9"), 1);
+        assertEquals(Version.compareVersions("0.10.0", "0.10"), 0);
         
         // Invalid versions
         assertEquals(Version.compareVersions("a", "0.1"), 1);

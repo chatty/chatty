@@ -30,8 +30,13 @@ public class Splash {
     private static String[] getThings() {
         return new String[]{
             "Happy Birthday, Broughy!",
+            "Top 5 is always possible!",
             "When's True 100%+?",
+            "Oh hey, thanks!",
+            "Carl Carl, dude dude, man!",
+            "Old Reece still got it cracking.",
             "Jaffa Kree!",
+            "What fate Omoroca?",
             "Java is an island as well!",
             "And we're walking..",
             "Let's make life take the lemons back!",
@@ -42,24 +47,32 @@ public class Splash {
             "The hypnotic tick-tack of stilettos on virtual cobble",
             "Do you get to the cloud district often?",
             "Getting into the Swing of things..",
-            "I've heard if both ways",
+            "I've heard it both ways",
             "🐣",
             "Igniting the midnight petroleum!",
+            "Tea, Earl Grey, Hot",
+            "There's coffee in that nebula!",
             "70k lines of code!",
             "Free and open-source!",
             "Batteries not included",
             "Made with your support!",
             "Guten Morgen!",
+            "Have a nice day!",
             "Wind's howling.",
             "Rac + <Shift-Tab>",
             "Alternating backgrounds!",
             "Right-click on all the things!",
+            "Click on username to moderate",
+            "'View - Channel Admin' to set your stream title",
             "Splash screen!",
             "Pop goes the weasel!",
             ":)",
             "Donaudampfschiffahrtsgesellschaftskapitän",
             "Schleyfsteyn!",
-            "Never dig below your feet!"
+            "Never dig below your feet!",
+            "Kohle, Kohle, Kohle 🎵",
+            "Remember the Cant!",
+            "Global Hotkeys!"
         };
     }
     
@@ -94,7 +107,7 @@ public class Splash {
     }
     
     private static void drawOnSplashscreen(final Point location) {
-        System.out.println(System.currentTimeMillis()-Chatty.STARTED_TIME);
+        System.out.println(Chatty.uptimeMillis());
         final SplashScreen splash = SplashScreen.getSplashScreen();
         if (splash != null) {
             // Native

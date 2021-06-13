@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
@@ -42,15 +43,7 @@ public class ChatSettings extends SettingsPanel {
         gbc.insets = new Insets(4,1,0,5);
         main.add(autoScrollPanel, gbc);
         
-        
- 
-        gbc = d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
-        main.add(new JLabel("Chat buffer size (default):"),
-                gbc);
-        
-        gbc = d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
-        main.add(d.addSimpleLongSetting("bufferSize", 3, true),
-                gbc);
+        SettingsUtil.addLabeledComponent(main, "bufferSize", 0, 4, 1, WEST, d.addSimpleLongSetting("bufferSize", 3, true));
         
         BufferSizes bufferSizes = new BufferSizes(d);
         JButton bufferSizesButton = new JButton("Per tab buffer sizes");
@@ -70,9 +63,13 @@ public class ChatSettings extends SettingsPanel {
                 null), gbc);
         
         gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
-        main.add(d.addSimpleBooleanSetting("showImageTooltips",
-                "Show Emoticon/Badge tooltips",
-                null), gbc);
+        main.add(d.addSimpleBooleanSetting("showImageTooltips"), gbc);
+        
+        gbc = d.makeGbcSub(0, 7, 3, 1, GridBagConstraints.WEST);
+        main.add(d.addSimpleBooleanSetting("showTooltipImages"), gbc);
+        
+        gbc = SettingsDialog.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST);
+        main.add(d.addSimpleBooleanSetting("mentionReplyRestricted"), gbc);
         
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
         

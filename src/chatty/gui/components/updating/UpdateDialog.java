@@ -324,7 +324,7 @@ public class UpdateDialog extends JDialog {
         Debugging.command("+update");
         Stuff.init(Paths.get("H:\\chatty_install\\Param Test.jar"));
         
-        Settings settings = new Settings("");
+        Settings settings = new Settings("", null);
         settings.addBoolean("checkNewBeta", true);
         settings.addLong("versionLastChecked", 0L);
         

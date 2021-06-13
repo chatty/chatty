@@ -3,7 +3,9 @@ package chatty.gui.colors;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -109,19 +111,33 @@ public class UsercolorManager {
                 if (item.idColor.equals(user.getPlainColor())) {
                     return item.color;
                 }
-            } else if (item.type == UsercolorItem.TYPE_NAME) {
+            }
+            else if (item.type == UsercolorItem.TYPE_NAME) {
                 if (item.id.equalsIgnoreCase(user.getName())) {
                     return item.color;
                 }
-            } else if (item.type == UsercolorItem.TYPE_STATUS) {
+            }
+            else if (item.type == UsercolorItem.TYPE_STATUS) {
                 if (Helper.matchUserStatus(item.id, user)) {
                     return item.color;
                 }
-            } else if (item.type == UsercolorItem.TYPE_CATEGORY) {
+            }
+            else if (item.type == UsercolorItem.TYPE_CATEGORY) {
                 if (user.hasCategory(item.category)) {
                     return item.color;
                 }
-            } else if (item.type == UsercolorItem.TYPE_ALL) {
+            }
+            else if (item.type == UsercolorItem.TYPE_MATCH) {
+                if (item.match.matches(user)) {
+                    return item.color;
+                }
+            }
+            else if (item.type == UsercolorItem.TYPE_DEFAULT_COLOR) {
+                if (user.hasDefaultColor()) {
+                    return item.color;
+                }
+            }
+            else if (item.type == UsercolorItem.TYPE_ALL) {
                 return item.color;
             }
         }

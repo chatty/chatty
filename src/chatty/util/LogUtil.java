@@ -24,7 +24,7 @@ public class LogUtil {
     
     public static String getMemoryUsage() {
         Runtime runtime = Runtime.getRuntime();
-        return String.format("[Memory] total: %2$,d / %1$,d free: %3$,d [Uptime] %4$s",
+        return String.format("[Memory] max: %2$,d / %1$,d free: %3$,d [Uptime] %4$s",
                 runtime.maxMemory() / 1024,
                 runtime.totalMemory() / 1024,
                 runtime.freeMemory() / 1024,

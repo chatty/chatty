@@ -2,12 +2,19 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.TestContextMenu;
+import chatty.gui.components.userinfo.UserInfo;
+import chatty.gui.components.userinfo.UserInfoListener;
+import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
+import chatty.util.commands.CustomCommands;
+import chatty.util.commands.Parameters;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
@@ -23,115 +30,26 @@ import javax.swing.JPanel;
 public class CommandSettings extends SettingsPanel {
     
     private static String getInfo(String type) {
-        String info = INFO_HEADER
-            + "<ul>"
-            + "<li>"
-            + "Add Custom Commands as <code>/Command</code> (no parameters), "
-            + "separated by spaces (several per line), <code>//Command</code> "
-            + "to put into submenu, <code>|</code> (vertical bar) to add "
-            + "separator (or <code>-</code> on it's own line)."
-            + "</li>"
-            + "<li>"
-            + "Add timeouts by specifying a number (<code>30</code> interpreted "
-            + "as 30 seconds, <code>30s/m/h/d</code> as seconds/minutes/hours "
-            + "days respectively)."
-            + "</li>"
-            + "<li>"
-            + "Or add a command directly (without it having to be added as a "
-            + "Custom Command), one per line:<br />"
-            + "<code>Slap=/me slaps $$1 around a bit with a large trout</code>"
-            + "</li>";
-        
-        if (type.equals("userDialog")) {
-            info += "<li>"
-                    + "Put buttons in different rows, e.g. <code>@a1</code> on "
-                    + "a line, subsequent lines to put into that row starting "
-                    + "with a <code>.</code> (point). <code>@a1</code> is the "
-                    + "default row, <code>@b1</code> the default bottom row "
-                    + "(otherwise <code>//Command</code>), <code>@a2</code> to "
-                    + "put into second top row and so on:<br />"
-                    + "<code>@a2<br />./No_Spam /No_Spoilers<br />.Spoiler=/timeout $$1 600 no spoilers</code>";
-        } else {
-            info += "<li>"
-                    + "Add custom submenus, <code>@Name of menu</code> on a line, "
-                    + "subsequent lines to put in that menu starting with a "
-                    + "<code>.</code> (point):<br />"
-                    + "<code>@Rules<br />./No_Spam /No_Spoilers<br />.Spoiler=/timeout $$1 600 no spoilers</code>"
-                    + "</li>";
-        }
-        switch(type) {
-            case "userDialog":
-                info += "<li>"
-                        + "User Dialog specific parameters: "
-                        + "<code>$1</code> Name of user, "
-                        + "<code>$2-</code> Ban reason (if selected)"
-                        + "</li>";
-                break;
-            case "streamsMenu":
-                info += "<li>"
-                        + "Streams Context Menu specific parameters: "
-                        + "<code>$1-</code> Names of selected streams"
-                        + "</li>";
-                break;
-            case "channelMenu":
-                info += "<li>"
-                        + "Channel Context Menu specific parameters: "
-                        + "<code>$1</code> Name of currently active channel "
-                        + "(without leading #)"
-                        + "</li>";
-                break;
-            case "userMenu":
-                info += "<li>"
-                        + "User Context Menu specific parameters: "
-                        + "<code>$1</code> Name of the user"
-                        + "</li>";
-                break;
-        }
-        info += "</ul>";
-        
-        if (type.equals("userDialog")) {
-            info += "<p><em>Note:</em> You can also add [help-commands:shortcuts shortcuts] in brackets, "
-                    + "which can be triggered when the User Dialog has focus "
-                    + "(<code>/Ban[B]</code> or <code>Slap[B]=/me ..</code>).";
-        }
-        
-        info += INFO_MORE;
-        return info;
+        return INFO_HEADER+SettingsUtil.getInfo("info-menu.html", type);
     }
     
     private static final String INFO_HEADER = "<html>"
             + "<style type='text/css'>"
-            + "code { background: white; color: black; }"
             + "p { margin: 2px; }"
-            + "ul { margin-left: 10px; }"
-            + "li { margin-top: 2px; }"
+            + "dt { margin-top: 8px; }"
+            + "dd { margin-left: 10px; margin-top: 4px; }"
+            + "li { margin-top: 4px; }"
             + "</style>"
             + "<body style='width:300px;font-weight:normal;'>";
     
-    private static final String INFO_MORE =
-            "<p>See the help for more information on "
-            + "[help-commands: Custom Commands] and adding them to "
-            + "[help-commands:menus Menus/User Dialog Buttons].</p>";
-
     private static final String INFO_COMMANDS = INFO_HEADER
-            + "<p>Each entry is one custom command:<br /><code>/commandName Text to send to chat or regular command</code></p>"
-            + "<p>Parameters (replaced when executing the command): "
-            + "<code>$1</code> first parameter (optional), <code>$$1</code> first parameter (required) "
-            + ", <code>$2-</code> second parameter to end.</p>"
-            + "<p>Example: <code>/hello /me welcomes $$1 to chat</code></p>"
-            + "<p>Backslash (<code>\\</code>) is used as an "
-            + "escape character, which means the subsequent character is "
-            + "taken literal (instead of a special meaning). Example: "
-            + "<code>\\$1</code> would output <code>$1</code> instead of "
-            + "being replaced with the first parameter. To have the "
-            + "<code>\\</code> itself show up you have to escape it as well "
-            + "(<code>\\\\</code> shows up as <code>\\</code>).</p>"
-            + "<p>You can restrict commands to a channel by adding it "
-            + "to the command name: <code>/hello#joshimuz /me welcomes ..</code></p>"
-            + INFO_MORE;
+            +SettingsUtil.getInfo("info-commands.html", null);
+    
+    private final SettingsDialog d;
     
     public CommandSettings(SettingsDialog d) {
         super(true);
+        this.d = d;
         
         JPanel base = addTitledPanel("Custom Commands", 0, true);
         
@@ -146,19 +64,7 @@ public class CommandSettings extends SettingsPanel {
                 return input.trim();
             }
         });
-        items.setTester(new Editor.Tester() {
-
-            @Override
-            public String test(Window parent, Component component, int x, int y, String value) {
-                CustomCommand command = null;
-                String[] split = value.split(" ", 2);
-                if (split.length == 2) {
-                    command = CustomCommand.parse(split[1].trim());
-                }
-                showCommandInfoPopup(component, command);
-                return null;
-            }
-        });
+        items.setTester(createCommandTester());
         items.setInfo(INFO_COMMANDS);
         items.setInfoLinkLabelListener(d.getLinkLabelListener());
         gbc.fill = GridBagConstraints.BOTH;
@@ -178,81 +84,93 @@ public class CommandSettings extends SettingsPanel {
             }
         };
         
-        Editor.Tester errorTester = new Editor.Tester() {
+        Editor.Tester userDialogTester = new Editor.Tester() {
 
+            private final User user = new User("testUser", Room.createRegular("#testchannel"));
+            
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
-                StringBuilder errors = new StringBuilder();
+                updateErrors(value);
+                UserInfo dialog = new UserInfo(parent, new UserInfoListener() {
+
+                    @Override
+                    public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {
+                        CustomCommands.addChans(room, parameters);
+                        String result = String.format("<html><body><p style='font-family:monospaced;'>%s</p>",
+                                formatCommandInfo(command.replace(parameters)));
+                        JOptionPane.showMessageDialog(parent, result, "Command result", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }, null, d.settings, null);
+                dialog.setUserDefinedButtonsDef(value);
+                GuiUtil.setLocationRelativeTo(dialog, parent);
+                dialog.show(component, user, "s0m3-msg-1d", null, null);
+                return null;
+            }
+            
+            /**
+             * Add command error messages to User messages.
+             * 
+             * @param value
+             * @return 
+             */
+            private void updateErrors(String value) {
+                user.clearMessages();
                 List<CommandMenuItem> items = CommandMenuItems.parse(value);
                 for (CommandMenuItem item : items) {
                     if (item.getCommand() != null && item.getCommand().hasError()) {
-                        errors.append("<p style='font-family:monospaced;'>");
-                        errors.append("Error in command '").append(item.getLabel()).append("': ");
-                        errors.append(formatCommandInfo(item.getCommand().getError()));
-                        errors.append("</p>");
+                        user.addMessage(String.format("Error in command '%s': %s",
+                                item.getLabel(), item.getCommand().getSingleLineError()
+                        ), false, null);
                     }
                 }
-                String output = "No errors found.";
-                if (errors.length() > 0) {
-                    output = errors.toString();
-                }
-                GuiUtil.showNonModalMessage(parent, "Custom Commands", output,
-                JOptionPane.INFORMATION_MESSAGE, true);
+                user.addMessage("Note that some replacements may not work in this test dialog.", false, "s0m3-msg-1d");
+            }
+            
+        };
+        
+        addSetting("channelContextMenu", "channelMenu", 0, menus, menuTester);
+        addSetting("streamsContextMenu", "streamsMenu", 1, menus, menuTester);
+        addSetting("userContextMenu", "userMenu", 2, menus, menuTester);
+        addSetting("timeoutButtons", "userDialog", 3, menus, userDialogTester);
+        addSetting("textContextMenu", "textMenu", 4, menus, menuTester);
+        addSetting("adminContextMenu", "adminMenu", 5, menus, menuTester);
+        menus.add(d.addSimpleBooleanSetting("menuCommandLabels"), SettingsDialog.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
+    }
+    
+    private void addSetting(String settingName, String infoName, int y, JPanel panel, Editor.Tester tester) {
+        GridBagConstraints gbc;
+        JLabel label = SettingsUtil.createLabel(settingName);
+        gbc = d.makeGbc(0, y, 1, 1);
+        gbc.anchor = GridBagConstraints.EAST;
+        panel.add(label, gbc);
+        
+        gbc = d.makeGbc(1, y, 1, 1);
+        EditorStringSetting setting = d.addEditorStringSetting(
+                settingName, 20, true, label.getText(), true,
+                getInfo(infoName), tester);
+        label.setLabelFor(setting);
+        setting.setLinkLabelListener(d.getLinkLabelListener());
+        panel.add(setting, gbc);
+    }
+    
+    public static Editor.Tester createCommandTester() {
+        return new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                CustomCommand command = CustomCommands.parseCommandWithName(value);
+                showCommandInfoPopup(component, command);
                 return null;
             }
         };
-        
-        gbc = d.makeGbc(0, 0, 1, 1);
-        gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("User Context Menu:"), gbc);
-        
-        gbc = d.makeGbc(1, 0, 1, 1);
-        EditorStringSetting userContextMenu = d.addEditorStringSetting(
-                "userContextMenu", 20, true, "Edit User Context Menu:", true,
-                getInfo("userMenu"), menuTester);
-        userContextMenu.setLinkLabelListener(d.getLinkLabelListener());
-        menus.add(userContextMenu, gbc);
-        
-        gbc = d.makeGbc(0, 1, 1, 1);
-        gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("Channel Context Menu:"), gbc);
-        
-        gbc = d.makeGbc(1, 1, 1, 1);
-        EditorStringSetting channelContextMenu = d.addEditorStringSetting(
-                "channelContextMenu", 20, true, "Edit Channel Context Menu:", true,
-                getInfo("channelMenu"), menuTester);
-        channelContextMenu.setLinkLabelListener(d.getLinkLabelListener());
-        menus.add(channelContextMenu, gbc);
-        
-        gbc = d.makeGbc(0, 2, 1, 1);
-        gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("Streams Context Menu:"), gbc);
-        
-        gbc = d.makeGbc(1, 2, 1, 1);
-        EditorStringSetting streamsContextMenu = d.addEditorStringSetting(
-                "streamsContextMenu", 20, true, "Edit Streams Context Menu:", true,
-                getInfo("streamsMenu"), menuTester);
-        streamsContextMenu.setLinkLabelListener(d.getLinkLabelListener());
-        menus.add(streamsContextMenu, gbc);
-        
-        gbc = d.makeGbc(0, 3, 1, 1);
-        gbc.anchor = GridBagConstraints.EAST;
-        menus.add(new JLabel("User Dialog Buttons:"), gbc);
-        
-        gbc = d.makeGbc(1, 3, 1, 1);
-        EditorStringSetting userDialogButtons = d.addEditorStringSetting(
-                "timeoutButtons", 20, true, "Edit User Dialog Buttons:", true,
-                getInfo("userDialog"), errorTester);
-        userDialogButtons.setLinkLabelListener(d.getLinkLabelListener());
-        menus.add(userDialogButtons, gbc);
-        
     }
     
     public static void showCommandInfoPopup(Component parent, CustomCommand command) {
         String message = "<p style='font-family:sans-serif;'>This shows how the "
                 + "parser understands the part to be executed. It may not be "
                 + "very obvious what it means, but it can be helpful for "
-                + "debugging.</p><br />";
+                + "debugging. If no error is shown here, it's at least formally "
+                + "correct.</p><br />";
         if (command == null) {
             message += "No command.";
         } else if (command.hasError()) {
@@ -261,13 +179,22 @@ public class CommandSettings extends SettingsPanel {
         } else {
             message += formatCommandInfo(command.toString());
         }
-        GuiUtil.showNonModalMessage(parent, "Custom Command", message,
+        String name = "";
+        String chan = "";
+        if (command != null) {
+            name = command.hasName() ? " ("+command.getName()+")" : "";
+            chan = command.hasChan() ? " [#"+command.getChan()+"]" : "";
+        }
+        GuiUtil.showNonModalMessage(parent, "Custom Command"+name+chan, message,
                 JOptionPane.INFORMATION_MESSAGE, true);
     }
     
     public static String formatCommandInfo(String input) {
+        if (input == null) {
+            return "<em>Empty</em>";
+        }
         return Helper.htmlspecialchars_encode(input)
-                .replace("\n", "<br />").replace(" ", "&nbsp;");
+                .replace("\n", "<br>").replace(" ", "&nbsp;");
     }
     
 }

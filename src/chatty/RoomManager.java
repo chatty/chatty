@@ -1,8 +1,6 @@
 
 package chatty;
 
-import chatty.util.api.RoomsInfo;
-import chatty.util.api.TwitchApi;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,48 +20,10 @@ public class RoomManager {
     
     private final Map<String, Set<Room>> roomsByOwner = new HashMap<>();
     
-    private final Map<String, RoomsInfo> roomsInfo = new HashMap<>();
-    
-    private final TwitchApi api;
     private final RoomUpdatedListener listener;
     
-    public RoomManager(TwitchApi api, RoomUpdatedListener listener) {
-        this.api = api;
+    public RoomManager(RoomUpdatedListener listener) {
         this.listener = listener;
-    }
-    
-    /**
-     * Store RoomsInfo directly from the API, as a cache.
-     * 
-     * @param info 
-     */
-    public synchronized void addRoomsInfo(RoomsInfo info) {
-        roomsInfo.put(info.stream, info);
-        addRooms(info.rooms);
-    }
-    
-    /**
-     * 
-     * 
-     * @param channel
-     * @param forceRefresh
-     * @return 
-     */
-    public RoomsInfo getRoomsInfo(String channel, boolean forceRefresh) {
-        if (!Helper.isRegularChannel(channel)) {
-            return null;
-        }
-        if (!forceRefresh) {
-            // Give chance to use cached
-            synchronized (this) {
-                RoomsInfo cached = roomsInfo.get(Helper.toStream(channel));
-                if (cached != null) {
-                    return cached;
-                }
-            }
-        }
-        api.requestRoomsNow(channel);
-        return null;
     }
     
     public synchronized void addRooms(Collection<Room> newRooms) {

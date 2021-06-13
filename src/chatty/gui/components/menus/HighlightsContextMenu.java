@@ -12,8 +12,11 @@ import java.awt.event.ActionEvent;
  */
 public class HighlightsContextMenu extends ContextMenu {
 
-    public HighlightsContextMenu() {
+    public HighlightsContextMenu(boolean isDocked, boolean autoOpen) {
         addItem("clearHighlights", Language.getString("highlightedDialog.cm.clear"));
+        addSeparator();
+        addCheckboxItem("dockToggleDocked", "Dock", isDocked);
+        addCheckboxItem("dockToggleAutoOpenActivity", "Open on message", autoOpen);
     }
     
     @Override

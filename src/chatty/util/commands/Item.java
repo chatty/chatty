@@ -2,6 +2,7 @@
 package chatty.util.commands;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -58,10 +59,25 @@ interface Item {
         return null;
     }
 
+    /**
+     * Returns all prefixes with the given prefix contained in {@code input}.
+     * 
+     * @param prefix The prefix
+     * @param input Can be one or several {@code String} or {@code Item} objects
+     * @return The prefixes, may be empty, but never {@code null}
+     */
     public static Set<String> getIdentifiersWithPrefix(String prefix, Object... input) {
         return getIdentifiersWithPrefix(prefix, false, input);
     }
     
+    /**
+     * Returns all prefixes with the given prefix contained in {@code input}.
+     * 
+     * @param prefix The prefix
+     * @param required Whether to get required identifiers
+     * @param input Can be one or several {@code String} or {@code Item} objects
+     * @return The prefixes, may be empty, but never {@code null}
+     */
     public static Set<String> getIdentifiersWithPrefix(String prefix, boolean required, Object... input) {
         Set<String> output = new HashSet<>();
         for (Object value : input) {
@@ -70,21 +86,34 @@ interface Item {
                     if (((String) value).startsWith(prefix)) {
                         output.add((String) value);
                     }
-                } else if (value instanceof Item) {
-                    Set<String> value2;
-                    if (required) {
-                        value2 = ((Item) value).getRequiredIdentifiers();
-                    } else {
-                        value2 = ((Item) value).getIdentifiersWithPrefix(prefix);
+                }
+                else if (value instanceof List) {
+                    for (Object o : (List) value) {
+                        if (o instanceof Item) {
+                            addItemIdentifiers(prefix, required, (Item) o, output);
+                        }
                     }
-                    
-                    if (value2 != null) {
-                        output.addAll(value2);
-                    }
+                }
+                else if (value instanceof Item) {
+                    addItemIdentifiers(prefix, required, (Item) value, output);
                 }
             }
         }
         return output;
+    }
+
+    public static void addItemIdentifiers(String prefix, boolean required, Item item, Set<String> result) {
+        Set<String> value;
+        if (required) {
+            value = item.getRequiredIdentifiers();
+        }
+        else {
+            value = item.getIdentifiersWithPrefix(prefix);
+        }
+
+        if (value != null) {
+            result.addAll(value);
+        }
     }
     
     /**

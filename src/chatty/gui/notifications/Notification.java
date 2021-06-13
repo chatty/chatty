@@ -7,14 +7,13 @@ import chatty.User;
 import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import chatty.util.StringUtil;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -28,6 +27,7 @@ public class Notification {
 
     public enum Type {
         
+        // Type constants must not be renamed, since they are used in setting
         STREAM_STATUS("Stream Status", createStreamStatusSubtypes()),
         HIGHLIGHT("Highlights", createMessageSubtypes()),
         MESSAGE("Chat Message", createMessageSubtypes()),
@@ -40,33 +40,59 @@ public class Notification {
         AUTOMOD("AutoMod Message");
         
         public final String label;
-        public final Map<String, String> subTypes;
+        public final List<TypeOption> options;
         
-        Type(String name, Map<String, String> subTypes) {
+        Type(String name, List<TypeOption> options) {
             this.label = name;
-            this.subTypes = Collections.unmodifiableMap(subTypes);
+            options.add(TypeOption.HIDE_ON_START);
+            this.options = Collections.unmodifiableList(options);
         }
         
         Type(String name) {
-            this(name, new HashMap<>());
+            this(name, new ArrayList<>());
         }
         
-        private static Map<String, String> createStreamStatusSubtypes() {
-            Map<String, String> result = new LinkedHashMap<>();
-            result.put("noOffline", "Not when: 'Stream offline'");
-            return result;
+        private static List<TypeOption> createStreamStatusSubtypes() {
+            return new ArrayList<>(Arrays.asList(
+                    TypeOption.NOW_LIVE,
+                    TypeOption.NEW_STREAM,
+                    TypeOption.LIVE,
+                    TypeOption.NO_UPTIME,
+                    TypeOption.FAV_CHAN,
+                    TypeOption.FAV_GAME));
         }
         
-        private static Map<String, String> createMessageSubtypes() {
-            Map<String, String> result = new LinkedHashMap<>();
-            result.put("own", "Trigger on own messages as well");
-            result.put("bits", "Trigger only on messages containing bits");
-            return result;
+        private static List<TypeOption> createMessageSubtypes() {
+            return new ArrayList<>(Arrays.asList(
+                    TypeOption.OWN_MSG,
+                    TypeOption.CONTAINS_BITS,
+                    TypeOption.FAV_CHAN));
         }
     }
     
+    public enum TypeOption {
+        
+        // Ids must not be renamed, since they are used in setting
+        NO_UPTIME("noUptime"),
+        NEW_STREAM("justLive"),
+        NOW_LIVE("nowLive"),
+        HIDE_ON_START("hideOnStart"),
+        LIVE("noOffline"),
+        OWN_MSG("own"),
+        FAV_CHAN("fav"),
+        FAV_GAME("favGame"),
+        CONTAINS_BITS("bits");
+        
+        public String id;
+        
+        TypeOption(String id) {
+            this.id = id;
+        }
+        
+    }
+    
     public enum State {
-        ALWAYS(1, "Enabled"),
+        ALWAYS(1, "Always enabled"),
         OFF(0, "Off"),
         CHANNEL_ACTIVE(2, "Chan focused"),
         CHANNEL_NOT_ACTIVE(3, "Chan not focused"),
@@ -210,7 +236,7 @@ public class Notification {
         this.channel = tempChannel == null || tempChannel.isEmpty() ? null : Helper.toChannel(tempChannel);
         this.matcher = StringUtil.trim(builder.matcher);
         if (matcher != null && !matcher.isEmpty()) {
-            this.matcherItem = new Highlighter.HighlightItem(matcher);
+            this.matcherItem = new Highlighter.HighlightItem(matcher, "notification");
         } else {
             this.matcherItem = null;
         }
@@ -267,19 +293,19 @@ public class Notification {
         return channel.equalsIgnoreCase(this.channel);
     }
     
-    public boolean matches(String text, String channel, Addressbook ab, User user) {
+    public boolean matches(String text, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user);
+        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, localUser, tags);
     }
     
     public boolean hasChannel() {
         return channel != null;
     }
 
-    public boolean hasOption(String option) {
-        return options.contains(option);
+    public boolean hasOption(TypeOption option) {
+        return options.contains(option.id);
     }
     
     public boolean hasMatcher() {
@@ -294,8 +320,8 @@ public class Notification {
         return matcher == null ? "" : matcher;
     }
     
-    public List toList() {
-        List result = new ArrayList<>();
+    public List<Object> toList() {
+        List<Object> result = new ArrayList<>();
         result.add(type.name());
         result.add(desktopState.id);
         result.add(soundState.id);
@@ -312,7 +338,7 @@ public class Notification {
         return result;
     }
     
-    public static Notification fromList(List list) {
+    public static Notification fromList(List<Object> list) {
         try {
             Type type = Type.valueOf((String)list.get(0));
             State desktopState = State.getTypeFromId(((Number)list.get(1)).intValue());
@@ -358,6 +384,11 @@ public class Notification {
             }
         }
         return result;
+    }
+    
+    @Override
+    public String toString() {
+        return "Event "+type.label+", Desktop Notification "+getDesktopState()+", Sound "+getSoundState();
     }
     
 }

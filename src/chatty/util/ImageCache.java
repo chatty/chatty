@@ -436,13 +436,9 @@ public class ImageCache {
         try {
             URLConnection c = url.openConnection();
             try (InputStream is = c.getInputStream()) {
-                if (c.getContentLengthLong() <= 0) {
-                    LOGGER.warning("Error saving " + url + " (empty): " + c.getHeaderField(null));
-                } else {
-                    long written = Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
-                    if (written > 0) {
-                        return true;
-                    }
+                long written = Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
+                if (written > 0) {
+                    return true;
                 }
             }
         } catch (IOException ex) {
@@ -463,7 +459,7 @@ public class ImageCache {
         return null;
     }
     
-    private static String sha1(String input) {
+    public static String sha1(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             return byteArrayToHexString(md.digest(input.getBytes("UTF-8")));

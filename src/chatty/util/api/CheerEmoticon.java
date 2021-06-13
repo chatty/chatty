@@ -31,8 +31,8 @@ public class CheerEmoticon extends Emoticon {
     public final int min_bits;
     public final Color color;
     
-    private String currentBackground;
-    private String currentState;
+    private volatile String currentBackground;
+    private volatile String currentState;
     
     private final Set<CheerEmoticonUrl> urls;
     
@@ -56,7 +56,7 @@ public class CheerEmoticon extends Emoticon {
     }
     
     @Override
-    protected String getEmoteUrl(int factor) {
+    public String getEmoteUrl(int factor) {
         return getUrl(currentBackground, currentState, String.valueOf(factor));
     }
     

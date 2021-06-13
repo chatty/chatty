@@ -52,7 +52,7 @@ public class EmoticonFavorites {
      * @return The created Favorite object
      */
     private Favorite createFavorite(Emoticon emote) {
-        return new Favorite(emote.code, emote.emoteSet);
+        return new Favorite(emote.code, emote.emoteset);
     }
     
     /**
@@ -91,10 +91,10 @@ public class EmoticonFavorites {
         settings.putList("favoriteEmotes", entriesToSave);
     }
     
-    public Set<Integer> getEmotesets() {
-        Set<Integer> result = new HashSet<>();
+    public Set<String> getNonGlobalEmotesets() {
+        Set<String> result = new HashSet<>();
         for (Favorite f : favorites.keySet()) {
-            if (f.emoteset > 0) {
+            if (!Emoticon.isGlobalEmoteset(f.emoteset) && !f.emoteset.isEmpty()) {
                 result.add(f.emoteset);
             }
         }
@@ -113,7 +113,20 @@ public class EmoticonFavorites {
     private Favorite listToFavorite(List item) {
         try {
             String code = (String) item.get(0);
-            int emoteset = ((Number) item.get(1)).intValue();
+            String emoteset;
+            if (item.get(1) instanceof String || item.get(1) == null) {
+                emoteset = (String)item.get(1);
+            } else {
+                emoteset = String.valueOf((Number)item.get(1));
+            }
+            if (emoteset != null) {
+                if (emoteset.equals("-2")) {
+                    emoteset = "";
+                }
+                if (emoteset.equals("-1")) {
+                    emoteset = null;
+                }
+            }
             return new Favorite(code, emoteset);
         } catch (ClassCastException | ArrayIndexOutOfBoundsException ex) {
             return null;
@@ -137,8 +150,8 @@ public class EmoticonFavorites {
      * @return The created list
      * @see listToFavorite(List)
      */
-    private List favoriteToList(Favorite f) {
-        List list = new ArrayList();
+    private List<Object> favoriteToList(Favorite f) {
+        List<Object> list = new ArrayList<>();
         list.add(f.code);
         list.add(f.emoteset);
         list.add(0); // In case loaded in older version where this is expeceted
@@ -153,7 +166,8 @@ public class EmoticonFavorites {
      * @param twitchEmotesById All Twitch emotes currently loaded
      * @param more
      */
-    public void find(Map<Integer, Emoticon> twitchEmotesById,
+    @SafeVarargs
+    public final void find(Map<String, Emoticon> twitchEmotesById,
             Set<Emoticon>... more) {
         if (favoritesNotFound.isEmpty()) {
             return;
@@ -194,7 +208,7 @@ public class EmoticonFavorites {
     
     private void checkFavorite(Emoticon emote) {
         Favorite f = favoritesNotFound.get(emote.code);
-        if (f != null && f.emoteset == emote.emoteSet) {
+        if (f != null && Objects.equals(f.emoteset, emote.emoteset)) {
             favorites.put(f, emote);
             favoritesNotFound.remove(emote.code);
         }
@@ -246,28 +260,13 @@ public class EmoticonFavorites {
     private static class Favorite {
         
         public final String code;
-        public final int emoteset;
+        public final String emoteset;
         
-        Favorite(String code, int emoteset) {
+        Favorite(String code, String emoteset) {
             this.code = code;
             this.emoteset = emoteset;
         }
 
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 19 * hash + Objects.hashCode(this.code);
-            hash = 19 * hash + this.emoteset;
-            return hash;
-        }
-
-        /**
-         * A Favorite is considered equal when both the emote code and emoteset
-         * are equal.
-         * 
-         * @param obj
-         * @return 
-         */
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -280,10 +279,18 @@ public class EmoticonFavorites {
             if (!Objects.equals(this.code, other.code)) {
                 return false;
             }
-            if (this.emoteset != other.emoteset) {
+            if (!Objects.equals(this.emoteset, other.emoteset)) {
                 return false;
             }
             return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + Objects.hashCode(this.code);
+            hash = 89 * hash + Objects.hashCode(this.emoteset);
+            return hash;
         }
         
         @Override

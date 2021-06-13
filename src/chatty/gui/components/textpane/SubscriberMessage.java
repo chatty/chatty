@@ -2,18 +2,17 @@
 package chatty.gui.components.textpane;
 
 import chatty.User;
-import chatty.gui.Highlighter.Match;
-import chatty.util.api.Emoticons;
-import java.util.List;
+import chatty.util.irc.MsgTags;
 
 /**
- *
+ * Historically extra class, but also used to check for type.
+ * 
  * @author tduva
  */
 public class SubscriberMessage extends UserNotice {
     
     public SubscriberMessage(User user, String text, String message,
-            Emoticons.TagEmotes emotes) {
-        super("Notification", user, text, message, emotes);
+            MsgTags tags) {
+        super("Notification", user, text, message, tags);
     }
 }

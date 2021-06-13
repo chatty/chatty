@@ -1,0 +1,14 @@
+Both comparison algorithms are based on Dice's coefficient. Each message is
+split into two-long overlapping parts, which are then compared. Whitespace is
+entirely ignored.
+<ul>
+    <li>Strict: Message length and the number of parts equals to
+        both messages determine similarity.</li>
+    <li>Lenient: Same as Strict, but it doesn't matter how
+        often each unique part is repeated within the same message.</li>
+</ul>
+A very simple example that illustrates the difference is calculating the similarity between "aa" and
+"aaaa". With the Strict method they are 50% similar and with the Lenient method they are equal.
+<br /><br />
+Even with the Strict method some messages can appear equal even if they aren't, such as "aba" and "bab" (since it
+splits them into "ab" and "ba" and compares if they occur in both messages).

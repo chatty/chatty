@@ -19,13 +19,13 @@ public class ConnectionDialog extends JDialog {
     private final static Insets SMALL_BUTTON_INSETS = new Insets(-1, 10, -1, 10);
     
     private final JLabel passwordLabel = new JLabel("Access token:");
-    private final JLabel name = new JLabel("");
+    private final JTextField name = new JTextField("");
     private final JTextField password = new JPasswordField(14);
     private final JButton connect = new JButton(Language.getString("connect.button.connect"));
     private final JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
     private final JButton favorites = new JButton(Language.getString("connect.button.favoritesHistory"));
     private final JTextField channel = new JTextField(16);
-    private final JButton getToken = new JButton();
+    private final JButton getToken = new JButton(Language.getString("connect.button.configureLogin"));
     private final JCheckBox rejoinOpenChannels = new JCheckBox(Language.getString("connect.button.rejoin"));
     
     private final GridBagConstraints passwordGc = makeGbc(1,1,2,1,GridBagConstraints.WEST);
@@ -54,8 +54,12 @@ public class ConnectionDialog extends JDialog {
         
         // Account
         final JLabel nameLabel = new JLabel(Language.getString("connect.account"));
+        nameLabel.setLabelFor(name);
         add(nameLabel, makeGbc(0,0,1,1,GridBagConstraints.EAST));
-        add(name, makeGbc(1,0,2,1,GridBagConstraints.WEST));
+        name.setEditable(false);
+        gbc = makeGbc(1,0,2,1,GridBagConstraints.WEST);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(name, gbc);
         
         // Passwort or Token Button
         //add(passwordLabel, makeGbc(0,1,1,1,GridBagConstraints.EAST));
@@ -86,12 +90,14 @@ public class ConnectionDialog extends JDialog {
         
         // Channels and Favorites
         final JLabel channelLabel = new JLabel(Language.getString("connect.channel"));
+        channelLabel.setLabelFor(channel);
         add(channelLabel, makeGbc(0,4,1,1,GridBagConstraints.EAST));
 
         GuiUtil.installLengthLimitDocumentFilter(channel, 8000, false);
         gbc = makeGbc(1,4,2,1,GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5,5,5,8);
+        channel.setToolTipText(Language.getString("connect.channel.tip"));
         add(channel, gbc);
         
         
@@ -203,12 +209,12 @@ public class ConnectionDialog extends JDialog {
             remove(password);
             remove(passwordLabel);
             if (currentUsername.isEmpty() || currentToken.isEmpty()) {
-                name.setText(Language.getString("connect.none"));
-                getToken.setText(Language.getString("connect.button.createLogin"));
+                name.setText("");
+                name.setToolTipText(Language.getString("connect.accountEmpty.tip"));
             }
             else {
                 name.setText(currentUsername);
-                getToken.setText(Language.getString("connect.button.configureLogin"));
+                name.setToolTipText(Language.getString("connect.account.tip"));
             }
         }
         pack();

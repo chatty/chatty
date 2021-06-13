@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.colors.ColorItem;
+import chatty.lang.Language;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -58,6 +59,15 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
         }
     }
     
+    public void setSelected(String item) {
+        // Create dummy object to find index of item to select
+        T preset = itemCreator.createItem(item, Color.BLACK, true, Color.WHITE, true);
+        int index = data.indexOf(preset);
+        if (index != -1) {
+            super.selectItem(index);
+        }
+    }
+    
     public void setDefaultForeground(Color color) {
         colorRenderer.setDefaultForeground(color);
         editor.setDefaultForeground(color);
@@ -73,7 +83,9 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
         public MyTableModel(boolean editBackground) {
             super(new String[]{"Item", "Color"});
             if (editBackground) {
-                setColumnNames(new String[]{"Item", "Foreground", "Background"});
+                setColumnNames(new String[]{Language.getString("settings.general.item"),
+                                            Language.getString("settings.general.foreground"),
+                                            Language.getString("settings.general.background")});
             }
         }
 

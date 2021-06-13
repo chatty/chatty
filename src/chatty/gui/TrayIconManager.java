@@ -1,9 +1,16 @@
 
 package chatty.gui;
 
+import chatty.lang.Language;
+import chatty.util.IconManager;
+import chatty.util.IconManager.CustomIcon;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 
 /**
  * Allows adding/removing of a tray icon with a popup menu. It is added
@@ -22,18 +29,22 @@ public class TrayIconManager {
     
     private boolean iconAdded;
     
-    public TrayIconManager(Image image) {
+    public TrayIconManager() {
         if (SystemTray.isSupported()) {
             tray = SystemTray.getSystemTray();
             
             popup = new PopupMenu();
-            MenuItem showItem = new MenuItem("Show");
+            MenuItem showItem = new MenuItem(Language.getString("trayCm.show"));
             showItem.setActionCommand("show");
             popup.add(showItem);
-            MenuItem exitItem = new MenuItem("Exit");
+            MenuItem exitItem = new MenuItem(Language.getString("trayCm.exit"));
             exitItem.setActionCommand("exit");
             popup.add(exitItem);
 
+            Dimension iconDimension = tray.getTrayIconSize();
+            int size = Math.min(iconDimension.width, iconDimension.height);
+            LOGGER.info("Creating TrayIcon ("+iconDimension.width+"x"+iconDimension.height+")");
+            Image image = IconManager.getTrayIcon(size);
             trayIcon = new TrayIcon(image, "Chatty");
             trayIcon.setImageAutoSize(true);
             trayIcon.setPopupMenu(popup);
@@ -78,6 +89,32 @@ public class TrayIconManager {
     public void addActionListener(ActionListener listener) {
         if (trayIcon != null) {
             trayIcon.addActionListener(listener);
+            /**
+             * Show with single-click. Just keeping the ActionListener in case
+             * the MouseListener doesn't work or the ActionListener is triggered
+             * via different ways as well.
+             */
+            trayIcon.addMouseListener(new MouseAdapter() {
+                
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // Checking just isPopupTrigger() didn't seem to work
+                    if (!e.isPopupTrigger() && e.getButton() == MouseEvent.BUTTON1) {
+                        if (e.getClickCount() % 2 == 0) {
+                            /**
+                             * The action listener above may already trigger for
+                             * double-clicks, but this allows for quicker toggle
+                             * (at least on Windows 7).
+                             */
+                            listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "doubleClick"));
+                        }
+                        else {
+                            listener.actionPerformed(new ActionEvent(e, ActionEvent.ACTION_FIRST, "singleClick"));
+                        }
+                    }
+                }
+                
+            });
             popup.addActionListener(listener);
         }
     }

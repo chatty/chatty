@@ -1,0 +1,28 @@
+<p>Regular chat messages. This is using Custom Command syntax, although somewhat limited. The following parameters can be used:</p>
+
+<ul>
+    <li><code>$(timestamp)</code> - The default chatlog timestamp</li>
+    <li><code>$(action)</code> - Whether the message is an action (/me) message</li>
+    <li><code>$(msg)</code> - The message text</li>
+    <li><code>$(twitch-badges)</code> - Most common badges, abbreviated</li>
+    <li><code>$(twitch-badge-info)</code> - Verbose badge info</li>
+    <li><code>$(user-id)</code> - User id, if available</li>
+</ul>
+
+<p>Name (a display name may contain case or even not resemble the login name at all, e.g. localized):</p>
+<ul>
+    <li><code>$(full-nick2)</code> - "%Username" or "%Localized (Username)" (default)</li>
+    <li><code>$(full-nick)</code> - "%Username" or "%Localized"</li>
+    <li><code>$(display-nick2)</code> - "Username" or "Localized (Username)"</li>
+    <li><code>$(display-nick)</code> - "Username"</li>
+    <li><code>$(nick)</code> - "username" (Login name, all lowercase)</li>
+    <li><code>$(custom-nick)</code> - Display/custom name (if set)</li>
+    <li><code>$(special-nick)</code> - <code>true</code> if the display name is dfferent from the login name</li>
+</ul>
+
+<p>Example:</p>
+
+<dl>
+    <dt><code>$(timestamp) $(twitch-badges)($(user-id)) &lt;$(display-nick2)>$if(action,*) $(msg)</code></dt>
+    <dd>Shows common badges separately (but doesn't have name status symbols) and includes user id</dd>
+</dl>

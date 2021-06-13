@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -49,6 +51,8 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     private StringEditor editor;
     private final Editor allEditor;
+    
+    private Consumer<List<String>> changeListener;
 
     public ListSelector(Window parent, String title, boolean manualSorting,
             boolean alphabeticSorting) {
@@ -241,6 +245,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             }
             input.setText("");
         }
+        informListener();
     }
     
     /**
@@ -258,6 +263,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
                 list.setSelectedValue(data.get(selectedIndex - 1), true);
             }
         }
+        informListener();
     }
     
     private void changeItem() {
@@ -271,6 +277,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
                 data.set(selectedIndex, newValue);
             }
         }
+        informListener();
     }
     
     private void editAll() {
@@ -290,6 +297,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
                 }
             }
         }
+        informListener();
     }
 
     private void moveUp() {
@@ -298,6 +306,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             swap(selectedIndex, selectedIndex -1);
             list.setSelectedValue(data.get(selectedIndex - 1), true);
         }
+        informListener();
     }
     
     private void moveDown() {
@@ -306,12 +315,14 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             swap(selectedIndex, selectedIndex + 1);
             list.setSelectedValue(data.get(selectedIndex + 1), true);
         }
+        informListener();
     }
     
     private void swap(int index1, int index2) {
         String temp = data.get(index2);
         data.set(index2, data.get(index1));
         data.set(index1, temp);
+        informListener();
     }
     
     private void sort() {
@@ -365,6 +376,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         for (String item : list) {
             data.addElement(item);
         }
+        informListener();
     }
 
     @Override
@@ -403,6 +415,20 @@ public class ListSelector extends JPanel implements ListSetting<String> {
             return formatter.format(input);
         }
         return input;
+    }
+    
+    public void setSelected(String item) {
+        list.setSelectedValue(item, true);
+    }
+    
+    public void setChangeListener(Consumer<List<String>> listener) {
+        this.changeListener = listener;
+    }
+    
+    private void informListener() {
+        if (changeListener != null) {
+            changeListener.accept(getData());
+        }
     }
     
 }

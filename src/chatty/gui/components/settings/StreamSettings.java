@@ -1,12 +1,19 @@
 
 package chatty.gui.components.settings;
 
+import chatty.Helper;
+import chatty.gui.GuiUtil;
 import chatty.lang.Language;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
-import java.util.HashMap;
+import java.awt.Window;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -54,6 +61,42 @@ public class StreamSettings extends SettingsPanel {
         commandPanel.add(d.addSimpleBooleanSetting("streamHighlightChannelRespond"),
                 d.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
         
+        EditorStringSetting responseMsg = d.addEditorStringSetting("streamHighlightResponseMsg", 30, true,
+                Language.getString("settings.streamHighlights.responseMsg"),
+                false,
+                SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-streamhighlightmsg.html", null),
+                new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                CustomCommand command = CustomCommand.parse(value);
+                if (command.hasError()) {
+                    CommandSettings.showCommandInfoPopup(component, command);
+                }
+                else {
+                    Parameters params = Parameters.create("");
+                    params.put("added", "highlight" + (d.getBooleanSetting("streamHighlightMarker") ? "/marker" : ""));
+                    params.put("chan", "#channel");
+                    params.put("uptime", "1h 57m 30s");
+                    params.put("comment", "(Funny jump in th..)");
+                    params.put("fullcomment", "(Funny jump in the first level)");
+                    String localCommand = command.replace(params);
+                    params.put("chatuser", "Username");
+                    params.put("comment", "([Username] Funny jum..)");
+                    params.put("fullcomment", "([Username] Funny jump in the first level)");
+                    String chatCommand = command.replace(params);
+                    
+                    GuiUtil.showNonModalMessage(parent, "Example",
+                            String.format("Chat command:<br />%s<br /><br />Local command:<br />%s",
+                                    Helper.htmlspecialchars_encode(chatCommand),
+                                    Helper.htmlspecialchars_encode(localCommand)),
+                            JOptionPane.INFORMATION_MESSAGE, true);
+                }
+                return null;
+            }
+        });
+        commandPanel.add(responseMsg,
+                d.makeGbc(0, 7, 2, 1, GridBagConstraints.WEST));
     }
     
 }

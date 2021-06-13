@@ -3,13 +3,10 @@ package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
 import chatty.gui.IgnoredMessages;
-import chatty.gui.components.LinkLabel;
 import chatty.util.StringUtil;
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -26,15 +23,14 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  */
 public class IgnoreSettings extends SettingsPanel {
     
-    private static final String INFO_IGNORE = HighlightSettings.INFO
-            +"Example: <code>chan:joshimuz start:!bet</code>";
-    
+    private final ListSelector items;
     private final IgnoredUsers ignoredUsers;
     
     public IgnoreSettings(SettingsDialog d) {
         super(true);
         
         ignoredUsers = new IgnoredUsers(d);
+        HighlightBlacklist blacklist = new HighlightBlacklist(d, "ignore", "ignoreBlacklist");
         
         JPanel base = addTitledPanel("Ignore Messages", 0, true);
         
@@ -104,10 +100,14 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
         gbc.weightx = 1;
-        ListSelector items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
-        items.setInfo(INFO_IGNORE);
-        HighlighterTester tester = new HighlighterTester(d, false);
+        items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
+        items.setInfo(HighlightSettings.getMatchingHelp("ignore"));
+        HighlighterTester tester = new HighlighterTester(d, false, "ignore");
         tester.setLinkLabelListener(d.getLinkLabelListener());
+        tester.setAddToBlacklistListener(e -> {
+            blacklist.addItem(e.getActionCommand());
+        });
+        items.setInfoLinkLabelListener(d.getLinkLabelListener());
         items.setEditor(tester);
         items.setDataFormatter(input -> input.trim());
         base.add(items, gbc);
@@ -128,16 +128,26 @@ public class IgnoreSettings extends SettingsPanel {
                 ignoredUsers.setVisible(true);
             }
         });
-        gbc = d.makeGbc(0, 4, 1, 1);
+        gbc = SettingsDialog.makeGbc(0, 4, 2, 1);
         gbc.insets = new Insets(1,10,5,5);
         gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(ignoredUsersButton, gbc);
         
-        gbc = d.makeGbc(1,4,3,1, GridBagConstraints.CENTER);
-        gbc.insets = new Insets(0, 5, 5, 5);
-        base.add(new LinkLabel("<html><body style=\"width:220px;\">"
-                + "Click on the Help link on the bottom left for help."
-                , d.getLinkLabelListener()), gbc);
+        JButton blacklistButton = new JButton("Ignore Blacklist");
+        blacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        blacklistButton.addActionListener(e -> {
+            blacklist.setLocationRelativeTo(this);
+            blacklist.setVisible(true);
+        });
+        gbc = SettingsDialog.makeGbc(2, 4, 2, 1);
+        gbc.insets = new Insets(1,5,5,30);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        base.add(blacklistButton, gbc);
+    }
+    
+    public void selectItem(String item) {
+        items.setSelected(item);
     }
     
     private static class IgnoredUsers extends JDialog {

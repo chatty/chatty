@@ -23,12 +23,15 @@ import javax.swing.JPanel;
  * 
  * Colors are stored as String objects, which also allows for more readable
  * color names like "Black" or "BlueViolet".
+ * 
+ * Note: Changed to support the more generic StringSetting objects. More
+ * refactoring may make sense, but it will do for now.
  *
  * @author tduva
  */
 public class ColorTemplates extends JPanel {
     
-    private final List<ColorSetting> colorSettings = new ArrayList<>();
+    private final List<StringSetting> colorSettings = new ArrayList<>();
     private final List<BooleanSetting> booleanSettings = new ArrayList<>();
     private final List<Preset> hardcodedPresets = new ArrayList<>();
     private final List<Preset> userPresets = new ArrayList<>();
@@ -46,14 +49,16 @@ public class ColorTemplates extends JPanel {
         this(settings, settingName, values, new BooleanSetting[0]);
     }
     
-    public ColorTemplates(Settings settings, String settingName, ColorSetting[] values, BooleanSetting[] booleanValues) {
+    public ColorTemplates(Settings settings, String settingName, StringSetting[] values, BooleanSetting[] booleanValues) {
         colorSettings.addAll(Arrays.asList(values));
         booleanSettings.addAll(Arrays.asList(booleanValues));
         
-        for (ColorSetting c : colorSettings) {
-            c.addListener(() -> {
-                update();
-            });
+        for (StringSetting c : colorSettings) {
+            if (c instanceof ColorSetting) {
+                ((ColorSetting)c).addListener(() -> {
+                    update();
+                });
+            }
         }
         
         this.settings = settings;
@@ -165,7 +170,7 @@ public class ColorTemplates extends JPanel {
      */
     private boolean currentEqualTo(Preset p) {
         for (int i = 0; i < colorSettings.size(); i++) {
-            ColorSetting s = colorSettings.get(i);
+            StringSetting s = colorSettings.get(i);
             if (p.colors.size() <= i) {
                 return false;
             }
@@ -240,7 +245,7 @@ public class ColorTemplates extends JPanel {
      */
     private List<String> getCurrentColors() {
         List<String> colors = new ArrayList<>();
-        for (ColorSetting s : colorSettings) {
+        for (StringSetting s : colorSettings) {
             colors.add(s.getSettingValue());
         }
         return colors;
@@ -272,6 +277,7 @@ public class ColorTemplates extends JPanel {
      * 
      * @param name
      * @param values 
+     * @param booleanValues 
      */
     public void addPreset(String name, String[] values, Boolean[] booleanValues) {
         if (values.length < colorSettings.size()) {

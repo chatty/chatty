@@ -96,7 +96,7 @@ public class UsericonFactory {
     
     public static Usericon createThirdParty(String id, String version,
             String urlString, String title, String clickUrl, String color,
-            Set<String> usernames, String position) {
+            Set<String> usernames, Set<String> userids, String position) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
@@ -105,6 +105,7 @@ public class UsericonFactory {
             b.setMetaTitle(title);
             b.setMetaUrl(clickUrl);
             b.setUsernames(usernames);
+            b.setUserids(userids);
             b.setPosition(position);
             if (color != null) {
                 b.setColor(HtmlColors.decode(color));
@@ -112,6 +113,20 @@ public class UsericonFactory {
             return b.build();
         } catch (MalformedURLException ex) {
             LOGGER.warning("Invalid icon url: " + urlString);
+        }
+        return null;
+    }
+    
+    public static Usericon createChannelLogo(String channel, String url, int size) {
+        try {
+            Usericon.Builder b = new Usericon.Builder(Usericon.Type.CHANNEL_LOGO, Usericon.SOURCE_OTHER);
+            b.setChannel(channel);
+            b.setUrl(new URL(url));
+            b.setTargetImageSize(size, size);
+            return b.build();
+        }
+        catch (MalformedURLException ex) {
+            LOGGER.warning("Invalid icon url: " + url);
         }
         return null;
     }

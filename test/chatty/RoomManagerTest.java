@@ -13,7 +13,7 @@ public class RoomManagerTest {
     
     @Test
     public void testAddRoomsIfNone() {
-        RoomManager m = new RoomManager(null, u -> {});
+        RoomManager m = new RoomManager(u -> {});
         Room r1 = Room.createRegular("#channel");
         Room r2 = Room.createRegular("#channel");
         m.addRoomsIfNone(Arrays.asList(r1));
@@ -24,7 +24,7 @@ public class RoomManagerTest {
         assertTrue(m.getRoom("#channel") != r1);
         assertTrue(m.getRoom("#channel") == r2);
         
-        RoomManager m2 = new RoomManager(null, u -> {});
+        RoomManager m2 = new RoomManager(u -> {});
         m2.getRoom("#channel");
         m2.addRoomsIfNone(Arrays.asList(r2));
         assertTrue(m2.getRoom("#channel") != r2);
@@ -32,7 +32,7 @@ public class RoomManagerTest {
     
     @Test
     public void testOwnerChannel() {
-        RoomManager m = new RoomManager(null, u -> {});
+        RoomManager m = new RoomManager(u -> {});
         Room r1 = Room.createRegular("#channel");
         m.addRoom(r1);
         assertTrue(m.getRoomsByOwner("#channel").iterator().next() == r1);

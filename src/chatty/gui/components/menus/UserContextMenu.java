@@ -1,11 +1,14 @@
 
 package chatty.gui.components.menus;
 
+import chatty.TwitchClient;
 import chatty.User;
 import chatty.lang.Language;
+import chatty.util.UserRoom;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +26,9 @@ public class UserContextMenu extends ContextMenu {
     private final String autoModMsgId;
     
     private static final String MISC_MENU = Language.getString("userCm.menu.misc");
+    private static final String ROOMS_MENU = Language.getString("userCm.menu.openIn");
+    
+    public static TwitchClient client;
     
     public UserContextMenu(User user, String msgId, String autoModMsgId,
             ContextMenuListener listener) {
@@ -32,6 +38,30 @@ public class UserContextMenu extends ContextMenu {
         this.autoModMsgId = autoModMsgId;
         
         addItem("userinfo", Language.getString("userCm.user", user.getDisplayNick()));
+        if (client != null) {
+            List<UserRoom> rooms = client.getOpenUserRooms(user);
+            Collections.sort(rooms);
+            if (rooms.isEmpty()) {
+                addItem("", "No rooms", ROOMS_MENU);
+            }
+            else {
+                for (UserRoom userRoom : rooms) {
+                    String label;
+                    if (userRoom.user != null && userRoom.user.getNumberOfLines() > 0) {
+                        label = String.format("%s (%s)",
+                                userRoom.room.getDisplayName(),
+                                userRoom.user.getNumberOfLines());
+                    }
+                    else {
+                        label = userRoom.room.getDisplayName();
+                    }
+                    if (user.getRoom().equals(userRoom.room)) {
+                        label = ">"+label;
+                    }
+                    addItem("userinfo."+userRoom.room.getChannel(), label, ROOMS_MENU);
+                }
+            }
+        }
         addSeparator();
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
@@ -55,6 +85,8 @@ public class UserContextMenu extends ContextMenu {
         addSeparator(MISC_MENU);
         addItem("setcolor", Language.getString("userCm.setColor"), MISC_MENU);
         addItem("setname", Language.getString("userCm.setName"), MISC_MENU);
+        addSeparator(MISC_MENU);
+        addItem("notes", "Notes", MISC_MENU);
         
         // Get the preset categories from the addressbook, which may be empty
         // if not addressbook is set to this user
@@ -82,10 +114,10 @@ public class UserContextMenu extends ContextMenu {
             // Add "add" or "edit" buttons depending on whether the user is
             // already in the addressbook
             if (userCategories != null) {
-                addItem("addressbookEdit", "Edit", submenu);
-                addItem("addressbookRemove", "Remove", submenu);
+                addItem("addressbookEdit", Language.getString("dialog.button.edit"), submenu);
+                addItem("addressbookRemove", Language.getString("dialog.button.remove"), submenu);
             } else {
-                addItem("addressbookEdit", "Add", submenu);
+                addItem("addressbookEdit", Language.getString("dialog.button.add"), submenu);
             }
         }
 

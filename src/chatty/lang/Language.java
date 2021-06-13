@@ -2,10 +2,7 @@
 package chatty.lang;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +20,8 @@ public class Language {
     
     private static final Logger LOGGER = Logger.getLogger(Language.class.getName());
 
+    private static final boolean DEBUG = false;
+    
     private static ResourceBundle strings;
     
     /**
@@ -39,7 +38,14 @@ public class Language {
     
     public static ResourceBundle getBundleForLanguage(String language) {
         Locale locale = parseLanguage(language);
-        return ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
+        try {
+            return ResourceBundle.getBundle("chatty.lang.Strings", locale, CONTROL);
+        }
+        catch (UnsupportedOperationException ex) {
+            // If this exception occurs, it should mean that it's a named module
+            // and thus would be read as UTF-8 by default anyway
+            return ResourceBundle.getBundle("chatty.lang.Strings", locale);
+        }
     }
     
     public static Locale parseLanguage(String language) {
@@ -95,7 +101,13 @@ public class Language {
                 LOGGER.warning("Missing string key: "+key);
                 return "?";
             }
+            if (DEBUG) {
+                return "{"+key+"}";
+            }
             return null;
+        }
+        if (DEBUG) {
+            return "["+strings.getString(key)+"]";
         }
         return strings.getString(key);
     }
@@ -110,6 +122,30 @@ public class Language {
      */
     public synchronized static String getString(String key, Object... arguments) {
         return getString(key, true, arguments);
+    }
+    
+    /**
+     * Gets the String with the given key for the current language. This "Null"
+     * variant of the method returns null for invalid keys.
+     * 
+     * @param key The key as defined in the properties files
+     * @return The language specific String, or null if none could be found
+     */
+    public synchronized static String getStringNull(String key) {
+        return getString(key, false);
+    }
+    
+    /**
+     * Gets the String with the given key for the current language. Provide
+     * arguments for any replacements present in the String. This "Null" variant
+     * of the method returns null for invalid keys.
+     * 
+     * @param key The key as defined in the properties files
+     * @param arguments One or more arguments, depending on the String value
+     * @return The language specific String, or null if none could be found
+     */
+    public synchronized static String getStringNull(String key, Object... arguments) {
+        return getString(key, false, arguments);
     }
     
     /**
@@ -138,7 +174,13 @@ public class Language {
                 LOGGER.warning("Missing string key: "+key);
                 return "?";
             }
+            if (DEBUG) {
+                return "{"+key+"}";
+            }
             return null;
+        }
+        if (DEBUG) {
+            return "["+MessageFormat.format(strings.getString(key), arguments)+"]";
         }
         return MessageFormat.format(strings.getString(key), arguments);
     }
@@ -148,7 +190,12 @@ public class Language {
      */
     private static void loadIfNecessary() {
         if (strings == null) {
-            strings = ResourceBundle.getBundle("chatty.lang.Strings", CONTROL);
+            try {
+                strings = ResourceBundle.getBundle("chatty.lang.Strings", CONTROL);
+            }
+            catch (UnsupportedOperationException ex) {
+                strings = ResourceBundle.getBundle("chatty.lang.Strings");
+            }
         }
     }
     

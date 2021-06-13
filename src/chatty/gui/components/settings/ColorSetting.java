@@ -11,7 +11,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -192,11 +194,15 @@ public class ColorSetting extends JPanel implements StringSetting {
 
     @Override
     public void setSettingValue(String value) {
+        if (Objects.equals(textField.getText(), value)) {
+            return;
+        }
         textField.setText(value);
+        updated();
+        // Inform after updating current color (for getSettingValueAsColor())
         for (ColorSettingListener listener : listeners) {
             listener.colorUpdated();
         }
-        updated();
     }
     
     public Color getSettingValueAsColor() {
@@ -211,6 +217,11 @@ public class ColorSetting extends JPanel implements StringSetting {
     
     public void removeListener(ColorSettingListener listener) {
         listeners.remove(listener);
+    }
+    
+    public void addMouseListener(MouseListener listener) {
+        textField.addMouseListener(listener);
+        preview.addMouseListener(listener);
     }
     
 }
