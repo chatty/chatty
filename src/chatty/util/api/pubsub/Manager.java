@@ -356,7 +356,7 @@ public class Manager {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final ModLog other = (ModLog) obj;
+            final StreamTopic other = (StreamTopic) obj;
             if (!Objects.equals(this.stream, other.stream)) {
                 return false;
             }

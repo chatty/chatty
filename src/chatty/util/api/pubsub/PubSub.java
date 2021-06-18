@@ -102,7 +102,7 @@ public class PubSub extends JWSClient {
         synchronized(topics) {
             toSend.addAll(topics);
         }
-        sendListen(topics, true);
+        sendListen(toSend, true);
     }
     
     private void sendListen(String topic, boolean listen) {
