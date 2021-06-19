@@ -93,7 +93,7 @@ public class TabSettings extends SettingsPanel {
         orderPanel.add(d.addSimpleBooleanSetting("tabsAutoSort"),
                 SettingsDialog.makeGbc(0, 6, 2, 1, GridBagConstraints.WEST));
         
-        orderPanel.add(new JLabel(SettingConstants.HTML_PREFIX+"Tab order applies when opening new tabs and when tabs are resorted. Tabs can always be moved manually via drag and drop, however they may not keep their position when reopened or resorted."),
+        orderPanel.add(new JLabel(SettingConstants.HTML_PREFIX+"Tab order applies when opening new tabs and when tabs are resorted. Tabs can always be moved manually via drag&amp;drop, however they may not keep their position when reopened or resorted."),
                 SettingsDialog.makeGbc(0, 10, 2, 1, GridBagConstraints.CENTER));
         
         //--------------------------

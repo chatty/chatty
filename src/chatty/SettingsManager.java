@@ -622,7 +622,7 @@ public class SettingsManager {
         settings.addBoolean("repeatMsg", false);
         settings.addLong("repeatMsgSim", 80);
         settings.addLong("repeatMsgRep", 2);
-        settings.addLong("repeatMsgLen", 20);
+        settings.addLong("repeatMsgLen", 0);
         settings.addLong("repeatMsgTime", 3600);
         settings.addLong("repeatMsgMethod", 1);
         settings.addString("repeatMsgIgnored", "");

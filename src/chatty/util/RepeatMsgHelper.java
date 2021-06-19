@@ -107,6 +107,9 @@ public class RepeatMsgHelper {
             minLen = settings.getInt("repeatMsgLen");
             method = settings.getInt("repeatMsgMethod");
             ignoredChars = StringUtil.getCharsFromString(settings.getString("repeatMsgIgnored"));
+            if (ignoredChars.length == 0) {
+                ignoredChars = null;
+            }
         }
         else {
             matcher = null;

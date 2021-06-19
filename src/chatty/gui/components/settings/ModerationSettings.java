@@ -114,13 +114,13 @@ public class ModerationSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgTime", 0, 2, 1, GridBagConstraints.EAST,
                 d.addSimpleLongSetting("repeatMsgTime", 4, true));
         
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgLen", 0, 3, 1, GridBagConstraints.EAST,
-                d.addSimpleLongSetting("repeatMsgLen", 4, true));
-        
         JTextField ignoredChars = d.addSimpleStringSetting("repeatMsgIgnored", 4, true);
         ((AbstractDocument) ignoredChars.getDocument()).setDocumentFilter(TestSimilarity.IGNORED_CHARS_FILTER);
-        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgIgnored", 0, 4, 1, GridBagConstraints.EAST,
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgIgnored", 0, 3, 1, GridBagConstraints.EAST,
                 ignoredChars);
+        
+        SettingsUtil.addLabeledComponent(repeatMsgPanel, "repeatMsgLen", 0, 4, 1, GridBagConstraints.EAST,
+                d.addSimpleLongSetting("repeatMsgLen", 4, true));
         
         EditorStringSetting editor = d.addEditorStringSetting("repeatMsgMatch", 10, true, "Restrict detection", false, SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-restriction-repeat.html", null));
         editor.setShowInfoByDefault(true);

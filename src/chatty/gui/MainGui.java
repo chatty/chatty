@@ -2626,7 +2626,7 @@ public class MainGui extends JFrame implements Runnable {
                 String[] split = args.split(" ", 2);
                 if (split.length == 2) {
                     command = split[0];
-                    if (split[1].startsWith("-")) {
+                    if (split[1].startsWith("-") && command.equals("load")) {
                         String[] optionsSplit = split[1].split(" ");
                         if (optionsSplit.length == 2) {
                             if (!optionsSplit[0].equals("--")) {
