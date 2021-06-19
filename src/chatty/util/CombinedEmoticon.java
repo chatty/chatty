@@ -80,15 +80,16 @@ public class CombinedEmoticon extends Emoticon {
      * @param user
      * @return 
      */
-    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user) {
-        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, user);
+    @Override
+    public EmoticonImage getIcon(float scaleFactor, int maxHeight, ImageType imageType, EmoticonUser user) {
+        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
         Debugging.println("combinedemotes", "Get: %s [%s] %s", emotes, System.identityHashCode(this), alreadyMade.contains(emoteImage));
         if (alreadyMade.contains(emoteImage)) {
             return emoteImage;
         }
         boolean allLoaded = true;
         for (Emoticon emote : emotes) {
-            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, new EmoticonUser() {
+            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, new EmoticonUser() {
 
                 @Override
                 public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
@@ -118,7 +119,7 @@ public class CombinedEmoticon extends Emoticon {
      * @param user 
      */
     private void makeImage(float scaleFactor, int maxHeight, EmoticonUser user) {
-        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, user);
+        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
         if (alreadyMade.contains(emoteImage)) {
             return;
         }
@@ -126,7 +127,7 @@ public class CombinedEmoticon extends Emoticon {
         LinkedHashMap<ImageIcon, Integer> data = new LinkedHashMap<>();
         // Build list images and offsets
         for (Emoticon emote : emotes) {
-            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, null);
+            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, null);
             if (!image.isLoaded()) {
                 LOGGER.warning(image.getEmoticon()+" not loaded for "+emotes);
                 return;

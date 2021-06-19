@@ -56,7 +56,7 @@ public class CheerEmoticon extends Emoticon {
     }
     
     @Override
-    public String getEmoteUrl(int factor) {
+    public String getEmoteUrl(int factor, ImageType imageType) {
         return getUrl(currentBackground, currentState, String.valueOf(factor));
     }
     

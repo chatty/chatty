@@ -100,6 +100,12 @@ public class EmoteSettings extends SettingsPanel {
         main.add(cheersType,
                 d.makeGbc(1, 6, 2, 1, GridBagConstraints.WEST));
         
+        //--------------------------
+        // Animated
+        //--------------------------
+        main.add(d.addSimpleBooleanSetting("animatedEmotes"),
+                d.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST));
+        
         //==========
         // FFZ/BTTV
         //==========

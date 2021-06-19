@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.gui.GuiUtil;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.DateTime;
 import chatty.util.HalfWeakSet;
@@ -75,6 +76,10 @@ public class Emoticon {
     
     public static enum SubType {
         FEATURE_FRIDAY, EVENT, CHEER
+    }
+    
+    public static enum ImageType {
+        STATIC, ANIMATED_DARK, ANIMATED_LIGHT
     }
     
     /**
@@ -247,13 +252,14 @@ public class Emoticon {
      * Get the built URL for this emote if applicable to the emote type.
      * 
      * @param factor The size factor (1 or 2)
+     * @param imageType
      * @return The URL as a String or null if none could created or not of an
      * applicable type
      */
-    public String getEmoteUrl(int factor) {
+    public String getEmoteUrl(int factor, ImageType imageType) {
         if (type == Type.TWITCH) {
             if (stringId != null) {
-                return getTwitchEmoteUrlById(stringId, factor);
+                return getTwitchEmoteUrlById(stringId, factor, imageType);
             }
         } else if (type == Type.BTTV && stringId != null) {
             return getBttvEmoteUrl(stringId, factor);
@@ -265,8 +271,20 @@ public class Emoticon {
         return null;
     }
     
-    public static String getTwitchEmoteUrlById(String id, int factor) {
-        return "https://static-cdn.jtvnw.net/emoticons/v1/"+id+"/"+factor+".0";
+    public static ImageType makeImageType(boolean animated) {
+        return animated ? ImageType.ANIMATED_DARK : ImageType.STATIC;
+    }
+    
+    public static String getTwitchEmoteUrlById(String id, int factor, ImageType imageType) {
+        switch (imageType) {
+            case STATIC:
+                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/static/dark/%d.0", id, factor);
+            case ANIMATED_DARK:
+                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/default/dark/%d.0", id, factor);
+            case ANIMATED_LIGHT:
+                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/default/light/%d.0", id, factor);
+        }
+        return null;
     }
     
     public String getBttvEmoteUrl(String id, int factor) {
@@ -531,21 +549,24 @@ public class Emoticon {
      * @param scaleFactor Scale Factor, default (no scaling) should be 1
      * @param maxHeight Maximum height in pixels, default (no max height) should
      * be 0
+     * @param imageType
      * @param user
      * @return
      */
-    public EmoticonImage getIcon(float scaleFactor, int maxHeight, EmoticonUser user) {
+    public EmoticonImage getIcon(float scaleFactor, int maxHeight, ImageType imageType, EmoticonUser user) {
         if (images == null) {
             images = new HalfWeakSet<>();
         }
         EmoticonImage resultImage = null;
         for (EmoticonImage image : images) {
-            if (image.scaleFactor == scaleFactor && image.maxHeight == maxHeight) {
+            if (image.scaleFactor == scaleFactor
+                    && image.maxHeight == maxHeight
+                    && image.imageType == imageType) {
                 resultImage = image;
             }
         }
         if (resultImage == null) {
-            resultImage = new EmoticonImage(scaleFactor, maxHeight);
+            resultImage = new EmoticonImage(scaleFactor, maxHeight, imageType);
             images.add(resultImage);
         } else {
             images.markStrong(resultImage);
@@ -601,7 +622,7 @@ public class Emoticon {
      * @return 
      */
     public EmoticonImage getIcon(EmoticonUser user) {
-        return getIcon(1, 0, user);
+        return getIcon(1, 0, ImageType.STATIC, user);
     }
     
     /**
@@ -770,7 +791,7 @@ public class Emoticon {
                         urlFactor = 1;
                     }
                 }
-                String builtUrl = getEmoteUrl(urlFactor);
+                String builtUrl = getEmoteUrl(urlFactor, image.imageType);
                 if (builtUrl == null) {
                     LOGGER.warning("Couldn't build URL for "+type+"/"+code);
                     //return null;
@@ -971,6 +992,7 @@ public class Emoticon {
         private ImageIcon icon;
         public final float scaleFactor;
         public final int maxHeight;
+        public final ImageType imageType;
         
         private Set<EmoticonUser> users;
       
@@ -988,9 +1010,10 @@ public class Emoticon {
         private long lastLoadingAttempt;
         private long lastUsed;
         
-        public EmoticonImage(float scaleFactor, int maxHeight) {
+        public EmoticonImage(float scaleFactor, int maxHeight, ImageType imageType) {
             this.scaleFactor = scaleFactor;
             this.maxHeight = maxHeight;
+            this.imageType = imageType;
         }
         
         /**

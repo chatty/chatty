@@ -45,6 +45,7 @@ public class StyleManager implements StyleServer {
             "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
+            "animatedEmotes",
             "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",
@@ -219,7 +220,8 @@ public class StyleManager implements StyleServer {
         addLongSetting(Setting.FILTER_COMBINING_CHARACTERS, "filterCombiningCharacters");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE, "pauseChatOnMouseMove");
         addBooleanSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, "pauseChatOnMouseMoveCtrlRequired");
-        addBooleanSetting(Setting.EMOTICONS_SHOW_ANIMATED, "showAnimatedEmotes");
+        addBooleanSetting(Setting.EMOTICONS_BTTV_SHOW_ANIMATED, "showAnimatedEmotes");
+        addBooleanSetting(Setting.EMOTICONS_ANIMATED, "animatedEmotes");
         addLongSetting(Setting.USERCOLOR_BACKGROUND, "nickColorBackground");
         addLongSetting(Setting.BOTTOM_MARGIN, "bottomMargin");
         addLongSetting(Setting.MENTIONS, "mentions");

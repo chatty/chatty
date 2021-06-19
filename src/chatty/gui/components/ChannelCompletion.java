@@ -7,6 +7,7 @@ import chatty.User;
 import chatty.gui.MainGui;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
+import chatty.util.api.Emoticon.ImageType;
 import chatty.util.api.Emoticons;
 import chatty.util.settings.Settings;
 import java.awt.Component;
@@ -82,6 +83,7 @@ public class ChannelCompletion implements AutoCompletionServer {
     
     private Font currentFont;
     private int currentEmoteScaling;
+    private ImageType currentEmoteImageType;
     
     private Settings settings() {
         return main.getSettings();
@@ -98,6 +100,7 @@ public class ChannelCompletion implements AutoCompletionServer {
             currentFont = input.getFont();
             updateSizeSettings();
         }
+        currentEmoteImageType = Emoticon.makeImageType(main.getSettings().getBoolean("animatedEmotes"));
     }
     
     private void updateSizeSettings() {
@@ -259,7 +262,7 @@ public class ChannelCompletion implements AutoCompletionServer {
         return new CompletionItem(code, info) {
             public ImageIcon getImage(Component c) {
                 float scale = (float)(currentEmoteScaling / 100.0);
-                ImageIcon icon = emote.getIcon(scale, 0, new Emoticon.EmoticonUser() {
+                ImageIcon icon = emote.getIcon(scale, 0, currentEmoteImageType, new Emoticon.EmoticonUser() {
 
                     @Override
                     public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {

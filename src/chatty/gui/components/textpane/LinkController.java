@@ -30,6 +30,7 @@ import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.Emoticon.ImageType;
 import chatty.util.api.Emoticons;
 import chatty.util.api.usericons.Usericon;
 import java.awt.Color;
@@ -827,7 +828,7 @@ public class LinkController extends MouseAdapter {
         }
 
         if (showImage && !emote.isAnimated()) {
-            EmoticonImage icon = emote.getIcon(2, 0, (o,n,c) -> {
+            EmoticonImage icon = emote.getIcon(2, 0, ImageType.STATIC, (o,n,c) -> {
                 // The set ImageIcon will have been updated
                 popup.forceUpdate();
             });
