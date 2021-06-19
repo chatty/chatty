@@ -219,6 +219,17 @@ public class Debugging {
         return StringUtil.join(st);
     }
     
+    public static String getCurrenThreadInfo() {
+        return getThreadInfo(Thread.currentThread());
+    }
+    
+    public static String getThreadInfo(Thread thread) {
+        StringBuilder b = new StringBuilder();
+        b.append("[").append(thread.getName()).append("/").append(thread.getState()).append("]");
+        b.append(StringUtil.join(thread.getStackTrace()));
+        return b.toString();
+    }
+    
     // For testing
     public static void main(String[] args) {
         System.out.println(filterToken("-d \"G:\\chatty settings\" -set:token abc -token abc -password -password abc -connect"));

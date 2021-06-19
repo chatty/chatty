@@ -84,6 +84,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
@@ -1722,6 +1723,18 @@ public class TwitchClient {
             ImageCache.deleteExpiredFiles();
         } else if (command.equals("sha1")) {
             g.printSystem(ImageCache.sha1(parameter));
+        } else if (command.equals("letstakeabreak")) {
+            try {
+                Thread.sleep(Integer.parseInt(parameter));
+            }
+            catch (InterruptedException ex) {
+                Logger.getLogger(TwitchClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else if (command.equals("infiniteloop")) {
+            while (true) {
+            }
+        } else if (command.equals("threadinfo")) {
+            LogUtil.logThreadInfo();
         }
     }
     
