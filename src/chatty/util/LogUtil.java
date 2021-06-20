@@ -90,8 +90,12 @@ public class LogUtil {
     }
     
     private static final AtomicInteger EDT_LOCK_STATE = new AtomicInteger();
-    private static final ElapsedTime EDT_LOCK_LOG = new ElapsedTime();
+    private static final ElapsedTime EDT_LOCK_LAST_LOGGED = new ElapsedTime();
     
+    /**
+     * Tries to set a value through the EDT regularly in order to detect when it
+     * may have locked up (and logs the current thread info if so).
+     */
     public static void startEdtLockDetection() {
         Thread thread = new Thread(() -> {
             int state = 0;
@@ -106,15 +110,15 @@ public class LogUtil {
                     });
                     Thread.sleep(1000);
                     // Should be set by now, otherwise the EDT is really slow
-                    if (EDT_LOCK_STATE.get() != state && EDT_LOCK_LOG.secondsElapsed(600)) {
-                        EDT_LOCK_LOG.set();
+                    if (EDT_LOCK_STATE.get() != state && EDT_LOCK_LAST_LOGGED.secondsElapsed(600)) {
+                        EDT_LOCK_LAST_LOGGED.set();
                         // No more often than every 10 minutes, log if EDT is slow
                         LOGGER.warning("EDT may be slow");
                         logThreadInfo();
                     }
                 }
                 catch (InterruptedException ex) {
-                    // Do nothing
+                    return;
                 }
             }
         }, "EdtLockDetection");
@@ -122,6 +126,9 @@ public class LogUtil {
         thread.start();
     }
     
+    /**
+     * Log a thread dump and try to detect deadlocked threads.
+     */
     public static void logThreadInfo() {
         LOGGER.info("Thread Dump:\n"+threadDump());
         logDeadlocks();
