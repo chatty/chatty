@@ -20,6 +20,7 @@ public class EmotesetManager {
     private final Settings settings;
     
     private final Set<String> ircEmotesets = new HashSet<>();
+    private final Set<String> userEmotesets = new HashSet<>();
     private final Set<String> emotesets = new HashSet<>();
     
     public EmotesetManager(TwitchApi api, MainGui g, Settings settings) {
@@ -54,14 +55,10 @@ public class EmotesetManager {
             ircEmotesets.addAll(emotesets);
         }
         if (changed) {
-            if (!requestUserEmotes()) {
-                /**
-                 * Request not possible for some reason, so just use IRC sets
-                 * directly, requesting them as usual.
-                 */
-                setEmotesets(emotesets);
-                api.getEmotesBySets(emotesets);
-            }
+            requestUserEmotes();
+            updateEmotesets();
+            emotesets.remove("0");
+            api.getEmotesBySets(emotesets);
         }
     }
     
@@ -84,23 +81,33 @@ public class EmotesetManager {
         return true;
     }
     
-    /**
-     * Set the emotesets for the local user and update stuff if necessary.
-     * 
-     * @param newEmotesets Must not be null
-     */
-    public void setEmotesets(Set<String> newEmotesets) {
-        boolean changed = false;
+    public void setUserEmotesets(Set<String> newEmotesets) {
         synchronized(this) {
-            if (!emotesets.equals(newEmotesets)) {
+            userEmotesets.clear();
+            userEmotesets.addAll(newEmotesets);
+        }
+        updateEmotesets();
+    }
+    
+    /**
+     * Update the emotesets for the local user and update stuff if necessary.
+     */
+    public void updateEmotesets() {
+        boolean changed = false;
+        Set<String> all = new HashSet<>();
+        synchronized(this) {
+            // Both IRC and GetUserEmotes sets as long as both don't contain all
+            all.addAll(userEmotesets);
+            all.addAll(ircEmotesets);
+            if (!emotesets.equals(all)) {
                 changed = true;
             }
             emotesets.clear();
-            emotesets.addAll(newEmotesets);
+            emotesets.addAll(all);
         }
         if (changed) {
-            g.updateEmotesDialog(newEmotesets);
-            g.updateEmoteNames(newEmotesets);
+            g.updateEmotesDialog(all);
+            g.updateEmoteNames(all);
         }
     }
 

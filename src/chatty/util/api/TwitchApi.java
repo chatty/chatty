@@ -132,6 +132,43 @@ public class TwitchApi {
     // Chat / Emoticons
     //=================
     
+    /**
+     * Request channel emotes if necessary.
+     * 
+     * @param stream The stream name (required)
+     * @param id The stream id (optional)
+     * @param refresh If true, request is done even if already requested before
+     */
+    public void getEmotesByChannelId(String stream, String id, boolean refresh) {
+        if (id != null) {
+            getEmotesByChannelId2(stream, id, refresh);
+        } else {
+            userIDs.getUserIDsAsap(r -> {
+                if (!r.hasError()) {
+                    getEmotesByChannelId2(stream, r.getId(stream), refresh);
+                }
+            }, stream);
+        }
+    }
+    
+    /**
+     * Request channel emotes if necessary.
+     * 
+     * @param stream The stream name (required)
+     * @param id The stream id (required)
+     * @param refresh If true, request is done even if already requested before
+     */
+    private void getEmotesByChannelId2(String stream, String id, boolean refresh) {
+        int options = CachedBulkManager.ASAP | CachedBulkManager.WAIT;
+        if (refresh) {
+            options = options | CachedBulkManager.REFRESH;
+        }
+        String requestId = "channel_emotes:" + id;
+        m.query(null, options, new Req(requestId, () -> {
+            requests.requestEmotesByChannelId(stream, id, requestId);
+        }));
+    }
+    
     public void getEmotesBySets(String... emotesets) {
         getEmotesBySets(new HashSet<>(Arrays.asList(emotesets)));
     }

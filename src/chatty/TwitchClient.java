@@ -419,7 +419,8 @@ public class TwitchClient {
         updateCustomCommands();
         
         // Request some stuff
-        api.getEmotesBySets("0");
+        // Don't request for now, since new API is a bit weird with :) emotes
+//        api.getEmotesBySets("0");
         
         // Before checkNewVersion(), so "updateAvailable" is already updated
         checkForVersionChange();
@@ -2351,7 +2352,7 @@ public class TwitchClient {
                     && update.setsToRemove != null) {
                 // setsToRemove contains all sets (only for USER_EMOTES)
                 // This may also update EmoteDialog etc.
-                emotesetManager.setEmotesets(update.setsToRemove);
+                emotesetManager.setUserEmotesets(update.setsToRemove);
             }
             
             // Other stuff

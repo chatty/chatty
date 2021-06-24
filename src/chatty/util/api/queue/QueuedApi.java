@@ -1,6 +1,7 @@
 
 package chatty.util.api.queue;
 
+import chatty.util.Debugging;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,6 +55,9 @@ public class QueuedApi {
                             QueuedApi.this.ratelimitRemaining = ratelimitRemaining;
                             entry.listener.result(result, responseCode);
                             removePending(entry);
+                            if (Debugging.isEnabled("requestresponse")) {
+                                LOGGER.info(result);
+                            }
                         });
                         entry.request.run();
                     } catch (InterruptedException ex) {

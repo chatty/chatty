@@ -773,7 +773,7 @@ public class EmotesDialog extends JDialog {
             addTitle(String.format("%s %s (%d emotes)",
                     titlePrefix,
                     sets,
-                    sorted.size()), sets);
+                    sorted.size()), allowHide ? sets : null);
             boolean show = !allowHide || !isHidden(sets);
             if (show) {
                 addEmotesPanel(sorted);
@@ -867,12 +867,23 @@ public class EmotesDialog extends JDialog {
             //System.out.println(targetPanel.getParent().getParent());
 
             String prevEmoteset = null;
+            String prevEmotesetInfo = null;
             for (Emoticon emote : emotes) {
-                if (!Objects.equals(prevEmoteset, emote.emoteset) && prevEmoteset != null) {
+                if (!Objects.equals(prevEmoteset, emote.emoteset)
+                        && prevEmoteset != null
+                        && (
+                            !Objects.equals(emote.getEmotesetInfo(), prevEmotesetInfo)
+                            || emote.getEmotesetInfo() == null)
+                        ) {
                     // Separator between different emotesets (and thus tiers)
                     panel.add(makeSeparator());
+                    addSeparatorEmotesetInfo(panel, emote);
+                }
+                else if (prevEmoteset == null) {
+                    addSeparatorEmotesetInfo(panel, emote);
                 }
                 prevEmoteset = emote.emoteset;
+                prevEmotesetInfo = emote.getEmotesetInfo();
                 panel.add(new EmoteLabel(emote, mouseListener, scale, imageType, emoteUser));
             }
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -883,6 +894,21 @@ public class EmotesDialog extends JDialog {
             add(panel, gbc);
             gbc.gridx = 0;
             gbc.gridy++;
+        }
+        
+        /**
+         * Add a label with a short description of the emoteset for some types.
+         * 
+         * @param panel
+         * @param emote 
+         */
+        private void addSeparatorEmotesetInfo(JPanel panel, Emoticon emote) {
+            if (StringUtil.isNullOrEmpty(emote.getEmotesetInfo())) {
+                return;
+            }
+            if (Arrays.asList(new String[]{"Tier 2", "Tier 3", "Bits"}).contains(emote.getEmotesetInfo())) {
+                panel.add(new JLabel(emote.getEmotesetInfo()));
+            }
         }
         
         private JSeparator makeSeparator() {
@@ -1190,11 +1216,8 @@ public class EmotesDialog extends JDialog {
                     }
                 }
                 Debugging.println("emoteinfo", "UPDATE %s", stream);
-                TwitchEmotesApi.api.requestByStream(result -> {
-                    SwingUtilities.invokeLater(() -> {
-                        addSubemotes(stream, result);
-                    });
-                }, stream);
+                TwitchEmotesApi.api.requestByStream(stream);
+                addSubemotes(stream, emoteManager.getSetsByStream(stream));
             }
             relayout();
         }

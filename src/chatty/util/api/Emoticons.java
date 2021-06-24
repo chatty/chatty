@@ -6,6 +6,7 @@ import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.CombinedEmoticon;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -181,10 +182,29 @@ public class Emoticons {
         timer.start();
     }
     
+    private final Map<String, Set<EmotesetInfo>> twitchEmotesByStream = new HashMap<>();
+    
+    public Set<EmotesetInfo> getSetsByStream(String stream) {
+        return twitchEmotesByStream.get(stream);
+    }
+    
     public void updateEmoticons(EmoticonUpdate update) {
         removeEmoticons(update);
         if (!update.emotesToAdd.isEmpty()) {
             addEmoticons(update.emotesToAdd);
+        }
+        if (update.source == EmoticonUpdate.Source.CHANNEL) {
+            // All emotes should contain emoteset info and the same stream
+            Set<EmotesetInfo> sets = new HashSet<>();
+            String stream = null;
+            for (Emoticon emote : update.emotesToAdd) {
+                EmotesetInfo info = new EmotesetInfo(emote.emoteset, emote.getStream(), null, emote.getEmotesetInfo());
+                sets.add(info);
+                stream = emote.getStream();
+            }
+            if (stream != null) {
+                twitchEmotesByStream.put(stream, sets);
+            }
         }
     }
     

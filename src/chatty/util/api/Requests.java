@@ -521,6 +521,25 @@ public class Requests {
         }
     }
     
+    public void requestEmotesByChannelId(String stream, String id, String requestId) {
+        newApi.add("https://api.twitch.tv/helix/chat/emotes?broadcaster_id="+id, "GET", api.defaultToken, (result, responseCode) -> {
+            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.CHANNEL, stream);
+            if (parsed != null) {
+                listener.receivedEmoticons(parsed);
+                api.setReceived(requestId);
+                if (parsed.setsToRemove != null) {
+                    api.emoticonManager2.addRequested(parsed.setsToRemove);
+                }
+            }
+            else if (responseCode == 404) {
+                api.setNotFound(requestId);
+            }
+            else {
+                api.setError(requestId);
+            }
+        });
+    }
+    
     public void requestEmotesets(Set<String> emotesets) {
         if (emotesets != null && !emotesets.isEmpty()) {
             String emotesetsParam = StringUtil.join(emotesets, ",");
@@ -541,6 +560,22 @@ public class Requests {
             //requestResult(REQUEST_TYPE_EMOTICONS,"")
     }
     
+    public void requestEmotesetsNew(Set<String> emotesets) {
+        if (emotesets != null && !emotesets.isEmpty()) {
+            String emotesetsParam = StringUtil.join(emotesets, "&emote_set_id=");
+            String url = "https://api.twitch.tv/helix/chat/emotes/set?emote_set_id="+emotesetsParam;
+            newApi.add(url, "GET", api.defaultToken, (text, responseCode) -> {
+                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.OTHER, null);
+                if (result != null) {
+                    listener.receivedEmoticons(result);
+                }
+                else {
+                    api.emoticonManager2.addError(emotesets);
+                }
+            });
+        }
+    }
+    
     public void requestUserEmotes(String userId) {
         String url = "https://api.twitch.tv/kraken/users/"+userId+"/emotes";
         if (attemptRequest(url)) {
@@ -552,7 +587,11 @@ public class Requests {
                     listener.receivedEmoticons(result);
                     api.setReceived("userEmotes");
                     if (result.setsToRemove != null) {
-                        api.emoticonManager2.addRequested(result.setsToRemove);
+                        /**
+                         * New API may return more emotes (emotes with new id?)
+                         * for same emotesets, so don't prevent those requests.
+                         */
+                        //api.emoticonManager2.addRequested(result.setsToRemove);
                     }
                 }
                 else if (r.responseCode == 404) {
