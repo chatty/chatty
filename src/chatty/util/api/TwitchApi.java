@@ -91,6 +91,11 @@ public class TwitchApi {
             this.key = key;
             this.request = request;
         }
+        
+        @Override
+        public String toString() {
+            return key;
+        }
 
         @Override
         public boolean equals(Object obj) {
@@ -152,14 +157,17 @@ public class TwitchApi {
     }
     
     /**
-     * Request channel emotes if necessary.
-     * 
+     * Request channel emotes if necessary. Only does one request attempt for a
+     * while, since at least currently it's only used for the Emote Dialog and
+     * manually triggered anyway. The reload button should be implemented at
+     * some point to be able to trigger a manual refresh.
+     *
      * @param stream The stream name (required)
      * @param id The stream id (required)
      * @param refresh If true, request is done even if already requested before
      */
     private void getEmotesByChannelId2(String stream, String id, boolean refresh) {
-        int options = CachedBulkManager.ASAP | CachedBulkManager.WAIT;
+        int options = CachedBulkManager.ASAP | CachedBulkManager.UNIQUE;
         if (refresh) {
             options = options | CachedBulkManager.REFRESH;
         }
