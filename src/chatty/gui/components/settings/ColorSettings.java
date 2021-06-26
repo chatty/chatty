@@ -334,7 +334,31 @@ public class ColorSettings extends SettingsPanel {
                     true,  // highlightBackground
                     true,  // timestampColorEnabled
                 });
-        
+
+        presets.addPreset("Dark Dracul",
+                new String[]{
+                        "#2B2B2B",// backgroundColor
+                        "#629755",// foregroundColor
+                        "#9876AA",// infoColor
+                        "#A0A0A0",// compactColor
+                        "#BC3F3C", // highlightColor
+                        "#2B2B2B",// inputBackgroundColor
+                        "#A9B7C6", // inputForegroundColor
+                        "#155221", // searchResultColor
+                        "#294436", // searchResultColor2
+                        "#3B3B3B", // backgroundColor2
+                        "#5C0000", // highlightBackgroundColor
+                        "#DFDFDF", // separatorColor
+                        "#C5C5C5",  // timestampColor
+                        "40", // timestampColorInherit
+                },
+                new Boolean[]{
+                        true,  // alternateBackground
+                        false, // messageSeparator
+                        true,  // highlightBackground
+                        true,  // timestampColorEnabled
+                });
+
         presets.init();
         
         //========
