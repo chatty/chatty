@@ -8,6 +8,7 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.MessageSettings.addTimestampFormat;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import java.awt.CardLayout;
@@ -340,7 +341,7 @@ public class LogSettings extends SettingsPanel {
             if (input.length() == 1) {
                 input = null;
             }
-            return input;
+            return StringUtil.toLowerCase(input);
         }
         
     }
