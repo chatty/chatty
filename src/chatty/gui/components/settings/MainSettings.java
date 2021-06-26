@@ -175,6 +175,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("nl", "Dutch / Nederlands");
         languageOptions.put("en_US", "English (US)");
         languageOptions.put("en_GB", "English (UK)");
+        languageOptions.put("fi", "Finnish / Suomi");
         languageOptions.put("fr", "French / Français");
         languageOptions.put("de", "German / Deutsch");
         languageOptions.put("in", "Indonesian");
