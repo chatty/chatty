@@ -179,7 +179,7 @@ public class CompletionSettings extends SettingsPanel {
             setTitle("Custom Completion Items");
             setDefaultCloseOperation(HIDE_ON_CLOSE);
             
-            add(new JLabel("<html><body style='width:300px;padding:7 7 10 7;'>"
+            add(new JLabel("<html><body style='width:300px;padding:7px 7px 10px 7px;'>"
                     + "Use <kbd>TAB</kbd> to complete '.Key' (prefixed "
                     + "with a dot) to 'Value'.<br />"
                     + "<br />"
