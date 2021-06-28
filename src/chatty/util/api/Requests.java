@@ -523,12 +523,12 @@ public class Requests {
     
     public void requestEmotesByChannelId(String stream, String id, String requestId) {
         newApi.add("https://api.twitch.tv/helix/chat/emotes?broadcaster_id="+id, "GET", api.defaultToken, (result, responseCode) -> {
-            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.CHANNEL, stream);
+            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.CHANNEL, stream, id);
             if (parsed != null) {
                 listener.receivedEmoticons(parsed);
                 api.setReceived(requestId);
-                if (parsed.setsToRemove != null) {
-                    api.emoticonManager2.addRequested(parsed.setsToRemove);
+                if (parsed.setsAdded != null) {
+                    api.emoticonManager2.addRequested(parsed.setsAdded);
                 }
             }
             else if (responseCode == 404) {
@@ -565,7 +565,7 @@ public class Requests {
             String emotesetsParam = StringUtil.join(emotesets, "&emote_set_id=");
             String url = "https://api.twitch.tv/helix/chat/emotes/set?emote_set_id="+emotesetsParam;
             newApi.add(url, "GET", api.defaultToken, (text, responseCode) -> {
-                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.OTHER, null);
+                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.OTHER, null, null);
                 if (result != null) {
                     listener.receivedEmoticons(result);
                 }
@@ -586,12 +586,12 @@ public class Requests {
                 if (result != null) {
                     listener.receivedEmoticons(result);
                     api.setReceived("userEmotes");
-                    if (result.setsToRemove != null) {
+                    if (result.setsAdded != null) {
                         /**
                          * New API may return more emotes (emotes with new id?)
                          * for same emotesets, so don't prevent those requests.
                          */
-                        //api.emoticonManager2.addRequested(result.setsToRemove);
+                        //api.emoticonManager2.addRequested(result.setsAdded);
                     }
                 }
                 else if (r.responseCode == 404) {

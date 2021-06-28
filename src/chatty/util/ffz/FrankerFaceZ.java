@@ -271,14 +271,12 @@ public class FrankerFaceZ {
         }
         
         // Package accordingly and send the result to the listener
-        EmoticonUpdate emotesUpdate;
+        EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
         if (type == Type.FEATURE_FRIDAY) {
-            emotesUpdate = new EmoticonUpdate(emotes, Emoticon.Type.FFZ,
-                     Emoticon.SubType.FEATURE_FRIDAY, null, null);
-        } else {
-            emotesUpdate = new EmoticonUpdate(emotes);
+            updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
+            updateBuilder.setSubTypeToRemove(Emoticon.SubType.FEATURE_FRIDAY);
         }
-        listener.channelEmoticonsReceived(emotesUpdate);
+        listener.channelEmoticonsReceived(updateBuilder.build());
         // Return icons if mod icon was found (will be empty otherwise)
         listener.usericonsReceived(usericons);
     }
@@ -341,11 +339,10 @@ public class FrankerFaceZ {
      * Send a message to the listener to clear all FFZ Feature Friday emotes.
      */
     private void clearFeatureFridayEmotes() {
-        listener.channelEmoticonsReceived(new EmoticonUpdate(null,
-                Emoticon.Type.FFZ,
-                Emoticon.SubType.FEATURE_FRIDAY,
-                null,
-                null));
+        EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(null);
+        updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
+        updateBuilder.setSubTypeToRemove(Emoticon.SubType.FEATURE_FRIDAY);
+        listener.channelEmoticonsReceived(updateBuilder.build());
     }
 
     /**

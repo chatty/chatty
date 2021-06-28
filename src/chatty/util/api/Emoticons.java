@@ -183,9 +183,14 @@ public class Emoticons {
     }
     
     private final Map<String, Set<EmotesetInfo>> twitchEmotesByStream = new HashMap<>();
+    private final Map<String, EmotesetInfo> infoBySet = new HashMap<>();
     
     public Set<EmotesetInfo> getSetsByStream(String stream) {
         return twitchEmotesByStream.get(stream);
+    }
+    
+    public EmotesetInfo getInfoBySet(String set) {
+        return infoBySet.get(set);
     }
     
     public void updateEmoticons(EmoticonUpdate update) {
@@ -204,6 +209,11 @@ public class Emoticons {
             }
             if (stream != null) {
                 twitchEmotesByStream.put(stream, sets);
+            }
+        }
+        if (update.setInfos != null) {
+            for (EmotesetInfo info : update.setInfos) {
+                infoBySet.put(info.emoteset_id, info);
             }
         }
     }

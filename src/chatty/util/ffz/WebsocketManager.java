@@ -337,12 +337,11 @@ public class WebsocketManager {
                 result.add(emoteToAdd);
             }
         }
-        EmoticonUpdate update = new EmoticonUpdate(result,
-                Emoticon.Type.FFZ,
-                Emoticon.SubType.EVENT,
-                room,
-                null);
-        listener.channelEmoticonsReceived(update);
+        EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(result);
+        updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
+        updateBuilder.setSubTypeToRemove(Emoticon.SubType.EVENT);
+        updateBuilder.setRoomToRemove(room);
+        listener.channelEmoticonsReceived(updateBuilder.build());
     }
     
     /**
@@ -352,12 +351,11 @@ public class WebsocketManager {
      * @param room The channel the emotes should be removed from
      */
     private void removeEmotes(String room) {
-        EmoticonUpdate update = new EmoticonUpdate(null,
-                Emoticon.Type.FFZ,
-                Emoticon.SubType.EVENT,
-                room,
-                null);
-        listener.channelEmoticonsReceived(update);
+        EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(null);
+        updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
+        updateBuilder.setSubTypeToRemove(Emoticon.SubType.EVENT);
+        updateBuilder.setRoomToRemove(room);
+        listener.channelEmoticonsReceived(updateBuilder.build());
     }
     
     /**

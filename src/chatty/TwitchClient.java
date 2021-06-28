@@ -2349,10 +2349,10 @@ public class TwitchClient {
             
             // After adding emotes, update sets
             if (update.source == EmoticonUpdate.Source.USER_EMOTES
-                    && update.setsToRemove != null) {
-                // setsToRemove contains all sets (only for USER_EMOTES)
+                    && update.setsAdded != null) {
+                // setsAdded contains all sets (for USER_EMOTES)
                 // This may also update EmoteDialog etc.
-                emotesetManager.setUserEmotesets(update.setsToRemove);
+                emotesetManager.setUserEmotesets(update.setsAdded);
             }
             
             // Other stuff

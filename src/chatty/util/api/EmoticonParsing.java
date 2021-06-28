@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.util.Debugging;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
+import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.EmoticonUpdate.Source;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,14 +21,18 @@ public class EmoticonParsing {
     
     private static final Logger LOGGER = Logger.getLogger(EmoticonParsing.class.getName());
     
-    protected static EmoticonUpdate parseEmoteList(String json, EmoticonUpdate.Source source, String stream) {
+    protected static EmoticonUpdate parseEmoteList(String json, EmoticonUpdate.Source source, String streamName, String streamId) {
         if (json == null) {
             return null;
         }
         try {
             Set<Emoticon> emotes = new HashSet<>();
             Set<String> emotesets = new HashSet<>();
+            Set<EmotesetInfo> setInfos = new HashSet<>();
             
+            //--------------------------
+            // Parsing
+            //--------------------------
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(json);
             JSONArray data = (JSONArray) root.get("data");
@@ -38,36 +43,55 @@ public class EmoticonParsing {
                 String type = JSONUtil.getString(entry, "emote_type");
                 String set = JSONUtil.getString(entry, "emote_set_id");
                 String tier = JSONUtil.getString(entry, "tier");
+                String owner_id = JSONUtil.getString(entry, "owner_id");
+                if (owner_id == null) {
+                    // Channel emotes API doesn't include owner_id
+                    owner_id = streamId;
+                }
                 Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.TWITCH, code, null);
                 builder.setStringId(id);
                 builder.setEmoteset(set);
-                builder.setStream(stream);
+                builder.setStream(streamName);
+                String info = null;
                 switch (type) {
                     case "subscriptions":
                         if (!StringUtil.isNullOrEmpty(tier)) {
-                            builder.setEmotesetInfo("Tier "+tier.substring(0, 1));
+                            info = "Tier "+tier.substring(0, 1);
                         }
                         else {
-                            builder.setEmotesetInfo("Subemote");
+                            info = "Subemote";
                         }
                         break;
                     case "bitstier":
-                        builder.setEmotesetInfo("Bits");
+                        info = "Bits";
                         break;
                     case "follower":
-                        builder.setEmotesetInfo("Follower");
+                        info = "Follower";
                         break;
                     default:
-                        builder.setEmotesetInfo(type);
+                        info = type;
                 }
+                builder.setEmotesetInfo(info);
                 
                 emotes.add(builder.build());
                 emotesets.add(set);
+                // Not all information may be available, but add anyway
+                EmotesetInfo setInfo = new EmotesetInfo(set, streamName, owner_id, info);
+                setInfos.add(setInfo);
             }
+            //--------------------------
+            // Result
+            //--------------------------
+            EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
             if (source == Source.CHANNEL) {
-                return new EmoticonUpdate(emotes, Emoticon.Type.TWITCH, null, null, emotesets, source);
+                updateBuilder.setTypeToRemove(Emoticon.Type.TWITCH);
+                updateBuilder.setsSetsAddedToRemove(emotesets);
+                updateBuilder.setSource(source);
             }
-            return new EmoticonUpdate(emotes);
+            if (!setInfos.isEmpty()) {
+                updateBuilder.setSetInfos(setInfos);
+            }
+            return updateBuilder.build();
         }
         catch (Exception ex) {
             LOGGER.warning("Error parsing emoticons by sets: " + ex);
@@ -117,15 +141,17 @@ public class EmoticonParsing {
             if (errors > 100) {
                 return null;
             }
+            EmoticonUpdate.Builder builder = new EmoticonUpdate.Builder(emotes);
             if (source == EmoticonUpdate.Source.USER_EMOTES) {
                 /**
                  * Don't remove, since some sets may not contain all emotes in
                  * this old API. Still include emotesets though for adding to
                  * usable emotesets.
                  */
-                return new EmoticonUpdate(emotes, null, null, null, emotesets, source);
+                builder.setSetsAdded(emotesets);
+                builder.setSource(source);
             }
-            return new EmoticonUpdate(emotes);
+            return builder.build();
         } catch (Exception ex) {
             LOGGER.warning("Error parsing emoticons by sets: "+ex);
         }

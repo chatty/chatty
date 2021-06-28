@@ -1027,6 +1027,35 @@ public class EmotesDialog extends JDialog {
             //-------------------------
             // Sort emotes by emoteset
             //-------------------------
+            /**
+             * Add all emotes with the same owner id together, to determine the
+             * common prefix. This is necessary if some emotesets from the same
+             * owner have an unclear prefix.
+             * 
+             * Currently this is designed to make use of the current code. This
+             * whole section should be rewritten once it's clearer what
+             * information will be available when the emote APIs are updated or
+             * when it seems like they won't be updated anymore anytime soon.
+             */
+            Map<String, Set<Emoticon>> perOwnerId = new HashMap<>();
+            for (String emoteset : localUserEmotesets) {
+                EmotesetInfo newInfo = emoteManager.getInfoBySet(emoteset);
+                if (newInfo != null && newInfo.stream_id != null) {
+                    Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
+                    if (!perOwnerId.containsKey(newInfo.stream_id)) {
+                        perOwnerId.put(newInfo.stream_id, new HashSet<>());
+                    }
+                    perOwnerId.get(newInfo.stream_id).addAll(emotes);
+                }
+            }
+            Map<String, String> prefixesByOwnerId = new HashMap<>();
+            for (Map.Entry<String, Set<Emoticon>> entry : perOwnerId.entrySet()) {
+                String emotePrefix = getPrefix(entry.getValue());
+                if (emotePrefix != null) {
+                    prefixesByOwnerId.put(entry.getKey(), emotePrefix);
+                }
+            }
+            
             Set<String> turboEmotes = new HashSet<>();
             Map<String, Set<EmotesetInfo>> perStream = new HashMap<>();
             Map<String, Set<EmotesetInfo>> perInfo = new HashMap<>();
@@ -1065,6 +1094,10 @@ public class EmotesDialog extends JDialog {
                         // Unknown emoteset
                         Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
                         String emotePrefix = getPrefix(emotes);
+                        EmotesetInfo newInfo = emoteManager.getInfoBySet(emoteset);
+                        if (newInfo != null && newInfo.stream_id != null && prefixesByOwnerId.containsKey(newInfo.stream_id)) {
+                            emotePrefix = prefixesByOwnerId.get(newInfo.stream_id);
+                        }
                         if (emotePrefix == null) {
                             if (emotes.size() == 1) {
                                 unknownEmotesetsSingle.add(emoteset);
