@@ -67,18 +67,61 @@
         <a name="0.15">Version 0.15</a> <a name="latest">(This one!) (2021-04-??)</a>
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p><em>This is a beta version, so these release notes are not complete and
-        some features may not be finished yet.</em></p>
-    
-    <p>Further tabs improvements:</p>
+    <p>More Tabs/Layouts improvements:</p>
     <ul>
         <li>More Info Dialogs (such as Channel Info, Followers, Modlogs, ..) can
-            be docked as a tab through their context menu. This means they become part of the new tabs
-            system and can be dragged&amp;dropped just like channels.</li>
-        <li>Saving/loading of tabs layouts (splits, popouts) through the "View" menu.
-            Note that layouts only affect tabs (including popouts), but
-            not Info Dialogs that aren't docked as a tab.</li>
+            be docked as a tab through their context menu. This means they
+            become part of the new Tabs system and can be dragged&amp;dropped
+            just like channels.</li>
+        <li>Layouts (splits, popouts) can now be saved and loaded, both
+            automatically on restart and manually through the "View" menu. Note
+            that layouts only affect Info Dialogs if they are docked as a tab.</li>
     </ul>
+    <p>This version also implements some API changes mainly affecting Emoticons
+        (neither the API nor the implementation is perfect yet, but more emotes
+        should show up) and AutoMod (you may have to grant additional access for
+        it to work fully). Moderators may also find the new Repeated Chat
+        Message Detection useful (you can enable it in the "Moderation"
+        settings).</p>
+    <pre>
+### Tabs / Layouts
+- Added setting to restore last session's layout
+- Manually save and load layouts through the View-menu and the /layouts command
+- Made more dialogs dockable as a Tab, accessible through their context menu
+  (Channel Info, Admin, Followers/Subscribers, Live Streams, Moderation Log)
+- Added more settings, including: Max. Tab width, show channel title in splits,
+  more advanced Tab sorting
+- Open all tabs immediately when joining several channels
+- Connect automatically when joining a channel while not connected
+- Updated Tab context menu
+
+### Twitch Features
+- Updated AutoMod and Moderation Logs for new APIs
+- Partially switched to new Emote APIs to support newer emotes
+- Added setting to turn off animation for Twitch's animated emotes
+
+### Other
+- Added Repeated Message Detection, which marks repeated messages from the same
+  user in chat (Moderation Settings)
+- Added ability to join channels associated with Addressbook categories (e.g.
+  `[abc]` to join channels associated with the "abc" category
+- Added setting to enable Custom Commands syntax for menu labels (for now mainly
+  to display setting values)
+- Added line numbers to some settings editors
+- Added "Edit All" button for Custom Message Colors setting
+- Added `!user:` Highlight prefix
+- Added "https://" to Streamlink stream URL
+- Updated translations
+- Updated help
+
+### Bugfixes
+- Fixed copying text in chat sometimes not working
+- Fixed copy text menu sometimes appearing when no text visibly selected
+- Fixed reply command not working
+- Fixed timezone setting not applying to some timestamps
+- Fixed bug delaying Chatty startup
+- Fixed rare PubSub related error
+    </pre>
     
     <h2>
         <a name="0.14">Version 0.14</a> (2021-03-04)
