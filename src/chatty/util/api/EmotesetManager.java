@@ -5,7 +5,9 @@ import chatty.gui.MainGui;
 import chatty.gui.components.eventlog.EventLog;
 import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -19,9 +21,11 @@ public class EmotesetManager {
     private final MainGui g;
     private final Settings settings;
     
-    private final Set<String> ircEmotesets = new HashSet<>();
+    private final Map<String, Set<String>> ircEmotesets = new HashMap<>();
     private final Set<String> userEmotesets = new HashSet<>();
     private final Set<String> emotesets = new HashSet<>();
+    
+    private boolean userEmotesRequested = false;
     
     public EmotesetManager(TwitchApi api, MainGui g, Settings settings) {
         this.api = api;
@@ -36,30 +40,38 @@ public class EmotesetManager {
      * If the required access to request user emotes isn't available, then still
      * just use these.
      * 
-     * @param emotesets 
+     * @param channel
+     * @param newSets 
      */
-    public void setIrcEmotesets(Set<String> emotesets) {
+    public void setIrcEmotesets(String channel, Set<String> newSets) {
         boolean changed = false;
         synchronized(this) {
-            if (emotesets == null) {
-                emotesets = new HashSet<>();
+            if (newSets == null) {
+                newSets = new HashSet<>();
             }
+            Set<String> prevSets = ircEmotesets.get(channel);
             /**
              * Only check length, since emotesets may cycle through, without
              * anything actually having really changed. This is a Twitch Chat bug.
              */
-            if (ircEmotesets.size() != emotesets.size()) {
+            if ((prevSets != null && prevSets.size() != newSets.size()) || !userEmotesRequested) {
                 changed = true;
+                userEmotesRequested = true;
             }
-            ircEmotesets.clear();
-            ircEmotesets.addAll(emotesets);
+            if (prevSets == null) {
+                ircEmotesets.put(channel, new HashSet<>());
+            }
+            ircEmotesets.get(channel).clear();
+            ircEmotesets.get(channel).addAll(newSets);
         }
         if (changed) {
             requestUserEmotes();
-            updateEmotesets();
-            emotesets.remove("0");
-            api.getEmotesBySets(emotesets);
         }
+        newSets.remove("0");
+        // Filter out emotesets in the new format for now
+        newSets.removeIf(s -> s.contains("-"));
+        api.getEmotesBySets(newSets);
+        updateEmotesets();
     }
     
     /**
@@ -92,13 +104,16 @@ public class EmotesetManager {
     /**
      * Update the emotesets for the local user and update stuff if necessary.
      */
-    public void updateEmotesets() {
+    private void updateEmotesets() {
         boolean changed = false;
         Set<String> all = new HashSet<>();
         synchronized(this) {
             // Both IRC and GetUserEmotes sets as long as both don't contain all
             all.addAll(userEmotesets);
-            all.addAll(ircEmotesets);
+            // Add all emotesets from all channels
+            for (Set<String> sets : ircEmotesets.values()) {
+                all.addAll(sets);
+            }
             if (!emotesets.equals(all)) {
                 changed = true;
             }

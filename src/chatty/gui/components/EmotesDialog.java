@@ -741,12 +741,14 @@ public class EmotesDialog extends JDialog {
                 stream = "-";
             }
             Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
-            List<Emoticon> sorted = new ArrayList<>(emotes);
-            Collections.sort(sorted, new SortEmotesByTypeAndName());
-            addTitle(stream + " [" + emoteset + "] (" + emotes.size() + " emotes)",
-                    Arrays.asList(new String[]{emoteset}));
-            if (!allowHide || !isHidden(emoteset)) {
-                addEmotesPanel(sorted);
+            if (!emotes.isEmpty()) {
+                List<Emoticon> sorted = new ArrayList<>(emotes);
+                Collections.sort(sorted, new SortEmotesByTypeAndName());
+                addTitle(stream + " [" + emoteset + "] (" + emotes.size() + " emotes)",
+                        Arrays.asList(new String[]{emoteset}));
+                if (!allowHide || !isHidden(emoteset)) {
+                    addEmotesPanel(sorted);
+                }
             }
         }
         
@@ -769,16 +771,19 @@ public class EmotesDialog extends JDialog {
             for (String set : sets) {
                 sorted.addAll(emoteManager.getEmoticonsBySet(set));
             }
-            Collections.sort(sorted, new SortEmotesByEmotesetAndName());
-            addTitle(String.format("%s %s (%d emotes)",
-                    titlePrefix,
-                    sets,
-                    sorted.size()), allowHide ? sets : null);
-            boolean show = !allowHide || !isHidden(sets);
-            if (show) {
-                addEmotesPanel(sorted);
+            if (!sorted.isEmpty()) {
+                Collections.sort(sorted, new SortEmotesByEmotesetAndName());
+                addTitle(String.format("%s %s (%d emotes)",
+                        titlePrefix,
+                        sets,
+                        sorted.size()), allowHide ? sets : null);
+                boolean show = !allowHide || !isHidden(sets);
+                if (show) {
+                    addEmotesPanel(sorted);
+                }
+                return show;
             }
-            return show && !sorted.isEmpty();
+            return false;
         }
         
         void addTitle(String title) {
@@ -906,7 +911,7 @@ public class EmotesDialog extends JDialog {
             if (StringUtil.isNullOrEmpty(emote.getEmotesetInfo())) {
                 return;
             }
-            if (Arrays.asList(new String[]{"Tier 2", "Tier 3", "Bits"}).contains(emote.getEmotesetInfo())) {
+            if (Arrays.asList(new String[]{"Tier 2", "Tier 3", "Bits", "Follower"}).contains(emote.getEmotesetInfo())) {
                 panel.add(new JLabel(emote.getEmotesetInfo()));
             }
         }

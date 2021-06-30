@@ -1363,7 +1363,7 @@ public class TwitchConnection {
             //--------------------------
             // Emotesets
             //--------------------------
-            listener.onEmotesets(Emoticons.parseEmotesets(tags.get("emote-sets")));
+            listener.onEmotesets(channel, Emoticons.parseEmotesets(tags.get("emote-sets")));
         }
         
         @Override
@@ -1593,7 +1593,7 @@ public class TwitchConnection {
 
         void onConnectionStateChanged(int state);
         
-        void onEmotesets(Set<String> emotesets);
+        void onEmotesets(String channel, Set<String> emotesets);
 
         void onConnectError(String message);
         

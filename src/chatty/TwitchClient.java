@@ -2151,36 +2151,6 @@ public class TwitchClient {
         return emotesetManager.getEmotesets();
     }
     
-    /**
-     * Outputs the emotesets for the local user. This might not work correctly
-     * if the user is changed or the emotesets change during the session.
-     */
-    private void commandMyEmotes() {
-        Set<String> emotesets = getEmotesets();
-        if (emotesets.isEmpty()) {
-            g.printLine("No subscriber emotes found. (Only works if you joined"
-                    + " any channel before.)");
-        } else {
-            StringBuilder b = new StringBuilder("Your subemotes: ");
-            String sep = "";
-            for (String emoteset : emotesets) {
-                b.append(sep);
-                if (Emoticons.isTurboEmoteset(emoteset)) {
-                    b.append("Turbo/Prime emotes");
-                } else {
-                    String sep2 = "";
-                    for (Emoticon emote : g.emoticons.getEmoticonsBySet(emoteset)) {
-                        b.append(sep2);
-                        b.append(emote.code);
-                        sep2 = ", ";
-                    }
-                }
-                sep = " / ";
-            }
-            g.printLine(b.toString());
-        }
-    }
-    
     private void commandFFZ(String channel) {
         Set<Emoticon> output;
         StringBuilder b = new StringBuilder();
@@ -2953,6 +2923,7 @@ public class TwitchClient {
             if (Helper.isValidStream(stream)) {
                 api.getRoomBadges(stream, false);
                 api.getCheers(stream, false);
+                api.getEmotesByChannelId(stream, null, false);
                 requestChannelEmotes(stream);
                 frankerFaceZ.joined(stream);
                 checkModLogListen(user);
@@ -3141,8 +3112,8 @@ public class TwitchClient {
         }
         
         @Override
-        public void onEmotesets(Set<String> emotesets) {
-            emotesetManager.setIrcEmotesets(emotesets);
+        public void onEmotesets(String channel, Set<String> emotesets) {
+            emotesetManager.setIrcEmotesets(channel, emotesets);
         }
 
         @Override

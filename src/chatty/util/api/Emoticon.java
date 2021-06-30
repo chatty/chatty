@@ -75,7 +75,7 @@ public class Emoticon {
     }
     
     public static enum SubType {
-        FEATURE_FRIDAY, EVENT, CHEER
+        FEATURE_FRIDAY, EVENT, CHEER, FOLLOWER
     }
     
     public static enum ImageType {

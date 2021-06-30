@@ -40,7 +40,7 @@ public class EmoticonParsing {
                 JSONObject entry = (JSONObject) o;
                 String id = JSONUtil.getString(entry, "id");
                 String code = JSONUtil.getString(entry, "name");
-                String type = JSONUtil.getString(entry, "emote_type");
+                String type = JSONUtil.getString(entry, "emote_type", "");
                 String set = JSONUtil.getString(entry, "emote_set_id");
                 String tier = JSONUtil.getString(entry, "tier");
                 String owner_id = JSONUtil.getString(entry, "owner_id");
@@ -67,17 +67,26 @@ public class EmoticonParsing {
                         break;
                     case "follower":
                         info = "Follower";
+                        builder.setSubType(Emoticon.SubType.FOLLOWER);
+                        builder.addStreamRestriction(streamName);
                         break;
                     default:
                         info = type;
                 }
                 builder.setEmotesetInfo(info);
                 
-                emotes.add(builder.build());
-                emotesets.add(set);
-                // Not all information may be available, but add anyway
-                EmotesetInfo setInfo = new EmotesetInfo(set, streamName, owner_id, info);
-                setInfos.add(setInfo);
+                boolean add = true;
+                if (type.equals("follower") && streamName == null) {
+                    // Stream restriction is required
+                    add = false;
+                }
+                if (add) {
+                    emotes.add(builder.build());
+                    emotesets.add(set);
+                    // Not all information may be available, but add anyway
+                    EmotesetInfo setInfo = new EmotesetInfo(set, streamName, owner_id, info);
+                    setInfos.add(setInfo);
+                }
             }
             //--------------------------
             // Result
