@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Room;
 import chatty.util.DateTime;
+import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -103,9 +104,10 @@ public class Parsing {
             
             String username = (String)token.get("user_name");
             String id = (String)token.get("user_id");
+            String client_id = JSONUtil.getString(token, "client_id");
             JSONObject authorization = (JSONObject)token.get("authorization");
             JSONArray scopes = (JSONArray)authorization.get("scopes");
-            return new TokenInfo(username, id, scopes);
+            return new TokenInfo(username, id, client_id, scopes);
         }
         catch (Exception e) {
             return null;

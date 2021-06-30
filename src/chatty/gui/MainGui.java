@@ -4528,6 +4528,9 @@ public class MainGui extends JFrame implements Runnable {
             else {
                 result = "Login verified and ready to connect.";
             }
+            if (!Chatty.CLIENT_ID.equals(tokenInfo.clientId)) {
+                result += " ClientID does not match, please generate token through Chatty.";
+            }
         }
         if (changedTokenResponse) {
             printLine(result);
