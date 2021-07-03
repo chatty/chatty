@@ -234,6 +234,9 @@ public class Requests {
                 } else {
                     listener.followResult("Couldn't follow '" + targetName + "' (unknown error)");
                 }
+                if (r.responseCode != 200) {
+                    listener.followResult("Note: Twitch planned to remove follow/unfollow functionality from their API on July 27, 2021.");
+                }
             });
         }
     }
@@ -256,6 +259,9 @@ public class Requests {
                     listener.followResult("Couldn't unfollow '" + targetName + "' (access denied)");
                 } else {
                     listener.followResult("Couldn't unfollow '" + targetName + "' (unknown error)");
+                }
+                if (r.responseCode != 204) {
+                    listener.followResult("Note: Twitch planned to remove follow/unfollow functionality from their API on July 27, 2021.");
                 }
             });
         }

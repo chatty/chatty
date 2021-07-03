@@ -1,7 +1,6 @@
 
 package chatty.util;
 
-import chatty.util.api.Emoticon;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Graphics;
