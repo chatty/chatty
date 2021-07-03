@@ -8,6 +8,7 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.lang.Language;
 import chatty.util.Debugging;
+import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
@@ -1047,10 +1048,7 @@ public class EmotesDialog extends JDialog {
                 EmotesetInfo newInfo = emoteManager.getInfoBySet(emoteset);
                 if (newInfo != null && newInfo.stream_id != null) {
                     Set<Emoticon> emotes = emoteManager.getEmoticonsBySet(emoteset);
-                    if (!perOwnerId.containsKey(newInfo.stream_id)) {
-                        perOwnerId.put(newInfo.stream_id, new HashSet<>());
-                    }
-                    perOwnerId.get(newInfo.stream_id).addAll(emotes);
+                    MiscUtil.getSetFromMap(perOwnerId, newInfo.stream_id).addAll(emotes);
                 }
             }
             Map<String, String> prefixesByOwnerId = new HashMap<>();

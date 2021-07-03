@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import chatty.util.api.Emoticon;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Graphics;
@@ -290,6 +291,24 @@ public class MiscUtil {
     
     public static boolean isBitEnabled(int value, int bit) {
         return (value & bit) != 0;
+    }
+    
+    /**
+     * Return the Set contained in the Map for the given key. If no Set exists
+     * for the key yet, a new HashSet is automatically created and added to the
+     * Map.
+     * 
+     * @param <K> The Map key type
+     * @param <V> The Set value type
+     * @param map The Map
+     * @param mapKey The Map key
+     * @return 
+     */
+    public static <K, V> Set<V> getSetFromMap(Map<K, Set<V>> map, K mapKey) {
+        if (!map.containsKey(mapKey)) {
+            map.put(mapKey, new HashSet<>());
+        }
+        return map.get(mapKey);
     }
     
 }

@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.CombinedEmoticon;
+import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.settings.Settings;
@@ -147,8 +148,6 @@ public class Emoticons {
      * separate map if the user may not have access to all channel-specific
      * emotes, which is rather unusual, but some BTTV may have an emoteset as
      * requirement.
-     * 
-     * TODO: May need to check when localEmotesets changes as well
      */
     private final Map<String, Set<Emoticon>> usableStreamEmotes = new HashMap<>();
     
@@ -352,10 +351,7 @@ public class Emoticons {
                 usableGlobalEmotes.add(emote);
             } else {
                 for (String stream : emote.getStreamRestrictions()) {
-                    if (!usableStreamEmotes.containsKey(stream)) {
-                        usableStreamEmotes.put(stream, new HashSet<>());
-                    }
-                    usableStreamEmotes.get(stream).add(emote);
+                    MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
                 }
             }
         }
@@ -497,6 +493,9 @@ public class Emoticons {
     public void updateLocalEmotes(Set<String> emotesets) {
         if (!this.localEmotesets.equals(emotesets)) {
             this.localEmotesets = emotesets;
+            //--------------------------
+            // By set
+            //--------------------------
             // Remove emotes not having current sets (and not being global)
             Iterator<Emoticon> it = usableGlobalEmotes.iterator();
             while (it.hasNext()) {
@@ -509,6 +508,31 @@ public class Emoticons {
             for (String emoteset : emotesets) {
                 for (Emoticon emote : getEmoticonsBySet(emoteset)) {
                     usableGlobalEmotes.add(emote);
+                }
+            }
+            
+            //--------------------------
+            // By stream
+            //--------------------------
+            for (Map.Entry<String, Set<Emoticon>> entry : usableStreamEmotes.entrySet()) {
+                // For each stream in usable emotes
+                // Remove any non-accessible
+                Iterator<Emoticon> itStream = entry.getValue().iterator();
+                while (itStream.hasNext()) {
+                    Emoticon emote = itStream.next();
+                    if (!emote.hasGlobalEmoteset() && !localEmotesets.contains(emote.emoteset)) {
+                        itStream.remove();
+                    }
+                }
+            }
+            for (Map.Entry<String, HashSet<Emoticon>> entry : streamEmoticons.entrySet()) {
+                // For each stream in all per-stream emotes
+                String stream  = entry.getKey();
+                // Add all accessible
+                for (Emoticon emote : entry.getValue()) {
+                    if (emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteset)) {
+                        MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
+                    }
                 }
             }
         }
