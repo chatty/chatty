@@ -64,6 +64,7 @@ import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 /**
@@ -263,8 +264,22 @@ public class EmotesDialog extends JDialog {
         refreshButton.addActionListener(e -> {
             if (currentPanel != null) {
                 if (currentPanel.label.equals(MY_EMOTES)) {
-                    main.refreshEmotes("user");
+                    main.refreshEmotes("user", null);
                 }
+                else if (currentPanel.label.equals(CHANNEL_EMOTES)) {
+                    String stream = tempStream != null ? tempStream : currentStream;
+                    main.refreshEmotes("channel", stream);
+                }
+                else if (currentPanel.label.equals(TWITCH_EMOTES)) {
+                    main.refreshEmotes("globaltwitch", null);
+                }
+                else if (currentPanel.label.equals(OTHER_EMOTES)) {
+                    main.refreshEmotes("globalother", null);
+                }
+                refreshButton.setEnabled(false);
+                Timer timer = new Timer(1000, evt -> refreshButton.setEnabled(true));
+                timer.setRepeats(false);
+                timer.start();
             }
         });
         
@@ -525,7 +540,10 @@ public class EmotesDialog extends JDialog {
         if (currentPanel == null) {
             return;
         }
-        boolean enabled = currentPanel.label.equals(MY_EMOTES) && userEmotesAccess;
+        boolean enabled = (currentPanel.label.equals(MY_EMOTES) && userEmotesAccess)
+                || currentPanel.label.equals(CHANNEL_EMOTES)
+                || (currentPanel.label.equals(TWITCH_EMOTES) && userEmotesAccess)
+                || currentPanel.label.equals(OTHER_EMOTES);
         refreshButton.setEnabled(enabled);
         if (enabled) {
             refreshButton.setToolTipText(Language.getString("emotesDialog.refresh"));

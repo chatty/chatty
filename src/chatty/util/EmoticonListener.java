@@ -1,7 +1,7 @@
 
 package chatty.util;
 
-import chatty.util.api.Emoticon;
+import chatty.util.api.EmoticonUpdate;
 import java.util.Set;
 
 /**
@@ -10,6 +10,6 @@ import java.util.Set;
  * @author tduva
  */
 public interface EmoticonListener {
-    void receivedEmoticons(Set<Emoticon> emoticons);
+    void receivedEmoticons(EmoticonUpdate emotesUpdate);
     void receivedBotNames(String stream, Set<String> names);
 }

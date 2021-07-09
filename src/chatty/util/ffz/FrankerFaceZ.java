@@ -272,9 +272,16 @@ public class FrankerFaceZ {
         
         // Package accordingly and send the result to the listener
         EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
+        updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
         if (type == Type.FEATURE_FRIDAY) {
-            updateBuilder.setTypeToRemove(Emoticon.Type.FFZ);
             updateBuilder.setSubTypeToRemove(Emoticon.SubType.FEATURE_FRIDAY);
+        }
+        else if (type == Type.ROOM) {
+            updateBuilder.setSubTypeToRemove(Emoticon.SubType.REGULAR);
+            updateBuilder.setRoomToRemove(stream);
+        }
+        else if (type == Type.GLOBAL) {
+            updateBuilder.setSubTypeToRemove(Emoticon.SubType.REGULAR);
         }
         listener.channelEmoticonsReceived(updateBuilder.build());
         // Return icons if mod icon was found (will be empty otherwise)

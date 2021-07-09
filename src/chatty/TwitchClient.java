@@ -2136,7 +2136,7 @@ public class TwitchClient {
         } else if (parameter.equals("bttvemotes")) {
             g.printLine("Refreshing BTTV emotes..");
             refreshRequests.add("bttvemotes");
-            bttvEmotes.requestEmotes("$global$", true);
+            bttvEmotes.requestEmotes(BTTVEmotes.GLOBAL, true);
             bttvEmotes.requestEmotes(channel, true);
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
@@ -2783,8 +2783,8 @@ public class TwitchClient {
     private class EmoteListener implements EmoticonListener {
 
         @Override
-        public void receivedEmoticons(Set<Emoticon> emoticons) {
-            g.addEmoticons(emoticons);
+        public void receivedEmoticons(EmoticonUpdate emoticons) {
+            g.updateEmoticons(emoticons);
             if (refreshRequests.contains("bttvemotes")) {
                 g.printLine("BTTV emotes updated.");
                 refreshRequests.remove("bttvemotes");

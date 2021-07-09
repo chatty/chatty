@@ -118,8 +118,9 @@ public class EmoticonUpdate {
     
     @Override
     public String toString() {
-        return String.format("+%d/%s/-%s|%s|%s|%s",
+        return String.format("+%d|%s/%s/-%s|%s|%s|%s",
                              emotesToAdd.size(),
+                             setsAdded,
                              source,
                              typeToRemove,
                              subTypeToRemove,

@@ -69,7 +69,7 @@ public class FrankerFaceZParsing {
             for (Object setObject : defaultSets) {
                 int set = ((Number)setObject).intValue();
                 JSONObject setData = (JSONObject)sets.get(String.valueOf(set));
-                return parseEmoteSet(setData, null, null);
+                return parseEmoteSet(setData, null, Emoticon.SubType.REGULAR);
             }
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             LOGGER.warning("Error parsing global FFZ emotes: "+ex);
@@ -97,7 +97,7 @@ public class FrankerFaceZParsing {
             int set = ((Number)room.get("set")).intValue();
             JSONObject sets = (JSONObject)o.get("sets");
             JSONObject setData = (JSONObject)sets.get(String.valueOf(set));
-            return parseEmoteSet(setData, stream, null);
+            return parseEmoteSet(setData, stream, Emoticon.SubType.REGULAR);
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             LOGGER.warning("Error parsing FFZ emotes: "+ex);
         }

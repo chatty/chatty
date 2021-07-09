@@ -3,6 +3,7 @@ package chatty.util;
 
 import chatty.Helper;
 import chatty.util.api.Emoticon;
+import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.TwitchApi;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,6 +26,8 @@ public class BTTVEmotes {
     private static final String URL_CHANNEL = "https://api.betterttv.net/3/cached/users/twitch/";
     private static final String TEMPLATE = "https://cdn.betterttv.net/emote/{{id}}/{{image}}";
     
+    public static final String GLOBAL = "$global$";
+    
     private final EmoticonListener listener;
     private final TwitchApi api;
     
@@ -35,11 +38,11 @@ public class BTTVEmotes {
     
     public synchronized void requestEmotes(String channel, boolean forcedUpdate) {
         String stream = Helper.toStream(channel);
-        if (!Helper.isValidStream(stream) && !"$global$".equals(stream)) {
+        if (!Helper.isValidStream(stream) && !GLOBAL.equals(stream)) {
             return;
         }
-        if (stream.equals("$global$")) {
-            request("$global$", null, forcedUpdate);
+        if (stream.equals(GLOBAL)) {
+            request(GLOBAL, null, forcedUpdate);
         } else {
             api.getUserId(r -> {
                 if (!r.hasError()) {
@@ -97,7 +100,7 @@ public class BTTVEmotes {
     private int loadEmotes(String json, String streamRestriction) {
         Set<Emoticon> emotes;
         Set<String> bots = new HashSet<>();
-        if (streamRestriction != null && streamRestriction.equals("$global$")) {
+        if (streamRestriction != null && streamRestriction.equals(GLOBAL)) {
             streamRestriction = null;
         }
         
@@ -109,7 +112,10 @@ public class BTTVEmotes {
             bots = parseBots(json);
         }
         LOGGER.info("|[BTTV] Found " + emotes.size() + " emotes / "+bots.size()+" bots");
-        listener.receivedEmoticons(emotes);
+        EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
+        updateBuilder.setTypeToRemove(Emoticon.Type.BTTV);
+        updateBuilder.setRoomToRemove(streamRestriction);
+        listener.receivedEmoticons(updateBuilder.build());
         listener.receivedBotNames(streamRestriction, bots);
         return emotes.size();
     }
