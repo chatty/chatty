@@ -17,7 +17,6 @@ import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.EAST;
@@ -30,7 +29,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -158,7 +156,7 @@ class NotificationEditor extends TableEditor<Notification> {
             // Text
             String text;
             if (column == 0) {
-                String channel = n.hasChannel() ? " ("+n.channel+")" : "";
+                String channel = n.hasChannels() ? " (" + n.serializeChannels() + ")" : "";
                 String matcher = n.hasMatcher() ? "&nbsp;"+n.getMatcherString() : "";
                 text = String.format("%s%s\n%s",
                         n.type.label,
@@ -225,7 +223,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final GenericComboSetting<Notification.Type> type;
         private final GenericComboSetting<Notification.State> desktopState;
         private final GenericComboSetting<Notification.State> soundState;
-        private final SimpleStringSetting channel;
+        private final SimpleStringSetting channels;
         private final EditorStringSetting matcher;
         private final ColorTemplates colorTemplates;
         private final ColorSetting foregroundColor;
@@ -297,12 +295,12 @@ class NotificationEditor extends TableEditor<Notification> {
             options.setLayout(new BoxLayout(options, BoxLayout.PAGE_AXIS));
             optionsAssoc = new HashMap<>();
             
-            channel = new SimpleStringSetting(20, true);
+            channels = new SimpleStringSetting(20, true, DataFormatter.TRIM);
             HighlighterTester matcherEditor = new HighlighterTester(dialog, false, "notification");
             matcherEditor.setAllowEmpty(true);
             matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, matcherEditor);
             
-            SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.channel", 0, 2, 1, EAST, channel);
+            SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.channel", 0, 2, 1, EAST, channels);
             SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.textMatch", 0, 3, 1, EAST, matcher);
             
             optionsPanel.add(options, GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
@@ -557,7 +555,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 current = preset;
                 
                 type.setSettingValue(preset.type);
-                channel.setSettingValue(preset.channel);
+                channels.setSettingValue(preset.serializeChannels());
                 matcher.setSettingValue(preset.matcher);
                 desktopState.setSettingValue(preset.desktopState);
                 foregroundColor.setSettingValue(HtmlColors.getColorString(preset.foregroundColor));
@@ -574,7 +572,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 current = null;
                 
                 type.setSelectedIndex(0);
-                channel.setSettingValue(null);
+                channels.setSettingValue("");
                 matcher.setSettingValue(null);
                 desktopState.setSettingValue(Notification.State.ALWAYS);
                 foregroundColor.setSettingValue("black");
@@ -628,7 +626,7 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setVolume(volumeSlider.getSettingValue());
             b.setSoundCooldown(soundCooldown.getSettingValue(0L).intValue());
             b.setSoundInactiveCooldown(soundInactiveCooldown.getSettingValue(0L).intValue());
-            b.setChannel(channel.getSettingValue());
+            b.setChannels(channels.getSettingValue());
             b.setMatcher(matcher.getSettingValue());
             b.setOptions(getSubTypes());
             

@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 /**
@@ -135,7 +137,7 @@ public class Notification {
         private int soundCooldown;
         private int soundInactiveCooldown;
         private List<String> options = new ArrayList<>();
-        private String channel;
+        private String channels;
         
         public Builder(Type type) {
             this.type = type;
@@ -191,8 +193,8 @@ public class Notification {
             return this;
         }
         
-        public Builder setChannel(String channel) {
-            this.channel = channel;
+        public Builder setChannels(String channels) {
+            this.channels = channels;
             return this;
         }
         
@@ -205,7 +207,7 @@ public class Notification {
     
     public final Type type;
     public final List<String> options;
-    public final String channel;
+    private final Set<String> channels;
     public final String matcher;
     private final Highlighter.HighlightItem matcherItem;
     
@@ -221,8 +223,7 @@ public class Notification {
     public final long soundVolume;
     public final int soundCooldown;
     public final int soundInactiveCooldown;
-    public int soundFileDelay;
-    
+
     // State
     private long lastMatched;
     private long lastSoundPlayed;
@@ -232,8 +233,7 @@ public class Notification {
         // Both
         type = builder.type;
         this.options = builder.options;
-        String tempChannel = StringUtil.trim(builder.channel);
-        this.channel = tempChannel == null || tempChannel.isEmpty() ? null : Helper.toChannel(tempChannel);
+        channels = parseChannels(builder.channels);
         this.matcher = StringUtil.trim(builder.matcher);
         if (matcher != null && !matcher.isEmpty()) {
             this.matcherItem = new Highlighter.HighlightItem(matcher, "notification");
@@ -253,6 +253,20 @@ public class Notification {
         this.soundVolume = builder.soundVolume;
         this.soundCooldown = builder.soundCooldown;
         this.soundInactiveCooldown = builder.soundInactiveCooldown;
+    }
+
+    private static Set<String> parseChannels(String channels) {
+        if (channels == null) {
+            return null;
+        }
+        Set<String> parsedChannels = Helper.parseChannelsFromString(channels, true);
+        if (!parsedChannels.isEmpty()) {
+            Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+            result.addAll(parsedChannels);
+            return result;
+        } else {
+            return null;
+        }
     }
 
     public String getDesktopState() {
@@ -287,10 +301,10 @@ public class Notification {
         if (channel == null) {
             return true;
         }
-        if (this.channel == null) {
+        if (channels == null) {
             return true;
         }
-        return channel.equalsIgnoreCase(this.channel);
+        return channels.contains(Helper.toChannel(channel));
     }
     
     public boolean matches(String text, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
@@ -300,8 +314,12 @@ public class Notification {
         return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, localUser, tags);
     }
     
-    public boolean hasChannel() {
-        return channel != null;
+    public boolean hasChannels() {
+        return channels != null && !channels.isEmpty();
+    }
+
+    public String serializeChannels() {
+        return channels == null ? "" : Helper.buildStreamsString(channels);
     }
 
     public boolean hasOption(TypeOption option) {
@@ -333,7 +351,7 @@ public class Notification {
         result.add(soundVolume);
         result.add(soundCooldown);
         result.add(soundInactiveCooldown);
-        result.add(channel);
+        result.add(serializeChannels());
         result.add(matcher);
         return result;
     }
@@ -351,7 +369,7 @@ public class Notification {
             long volume = ((Number)list.get(8)).longValue();
             int soundCooldown = ((Number)list.get(9)).intValue();
             int soundInactiveCooldown = ((Number)list.get(10)).intValue();
-            String channel = (String)list.get(11);
+            String channels = (String)list.get(11);
             String matcher = (String)list.get(12);
             
             Builder b = new Builder(type);
@@ -365,7 +383,7 @@ public class Notification {
             b.setVolume(volume);
             b.setSoundCooldown(soundCooldown);
             b.setSoundInactiveCooldown(soundInactiveCooldown);
-            b.setChannel(channel);
+            b.setChannels(channels);
             b.setMatcher(matcher);
             return new Notification(b);
         } catch (Exception ex) {
