@@ -2,6 +2,7 @@ package chatty.gui.notifications;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class NotificationTest {
@@ -13,6 +14,8 @@ public class NotificationTest {
         assertTrue(notification.matchesChannel("#fooBAR"));
         assertTrue(notification.matchesChannel("foobar"));
         assertTrue(notification.matchesChannel("FOObar"));
+        assertTrue(notification.matchesChannel("AnythingGoes"));
+        assertTrue(notification.matchesChannel("#AnythingGoes"));
     }
 
     @Test
@@ -23,12 +26,16 @@ public class NotificationTest {
         assertTrue(notification.matchesChannel("#fooBAR"));
         assertTrue(notification.matchesChannel("foobar"));
         assertTrue(notification.matchesChannel("Foobar"));
+        assertFalse(notification.matchesChannel("NotInChannelList"));
+        assertFalse(notification.matchesChannel("#NotInChannelList"));
         notification = createStreamStatusNotification("#fOOBAR");
         assertTrue(notification.matchesChannel(null));
         assertTrue(notification.matchesChannel("#foobar"));
         assertTrue(notification.matchesChannel("#FOObar"));
         assertTrue(notification.matchesChannel("foobar"));
         assertTrue(notification.matchesChannel("fooBar"));
+        assertFalse(notification.matchesChannel("NotInChannelList"));
+        assertFalse(notification.matchesChannel("#NotInChannelList"));
     }
 
     @Test
@@ -42,6 +49,8 @@ public class NotificationTest {
         assertTrue(notification.matchesChannel("#baz"));
         assertTrue(notification.matchesChannel("#FOO"));
         assertTrue(notification.matchesChannel("#baR"));
+        assertFalse(notification.matchesChannel("NotInChannelList"));
+        assertFalse(notification.matchesChannel("#NotInChannelList"));
         notification = createStreamStatusNotification("#fOO ,#BAR, #BAZ");
         assertTrue(notification.matchesChannel("foo"));
         assertTrue(notification.matchesChannel("bar"));
@@ -51,6 +60,8 @@ public class NotificationTest {
         assertTrue(notification.matchesChannel("#baz"));
         assertTrue(notification.matchesChannel("#FOO"));
         assertTrue(notification.matchesChannel("#baR"));
+        assertFalse(notification.matchesChannel("NotInChannelList"));
+        assertFalse(notification.matchesChannel("#NotInChannelList"));
     }
 
     private Notification createStreamStatusNotification(String channels) {
