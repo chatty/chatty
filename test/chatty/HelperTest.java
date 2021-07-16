@@ -4,6 +4,8 @@ package chatty;
 import chatty.util.StringUtil;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -266,4 +268,31 @@ public class HelperTest {
         assertEquals(new HashSet<>(Arrays.asList(result)), Helper.parseChannelsFromString(input, prepend));
     }
     
+    @Test
+    public void testChannelsListParsingRoundTrip() {
+        Set<String> expected = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        expected.add("foo");
+        expected.add("bar");
+        expected.add("hello");
+        expected.add("world");
+        TreeSet<String> actual = channelListRoundTrip(expected, false);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testPrependedChannelsListParsingRoundTrip() {
+        Set<String> expected = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        expected.add("#foo");
+        expected.add("#bar");
+        expected.add("#hello");
+        expected.add("#world");
+        TreeSet<String> actual = channelListRoundTrip(expected, true);
+        assertEquals(expected, actual);
+    }
+
+    private TreeSet<String> channelListRoundTrip(Set<String> original, boolean prepend) {
+        TreeSet<String> copy = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        copy.addAll(Helper.parseChannelsFromString(Helper.buildStreamsString(original), prepend));
+        return copy;
+    }
 }
