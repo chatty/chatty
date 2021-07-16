@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -38,6 +39,8 @@ import javax.swing.event.ChangeListener;
  * @author tduva
  */
 public class DockTabs extends JTabbedPane implements DockChild {
+    
+    private static final Logger LOGGER = Logger.getLogger(DockTabs.class.getName());
 
     private final DockExportHandler transferHandler;
     private final Map<JComponent, DockContent> assoc = new HashMap<>();
@@ -382,7 +385,20 @@ public class DockTabs extends JTabbedPane implements DockChild {
     public void setActiveContent(DockContent content) {
         JComponent comp = getComponentByContent(content);
         if (comp != null && getSelectedComponent() != comp) {
-            setSelectedComponent(comp);
+            /**
+             * Sometimes this would thrown an error because the comp is not
+             * actually in the tab pane. I'm not sure how this is possible,
+             * since "assoc" should contain up-to-date information, but maybe
+             * it's not updated in some situations. The error appears to occur
+             * inconsistently, on start when loading the layout (maybe other
+             * times as well). For now, catch the error but log it.
+             */
+            try {
+                setSelectedComponent(comp);
+            }
+            catch (IllegalArgumentException ex) {
+                LOGGER.warning("Error setting active content "+content.getId()+": "+ex);
+            }
         }
     }
     
