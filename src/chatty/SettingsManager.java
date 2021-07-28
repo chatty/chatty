@@ -125,6 +125,7 @@ public class SettingsManager {
         settings.addString("updateAvailable", "");
         settings.addBoolean("checkNewVersion", true);
         settings.addBoolean("checkNewBeta", false);
+        settings.addBoolean("updateJar", false);
         settings.addBoolean("newsAutoRequest", true);
         settings.addLong("newsLastRead", 0);
         settings.addString("currentVersion", "");

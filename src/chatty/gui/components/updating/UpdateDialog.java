@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.gui.components.settings.SettingsUtil;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
@@ -62,6 +63,7 @@ public class UpdateDialog extends JDialog {
     private Release latestRelease;
     
     private final JCheckBox enableCheckBeta;
+    private final JCheckBox enableUpdateJar;
     private final JButton closeButton;
     private final JButton downloadButton;
     
@@ -128,8 +130,18 @@ public class UpdateDialog extends JDialog {
         gbc.insets = new Insets(1, 12, 5, 5);
         //add(new JLabel(BETA_INFO), gbc);
         
+        enableUpdateJar = new JCheckBox("Stay on current Standalone (updates JAR only)");
+        enableUpdateJar.setToolTipText(SettingsUtil.addTooltipLinebreaks("Will download the JAR installer only, for example if you need to save data or need to stay on the old Standalone version."));
+        enableUpdateJar.addActionListener(e -> {
+            settings.setBoolean("updateJar", enableUpdateJar.isSelected());
+            updateDisplay();
+        });
+        gbc = GuiUtil.makeGbc(0, 6, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(0, 5, 5, 5);
+        add(enableUpdateJar, gbc);
+
         closeButton = new JButton(Language.getString("dialog.button.close"));
-        gbc = GuiUtil.makeGbc(0, 6, 1, 1);
+        gbc = GuiUtil.makeGbc(0, 7, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         add(closeButton, gbc);
@@ -167,7 +179,11 @@ public class UpdateDialog extends JDialog {
         downloadButtonInfo.setText(null);
         downloadsInfo.setVisible(false);
         enableCheckBeta.setSelected(settings.getBoolean("checkNewBeta"));
+        enableUpdateJar.setSelected(settings.getBoolean("updateJar"));
         if (releases != null) {
+            if (!Stuff.isStandalone()) {
+                enableUpdateJar.setVisible(false);
+            }
             Release latest = releases.getLatest();
             boolean betaUpdateAvailable = false;
             
@@ -249,7 +265,7 @@ public class UpdateDialog extends JDialog {
         
         Asset asset = null;
         if (MiscUtil.OS_WINDOWS && Stuff.installPossible()) {
-            if (isStandalone) {
+            if (isStandalone && !settings.getBoolean("updateJar")) {
                 asset = latest.getAsset("win_standalone_setup.exe");
             }
             if (asset == null) {
@@ -326,6 +342,7 @@ public class UpdateDialog extends JDialog {
         
         Settings settings = new Settings("", null);
         settings.addBoolean("checkNewBeta", true);
+        settings.addBoolean("updateJar", false);
         settings.addLong("versionLastChecked", 0L);
         
         LinkLabelListener linkLabelListener = (type, ref) -> {
