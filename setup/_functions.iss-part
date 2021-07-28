@@ -70,3 +70,207 @@ begin
   //if IsAppRunning('Chatty.jar') then
   //    MsgBox('Please close any remaining Chatty instances.', mbError, MB_OK)
 end;
+
+var
+  ConfigFileConvert: Boolean;
+  ConfigFileChecked: Boolean;
+  ConfigFileName: String;
+  ConfigFileBackupName: String;
+  ConfigFileIsJPackage: Boolean;
+
+{ Used to decide whether to install the Config File and to
+  gather information on the currently installed Config File
+  and making a backup if necessary.
+
+  In the Config File it checks the main class name value,
+  since that is distinct between the different formats. It
+  doesn't check the ChattyPortable.cfg since it doesn't
+  exist in the old format.
+  
+  If the file doesn't already exist, the backup copy will
+  fail and thus ConfigFileConvert won't be set to True.
+
+  The will be installed either when it should be converted
+  (because the main class name doesn't match) or when it's
+  selected for installation. It won't always be converted
+  though, see convert function ConfigFileAfterInstall.
+}
+function ConfigFileCheck(): Boolean;
+var
+  MainClassName: String;
+  NewMainClassName: String;
+begin
+    { Only check currently installed Config File once. }
+    if not ConfigFileChecked then begin
+        ConfigFileName := ExpandConstant(CurrentFileName);
+        if ExpandConstant('{#IsJPackage}') = '1' then
+            ConfigFileIsJPackage := True;
+        if ConfigFileIsJPackage then
+            NewMainClassName := 'chatty.Chatty2'
+        else
+            NewMainClassName := 'chatty/Chatty';
+        MainClassName := GetIniString('Application', 'app.mainclass', '', ConfigFileName);
+        Log('Checking Config File: '+ConfigFileName+' / '+MainClassName+' ('+NewMainClassName+')');
+        if CompareStr(MainClassName, NewMainClassName) <> 0 then begin
+            Log('Config File should be converted');
+            ConfigFileBackupName := ConfigFileName+'_backup';
+            if FileCopy(ConfigFileName, ConfigFileBackupName, False) then begin
+                Log('Made Config File backup')
+                ConfigFileConvert := True;
+            end;
+        end;
+        ConfigFileChecked := True;
+    end;
+    if ConfigFileConvert or WizardIsComponentSelected('config') then begin
+        Result := True;
+        Log('Write Config File');
+    end
+    else
+    begin
+        Result := False;
+        Log('Dont write Config File');
+    end;
+end;
+
+{ Checks if the given Input begins with the given Prefix.
+  
+  Probably not very efficient, but it'll do for this.  
+}
+function StartsWith(const Input, Prefix: String): Boolean;
+var
+  Temp : String;
+begin
+    Temp := Copy(Input, 1, Length(Prefix));
+    if CompareStr(Temp, Prefix) = 0 then
+        Result := True
+    else
+        Result := False;
+end;
+
+{ Adds lines to the given StringList while adding or removing
+  the given Prefix, depending on whether this installer is
+  for the new or old Config File format.
+}
+procedure AddArgs(const Prefix: string; StringList, AddStrings: TStrings);
+var
+  Index : Integer;
+  Temp : String;
+begin
+    for Index := 0 to AddStrings.Count - 1 do begin
+        Temp := AddStrings[Index];
+        if ConfigFileIsJPackage then begin
+            { Add Prefix if necessary. }
+            if StartsWith(Temp, Prefix) then
+                StringList.Append(Temp)
+            else
+                StringList.Append(Prefix+Temp);
+        end
+        else
+        begin
+            { Remove Prefix if necessary. }
+            if StartsWith(Temp, Prefix) then
+                StringList.Append(Copy(Temp, Length(Prefix)+1, 1000))
+            else
+                StringList.Append(Temp);
+        end;
+    end;
+end;
+
+{ Converts the Config File after install, if necessary.
+
+  This is not done if the file is selected for installation,
+  since that assumes it's supposed to be entirely replaced
+  instead of "updated".
+
+  The conversion looks for all lines under the "[JVMOptions]" and
+  "[ArgOptions]" sections in the old (javapackager) format file
+  and moves them to the "[JavaOptions]" and "[ArgOptions]" sections
+  in the new (jpackage) format file, while adding the required
+  prefix to each line. It does the opposite when going back to
+  the older format.
+}
+procedure ConfigFileAfterInstall();
+var
+  TempList: TStrings;
+  JavaOptions: TStrings;
+  JavaOptionsSourceKey: String;
+  JavaOptionsTargetKey: String;
+  ArgOptions: TStrings;
+  CurrentSection : String;
+  Index: Integer;
+  Line: String;
+  NewFile : TStrings;
+  IgnoreSection : Boolean;
+begin
+    if ConfigFileChecked and ConfigFileConvert and not WizardIsComponentSelected('config') then begin
+        { New JPackage Config File Format }
+        TempList := TStringList.Create;
+        JavaOptions := TStringList.Create;
+        ArgOptions := TStringList.Create;
+        NewFile := TStringList.Create;
+        try
+            if ConfigFileIsJPackage then begin
+                JavaOptionsSourceKey := '[JVMOptions]';
+                JavaOptionsTargetKey := '[JavaOptions]';
+            end
+            else
+            begin
+                JavaOptionsTargetKey := '[JVMOptions]';
+                JavaOptionsSourceKey := '[JavaOptions]';
+            end;
+                
+            TempList.LoadFromFile(ConfigFileBackupName);
+            for Index := 0 to TempList.Count - 1 do begin
+                Line := TempList[Index];
+                Log('Line: '+Line);
+                if Length(Line) > 0 then begin
+                    if (Line[1] = '[') and (Line[Length(Line)] = ']') then begin
+                        Log('Start section '+Line);
+                        CurrentSection := Line;
+                    end
+                    else
+                    begin
+                        if CompareStr(CurrentSection, JavaOptionsSourceKey) = 0 then
+                            JavaOptions.Append(Line);
+                        if CompareStr(CurrentSection, '[ArgOptions]') = 0 then
+                            ArgOptions.Append(Line);
+                        Log('Under section '+CurrentSection+' there is option '+Line);
+                    end;
+                end;
+            end;
+            Log('JavaOptions: '+JavaOptions.Text+' ArgOptions: '+ArgOptions.Text);
+            TempList.LoadFromFile(ConfigFileName);
+            for Index := 0 to TempList.Count - 1 do begin
+                Line := TempList[Index];
+                Log('Line New File: '+Line);
+                if CompareStr(Line, JavaOptionsTargetKey) = 0 then begin
+                    NewFile.Append(Line);
+                    AddArgs('java-options=', NewFile, JavaOptions);
+                    IgnoreSection := True;
+                end
+                else if CompareStr(Line, '[ArgOptions]') = 0 then begin
+                    NewFile.Append(Line);
+                    AddArgs('arguments=', NewFile, ArgOptions);
+                    IgnoreSection := True;
+                end
+                else
+                if (Length(Line) > 0) and (Line[1] = '[') then begin
+                    IgnoreSection := False;
+                end;
+                if (Length(Line) = 0) or (not IgnoreSection) then
+                    NewFile.Append(Line);
+            end;
+            Log('Result: '+NewFile.Text);
+            NewFile.SaveToFile(ConfigFileName);
+            MsgBox('The Chatty.cfg format has changed from the previously installed version. Options have been automatically converted, so you probably don''t need to take any further action:' + #13#10#13#10
+                + NewFile.Text + #13#10#13#10
+                + 'Additionally, a backup of the old file has been created at:' + #13#10
+                + ConfigFileBackupName, mbInformation, MB_OK);
+        finally
+            TempList.Free;
+            NewFile.Free;
+            JavaOptions.Free;
+            ArgOptions.Free;
+        end;
+    end;
+end;

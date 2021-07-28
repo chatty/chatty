@@ -119,18 +119,57 @@ task release(group: 'build') {
 // Windows
 //--------
 
-def javapackagerBuildDir = new File(buildDir, 'javapackager')
+def windowsBundleTarget = new File(buildDir, 'javapackager')
+def windowsBundleSource = new File(windowsBundleTarget, 'bundles/Chatty')
+def standaloneSuffix = "_legacy";
+def isJPackage = "0";
+if (project.hasProperty('jpackagePath')) {
+    windowsBundleTarget = new File(buildDir, 'jpackage')
+    windowsBundleSource = new File(windowsBundleTarget, 'Chatty')
+    standaloneSuffix = "";
+    isJPackage = "1";
+}
 
-task javapackager(type: Exec, group: 'build') {
+ext.standaloneSuffix = standaloneSuffix
+ext.isJPackage = isJPackage
+
+task javapackagerBuild(type: Exec, group: 'build') {
     dependsOn shadowJar
 
     doFirst {
-        if (!project.hasProperty('javapackagerPath')) {
+        if (!project.hasProperty('javapackagerPath') && !project.hasProperty('jpackagePath')) {
             throw new GradleException('Path to javapackager.exe must be defined with -PjavapackagerPath=<path>')
         }
     }
-    if (project.hasProperty('javapackagerPath')) {
-        def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', javapackagerBuildDir, '-outfile', 'Chatty']
+    if (project.hasProperty('jpackagePath')) {
+        doFirst {
+            delete windowsBundleTarget
+	    copy {
+		from tasks.shadowJar.archivePath
+                into new File(windowsBundleTarget, 'input')
+	    }
+        }
+	def command = [jpackagePath,
+		'--type', 'app-image',
+		'-n', 'Chatty',
+		'-i', new File(windowsBundleTarget, 'input'),
+		'-d', windowsBundleTarget,
+		'--main-class', 'chatty.Chatty2',
+		'--main-jar', 'Chatty.jar',
+		'--description', 'Chatty - Twitch Chat Client',
+		'--java-options', '-Xmx600M',
+		'--java-options', '-Dsun.java2d.d3d=false',
+		'--icon', 'assets-bundle/Chatty.ico',
+		'--app-version', project.version,
+		'--arguments', '-abc',
+		'--add-launcher', 'ChattyPortable=assets-bundle/LauncherPortable.properties']
+	commandLine command
+    }
+    else if (project.hasProperty('javapackagerPath')) {
+        doFirst {
+            delete windowsBundleTarget
+        }
+        def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', windowsBundleTarget, '-outfile', 'Chatty']
         command << "-Bicon=assets-bundle/Chatty.ico"
         command << "-BappVersion=${project.version}"
         command << "-BjvmProperties=sun.java2d.d3d=false"
@@ -142,25 +181,51 @@ task javapackager(type: Exec, group: 'build') {
     }
 }
 
+def addApplicationManifest(target) {
+    // Exe files output by packager appear to be readonly
+    ant.attrib(readonly: false) {
+        fileset(file: target)
+    }
+    exec {
+        def command = [mtPath, '-nologo', '-manifest', new File('assets-bundle/Chatty.exe.manifest'), '-outputresource:'+target]
+        commandLine command
+    }
+}
+
+task javapackagerManifest(group: 'build') {
+    dependsOn javapackagerBuild
+    doLast {
+        if (project.hasProperty('mtPath')) {
+            addApplicationManifest(new File(windowsBundleSource, "Chatty.exe"));
+            if (isJPackage) {
+                addApplicationManifest(new File(windowsBundleSource, "ChattyPortable.exe"));
+            }
+        }
+        else {
+            println("Path to mt.exe has to be specified to add an application manifest, skipping..");
+        }
+    }
+}
+
+task javapackager(group: 'build') {
+    dependsOn javapackagerBuild, javapackagerManifest
+}
+
 task windowsZip(type: Zip, group: 'build') {
     dependsOn javapackager
 
-    from new File(javapackagerBuildDir, 'bundles/Chatty')
+    from windowsBundleSource
     from ('assets') {
         exclude 'lib'
 	into 'app'
     }
-    from ('assets/lib/dlls/JIntellitype32.dll') {
-        into 'app'
-    }
-    rename { filename -> filename.replaceAll('JIntellitype\\d{2}', 'JIntellitype') };
     from ('assets-bundle/fallback-fonts') {
         into 'runtime/lib/fonts/fallback'
     }
     from 'assets-bundle/readme-bundle.txt'
 
     destinationDirectory = releasesDir
-    archiveFileName = "${archivesBaseName}_${project.version}_win_standalone.zip"
+    archiveFileName = "${archivesBaseName}_${project.version}_win_standalone${standaloneSuffix}.zip"
 }
 
 task releaseWindows(group: 'build') {
@@ -181,7 +246,9 @@ def prepareSetupFile(file, to) {
                 expand([
                     applicationVersion: project.version,
                     code: new File('setup/_functions.iss-part').getText('UTF-8'),
-                    setup: new File('setup/_common.iss-part').getText('UTF-8')
+                    setup: new File('setup/_common.iss-part').getText('UTF-8'),
+                    isJPackage: project.ext.isJPackage,
+                    standaloneSuffix: project.ext.standaloneSuffix
                 ])
             }
             into(to)
@@ -224,7 +291,7 @@ task innosetupStandalone(type: Exec, group: 'build') {
 
         prepareSetupFile("setup_standalone.iss-template", innosetupDir2)
         copy {
-            from new File(javapackagerBuildDir, 'bundles/Chatty')
+            from windowsBundleSource
             from ('assets') {
                 exclude 'lib'
 	        into 'app'

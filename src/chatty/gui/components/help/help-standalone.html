@@ -32,6 +32,14 @@ joshimuz
 -d
 H:\\Chatty\\settings1</pre>
     
+    <p>The format has changed in newer Standalone versions, which requires a
+        prefix on each line:</p>
+    
+    <pre>
+[ArgOptions]
+arguments=-channel
+arguments=joshimuz</pre>
+    
     <p>Note that for this file, backslashes need to be escaped. For this option
         you can alternatively also use forward slashes, which Java should
         understand.</p>
@@ -39,7 +47,7 @@ H:\\Chatty\\settings1</pre>
     <p>When you specify any launch options on the commandline/in the shortcut,
         then the launch options in the <code>Chatty.cfg</code> are ignored.</p>
     
-    <h3><a name="cfg-jvm">JVM Options</a></h3>
+    <h3><a name="cfg-jvm">JVM/Java Options</a></h3>
     <p>The <code>[JVMOptions]</code> section contains parameters that are given
         to the JVM (Java Virtual Machine) when Chatty is started. There should
         already be a few options there by default, for example:</p>
@@ -51,6 +59,14 @@ H:\\Chatty\\settings1</pre>
     
     <p>These restrict the maximum heap (memory usage) to 400MB and disable
         Hardware Acceleration to reduce GUI issues.</p>
+    
+    <p>In newer Standalone versions this needs to be under the <code>[JavaOptions]</code>
+        section and also requires a prefix on each line:</p>
+    
+    <pre>
+[JavaOptions]
+java-options=-Xmx400M
+java-options=-Dsun.java2d.d3d=false</pre>
 </body>
 </html>
 

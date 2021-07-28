@@ -63,6 +63,9 @@ public class OtherSettings extends SettingsPanel {
                 ""),
                 d.makeGbc(1, 1, 1, 1));
         
+        SettingsUtil.addLabeledComponent(graphics, "uiScale", 0, 2, 1, GridBagConstraints.EAST,
+                d.addComboLongSetting("uiScale", 0, 100, 125, 150, 175, 200));
+        
         //--------
         // Updates
         //--------

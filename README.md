@@ -191,29 +191,34 @@ The project is compiled using Gradle. Once you've checked it out, you can run
 `gradlew build` to compile and run the tests, and `gradlew release` to package
 the release artifacts.
 
-If you have Hotkey Support enabled (Windows only), you need to include the
-JIntellitype32.dll or the JIntellitype64.dll for the 32/64bit versions of Java
-respectively (but always renamed to JIntellitype.dll). If you use the release
-task mentioned above, several different zip versions are created for this.
+If you modified Chatty you should set your own client id in `Chatty.java`. You
+may also want to disable the Version Checker.
 
-In Chatty.java you should set your own client id which you get from Twitch. You
-may also want to disable the Version Checker depending on how you will distribute
-the compiled program. See the comments in Chatty.java for more information.
+Main release tasks
+------------------
 
-Windows Standalone Bundle
--------------------------
+* `release` - Just the regular JAR version Zip
+* `releaseWindows` - Regular and Windows Standalone Zip
+* `releaseWinSetups` - Everything, including Windows Standalone and Windows setups
 
-You can create a standalone Windows version (including a JRE) using the
-javapackager program included in the JDK. Use the `releaseWindows` task to
-build both the regular zip files and the standalone version, or the
-`windowsZip` task to just build the standalone version.
+Build parameters
+----------------
 
-You must specify the path to the javapackager program like this:
+* Windows Standalone (one of these required for the Windows Standalone tasks)
+  * `javapackagerPath` - Path to the `javapackager.exe` in the Java 8 JDK
+    * `jrePath` - Adds `-Bruntime=` option for javapackager (optional, will use
+      default JRE otherwise)
+  * `jpackagePath` - Path to the `jpackage.exe` in the Java 14+ JDK (if you
+    specify this one, it will use jpackage instead of javapackager)
+  * `mtPath` - Path to Microsoft's `mt.exe` (see e.g.
+    <https://stackoverflow.com/questions/54462568/how-to-install-just-mt-exe>),
+    used to add `assets-bundle/Chatty.exe.manifest` to the `Chatty.exe`/
+    `ChattyPortable.exe` (optional)
+* `innosetupPath` - Path to InnoSetup's `iscc.exe` (required for the Windows
+  installer tasks)
+
+These build parameters must be specified like this:
 `gradlew windowsZip -PjavapackagerPath="<path_to>/javapackager.exe"`
 
-You may also specify the path to the JRE to bundle using the `-PjrePath`
-parameter, otherwise it will use the default JRE of the system.
-
-Currently the build includes the JIntellitype32.dll, so you may have to
-exchange that file if you bundle a 64bit version of Java.
-
+Full example:
+`gradlew -Dorg.gradle.java.home="C:/Program Files (x86)/Java/jdk1.8.0_201" releaseWinSetups --console=verbose -PjavapackagerPath="C:/Program Files (x86)/Java/jdk1.8.0_201/bin/javapackager.exe" -PjrePath="C:\Program Files (x86)\Java\jre1.8.0_201" -PinnosetupPath="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"`

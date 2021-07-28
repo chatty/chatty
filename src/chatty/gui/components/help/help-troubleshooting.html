@@ -26,6 +26,7 @@
             <ul>
                 <li><a href="#font">Broken characters / Fallback fonts</a></li>
                 <li><a href="#visual-glitches">Visual Artifacts/Glitches</a></li>
+                <li><a href="#scaling">Blurry UI Scaling</a></li>
             </ul>
         </li>
         <li>Other
@@ -304,6 +305,45 @@
     <p><a href="https://github.com/chatty/chatty/issues/64">Read Issue #64</a>
         for experiences of other users and possible workarounds, and add your
         own data to the discussion.</p>
+    
+    <h2>
+        <a name="scaling">Blurry UI Scaling</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>When using a High-DPI monitor or changing the monitor scale setting in
+        Windows, you may experience blurryness in the UI since UI scaling is not
+        very well supported at the moment.</p>
+    
+    <h3>Windows</h3>
+    <p>If an app does not handle scaling Windows will attempt to scale up the
+        app automatically, which will usually not look very sharp. There are
+        different ways to tell Windows that Chatty/Java should handle the
+        scaling:</p>
+    <ul>
+        <li>The Windows Standalone (Chatty.exe) contains an application manifest
+            that should tell Windows that the app will do the scaling.</li>
+        <li>Some Java executables tell Windows that the app will do the scaling,
+            however the javaw.exe that is used by default when starting a JAR
+            may not do that.</li>
+        <li>You can change the Compatability settings of a Java executable in
+            order to tell Windows to let the app do the High-DPI scaling. This
+            however may cause issues when moving the app between differently
+            scaled screens (e.g. the scaling is done visually, but mouse events
+            are triggered as if it was scaled differently).</li>
+    </ul>
+    <p>Once Windows lets the app do the scaling, there are different
+        possibilities:</p>
+    <ul>
+        <li>Java 8 versions will simply not do any scaling at all, so on
+            High-DPI Chatty may appear smaller.</li>
+        <li>Java 9 and higher can scale the UI correctly (although not always
+            perfectly), except for images, which will still occur blurry.</li>
+    </ul>
+    <p>You can change the "UI Scaling" setting under "Main - Settings - Other"
+        to force a fixed scaling. This may not always work. To avoid blurry
+        images and other UI issues a scaling of <code>1.0</code> is recommended
+        (you can change "Look", "Font" and "Emoticons" settings to scale up
+        fonts and emotes).</p>
     
     <h2>
         <a name="log">Debug log</a>

@@ -472,13 +472,21 @@ public class TwitchClient {
         try {
             Boolean d3d = !settings.getBoolean("nod3d");
             Boolean ddraw = settings.getBoolean("noddraw");
-            LOGGER.info(String.format("d3d: %s (%s) / noddraw: %s (%s) / opengl: (%s) / retina: %s",
+            String uiScale = null;
+            if (settings.getLong("uiScale") > 0) {
+                uiScale = String.valueOf(settings.getLong("uiScale") / 100.0);
+            }
+            LOGGER.info(String.format("d3d: %s (%s) / noddraw: %s (%s) / opengl: (%s) / retina: %s / uiScale: %s",
                     d3d, System.getProperty("sun.java2d.d3d"),
                     ddraw, System.getProperty("sun.java2d.noddraw"),
                     System.getProperty("sun.java2d.opengl"),
-                    GuiUtil.hasRetinaDisplay()));
+                    GuiUtil.hasRetinaDisplay(),
+                    uiScale));
             System.setProperty("sun.java2d.d3d", d3d.toString());
             System.setProperty("sun.java2d.noddraw", ddraw.toString());
+            if (uiScale != null) {
+                System.setProperty("sun.java2d.uiScale", uiScale);
+            }
         } catch (SecurityException ex) {
             LOGGER.warning("Error setting drawing settings: "+ex.getLocalizedMessage());
         }

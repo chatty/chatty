@@ -1,10 +1,11 @@
+#define IsJPackage ${isJPackage}
 
 [Setup]
 AppName=Chatty
 AppVersion=${applicationVersion}
 DefaultDirName={autopf}\\Chatty
 DefaultGroupName=Chatty
-OutputBaseFilename=Chatty_${applicationVersion}_win_standalone_setup
+OutputBaseFilename=Chatty_${applicationVersion}_win_standalone_setup${standaloneSuffix}
 ${setup}
 
 [Files]
@@ -12,7 +13,7 @@ Source: "*"; DestDir: "{app}"; Excludes: "\\app\\sounds,\\app\\img,\\runtime,\\a
 Source: "app/sounds/*"; DestDir: "{app}/app/sounds"; Components: examples
 Source: "app/img/*"; DestDir: "{app}/app/img"; Components: examples
 Source: "runtime/*"; DestDir: "{app}/runtime"; Flags: recursesubdirs; Components: runtime
-Source: "app/Chatty.cfg"; DestDir: "{app}/app"; Components: config
+Source: "app/Chatty.cfg"; DestDir: "{app}/app"; Check: ConfigFileCheck; AfterInstall: ConfigFileAfterInstall
 
 [Types]
 Name: "install"; Description: "Install"

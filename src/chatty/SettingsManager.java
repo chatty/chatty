@@ -406,6 +406,7 @@ public class SettingsManager {
         settings.addBoolean("maximized", false);
         settings.addBoolean("nod3d", true);
         settings.addBoolean("noddraw", false);
+        settings.addLong("uiScale", 0);
         settings.addBoolean("bufferStrategy1", false);
         settings.addBoolean("mainResizable", true);
         settings.addBoolean("splash", true);

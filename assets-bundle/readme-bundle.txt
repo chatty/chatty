@@ -1,13 +1,10 @@
 
 This is a bundled version of Chatty, which includes:
 
-* The Chatty program (Chatty.jar), the original readme.txt and other original
-  Chatty files in the `app` subdirectory
-* A private Java Runtime Environment (Java 1.8.0_201, 32bit) in the `runtime`
-  subdirectory, which is used to run Chatty without having to have Java
-  installed on the system
+* The Chatty program (Chatty.jar) and related files in the `app` directory
+* The Chatty.exe that uses the private Java Runtime in the `runtime` directory
+  to launch Chatty
 * Some additional fallback fonts
-* The Chatty.exe and some helper libraries to launch Chatty
 
 Advantages
 ----------
@@ -27,22 +24,25 @@ Downsides
 Use and configure
 =================
 
-Execute the Chatty.exe to start the Chatty with the bundled runtime. The
-working directory is always set to the `app` directory.
+The "Chatty.exe" starts Chatty normally, with the launch arguments in
+`app/Chatty.cfg`.
 
-You can add/remove JVM and Chatty commandline options in the `app/Chatty.cfg`
-file. For example add `-cd` to the `ArgOptions` section to save settings to
-the `app` directory, which makes Chatty portable.
+If available, the "ChattyPortable.exe" starts Chatty with the settings
+directory `app/portable_settings`, with the launch arguments in
+`app/ChattyPortable.cfg`.
+
+The working directory is always set to the `app` directory.
+
+See the help on how to add launch options:
+https://chatty.github.io/help/help-standalone.html
 
 ===========
 Development
 ===========
 
 This bundle was created from the regular Chatty.jar using the javapackager
-program that is included in the JDK.
+program that is included in the JDK. Newer versions use the jpackage program
+included in Java 14 or later.
 
 See the README.md in the Chatty repository for information on building it
 yourself.
-
-Documentation:
-http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html
