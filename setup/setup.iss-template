@@ -1,3 +1,4 @@
+#define IsJPackage 0
 
 [Setup]
 AppName=Chatty

@@ -122,16 +122,16 @@ task release(group: 'build') {
 def windowsBundleTarget = new File(buildDir, 'javapackager')
 def windowsBundleSource = new File(windowsBundleTarget, 'bundles/Chatty')
 def standaloneSuffix = "_legacy";
-def isJPackage = "0";
+def isJPackage = false;
 if (project.hasProperty('jpackagePath')) {
     windowsBundleTarget = new File(buildDir, 'jpackage')
     windowsBundleSource = new File(windowsBundleTarget, 'Chatty')
     standaloneSuffix = "";
-    isJPackage = "1";
+    isJPackage = true;
 }
 
 ext.standaloneSuffix = standaloneSuffix
-ext.isJPackage = isJPackage
+ext.isJPackageString = isJPackage ? "1" : "0";
 
 task javapackagerBuild(type: Exec, group: 'build') {
     dependsOn shadowJar
@@ -143,6 +143,7 @@ task javapackagerBuild(type: Exec, group: 'build') {
     }
     if (project.hasProperty('jpackagePath')) {
         doFirst {
+            println 'Using jpackagePath';
             delete windowsBundleTarget
 	    copy {
 		from tasks.shadowJar.archivePath
@@ -167,6 +168,7 @@ task javapackagerBuild(type: Exec, group: 'build') {
     }
     else if (project.hasProperty('javapackagerPath')) {
         doFirst {
+            println 'Using javapackagerPath';
             delete windowsBundleTarget
         }
         def command = [javapackagerPath, '-deploy', '-native', 'image', '-srcfiles', tasks.shadowJar.archivePath, '-appclass', 'chatty.Chatty', '-outdir', windowsBundleTarget, '-outfile', 'Chatty']
@@ -247,7 +249,7 @@ def prepareSetupFile(file, to) {
                     applicationVersion: project.version,
                     code: new File('setup/_functions.iss-part').getText('UTF-8'),
                     setup: new File('setup/_common.iss-part').getText('UTF-8'),
-                    isJPackage: project.ext.isJPackage,
+                    isJPackage: project.ext.isJPackageString,
                     standaloneSuffix: project.ext.standaloneSuffix
                 ])
             }

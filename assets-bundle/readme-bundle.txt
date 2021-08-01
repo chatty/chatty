@@ -29,7 +29,10 @@ The "Chatty.exe" starts Chatty normally, with the launch arguments in
 
 If available, the "ChattyPortable.exe" starts Chatty with the settings
 directory `app/portable_settings`, with the launch arguments in
-`app/ChattyPortable.cfg`.
+`app/ChattyPortable.cfg`. Note that using this method when Chatty is
+installed in a protected locations such as "C:\Program Files.." it might
+actually store the settings in something like:
+"C:\Users\..\AppData\Local\VirtualStore\Program Files (x86)\..."
 
 The working directory is always set to the `app` directory.
 
