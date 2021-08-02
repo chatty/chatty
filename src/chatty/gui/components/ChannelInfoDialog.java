@@ -197,8 +197,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         add(mainPanel);
         
         if (dockedDialogs != null) {
-            DockContent content = new DockContentContainer("Channel Info", mainPanel, dockedDialogs.getDockManager());
-            content.setId("-channelInfo-");
+            DockContent content = dockedDialogs.createContent(mainPanel, "Channel Info", "-channelInfo-");
             helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
                 @Override
                 public void setVisible(boolean visible) {

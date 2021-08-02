@@ -237,8 +237,8 @@ public class FollowersDialog extends JDialog {
         
         add(mainPanel);
         
-        DockContent content = new DockContentContainer(type.name, mainPanel, dockedDialogs.getDockManager());
-        content.setId(type == Type.FOLLOWERS ? "-followers-" : "-subscribers-");
+        DockContent content = dockedDialogs.createContent(mainPanel, type.name,
+                type == Type.FOLLOWERS ? "-followers-" : "-subscribers-");
         helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
             @Override
             public void setVisible(boolean visible) {
