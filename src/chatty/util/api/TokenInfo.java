@@ -43,6 +43,7 @@ public class TokenInfo {
     public final boolean valid;
     public final String clientId;
     public final Set<String> scopes;
+    public final long expiresIn;
     
     public TokenInfo() {
         valid = false;
@@ -50,9 +51,10 @@ public class TokenInfo {
         userId = null;
         clientId = null;
         scopes = new HashSet<>();
+        expiresIn = -1;
     }
     
-    public TokenInfo(String name, String userId, String clientId, Collection<String> scopes) {
+    public TokenInfo(String name, String userId, String clientId, Collection<String> scopes, long expiresIn) {
         this.name = name;
         this.userId = userId;
         valid = true;
@@ -66,6 +68,7 @@ public class TokenInfo {
             scopes.add("chat_login");
         }
         this.scopes = new HashSet<>(scopes);
+        this.expiresIn = expiresIn;
     }
     
     public boolean hasScope(String scope) {

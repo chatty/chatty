@@ -169,13 +169,23 @@ public class Requests {
     //=======
     
     public void verifyToken(String token) {
-        String url = "https://api.twitch.tv/kraken/";
-        //url = "http://127.0.0.1/twitch/token";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
+        String url = "https://id.twitch.tv/oauth2/validate";
+        // Not an old API request, but needs the same Authorization header
+        TwitchApiRequest request = new TwitchApiRequest(url, null);
         request.setToken(token);
         execute(request, r -> {
-            TokenInfo tokenInfo = Parsing.parseVerifyToken(r.text);
-            listener.tokenVerified(token, tokenInfo);
+            if (r.responseCode == 200) {
+                TokenInfo tokenInfo = Parsing.parseVerifyToken(r.text);
+                listener.tokenVerified(token, tokenInfo);
+            }
+            else if (r.responseCode == 401) {
+                // Invalid token
+                listener.tokenVerified(token, new TokenInfo());
+            }
+            else {
+                // Another error occured
+                listener.tokenVerified(token, null);
+            }
         });
     }
     

@@ -88,26 +88,14 @@ public class Parsing {
         }
         try {
             JSONParser parser = new JSONParser();
-            JSONObject root = (JSONObject) parser.parse(json);
+            JSONObject token = (JSONObject) parser.parse(json);
             
-            JSONObject token = (JSONObject) root.get("token");
-            
-            if (token == null) {
-                return null;
-            }
-            
-            boolean valid = (Boolean)token.get("valid");
-            
-            if (!valid) {
-                return new TokenInfo();
-            }
-            
-            String username = (String)token.get("user_name");
+            String username = (String)token.get("login");
             String id = (String)token.get("user_id");
             String client_id = JSONUtil.getString(token, "client_id");
-            JSONObject authorization = (JSONObject)token.get("authorization");
-            JSONArray scopes = (JSONArray)authorization.get("scopes");
-            return new TokenInfo(username, id, client_id, scopes);
+            JSONArray scopes = (JSONArray)token.get("scopes");
+            long expiresIn = JSONUtil.getLong(token, "expires_in", -1);
+            return new TokenInfo(username, id, client_id, scopes, expiresIn);
         }
         catch (Exception e) {
             return null;
