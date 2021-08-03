@@ -153,9 +153,16 @@ public class Emoticons {
     
     /**
      * Used to check what emotes the local user has access to for completion. If
-     * this changes, it checks usableGlobalEmotes again.
+     * this changes, it checks usableGlobalEmotes again. May not contain
+     * channel-specific (follower) emotesets.
      */
     private Set<String> localEmotesets = new HashSet<>();
+    
+    /**
+     * Contain all emotesets from all channels, may contain emotesets the user
+     * has no longer access to since not all channels are necessarily updated.
+     */
+    private Set<String> allLocalEmotesets = new HashSet<>();
     
     //==================
     // Meta Information
@@ -343,13 +350,15 @@ public class Emoticons {
      */
     private void addEmote(Collection<Emoticon> collection, Emoticon emote) {
         /**
-         * Add emote codes for TAB Completion. Only add emotes the local user
-         * has access to.
+         * Add emotes the local user has access to (e.g. TAB Completion).
          */
-        if ((emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteset))) {
-            if (!emote.hasStreamRestrictions()) {
+        if (!emote.hasStreamRestrictions()) {
+            if (emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteset)) {
                 usableGlobalEmotes.add(emote);
-            } else {
+            }
+        }
+        else {
+            if (emote.hasGlobalEmoteset() || allLocalEmotesets.contains(emote.emoteset)) {
                 for (String stream : emote.getStreamRestrictions()) {
                     MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
                 }
@@ -474,7 +483,7 @@ public class Emoticons {
         return emote;
     }
     
-    public Collection<Emoticon> getLocalTwitchEmotes() {
+    public Set<Emoticon> getUsableGlobalEmotes() {
         return usableGlobalEmotes;
     }
     
@@ -484,13 +493,17 @@ public class Emoticons {
     }
     
     /**
-     * Update Twitch Emotes for TAB Completion. Twitch Emotes are always global,
-     * so only need to update usableGlobalEmotes. This only updates based on
-     * emotesets, other global emotes (like FFZ) must not be removed by this.
-     * 
+     * Update Twitch Emotes usable for the local user. This only updates based
+     * on emotesets, other emotes (like FFZ) must not be removed by this.
+     *
      * @param emotesets 
+     * @param allEmotesets 
      */
-    public void updateLocalEmotes(Set<String> emotesets) {
+    public void updateLocalEmotes(Set<String> emotesets, Set<String> allEmotesets) {
+        /**
+         * Global emotes use the "localEmotesets", which should more likely be
+         * up-to-date in regards to non-channel-specific emotesets.
+         */
         if (!this.localEmotesets.equals(emotesets)) {
             this.localEmotesets = emotesets;
             //--------------------------
@@ -510,7 +523,14 @@ public class Emoticons {
                     usableGlobalEmotes.add(emote);
                 }
             }
-            
+        }
+        /**
+         * Channel-specific emotes use the "allEmotesets", which is less likely
+         * to be up-to-date in regards to non-channel-specific emotesets, but
+         * is more likely to contain all channel-specific emotesets.
+         */
+        if (!this.allLocalEmotesets.equals(allEmotesets)) {
+            this.allLocalEmotesets = allEmotesets;
             //--------------------------
             // By stream
             //--------------------------
@@ -520,7 +540,7 @@ public class Emoticons {
                 Iterator<Emoticon> itStream = entry.getValue().iterator();
                 while (itStream.hasNext()) {
                     Emoticon emote = itStream.next();
-                    if (!emote.hasGlobalEmoteset() && !localEmotesets.contains(emote.emoteset)) {
+                    if (!emote.hasGlobalEmoteset() && !allLocalEmotesets.contains(emote.emoteset)) {
                         itStream.remove();
                     }
                 }
@@ -530,7 +550,7 @@ public class Emoticons {
                 String stream  = entry.getKey();
                 // Add all accessible
                 for (Emoticon emote : entry.getValue()) {
-                    if (emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteset)) {
+                    if (emote.hasGlobalEmoteset() || allLocalEmotesets.contains(emote.emoteset)) {
                         MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
                     }
                 }
@@ -540,6 +560,10 @@ public class Emoticons {
     
     public Set<String> getLocalEmotesets() {
         return localEmotesets;
+    }
+    
+    public Set<String> getAllLocalEmotesets() {
+        return allLocalEmotesets;
     }
     
     private static final List<String> TURBO_EMOTESETS = Arrays.asList(new String[]{

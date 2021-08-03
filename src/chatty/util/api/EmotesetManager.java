@@ -22,8 +22,21 @@ public class EmotesetManager {
     private final Settings settings;
     
     private final Map<String, Set<String>> ircEmotesets = new HashMap<>();
+    private final Set<String> latestIrcEmotesets = new HashSet<>();
     private final Set<String> userEmotesets = new HashSet<>();
+    
+    /**
+     * Emotesets both from the API and latest from IRC. May not contain follower
+     * emote sets, but subemotes sets should be up-to-date.
+     */
     private final Set<String> emotesets = new HashSet<>();
+    
+    /**
+     * Emotestes both from the API and all channels from IRC. May contain sets
+     * that the user has no longer access to, since not all channels will have
+     * up-to-date emotestes.
+     */
+    private final Set<String> allEmotesets = new HashSet<>();
     
     private boolean userEmotesRequested = false;
     
@@ -49,6 +62,9 @@ public class EmotesetManager {
             if (newSets == null) {
                 newSets = new HashSet<>();
             }
+            latestIrcEmotesets.clear();
+            latestIrcEmotesets.addAll(newSets);
+            
             Set<String> prevSets = ircEmotesets.get(channel);
             /**
              * Only check length, since emotesets may cycle through, without
@@ -106,23 +122,34 @@ public class EmotesetManager {
      */
     private void updateEmotesets() {
         boolean changed = false;
+        Set<String> latest = new HashSet<>();
         Set<String> all = new HashSet<>();
         synchronized(this) {
+            latest.addAll(userEmotesets);
+            latest.addAll(latestIrcEmotesets);
+            
             // Both IRC and GetUserEmotes sets as long as both don't contain all
             all.addAll(userEmotesets);
             // Add all emotesets from all channels
             for (Set<String> sets : ircEmotesets.values()) {
                 all.addAll(sets);
             }
-            if (!emotesets.equals(all)) {
+            
+            // Check if changed
+            if (!emotesets.equals(latest) || !allEmotesets.equals(all)) {
                 changed = true;
             }
+            
+            // Update combined
             emotesets.clear();
-            emotesets.addAll(all);
+            emotesets.addAll(latest);
+            
+            allEmotesets.clear();
+            allEmotesets.addAll(all);
         }
         if (changed) {
-            g.updateEmotesDialog(all);
-            g.updateEmoteNames(all);
+            g.updateEmotesDialog(latest);
+            g.updateEmoteNames(latest, all);
         }
     }
 

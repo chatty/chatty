@@ -5014,7 +5014,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public Collection<Emoticon> getUsableGlobalEmotes() {
-        return emoticons.getLocalTwitchEmotes();
+        return emoticons.getUsableGlobalEmotes();
     }
     
     public Collection<Emoticon> getUsableEmotesPerStream(String stream) {
@@ -5029,12 +5029,12 @@ public class MainGui extends JFrame implements Runnable {
         return client.customCommands.getCommandNames();
     }
     
-    public void updateEmoteNames(Set<String> emotesets) {
+    public void updateEmoteNames(Set<String> emotesets, Set<String> allEmotesets) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                emoticons.updateLocalEmotes(emotesets);
+                emoticons.updateLocalEmotes(emotesets, allEmotesets);
             }
         });
     }
