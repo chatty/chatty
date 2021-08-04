@@ -45,15 +45,19 @@ public class Proc extends Thread {
     public String getCommand() {
         return command;
     }
+    
+    public String getLabel() {
+        return label;
+    }
 
     @Override
     public void run() {
+        if (command == null || command.isEmpty()) {
+            return;
+        }
+        String[] cmd = split(command);
         try {
-            if (command == null || command.isEmpty()) {
-                return;
-            }
             Runtime rt = Runtime.getRuntime();
-            String[] cmd = split(command);
             Process p = rt.exec(cmd);
             this.process = p;
             LOGGER.info(String.format("[%s] Process %s started. [%s][%s]",
@@ -77,7 +81,8 @@ public class Proc extends Thread {
         } catch (IOException ex) {
             listener.message(this, "Error: " + ex);
             LOGGER.warning(String.format(
-                    "[%s] Error starting process / %s", label, ex));
+                    "[%s] Error starting process / %s [%s][%s]",
+                    label, ex, command, StringUtil.join(cmd)));
         } catch (InterruptedException ex) {
             listener.message(this, "Error: " + ex);
             LOGGER.warning(String.format(

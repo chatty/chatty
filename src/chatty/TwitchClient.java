@@ -1369,7 +1369,8 @@ public class TwitchClient {
             g.resortUsers(p.getRoom());
         });
         commands.add("proc", p -> {
-            g.printSystem("[Proc] "+ProcessManager.command(p.getArgs()));
+            g.printSystem("[Proc] "+ProcessManager.command(p.getArgs(),
+                    s -> g.printSystem("[ProcOutput] "+s)));
         });
         commands.add("chain", p -> {
             List<String> commands = Helper.getChainedCommands(p.getArgs());

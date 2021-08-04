@@ -132,7 +132,7 @@ public class UrlOpener {
             command = "open "+url;
         }
         if (command != null) {
-            ProcessManager.execute(command, "URL");
+            ProcessManager.execute(command, "URL", null);
             return true;
         }
         return false;

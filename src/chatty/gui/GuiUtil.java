@@ -573,7 +573,7 @@ public class GuiUtil {
             return "Error: "+command.getSingleLineError();
         } else {
             String resultCommand = command.replace(param);
-            ProcessManager.execute(resultCommand, "Notification");
+            ProcessManager.execute(resultCommand, "Notification", null);
             return "Running: "+resultCommand;
         }
     }

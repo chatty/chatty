@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * Provides functions to start processes and store a list of them.
@@ -26,9 +27,10 @@ public class ProcessManager {
      * Handle input from the /proc command.
      * 
      * @param input The parameters to the command
+     * @param messageListener Receives output from the process (can be null)
      * @return Message back to the user
      */
-    public static String command(String input) {
+    public static String command(String input, Consumer<String> messageListener) {
         if (input == null || input.isEmpty()) {
             return "Invalid input.";
         }
@@ -39,7 +41,11 @@ public class ProcessManager {
             parameter = split[1];
         }
         if (command.equals("exec")) {
-            execute(parameter, "Custom");
+            execute(parameter, "Custom", null);
+            return "Trying to start process.";
+        }
+        else if (command.equals("execEcho")) {
+            execute(parameter, "Custom", messageListener);
             return "Trying to start process.";
         }
         else if (command.equals("kill")) {
@@ -70,8 +76,9 @@ public class ProcessManager {
      * @param command The process and parameters (split up by spaces, except
      * for parts surrounded by quotes, \" to escape quotes)
      * @param label For debug output
+     * @param messageListener Receives output from the process (can be null)
      */
-    public static void execute(String command, String label) {
+    public static void execute(String command, String label, Consumer<String> messageListener) {
         final int id = lastId.incrementAndGet();
         Proc proc = new Proc(command, new Proc.ProcListener() {
 
@@ -82,6 +89,9 @@ public class ProcessManager {
 
             @Override
             public void message(Proc p, String message) {
+                if (messageListener != null) {
+                    messageListener.accept(p.getLabel()+": "+message);
+                }
             }
 
             @Override

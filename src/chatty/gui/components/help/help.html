@@ -1551,12 +1551,23 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     </h2>
     <p>Using the <code>/proc</code> command you can start processes directly out
         of Chatty. An example of where this is already integrated into Chatty is
-        starting Streamlink, however this is a more basic implementation.
-        <em>This is probably only interesting for advanced users.</em></p>
+        starting Streamlink, however this is a more basic implementation.</p>
+    <p><em>You should only use this if you know what you are doing, running
+        system processes can be dangerous if done wrong. Take special care when
+        unsafe/unpredictable text is being used, for example from chat messages,
+        which may need to be properly quoted/escaped depending on context.</em></p>
     
     <ul>
         <li><code>/proc exec &lt;command and parameters&gt;</code> - Try to
-            start a process on your computer.</li>
+            start a process on your computer. The command and parameters are
+            split by spaces, unless enclosed by quotes.<br /><br />
+            A quote can be escaped by adding a backslash in front <code>\"</code>
+            (note that if there is no closing quote, the last quote, even if
+            escaped, is used as closing quote). Adding another backslash, e.g.
+            <code>\\"</code> will still escape the quote. The debug log shows
+            both the original command text and how it was split up.</li>
+        <li><code>/proc execEcho &lt;command and parameters&gt;</code> - Same as
+            above, but prints the output of the process to the current tab.</li>
         <li><code>/proc list</code> - List of processes currently running out of
             Chatty.</li>
         <li><code>/proc kill &lt;id&gt;</code> - Forcefully end the process with
@@ -1644,8 +1655,8 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
             supply a port a default one is used. If the used port is already
             taken by another program you have to specify one that works or else
             no instance of Chatty will be able to start.</dd>
-        <dd>Currently only the <code>-channel</code> parameter is used when 
-            forwarded to an already running instance (joining the channel).</dd>
+        <dd>Currently only the <code>-channel</code> and <code>-cc</code>
+            parameters are forwarded to an already running instance.</dd>
         
         <dt><code>-cc &lt;name&gt; [parameters]</code></dt>
         <dd>Execute the Custom Command with the given name on start. The
