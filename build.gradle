@@ -161,7 +161,7 @@ task javapackagerBuild(type: Exec, group: 'build') {
 		'--java-options', '-Xmx600M',
 		'--java-options', '-Dsun.java2d.d3d=false',
 		'--icon', 'assets-bundle/Chatty.ico',
-		'--app-version', project.version,
+		'--app-version', project.version.replace("-",".").replace("b","0."),
 		'--arguments', '-abc',
 		'--add-launcher', 'ChattyPortable=assets-bundle/LauncherPortable.properties']
 	commandLine command
