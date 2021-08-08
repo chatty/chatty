@@ -9,10 +9,11 @@ OutputBaseFilename=Chatty_${applicationVersion}_win_standalone_setup${standalone
 ${setup}
 
 [Files]
-Source: "*"; DestDir: "{app}"; Excludes: "\\app\\sounds,\\app\\img,\\runtime,\\app\\Chatty.cfg"; Flags: recursesubdirs; Components: main
+Source: "*"; DestDir: "{app}"; Excludes: "\\app\\sounds,\\app\\img,\\runtime,\\app\\Chatty.cfg,\\Chatty*.exe"; Flags: recursesubdirs; Components: main
 Source: "app/sounds/*"; DestDir: "{app}/app/sounds"; Components: examples
 Source: "app/img/*"; DestDir: "{app}/app/img"; Components: examples
 Source: "runtime/*"; DestDir: "{app}/runtime"; Flags: recursesubdirs; Components: runtime
+Source: "Chatty*.exe"; DestDir: "{app}"; Components: runtime
 Source: "app/Chatty.cfg"; DestDir: "{app}/app"; Check: ConfigFileCheck; AfterInstall: ConfigFileAfterInstall
 
 [Types]
@@ -22,7 +23,7 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 
 [Components]
 Name: main; Description: "Program files and Readme"; Types: install update custom; Flags: fixed
-Name: runtime; Description: "Java Runtime"; Types: install update
+Name: runtime; Description: "Java Runtime and Launcher"; Types: install update
 Name: config; Description: "Startup Config"; Types: install
 Name: examples; Description: "Example sound/image files"; Types: install
 Name: shortcut; Description: "Create Shortcut";

@@ -798,6 +798,107 @@ begin
     Result := Files;
 end;
 
+function GetRuntimeFolders(): TStrings;
+var
+  Folders : TStrings;
+  Path : String;
+begin
+    Path := ExpandConstant('{app}');
+
+    Folders := TStringList.Create;
+    Folders.Append(Path+'\runtime\lib\security\policy\unlimited');
+    Folders.Append(Path+'\runtime\lib\security\policy\limited');
+    Folders.Append(Path+'\runtime\lib\security\policy');
+    Folders.Append(Path+'\runtime\lib\security');
+    Folders.Append(Path+'\runtime\lib\management');
+    Folders.Append(Path+'\runtime\lib\jfr');
+    Folders.Append(Path+'\runtime\lib\images\cursors');
+    Folders.Append(Path+'\runtime\lib\images');
+    Folders.Append(Path+'\runtime\lib\i386');
+    Folders.Append(Path+'\runtime\lib\fonts\fallback');
+    Folders.Append(Path+'\runtime\lib\fonts');
+    Folders.Append(Path+'\runtime\lib\ext');
+    Folders.Append(Path+'\runtime\lib\cmm');
+    Folders.Append(Path+'\runtime\lib');
+    Folders.Append(Path+'\runtime\legal\jdk.zipfs');
+    Folders.Append(Path+'\runtime\legal\jdk.xml.dom');
+    Folders.Append(Path+'\runtime\legal\jdk.unsupported.desktop');
+    Folders.Append(Path+'\runtime\legal\jdk.unsupported');
+    Folders.Append(Path+'\runtime\legal\jdk.security.jgss');
+    Folders.Append(Path+'\runtime\legal\jdk.security.auth');
+    Folders.Append(Path+'\runtime\legal\jdk.sctp');
+    Folders.Append(Path+'\runtime\legal\jdk.nio.mapmode');
+    Folders.Append(Path+'\runtime\legal\jdk.net');
+    Folders.Append(Path+'\runtime\legal\jdk.naming.rmi');
+    Folders.Append(Path+'\runtime\legal\jdk.naming.dns');
+    Folders.Append(Path+'\runtime\legal\jdk.management.jfr');
+    Folders.Append(Path+'\runtime\legal\jdk.management.agent');
+    Folders.Append(Path+'\runtime\legal\jdk.management');
+    Folders.Append(Path+'\runtime\legal\jdk.localedata');
+    Folders.Append(Path+'\runtime\legal\jdk.jstatd');
+    Folders.Append(Path+'\runtime\legal\jdk.jsobject');
+    Folders.Append(Path+'\runtime\legal\jdk.jshell');
+    Folders.Append(Path+'\runtime\legal\jdk.jpackage');
+    Folders.Append(Path+'\runtime\legal\jdk.jlink');
+    Folders.Append(Path+'\runtime\legal\jdk.jfr');
+    Folders.Append(Path+'\runtime\legal\jdk.jdwp.agent');
+    Folders.Append(Path+'\runtime\legal\jdk.jdi');
+    Folders.Append(Path+'\runtime\legal\jdk.jdeps');
+    Folders.Append(Path+'\runtime\legal\jdk.jconsole');
+    Folders.Append(Path+'\runtime\legal\jdk.javadoc');
+    Folders.Append(Path+'\runtime\legal\jdk.jartool');
+    Folders.Append(Path+'\runtime\legal\jdk.internal.opt');
+    Folders.Append(Path+'\runtime\legal\jdk.internal.le');
+    Folders.Append(Path+'\runtime\legal\jdk.internal.jvmstat');
+    Folders.Append(Path+'\runtime\legal\jdk.internal.ed');
+    Folders.Append(Path+'\runtime\legal\jdk.incubator.vector');
+    Folders.Append(Path+'\runtime\legal\jdk.incubator.foreign');
+    Folders.Append(Path+'\runtime\legal\jdk.httpserver');
+    Folders.Append(Path+'\runtime\legal\jdk.editpad');
+    Folders.Append(Path+'\runtime\legal\jdk.dynalink');
+    Folders.Append(Path+'\runtime\legal\jdk.crypto.mscapi');
+    Folders.Append(Path+'\runtime\legal\jdk.crypto.ec');
+    Folders.Append(Path+'\runtime\legal\jdk.crypto.cryptoki');
+    Folders.Append(Path+'\runtime\legal\jdk.compiler');
+    Folders.Append(Path+'\runtime\legal\jdk.charsets');
+    Folders.Append(Path+'\runtime\legal\jdk.attach');
+    Folders.Append(Path+'\runtime\legal\jdk.accessibility');
+    Folders.Append(Path+'\runtime\legal\java.xml.crypto');
+    Folders.Append(Path+'\runtime\legal\java.xml');
+    Folders.Append(Path+'\runtime\legal\java.transaction.xa');
+    Folders.Append(Path+'\runtime\legal\java.sql.rowset');
+    Folders.Append(Path+'\runtime\legal\java.sql');
+    Folders.Append(Path+'\runtime\legal\java.smartcardio');
+    Folders.Append(Path+'\runtime\legal\java.security.sasl');
+    Folders.Append(Path+'\runtime\legal\java.security.jgss');
+    Folders.Append(Path+'\runtime\legal\java.scripting');
+    Folders.Append(Path+'\runtime\legal\java.rmi');
+    Folders.Append(Path+'\runtime\legal\java.prefs');
+    Folders.Append(Path+'\runtime\legal\java.net.http');
+    Folders.Append(Path+'\runtime\legal\java.naming');
+    Folders.Append(Path+'\runtime\legal\java.management.rmi');
+    Folders.Append(Path+'\runtime\legal\java.management');
+    Folders.Append(Path+'\runtime\legal\java.logging');
+    Folders.Append(Path+'\runtime\legal\java.instrument');
+    Folders.Append(Path+'\runtime\legal\java.desktop');
+    Folders.Append(Path+'\runtime\legal\java.datatransfer');
+    Folders.Append(Path+'\runtime\legal\java.compiler');
+    Folders.Append(Path+'\runtime\legal\java.base');
+    Folders.Append(Path+'\runtime\legal');
+    Folders.Append(Path+'\runtime\conf\security\policy\unlimited');
+    Folders.Append(Path+'\runtime\conf\security\policy\limited');
+    Folders.Append(Path+'\runtime\conf\security\policy');
+    Folders.Append(Path+'\runtime\conf\security');
+    Folders.Append(Path+'\runtime\conf\management');
+    Folders.Append(Path+'\runtime\conf');
+    Folders.Append(Path+'\runtime\bin\server');
+    Folders.Append(Path+'\runtime\bin\plugin2');
+    Folders.Append(Path+'\runtime\bin\client');
+    Folders.Append(Path+'\runtime\bin');
+    
+    Result := Folders;
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   Files : TStrings;
@@ -823,5 +924,17 @@ begin
                     Log('Failed to delete: '+File);
             end;
         end;
+
+        Files := GetRuntimeFolders();
+        for Index := 0 to Files.Count - 1 do begin
+            File := Files[Index];
+            Log('Removing: '+File);
+            if not RemoveDir(File) then
+                Log('Failed to remove: '+File);
+        end;
     end;
+
+    if ConfigFileChecked and ConfigFileIsJPackage and DirExists(ExpandConstant('{app}\runtime\lib\ext')) then
+        MsgBox('Could not remove "runtime\lib\ext", which may cause issues. Please delete manually.' + #13#10#13#10
+            + ExpandConstant('{app}\runtime\lib\ext'), mbInformation, MB_OK);
 end;
