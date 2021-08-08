@@ -10,8 +10,10 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
@@ -212,6 +214,56 @@ public class Debugging {
             LOGGER.warning("Error occured trying to get stacktrace: "+ex2);
         }
         return null;
+    }
+    
+    public static String getStacktraceFiltered(Exception ex) {
+        try {
+            return ex+"\n\t"+StringUtil.join(filterStacktrace(ex.getStackTrace()), "\n\t ");
+        }
+        catch (Exception ex2) {
+            LOGGER.warning("Error occured trying to get stacktrace: "+ex2);
+        }
+        return null;
+    }
+    
+    public static String getStacktraceFilteredFlat(Exception ex) {
+        try {
+            return ex+" ["+StringUtil.join(filterStacktrace(ex.getStackTrace()), ",")+"]";
+        }
+        catch (Exception ex2) {
+            LOGGER.warning("Error occured trying to get stacktrace: "+ex2);
+        }
+        return null;
+    }
+    
+    private static final Set<String> STACKTRACE_FILTER = new HashSet<>();
+    
+    static {
+        STACKTRACE_FILTER.add("java.awt.EventDispatchThread");
+        STACKTRACE_FILTER.add("java.awt.EventQueue");
+        STACKTRACE_FILTER.add("java.awt.DefaultKeyboardFocusManager");
+    }
+    
+    public static List<String> filterStacktrace(StackTraceElement[] st) {
+        List<String> result = new ArrayList<>();
+        String filtered = null;
+        for (int i = 0; i < st.length; i++) {
+            StackTraceElement el = st[i];
+            boolean show = true;
+            for (String filter : STACKTRACE_FILTER) {
+                if (el.getClassName().startsWith(filter)) {
+                    if (!filter.equals(filtered)) {
+                        result.add("["+filter+"]");
+                        filtered = filter;
+                    }
+                    show = false;
+                }
+            }
+            if (show) {
+                result.add(el.toString());
+            }
+        }
+        return result;
     }
     
     public static String getStacktrace() {

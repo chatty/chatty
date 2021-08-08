@@ -9,6 +9,7 @@ import chatty.User;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.Pair;
+import chatty.util.TimeoutPatternMatcher;
 import chatty.util.RepeatMsgHelper;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.BadgeType;
@@ -1285,7 +1286,7 @@ public class Highlighter {
                 return true;
             }
             try {
-                Matcher m = pattern.matcher(text);
+                Matcher m = TimeoutPatternMatcher.create(pattern, text, 100);
                 while (m.find()) {
                     boolean notBlacklisted = blacklist == null || !blacklist.isBlacklisted(m.start(), m.end());
                     if (notBlacklisted) {
@@ -1334,15 +1335,20 @@ public class Highlighter {
                      * message which would in turn trigger an error again,
                      * however unlikely).
                      */
-                    LOGGER.log(Logging.USERINFO,
-                            String.format("Error: Regex '%s' failed with %s",
-                                    pattern, ex));
-                    LOGGER.warning(
-                        String.format("Error: Regex '%s' failed on '%s' with %s",
-                        pattern, text, Debugging.getStacktrace(ex)));
+                    logRegexError(pattern, text, ex);
                 }
+                error = ex.getLocalizedMessage();
             }
             return false;
+        }
+        
+        private void logRegexError(Pattern pattern, String text, Exception ex) {
+            LOGGER.log(Logging.USERINFO,
+                    String.format("Error: Regex match failed (see 'Extra - Debug window' for details)",
+                            usedForFeature, StringUtil.shortenTo(pattern.pattern(), 40)));
+            LOGGER.warning(
+                    String.format("Regex match failed (%s/'%s'):\n\tregex '%s'\n\ton text '%s'\n\twith error '%s'",
+                            usedForFeature, raw, pattern, text, Debugging.getStacktraceFilteredFlat(ex)));
         }
         
         /**
@@ -1358,7 +1364,7 @@ public class Highlighter {
             }
             List<Match> result = new ArrayList<>();
             try {
-                Matcher m = pattern.matcher(text);
+                Matcher m = TimeoutPatternMatcher.create(pattern, text, 100);
                 while (m.find()) {
                     /**
                      * Filter "reg:.*" (or probably similiar) would show empty
@@ -1375,13 +1381,9 @@ public class Highlighter {
             } catch (Exception ex) {
                 // See matchesPattern() for explanation
                 if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
-                    LOGGER.log(Logging.USERINFO,
-                            String.format("Error: Regex '%s' failed with %s",
-                                    pattern, ex));
-                    LOGGER.warning(
-                        String.format("Error: Regex '%s' failed on '%s' with %s",
-                        pattern, text, Debugging.getStacktrace(ex)));
+                    logRegexError(pattern, text, ex);
                 }
+                error = ex.getLocalizedMessage();
             }
             return result;
         }
