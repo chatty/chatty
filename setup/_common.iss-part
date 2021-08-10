@@ -8,3 +8,4 @@ SetupIconFile=Chatty.ico
 Uninstallable=no
 UsePreviousSetupType=no
 DisableProgramGroupPage=yes
+SetupLogging=yes

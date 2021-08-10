@@ -327,6 +327,10 @@ begin
     Files.Append(Path+'\api-ms-win-crt-string-l1-1-0.dll');
     Files.Append(Path+'\api-ms-win-crt-time-l1-1-0.dll');
     Files.Append(Path+'\api-ms-win-crt-utility-l1-1-0.dll');
+    Files.Append(Path+'\Chatty.exe');
+    Files.Append(Path+'\Chatty.ico');
+    Files.Append(Path+'\ChattyPortable.exe');
+    Files.Append(Path+'\ChattyPortable.ico');
     Files.Append(Path+'\msvcp140.dll');
     Files.Append(Path+'\msvcr100.dll');
     Files.Append(Path+'\packager.dll');
@@ -928,9 +932,12 @@ begin
         Files := GetRuntimeFolders();
         for Index := 0 to Files.Count - 1 do begin
             File := Files[Index];
-            Log('Removing: '+File);
-            if not RemoveDir(File) then
-                Log('Failed to remove: '+File);
+            if DirExists(File) then
+            begin
+                Log('Removing: '+File);
+                if not RemoveDir(File) then
+                    Log('Failed to remove: '+File);
+            end;
         end;
     end;
 
