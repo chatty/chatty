@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -480,6 +481,7 @@ public class Highlighter {
         private boolean invalidRegexLog;
         private String mainPrefix;
         private String error;
+        private String matchingError;
         private boolean patternWarning;
         private List<Modification> modifications = new ArrayList<>();
         
@@ -1328,7 +1330,7 @@ public class Highlighter {
                  * 
                  * Example for problematic item: "reg:(?i)(.)\1{2,}"
                  */
-                if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
+                if (Debugging.millisecondsElapsedLenient(LOG_MATCHING_ERROR_KEY, LOG_MATCHING_ERROR_DELAY)) {
                     /**
                      * Some delay to not spam too much as well as preventing
                      * possible infinite loop (since this outputs an info
@@ -1337,18 +1339,25 @@ public class Highlighter {
                      */
                     logRegexError(pattern, text, ex);
                 }
-                error = ex.getLocalizedMessage();
+                matchingError = ex.getLocalizedMessage();
             }
             return false;
         }
+        
+        private static final String LOG_MATCHING_ERROR_KEY = "HighlighterRegexError";
+        private static final long LOG_MATCHING_ERROR_DELAY = TimeUnit.SECONDS.toMillis(120);
         
         private void logRegexError(Pattern pattern, String text, Exception ex) {
             LOGGER.log(Logging.USERINFO,
                     String.format("Error: Regex match failed (see 'Extra - Debug window' for details)",
                             usedForFeature, StringUtil.shortenTo(pattern.pattern(), 40)));
             LOGGER.warning(
-                    String.format("Regex match failed (%s/'%s'):\n\tregex '%s'\n\ton text '%s'\n\twith error '%s'",
-                            usedForFeature, raw, pattern, text, Debugging.getStacktraceFilteredFlat(ex)));
+                    String.format("Regex match failed (%s/'%s'):\n\t"
+                            + "regex '%s'\n\t"
+                            + "on text '%s'\n\t"
+                            + "with error '%s'\n\t"
+                            + "(Note that this type of error is logged no more often than every %s seconds.)",
+                            usedForFeature, raw, pattern, text, Debugging.getStacktraceFilteredFlat(ex), LOG_MATCHING_ERROR_DELAY / 1000));
         }
         
         /**
@@ -1380,10 +1389,10 @@ public class Highlighter {
                 }
             } catch (Exception ex) {
                 // See matchesPattern() for explanation
-                if (Debugging.millisecondsElapsed("HighlighterRegexError", 5000)) {
+                if (Debugging.millisecondsElapsedLenient(LOG_MATCHING_ERROR_KEY, LOG_MATCHING_ERROR_DELAY)) {
                     logRegexError(pattern, text, ex);
                 }
-                error = ex.getLocalizedMessage();
+                matchingError = ex.getLocalizedMessage();
             }
             return result;
         }
@@ -1535,6 +1544,7 @@ public class Highlighter {
             failedItem = null;
             blacklistPreventedTextMatch = false;
             blockedByBlacklist = false;
+            matchingError = null;
             
             if (blacklist != null && blacklist.block) {
                 // This would only happen when using item individually, e.g. testing
@@ -1703,8 +1713,26 @@ public class Highlighter {
             return error != null;
         }
         
+        /**
+         * An error that occured while parsing.
+         * 
+         * @return 
+         */
         public String getError() {
             return error;
+        }
+        
+        public boolean hasMatchingError() {
+            return matchingError != null;
+        }
+        
+        /**
+         * The latest error that occured when matching. Reset with every match.
+         * 
+         * @return 
+         */
+        public String getMatchingError() {
+            return matchingError;
         }
         
         public String getReplacement() {

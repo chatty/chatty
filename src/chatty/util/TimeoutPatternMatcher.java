@@ -20,7 +20,7 @@ public class TimeoutPatternMatcher {
 
     /**
      * Creates a Matcher that will (probably) throw a MatcherTimeoutException if
-     * the Matcher is active past the give timeout.
+     * the Matcher is active past the given timeout.
      *
      * @param regex The regex
      * @param text The text to match against
@@ -34,7 +34,7 @@ public class TimeoutPatternMatcher {
 
     /**
      * Creates a Matcher that will (probably) throw a MatcherTimeoutException if
-     * the Matcher is active past the give timeout.
+     * the Matcher is active past the given timeout.
      *
      * @param pattern The Pattern object
      * @param text The text to match against

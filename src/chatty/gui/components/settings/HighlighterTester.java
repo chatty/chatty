@@ -445,6 +445,9 @@ public class HighlighterTester extends JDialog implements StringEditor {
             else {
                 testResult.setText("No match: "+failedReason);
             }
+            if (highlightItem.hasMatchingError()) {
+                testResult.setText("Error: "+highlightItem.getMatchingError());
+            }
         }
         if (blacklistItem != null && blacklistItem.hasError()) {
             testResult.setText("Blacklist error: "+blacklistItem.getError());

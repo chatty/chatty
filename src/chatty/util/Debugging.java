@@ -167,9 +167,28 @@ public class Debugging {
      * @return true if enough time has passed since the last call or it hasn't
      * been called yet (for the given id)
      */
-    public synchronized static boolean millisecondsElapsed(String id, int milliseconds) {
+    public synchronized static boolean millisecondsElapsed(String id, long milliseconds) {
         long elapsed = millisecondsElapsed(id);
         return elapsed == -1 || elapsed >= milliseconds;
+    }
+    
+    /**
+     * Same as {@link millisecondsElapsed(String, long)}, except that the time
+     * is updated only when this returns true.
+     * 
+     * @param id The identifier, can be any string
+     * @param milliseconds The amount of milliseconds
+     * @return true if enough time has passed since the last time this returned
+     * true or it hasn't been called yet (for the given id)
+     */
+    public synchronized static boolean millisecondsElapsedLenient(String id, long milliseconds) {
+        Long previous = stopwatchData.get(id);
+        if (previous == null
+                || System.currentTimeMillis() - previous >= milliseconds) {
+            stopwatchData.put(id, System.currentTimeMillis());
+            return true;
+        }
+        return false;
     }
     
     public synchronized static long count(String key) {
