@@ -105,7 +105,7 @@ var
 begin
     { Only check currently installed Config File once. }
     if not ConfigFileChecked and WizardIsComponentSelected('runtime') then begin
-        ConfigFileName := ExpandConstant(CurrentFileName);
+        ConfigFileName := ExpandConstant('{app}\app\Chatty.cfg');
         if ExpandConstant('{#IsJPackage}') = '1' then
             ConfigFileIsJPackage := True;
         if ConfigFileIsJPackage then
@@ -909,6 +909,10 @@ var
   Index : Integer;
   File : String;
 begin
+    Log('Prepare to install..');
+    ConfigFileCheck();
+    Log(Format('Prepare to install.. %d/%d/%d/%d', [ConfigFileChecked, ConfigFileConvert, ConfigFileIsJPackage, DirExists(ExpandConstant('{app}\runtime\lib\ext'))]));
+    Log(ExpandConstant('{app}\runtime\lib\ext'));
     if ConfigFileChecked and ConfigFileConvert then
     begin
         { Delete files related to the runtime, as specified above.
