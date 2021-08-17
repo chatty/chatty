@@ -288,7 +288,7 @@ public class MainGui extends JFrame implements Runnable {
         client.settings.addSettingsListener(new MySettingsListener());
         
         streamChat = new StreamChat(this, styleManager, contextMenuListener,
-            client.settings.getBoolean("streamChatBottom"));
+            client.settings.getBoolean("streamChatBottom"), dockedDialogs);
         StreamChatContextMenu.client = client;
         
         moderationLog = new ModerationLog(this, dockedDialogs);

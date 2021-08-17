@@ -1,24 +1,23 @@
 
 package chatty.gui.components;
 
-import chatty.Room;
 import chatty.User;
+import chatty.gui.DockStyledTabContainer;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.MainGui;
 import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
-import chatty.gui.components.menus.HighlightsContextMenu;
 import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
-import chatty.util.api.Emoticon.EmoticonImage;
-import chatty.util.api.StreamInfo;
-import chatty.util.api.usericons.Usericon;
+import chatty.util.dnd.DockContent;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.util.Collection;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -32,11 +31,13 @@ import javax.swing.ScrollPaneConstants;
  */
 public class StreamChat extends JDialog {
     
+    private final DockedDialogHelper helper;
+    private final DockStyledTabContainer content;
     private final ChannelTextPane textPane;
     private final ContextMenuListener contextMenuListener;
     
     public StreamChat(MainGui g, StyleManager styles, ContextMenuListener contextMenuListener,
-            boolean startAtBottom) {
+            boolean startAtBottom, DockedDialogManager dockedDialogs) {
         super(g);
         this.contextMenuListener = contextMenuListener;
         setTitle("Stream Chat");
@@ -49,6 +50,7 @@ public class StreamChat extends JDialog {
                 if (e.getActionCommand().equals("clearHighlights")) {
                     textPane.clearAll();
                 }
+                helper.menuAction(e);
                 super.menuItemClicked(e);
             }
             
@@ -59,11 +61,60 @@ public class StreamChat extends JDialog {
         
         add(scroll, BorderLayout.CENTER);
         
+        content = dockedDialogs.createStyledContent(scroll, "Stream Chat", "-streamChat-");
+        
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            
+            @Override
+            public void setVisible(boolean visible) {
+                StreamChat.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return StreamChat.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp, BorderLayout.CENTER);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return StreamChat.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+            
+        });
+        
         setSize(400, 200);
+    }
+    
+    @Override
+    public void setVisible(boolean visible) {
+        helper.setVisible(visible, true);
+    }
+    
+    @Override
+    public boolean isVisible() {
+        return helper.isVisible();
     }
     
     public void printMessage(Message message) {
         textPane.printMessage(message);
+        if (helper.isDocked() && !content.isContentVisible()) {
+            content.setNewMessage(true);
+        }
     }
     
     public void userBanned(User user, long duration, String reason, String id) {
@@ -85,14 +136,14 @@ public class StreamChat extends JDialog {
     /**
      * Normal channel text pane modified a bit to fit the needs for this.
      */
-    static class TextPane extends ChannelTextPane {
+    class TextPane extends ChannelTextPane {
         
         public TextPane(MainGui main, StyleServer styleServer, boolean startAtBottom) {
             // Enables the "special" parameter to be able to remove old lines
             super(main, styleServer, ChannelTextPane.Type.STREAM_CHAT, startAtBottom);
             
             // Overriding constructor is required to set the custom context menu
-            linkController.setContextMenuCreator(() -> new StreamChatContextMenu());
+            linkController.setContextMenuCreator(() -> new StreamChatContextMenu(helper.isDocked()));
         }
         
     }

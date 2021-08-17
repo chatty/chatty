@@ -22,7 +22,7 @@ public class StreamChatContextMenu extends ContextMenu {
     private static final String CHANNEL_SETTING = "streamChatChannels";
     private static final String LOGO_SETTING = "streamChatLogos";
 
-    public StreamChatContextMenu() {
+    public StreamChatContextMenu(boolean isDocked) {
         addItem("clearHighlights", Language.getString("highlightedDialog.cm.clear"));
         addSeparator();
         List<String> channels = new ArrayList<>();
@@ -60,6 +60,9 @@ public class StreamChatContextMenu extends ContextMenu {
         }
         addSeparator(logoSubmenu);
         addItem("logoReadme", "Readme", logoSubmenu);
+        
+        addSeparator();
+        addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
     }
     
     private static void addChans(List<String> chans, Collection<String> add) {
