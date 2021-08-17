@@ -19,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -29,7 +28,6 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
@@ -437,37 +435,12 @@ public class LiveStreamsList extends JList<StreamInfo> {
             if (info.getStatusChangeTimeAgo() < STREAMINFO_NEW_TIME) {
                 titleBaseBorder = TITLE_NEW;
             }
-            TitledBorder titleBorder = BorderFactory.createTitledBorder(titleBaseBorder,
-                    title, TitledBorder.CENTER, TitledBorder.TOP, null, null);
+            LiveStreamsTitledBorder titleBorder = new LiveStreamsTitledBorder(titleBaseBorder, title, TitledBorder.CENTER, TitledBorder.TOP);
             
             boolean fav = favs.contains(info.stream);
             boolean gameFav = gameFavs.contains(info.getGame());
             if (fav || gameFav) {
-                ImageIcon icon = getFavIcon(fav, gameFav);
-                try {
-                    /**
-                     * https://stackoverflow.com/a/38052703/2375667
-                     * 
-                     * Reflection seems kind of ugly, but short of implementing
-                     * a replacement for TitledBorder this seems the most
-                     * practical. Overwriting the paintBorder() method is
-                     * possible, but the positioning of the image and the text
-                     * isn't as good when it's just slapped on there afterwards.
-                     */
-                    // Get the field declaration
-                    Field f = TitledBorder.class.getDeclaredField("label");
-                    // Make it accessible (it normally is private)
-                    f.setAccessible(true);
-                    // Get the label
-                    JLabel borderLabel = (JLabel) f.get(titleBorder);
-                    // Put the field accessibility back to default
-                    f.setAccessible(false);
-                    // Set the icon and do whatever you want with your label
-                    borderLabel.setIcon(icon);
-                } catch (Exception ex) {
-                    // Fallback when the reflection doesn't work
-                    titleBorder.setTitle(getFavText(fav, gameFav)+titleBorder.getTitle());
-                }
+                titleBorder.getLabel().setIcon(getFavIcon(fav, gameFav));
             }
             Border innerBorder = BorderFactory.createCompoundBorder(titleBorder, PADDING);
             Border border = BorderFactory.createCompoundBorder(MARGIN, innerBorder);
@@ -493,19 +466,6 @@ public class LiveStreamsList extends JList<StreamInfo> {
             }
             else if (gameFav) {
                 return gameFavIcon;
-            }
-            return null;
-        }
-        
-        private String getFavText(boolean fav, boolean gameFav) {
-            if (fav && gameFav) {
-                return "⭐ 🎮 ";
-            }
-            else if (fav) {
-                return "⭐ ";
-            }
-            else if (gameFav) {
-                return "🎮 ";
             }
             return null;
         }
