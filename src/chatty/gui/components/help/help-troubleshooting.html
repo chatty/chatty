@@ -190,16 +190,26 @@
     </h2>
     
     <h3>Windows Standalone Version</h3>
-    <p>The <code>Chatty.exe</code> uses the bundled Java (JRE) to execute the
-        <code>Chatty.jar</code> in the <code>app</code> directory. If nothing
-        happens after starting the <code>Chatty.jar</code>, try the following:</p>
-    <ul>
-        <li>Re-download the Standalone Bundle and make sure it extracts fully.</li>
-        <li>Make sure that the path where Chatty is located contains only ASCII
-            characters (basicially no non-english letters).</li>
-        <li>In new Standalone versions (ChattyPortable.exe exists) make sure
-            that the directory <code>runtime/lib/ext</code> does not exist.</li>
-    </ul>
+    <p>The <code>Chatty.exe</code> uses the bundled Java (JRE) in the <code>runtime</code>
+        directory to execute the <code>Chatty.jar</code> in the <code>app</code>
+        directory. If you have issues executing the <code>Chatty.exe</code>, try
+        the following:</p>
+    
+    <dl class="defList">
+        <dt>Error: Failed to find JVM..</dt>
+        <dd>The <code>Chatty.exe</code> and the bundled Java in the <code>runtime</code>
+            directory may not be compatible or they weren't installed correctly.
+            Manually delete the <code>Chatty.exe</code> and the <code>runtime</code>
+            directory and re-install the Standalone version and make sure it installs or
+            extracts fully.</dd>
+        <dt>Error: Class chatty/Chatty not found. / Failed to launch JVM.</dt>
+        <dd>Make sure that the path where Chatty is located contains only ASCII
+            characters (basicially no non-english letters).</dd>
+        
+        <dt>Issue: Nothing happens when executing the Chatty.exe</dt>
+        <dd>In new Standalone versions (ChattyPortable.exe exists) make sure
+            that the directory <code>runtime/lib/ext</code> does not exist.</dd>
+    </dl>
     
     <h3>JAR Version</h3>
     <p>You need to have at least Java 8 JRE (Java Runtime Environment) installed to run Chatty.</p>
