@@ -160,6 +160,9 @@ public class RawMessageTest {
         if (type.equals("founder")) {
             return "@badge-info=founder/29;badges=moderator/1,founder/0;client-nonce=1234;color=#0000FF;display-name=USERNAME;emotes=;flags=;id=1234;mod=1;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type=mod :username!username@username.tmi.twitch.tv PRIVMSG " + channel + " :Ja bitte?";
         }
+        if (type.equals("first")) {
+            return "@color=;display-name=Test;id=123;first-msg=1;mod=0;room-id=123;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hello";
+        }
         return null;
     }
     

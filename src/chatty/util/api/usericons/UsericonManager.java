@@ -6,6 +6,7 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
+import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.net.URL;
 import java.util.ArrayList;
@@ -168,18 +169,18 @@ public class UsericonManager {
     }
     
     public synchronized List<Usericon> getBadges(Map<String, String> badgesDef,
-            User user, boolean botBadgeEnabled, boolean pointsHl, boolean channelLogo) {
-        List<Usericon> icons = getTwitchBadges(badgesDef, user);
+            User user, boolean botBadgeEnabled, MsgTags tags, boolean channelLogo) {
+        List<Usericon> icons = getTwitchBadges(badgesDef, user, tags);
         if (user.isBot() && botBadgeEnabled) {
-            Usericon icon = getIcon(Usericon.Type.BOT, null, null, user);
+            Usericon icon = getIcon(Usericon.Type.BOT, null, null, user, tags);
             if (icon != null) {
                 icons.add(icon);
             }
         }
-        addThirdPartyIcons(icons, user);
-        addAddonIcons(icons, user);
-        if (pointsHl) {
-            Usericon icon = getIcon(Usericon.Type.HL, null, null, user);
+        addThirdPartyIcons(icons, user, tags);
+        addAddonIcons(icons, user, tags);
+        if (tags != null && tags.isHighlightedMessage()) {
+            Usericon icon = getIcon(Usericon.Type.HL, null, null, user, tags);
             if (icon != null) {
                 icons.add(0, icon);
             }
@@ -190,14 +191,14 @@ public class UsericonManager {
         return icons;
     }
 
-    private List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user) {
+    private List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user, MsgTags tags) {
         if (badgesDef == null || badgesDef.isEmpty()) {
             return new ArrayList<>();
         }
         List<Usericon> result = new ArrayList<>();
         for (String id : badgesDef.keySet()) {
             String value = badgesDef.get(id);
-            Usericon icon = getIcon(Type.TWITCH, id, value, user);
+            Usericon icon = getIcon(Type.TWITCH, id, value, user, tags);
             if (icon != null) {
                 result.add(icon);
             }
@@ -220,14 +221,15 @@ public class UsericonManager {
      * @param id
      * @param version
      * @param user The user the returned icon has to match
+     * @param tags The MsgTags (some tags are user-specific)
      * @return The matching icon or {@code null} if none matched
      */
     public synchronized Usericon getIcon(Usericon.Type type,
-            String id, String version, User user) {
+            String id, String version, User user, MsgTags tags) {
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
                 //System.out.println("A:"+" "+type+" "+icon.type+" "+iconsMatchesAdvancedType(icon, type, id, version)+" "+icon);
-                if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)) {
+                if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user, tags)) {
                     if (icon.removeBadge) {
                         return null;
                     } else if (icon.image != null) {
@@ -286,7 +288,7 @@ public class UsericonManager {
     }
     
     private Usericon checkIcon(Usericon icon, Usericon.Type type, String id, String version, User user, int source) {
-        if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user)
+        if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user, null)
                 && (source == Usericon.SOURCE_ANY || icon.source == source)) {
             // Skip FFZ if disabled
             if (icon.source == Usericon.SOURCE_FFZ && !settings.getBoolean("ffzModIcon")) {
@@ -301,10 +303,10 @@ public class UsericonManager {
         return settings.getBoolean("customUsericonsEnabled");
     }
     
-    private void addAddonIcons(List<Usericon> icons, User user) {
+    private void addAddonIcons(List<Usericon> icons, User user, MsgTags tags) {
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
-                if (icon.type == Type.ADDON && iconMatchesUser(icon, user)
+                if (icon.type == Type.ADDON && iconMatchesUser(icon, user, tags)
                         && icon.image != null) {
                     insert(icons, icon);
                     if (icon.stop) {
@@ -315,7 +317,7 @@ public class UsericonManager {
         }
     }
     
-    private void addThirdPartyIcons(List<Usericon> icons, User user) {
+    private void addThirdPartyIcons(List<Usericon> icons, User user, MsgTags tags) {
         for (Usericon icon : thirdParty) {
             /**
              * Need to check eligibility here first, since a Custom Icon
@@ -324,10 +326,10 @@ public class UsericonManager {
              * types the user actually has access to, so that's already a
              * different starting position).
              */
-            if (iconMatchesUser(icon, user)) {
+            if (iconMatchesUser(icon, user, tags)) {
                 // This may or may not return the same icon, depending on
                 // whether Custom Usericons replace it
-                Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user);
+                Usericon transformed = getIcon(Type.OTHER, icon.badgeType.id, icon.badgeType.version, user, tags);
                 if (transformed != null) {
                     insert(icons, transformed);
                 }
@@ -371,7 +373,7 @@ public class UsericonManager {
      * @return {@code true} if this icon matches the user, {@code false}
      * otherwise
      */
-    private boolean iconMatchesUser(Usericon icon, User user) {
+    private boolean iconMatchesUser(Usericon icon, User user, MsgTags tags) {
         if (icon.badgeTypeRestriction.id != null) {
             Map<String, String> badges = user.getTwitchBadges();
             String id = icon.badgeTypeRestriction.id;
@@ -427,7 +429,7 @@ public class UsericonManager {
                 return true;
             }
         } else if (icon.matchType == Usericon.MatchType.MATCH) {
-            if (icon.match.matches(user)) {
+            if (icon.match.matches(user, tags)) {
                 return true;
             }
         } else if (icon.matchType == Usericon.MatchType.STATUS) {

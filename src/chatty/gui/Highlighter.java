@@ -1517,6 +1517,10 @@ public class Highlighter {
             return matches(Type.ANY, "", null, null, null, user, null, MsgTags.EMPTY);
         }
         
+        public boolean matches(User user, MsgTags tags) {
+            return matches(Type.ANY, "", null, null, null, user, null, tags);
+        }
+        
         /**
          * Check whether a message matches this item.
          * 

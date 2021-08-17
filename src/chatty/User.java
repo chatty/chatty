@@ -10,6 +10,7 @@ import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -200,10 +201,10 @@ public class User implements Comparable<User> {
         return twitchBadges != null && twitchBadges.containsKey(id) && twitchBadges.get(id).equals(version);
     }
     
-    public List<Usericon> getBadges(boolean botBadgeEnabled, boolean pointsHl, boolean channelLogo) {
+    public List<Usericon> getBadges(boolean botBadgeEnabled, MsgTags tags, boolean channelLogo) {
         Map<String, String> badges = getTwitchBadges();
         if (iconManager != null) {
-            return iconManager.getBadges(badges, this, botBadgeEnabled, pointsHl, channelLogo);
+            return iconManager.getBadges(badges, this, botBadgeEnabled, tags, channelLogo);
         }
         return null;
     }
