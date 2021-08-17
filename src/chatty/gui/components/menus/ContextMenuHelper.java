@@ -79,9 +79,6 @@ public class ContextMenuHelper {
             m.addSeparator(miscSubmenu);
             m.addItem("copy", Language.getString("channelCm.copyStreamname"), miscSubmenu);
             m.addSeparator(miscSubmenu);
-            m.addItem("follow", Language.getString("channelCm.follow"), miscSubmenu);
-            m.addItem("unfollow", Language.getString("channelCm.unfollow"), miscSubmenu);
-            m.addSeparator(miscSubmenu);
             m.addItem("favoriteChannel", Language.getString("channelCm.favorite"), miscSubmenu);
             m.addItem("unfavoriteChannel", Language.getString("channelCm.unfavorite"), miscSubmenu);
         }

@@ -34,9 +34,6 @@ public class ChannelContextMenu extends ContextMenu {
         addItem("joinHostedChannel", Language.getString("channelCm.joinHosted"), MISC_MENU);
         addItem("copy", Language.getString("channelCm.copyStreamname"), MISC_MENU);
         addSeparator(MISC_MENU);
-        addItem("follow", Language.getString("channelCm.follow"), MISC_MENU);
-        addItem("unfollow", Language.getString("channelCm.unfollow"), MISC_MENU);
-        addSeparator(MISC_MENU);
         addItem("srcOpen", Language.getString("channelCm.speedruncom"), MISC_MENU);
         
         addSeparator();

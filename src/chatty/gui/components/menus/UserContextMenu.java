@@ -80,9 +80,6 @@ public class UserContextMenu extends ContextMenu {
         ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, false);
         ContextMenuHelper.addIgnore(this, user.getName(), MISC_MENU, true);
         addSeparator(MISC_MENU);
-        addItem("follow", Language.getString("userCm.follow"), MISC_MENU);
-        addItem("unfollow", Language.getString("userCm.unfollow"), MISC_MENU);
-        addSeparator(MISC_MENU);
         addItem("setcolor", Language.getString("userCm.setColor"), MISC_MENU);
         addItem("setname", Language.getString("userCm.setName"), MISC_MENU);
         addSeparator(MISC_MENU);

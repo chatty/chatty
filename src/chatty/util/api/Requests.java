@@ -217,65 +217,6 @@ public class Requests {
     //================
     // User Management
     //================
-    
-    public void followChannel(String userId, String targetId, String targetName, String token) {
-        String url = String.format(
-                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
-                userId,
-                targetId);
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(token);
-            request.setRequestType("PUT");
-            execute(request, r -> {
-                if (r.responseCode == 200) {
-                    long followTime = Parsing.followGetTime(r.text);
-                    if (followTime != -1 && System.currentTimeMillis() - followTime > 5000) {
-                        listener.followResult(String.format("Already following '%s' (since %s)",
-                                targetName,
-                                DateTime.ago(followTime, 0, 2, 0, DateTime.Formatting.VERBOSE)));
-                    } else {
-                        listener.followResult("Now following '" + targetName + "'");
-                    }
-                } else if (r.responseCode == 404) {
-                    listener.followResult("Couldn't follow '" + targetName + "' (channel not found)");
-                } else if (r.responseCode == 401) {
-                    listener.followResult("Couldn't follow '" + targetName + "' (access denied)");
-                } else {
-                    listener.followResult("Couldn't follow '" + targetName + "' (unknown error)");
-                }
-                if (r.responseCode != 200) {
-                    listener.followResult("Note: Twitch planned to remove follow/unfollow functionality from their API on July 27, 2021.");
-                }
-            });
-        }
-    }
-    
-    public void unfollowChannel(String userId, String targetId, String targetName, String token) {
-        String url = String.format(
-                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
-                userId,
-                targetId);
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(token);
-            request.setRequestType("DELETE");
-            execute(request, r -> {
-                if (r.responseCode == 204) {
-                    listener.followResult("No longer following '" + targetName + "'");
-                } else if (r.responseCode == 404) {
-                    listener.followResult("Couldn't unfollow '" + targetName + "' (channel not found)");
-                } else if (r.responseCode == 401) {
-                    listener.followResult("Couldn't unfollow '" + targetName + "' (access denied)");
-                } else {
-                    listener.followResult("Couldn't unfollow '" + targetName + "' (unknown error)");
-                }
-                if (r.responseCode != 204) {
-                    listener.followResult("Note: Twitch planned to remove follow/unfollow functionality from their API on July 27, 2021.");
-                }
-            });
-        }
-    }
 
     public void getSingleFollower(String stream, String streamID, String user, String userID) {
         if (StringUtil.isNullOrEmpty(stream, user, streamID, userID)) {

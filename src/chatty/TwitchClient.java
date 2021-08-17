@@ -2040,37 +2040,11 @@ public class TwitchClient {
      * @param parameter 
      */
     public void commandFollow(String channel, String parameter) {
-        String user = settings.getString("username");
-        String target = Helper.toStream(channel);
-        if (parameter != null && !parameter.isEmpty()) {
-            target = Helper.toStream(parameter.trim());
-        }
-        if (!Helper.isValidStream(target)) {
-            g.printSystem("No valid channel to follow.");
-            return;
-        }
-        if (!Helper.isValidStream(user)) {
-            g.printSystem("No valid username.");
-            return;
-        }
-        api.followChannel(user, target);
+        g.printSystem("Following/unfollowing has been removed from the Twitch API");
     }
     
     public void commandUnfollow(String channel, String parameter) {
-        String user = settings.getString("username");
-        String target = Helper.toStream(channel);
-        if (parameter != null && !parameter.isEmpty()) {
-            target = Helper.toStream(parameter.trim());
-        }
-        if (!Helper.isValidStream(target)) {
-            g.printSystem("No valid channel to unfollow.");
-            return;
-        }
-        if (!Helper.isValidStream(user)) {
-            g.printSystem("No valid username.");
-            return;
-        }
-        api.unfollowChannel(user, target);
+        g.printSystem("Following/unfollowing has been removed from the Twitch API");
     }
     
     public void commandAddStreamHighlight(Room room, String parameter) {

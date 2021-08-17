@@ -405,30 +405,6 @@ public class TwitchApi {
         }, usernames.split(" "));
     }
     
-    //================
-    // User Management
-    //================
-    
-    public void followChannel(String user, String target) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                resultListener.followResult("Couldn't follow '" + target + "' ("+r.getError()+")");
-            } else {
-                requests.followChannel(r.getId(user), r.getId(target), target, defaultToken);
-            }
-        }, user, target);
-    }
-    
-    public void unfollowChannel(String user, String target) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                resultListener.followResult("Couldn't unfollow '" + target + "' ("+r.getError()+")");
-            } else {
-                requests.unfollowChannel(r.getId(user), r.getId(target), target, defaultToken);
-            }
-        }, user, target);
-    }
-    
     
     //===================
     // Admin / Moderation

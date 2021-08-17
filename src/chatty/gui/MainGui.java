@@ -2196,24 +2196,6 @@ public class MainGui extends JFrame implements Runnable {
                 } else {
                     printLine("Can't host more than one channel.");
                 }
-            } else if (cmd.equals("follow")) {
-                if (JOptionPane.showConfirmDialog(getActiveWindow(),
-                        "Follow " + StringUtil.join(streams, ", ") + "?",
-                        Language.getString("channelCm.follow"),
-                        JOptionPane.YES_NO_OPTION) == 0) {
-                    for (String stream : streams) {
-                        client.commandFollow(null, stream);
-                    }
-                }
-            } else if (cmd.equals("unfollow")) {
-                if (JOptionPane.showConfirmDialog(getActiveWindow(),
-                        "Unfollow " + StringUtil.join(streams, ", ") + "?",
-                        Language.getString("channelCm.unfollow"),
-                        JOptionPane.YES_NO_OPTION) == 0) {
-                    for (String stream : streams) {
-                        client.commandUnfollow(null, stream);
-                    }
-                }
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));
             } else if (cmd.startsWith("command")) {
