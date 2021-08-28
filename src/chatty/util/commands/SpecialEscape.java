@@ -21,7 +21,7 @@ public class SpecialEscape implements Item {
     @Override
     public String replace(Parameters parameters) {
         String result = item.replace(parameters);
-        if (parameters.get("escape-pipe") != null) {
+        if (parameters.get("escape-pipe") != null && result != null) {
             result = result.replaceAll("(\\|+)", "$1|");
         }
         return result;
