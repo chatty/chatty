@@ -279,6 +279,13 @@ public class HelperTest {
         assertEquals("channel", Helper.getChannelFromUrl("channel"));
         assertEquals("channel/", Helper.getChannelFromUrl("channel/"));
         assertEquals("twitch.tv/$%&", Helper.getChannelFromUrl("twitch.tv/$%&"));
+        assertEquals("channel", Helper.getChannelFromUrl("https://twitch.tv/channel"));
+        assertEquals("channel", Helper.getChannelFromUrl("http://twitch.tv/channel"));
+        assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/channel"));
+        assertEquals("channel", Helper.getChannelFromUrl("http://www.twitch.tv/channel"));
+        assertEquals("channel", Helper.getChannelFromUrl("www.twitch.tv/channel"));
+        assertEquals("https:///twitch.tv/channel", Helper.getChannelFromUrl("https:///twitch.tv/channel"));
+        assertEquals("https://wwww.twitch.tv/channel", Helper.getChannelFromUrl("https://wwww.twitch.tv/channel"));
     }
     
     @Test
