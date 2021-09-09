@@ -1920,15 +1920,14 @@ public class TwitchClient {
      */
     public void commandJoinChannel(String channelString) {
         if (channelString == null) {
-            g.printLine("A channel to join needs to be specified.");
-        } else {
-            String[] channelList = channelString.split(" ");
-            for (String channel: channelList)
-            {
-                channel = StringUtil.toLowerCase(channel.trim());
-                c.joinChannel(channel);
-            }
-            
+            channelString = "";
+        }
+        String[] channelList = Helper.parseChannels(channelString);
+        if (channelList.length == 0) {
+            g.printLine("No valid channel specified.");
+        }
+        else {
+            c.joinChannels(new HashSet<>(Arrays.asList(channelList)));
         }
     }
     

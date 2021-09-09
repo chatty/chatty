@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -59,6 +60,7 @@ public class Helper {
         Set<String> result = new LinkedHashSet<>();
         for (String part : parts) {
             String channel = part.trim();
+            channel = getChannelFromUrl(channel);
             if (isValidChannel(channel)) {
                 addValidChannel(channel, prepend, result);
             }
@@ -95,6 +97,22 @@ public class Helper {
         }
     }
     
+    /**
+     * Get the channel name from a Twitch url such as twitch.tv/channel_name and
+     * some variants.
+     * 
+     * @param url The url or other input String
+     * @return The channel name from the URL, or the input String if it doesn't
+     * match an expected format
+     */
+    public static String getChannelFromUrl(String url) {
+        Matcher m = CHANNEL_URL_PATTERN.matcher(url);
+        if (m.matches()) {
+            return m.group(1);
+        }
+        return url;
+    }
+    
     public static String[] parseChannels(String channels, boolean prepend) {
         return parseChannelsFromString(channels, prepend).toArray(new String[0]);
     }
@@ -124,6 +142,7 @@ public class Helper {
     public static final Pattern CHANNEL_PATTERN = Pattern.compile("(?i)^#?"+USERNAME_REGEX+"$");
     public static final Pattern CHATROOM_PATTERN = Pattern.compile("(?i)^#?chatrooms:[0-9a-z-:]+$");
     public static final Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
+    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile("(?:https?://)?(?:www\\.)?twitch\\.tv/("+USERNAME_REGEX+")[/a-z]*");
     
     /**
      * Kind of relaxed valiadation if a channel, which can have a leading # or
