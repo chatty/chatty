@@ -162,7 +162,7 @@ public class MainMenu extends JMenuBar {
         //-------
         // Extra
         //-------
-        addItem(extra,"livestreamer",Language.getString("menubar.dialog.livestreamer"), KeyEvent.VK_L);
+        addItem(extra,"dialog.livestreamer");
         addItem(extra,"dialog.toggleEmotes");
         extra.addSeparator();
         addItem(extra,"dialog.followers");

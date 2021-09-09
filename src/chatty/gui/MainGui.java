@@ -579,6 +579,19 @@ public class MainGui extends JFrame implements Runnable {
                 toggleSubscriberDialog();
             }
         });
+        
+        addMenuAction("dialog.livestreamer", "Dialog: "+Language.getString("menubar.dialog.livestreamer")+" (toggle)", KeyEvent.VK_L, new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (livestreamerDialog.isVisible()) {
+                    livestreamerDialog.close();
+                }
+                else {
+                    livestreamerDialog.open(null, null);
+                }
+            }
+        });
 
         addMenuAction("dialog.joinChannel", "Dialog: Join Channel",
                 KeyEvent.VK_J, new AbstractAction() {
@@ -1664,8 +1677,6 @@ public class MainGui extends JFrame implements Runnable {
                 if (!stream.isEmpty()) {
                     srl.searchRaceWithEntrant(stream);
                 }
-            } else if (cmd.equals("livestreamer")) {
-                livestreamerDialog.open(null, null);
             } else if (cmd.equals("configureLogin")) {
                 openTokenDialog();
             } else if (cmd.equals("addStreamHighlight")) {
