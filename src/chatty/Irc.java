@@ -24,7 +24,7 @@ public abstract class Irc {
     /**
      * Delay between JOINs (in milliseconds).
      */
-    private static final int JOIN_DELAY = 1200;
+    private static final int JOIN_DELAY = 750;
     
     private final AddressManager addressManager = new AddressManager();
     private final DelayedActionQueue<String> joinQueue
