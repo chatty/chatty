@@ -51,9 +51,30 @@ public class StreamCategory implements Comparable<StreamCategory> {
         return name.isEmpty();
     }
     
+    /**
+     * Looser match rather than just an exact comparison which can account for
+     * small changes in what is still essentially the same name.
+     * 
+     * @param other
+     * @return 
+     */
+    public boolean nameMatches(StreamCategory other) {
+        String currentName = name.trim();
+        String otherName = other.name.trim();
+        return currentName.equals(otherName) || newDash(currentName).equals(newDash(otherName));
+    }
+    
+    private static String newDash(String input) {
+        return input.replace("–", "-");
+    }
+    
     @Override
     public String toString() {
         return name;
+    }
+    
+    public String toStringVerbose() {
+        return String.format("[%s/%s]", id, name);
     }
 
     @Override

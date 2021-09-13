@@ -453,8 +453,8 @@ public class TwitchApi {
                     performGameSearch(info.category.name, (categories) -> {
                         boolean categoryFound = false;
                         for (StreamCategory category : categories) {
-                            if (category.name.equals(info.category.name)) {
-                                requests.putChannelInfoNew(streamId, info.updateCategory(category), defaultToken);
+                            if (category.nameMatches(info.category)) {
+                                requests.putChannelInfoNew(streamId, info.changeCategory(category), defaultToken);
                                 categoryFound = true;
                             }
                         }

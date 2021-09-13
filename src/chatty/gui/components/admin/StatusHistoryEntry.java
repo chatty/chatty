@@ -100,7 +100,7 @@ public class StatusHistoryEntry {
             return this;
         }
         // Add id
-        if (!game.hasId() && updatedCategory.name.equals(game.name)) {
+        if (!game.hasId() && updatedCategory.nameMatches(game)) {
             return new StatusHistoryEntry(title, updatedCategory, tags, lastActivity, timesUsed, favorite);
         }
         // Change name

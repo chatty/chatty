@@ -238,8 +238,11 @@ public class StatusHistory implements SettingsListener {
         for (StatusHistoryEntry entry : entries.values()) {
             StatusHistoryEntry modified = entry.updateCategory(category);
             if (modified != entry) {
-                System.out.println("Updating "+modified);
                 modifiedValues.put(entry, modified);
+                LOGGER.info(String.format("Status presets: Updating '%s' (%s to %s)",
+                        entry,
+                        entry.game.toStringVerbose(),
+                        modified.game.toStringVerbose()));
             }
         }
         // After renaming StreamCategory old an new might not be equal()

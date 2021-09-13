@@ -311,12 +311,27 @@ public class StatusPanel extends JPanel {
         addContextMenu(streamTags);
         TextSelectionMenu.install(status);
         
+        /**
+         * Update category ids and names if necessary. Category favorites get
+         * updated in SelectGameDialog.
+         */
         api.subscribe(ResultManager.Type.CATEGORY_RESULT, (ResultManager.CategoryResult) categories -> {
-            if (categories != null) {
-                for (StreamCategory category : categories) {
-                    main.getStatusHistory().updateCategory(category);
+            SwingUtilities.invokeLater(() -> {
+                if (categories != null) {
+                    // Update status history
+                    for (StreamCategory category : categories) {
+                        main.getStatusHistory().updateCategory(category);
+                    }
+                    // Update currently selected category
+                    if (!currentStreamCategory.hasId()) {
+                        for (StreamCategory category : categories) {
+                            if (currentStreamCategory.nameMatches(category)) {
+                                currentStreamCategory = category;
+                            }
+                        }
+                    }
                 }
-            }
+            });
         });
     }
     

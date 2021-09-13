@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -39,6 +40,8 @@ import javax.swing.event.ListSelectionListener;
  * @author tduva
  */
 public class SelectGameDialog extends JDialog {
+    
+    private static final Logger LOGGER = Logger.getLogger(SelectGameDialog.class.getName());
 
     private static final String INFO = "<html><body style='width:280px'>"
             +Language.getString("admin.game.info");
@@ -200,8 +203,7 @@ public class SelectGameDialog extends JDialog {
                 for (StreamCategory currentCategory : favorites) {
                     for (StreamCategory updatedCategory : categories) {
                         if (!currentCategory.hasId()) {
-                            System.out.println(currentCategory.name + " doesnt' have id");
-                            if (currentCategory.name.equals(updatedCategory.name)) {
+                            if (currentCategory.nameMatches(updatedCategory)) {
                                 // Has no id yet, but same name -> add id
                                 replace.put(currentCategory, updatedCategory);
                             }
@@ -215,7 +217,9 @@ public class SelectGameDialog extends JDialog {
                     }
                 }
                 for (Map.Entry<StreamCategory, StreamCategory> category : replace.entrySet()) {
-                    System.out.println("Replacing "+category.getKey()+" with "+category.getValue());
+                    LOGGER.info(String.format("Game favorites: Updating %s to %s",
+                            category.getKey().toStringVerbose(),
+                            category.getValue().toStringVerbose()));
                     favorites.remove(category.getKey());
                     favorites.add(category.getValue());
                 }

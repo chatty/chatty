@@ -53,12 +53,15 @@ public class ChannelStatus {
         return category != null && category.hasId();
     }
     
-    public ChannelStatus updateCategory(StreamCategory category) {
-        // Add id
-        if (!this.category.hasId() && this.category.name.equals(category.name)) {
-            return new ChannelStatus(channelId, channelLogin, channelName, title, category);
-        }
-        return this;
+    /**
+     * Creates a new ChannelStatus object with the StreamCategory replaced by
+     * the given category.
+     * 
+     * @param category
+     * @return 
+     */
+    public ChannelStatus changeCategory(StreamCategory category) {
+        return new ChannelStatus(channelId, channelLogin, channelName, title, category);
     }
     
     public static List<ChannelStatus> parseJson(String json) {
