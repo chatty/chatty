@@ -11,6 +11,7 @@ import chatty.util.api.StreamTagManager.StreamTagPutListener;
 import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
+import chatty.util.api.ResultManager.CategoryResult;
 
 /**
  * Handles TwitchApi requests and responses.
@@ -48,6 +49,7 @@ public class TwitchApi {
     protected final ChannelInfoManager channelInfoManager;
     protected final StreamTagManager communitiesManager;
     protected final CachedBulkManager<Req, Boolean> m;
+    protected final ResultManager resultManager;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -80,6 +82,7 @@ public class TwitchApi {
                 }
             }
         }, "[Api] ", CachedBulkManager.NONE);
+        resultManager = new ResultManager();
     }
     
     private static class Req {
@@ -233,6 +236,24 @@ public class TwitchApi {
                     resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
                 } else {
                     requests.getChannelInfo(r.getId(stream), stream);
+                }
+            }, stream);
+        }
+    }
+    
+    public void getChannelStatus(String stream) {
+        getChannelStatus(stream, null);
+    }
+    
+    public void getChannelStatus(String stream, String id) {
+        if (id != null) {
+            requests.getChannelStatus(id, stream);
+        } else {
+            userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    resultListener.receivedChannelStatus(ChannelStatus.createInvalid(null, stream), TwitchApi.RequestResultCode.FAILED);
+                } else {
+                    requests.getChannelStatus(r.getId(stream), stream);
                 }
             }, stream);
         }
@@ -410,22 +431,48 @@ public class TwitchApi {
     // Admin / Moderation
     //===================
     
-    public void putChannelInfo(ChannelInfo info) {
+    public void putChannelInfo(ChannelStatus info) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+            }
+            else {
+                requests.putChannelInfo(r.getId(info.channelLogin), info, defaultToken);
+            }
+        }, info.channelLogin);
+    }
+    
+    public void putChannelInfoNew(ChannelStatus info) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
                 resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
             } else {
-                requests.putChannelInfo(r.getId(info.name), info, defaultToken);
+                String streamId = r.getId(info.channelLogin);
+                if (!info.hasCategoryId()) {
+                    // Search for category
+                    performGameSearch(info.category.name, (categories) -> {
+                        boolean categoryFound = false;
+                        for (StreamCategory category : categories) {
+                            if (category.name.equals(info.category.name)) {
+                                requests.putChannelInfoNew(streamId, info.updateCategory(category), defaultToken);
+                                categoryFound = true;
+                            }
+                        }
+                        if (!categoryFound) {
+                            LOGGER.warning("Stream Category "+info.category.name+" not found");
+                            resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+                        }
+                    });
+                }
+                else {
+                    requests.putChannelInfoNew(streamId, info, defaultToken);
+                }
             }
-        }, info.name);
+        }, info.channelLogin);
     }
     
-    public void performGameSearch(String search, GameSearchListener listener) {
+    public void performGameSearch(String search, CategoryResult listener) {
         requests.getGameSearch(search, listener);
-    }
-    
-    public interface GameSearchListener {
-        public void result(Collection<String> result);
     }
     
     //-------------
@@ -568,6 +615,10 @@ public class TwitchApi {
                 requests.createStreamMarker(r.getId(stream), description, defaultToken, listener);
             }
         }, stream);
+    }
+    
+    public void subscribe(ResultManager.Type type, Object listener) {
+        resultManager.subscribe(type, listener);
     }
     
     public interface StreamMarkerResult {

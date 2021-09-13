@@ -29,24 +29,28 @@ public class Parsing {
      * @param json
      * @return 
      */
-    public static Set<String> parseGameSearch(String json) {
-        Set<String> result = new HashSet<>();
+    public static Set<StreamCategory> parseCategorySearch(String json) {
+        Set<StreamCategory> result = new HashSet<>();
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject)parser.parse(json);
             
-            Object games = root.get("games");
+            Object data = root.get("data");
             
-            if (!(games instanceof JSONArray)) {
+            if (!(data instanceof JSONArray)) {
                 LOGGER.warning("Error parsing game search: Should be array");
                 return null;
             }
-            Iterator it = ((JSONArray)games).iterator();
+            Iterator it = ((JSONArray)data).iterator();
             while (it.hasNext()) {
                 Object obj = it.next();
                 if (obj instanceof JSONObject) {
-                    String name = (String)((JSONObject)obj).get("name");
-                    result.add(name);
+                    JSONObject categoryData = (JSONObject) obj;
+                    String id = JSONUtil.getString(categoryData, "id");
+                    String name = JSONUtil.getString(categoryData, "name");
+                    if (!StringUtil.isNullOrEmpty(id, name)) {
+                        result.add(new StreamCategory(id, name));
+                    }
                 }
             }
             return result;

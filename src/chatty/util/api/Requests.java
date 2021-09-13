@@ -14,7 +14,6 @@ import chatty.util.api.StreamTagManager.StreamTagPutListener;
 import chatty.util.api.StreamTagManager.StreamTagsResult;
 import chatty.util.api.TwitchApi.AutoModAction;
 import chatty.util.api.TwitchApi.AutoModActionResult;
-import chatty.util.api.TwitchApi.GameSearchListener;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.TwitchApi.StreamMarkerResult;
 import chatty.util.api.TwitchApiRequest.TwitchApiRequestResult;
@@ -33,6 +32,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
+import chatty.util.api.ResultManager.CategoryResult;
+import java.util.Arrays;
 
 /**
  *
@@ -96,7 +97,30 @@ public class Requests {
             });
         }
     }
-
+    
+    public void getChannelStatus(String streamId, String stream) {
+        String url = "https://api.twitch.tv/helix/channels?broadcaster_id="+streamId;
+        newApi.add(url, "GET", api.defaultToken, (result, statusCode) -> {
+            if (statusCode == 200) {
+                List<ChannelStatus> parsed = ChannelStatus.parseJson(result);
+                if (parsed != null && parsed.size() > 0) {
+                    ChannelStatus status = parsed.get(0);
+                    listener.receivedChannelStatus(status, RequestResultCode.SUCCESS);
+                    if (status.hasCategoryId()) {
+                        api.resultManager.inform(ResultManager.Type.CATEGORY_RESULT, (CategoryResult l) -> {
+                            l.result(Arrays.asList(new StreamCategory[]{status.category}));
+                        });
+                    }
+                }
+                else {
+                    listener.receivedChannelStatus(ChannelStatus.createInvalid(streamId, stream), RequestResultCode.NOT_FOUND);
+                }
+            }
+            else {
+                listener.receivedChannelStatus(ChannelStatus.createInvalid(streamId, stream), RequestResultCode.UNKNOWN);
+            }
+        });
+    }
     
     //===================
     // Stream Information
@@ -244,19 +268,37 @@ public class Requests {
      * @param info
      * @param token 
      */
-    public void putChannelInfo(String userId, ChannelInfo info, String token) {
-        if (info == null || info.name == null) {
+    public void putChannelInfo(String userId, ChannelStatus info, String token) {
+        if (info == null || info.channelLogin == null) {
             return;
         }
-        String url = "https://api.twitch.tv/kraken/channels/"+userId;
+        String url = "https://api.twitch.tv/kraken/channels/" + userId;
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");
             request.setToken(token);
             request.setData(api.channelInfoManager.makeChannelInfoJson(info), "PUT");
             execute(request, r -> {
-                api.channelInfoManager.handleChannelInfoResult(true, r.text, r.responseCode, info.name);
+                api.channelInfoManager.handleChannelInfoResult(true, r.text, r.responseCode, info.channelLogin);
             });
         }
+    }
+    
+    public void putChannelInfoNew(String userId, ChannelStatus info, String token) {
+        if (info == null || info.channelLogin == null) {
+            return;
+        }
+        String url = "https://api.twitch.tv/helix/channels?broadcaster_id=" + userId;
+        newApi.add(url, "PATCH", info.makePutJson(), token, (result, statusCode) -> {
+            if (statusCode == 204) {
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS);
+            }
+            else if (statusCode == 401 || statusCode == 403) {
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED);
+            }
+            else {
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+            }
+        });
     }
     
     private int allTagsRequestCount;
@@ -359,7 +401,7 @@ public class Requests {
         });
     }
     
-    public void getGameSearch(String game, GameSearchListener listener) {
+    public void getGameSearch(String game, CategoryResult listener) {
         if (game == null || game.isEmpty()) {
             return;
         }
@@ -369,13 +411,15 @@ public class Requests {
         } catch (UnsupportedEncodingException ex) {
             Logger.getLogger(TwitchApi.class.getName()).log(Level.SEVERE, null, ex);
         }
-        final String url = "https://api.twitch.tv/kraken/search/games?query="+encodedGame;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        execute(request, r -> {
-            if (r.text != null) {
-                Set<String> games = Parsing.parseGameSearch(r.text);
-                if (games != null) {
-                    listener.result(games);
+        final String url = "https://api.twitch.tv/helix/search/categories?query="+encodedGame;
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            if (result != null) {
+                Set<StreamCategory> categories = Parsing.parseCategorySearch(result);
+                if (categories != null) {
+                    listener.result(categories);
+                    api.resultManager.inform(ResultManager.Type.CATEGORY_RESULT, (CategoryResult l) -> {
+                        l.result(categories);
+                    });
                 }
             }
         });

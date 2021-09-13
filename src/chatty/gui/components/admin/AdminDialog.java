@@ -9,6 +9,7 @@ import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
+import chatty.util.api.ChannelStatus;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.dnd.DockContent;
@@ -363,9 +364,9 @@ public class AdminDialog extends JDialog {
             close();
         }
     }
-
-    public void setChannelInfo(String channel, ChannelInfo info, RequestResultCode result) {
-        statusPanel.setChannelInfo(channel, info, result);
+    
+    public void channelStatusReceived(ChannelStatus status, RequestResultCode result) {
+        statusPanel.channelStatusReceived(status, result);
     }
     
     public void setPutResult(RequestResultCode result) {

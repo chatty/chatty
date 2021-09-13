@@ -1,6 +1,7 @@
 
 package chatty.gui.components.admin;
 
+import chatty.util.api.StreamCategory;
 import chatty.util.api.StreamTagManager.StreamTag;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class StatusHistoryEntry {
     
     public final String title;
-    public final String game;
+    public final StreamCategory game;
     
     /**
      * A list of StreamTag objects. May be null (meaning tags should be entirely
@@ -27,7 +28,7 @@ public class StatusHistoryEntry {
     public final int timesUsed;
     public final boolean favorite;
     
-    public StatusHistoryEntry(String title, String game, List<StreamTag> tags, long lastSet, int timesUsed, boolean favorite) {
+    public StatusHistoryEntry(String title, StreamCategory game, List<StreamTag> tags, long lastSet, int timesUsed, boolean favorite) {
         this.title = title;
         this.game = game;
         this.lastActivity = lastSet;
@@ -40,7 +41,7 @@ public class StatusHistoryEntry {
         }
     }
     
-    public StatusHistoryEntry(String title, String game, List<StreamTag> tags) {
+    public StatusHistoryEntry(String title, StreamCategory game, List<StreamTag> tags) {
         this(title, game, tags, -1, -1, false);
     }
     
@@ -82,6 +83,29 @@ public class StatusHistoryEntry {
                     return new StatusHistoryEntry(title, game, newTags, lastActivity, timesUsed, favorite);
                 }
             }
+        }
+        return this;
+    }
+    
+    /**
+     * Update the game (category) id or name, if the given category matches and
+     * a change is needed.
+     * 
+     * @param updatedCategory The up-to-date category, probably from the API
+     * @return A new entry with the category changed, or the same entry if
+     * nothing changed
+     */
+    public StatusHistoryEntry updateCategory(StreamCategory updatedCategory) {
+        if (game == null || updatedCategory == null) {
+            return this;
+        }
+        // Add id
+        if (!game.hasId() && updatedCategory.name.equals(game.name)) {
+            return new StatusHistoryEntry(title, updatedCategory, tags, lastActivity, timesUsed, favorite);
+        }
+        // Change name
+        if (game.hasId() && updatedCategory.id.equals(game.id) && !updatedCategory.name.equals(game.name)) {
+            return new StatusHistoryEntry(title, updatedCategory, tags, lastActivity, timesUsed, favorite);
         }
         return this;
     }

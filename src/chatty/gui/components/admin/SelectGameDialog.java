@@ -4,6 +4,9 @@ package chatty.gui.components.admin;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
+import chatty.util.api.ResultManager;
+import chatty.util.api.StreamCategory;
 import chatty.util.api.TwitchApi;
 import java.awt.Color;
 import java.awt.Component;
@@ -15,6 +18,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.*;
@@ -38,6 +46,8 @@ public class SelectGameDialog extends JDialog {
     private static String s(String key) {
         return Language.getString("admin.game."+key);
     }
+    
+    private static final StreamCategory SEPARATOR = new StreamCategory("", "");
 
     private final MainGui main;
     private final TwitchApi api;
@@ -55,12 +65,14 @@ public class SelectGameDialog extends JDialog {
     // Current info elements
     private final JLabel searchResultInfo = new JLabel();
     private final JTextField gameInput = new JTextField(30);
-    private final JList<String> list = new JList<>();
-    private final DefaultListModel<String> listData = new DefaultListModel<>();
+    private final JList<StreamCategory> list = new JList<>();
+    private final DefaultListModel<StreamCategory> listData = new DefaultListModel<>();
     
     // Current games data separate from GUI
-    private final Set<String> favorites = new TreeSet<>();
-    private final Set<String> searchResult = new TreeSet<>();
+    private final Set<StreamCategory> favorites = new TreeSet<>();
+    private final Set<StreamCategory> searchResult = new TreeSet<>();
+    
+    private StreamCategory presetCategory;
     
     // Whether to use the current game
     private boolean save;
@@ -178,6 +190,41 @@ public class SelectGameDialog extends JDialog {
         
         setMinimumSize(getSize());
         
+        api.subscribe(ResultManager.Type.CATEGORY_RESULT, (ResultManager.CategoryResult) categories -> {
+            SwingUtilities.invokeLater(() -> {
+                // Load favorites first, since this may be triggered while the
+                // dialog has not been opened yet
+                loadFavorites();
+                // Needs to save old an new, in case what equals() matches is different
+                Map<StreamCategory, StreamCategory> replace = new HashMap<>();
+                for (StreamCategory currentCategory : favorites) {
+                    for (StreamCategory updatedCategory : categories) {
+                        if (!currentCategory.hasId()) {
+                            System.out.println(currentCategory.name + " doesnt' have id");
+                            if (currentCategory.name.equals(updatedCategory.name)) {
+                                // Has no id yet, but same name -> add id
+                                replace.put(currentCategory, updatedCategory);
+                            }
+                        }
+                        else if (currentCategory.id.equals(updatedCategory.id)) {
+                            if (!currentCategory.name.equals(updatedCategory.name)) {
+                                // Has id, but different name -> update name
+                                replace.put(currentCategory, updatedCategory);
+                            }
+                        }
+                    }
+                }
+                for (Map.Entry<StreamCategory, StreamCategory> category : replace.entrySet()) {
+                    System.out.println("Replacing "+category.getKey()+" with "+category.getValue());
+                    favorites.remove(category.getKey());
+                    favorites.add(category.getValue());
+                }
+                if (!replace.isEmpty()) {
+                    saveFavorites();
+                    update();
+                }
+            });
+        });
     }
     
     /**
@@ -188,15 +235,16 @@ public class SelectGameDialog extends JDialog {
      * @return The name of the game to use, or {@code null} if the game should
      * not be changed
      */
-    public String open(String gamePreset) {
-        gameInput.setText(gamePreset);
+    public StreamCategory open(StreamCategory gamePreset) {
+        presetCategory = gamePreset;
         loadFavorites();
+        list.setSelectedValue(gamePreset, true);
         save = false;
         setVisible(true);
 
         // Blocking dialog, so stuff can change in the meantime
         if (save) {
-            return gameInput.getText().trim();
+            return list.getSelectedValue();
         }
         return null;
     }
@@ -215,13 +263,16 @@ public class SelectGameDialog extends JDialog {
      */
     private void update() {
         listData.clear();
-        for (String game : searchResult) {
+        if (presetCategory != null && !presetCategory.isEmpty() && !favorites.contains(presetCategory)) {
+            searchResult.add(presetCategory);
+        }
+        for (StreamCategory game : searchResult) {
             listData.addElement(game);
         }
         if (!searchResult.isEmpty() && !favorites.isEmpty()) {
-            listData.addElement("-");
+            listData.addElement(SEPARATOR);
         }
-        for (String game : favorites) {
+        for (StreamCategory game : favorites) {
             listData.addElement(game);
         }
         searchResultInfo.setText(Language.getString("admin.game.listInfo",
@@ -248,8 +299,8 @@ public class SelectGameDialog extends JDialog {
      * Adds the currently selected games to the favorites.
      */
     private void addToFavorites() {
-        for (String game : list.getSelectedValuesList()) {
-            if (!game.equals("-")) {
+        for (StreamCategory game : list.getSelectedValuesList()) {
+            if (!game.equals(SEPARATOR)) {
                 favorites.add(game);
             }
         }
@@ -261,7 +312,7 @@ public class SelectGameDialog extends JDialog {
      * Removes the currently selected games from the favorites.
      */
     private void removeFromFavorites() {
-        for (String game : list.getSelectedValuesList()) {
+        for (StreamCategory game : list.getSelectedValuesList()) {
             favorites.remove(game);
         }
         saveFavorites();
@@ -273,8 +324,8 @@ public class SelectGameDialog extends JDialog {
      * favorites.
      */
     private void toggleFavorite() {
-        for (String game : list.getSelectedValuesList()) {
-            if (favorites.contains(game) || game.equals("-")) {
+        for (StreamCategory game : list.getSelectedValuesList()) {
+            if (favorites.contains(game) || game.equals(SEPARATOR)) {
                 favorites.remove(game);
             } else {
                 favorites.add(game);
@@ -282,6 +333,49 @@ public class SelectGameDialog extends JDialog {
         }
         saveFavorites();
         update();
+    }
+    
+    public static Collection<List> favoritesToSettings(Collection<StreamCategory> favorites) {
+        List<List> result = new ArrayList<>();
+        for (StreamCategory category : favorites) {
+            if (!StringUtil.isNullOrEmpty(category.name)) {
+                List item = new ArrayList<>();
+                item.add(category.id);
+                item.add(category.name);
+                result.add(item);
+            }
+        }
+        return result;
+    }
+    
+    public static Collection<String> favoritesToSettingsOld(Collection<StreamCategory> favorites) {
+        List<String> result = new ArrayList<>();
+        for (StreamCategory category : favorites) {
+            if (!StringUtil.isNullOrEmpty(category.name)) {
+                result.add(category.name);
+            }
+        }
+        return result;
+    }
+    
+    public static Collection<StreamCategory> settingsToFavorites(List<List> favorites) {
+        List<StreamCategory> result = new ArrayList<>();
+        for (List item : favorites) {
+            if (item != null && item.size() == 2) {
+                String id = (String) item.get(0);
+                String name = (String) item.get(1);
+                result.add(new StreamCategory(id, name));
+            }
+        }
+        return result;
+    }
+    
+    public static Collection<StreamCategory> settingsToFavoritesOld(List<String> favorites) {
+        List<StreamCategory> result = new ArrayList<>();
+        for (String item : favorites) {
+            result.add(new StreamCategory(null, item));
+        }
+        return result;
     }
     
     private void saveFavorites() {
@@ -301,8 +395,8 @@ public class SelectGameDialog extends JDialog {
     private void updateButtons() {
         boolean favoriteSelected = false;
         boolean nonFavoriteSelected = false;
-        for (String game : list.getSelectedValuesList()) {
-            if (!game.equals("-")) {
+        for (StreamCategory game : list.getSelectedValuesList()) {
+            if (!game.equals(SEPARATOR)) {
                 if (favorites.contains(game)) {
                     favoriteSelected = true;
                 } else {
@@ -313,6 +407,7 @@ public class SelectGameDialog extends JDialog {
         addToFavoritesButton.setEnabled(nonFavoriteSelected);
         removeFromFavoritesButton.setEnabled(favoriteSelected);
         searchButton.setEnabled(!gameInput.getText().isEmpty());
+        ok.setEnabled(list.getSelectedValue() != null && list.getSelectedValue() != SEPARATOR);
     }
     
     private GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -323,29 +418,6 @@ public class SelectGameDialog extends JDialog {
         gbc.gridheight = h;
         gbc.insets = new Insets(4,4,4,4);
         return gbc;
-    }
-    
-    /**
-     * Change the game to be used to the one currently selected in the given
-     * JList.
-     * 
-     * @param list 
-     */
-    private void updateGameFromSelection() {
-        String selected = list.getSelectedValue();
-        if (selected != null) {
-            gameInput.setText(selected);
-        }
-    }
-    
-    /**
-     * Called when an item is selected either by changing the selected item
-     * or clicking an already selected item.
-     * 
-     * @param source 
-     */
-    private void itemSelected() {
-        updateGameFromSelection();
     }
     
     private class MyActionListener implements ActionListener {
@@ -379,7 +451,6 @@ public class SelectGameDialog extends JDialog {
         
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            itemSelected();
             updateButtons();
         }
     }
@@ -391,7 +462,6 @@ public class SelectGameDialog extends JDialog {
         
         @Override
         public void mouseClicked(MouseEvent e) {
-            itemSelected();
             if (e.getClickCount() == 2) {
                 useGameAndClose();
             }
@@ -423,12 +493,11 @@ public class SelectGameDialog extends JDialog {
             if (value == null) {
                 return label;
             }
-            String text = (String)value;
-            if (text.equals("-")) {
+            if (value.equals(SEPARATOR)) {
                 label.setText(null);
                 label.setBorder(seperatorBorder);
             }
-            if (favorites.contains((String)value)) {
+            if (favorites.contains((StreamCategory) value)) {
                 label.setIcon(icon);
             }
             return label;

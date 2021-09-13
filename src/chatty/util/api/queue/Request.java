@@ -9,12 +9,28 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.util.Timeout;
 import org.json.simple.JSONObject;
 
 /**
@@ -80,15 +96,6 @@ public class Request implements Runnable {
     }
     
     /**
-     * Sets the content type of the send data.
-     * 
-     * @param contentType 
-     */
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-    
-    /**
      * Set the listener for this request. Should probably not be set when this
      * request is supposed to be performed by QueuedApi, since it will overwrite
      * it (set to Entry instead).
@@ -101,6 +108,100 @@ public class Request implements Runnable {
 
     @Override
     public void run() {
+        if (requestMethod.equals("PATCH")) {
+            apache();
+        }
+        else {
+            regular();
+        }
+    }
+    
+    private void apache() {
+        if (listener == null) {
+            return;
+        }
+        String responseText = null;
+        int responseCode = -1;
+        int ratelimitRemaining = -1;
+        String responseEncoding = null;
+        String requestError = null;
+        
+        LOGGER.info(String.format("%s*%s: %s",
+                requestMethod,
+                token != null ? " (auth) " : "",
+                url));
+        
+        RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(CONNECT_TIMEOUT))
+                .setResponseTimeout(30, TimeUnit.SECONDS)
+                .build();
+        try (CloseableHttpClient httpclient = HttpClientBuilder.create().setDefaultRequestConfig(config).build()) {
+            ClassicHttpRequest request = new HttpUriRequestBase(requestMethod, new URI(url));
+            request.addHeader("Client-ID", CLIENT_ID);
+            if (token != null) {
+                request.addHeader("Authorization", "Bearer "+token);
+            }
+            if (data != null) {
+                StringEntity stringEntity;
+                if (contentType.equals("application/json")) {
+                    stringEntity = new StringEntity(data, ContentType.APPLICATION_JSON, "UTF-8", false);
+                }
+                else {
+                    stringEntity = new StringEntity(data, CHARSET);
+                }
+                request.setEntity(stringEntity);
+                LOGGER.info("Sending data: "+data);
+            }
+            try (CloseableHttpResponse response = httpclient.execute(request)) {
+                responseCode = response.getCode();
+                responseEncoding = getStringHeader(response.getFirstHeader("Content-Encoding"), null);
+                ratelimitRemaining = getIntHeader(response.getFirstHeader("Ratelimit-Remaining"), -1);
+                HttpEntity responseEntity = response.getEntity();
+                if (responseEntity != null) {
+                    responseText = EntityUtils.toString(responseEntity, Charset.forName("UTF-8"));
+                    EntityUtils.consume(responseEntity);
+                }
+            }
+        }
+        catch (IOException | URISyntaxException | ParseException ex) {
+            requestError = ex.toString();
+        }
+        
+        //-----------------------
+        // Debug output / Output
+        //-----------------------
+        LOGGER.info(String.format("GOT (%d/%d, %d%s): %s%s",
+                responseCode,
+                ratelimitRemaining,
+                responseText != null ? responseText.length() : -1,
+                responseEncoding != null ? ", " + responseEncoding : "",
+                url,
+                requestError != null ? " ["+requestError+"]" : ""));
+        
+        
+        listener.requestResult(responseText, responseCode, ratelimitRemaining);
+    }
+    
+    private static int getIntHeader(Header header, int defaultValue) {
+        if (header != null) {
+            try {
+                return Integer.parseInt(header.getValue());
+            }
+            catch (NumberFormatException ex) {
+                // Do nothing
+            }
+        }
+        return defaultValue;
+    }
+    
+    private static String getStringHeader(Header header, String defaultValue) {
+        if (header != null) {
+            return header.getValue();
+        }
+        return defaultValue;
+    }
+    
+    private void regular() {
         if (listener == null) {
             return;
         }
@@ -130,7 +231,7 @@ public class Request implements Runnable {
                 connection.setRequestProperty("Authorization", "Bearer "+token);
             }
             connection.setRequestMethod(requestMethod);
-            
+
             if (data != null) {
                 connection.setRequestProperty("Content-Type", contentType);
                 connection.setDoOutput(true);

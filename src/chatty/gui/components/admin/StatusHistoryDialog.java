@@ -4,6 +4,7 @@ package chatty.gui.components.admin;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.lang.Language;
+import chatty.util.api.StreamCategory;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -49,7 +50,7 @@ public class StatusHistoryDialog extends JDialog {
     private final JCheckBox filterCurrentGame = new JCheckBox(Language.getString("admin.presets.setting.currentGame"));
     private final JCheckBox filterFavorites = new JCheckBox(Language.getString("admin.presets.setting.favorites"));
     
-    private String currentGame;
+    private StreamCategory currentGame;
     private CloseAction closeAction;
     
     private final Dialog parentComponent;
@@ -190,7 +191,7 @@ public class StatusHistoryDialog extends JDialog {
      * for values that should not be used) or {@code null} if none was selected
      * or the dialog was cancelled.
      */
-    public StatusHistoryEntry showDialog(String currentGame) {
+    public StatusHistoryEntry showDialog(StreamCategory currentGame) {
         this.currentGame = currentGame;
         table.requestFocusInWindow();
         setTitle(Language.getString("admin.presets.title", currentGame));
@@ -253,7 +254,7 @@ public class StatusHistoryDialog extends JDialog {
      * selected.
      */
     private void updateFilter() {
-        String game = null;
+        StreamCategory game = null;
         boolean favorites = filterFavorites.isSelected();
         if (filterCurrentGame.isSelected()) {
             game = currentGame;

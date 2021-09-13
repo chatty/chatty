@@ -374,6 +374,8 @@ public class SettingsManager {
 
         // Game Presets
         settings.addList("gamesFavorites",new ArrayList(), Setting.STRING);
+        // New format for saving id and name
+        settings.addList("gamesFavorites2", new ArrayList(), Setting.LIST);
         
         // Tags Presets
         settings.addMap("tagsFavorites", new HashMap(), Setting.STRING);

@@ -48,6 +48,7 @@ import chatty.gui.components.ModerationLog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
+import chatty.gui.components.admin.SelectGameDialog;
 import chatty.gui.components.updating.UpdateDialog;
 import chatty.gui.components.menus.CommandActionEvent;
 import chatty.gui.components.menus.CommandMenuItems;
@@ -105,6 +106,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import chatty.util.dnd.DockPopout;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /**
  * The Main Hub for all GUI activity.
@@ -4633,17 +4637,38 @@ public class MainGui extends JFrame implements Runnable {
 
     public void setChannelInfo(final String stream, final ChannelInfo info, final RequestResultCode result) {
         SwingUtilities.invokeLater(() -> {
-            adminDialog.setChannelInfo(stream, info, result);
             userInfoDialog.setChannelInfo(stream, info);
         });
     }
     
-    public void putChannelInfo(ChannelInfo info) {
-        client.api.putChannelInfo(info);
+    public void channelStatusReceived(ChannelStatus status, RequestResultCode result) {
+        SwingUtilities.invokeLater(() -> {
+            adminDialog.channelStatusReceived(status, result);
+        });
+    }
+    
+    /**
+     * New API doesn't allow editors to set channel status, so use old API until
+     * it doesn't work anymore.
+     */
+    private static final Instant SWITCH_TO_NEW_API = ZonedDateTime.of(2022, 2, 7, 10, 0, 0, 0, ZoneId.of("-07:00")).toInstant();
+    
+    public void putChannelInfo(ChannelStatus info) {
+        if (!getSettings().getString("username").equals(info.channelLogin)
+                && Instant.now().isBefore(SWITCH_TO_NEW_API)) {
+            client.api.putChannelInfo(info);
+        }
+        else {
+            client.api.putChannelInfoNew(info);
+        }
     }
     
     public void getChannelInfo(String channel) {
         client.api.getChannelInfo(channel);
+    }
+    
+    public void getChannelStatus(String channel) {
+        client.api.getChannelStatus(channel);
     }
     
     public ChannelInfo getCachedChannelInfo(String channel, String id) {
@@ -4663,12 +4688,14 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Saves the Set game favorites to the settings.
+     * Saves game favorites to the settings. Save in new and old format for
+     * backwards compatibility.
      * 
      * @param favorites 
      */
-    public void setGameFavorites(Set<String> favorites) {
-        client.settings.putList("gamesFavorites", new ArrayList(favorites));
+    public void setGameFavorites(Set<StreamCategory> favorites) {
+        client.settings.putList("gamesFavorites", new ArrayList(SelectGameDialog.favoritesToSettingsOld(favorites)));
+        client.settings.putList("gamesFavorites2", new ArrayList(SelectGameDialog.favoritesToSettings(favorites)));
     }
     
     public void setStreamTagFavorites(Map<String, String> favorites) {
@@ -4676,12 +4703,18 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     /**
-     * Returns a Set of game favorites retrieved from the settings.
+     * Gets the game favorites from the settings. Loads from the old format if
+     * new format doesn't have any data for backwards compatibility.
      * 
      * @return 
      */
-    public Set<String> getGameFavorites() {
-        return new HashSet<>(client.settings.getList("gamesFavorites"));
+    public Collection<StreamCategory> getGameFavorites() {
+        Collection<StreamCategory> result = SelectGameDialog.settingsToFavorites(client.settings.getList("gamesFavorites2"));
+        if (result.isEmpty()) {
+            // If new settings format has never been saved yet, load old one
+            result = SelectGameDialog.settingsToFavoritesOld(client.settings.getList("gamesFavorites"));
+        }
+        return result;
     }
     
     public Map<String, String> getStreamTagFavorites() {

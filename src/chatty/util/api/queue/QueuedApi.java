@@ -55,7 +55,7 @@ public class QueuedApi {
                             QueuedApi.this.ratelimitRemaining = ratelimitRemaining;
                             entry.listener.result(result, responseCode);
                             removePending(entry);
-                            if (Debugging.isEnabled("requestresponse")) {
+                            if (Debugging.isEnabled("requestresponse") && result != null) {
                                 LOGGER.info(result);
                             }
                         });

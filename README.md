@@ -109,11 +109,18 @@ External Libraries
 	(see <https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE>)
   * Requires SLF4J (http://www.slf4j.org/, MIT, `slf4j-*.jar`)
 
-* Txtmark
+* Txtmark:
   * Files under `assets/lib/`: `txtmark-0.13.jar`, `txtmark-txtmark-0.13.zip`
   * Website: <https://github.com/rjeschke/txtmark>
   * License: "Apache License 2.0"
 	(for the license text see the APACHE_LICENSE file
+	or <http://www.apache.org/licenses/LICENSE-2.0>).
+
+* Apache HttpComponents Client:
+  * Files under `assets/lib/`: `httpclient*.jar`, `httpcore*.jar`, `commons-codec*.jar`
+  * Website: <https://hc.apache.org/>
+  * License: "Apache License 2.0"
+    (for the license text see the APACHE_LICENSE file
 	or <http://www.apache.org/licenses/LICENSE-2.0>).
 
 * Additional external/modified libraries integrated under `src/chatty/` have license/source

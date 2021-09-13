@@ -5,6 +5,7 @@ import chatty.gui.components.settings.ListTableModel;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.StreamCategory;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -117,7 +118,7 @@ public class StatusHistoryTable extends JTable {
         sorter.setRowFilter(null);
     }
     
-    public void filter(final String game, final boolean favorites) {
+    public void filter(final StreamCategory game, final boolean favorites) {
         if (game == null && !favorites) {
             resetFilter();
         } else {

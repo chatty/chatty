@@ -139,7 +139,7 @@ public class ChannelInfoManager {
             } catch (Exception ex) {
                 LOGGER.warning("Error parsing ChannelInfo: "+ex);
             }
-            return new ChannelInfo(name, id, status, game, createdAt, followers,
+            return new ChannelInfo(name, id, createdAt, followers,
                     views, updatedAt, broadcaster_type, description);
         }
         catch (ParseException ex) {
@@ -158,11 +158,11 @@ public class ChannelInfoManager {
      * @param info The ChannelInfo object
      * @return The created JSON
      */
-    protected String makeChannelInfoJson(ChannelInfo info) {
+    protected String makeChannelInfoJson(ChannelStatus info) {
         JSONObject root = new JSONObject();
         Map channel = new HashMap();
-        channel.put("status",info.getStatus());
-        channel.put("game",info.getGame());
+        channel.put("status",info.title);
+        channel.put("game",info.category.name);
         root.put("channel",channel);
         return root.toJSONString();
     }

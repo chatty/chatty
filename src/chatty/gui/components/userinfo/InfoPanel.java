@@ -217,8 +217,6 @@ public class InfoPanel extends JPanel {
                     + "ID: %8$s<br />"
                     + "Type: %9$s<br />"
                     + "<br />"
-                    + "Title: %2$s<br />"
-                    + "Category: %3$s<br />"
                     + "Views: %4$s<br />"
                     + "Followers: %5$s<br />"
                     + "<br />"
@@ -228,8 +226,6 @@ public class InfoPanel extends JPanel {
                     !StringUtil.isNullOrEmpty(info.description)
                             ? StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(info.description), 70, true)
                             : "No description",
-                    Helper.htmlspecialchars_encode(info.status),
-                    Helper.htmlspecialchars_encode(info.game),
                     Helper.formatViewerCount(info.views),
                     Helper.formatViewerCount(info.followers),
                     formatAgoTimeVerbose(info.createdAt),

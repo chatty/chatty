@@ -21,6 +21,7 @@ public interface TwitchApiResultListener {
     void runCommercialResult(String stream, String text, RequestResultCode result);
     void putChannelInfoResult(RequestResultCode result);
     void receivedChannelInfo(String channel, ChannelInfo info, RequestResultCode result);
+    void receivedChannelStatus(ChannelStatus status, RequestResultCode resultCode);
     void accessDenied();
     void receivedFollowers(FollowerInfo followerInfo);
     void newFollowers(FollowerInfo followerInfo);
