@@ -40,6 +40,9 @@ public class ImageSettings extends SettingsPanel {
         gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
         usericons.add(botBadgeEnabled, gbc);
         
+        gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.CENTER);
+        usericons.add(new JLabel(Language.getString("settings.ffzBadgesInfo")), gbc);
+        
         //==================
         // Custom Usericons
         //==================

@@ -9,6 +9,7 @@ import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.TwitchApi;
+import chatty.util.api.usericons.UsericonFactory;
 import chatty.util.settings.Settings;
 import java.util.*;
 import java.util.logging.Logger;
@@ -252,9 +253,17 @@ public class FrankerFaceZ {
             // If type is ROOM, stream should be available
             emotes = FrankerFaceZParsing.parseRoomEmotes(result, stream);
             addRoomBadgeUsernames(stream, FrankerFaceZParsing.parseRoomBadges(result));
-            Usericon modIcon = FrankerFaceZParsing.parseModIcon(result, stream);
-            if (modIcon != null) {
-                usericons.add(modIcon);
+            String modIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "mod_urls");
+            if (modIconUrl != null) {
+                // With added color
+                usericons.add(UsericonFactory.createTwitchLikeIcon(Usericon.Type.MOD,
+                        stream, modIconUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)"));
+            }
+            String vipIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "vip_badge");
+            if (vipIconUrl != null) {
+                // Just the badge, with no added color
+                usericons.add(UsericonFactory.createIconFromUrl(Usericon.Type.VIP,
+                        stream, vipIconUrl, Usericon.SOURCE_FFZ, null, "VIP (FFZ)"));
             }
         } else if (type == Type.FEATURE_FRIDAY) {
             emotes = FrankerFaceZParsing.parseSetEmotes(result, Emoticon.SubType.FEATURE_FRIDAY, null);

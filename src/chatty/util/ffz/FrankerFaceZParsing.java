@@ -25,27 +25,24 @@ public class FrankerFaceZParsing {
     private static final Logger LOGGER = Logger.getLogger(FrankerFaceZParsing.class.getName());
     
     /**
-     * Parses the mod icon.
+     * Parses the mod/VIP badge url.
      * 
      * Request: /room/:room
      * 
      * @param json
      * @param stream
-     * @return 
+     * @param type Which key to look up the badge URLs under
+     * @return The URL to the badge image, or null if none was found
      */
-    public static Usericon parseModIcon(String json, String stream) {
+    public static String parseCustomBadge(String json, String stream, String type) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject o = (JSONObject)parser.parse(json);
             JSONObject room = (JSONObject)o.get("room");
-            // Room ID (name) may not be correct if name changed
-            String roomId = (String)room.get("id");
-            String modBadgeUrl = (String)room.get("moderator_badge");
-            if (modBadgeUrl == null) {
-                return null;
+            Object badgeUrls = room.get(type);
+            if (badgeUrls instanceof JSONObject) {
+                return JSONUtil.getString((JSONObject) badgeUrls, "1");
             }
-            return UsericonFactory.createTwitchLikeIcon(Usericon.Type.MOD,
-                            stream, modBadgeUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)");
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             
         }
