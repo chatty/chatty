@@ -10,9 +10,9 @@ import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
-import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
+import chatty.util.api.UserInfo;
 import chatty.util.commands.CustomCommand;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,7 +35,7 @@ import javax.swing.Timer;
  */
 public class InfoPanel extends JPanel {
     
-    private final UserInfo owner;
+    private final UserInfoDialog owner;
 
     private final JPanel panel1 = new JPanel();
     private final JPanel panel2 = new JPanel();
@@ -50,10 +50,10 @@ public class InfoPanel extends JPanel {
     private final SizeMagic infoLabelSize;
 
     private User currentUser;
-    private ChannelInfo currentChannelInfo;
+    private UserInfo currentUserInfo;
     private Follower currentFollower;
     
-    public InfoPanel(UserInfo owner, ContextMenuListener listener) {
+    public InfoPanel(UserInfoDialog owner, ContextMenuListener listener) {
         this.owner = owner;
         
         panel1.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 2));
@@ -175,15 +175,15 @@ public class InfoPanel extends JPanel {
     
     private void showInfo() {
         // Channel Info
-        ChannelInfo requestedInfo = owner.getChannelInfo();
-        currentChannelInfo = null;
+        UserInfo requestedInfo = owner.getUserInfo();
+        currentUserInfo = null;
         if (requestedInfo == null) {
             createdAt.setText(Language.getString("userDialog.loading"));
             createdAt.setToolTipText(null);
             followers.setText(null);
             panel2.setToolTipText(null);
         } else {
-            setChannelInfo(requestedInfo);
+            setUserInfo(requestedInfo);
         }
         
         // Follower Info
@@ -200,9 +200,9 @@ public class InfoPanel extends JPanel {
         owner.updateButtons();
     }
     
-    public void setChannelInfo(ChannelInfo info) {
+    public void setUserInfo(UserInfo info) {
         if (info != null) {
-            currentChannelInfo = info;
+            currentUserInfo = info;
             createdAt.setText(new String[]{
                 Language.getString("userDialog.registered",formatAgoTime(info.createdAt, false)),
                 Language.getString("userDialog.registered",formatAgoTime(info.createdAt, true)),
@@ -210,15 +210,12 @@ public class InfoPanel extends JPanel {
             });
     //        createdAt.setToolTipText(Language.getString("userDialog.registered.tip",
     //                DateTime.formatFullDatetime(info.createdAt)));
-            followers.setText(Language.getString("userDialog.followers",
-                    Helper.formatViewerCount(info.followers)));
             String tooltip = String.format("<html>"
-                    + "Registered: %6$s ago (%7$s)<br />"
-                    + "ID: %8$s<br />"
-                    + "Type: %9$s<br />"
+                    + "Registered: %3$s ago (%4$s)<br />"
+                    + "ID: %5$s<br />"
+                    + "Type: %6$s<br />"
                     + "<br />"
-                    + "Views: %4$s<br />"
-                    + "Followers: %5$s<br />"
+                    + "Views: %2$s<br />"
                     + "<br />"
                     + "%1$s<br />"
                     + "<br />"
@@ -227,12 +224,11 @@ public class InfoPanel extends JPanel {
                             ? StringUtil.addLinebreaks(Helper.htmlspecialchars_encode(info.description), 70, true)
                             : "No description",
                     Helper.formatViewerCount(info.views),
-                    Helper.formatViewerCount(info.followers),
                     formatAgoTimeVerbose(info.createdAt),
                     DateTime.formatFullDatetime(info.createdAt),
                     info.id,
-                    !StringUtil.isNullOrEmpty(info.broadcaster_type)
-                            ? StringUtil.firstToUpperCase(info.broadcaster_type)
+                    !StringUtil.isNullOrEmpty(info.broadcasterType)
+                            ? StringUtil.firstToUpperCase(info.broadcasterType)
                             : "Regular");
             followers.setToolTipText(tooltip);
             createdAt.setToolTipText(tooltip);
@@ -294,21 +290,21 @@ public class InfoPanel extends JPanel {
     }
     
     protected String getAccountAge() {
-        if (currentChannelInfo != null) {
-            return formatAgoTimeVerbose(currentChannelInfo.createdAt);
+        if (currentUserInfo != null) {
+            return formatAgoTimeVerbose(currentUserInfo.createdAt);
         }
         return null;
     }
     
     protected String getAccountDate() {
-        if (currentChannelInfo != null) {
-            return DateTime.formatFullDatetime(currentChannelInfo.createdAt);
+        if (currentUserInfo != null) {
+            return DateTime.formatFullDatetime(currentUserInfo.createdAt);
         }
         return null;
     }
     
     protected String getChannelInfoTooltipText() {
-        if (currentChannelInfo != null) {
+        if (currentUserInfo != null) {
             return createdAt.getToolTipText().replace("<br />", "\n").replace("<html>", "");
         }
         return null;

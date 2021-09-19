@@ -27,7 +27,7 @@ import javax.swing.KeyStroke;
  */
 public class Buttons {
     
-    private final UserInfo owner;
+    private final UserInfoDialog owner;
     private final ActionListener listener;
     
     private final JPanel primary = new JPanel();
@@ -44,7 +44,7 @@ public class Buttons {
     private JButton approveButton;
     private JButton denyButton;
 
-    public Buttons(UserInfo owner, ActionListener listener) {
+    public Buttons(UserInfoDialog owner, ActionListener listener) {
         this.owner = owner;
         this.listener = listener;
         

@@ -109,6 +109,7 @@ import chatty.util.dnd.DockPopout;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.function.Consumer;
 
 /**
  * The Main Hub for all GUI activity.
@@ -4634,12 +4635,6 @@ public class MainGui extends JFrame implements Runnable {
     public void setFollowInfo(final String stream, final String user, RequestResultCode result, Follower follower) {
         SwingUtilities.invokeLater(() -> userInfoDialog.setFollowInfo(stream, user, result, follower));
     }
-
-    public void setChannelInfo(final String stream, final ChannelInfo info, final RequestResultCode result) {
-        SwingUtilities.invokeLater(() -> {
-            userInfoDialog.setChannelInfo(stream, info);
-        });
-    }
     
     public void channelStatusReceived(ChannelStatus status, RequestResultCode result) {
         SwingUtilities.invokeLater(() -> {
@@ -4663,16 +4658,12 @@ public class MainGui extends JFrame implements Runnable {
         }
     }
     
-    public void getChannelInfo(String channel) {
-        client.api.getChannelInfo(channel);
-    }
-    
     public void getChannelStatus(String channel) {
         client.api.getChannelStatus(channel);
     }
     
-    public ChannelInfo getCachedChannelInfo(String channel, String id) {
-        return client.api.getCachedChannelInfo(channel, id);
+    public UserInfo getCachedUserInfo(String channel, Consumer<UserInfo> result) {
+        return client.api.getCachedUserInfo(channel, result);
     }
     
     public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {

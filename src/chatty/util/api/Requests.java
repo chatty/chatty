@@ -85,19 +85,6 @@ public class Requests {
         }
     }
     
-    public void getChannelInfo(String streamId, String stream) {
-        if (stream == null || stream.isEmpty()) {
-            return;
-        }
-        String url = "https://api.twitch.tv/kraken/channels/"+streamId;
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.channelInfoManager.handleChannelInfoResult(false, r.text, r.responseCode, stream);
-            });
-        }
-    }
-    
     public void getChannelStatus(String streamId, String stream) {
         String url = "https://api.twitch.tv/helix/channels?broadcaster_id="+streamId;
         newApi.add(url, "GET", api.defaultToken, (result, statusCode) -> {
@@ -228,14 +215,25 @@ public class Requests {
         });
     }
     
+    public void requestUserInfo(Set<String> usernames) {
+        String url = "https://api.twitch.tv/helix/users"+makeNewApiParameters("login", usernames);
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(result);
+            Map<String, String> ids = null;
+            if (parsedResult != null) {
+                ids = new HashMap<>();
+                for (UserInfo info : parsedResult) {
+                    ids.put(info.login, info.id);
+                }
+            }
+            // Error or missing values are handled in these methods
+            api.userInfoManager.resultReceived(usernames, parsedResult);
+            api.userIDs.handleRequestResult(usernames, ids);
+        });
+    }
+    
     public void requestUserIDs(Set<String> usernames) {
-        String url = "https://api.twitch.tv/kraken/users?login="+StringUtil.join(usernames, ",");
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.userIDs.handleRequestResult(usernames, r.text);
-            });
-        }
+        requestUserInfo(usernames);
     }
 
     //================
@@ -704,6 +702,10 @@ public class Requests {
             return input.replace(token, "<token>");
         }
         return input;
+    }
+    
+    public static String makeNewApiParameters(String key, Collection<String> values) {
+        return "?"+key+"="+StringUtil.join(values, "&"+key+"=");
     }
     
 }

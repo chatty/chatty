@@ -12,6 +12,7 @@ import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
+import java.util.function.Consumer;
 
 /**
  * Handles TwitchApi requests and responses.
@@ -50,6 +51,7 @@ public class TwitchApi {
     protected final StreamTagManager communitiesManager;
     protected final CachedBulkManager<Req, Boolean> m;
     protected final ResultManager resultManager;
+    protected final UserInfoManager userInfoManager;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -69,6 +71,7 @@ public class TwitchApi {
         requests = new Requests(this, resultListener);
         channelInfoManager = new ChannelInfoManager(this, resultListener);
         userIDs = new UserIDs(this);
+        userInfoManager = new UserInfoManager(this);
         communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
         m = new CachedBulkManager<>(new CachedBulkManager.Requester<Req, Boolean>() {
@@ -223,24 +226,6 @@ public class TwitchApi {
     // Channel Information
     //====================
     
-    public void getChannelInfo(String stream) {
-        getChannelInfo(stream, null);
-    }
-    
-    public void getChannelInfo(String stream, String id) {
-        if (id != null) {
-            requests.getChannelInfo(id, stream);
-        } else {
-            userIDs.getUserIDsAsap(r -> {
-                if (r.hasError()) {
-                    resultListener.receivedChannelInfo(stream, null, TwitchApi.RequestResultCode.FAILED);
-                } else {
-                    requests.getChannelInfo(r.getId(stream), stream);
-                }
-            }, stream);
-        }
-    }
-    
     public void getChannelStatus(String stream) {
         getChannelStatus(stream, null);
     }
@@ -271,30 +256,12 @@ public class TwitchApi {
         subscriberManager.request(stream);
     }
     
-    /**
-     * Get ChannelInfo, if cached. This will *not* request missing ChannelInfo.
-     * 
-     * @param stream
-     * @return 
-     */
-    public ChannelInfo getOnlyCachedChannelInfo(String stream) {
-        return channelInfoManager.getOnlyCachedChannelInfo(stream);
+    public UserInfo getCachedUserInfo(String channel, Consumer<UserInfo> result) {
+        return userInfoManager.getCached(channel, result);
     }
     
-    public ChannelInfo getCachedChannelInfo(String stream) {
-        return getCachedChannelInfo(stream, null);
-    }
-    
-    /**
-     * Get ChannelInfo, which may be cached. This will request immediately if
-     * not cached.
-     * 
-     * @param stream
-     * @param id
-     * @return 
-     */
-    public ChannelInfo getCachedChannelInfo(String stream, String id) {
-        return channelInfoManager.getCachedChannelInfo(stream, id);
+    public UserInfo getCachedOnlyUserInfo(String login) {
+        return userInfoManager.getCachedOnly(login);
     }
     
     //===================

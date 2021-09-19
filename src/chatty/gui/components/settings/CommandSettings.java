@@ -9,7 +9,7 @@ import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.TestContextMenu;
-import chatty.gui.components.userinfo.UserInfo;
+import chatty.gui.components.userinfo.UserInfoDialog;
 import chatty.gui.components.userinfo.UserInfoListener;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
@@ -91,7 +91,7 @@ public class CommandSettings extends SettingsPanel {
             @Override
             public String test(Window parent, Component component, int x, int y, String value) {
                 updateErrors(value);
-                UserInfo dialog = new UserInfo(parent, new UserInfoListener() {
+                UserInfoDialog dialog = new UserInfoDialog(parent, new UserInfoListener() {
 
                     @Override
                     public void anonCustomCommand(Room room, CustomCommand command, Parameters parameters) {

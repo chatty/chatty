@@ -143,11 +143,10 @@ public class UserIDs {
         data.setId(StringUtil.toLowerCase(name), id);
     }
     
-    public void handleRequestResult(Set<String> requestedNames, String text) {
+    public void handleRequestResult(Set<String> requestedNames, Map<String, String> result) {
         synchronized(this) {
             requestPending.removeAll(requestedNames);
             
-            Map<String, String> result = parseResult(text);
             if (result == null) {
                 requestedNames.stream().forEach(n -> data.setError(n));
                 errors++;

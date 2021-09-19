@@ -64,6 +64,7 @@ import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi.RequestResultCode;
+import chatty.util.api.UserInfo;
 import chatty.util.api.pubsub.UserinfoMessageData;
 import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
@@ -2332,7 +2333,7 @@ public class TwitchClient {
         
         @Override
         public void receivedChannelInfo(String stream, ChannelInfo info, RequestResultCode result) {
-            g.setChannelInfo(stream, info, result);
+            
         }
         
         @Override
@@ -3043,9 +3044,9 @@ public class TwitchClient {
                 reason = "";
             }
             g.userBanned(user, duration, reason, targetMsgId);
-            ChannelInfo channelInfo = api.getOnlyCachedChannelInfo(user.getName());
+            UserInfo userInfo = api.getCachedOnlyUserInfo(user.getName());
             chatLog.userBanned(user.getRoom().getFilename(), user.getRegularDisplayNick(),
-                    duration, reason, channelInfo);
+                    duration, reason, userInfo);
         }
         
         @Override

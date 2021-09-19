@@ -16,6 +16,7 @@ import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.TwitchApi;
+import chatty.util.api.UserInfo;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
@@ -27,13 +28,14 @@ import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.*;
 
 /**
  *
  * @author tduva
  */
-public class UserInfo extends JDialog {
+public class UserInfoDialog extends JDialog {
 
     private static final String SINGLE_MESSAGE_CHECK = "Remove only selected message";
 
@@ -74,7 +76,7 @@ public class UserInfo extends JDialog {
     
     private final Settings settings;
     
-    public UserInfo(final Window parent, UserInfoListener listener,
+    public UserInfoDialog(final Window parent, UserInfoListener listener,
             UserInfoRequester requester,
             Settings settings,
             final ContextMenuListener contextMenuListener) {
@@ -511,17 +513,21 @@ public class UserInfo extends JDialog {
         pinnedDialog.setSelected(isPinned);
     }
 
-    public void setChannelInfo(String stream, ChannelInfo info) {
-        if (currentUser == null || !currentUser.getName().equals(stream)) {
+    public void setUserInfo(UserInfo info) {
+        if (currentUser == null || !currentUser.getName().equals(info.login)) {
             return;
         }
-        infoPanel.setChannelInfo(info);
+        infoPanel.setUserInfo(info);
         updateStuff(currentUser);
     }
     
-    protected ChannelInfo getChannelInfo() {
+    protected UserInfo getUserInfo() {
         if (requester != null) {
-            return requester.getCachedChannelInfo(currentUser.getName(), currentUser.getId());
+            return requester.getCachedUserInfo(currentUser.getName(), info -> {
+                SwingUtilities.invokeLater(() -> {
+                    setUserInfo(info);
+                });
+            });
         }
         return null;
     }

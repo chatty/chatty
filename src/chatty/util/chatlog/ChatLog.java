@@ -9,6 +9,7 @@ import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
+import chatty.util.api.UserInfo;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -209,7 +210,7 @@ public class ChatLog {
     }
     
     public void userBanned(String channel, String nick, long duration,
-            String reason, ChannelInfo info) {
+            String reason, UserInfo info) {
         String text = nick;
         if (duration > 0) {
             text += " ("+duration+"s)";
