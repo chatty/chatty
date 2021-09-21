@@ -2,6 +2,9 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.Debugging;
+import chatty.util.JSONUtil;
+import chatty.util.StringUtil;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonFactory;
 import java.util.ArrayList;
@@ -10,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -64,13 +68,13 @@ public class BadgeManager {
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject)parser.parse(json);
-            JSONObject badges = (JSONObject)root.get("badge_sets");
+            JSONArray badges = (JSONArray)root.get("data");
             if (badges != null) {
-                for (Object key : badges.keySet()) {
-                    JSONObject data = (JSONObject)badges.get(key);
+                for (Object entry : badges) {
+                    JSONObject data = (JSONObject) entry;
                     
-                    String id = (String)key;
-                    JSONObject versions = (JSONObject)data.get("versions");
+                    String id = JSONUtil.getString(data, "set_id");
+                    JSONArray versions = (JSONArray)data.get("versions");
                     if (versions != null) {
                         parseBadgeVersions(result, versions, room, id);
                     }
@@ -83,24 +87,91 @@ public class BadgeManager {
     }
     
     private static void parseBadgeVersions(List<Usericon> result,
-                JSONObject data, String room, String id) {
-        for (Object key : data.keySet()) {
-            JSONObject versionData = (JSONObject) data.get(key);
+                JSONArray data, String room, String id) {
+        for (Object entry : data) {
+            JSONObject versionData = (JSONObject) entry;
 
-            String version = (String) key;
-            String url = (String) versionData.get("image_url_1x");
-            String title = (String) versionData.get("title");
-            String description = (String) versionData.get("description");
-            String clickUrl = (String) versionData.get("click_url");
+            String version = JSONUtil.getString(versionData, "id");
+            String url = JSONUtil.getString(versionData, "image_url_1x");;
+            String title = StringUtil.firstToUpperCase(id);
+            switch (id) {
+                case "subscriber":
+                    title = makeSubscriberTitle(version);
+                    break;
+                case "bits":
+                    title = makeBitsTitle(version);
+                    break;
+                case "sub-gifter":
+                    title = makeSubGifterTitle(version);
+                    break;
+            }
 
             if (id != null && version != null && url != null) {
                 Usericon icon = UsericonFactory.createTwitchBadge(id, version, 
-                        url, room, title, description, clickUrl);
+                        url, room, title, "", "");
                 if (icon != null) {
                     result.add(icon);
+                    Debugging.println("badgetitles", "%s/%s %s", id, version, title);
                 }
             }
         }
+    }
+    
+    private static String makeSubscriberTitle(String version) {
+        String title = "Subscriber";
+        String tier = "0";
+        String months = version;
+        if (version.length() == 4) {
+            tier = version.substring(0, 1);
+            months = version.substring(1);
+        }
+        try {
+            int monthsNum = Integer.parseInt(months);
+            int tierNum = Integer.parseInt(tier);
+            if (tierNum > 1) {
+                title = "Tier " + tierNum + " " + title;
+            }
+            if (monthsNum > 1) {
+                title = monthsNum + "-Month " + title;
+            }
+        }
+        catch (NumberFormatException ex) {
+            // Don't expand title
+        }
+        return title;
+    }
+    
+    private static String makeBitsTitle(String version) {
+        String title = "Bits";
+        try {
+            int amount = Integer.parseInt(version);
+            if (amount > 1) {
+                if (amount < 1000) {
+                    title = amount+" Bits";
+                }
+                else {
+                    title = (amount / 1000)+"k Bits";
+                }
+            }
+        }
+        catch (NumberFormatException ex) {
+            // Don't expand title
+        }
+        return title;
+    }
+    
+    private static String makeSubGifterTitle(String version) {
+        String title = "Sub Gifter";
+        try {
+            int amount = Integer.parseInt(version);
+            if (amount > 1) {
+                title = amount+" Gift Subs";
+            }
+        }
+        catch (NumberFormatException ex) {
+            // Don't expand title
+        }
+        return title;
     }
     
 }

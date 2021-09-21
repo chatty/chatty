@@ -45,7 +45,7 @@ public class CheerEmoticonManager extends CachedManager {
         JSONParser parser = new JSONParser();
         try {
             JSONObject root = (JSONObject)parser.parse(json);
-            JSONArray cheers = (JSONArray)root.get("actions");
+            JSONArray cheers = (JSONArray)root.get("data");
             for (Object entry : cheers) {
                 if (entry instanceof JSONObject) {
                     Set<CheerEmoticon> parsedEntry = getEntry((JSONObject)entry, stream);

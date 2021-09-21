@@ -501,23 +501,17 @@ public class Requests {
     //=================
     
     protected void requestGlobalBadges() {
-        String url = "https://badges.twitch.tv/v1/badges/global/display?language=en";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                listener.receivedUsericons(api.badgeManager.handleGlobalBadgesResult(r.text));
-            });
-        }
+        String url = "https://api.twitch.tv/helix/chat/badges/global";
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            listener.receivedUsericons(api.badgeManager.handleGlobalBadgesResult(result));
+        });
     }
     
     protected void requestRoomBadges(String roomId, String stream) {
-        String url = "https://badges.twitch.tv/v1/badges/channels/"+roomId+"/display?language=en";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                listener.receivedUsericons(api.badgeManager.handleRoomBadgesResult(r.text, stream));
-            });
-        }
+        String url = "https://api.twitch.tv/helix/chat/badges?broadcaster_id="+roomId;
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            listener.receivedUsericons(api.badgeManager.handleRoomBadgesResult(result, stream));
+        });
     }
     
     public void requestEmotesByChannelId(String stream, String id, String requestId) {
@@ -604,13 +598,10 @@ public class Requests {
     }
     
     public void requestCheerEmoticons(String channelId, String stream) {
-        String url = "https://api.twitch.tv/kraken/bits/actions?channel_id="+channelId+"&include_sponsored=1";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.cheersManager2.dataReceived(r.text, stream, channelId);
-            });
-        }
+        String url = "https://api.twitch.tv/helix/bits/cheermotes?broadcaster_id="+channelId;
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.cheersManager2.dataReceived(result, stream, channelId);
+        });
     }
     
     //===================
