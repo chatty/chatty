@@ -7,6 +7,7 @@ import static chatty.gui.components.admin.AdminDialog.hideableLabel;
 import static chatty.gui.components.admin.AdminDialog.makeGbc;
 import chatty.gui.components.settings.DurationSetting;
 import chatty.util.DateTime;
+import chatty.util.ElapsedTime;
 import chatty.util.api.TwitchApi;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -41,7 +42,7 @@ public class CommercialPanel extends JPanel {
     // the dialog and it's still saved)
     private final Map<String, Long> lastCommercial = new HashMap<>();
     
-    private final static int[] commercialButtonsDef = {30,60,90,120,180};
+    private final static int[] commercialButtonsDef = {30,60,90,120,150,180};
     private final Map<Integer, JToggleButton> commercialButtons = new LinkedHashMap<>();
     private final JLabel commercialResult;
     private final JLabel lastCommercialInfo = new JLabel("");
@@ -57,6 +58,15 @@ public class CommercialPanel extends JPanel {
     private long scheduledCommercialTime;
     private int scheduledCommercialLength;
     private long lastCommercialRunAttempt;
+    
+    /**
+     * If set, contains the last time a commercial was attemped and no response
+     * has yet been received. This is used to assume an error occured if no
+     * response was received for a while (especially for the chat command, which
+     * doesn't always return a response that can be associated with
+     * commercials).
+     */
+    private final ElapsedTime lastCommercialRunAttemptError = new ElapsedTime();
     
     public CommercialPanel(MainGui main) {
         
@@ -118,6 +128,9 @@ public class CommercialPanel extends JPanel {
                 long ago = System.currentTimeMillis() - lastCommercialRun;
                 lastCommercialInfo.setText("Last run: "+DateTime.duration(ago, 1, 0)+" ago");
                 lastCommercialInfo.setToolTipText("Last run: "+DateTime.formatFullDatetime(lastCommercialRun));
+            }
+            if (lastCommercialRunAttemptError.isSetAndSecondsElapsed(10)) {
+                commercialResult(currentChannel, "Running commercial may have failed.", TwitchApi.RequestResultCode.UNKNOWN);
             }
         }
     }
@@ -292,6 +305,7 @@ public class CommercialPanel extends JPanel {
         }
         main.runCommercial(currentChannel, length);
         setLoadingCommercial(true);
+        lastCommercialRunAttemptError.set();
     }
     
     /**
@@ -349,9 +363,9 @@ public class CommercialPanel extends JPanel {
     }
     
     /**
-     * The commercial result as returned from the API. Updates the result text
-     * and when the commercial was last run, also sets it to "not loading" 
-     * state.
+     * The commercial result as returned from the API or chat. Updates the
+     * result text and when the commercial was last run, also sets it to "not
+     * loading" state.
      * 
      * @param stream
      * @param resultText
@@ -360,6 +374,7 @@ public class CommercialPanel extends JPanel {
     public void commercialResult(String stream, String resultText, TwitchApi.RequestResultCode result) {
         setCommercialResult(DateTime.currentTime()+" "+resultText);
         lastCommercialRunAttempt = System.currentTimeMillis();
+        lastCommercialRunAttemptError.reset();
         setLoadingCommercial(false);
         if (result == TwitchApi.RequestResultCode.RUNNING_COMMERCIAL) {
             lastCommercial.put(stream, System.currentTimeMillis());

@@ -179,6 +179,30 @@ public class ElapsedTime {
     }
     
     /**
+     * Checks if at least the given time in seconds has elapsed since the
+     * starting point has been set.
+     * 
+     * @param seconds
+     * @return true if a starting point is currently set and at least the given
+     * time has elapsed, false otherwise
+     */
+    public boolean isSetAndSecondsElapsed(int seconds) {
+        return isSet() && secondsElapsed(seconds);
+    }
+    
+    /**
+     * Identical to {@link isSetAndSecondsElapsed(int)}, except synchronized.
+     *
+     * @param seconds
+     * @return 
+     */
+    public boolean isSetAndSecondsElapsedSync(int seconds) {
+        synchronized(LOCK) {
+            return isSet() && secondsElapsed(seconds);
+        }
+    }
+    
+    /**
      * Helper function, outputs the current System.nanoTime() converted to
      * milliseconds.
      * 

@@ -531,7 +531,7 @@ public class TwitchApi {
             if (r.hasError()) {
                 resultListener.runCommercialResult(stream, "Failed to resolve id", RequestResultCode.UNKNOWN);
             } else {
-                requests.runCommercial(r.getId(stream), stream, defaultToken, length);
+                requests.runCommercial(r.getId(stream), stream, length);
             }
         }, stream);
     }

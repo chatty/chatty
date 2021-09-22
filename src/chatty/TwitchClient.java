@@ -2670,17 +2670,28 @@ public class TwitchClient {
      * @param length The length of the commercial in seconds
      */
     public void runCommercial(String stream, int length) {
+        String channel = Helper.toChannel(stream);
         if (stream == null || stream.isEmpty()) {
             commercialResult(stream, "Can't run commercial, not on a channel.", TwitchApi.RequestResultCode.FAILED);
         }
-        else {
-            String channel = "#"+stream;
+        else if (stream.equals(settings.getString("username"))) {
+            // Broadcaster can use API
             if (isChannelOpen(channel)) {
-                g.printLine(roomManager.getRoom(channel), "Trying to run "+length+"s commercial..");
-            } else {
-                g.printLine("Trying to run "+length+"s commercial.. ("+stream+")");
+                g.printLine(roomManager.getRoom(channel), Language.getString("chat.twitchcommands.commercial", length));
+            }
+            else {
+                g.printLine(Language.getString("chat.twitchcommands.commercial", length)+" (" + stream + ")");
             }
             api.runCommercial(stream, length);
+        }
+        else {
+            // Editor must use command
+            if (isChannelOpen(channel)) {
+                c.command(channel, "commercial", String.valueOf(length), null);
+            }
+            else {
+                commercialResult(stream, "Can't run commercial, not in the channel.", TwitchApi.RequestResultCode.FAILED);
+            }
         }
     }
     
@@ -2986,6 +2997,16 @@ public class TwitchClient {
 
         @Override
         public void onInfo(Room room, String infoMessage, MsgTags tags) {
+            if (tags != null) {
+                if (tags.isValue("msg-id", "commercial_success"))  {
+                    g.commercialResult(room.getStream(), StringUtil.shortenTo(infoMessage, 60), RequestResultCode.SUCCESS);
+                }
+                else if (tags.isValue("msg-id", "bad_commercial_error")) {
+                    g.commercialResult(room.getStream(), StringUtil.shortenTo(infoMessage, 60), RequestResultCode.UNKNOWN);
+                }
+                // Some error responses, like no access, don't appear to have
+                // commercial-specific ids, so they are not forwarded
+            }
             g.printInfo(room, infoMessage, tags);
         }
 

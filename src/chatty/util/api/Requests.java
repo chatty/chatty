@@ -454,6 +454,22 @@ public class Requests {
         }
     }
     
+    public void runCommercial(String userId, String stream, int length) {
+        String url = "https://api.twitch.tv/helix/channels/commercial";
+        JSONObject data = new JSONObject();
+        data.put("broadcaster_id", userId);
+        data.put("length", length);
+        newApi.add(url, "POST", data.toJSONString(), api.defaultToken, (result, responseCode) -> {
+            String resultText = "Failed to start commercial (error " + responseCode + ")";
+            RequestResultCode resultCode = RequestResultCode.UNKNOWN;
+            if (responseCode == 204 || responseCode == 200) {
+                resultText = "Running commercial..";
+                resultCode = RequestResultCode.RUNNING_COMMERCIAL;
+            }
+            listener.runCommercialResult(stream, resultText, resultCode);
+        });
+    }
+    
     public void autoMod(AutoModAction action, String msgId, String token, String localUserId) {
         String url = "https://api.twitch.tv/helix/moderation/automod/message";
         JSONObject data = new JSONObject();
