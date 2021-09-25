@@ -997,6 +997,12 @@ public class MainGui extends JFrame implements Runnable {
         
         updateCustomContextMenuEntries();
         
+        client.api.setToken(client.settings.getString("token"));
+        client.api.setLocalUserId(client.settings.getString("userid"));
+        if (client.settings.getList("scopes").isEmpty()) {
+            client.api.checkToken();
+        }
+        
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
         client.api.getEmotesBySets(emoticons.getFavoritesNonGlobalEmotesets());
@@ -1004,12 +1010,6 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.addEmoji(client.settings.getString("emoji"));
         emoticons.setCheerState(client.settings.getString("cheersType"));
         emoticons.setCheerBackground(HtmlColors.decode(client.settings.getString("backgroundColor")));
-        
-        client.api.setToken(client.settings.getString("token"));
-        client.api.setLocalUserId(client.settings.getString("userid"));
-        if (client.settings.getList("scopes").isEmpty()) {
-            client.api.checkToken();
-        }
         
         userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));

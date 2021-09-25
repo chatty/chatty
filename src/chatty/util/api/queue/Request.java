@@ -332,4 +332,9 @@ public class Request implements Runnable {
         return hash;
     }
     
+    @Override
+    public String toString() {
+        return url;
+    }
+    
 }
