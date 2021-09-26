@@ -1077,6 +1077,7 @@ public class MainGui extends JFrame implements Runnable {
     
     private void updateMatchingPresets() {
         Highlighter.HighlightItem.setGlobalPresets(Highlighter.HighlightItem.makePresets(client.settings.getList("matchingPresets")));
+        Highlighter.HighlightItem.setTwitchApi(client.api);
         updateHighlight();
         updateIgnore();
         updateFilter();

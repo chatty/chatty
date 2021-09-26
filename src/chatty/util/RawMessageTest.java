@@ -115,6 +115,9 @@ public class RawMessageTest {
         if (type.equals("msg")) {
             return "@badges=;color=#008000;display-name=Abc;emote-only=1;emotes=33:0-7;id=1234;mod=0;subscriber=0;tmi-sent-ts=1508516209239;turbo=0;user-type= :abc!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }
+        if (type.equals("user")) {
+            return "@badges=;color=#008000;display-name="+StringUtil.firstToUpperCase(options)+";emote-only=1;emotes=33:0-7;id=1234;mod=0;subscriber=0;tmi-sent-ts=1508516209239;turbo=0;user-type= :"+options+"!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :A message from "+options;
+        }
         if (type.equals("del")) {
             return "@login=abc;target-msg-id=1234 :tmi.twitch.tv CLEARMSG "+channel+" :"+options;
         }

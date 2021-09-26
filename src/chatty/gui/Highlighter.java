@@ -12,6 +12,8 @@ import chatty.util.Pair;
 import chatty.util.TimeoutPatternMatcher;
 import chatty.util.RepeatMsgHelper;
 import chatty.util.StringUtil;
+import chatty.util.api.StreamInfo;
+import chatty.util.api.TwitchApi;
 import chatty.util.api.usericons.BadgeType;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -442,6 +444,7 @@ public class Highlighter {
         };
         
         private static Map<String, CustomCommand> globalPresets;
+        private static TwitchApi api;
         
         //==========================
         // Properties
@@ -544,6 +547,14 @@ public class Highlighter {
         
         public static synchronized Map<String, CustomCommand> getGlobalPresets() {
             return HighlightItem.globalPresets;
+        }
+        
+        public static synchronized void setTwitchApi(TwitchApi api) {
+            HighlightItem.api = api;
+        }
+        
+        public static synchronized TwitchApi getTwitchApi(TwitchApi api) {
+            return HighlightItem.api;
         }
         
         /**
@@ -812,6 +823,9 @@ public class Highlighter {
                                 }
                             });
                         }
+                        else if (part.startsWith("live") || part.startsWith("!live")) {
+                            parseLive(part);
+                        }
                         else if (part.equals("hl")) {
                             addTagsItem("Highlighted by channel points", null, t -> {
                                 return t.isHighlightedMessage();
@@ -935,6 +949,62 @@ public class Highlighter {
                     pattern = compilePattern("(?iu)" + Pattern.quote(item));
                 }
             }
+        }
+        
+        /**
+         * Parse the config:live prefix.
+         * 
+         * @param part 
+         */
+        private void parseLive(String part) {
+            // Handle config:!live (negated)
+            boolean successResult = !part.startsWith("!");
+            if (part.startsWith("!")) {
+                part = part.substring(1);
+            }
+            
+            // Optional parameters
+            Pattern titlePattern = null;
+            Pattern categoryPattern = null;
+            if (part.length() > "live".length()) {
+                int paramStart = part.indexOf("|");
+                if (paramStart != -1) {
+                    String param = part.substring(paramStart + 1);
+                    String[] split = param.split("/", 2);
+                    if (split.length == 2) {
+                        titlePattern = compilePattern(split[0]);
+                        categoryPattern = compilePattern(split[1]);
+                    }
+                    if (split.length == 1) {
+                        titlePattern = compilePattern(split[0]);
+                    }
+                }
+            }
+            
+            Pattern titlePattern2 = titlePattern;
+            Pattern categoryPattern2 = categoryPattern;
+            matchItems.add(new Item((!successResult ? "Not: " : "") + "Stream is live (Title:" + titlePattern + "/Game:" + categoryPattern + ")", null, false) {
+
+                @Override
+                public boolean matches(String text, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
+                    if (api != null && !StringUtil.isNullOrEmpty(channel)) {
+                        StreamInfo info = api.getCachedStreamInfo(Helper.toStream(channel));
+                        if (info != null && info.isValid() && info.getOnline()) {
+                            // Optional parameters
+                            if (titlePattern2 != null && !titlePattern2.matcher(info.getStatus()).find()) {
+                                return !successResult;
+                            }
+                            if (categoryPattern2 != null && !categoryPattern2.matcher(info.getGame()).find()) {
+                                return !successResult;
+                            }
+                            // If it got to this part, it matches
+                            return successResult;
+                        }
+                        return !successResult;
+                    }
+                    return false;
+                }
+            });
         }
         
         /**

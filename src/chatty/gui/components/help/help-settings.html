@@ -997,6 +997,13 @@
                     regex matching on the value.</li>
                 <li><code>config:url</code> - Message must contain a URL (same
                     as what is made clickable)</li>
+                <li><code>config:live</code> or <code>config:live|title/game</code> -
+                    Stream must be live, title and game are interpreted as regex
+                    (like the <code>reg:</code> prefix) and match on the stream's
+                    title or game, use <code>!live</code> to negate match<br />
+                    Example: <code>config:live|/"Grand Theft Auto"</code> would match
+                    in any channel with a live stream where <code>Grand Theft Auto</code>
+                    occurs in the currently streamed game/category</li>
             </ul>
         </li>
         <li><a name="Highlight_Prefix-blacklist"><code>blacklist:</code></a> to specify one or more text patterns
