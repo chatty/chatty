@@ -174,10 +174,10 @@ public class UserInfoDialog extends JDialog {
         // Message log
         //==========================
         if (parent instanceof MainGui) {
-            pastMessages = new PastMessages(((MainGui) parent).repeatMsg);
+            pastMessages = new PastMessages(((MainGui) parent).repeatMsg, settings);
         }
         else {
-            pastMessages = new PastMessages(null);
+            pastMessages = new PastMessages(null, settings);
         }
         pastMessages.setRows(4);
         pastMessages.setPreferredSize(pastMessages.getPreferredSize());

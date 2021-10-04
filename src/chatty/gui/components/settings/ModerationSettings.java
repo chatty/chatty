@@ -1,24 +1,30 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.Channels;
 import chatty.gui.GuiUtil;
 import chatty.gui.RegexDocumentFilter;
 import chatty.gui.components.LinkLabel;
+import chatty.gui.components.userinfo.PastMessages;
 import chatty.lang.Language;
 import chatty.util.StringUtil;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.EAST;
 import java.awt.GridBagLayout;
 import java.awt.Window;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -65,33 +71,45 @@ public class ModerationSettings extends SettingsPanel {
         //==========================
         JPanel userInfo = addTitledPanel(Language.getString("settings.section.userDialog"), 1);
         
-        userInfo.add(d.addSimpleBooleanSetting(
+        JTabbedPane userInfoTabs = new JTabbedPane();
+        JPanel userInfoGeneral = new JPanel(new GridBagLayout());
+        JPanel userInfoMsg = new JPanel(new GridBagLayout());
+        
+        userInfoGeneral.add(d.addSimpleBooleanSetting(
                 "closeUserDialogOnAction"),
                 d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
-        userInfo.add(d.addSimpleBooleanSetting(
+        userInfoGeneral.add(d.addSimpleBooleanSetting(
                 "openUserDialogByMouse"),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
-        userInfo.add(d.addSimpleBooleanSetting(
+        userInfoGeneral.add(d.addSimpleBooleanSetting(
                 "reuseUserDialog"),
                 d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
         
-        userInfo.add(MessageSettings.createTimestampPanel(d, "userDialogTimestamp"),
-                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
-
-        SettingsUtil.addLabeledComponent(userInfo, "settings.long.clearUserMessages.label", 0, 4, 1, EAST,
-                d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}));
-        
-        SettingsUtil.addLabeledComponent(userInfo, "userDialogMessageLimit", 0, 5, 1, EAST,
-                d.addSimpleLongSetting("userDialogMessageLimit", 3, true));
-        
         HotkeyTextField banReasonsHotkey = new HotkeyTextField(12, null);
         d.addStringSetting("banReasonsHotkey", banReasonsHotkey);
-        SettingsUtil.addLabeledComponent(userInfo, "banReasonsHotkey", 0, 6, 1, EAST, banReasonsHotkey);
+        SettingsUtil.addLabeledComponent(userInfoGeneral, "banReasonsHotkey", 0, 6, 1, EAST, banReasonsHotkey);
         
-        userInfo.add(SettingsUtil.createLabel("banReasonsInfo", true),
+        userInfoGeneral.add(SettingsUtil.createLabel("banReasonsInfo", true),
                 d.makeGbc(0, 7, 2, 1));
+        
+        SettingsUtil.addLabeledComponent(userInfoMsg, "settings.otherMessageSettings.timestamp", 0, 3, 1, EAST, MessageSettings.createTimestampPanel(d, "userDialogTimestamp"));
+
+        SettingsUtil.addLabeledComponent(userInfoMsg, "settings.long.clearUserMessages.label", 0, 4, 1, EAST,
+                d.addComboLongSetting("clearUserMessages", new int[]{-1, 3, 6, 12, 24}));
+        
+        SettingsUtil.addLabeledComponent(userInfoMsg, "userDialogMessageLimit", 0, 5, 1, EAST,
+                d.addSimpleLongSetting("userDialogMessageLimit", 3, true));
+        
+        SettingsUtil.addLabeledComponent(userInfoMsg, "userMessagesHighlight",
+                0, 6, 2, GridBagConstraints.EAST,
+                new HighlightOptions("userMessagesHighlight", d));
+        
+        userInfoTabs.addTab(Language.getString("settings.userInfo.tab.general"), userInfoGeneral);
+        userInfoTabs.addTab(Language.getString("settings.userInfo.tab.userMessages"), userInfoMsg);
+        
+        userInfo.add(userInfoTabs, SettingsDialog.makeGbcStretchHorizontal(0, 0, 1, 1));
         
         //==========================
         // Repeated Messages
@@ -289,6 +307,57 @@ public class ModerationSettings extends SettingsPanel {
             else {
                 label.setText(String.format("Strict: %s%% - Lenient: %s%%",
                         similarity, similarity2));
+            }
+        }
+        
+    }
+    
+    private static class HighlightOptions extends JPanel implements LongSetting {
+        
+        private final Map<Integer, JCheckBox> options = new HashMap<>();
+        
+        HighlightOptions(String settingName, SettingsDialog settings) {
+            settings.addLongSetting(settingName, this);
+            setLayout(new GridBagLayout());
+            add(makeOption(PastMessages.CURRENT_MSG, "currentMsg"),
+                    SettingsDialog.makeNoGapGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(PastMessages.REPEATED_MSG, "repeatedMsg"),
+                    SettingsDialog.makeNoGapGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(PastMessages.MOD_ACTION, "modAction"),
+                    SettingsDialog.makeNoGapGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(PastMessages.AUTO_MOD, "autoMod"),
+                    SettingsDialog.makeNoGapGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+        }
+        
+        private JCheckBox makeOption(int option, String labelKey) {
+            String text = Language.getString("settings.userMessagesHighlight."+labelKey);
+            String tip = Language.getString("settings.userMessagesHighlight."+labelKey + ".tip", false);
+            JCheckBox check = new JCheckBox(text);
+            check.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
+            options.put(option, check);
+            return check;
+        }
+
+        @Override
+        public Long getSettingValue() {
+            long result = 0;
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                if (entry.getValue().isSelected()) {
+                    result = result | entry.getKey();
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Long getSettingValue(Long def) {
+            return getSettingValue();
+        }
+
+        @Override
+        public void setSettingValue(Long setting) {
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                entry.getValue().setSelected((setting & entry.getKey()) != 0);
             }
         }
         

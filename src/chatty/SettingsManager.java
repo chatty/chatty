@@ -350,6 +350,7 @@ public class SettingsManager {
         settings.addBoolean("reuseUserDialog", false);
         settings.addString("userDialogTimestamp", "[HH:mm:ss]");
         settings.addLong("clearUserMessages", 12);
+        settings.addLong("userMessagesHighlight", 15);
         settings.addMap("userNotes", new HashMap(), Setting.STRING);
         settings.addMap("userNotesChat", new HashMap(), Setting.STRING);
         settings.addLong("userDialogMessageLimit", 100);

@@ -670,6 +670,18 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
     
+    protected static GridBagConstraints makeGbcStretchHorizontal(int x, int y, int w, int h) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = w;
+        gbc.gridheight = h;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        return gbc;
+    }
+    
     protected void addBooleanSetting(String name, BooleanSetting setting) {
         booleanSettings.put(name, setting);
     }
