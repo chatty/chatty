@@ -31,6 +31,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -415,10 +416,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
                     imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.id);
                 } else if (action.equals("selectHighlight")) {
                     showPanel(Page.HIGHLIGHT);
-                    highlightSettings.selectItem((String) parameter);
+                    highlightSettings.selectItems((Collection<String>) parameter);
                 } else if (action.equals("selectIgnore")) {
                     showPanel(Page.IGNORE);
-                    ignoreSettings.selectItem((String) parameter);
+                    ignoreSettings.selectItems((Collection<String>) parameter);
                 } else if (action.equals("selectMsgColor")) {
                     showPanel(Page.MSGCOLORS);
                     msgColorSettings.selectItem((String) parameter);

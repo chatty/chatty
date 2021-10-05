@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -80,16 +81,21 @@ public class HighlightSettings extends SettingsPanel {
         JCheckBox highlightMatches = d.addSimpleBooleanSetting("highlightMatches");
         base.add(highlightMatches, gbc);
         
-        gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
-        gbc.insets = settingInsets;
+        gbc = d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = new Insets(1, 23, 1, 14);
         JCheckBox highlightMatchesAll = d.addSimpleBooleanSetting("highlightMatchesAll");
         base.add(highlightMatchesAll, gbc);
         
-        gbc = d.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST);
+        gbc.insets = settingInsets;
+        JCheckBox highlightMatchesAllEntries = d.addSimpleBooleanSetting("highlightMatchesAllEntries");
+        base.add(highlightMatchesAllEntries, gbc);
+        
+        gbc = d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST);
         JCheckBox highlightByPoints = d.addSimpleBooleanSetting("highlightByPoints");
         base.add(highlightByPoints, gbc);
         
-        gbc = d.makeGbc(0,5,2,1);
+        gbc = d.makeGbc(0,6,2,1);
         gbc.insets = new Insets(5,10,5,5);
         items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
         items.setInfo(getMatchingHelp("highlight"));
@@ -112,7 +118,7 @@ public class HighlightSettings extends SettingsPanel {
             noHighlightUsers.setLocationRelativeTo(HighlightSettings.this);
             noHighlightUsers.setVisible(true);
         });
-        gbc = d.makeGbc(0, 6, 1, 1);
+        gbc = d.makeGbc(0, 7, 1, 1);
         gbc.insets = new Insets(1,10,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(noHighlightUsersButton, gbc);
@@ -123,7 +129,7 @@ public class HighlightSettings extends SettingsPanel {
             highlightBlacklist.setLocationRelativeTo(HighlightSettings.this);
             highlightBlacklist.setVisible(true);
         });
-        gbc = d.makeGbc(1, 6, 1, 1);
+        gbc = d.makeGbc(1, 7, 1, 1);
         gbc.insets = new Insets(1,5,5,30);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(highlightBlacklistButton, gbc);
@@ -133,7 +139,7 @@ public class HighlightSettings extends SettingsPanel {
         presetsButton.addActionListener(e -> {
             d.showMatchingPresets();
         });
-        gbc = d.makeGbc(0, 7, 1, 1);
+        gbc = d.makeGbc(0, 8, 1, 1);
         gbc.insets = new Insets(1,10,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         base.add(presetsButton, gbc);
@@ -143,11 +149,15 @@ public class HighlightSettings extends SettingsPanel {
                 highlightMatches, items, noHighlightUsersButton,
                 highlightBlacklistButton);
         
-        SettingsUtil.addSubsettings(highlightMatches, highlightMatchesAll);
+        SettingsUtil.addSubsettings(highlightMatches, highlightMatchesAll, highlightMatchesAllEntries);
     }
     
     public void selectItem(String item) {
         items.setSelected(item);
+    }
+    
+    public void selectItems(Collection<String> selectItems) {
+        items.setSelected(selectItems);
     }
     
     private static class NoHighlightUsers extends JDialog {

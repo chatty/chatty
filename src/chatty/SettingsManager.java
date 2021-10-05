@@ -598,6 +598,7 @@ public class SettingsManager {
         settings.addList("highlightBlacklist", new ArrayList(), Setting.STRING);
         settings.addBoolean("highlightMatches", true);
         settings.addBoolean("highlightMatchesAll", true);
+        settings.addBoolean("highlightMatchesAllEntries", false);
         settings.addBoolean("highlightByPoints", true);
 
         // Ignore

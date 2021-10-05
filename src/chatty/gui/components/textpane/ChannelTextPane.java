@@ -2356,7 +2356,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      * @param start
      * @param end
      * @param style
-     * @param highlightMatches 
+     * @param highlightMatches Should be sorted by start index
      */
     private void specialPrint(User user, String text, int start, int end, AttributeSet style, java.util.List<Match> highlightMatches) {
         if (highlightMatches != null) {
@@ -2372,14 +2372,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
                         to = end;
                     }
                     if (from > start) {
+                        // Print before match normally
                         String processed = processText(user, text.substring(start, from));
                         print(processed, style);
                     }
                     
+                    // Print match
                     String processed = processText(user, text.substring(from, to));
                     MutableAttributeSet styleCopy = new SimpleAttributeSet(style);
                     styleCopy.addAttribute(Attribute.HIGHLIGHT_WORD, true);
                     print(processed, styleCopy);
+                    
+                    // Continue after match
                     start = to;
                 }
             }

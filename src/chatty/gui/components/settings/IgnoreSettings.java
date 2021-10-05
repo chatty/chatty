@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -148,6 +149,10 @@ public class IgnoreSettings extends SettingsPanel {
     
     public void selectItem(String item) {
         items.setSelected(item);
+    }
+    
+    public void selectItems(Collection<String> selectItems) {
+        items.setSelected(selectItems);
     }
     
     private static class IgnoredUsers extends JDialog {

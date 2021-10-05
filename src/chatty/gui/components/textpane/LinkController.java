@@ -43,6 +43,7 @@ import java.awt.event.ActionEvent;
 import static java.awt.event.ActionEvent.ACTION_FIRST;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -72,6 +73,7 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTML;
+import org.json.simple.JSONArray;
 
 /**
  * Detects any clickable text in the document and reacts accordingly. It shows
@@ -980,8 +982,22 @@ public class LinkController extends MouseAdapter {
         }
         if (highlightSource != null || colorSource != null) {
             JMenu menu = new JMenu("Message Info");
-            if (highlightSource == colorSource) {
-                addMessageInfoItem(menu, highlight+"/Custom Color Source", highlightSource);
+            
+            /**
+             * Treat a single highlight item (meaning no further text matches
+             * from other items, or setting disabled) as before and show
+             * combined if possible, otherwise show separately.
+             */
+            Object highlightSourceItem = null;
+            if (highlightSource != null && highlightSource instanceof List
+                    && ((List) highlightSource).size() == 1) {
+                highlightSourceItem = ((List) highlightSource).get(0);
+            }
+            else {
+                highlightSourceItem = highlightSource;
+            }
+            if (highlightSourceItem == colorSource) {
+                addMessageInfoItem(menu, highlight+"/Custom Color Source", highlightSourceItem);
             }
             else {
                 addMessageInfoItem(menu, highlight+" Source", highlightSource);
@@ -992,27 +1008,57 @@ public class LinkController extends MouseAdapter {
         }
     }
     
+    /**
+     * Create the actual menu item with the item text and tooltip, as well as
+     * action listener.
+     * 
+     * The source can be either from a highlight or a color source, whereas a
+     * color source can be a Highlight item (e.g. with a color: prefix) or a
+     * Msg. Colors item. What matters for the action listener is what setting
+     * it belongs to, not whether it caused a highlight or the color to change.
+     * Highlight/Ignore settings expect a list to select several entries in the
+     * Settings Dialog, Msg. Colors expects a single item (since for the color
+     * only one item can be the source, but Highlight items can also be the
+     * source for marking several text matches).
+     */
     private void addMessageInfoItem(JMenu menu, String label, Object source) {
         if (source != null) {
             JMenuItem item = new JMenuItem(label);
             String sourceText;
             String sourceType;
             String sourceLabel;
+            /**
+             * Since the source for highlight/ignore is a list now, turn single
+             * items (e.g. for color source) into a list so it can be handled
+             * the same.
+             */
+            if (source instanceof Highlighter.HighlightItem) {
+                List<Highlighter.HighlightItem> temp = new ArrayList<>();
+                temp.add((Highlighter.HighlightItem) source);
+                source = temp;
+            }
+            
             if (source instanceof ColorItem) {
                 sourceType = "msgColorSource";
                 sourceText = ((ColorItem)source).getId();
-                sourceLabel = "Msg. Color: ";
+                sourceLabel = "Msg. Color: "+sourceText;
             }
-            else if (source instanceof Highlighter.HighlightItem) {
+            else if (source instanceof List) {
+                List<Highlighter.HighlightItem> list = (List) source;
+                JSONArray rawList = new JSONArray();
+                list.forEach(entry -> rawList.add(entry.getRaw()));
+                sourceText = rawList.toJSONString();
                 if (type == ChannelTextPane.Type.IGNORED) {
                     sourceType = "ignoreSource";
-                    sourceText = ((Highlighter.HighlightItem) source).getRaw();
                     sourceLabel = "Ignore: ";
                 }
                 else {
                     sourceType = "highlightSource";
-                    sourceText = ((Highlighter.HighlightItem) source).getRaw();
                     sourceLabel = "Highlight: ";
+                }
+                sourceLabel += list.get(0).getRaw();
+                if (list.size() > 1) {
+                    sourceLabel += " (and " + (list.size() - 1) + " more for marked matches)";
                 }
             }
             else {
@@ -1023,7 +1069,7 @@ public class LinkController extends MouseAdapter {
             item.addActionListener(e -> {
                 contextMenuListener.menuItemClicked(new ActionEvent(item, ACTION_FIRST, sourceType+"."+sourceText));
             });
-            item.setToolTipText(sourceLabel+sourceText);
+            item.setToolTipText(sourceLabel);
             menu.add(item);
         }
     }

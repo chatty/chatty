@@ -6,11 +6,14 @@ import chatty.Room;
 import chatty.User;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.HighlightItem.Type;
+import chatty.gui.Highlighter.Match;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1114,6 +1117,44 @@ public class HighlighterTest {
         assertFalse(highlighter.check(user, "blahABCfeawfeawf"));
         assertFalse(highlighter.check(user, "blah"));
         assertFalse(highlighter.check(user, "fawefeawf"));
+    }
+    
+    @Test
+    public void testMatches() {
+        highlighter.setIncludeAllTextMatches(false);
+        update("cat", "nice cat");
+        assertTrue(highlighter.check(user, "What a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 1);
+        assertEquals(highlighter.getLastMatchItems().size(), 1);
+        
+        // Second matched entry adds to the area covered by matches
+        highlighter.setIncludeAllTextMatches(true);
+        assertTrue(highlighter.check(user, "What a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 2);
+        assertEquals(highlighter.getLastMatchItems().size(), 2);
+        
+        // First matched entry already covers area matched by the second
+        update("nice cat", "cat");
+        assertTrue(highlighter.check(user, "What a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 1);
+        assertEquals(highlighter.getLastMatchItems().size(), 1);
+        
+        // First matched entry doesn't have text matches, but second does
+        update("config:blah", "cat");
+        assertTrue(highlighter.check(user, "What a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 1);
+        assertEquals(highlighter.getLastMatchItems().size(), 2);
+        
+        // Second matched entry without text matches doesn't have any effect
+        update("cat", "config:blah");
+        assertTrue(highlighter.check(user, "What a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 1);
+        assertEquals(highlighter.getLastMatchItems().size(), 1);
+        
+        update("cat", "kitty", "nice cat");
+        assertTrue(highlighter.check(user, "What a nice kitty cat, isn't it a nice cat!"));
+        assertEquals(highlighter.getLastTextMatches().size(), 4);
+        assertEquals(highlighter.getLastMatchItems().size(), 3);
     }
     
 }

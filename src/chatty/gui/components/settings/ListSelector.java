@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -419,6 +420,29 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     public void setSelected(String item) {
         list.setSelectedValue(item, true);
+    }
+    
+    /**
+     * Select all of the given items, if they are in the list. Tries to make all
+     * selected items visible, although the earlier ones in the given items are
+     * preferred.
+     * 
+     * @param items The items to select, can be null to remove selection
+     */
+    public void setSelected(Collection<String> items) {
+        list.clearSelection();
+        if (items != null) {
+            // Reverse list so earlier entries are scrolled to last
+            List<String> itemsReversed = new ArrayList<>(items);
+            Collections.reverse(itemsReversed);
+            for (String item : itemsReversed) {
+                int index = data.indexOf(item);
+                if (index != -1) {
+                    list.addSelectionInterval(index, index);
+                    list.ensureIndexIsVisible(index);
+                }
+            }
+        }
     }
     
     public void setChangeListener(Consumer<List<String>> listener) {

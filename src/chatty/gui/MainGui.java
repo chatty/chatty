@@ -110,6 +110,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Consumer;
+import org.json.simple.JSONValue;
 
 /**
  * The Main Hub for all GUI activity.
@@ -977,6 +978,7 @@ public class MainGui extends JFrame implements Runnable {
         updateNotificationSettings();
         updateChannelsSettings();
         updateHighlightNextMessages();
+        updateHighlightIncludeAllMatches();
         repeatMsg.loadSettings();
         
         msgColorManager.loadFromSettings();
@@ -1134,6 +1136,10 @@ public class MainGui extends JFrame implements Runnable {
     
     private void updateHighlightNextMessages() {
         highlighter.setHighlightNextMessages(client.settings.getBoolean("highlightNextMessages"));
+    }
+    
+    private void updateHighlightIncludeAllMatches() {
+        highlighter.setIncludeAllTextMatches(client.settings.getBoolean("highlightMatchesAllEntries"));
     }
     
     private void updateNotificationSettings() {
@@ -1869,10 +1875,10 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.setBoolean("historyVerticalZoom", selected);
             }
             else if (cmd.startsWith("highlightSource.")) {
-                settingsDialog.showSettings("selectHighlight", cmd.substring("highlightSource.".length()));
+                settingsDialog.showSettings("selectHighlight", JSONValue.parse(cmd.substring("highlightSource.".length())));
             }
             else if (cmd.startsWith("ignoreSource.")) {
-                settingsDialog.showSettings("selectIgnore", cmd.substring("ignoreSource.".length()));
+                settingsDialog.showSettings("selectIgnore", JSONValue.parse(cmd.substring("ignoreSource.".length())));
             }
             else if (cmd.startsWith("msgColorSource.")) {
                 settingsDialog.showSettings("selectMsgColor", cmd.substring("msgColorSource.".length()));
@@ -3253,7 +3259,7 @@ public class MainGui extends JFrame implements Runnable {
                         // Text matches might not be valid if ignore was through
                         // ignored users list
                         ignoreMatches = ignoreList.getLastTextMatches();
-                        ignoreSource = ignoreList.getLastMatchItem();
+                        ignoreSource = ignoreList.getLastMatchItems();
                     }
                     ignoredMessages.addMessage(channel, user, text, action,
                             tagEmotes, bitsForEmotes, whisper, ignoreMatches,
@@ -3287,7 +3293,7 @@ public class MainGui extends JFrame implements Runnable {
                         message.color = highlighter.getLastMatchColor();
                         message.backgroundColor = highlighter.getLastMatchBackgroundColor();
                         message.colorSource = highlighter.getColorSource();
-                        message.highlightSource = highlighter.getLastMatchItem();
+                        message.highlightSource = highlighter.getLastMatchItems();
                     }
                     if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
                         ColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, tags);
@@ -3588,7 +3594,7 @@ public class MainGui extends JFrame implements Runnable {
                     message.color = highlighter.getLastMatchColor();
                     message.bgColor = highlighter.getLastMatchBackgroundColor();
                     message.colorSource = highlighter.getColorSource();
-                    message.highlightSource = highlighter.getLastMatchItem();
+                    message.highlightSource = highlighter.getLastMatchItems();
 
                     if (!highlighter.getLastMatchNoNotification()) {
                         channels.setChannelHighlighted(channel);
@@ -3622,7 +3628,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         } else if (!message.isHidden()) {
             ignoredMessages.addInfoMessage(channel.getChannel(), message.text,
-                    ignoreList.getLastTextMatches(), ignoreList.getLastMatchItem());
+                    ignoreList.getLastTextMatches(), ignoreList.getLastMatchItems());
             client.chatLog.info("ignored", message.text, channel.getChannel());
         }
         
@@ -4858,6 +4864,8 @@ public class MainGui extends JFrame implements Runnable {
                     updateHighlightSetUsernameHighlighted((Boolean) value);
                 } else if (setting.equals("highlightNextMessages")) {
                     updateHighlightNextMessages();
+                } else if (setting.equals("highlightMatchesAllEntries")) {
+                    updateHighlightIncludeAllMatches();
                 } else if (setting.equals("popoutSaveAttributes") || setting.equals("popoutCloseLastChannel")) {
                     updatePopoutSettings();
                 } else if (setting.equals("livestreamer")) {
