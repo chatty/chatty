@@ -65,7 +65,7 @@ import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.UserInfo;
-import chatty.util.api.pubsub.UserinfoMessageData;
+import chatty.util.api.pubsub.RewardRedeemedMessageData;
 import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
 import chatty.util.api.pubsub.PubSubListener;
@@ -2277,8 +2277,8 @@ public class TwitchClient {
                         }
                     }
                 }
-                else if (message.data instanceof UserinfoMessageData) {
-                    UserinfoMessageData data = (UserinfoMessageData) message.data;
+                else if (message.data instanceof RewardRedeemedMessageData) {
+                    RewardRedeemedMessageData data = (RewardRedeemedMessageData) message.data;
                     User user = c.getUser(Helper.toChannel(data.stream), data.username);
                     g.printPointsNotice(user, data.msg, data.attached_msg, MsgTags.create("chatty-source", "pubsub"));
                 }
@@ -2899,10 +2899,7 @@ public class TwitchClient {
         }
         
         private void checkPointsListen(User user) {
-            if (settings.listContains("scopes", TokenInfo.Scope.POINTS.scope)
-                    && user.getName().equals(c.getUsername())
-                    && user.getStream().equals(c.getUsername())
-                    && user.getStream() != null) {
+            if (settings.listContains("scopes", TokenInfo.Scope.POINTS.scope) && user.getStream() != null) {
                 pubsub.listenPoints(user.getStream(), settings.getString("token"));
             }
         }
@@ -2971,22 +2968,13 @@ public class TwitchClient {
 
         @Override
         public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
-            if (tags.isCustomReward()) {
-                String rewardInfo = (String)settings.mapGet("rewards", tags.getCustomRewardId());
-                String info = String.format("%s redeemed a custom reward (%s)",
-                                            user.getDisplayNick(),
-                                            rewardInfo != null ? rewardInfo : "unknown");
-                g.printPointsNotice(user, info, text, tags);
+            g.printMessage(user, text, action, tags);
+            if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
+                ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
             }
-            else {
-                g.printMessage(user, text, action, tags);
-                if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
-                    ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
-                }
-                if (!action) {
-                    addressbookCommands(user.getChannel(), user, text);
-                    modCommandAddStreamHighlight(user, text, tags);
-                }
+            if (!action) {
+                addressbookCommands(user.getChannel(), user, text);
+                modCommandAddStreamHighlight(user, text, tags);
             }
         }
 
