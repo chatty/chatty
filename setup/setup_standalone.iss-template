@@ -24,7 +24,7 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 [Components]
 Name: main; Description: "Program files and Readme"; Types: install update custom; Flags: fixed
 Name: runtime; Description: "Java Runtime and Launcher"; Types: install update
-Name: config; Description: "Startup Config"; Types: install
+Name: config; Description: "Launcher Config"; Types: install
 Name: examples; Description: "Example sound/image files"; Types: install
 Name: shortcut; Description: "Create Shortcut";
 Name: shortcut\\desktop; Description: "Desktop"; Types: install
