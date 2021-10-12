@@ -226,7 +226,7 @@ public class Requests {
                     ids.put(info.login, info.id);
                 }
             }
-            // Error or missing values are handled in these methods
+            // Error or missing values are handled in these methods as well
             api.userInfoManager.resultReceived(usernames, parsedResult);
             api.userIDs.handleRequestResult(usernames, ids);
         });

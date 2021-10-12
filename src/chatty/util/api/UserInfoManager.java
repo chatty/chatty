@@ -39,11 +39,18 @@ public class UserInfoManager {
         return perLogin.get(login);
     }
     
+    /**
+     * Get cached user info or request if necessary.
+     * 
+     * @param login The username
+     * @param result Receives the result if a request is necessary, UserInfo
+     * could be null in case of request error
+     * @return Cached UserInfo, or null if none cached for this user
+     */
     public UserInfo getCached(String login, Consumer<UserInfo> result) {
         return perLogin.getOrQuerySingle(r -> {
-            if (r.hasAllKeys()) {
-                result.accept(r.get(login));
-            }
+            // Can contain null in case of request error
+            result.accept(r.get(login));
         }, CachedBulkManager.ASAP, login);
     }
     
@@ -62,6 +69,9 @@ public class UserInfoManager {
     }
     
     public static Collection<UserInfo> parseJSON(String json) {
+        if (json == null) {
+            return null;
+        }
         try {
             List<UserInfo> result = new ArrayList<>();
             

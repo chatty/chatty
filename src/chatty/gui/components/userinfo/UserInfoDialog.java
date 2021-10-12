@@ -524,9 +524,12 @@ public class UserInfoDialog extends JDialog {
     protected UserInfo getUserInfo() {
         if (requester != null) {
             return requester.getCachedUserInfo(currentUser.getName(), info -> {
-                SwingUtilities.invokeLater(() -> {
-                    setUserInfo(info);
-                });
+                // Can return null in case of request error
+                if (info != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        setUserInfo(info);
+                    });
+                }
             });
         }
         return null;
