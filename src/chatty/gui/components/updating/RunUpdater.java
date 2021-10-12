@@ -62,7 +62,7 @@ public class RunUpdater {
             restartArgs.addAll(Arrays.asList(chattyArgs));
         }
         // Common arguments
-        command.add(makeParam("runChattyWdir", Chatty.getWorkingDirectory()));
+        command.add(makeParam("runChattyWdir", removeBackslashSuffix(Chatty.getWorkingDirectory())));
         String restartParams = makeJavaParam("runChattyParam", restartArgs);
         if (restartParams == null) {
             throw new IOException("Could not build restart parameters: "
@@ -87,6 +87,24 @@ public class RunUpdater {
             return input;
         }
         return "\""+input+"\"";
+    }
+    
+    /**
+     * Remove backslash at the end of a path to prevent issues with some Java
+     * versions adding double quotes, which won't work for launching the setup.
+     * It might be better to just let ProcessBuilder do all of the escaping,
+     * without adding any quote beforehand, but even then a backslash at the end
+     * leaves a double-backslash when launching the setup, which I'm not sure if
+     * it can cause issues.
+     * 
+     * @param input
+     * @return 
+     */
+    private static String removeBackslashSuffix(String input) {
+        if (input.endsWith("\\")) {
+            return input.substring(0, input.length() - 1);
+        }
+        return input;
     }
     
     /**
@@ -164,10 +182,10 @@ public class RunUpdater {
     
     public static void main(String[] args) {
         String[] args2 = new String[]{"-token", "abc"};
-        Path installerPath = Paths.get("H:\\chatty_test\\Chatty_0.9.1_installer.exe");
-        Path jarPath = Paths.get("H:\\chatty_install\\Param Test.jar");
+        Path installerPath = Paths.get("J:\\Chatty_0.16-b2_win_setup.exe");
+        Path jarPath = Paths.get("J:\\chatty install\\ParamTest.jar");
         Path chattyExe = null;
-        Path javawExe = Paths.get("C:\\Program Files (x86)\\Java\\jdk1.8.0_161\\jre\\bin\\javaw.exe");
+        Path javawExe = Paths.get("C:\\Program Files (x86)\\Java\\jre1.8.0_201\\bin\\javaw.exe");
         try {
             run(installerPath, jarPath.getParent(), jarPath, chattyExe, javawExe, args2, true);
         } catch (IOException ex) {
