@@ -36,7 +36,6 @@ public class MessageData {
             return ModeratorActionData.decodeAutoMod(topic, message, userIds);
         }
         else if (topic.startsWith("channel-points-channel-v1") || topic.startsWith("community-points-channel-v1")) {
-            // Community variation of the topic is not documented officially
             RewardRedeemedMessageData result = RewardRedeemedMessageData.decode(topic, message, userIds);
             if (result != null) {
                 return result;

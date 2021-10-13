@@ -20,9 +20,8 @@ public class RewardRedeemedMessageData extends MessageData {
     public final String username;
     public final String type;
     public final String reward_id;
-    public final String reward_name;
-
-    public RewardRedeemedMessageData(String topic, String message, String stream, String type, String username, String msg, String attachedMsg, String reward_id, String reward_name) {
+    
+    public RewardRedeemedMessageData(String topic, String message, String stream, String type, String username, String msg, String attachedMsg, String reward_id) {
         super(topic, message);
         this.stream = stream;
         this.msg = msg;
@@ -30,14 +29,13 @@ public class RewardRedeemedMessageData extends MessageData {
         this.type = type;
         this.username = username;
         this.reward_id = reward_id;
-        this.reward_name = reward_name;
     }
     
     public static RewardRedeemedMessageData decode(String topic, String message, Map<String, String> userIds) throws ParseException {
         String stream = Helper.getStreamFromTopic(topic, userIds);
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject)parser.parse(message);
-        if (topic.startsWith("channel-points-channel-v1") | topic.startsWith("community-points-channel-v1")) {
+        if (topic.startsWith("channel-points-channel-v1") || topic.startsWith("community-points-channel-v1")) {
             String msgType = (String)root.getOrDefault("type", "");
             JSONObject data = (JSONObject)root.get("data");
             if (msgType.equals("reward-redeemed")) {
@@ -46,17 +44,16 @@ public class RewardRedeemedMessageData extends MessageData {
                 String displayName = JSONUtil.getString(user, "display_name");
                 String username = JSONUtil.getString(user, "login");
                 JSONObject reward = (JSONObject)redemption.get("reward");
+                String reward_id = JSONUtil.getString(reward, "id");
                 String title = JSONUtil.getString(reward, "title");
-                String reward_id =  JSONUtil.getString(reward, "id");
                 String input = JSONUtil.getString(redemption, "user_input");
                 String status = JSONUtil.getString(redemption, "status");
                 int cost = JSONUtil.getInteger(reward, "cost", -1);
-                if (!StringUtil.isNullOrEmpty(username, displayName, stream)) {
+                if (!StringUtil.isNullOrEmpty(username, displayName, stream, reward_id)) {
                     String fullfilled = status != null && status.equalsIgnoreCase("fullfilled") ? " (fullfilled)" : "";
-                    String friendly_name = String.format("%s (%,d)", title, cost);
-                    String msg = String.format("%s redeemed %s%s",
-                            displayName, friendly_name, fullfilled);
-                    return new RewardRedeemedMessageData(topic, message, stream, "Points", username, msg, input, reward_id, friendly_name);
+                    String msg = String.format("%s redeemed %s (%,d)%s",
+                            displayName, title, cost, fullfilled);
+                    return new RewardRedeemedMessageData(topic, message, stream, "Points", username, msg, input, reward_id);
                 }
             }
         }

@@ -2280,11 +2280,10 @@ public class TwitchClient {
                 else if (message.data instanceof RewardRedeemedMessageData) {
                     RewardRedeemedMessageData data = (RewardRedeemedMessageData) message.data;
                     User user = c.getUser(Helper.toChannel(data.stream), data.username);
-                    settings.mapPut("rewards", data.reward_id, data.reward_name);
-                    // Let IRC handle redeems with messages since IRC has twitch emotes info from tags
-                    if (StringUtil.isNullOrEmpty(data.attached_msg)){
-                        g.printPointsNotice(user, data.msg, data.attached_msg, MsgTags.create("chatty-source", "pubsub"));
-                    }
+                    // Uses added source and reward id for merging
+                    g.printPointsNotice(user, data.msg, data.attached_msg,
+                            MsgTags.create("chatty-source", "pubsub",
+                                    "custom-reward-id", data.reward_id));
                 }
             }
         }
@@ -2903,7 +2902,9 @@ public class TwitchClient {
         }
         
         private void checkPointsListen(User user) {
-            if (settings.listContains("scopes", TokenInfo.Scope.POINTS.scope) && user.getStream() != null) {
+            if (settings.listContains("scopes", TokenInfo.Scope.POINTS.scope)
+                    && user.getName().equals(c.getUsername())
+                    && user.getStream() != null) {
                 pubsub.listenPoints(user.getStream(), settings.getString("token"));
             }
         }
@@ -2973,9 +2974,10 @@ public class TwitchClient {
         @Override
         public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
             if (tags.isCustomReward()) {
-                // Reward name will be loaded later since we need to wait for PubSub to receive the event
-                String info = String.format("%s redeemed %s",
-                        user.getDisplayNick(), "unknown custom reward");
+                String rewardInfo = (String)settings.mapGet("rewards", tags.getCustomRewardId());
+                String info = String.format("%s redeemed a custom reward (%s)",
+                                            user.getDisplayNick(),
+                                            rewardInfo != null ? rewardInfo : "unknown");
                 g.printPointsNotice(user, info, text, tags);
             }
             else {

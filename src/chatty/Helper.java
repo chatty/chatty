@@ -897,19 +897,20 @@ public class Helper {
     /**
      * Must be run in EDT.
      * 
+     * If a UserNotice with the same Reward ID (in tags) has already been added
+     * for merge it will perform the merge and output the message, otherwise it
+     * will store the given one for merging and start a backup timer to output
+     * it if no merge will occur in the given time.
+     *
      * @param newNotice
      * @param g 
      */
-    public static void pointsMerge(UserNotice newNotice, MainGui g, Settings settings) {
+    public static void pointsMerge(UserNotice newNotice, MainGui g) {
         UserNotice result = findPointsMerge(newNotice);
         if (result == null) {
             javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
                 pointsMerge.remove(newNotice);
-                // Loading reward info later since PubSub event may come with a delay
-                String rewardInfo = (String)settings.mapGet("rewards", newNotice.tags.getCustomRewardId());
-                String info = String.format("%s redeemed %s",
-                        newNotice.user.getDisplayNick(), rewardInfo != null ? rewardInfo : "unknown custom reward");
-                g.printUsernotice(newNotice.type, newNotice.user, info, newNotice.attachedMessage, newNotice.tags);
+                g.printUsernotice(newNotice.type, newNotice.user, newNotice.infoText, newNotice.attachedMessage, newNotice.tags);
             });
             timer.setRepeats(false);
             pointsMerge.put(newNotice, timer);
@@ -920,15 +921,21 @@ public class Helper {
         }
     }
     
+    /**
+     * Finds the Points UserNotice that has already been received from PubSub or
+     * IRC and merges it accordingly. Stops the timer that would have output the
+     * found UserNotice.
+     * 
+     * @param newNotice
+     * @return The merged UserNotice, or null if none could be found
+     */
     private static UserNotice findPointsMerge(UserNotice newNotice) {
         UserNotice found = null;
         for (Map.Entry<UserNotice, javax.swing.Timer> entry : pointsMerge.entrySet()) {
             UserNotice stored = entry.getKey();
             // Attached messages seem to be trimmed depending on source
-            boolean sameAttachedMsg = Objects.equals(
-                    StringUtil.trimAll(stored.attachedMessage),
-                    StringUtil.trimAll(newNotice.attachedMessage));
-            if (stored.user.sameUser(newNotice.user) && sameAttachedMsg) {
+            if (stored.tags.getCustomRewardId() != null
+                    && stored.tags.getCustomRewardId().equals(newNotice.tags.getCustomRewardId())) {
                 found = stored;
                 entry.getValue().stop();
             }
