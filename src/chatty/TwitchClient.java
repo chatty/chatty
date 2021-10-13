@@ -6,6 +6,7 @@ import chatty.ChannelFavorites.Favorite;
 import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.gui.components.admin.StatusHistory;
+import chatty.util.*;
 import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
@@ -29,28 +30,8 @@ import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.gui.components.updating.Stuff;
 import chatty.splash.Splash;
-import chatty.util.BTTVEmotes;
-import chatty.util.BotNameManager;
-import chatty.util.DateTime;
-import chatty.util.Debugging;
-import chatty.util.EmoticonListener;
-import chatty.util.IconManager;
 import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
-import chatty.util.ImageCache;
-import chatty.util.LogUtil;
-import chatty.util.MiscUtil;
-import chatty.util.OtherBadges;
-import chatty.util.ProcessManager;
-import chatty.util.RawMessageTest;
-import chatty.util.ReplyManager;
-import chatty.util.Speedruncom;
-import chatty.util.StreamHighlightHelper;
-import chatty.util.StreamStatusWriter;
-import chatty.util.StringUtil;
-import chatty.util.TwitchEmotesApi;
-import chatty.util.UserRoom;
-import chatty.util.Webserver;
 import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChannelStatus;
 import chatty.util.api.CheerEmoticon;
@@ -160,6 +141,8 @@ public class TwitchClient {
     private final AutoModCommandHelper autoModCommandHelper;
     
     public final RoomManager roomManager;
+
+    public final RecentHistory history;
     
     /**
      * Holds the UserManager instance, which manages all the user objects.
@@ -321,6 +304,8 @@ public class TwitchClient {
         g.showGui();
         
         autoModCommandHelper = new AutoModCommandHelper(g, api);
+
+        history = new RecentHistory(c, settings, g);
         
         if (Chatty.DEBUG) {
             Room testRoom =  Room.createRegular("");
@@ -2923,6 +2908,7 @@ public class TwitchClient {
             api.getGlobalBadges(false);
             String stream = user.getStream();
             if (Helper.isValidStream(stream)) {
+                history.requestHistory(user.getRoom());
                 api.getRoomBadges(stream, false);
                 api.getCheers(stream, false);
                 api.getEmotesByChannelId(stream, null, false);

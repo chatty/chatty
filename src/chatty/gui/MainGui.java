@@ -3380,7 +3380,7 @@ public class MainGui extends JFrame implements Runnable {
     public void printPointsNotice(final User user, final String text, final String message, final MsgTags tags) {
         SwingUtilities.invokeLater(() -> {
             UserNotice m = new UserNotice("Points", user, text, message, tags);
-            if (message != null) {
+            if (message != null && !tags.isHistorical()) {
                 Helper.pointsMerge(m, this);
             }
             else {

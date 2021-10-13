@@ -489,8 +489,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
      */
     private void printUsernotice(UserNotice message, MutableAttributeSet style) {
         closeCompactMode();
-        printTimestamp(style);
-        
+        if (message.tags.isHistorical()) {
+            printTimestampFromDate(style, new Date(message.tags.getReceivedTimestamp()));
+        } else {
+            printTimestamp(style);
+        }
+
         MutableAttributeSet userStyle;
         if (message.user.getName().isEmpty()) {
             // Only dummy User attached (so no custom message attached as well)
@@ -521,7 +525,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private void printAutoModMessage(AutoModMessage message, AttributeSet style) {
         closeCompactMode();
-        printTimestamp(style);
+        if (message.tags.isHistorical()) {
+            printTimestampFromDate(style, new Date(message.tags.getReceivedTimestamp()));
+        } else {
+            printTimestamp(style);
+        }
         
         MutableAttributeSet userStyle = styles.user(message.user, style);
         userStyle.addAttribute(Attribute.ID_AUTOMOD, message.msgId);
@@ -572,7 +580,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         } else {
             style = styles.standard(color);
         }
-        printTimestamp(style);
+
+        if (message.tags.isHistorical()) {
+            printTimestampFromDate(style, new Date(message.tags.getReceivedTimestamp()));
+        } else {
+            printTimestamp(style);
+        }
         printUser(user, action, message.whisper, message.id, background, message.tags);
         
         // Change style for text if /me and no highlight (if enabled)
@@ -669,7 +682,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     
     private void printInfoMessage2(InfoMessage message, AttributeSet style) {
         closeCompactMode();
-        printTimestamp(style);
+        if (message.tags != null && message.tags.isHistorical()) {
+            printTimestampFromDate(style, new Date(message.tags.getReceivedTimestamp()));
+        } else {
+            printTimestamp(style);
+        }
         printSpecialsInfo(message.text, style, message.highlightMatches);
         Pair<String, String> link = message.getLink();
         if (link != null) {
@@ -2951,6 +2968,21 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
     protected void printTimestamp(AttributeSet style) {
         if (styles.timestampFormat() != null) {
             print(DateTime.currentTime(styles.timestampFormat())+" ", styles.timestamp(style));
+        }
+        else {
+            // Inserts the linebreak with a style that shouldn't break anything
+            print("", style);
+        }
+    }
+
+    /**
+     * Makes the time prefix.
+     *
+     * @param style
+     */
+    protected void printTimestampFromDate(AttributeSet style, Date date) {
+        if (styles.timestampFormat() != null) {
+            print(styles.timestampFormat().format(date)+" ", styles.timestamp(style));
         }
         else {
             // Inserts the linebreak with a style that shouldn't break anything
