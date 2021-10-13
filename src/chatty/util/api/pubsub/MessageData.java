@@ -28,15 +28,15 @@ public class MessageData {
         }
         String topic = (String)data.get("topic");
         String message = (String)data.get("message");
-        Debugging.println("automod-msg", "%s: %s", topic, message);
+        Debugging.println("pubsub-msg", "%s: %s", topic, message);
         if (topic.startsWith("chat_moderator_actions")) {
             return ModeratorActionData.decode(topic, message, userIds);
         }
         else if (topic.startsWith("automod-queue.")) {
             return ModeratorActionData.decodeAutoMod(topic, message, userIds);
         }
-        else if (topic.startsWith("channel-points-channel-v1")) {
-            UserinfoMessageData result = UserinfoMessageData.decode(topic, message, userIds);
+        else if (topic.startsWith("channel-points-channel-v1") || topic.startsWith("community-points-channel-v1")) {
+            RewardRedeemedMessageData result = RewardRedeemedMessageData.decode(topic, message, userIds);
             if (result != null) {
                 return result;
             }

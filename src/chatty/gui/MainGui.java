@@ -3363,6 +3363,20 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    /**
+     * Will attempt to merge Points notices with an attached message between IRC
+     * and PubSub. Data is shared between both sources accordingly when a merge
+     * occurs, which is when both sources have called this method for the same
+     * message. When no merge occurs after a second, a backup timer will output
+     * the message anyway.
+     * 
+     * Notices without an attached messages will be directly output.
+     * 
+     * @param user
+     * @param text
+     * @param message
+     * @param tags 
+     */
     public void printPointsNotice(final User user, final String text, final String message, final MsgTags tags) {
         SwingUtilities.invokeLater(() -> {
             UserNotice m = new UserNotice("Points", user, text, message, tags);
