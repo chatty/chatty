@@ -900,12 +900,16 @@ public class Helper {
      * @param newNotice
      * @param g 
      */
-    public static void pointsMerge(UserNotice newNotice, MainGui g) {
+    public static void pointsMerge(UserNotice newNotice, MainGui g, Settings settings) {
         UserNotice result = findPointsMerge(newNotice);
         if (result == null) {
             javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
                 pointsMerge.remove(newNotice);
-                g.printUsernotice(newNotice.type, newNotice.user, newNotice.infoText, newNotice.attachedMessage, newNotice.tags);
+                // Loading reward info later since PubSub event may come with a delay
+                String rewardInfo = (String)settings.mapGet("rewards", newNotice.tags.getCustomRewardId());
+                String info = String.format("%s redeemed %s",
+                        newNotice.user.getDisplayNick(), rewardInfo != null ? rewardInfo : "unknown custom reward");
+                g.printUsernotice(newNotice.type, newNotice.user, info, newNotice.attachedMessage, newNotice.tags);
             });
             timer.setRepeats(false);
             pointsMerge.put(newNotice, timer);

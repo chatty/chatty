@@ -414,7 +414,7 @@ public class Manager {
         public String make() {
             String userId = getUserId(stream);
             if (userId != null) {
-                return "channel-points-channel-v1."+userId;
+                return "community-points-channel-v1."+userId;
             }
             return null;
         }
