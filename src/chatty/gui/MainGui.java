@@ -3352,7 +3352,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(() -> {
             UserNotice m = new UserNotice("Points", user, text, message, tags);
             if (message != null) {
-                Helper.pointsMerge(m, this);
+                Helper.pointsMerge(m, this, getSettings());
             }
             else {
                 printUsernotice(m);

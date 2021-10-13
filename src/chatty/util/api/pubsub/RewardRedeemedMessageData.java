@@ -19,14 +19,18 @@ public class RewardRedeemedMessageData extends MessageData {
     public final String attached_msg;
     public final String username;
     public final String type;
-    
-    public RewardRedeemedMessageData(String topic, String message, String stream, String type, String username, String msg, String attachedMsg) {
+    public final String reward_id;
+    public final String reward_name;
+
+    public RewardRedeemedMessageData(String topic, String message, String stream, String type, String username, String msg, String attachedMsg, String reward_id, String reward_name) {
         super(topic, message);
         this.stream = stream;
         this.msg = msg;
         this.attached_msg = attachedMsg;
         this.type = type;
         this.username = username;
+        this.reward_id = reward_id;
+        this.reward_name = reward_name;
     }
     
     public static RewardRedeemedMessageData decode(String topic, String message, Map<String, String> userIds) throws ParseException {
@@ -43,14 +47,16 @@ public class RewardRedeemedMessageData extends MessageData {
                 String username = JSONUtil.getString(user, "login");
                 JSONObject reward = (JSONObject)redemption.get("reward");
                 String title = JSONUtil.getString(reward, "title");
+                String reward_id =  JSONUtil.getString(reward, "id");
                 String input = JSONUtil.getString(redemption, "user_input");
                 String status = JSONUtil.getString(redemption, "status");
                 int cost = JSONUtil.getInteger(reward, "cost", -1);
                 if (!StringUtil.isNullOrEmpty(username, displayName, stream)) {
                     String fullfilled = status != null && status.equalsIgnoreCase("fullfilled") ? " (fullfilled)" : "";
-                    String msg = String.format("%s redeemed %s (%,d)%s",
-                            displayName, title, cost, fullfilled);
-                    return new RewardRedeemedMessageData(topic, message, stream, "Points", username, msg, input);
+                    String friendly_name = String.format("%s (%,d)", title, cost);
+                    String msg = String.format("%s redeemed %s%s",
+                            displayName, friendly_name, fullfilled);
+                    return new RewardRedeemedMessageData(topic, message, stream, "Points", username, msg, input, reward_id, friendly_name);
                 }
             }
         }

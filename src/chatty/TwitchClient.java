@@ -2280,7 +2280,11 @@ public class TwitchClient {
                 else if (message.data instanceof RewardRedeemedMessageData) {
                     RewardRedeemedMessageData data = (RewardRedeemedMessageData) message.data;
                     User user = c.getUser(Helper.toChannel(data.stream), data.username);
-                    g.printPointsNotice(user, data.msg, data.attached_msg, MsgTags.create("chatty-source", "pubsub"));
+                    settings.mapPut("rewards", data.reward_id, data.reward_name);
+                    // Let IRC handle redeems with messages since IRC has twitch emotes info from tags
+                    if (StringUtil.isNullOrEmpty(data.attached_msg)){
+                        g.printPointsNotice(user, data.msg, data.attached_msg, MsgTags.create("chatty-source", "pubsub"));
+                    }
                 }
             }
         }
@@ -2968,13 +2972,21 @@ public class TwitchClient {
 
         @Override
         public void onChannelMessage(User user, String text, boolean action, MsgTags tags) {
-            g.printMessage(user, text, action, tags);
-            if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
-                ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
+            if (tags.isCustomReward()) {
+                // Reward name will be loaded later since we need to wait for PubSub to receive the event
+                String info = String.format("%s redeemed %s",
+                        user.getDisplayNick(), "unknown custom reward");
+                g.printPointsNotice(user, info, text, tags);
             }
-            if (!action) {
-                addressbookCommands(user.getChannel(), user, text);
-                modCommandAddStreamHighlight(user, text, tags);
+            else {
+                g.printMessage(user, text, action, tags);
+                if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
+                    ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
+                }
+                if (!action) {
+                    addressbookCommands(user.getChannel(), user, text);
+                    modCommandAddStreamHighlight(user, text, tags);
+                }
             }
         }
 
