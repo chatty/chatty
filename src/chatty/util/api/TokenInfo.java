@@ -15,6 +15,10 @@ public class TokenInfo {
     
     public enum Scope {
         CHAT("chat_login", "chat"),
+        CHAT_READ("chat:read", "chatRead"),
+        CHAT_EDIT("chat:edit", "chatWrite"),
+        WHISPER_READ("whispers:read", "whisperRead"),
+        WHISPER_EDIT("whispers:edit", "whisperWrite"),
         USERINFO("user_read", "user"),
         EDITOR("channel_editor", "editor"),
         EDIT_BROADCAST("user:edit:broadcast", "broadcast"),
@@ -58,14 +62,6 @@ public class TokenInfo {
         this.userId = userId;
         valid = true;
         this.clientId = clientId;
-        /**
-         * Accept new chat scopes as well. Adding old "chat_login" scope for
-         * them, which is checked for. Kind of a hack, but should work well
-         * enough.
-         */
-        if (scopes.contains("chat:read") && scopes.contains("chat:edit")) {
-            scopes.add("chat_login");
-        }
         this.scopes = new HashSet<>(scopes);
         this.expiresIn = expiresIn;
     }
@@ -77,4 +73,10 @@ public class TokenInfo {
     public boolean hasScope(Scope scope) {
         return scopes.contains(scope.scope);
     }
+    
+    public boolean hasChatAccess() {
+        return hasScope(Scope.CHAT)
+                || (hasScope(Scope.CHAT_READ) && hasScope(Scope.CHAT_EDIT));
+    }
+    
 }

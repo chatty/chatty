@@ -16,7 +16,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 
@@ -65,7 +68,7 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
             checkbox.setToolTipText(scope.description);
             checkbox.setSelected(true);
             checkbox.addItemListener(e -> updateUrl());
-            if (scope == Scope.CHAT) {
+            if (scope == Scope.CHAT || scope == Scope.CHAT_EDIT || scope == Scope.CHAT_READ) {
                 checkbox.setEnabled(false);
             }
             gbc = makeGridBagConstraints(0, y, 2, 1, GridBagConstraints.WEST);
@@ -164,11 +167,16 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
     
     private void updateUrl() {
         String scopes = "";
+        List<String> sortedScopes = new ArrayList<>();
         for (Map.Entry<Scope, JCheckBox> entry : checkboxes.entrySet()) {
             JCheckBox checkbox = entry.getValue();
             if (checkbox.isSelected()) {
-                scopes += "+"+entry.getKey().scope;
+                sortedScopes.add(entry.getKey().scope);
             }
+        }
+        Collections.sort(sortedScopes);
+        for (String scope : sortedScopes) {
+            scopes += "+"+scope;
         }
         if (!scopes.isEmpty()) {
             scopes = scopes.substring(1);

@@ -54,8 +54,11 @@ public class Manager {
                 
                 @Override
                 public void handleReceived(int id, String received) {
-                    listener.info(String.format("[%d]--> %s",
+                    listener.info(String.format("[%d(%d)/%d(%d)]--> %s",
                             id,
+                            c.getNumTopics(id),
+                            c.getNumConnections(),
+                            c.getNumTopics(),
                             StringUtil.trim(received)));
                     Message message = Message.fromJson(received, userIds);
                     if (message != null) {
@@ -76,8 +79,11 @@ public class Manager {
                 
                 @Override
                 public void handleSent(int id, String sent) {
-                    listener.info(String.format("[%d]<-- %s",
+                    listener.info(String.format("[%d(%d)/%d(%d)]<-- %s",
                             id,
+                            c.getNumTopics(id),
+                            c.getNumConnections(),
+                            c.getNumTopics(),
                             Helper.removeToken(token, sent)));
                 }
                 
@@ -147,6 +153,15 @@ public class Manager {
     public void unlistenModLog(String username) {
         removeTopic(new ModLog(username));
         removeTopic(new AutoMod(username));
+    }
+    
+    public void listenUserModeration(String username, String token) {
+        this.token = token;
+        addTopic(new UserModeration(username));
+    }
+    
+    public void unlistenUserModeration(String username) {
+        removeTopic(new UserModeration(username));
     }
     
     public void listenPoints(String username, String token) {
@@ -398,6 +413,23 @@ public class Manager {
             String userId = getUserId(stream);
             if (userId != null && localUserId != null) {
                 return "automod-queue."+localUserId+"."+userId;
+            }
+            return null;
+        }
+        
+    }
+    
+    private class UserModeration extends StreamTopic {
+
+        UserModeration(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make() {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                return "user-moderation-notifications."+localUserId+"."+userId;
             }
             return null;
         }

@@ -4564,7 +4564,7 @@ public class MainGui extends JFrame implements Runnable {
                 showTokenWarning();
             }
         }
-        else if (!tokenInfo.hasScope(TokenInfo.Scope.CHAT)) {
+        else if (!tokenInfo.hasChatAccess()) {
             result = "No chat access (required) with token.";
         }
         else {

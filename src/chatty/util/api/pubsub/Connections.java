@@ -73,6 +73,25 @@ public class Connections {
         return connections.toString();
     }
     
+    public synchronized int getNumTopics(int id) {
+        if (connections.size() > id) {
+            return connections.get(id).numTopics();
+        }
+        return -1;
+    }
+    
+    public synchronized int getNumTopics() {
+        int total = 0;
+        for (PubSub c : connections) {
+            total += c.numTopics();
+        }
+        return total;
+    }
+    
+    public synchronized int getNumConnections() {
+        return connections.size();
+    }
+    
     public synchronized boolean isConnected() {
         if (connections.isEmpty()) {
             return false;

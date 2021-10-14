@@ -41,6 +41,12 @@ public class MessageData {
                 return result;
             }
         }
+        else if (topic.startsWith("user-moderation-notifications")) {
+            UserModerationMessageData result = UserModerationMessageData.decode(topic, message, userIds);
+            if (result != null) {
+                return result;
+            }
+        }
         return new MessageData(topic, message);
     }
 
