@@ -144,7 +144,7 @@ public class QueuedApi {
         if (checkPending(entry)) {
             queue.add(entry);
         } else {
-            System.out.println("Duped");
+            System.out.println("Duped "+request);
         }
     }
     

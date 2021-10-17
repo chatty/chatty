@@ -41,6 +41,10 @@ public class Follower {
     
     public final long user_created_time;
     
+    public final String info;
+    
+    public final String verboseInfo;
+    
     /**
      * Creates a new Follower item.
      * 
@@ -49,14 +53,20 @@ public class Follower {
      * @param refollow Whether it was detected as a refollow
      * @param newFollower Whether it is a new follower in this request
      */
-    public Follower(Type type, String name, String display_name, long time, long userTime, boolean refollow, boolean newFollower) {
+    public Follower(Type type, String name, String display_name, long time, long userTime, boolean refollow, boolean newFollower, String info, String verboseInfo) {
         this.type = type;
         this.name = name;
         this.display_name = display_name;
         this.follow_time = time;
+        this.user_created_time = userTime;
         this.refollow = refollow;
         this.newFollower = newFollower;
-        this.user_created_time = userTime;
+        this.info = info;
+        this.verboseInfo = verboseInfo;
+    }
+    
+    public Follower setAccountCreationTime(long time) {
+        return new Follower(type, name, display_name, follow_time, time, refollow, newFollower, info, verboseInfo);
     }
     
     @Override

@@ -28,6 +28,8 @@ public class FollowerInfo {
      */
     public final int total;
     
+    public final int totalPoints;
+    
     /**
      * The time this object was created.
      */
@@ -56,10 +58,11 @@ public class FollowerInfo {
      * @param followers
      * @param total 
      */
-    public FollowerInfo(Follower.Type type, String stream, List<Follower> followers, int total) {
+    public FollowerInfo(Follower.Type type, String stream, List<Follower> followers, int total, int totalPoints) {
         this.type = type;
         this.followers = Collections.unmodifiableList(followers);
         this.total = total;
+        this.totalPoints = totalPoints;
         this.time = System.currentTimeMillis();
         this.stream = stream;
         this.requestError = false;
@@ -77,6 +80,7 @@ public class FollowerInfo {
         this.type = type;
         this.followers = null;
         this.total = -1;
+        this.totalPoints = -1;
         this.time = System.currentTimeMillis();
         this.stream = stream;
         this.requestError = true;
@@ -96,6 +100,30 @@ public class FollowerInfo {
             }
         }
         return result;
+    }
+    
+    /**
+     * Get a list of all usernames in this FollowerInfo object.
+     * 
+     * @return The list of usernames
+     */
+    public List<String> getUsernames() {
+        List<String> result = new ArrayList<>();
+        for (Follower f : followers) {
+            result.add(f.name);
+        }
+        return result;
+    }
+    
+    /**
+     * Creates a new FollowerInfo object with the followers replaced with the
+     * given list.
+     * 
+     * @param updatedFollowers The followers to set
+     * @return The new object
+     */
+    public FollowerInfo replaceFollowers(List<Follower> updatedFollowers) {
+        return new FollowerInfo(type, stream, updatedFollowers, total, totalPoints);
     }
     
 }

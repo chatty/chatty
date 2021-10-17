@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -52,6 +53,22 @@ public class UserInfoManager {
             // Can contain null in case of request error
             result.accept(r.get(login));
         }, CachedBulkManager.ASAP, login);
+    }
+    
+    /**
+     * Get info for the given list of usernames, returned to the listener. A
+     * request is performed if necessary, but cached results may be returned as
+     * well.
+     * 
+     * @param unique Only one request per object is kept, overwriting older ones
+     * (unless this is null)
+     * @param logins The usernames
+     * @param resultListener
+     */
+    public void getCached(Object unique, List<String> logins, Consumer<Map<String, UserInfo>> resultListener) {
+        perLogin.query(unique, (result) -> {
+            resultListener.accept(result.getResults());
+        }, CachedBulkManager.ASAP, logins);
     }
     
     public void resultReceived(Set<String> requested, Collection<UserInfo> result) {

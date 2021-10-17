@@ -61,28 +61,19 @@ public class Requests {
     //====================
     
     protected void requestFollowers(String streamId, String stream) {
-        String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/follows?direction=desc&limit=100&offset=0";
-        //url = "http://127.0.0.1/twitch/followers";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.followerManager.received(r.responseCode, stream, r.text);
-            });
-        }
+        String url = String.format("https://api.twitch.tv/helix/users/follows?to_id=%s&first=100",
+                streamId);
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.followerManager.received(responseCode, stream, result);
+        });
     }
     
-    protected void requestSubscribers(String streamId, String stream, String token) {
-        String url = "https://api.twitch.tv/kraken/channels/"+streamId+"/subscriptions?direction=desc&limit=100&offset=0";
-        if (Chatty.DEBUG) {
-            url = "http://127.0.0.1/twitch/subscriptions_test";
-        }
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(token);
-            execute(request, r -> {
-                api.subscriberManager.received(r.responseCode, stream, r.text);
-            });
-        }
+    protected void requestSubscribers(String streamId, String stream) {
+        String url = String.format("https://api.twitch.tv/helix/subscriptions?broadcaster_id=%s&first=100",
+                streamId);
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.subscriberManager.received(responseCode, stream, result);
+        });
     }
     
     public void getChannelStatus(String streamId, String stream) {
@@ -245,15 +236,12 @@ public class Requests {
             return;
         }
         String url = String.format(
-                "https://api.twitch.tv/kraken/users/%s/follows/channels/%s",
+                "https://api.twitch.tv/helix/users/follows?from_id=%s&to_id=%s",
                 userID,
                 streamID);
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            execute(request, r -> {
-                api.followerManager.receivedSingle(r.responseCode, stream, r.text, user);
-            });
-        }
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.followerManager.receivedSingle(responseCode, stream, result, user);
+        });
     }
     
     //=================
