@@ -117,7 +117,7 @@ public class BadgeManager {
         }
     }
     
-    private static String makeSubscriberTitle(String version) {
+    public static String makeSubscriberTitle(String version) {
         String title = "Subscriber";
         String tier = "0";
         String months = version;

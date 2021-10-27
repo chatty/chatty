@@ -780,6 +780,13 @@ public class StringUtil {
         return 2f*count / (setA.size() + setB.size());
     }
     
+    public static String plural(String input, int num) {
+        if (num == 0 || num > 1) {
+            return input+"s";
+        }
+        return input;
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
         System.out.println(concats("a", null, "b", null));
