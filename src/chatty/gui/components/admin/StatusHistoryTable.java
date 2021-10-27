@@ -73,7 +73,7 @@ public class StatusHistoryTable extends JTable {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(3, SortOrder.DESCENDING));
+        sortKeys.add(new RowSorter.SortKey(4, SortOrder.DESCENDING)); // Last Activity
         sorter.setSortKeys(sortKeys);
         
         addMouseListener(new MouseAdapter() {
@@ -315,7 +315,7 @@ public class StatusHistoryTable extends JTable {
             } else if (columnIndex == 1) {
                 return entry.title;
             } else if (columnIndex == 2) {
-                return entry.game;
+                return entry.game.name;
             } else if (columnIndex == 3) {
                 return StringUtil.join(entry.tags, ", ");
             } else if (columnIndex == 4) {
