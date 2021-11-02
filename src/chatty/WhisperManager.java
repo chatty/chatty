@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.util.HashSet;
 import java.util.Set;
@@ -157,7 +158,12 @@ public class WhisperManager {
         }
         if (isUserIgnored(user) && settings.getBoolean("whisperAutoRespond")) {
             if (!autoRespondedTo.contains(user.getName())) {
-                rawWhisper(user.getName(), AUTO_RESPOND_MESSAGE);
+                String msg = AUTO_RESPOND_MESSAGE;
+                String customMsg = settings.getString("whisperAutoRespondCustom");
+                if (!StringUtil.isNullOrEmpty(customMsg)) {
+                    msg = String.format("%s (%s)", msg, customMsg);
+                }
+                rawWhisper(user.getName(), msg);
                 autoRespondedTo.add(user.getName());
             }
         } else {

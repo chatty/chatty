@@ -78,5 +78,9 @@ public class AdvancedSettings extends SettingsPanel {
         whisper.add(d.addSimpleBooleanSetting("whisperAutoRespond", "Auto-respond to ignored/non-whitelisted users",
                 "Sends an automatic message telling users you didn't receive their message"),
                 d.makeGbc(0, 2, 5, 1, GridBagConstraints.WEST));
+        
+        whisper.add(SettingsUtil.createPanel("whisperAutoRespondCustom",
+                d.addEditorStringSetting("whisperAutoRespondCustom", 10, true, "Custom Message", false, null)),
+                d.makeGbc(0, 3, 5, 1));
     }
 }
