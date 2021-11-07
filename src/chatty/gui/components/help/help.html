@@ -438,20 +438,21 @@
     </h2>
     <p>The login data consists of a <em>username</em> (or account name) and most
         importantly an <em>access token</em>, which is sort of a revokable
-        password that can also have different types of access associated with
-        it, the ones usable for Chatty being:</p>
+        password that can also have different types of access (scopes) associated with
+        it. You can see the full list of associated scopes under "Main - Account"
+        (hover over each entry for more information if available).</p>
     
+    <p>Some more information on some scopes:</p>
     <dl>
         <dt><code>Chat access</code></dt>
-        <dd>Required to connect to chat (required for Chatty).</dd>
-        
-        <dt><code>Read user info</code></dt>
-        <dd>Required to request the streams you follow, so you can get <a href="#notifications">notified</a>
-            when they start streaming.</dd>
+        <dd>Required to connect to chat. Some newer APIs need the "Read chat"
+            and "Send chat" scopes, although for connecting to chat either should
+            work.</dd>
         
         <dt><code>Editor access</code></dt>
-        <dd>Allows you to change the stream title/game on your channel and
-            channels you are an editor for (<a href="help-admin.html">Admin Dialog</a>).</dd>
+        <dd>Allows you to change the stream title/game on your channel, for
+            editors this only works with the old API
+            (<a href="help-admin.html">Admin Dialog</a>).</dd>
         
         <dt><code>Edit broadcast</code></dt>
         <dd>Allows you to create Stream Markers/set Stream Tags on your channel
@@ -480,45 +481,27 @@
             channel.</dd>
     </dl>
     
-    <p>Once requested from Twitch, the login data is stored locally on your
-        computer along with the other settings of Chatty.
-        <span style="text-decoration: line-through">Since Twitch gives out the
-        access token per application, any access token for the same account
-        requested with Chatty will be invalidated when you request a new access
-        token</span>.
-        <span style="text-decoration: underline">This doesn't seem to be the
-            case anymore.</span></p>
-    
     <p>If getting login data fails, read <a href="help-guide2.html">this guide</a>.
         If your login was determined invalid, read <a href="#login-invalid">down below</a>.</p>
     
-    <h3><a name="access">Allow more access</a></h3>
-    <p>To allow Chatty more access than it already has (e.g. if you haven't
-        selected editor access before, but you want it now), you need to request
-        a new access token. Just go to <code>&lt;Main - Account&gt;</code>,
-        delete the login and request it again with the necessary access.</p>
-    
-    <h3>Allow less access</h3>
-    <p>To allow Chatty less access than it already has (e.g. you don't want it
-        to have editor access anymore) you need to first revoke access
-        completely in your Twitch Account
-        <a href="http://www.twitch.tv/settings/connections">Settings</a>, then
-        authorize access again. What will not work is just requesting a new
-        token without selecting the now unwanted access. Twitch will always
-        respond with a token that has at least as much access as the previous
-        one.</p>
+    <h3><a name="access">Allow more/less access</a></h3>
+    <p>To change what Chatty is allowed to do (e.g. if you haven't selected
+        editor access before, but you want it now), you need to request a new
+        access token. Just go to <code>&lt;Main - Account&gt;</code>,
+        delete the login and request it again with the access scopes that you
+        want selected.</p>
     
     <h3><a name="login-security">Security</a></h3>
     <p>The access token is saved in the <code>login</code> file in the settings
         <a href="help-guide_folders.html">directory</a> and can thus be accessed
         by anyone having access to your computer.
-    It allows anyone who obtains it to chat in your name and access the other
-    things listed above (if you allowed it when getting the token). If you think
-    the token may have been compromised, please immediately go to your Twitch
-    Settings subsection
+    It allows anyone who obtains it to chat in your name and do the other things
+    that you have allowed Chatty to do. If you think the token may have been
+    compromised, please immediately go to your Twitch Settings subsection
     <a href="http://www.twitch.tv/settings/connections">Connections</a>
-    and <em>revoke the accesss</em> there. You can then request a new one for
-    which Twitch will ask you to authorize Chatty again.</p>
+    and <em>revoke the accesss</em> there. This will make all tokens previously
+    requested for Chatty associated with that account invalid. You can then
+    request a new one for which Twitch will ask you to authorize Chatty again.</p>
     
     <h3><a name="login-invalid">Invalid Login</a></h3>
     <p>If your login is determined invalid (either by checking it manually or
@@ -548,20 +531,14 @@
         </li>
         <li>Your login is actually invalid:
             <ul>
-                <li><span style="text-decoration: line-through">You have requested new login data for the same Twitch Account from
-                    another instance of Chatty, for example on another Computer, which
-                    has automatically invalidated the previously requested login data
-                    (access token).</span>
-                    <span style="text-decoration: underline">This may or may not
-                        be the case anymore.</span></li>
                 <li>You have just requested login data and something went wrong, or it
                     wasn't loaded properly from the settings.</li>
                 <li>The token was invalidated for some other reason.</li>
                 <li>How to proceed:
                     <ul>
                         <li>Go to <code>&lt;Main - Account&gt;</code> to open
-                            the <code>Login configuration</code> (you may
-                            already have it open), click <code>[Remove login]</code>
+                            the login configuration (if you don't already have
+                            it open), click <code>[Remove login]</code>
                             and create a new login.</li>
                     </ul>
                 </li>
@@ -571,13 +548,11 @@
     
     <p>What happens when your login is no longer valid:</p>
     <ul>
-        <li>You can't connect to chat anymore. If you are already connected and
-        stay connected, this doesn't matter.</li>
-        <li>Your followed streams are no longer requested, so you may not be
-        informed about streams starting anymore (if you had that enabled in the
-        first place).</li>
-        <li>Other features that require authentication won't work properly anymore, like
-        the Admin Dialog.</li>
+        <li>You can't connect to chat anymore. If you are already connected, you
+            probably stay connected though.</li>
+        <li>Various features that require authentication may not work anymore,
+            such as showing live streams you follow or changing your stream
+            title.</li>
     </ul>
     
     <h2>
@@ -1390,7 +1365,7 @@ MiniK   http://static-cdn.jtvnw.net/emoticons/v1/25/1.0     set:793 id:3287</pre
     This is always available for streams whose channels you have joined in chat,
     but with this feature enabled, this works for all streams you follow even
     without joining their channel.</p>
-    <p>This feature requires <code>Read user info</code> access, so Chatty can
+    <p>This feature requires <code>Show followed streams</code> access, so Chatty can
         request your followed streams. Read the <a href="#login">section about login</a>
     to learn more about login data and access.</p>
     <p>You can enable/disable this feature in the Settings under <code>Notifications</code>.</p>

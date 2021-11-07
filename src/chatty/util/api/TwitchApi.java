@@ -260,6 +260,10 @@ public class TwitchApi {
         return userInfoManager.getCached(channel, result);
     }
     
+    public void getCachedUserInfo(List<String> logins, Consumer<Map<String, UserInfo>> result) {
+        userInfoManager.getCached(null, logins, result);
+    }
+    
     public UserInfo getCachedOnlyUserInfo(String login) {
         return userInfoManager.getCachedOnly(login);
     }

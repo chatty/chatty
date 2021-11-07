@@ -4849,9 +4849,13 @@ public class MainGui extends JFrame implements Runnable {
      * was granted.
      */
     private void requestFollowedStreams() {
-        if (client.settings.getBoolean("requestFollowedStreams") &&
-                client.settings.getList("scopes").contains(TokenInfo.Scope.USERINFO.scope)) {
-            client.api.getFollowedStreams(client.settings.getString("token"));
+        if (client.settings.getBoolean("requestFollowedStreams")) {
+            if (client.settings.getList("scopes").contains(TokenInfo.Scope.FOLLOWS.scope)) {
+                client.api.getFollowedStreams(client.settings.getString("token"));
+            }
+            else {
+                EventLog.addSystemEvent("access.follows");
+            }
         }
     }
     

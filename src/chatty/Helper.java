@@ -283,6 +283,14 @@ public class Helper {
         return result;
     }
     
+    public static Collection<String> toStream(Collection<String> channels) {
+        List<String> result = new ArrayList<>();
+        for (String channel : channels) {
+            result.add(toStream(channel));
+        }
+        return result;
+    }
+    
     /**
      * Makes a readable message out of the given reason code.
      * 

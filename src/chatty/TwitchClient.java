@@ -60,6 +60,7 @@ import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
+import chatty.util.api.StreamCategory;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.StreamTagManager.StreamTag;
@@ -1512,7 +1513,7 @@ public class TwitchClient {
         } else if (command.equals("testtw")) {
             g.showTokenWarning();
         } else if (command.equals("tsonline")) {
-            testStreamInfo.set(parameter, "Game", 123, -1, StreamType.LIVE);
+            testStreamInfo.set(parameter, new StreamCategory(null, "Game"), 123, -1, StreamType.LIVE);
             g.addStreamInfo(testStreamInfo);
         } else if (command.equals("tsoffline")) {
             testStreamInfo.setOffline();
@@ -1522,7 +1523,7 @@ public class TwitchClient {
         } else if (command.equals("spamprotectioninfo")) {
             g.printSystem("Spam Protection: "+spamProtection);
         } else if (command.equals("tsv")) {
-            testStreamInfo.set("Title", "Game", Integer.parseInt(parameter), -1, StreamType.LIVE);
+            testStreamInfo.set("Title", new StreamCategory(null, "Game"), Integer.parseInt(parameter), -1, StreamType.LIVE);
         } else if (command.equals("tsvs")) {
             System.out.println(testStreamInfo.getViewerStats(true));
         } else if (command.equals("tsaoff")) {
@@ -1530,17 +1531,17 @@ public class TwitchClient {
             info.setOffline();
         } else if (command.equals("tsaon")) {
             StreamInfo info = api.getStreamInfo(g.getActiveStream(), null);
-            info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
+            info.set("Test", new StreamCategory(null, "Game"), 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("tss")) {
             StreamInfo info = api.getStreamInfo(parameter, null);
-            info.set("Test", "Game", 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
+            info.set("Test", new StreamCategory(null, "Game"), 12, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("tston")) {
             int viewers = 12;
             try {
                 viewers = Integer.parseInt(parameter);
             } catch (NumberFormatException ex) { }
             StreamInfo info = api.getStreamInfo("tduva", null);
-            info.set("Test 2", "Game", viewers, System.currentTimeMillis() - 1000, StreamType.LIVE);
+            info.set("Test 2", new StreamCategory(null, "Game"), viewers, System.currentTimeMillis() - 1000, StreamType.LIVE);
         } else if (command.equals("newstatus")) {
             g.setChannelNewStatus(parameter, "");
         } else if (command.equals("refreshstreams")) {
@@ -2534,22 +2535,20 @@ public class TwitchClient {
      * available StreamInfo.
      */
     public void updateStreamChatLogos() {
-        for (Object chanObject : settings.getList("streamChatChannels")) {
-            String channel = (String) chanObject;
-            updateStreamChatLogo(channel, api.getCachedStreamInfo(Helper.toStream(channel)));
+        List<String> logins = new ArrayList<>();
+        for (String channel : (List<String>) settings.getList("streamChatChannels")) {
+            if (Helper.isRegularChannel(channel)) {
+                logins.add(Helper.toStream(channel));
+            }
         }
-    }
-    
-    /**
-     * Update the Stream Chat logo for the given channel.
-     * 
-     * @param channel The channel
-     * @param info The StreamInfo to get the logo from, may be null
-     */
-    public void updateStreamChatLogo(String channel, StreamInfo info) {
-        if (info != null && info.getLogo() != null && settings.listContains("streamChatChannels", channel)) {
-            usericonManager.updateChannelLogo(channel, info.getLogo(), settings.getString("streamChatLogos"));
-        }
+        api.getCachedUserInfo(logins, (result) -> {
+            for (Map.Entry<String, UserInfo> entry : result.entrySet()) {
+                UserInfo info = entry.getValue();
+                if (info != null && !StringUtil.isNullOrEmpty(info.profileImageUrl)) {
+                    usericonManager.updateChannelLogo(Helper.toChannel(info.login), info.profileImageUrl, settings.getString("streamChatLogos"));
+                }
+            }
+        });
     }
 
     private class MyStreamInfoListener implements StreamInfoListener {
@@ -2585,7 +2584,6 @@ public class TwitchClient {
                         + "You may not be able to join this channel, but trying"
                         + " anyways. **");
             }
-            updateStreamChatLogo(channel, info);
         }
 
         /**
@@ -3038,8 +3036,19 @@ public class TwitchClient {
         }
         
         @Override
-        public void onJoinScheduled(String channel) {
-            g.joinScheduled(channel);
+        public void onJoinScheduled(Collection<String> channels) {
+            boolean joiningStreamChatChannel = false;
+            for (String channel : channels) {
+                g.joinScheduled(channel);
+                if (settings.listContains("streamChatChannels", channel)) {
+                    joiningStreamChatChannel = true;
+                }
+            }
+            if (joiningStreamChatChannel) {
+                updateStreamChatLogos();
+            }
+            // Try to request stream info for all, so it doesn't do it one by one
+            api.getStreamInfo(null, new HashSet<>(Helper.toStream(channels)));
         }
 
         @Override

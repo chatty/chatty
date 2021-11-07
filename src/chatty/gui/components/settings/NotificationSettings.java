@@ -325,7 +325,7 @@ public class NotificationSettings extends SettingsPanel {
         if (enabled) {
             userReadPermission.setText("Required access available. ([help:followed ?])");
         } else {
-            userReadPermission.setText("User read access required. ([help:followed ?])");
+            userReadPermission.setText("Followed streams access required. ([help:followed ?])");
         }
         requestFollowedStreams.setEnabled(enabled);
         

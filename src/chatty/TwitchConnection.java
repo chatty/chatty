@@ -11,6 +11,7 @@ import chatty.util.StringUtil;
 import chatty.util.api.Emoticons;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -515,7 +516,6 @@ public class TwitchConnection {
     
 
     private void join(String channel) {
-        listener.onJoinScheduled(channel);
         irc.joinChannel(channel);
     }
     
@@ -573,6 +573,7 @@ public class TwitchConnection {
         } else if (!irc.isRegistered()) {
             listener.onJoinError(valid, null, JoinError.NOT_REGISTERED);
         } else {
+            listener.onJoinScheduled(valid);
             for (String channel : valid) {
                 if (onChannel(channel)) {
                     listener.onJoinError(valid, channel, JoinError.ALREADY_JOINED);
@@ -715,6 +716,7 @@ public class TwitchConnection {
             
             
             if (autojoin != null) {
+                listener.onJoinScheduled(Arrays.asList(autojoin));
                 for (String channel : autojoin) {
                     join(channel);
                 }
@@ -1529,7 +1531,7 @@ public class TwitchConnection {
 
     public interface ConnectionListener {
 
-        void onJoinScheduled(String channel);
+        void onJoinScheduled(Collection<String> channels);
         
         void onJoinAttempt(Room room);
 

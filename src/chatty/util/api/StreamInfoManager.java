@@ -6,6 +6,7 @@ import chatty.util.ElapsedTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo.StreamType;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -128,7 +129,7 @@ public class StreamInfoManager {
             followsRequestedET.set();
             // This is only reset here, otherwise only increased
             followedStreamsRequests = 1;
-            api.requests.requestFollowedStreams(token, 0);
+            api.requests.requestFollowedStreams(token, null);
         }
     }
     
@@ -141,10 +142,10 @@ public class StreamInfoManager {
      * request results may call this for the next request (if number of results
      * is equal to the limit).
      */
-    private void getFollowedStreamsNext() {
+    private void getFollowedStreamsNext(String cursor) {
         if (followedStreamsRequests < FOLLOWED_STREAMS_REQUEST_LIMIT) {
             int offset = FOLLOWED_STREAMS_LIMIT*followedStreamsRequests;
-            api.requests.requestFollowedStreams(prevToken, offset);
+            api.requests.requestFollowedStreams(prevToken, cursor);
             followedStreamsRequests++;
         } else {
             LOGGER.warning("Followed streams: Not getting next url "
@@ -297,16 +298,20 @@ public class StreamInfoManager {
         // somehwere where the TwitchApi isn't locked
         StreamInfo streamInfo = getStreamInfo(stream);
         if (result == null) {
+            // Request failed
             LOGGER.warning("Error requesting stream data "+stream+": " + result);
             if (responseCode == 404) {
                 streamInfo.setExpiresAfter(UPDATE_STREAMINFO_DELAY_NOT_FOUND);
                 streamInfo.setNotFound();
             }
             streamInfo.setUpdateFailed();
-            return;
         }
-        parseStream(streamInfo, result);
-
+        else {
+            // Request success
+            Set<StreamInfo> expected = new HashSet<>();
+            expected.add(streamInfo);
+            parseStreams(result, expected);
+        }
     }
     
     /**
@@ -352,8 +357,9 @@ public class StreamInfoManager {
         if (responseCode == 200 && result != null) {
             int count = parseStreams(result, null);
             LOGGER.info("Got "+count+" (limit: "+FOLLOWED_STREAMS_LIMIT+") followed streams.");
-            if (count == FOLLOWED_STREAMS_LIMIT) {
-                getFollowedStreamsNext();
+            String cursor = Requests.getCursor(result);
+            if (cursor != null) {
+                getFollowedStreamsNext(cursor);
             }
             followsRequestErrors = 0;
         } else if (responseCode == 401) {
@@ -363,46 +369,6 @@ public class StreamInfoManager {
         } else {
             followsRequestErrors++;
         }
-    }
-
-    /**
-     * Parses a single stream info response, which can contain a stream object
-     * if the stream is online.
-     * 
-     * This parses the response to /streams/:channel/
-     *
-     * @param streamInfo The StreamInfo object to write the changes into
-     * @param json The JSON to parse from
-     */
-    private void parseStream(StreamInfo streamInfo, String json) {
-        
-        try {
-            JSONParser parser = new JSONParser();
-            JSONObject root = (JSONObject) parser.parse(json);
-            
-            /**
-             * See Requests.requestStreamInfoById().
-             */
-            JSONArray streams = (JSONArray) root.get("streams");
-            if (streams.size() == 0) {
-                streamInfo.setOffline();
-            }
-            else {
-                JSONObject stream = (JSONObject) streams.get(0);
-
-                StreamInfo result = parseStream(stream, false);
-                if (result == null || result != streamInfo) {
-                    LOGGER.warning("Error parsing stream ("
-                            + streamInfo.getStream() + "): " + json);
-                    streamInfo.setUpdateFailed();
-                }
-            }
-        }
-        catch (Exception ex) {
-            streamInfo.setUpdateFailed();
-            LOGGER.warning("Error parsing stream info: "+ex);
-        }
-        
     }
 
     /**
@@ -426,7 +392,7 @@ public class StreamInfoManager {
             JSONArray streamsArray;
             try {
                 JSONObject root = (JSONObject)parser.parse(json);
-                streamsArray = (JSONArray)root.get("streams");
+                streamsArray = (JSONArray)root.get("data");
             } catch (ClassCastException ex) {
                 LOGGER.warning("Error parsing streams: unexpected type");
                 streamsRequestError(streamInfos);
@@ -498,54 +464,24 @@ public class StreamInfoManager {
         }
         Number viewersTemp;
         String status;
-        String game;
+        StreamCategory game = StreamCategory.EMPTY;
         String name;
         String display_name;
-        StreamType streamType;
+        StreamType streamType = StreamType.LIVE;
         long timeStarted = -1;
         String userId = null;
-        boolean noChannelObject = false;
-        String logo;
+        String thumbnailUrl = null;
         try {
             // Get stream data
-            viewersTemp = (Number) stream.get("viewers");
-            //community_ids = JSONUtil.getStringList(stream, "community_ids");
-            
-            // Stream Type
-            switch (JSONUtil.getString(stream, "stream_type")) {
-                case "watch_party":
-                    streamType = StreamType.WATCH_PARTY;
-                    break;
-                case "rerun":
-                    streamType = StreamType.RERUN;
-                    break;
-                case "premiere":
-                    streamType = StreamType.PREMIERE;
-                    break;
-                default:
-                    streamType = StreamType.LIVE;
-            }
-            
-            // Get channel data
-            JSONObject channel = (JSONObject) stream.get("channel");
-            if (channel == null) {
-                LOGGER.warning("Error parsing StreamInfo: channel null");
-                return null;
-            }
-            status = (String) channel.get("status");
-            game = (String) channel.get("game");
-            name = (String) channel.get("name");
-            display_name = (String) channel.get("display_name");
-            
-            userId = String.valueOf(JSONUtil.getLong(channel, "_id", -1));
-            if (userId.equals("-1")) {
-                userId = JSONUtil.getString(channel, "_id");
-            }
-            if (!channel.containsKey("status")) {
-                LOGGER.warning("Error parsing StreamInfo: no channel object ("+name+")");
-                noChannelObject = true;
-            }
-            logo = JSONUtil.getString(channel, "logo");
+            viewersTemp = (Number) stream.get("viewer_count");
+            status = JSONUtil.getString(stream, "title");
+            String gameName = JSONUtil.getString(stream, "game_name");
+            String gameId = JSONUtil.getString(stream, "game_id");
+            game = new StreamCategory(gameId, gameName);
+            name = JSONUtil.getString(stream, "user_login");
+            display_name = JSONUtil.getString(stream, "user_name");
+            userId = JSONUtil.getString(stream, "user_id");
+            thumbnailUrl = JSONUtil.getString(stream, "thumbnail_url");
         } catch (ClassCastException ex) {
             LOGGER.warning("Error parsing StreamInfo: unpexected type");
             return null;
@@ -562,7 +498,7 @@ public class StreamInfoManager {
         
         // Try to parse created_at
         try {
-            timeStarted = DateTime.parseDatetime((String) stream.get("created_at"));
+            timeStarted = DateTime.parseDatetime(JSONUtil.getString(stream, "started_at"));
             if (timeStarted + VALID_UPTIME_LIMIT < System.currentTimeMillis()) {
                 LOGGER.warning("Warning: Stream created_at for "+name+" seems invalid ("+stream.get("created_at")+")");
                 timeStarted = -1;
@@ -580,20 +516,13 @@ public class StreamInfoManager {
 
         // Get and update stream info
         StreamInfo streamInfo = getStreamInfo(name);
-        if (noChannelObject) {
-            /**
-             * If no channel object was present, assume previous title/game.
-             */
-            status = streamInfo.getStatus();
-            game = streamInfo.getGame();
-        }
         streamInfo.setDisplayName(display_name);
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);
         }
-        if (logo != null) {
-            streamInfo.setLogo(logo);
+        if (thumbnailUrl != null) {
+            streamInfo.setThumbnailUrl(thumbnailUrl);
         }
         
         // Community (if cached, will immediately set Community correct again

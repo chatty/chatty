@@ -6,6 +6,7 @@ import chatty.Helper;
 import chatty.Room;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
+import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
@@ -34,6 +35,8 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
 import java.util.Arrays;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -104,13 +107,15 @@ public class Requests {
     // Stream Information
     //===================
     
-    protected void requestFollowedStreams(String token, int offset) {
-        String url = "https://api.twitch.tv/kraken/streams/followed?stream_type=all&limit="
-                + StreamInfoManager.FOLLOWED_STREAMS_LIMIT + "&offset="+offset;
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setToken(token);
-        execute(request, r -> {
-            api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
+    protected void requestFollowedStreams(String token, String cursor) {
+        String url = String.format("https://api.twitch.tv/helix/streams/followed?user_id=%s&first=%d",
+                api.localUserId,
+                StreamInfoManager.FOLLOWED_STREAMS_LIMIT);
+        if (!StringUtil.isNullOrEmpty(cursor)) {
+            url += "&after="+cursor;
+        }
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.streamInfoManager.requestResultFollows(result, responseCode);
         });
     }
     
@@ -120,49 +125,16 @@ public class Requests {
      * @param stream 
      */
     protected void requestStreamInfo(String stream) {
-        api.userIDs.getUserIDs(r -> {
-            if (r.hasError()) {
-                api.streamInfoManager.requestResult(null, -1, stream);
-            } else {
-                requestStreamInfoById(stream, r.getId(stream));
-            }
-        }, stream);
+        String url = "https://api.twitch.tv/helix/streams?first=100&user_login="+stream;
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.streamInfoManager.requestResult(result, responseCode, stream);
+        });
     }
     
-    private void requestStreamInfoById(String stream, String userId) {
-        /**
-         * Switched to /streams?channel= request since it didn't have the
-         * viewercount bug with stream_type=all. Added stream_type=all since
-         * live VODs weren't contained anymore.
-         */
-        String url = "https://api.twitch.tv/kraken/streams/?channel="+userId+"&stream_type=all";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(api.getToken());
-            execute(request, r -> {
-                api.streamInfoManager.requestResult(r.text, r.responseCode, stream);
-            });
-        }
-    }
-    
-    protected void requestStreamsInfo(Set<String> streams, Set<StreamInfo> streamInfosForRequest) {
-        api.userIDs.getUserIDs(r -> {
-            if (r.getValidIDs().isEmpty()) {
-                api.streamInfoManager.requestResultStreams(null, -1, streamInfosForRequest);
-            } else {
-                requestStreamsInfoById(r.getValidIDs(), streamInfosForRequest);
-            }
-        }, streams);
-    }
-    
-    private void requestStreamsInfoById(Collection<String> ids, Set<StreamInfo> expected) {
-        String streamsString = StringUtil.join(ids, ",");
-        String url = "https://api.twitch.tv/kraken/streams?stream_type=all&offset=0&limit=100&channel=" + streamsString;
-        //url = "http://127.0.0.1/twitch/streams";
-        TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-        request.setToken(api.getToken());
-        execute(request, r -> {
-            api.streamInfoManager.requestResultStreams(r.text, r.responseCode, expected);
+    protected void requestStreamsInfo(Set<String> streams, Set<StreamInfo> expected) {
+        String url = "https://api.twitch.tv/helix/streams?first=100&"+makeNewApiParameters("user_login", streams);
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.streamInfoManager.requestResultStreams(result, responseCode, expected);
         });
     }
 
@@ -207,7 +179,7 @@ public class Requests {
     }
     
     public void requestUserInfo(Set<String> usernames) {
-        String url = "https://api.twitch.tv/helix/users"+makeNewApiParameters("login", usernames);
+        String url = "https://api.twitch.tv/helix/users?"+makeNewApiParameters("login", usernames);
         newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
             Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(result);
             Map<String, String> ids = null;
@@ -700,7 +672,23 @@ public class Requests {
     }
     
     public static String makeNewApiParameters(String key, Collection<String> values) {
-        return "?"+key+"="+StringUtil.join(values, "&"+key+"=");
+        return key+"="+StringUtil.join(values, "&"+key+"=");
+    }
+    
+    public static String getCursor(String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(json);
+            JSONObject pagination = (JSONObject) root.get("pagination");
+            if (pagination != null) {
+                String cursor = JSONUtil.getString(pagination, "cursor");
+                return !StringUtil.isNullOrEmpty(cursor) ? cursor : null;
+            }
+        }
+        catch (Exception ex) {
+            LOGGER.warning("Error getting cursor: "+ex);
+        }
+        return null;
     }
     
 }

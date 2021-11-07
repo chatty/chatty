@@ -39,7 +39,7 @@ public class StreamInfo {
      */
     private String display_name;
     
-    private String logo;
+    private String thumbnailUrl;
     
     private String userId;
     
@@ -52,7 +52,7 @@ public class StreamInfo {
     private final ElapsedTime lastStatusChangeET = new ElapsedTime();
     private final ElapsedTime lastUpdateSuccededET = new ElapsedTime();
     private String status = null;
-    private String game = "";
+    private StreamCategory game = StreamCategory.EMPTY;
     private int viewers = 0;
     private List<StreamTag> communities;
     private long startedAt = -1;
@@ -157,7 +157,7 @@ public class StreamInfo {
      * @param viewers The current viewercount
      * @param startedAt The timestamp when the stream was started, -1 if not set
      */
-    public void setFollowed(String status, String game, int viewers,
+    public void setFollowed(String status, StreamCategory game, int viewers,
             long startedAt, StreamType streamType) {
         //System.out.println(status);
         followed = true;
@@ -180,7 +180,7 @@ public class StreamInfo {
      * @param viewers The current viewercount
      * @param startedAt The timestamp when the stream was started, -1 if not set
      */
-    public void set(String status, String game, int viewers, long startedAt,
+    public void set(String status, StreamCategory game, int viewers, long startedAt,
             StreamType streamType) {
         set(status, game, viewers, startedAt, streamType, true);
     }
@@ -194,12 +194,12 @@ public class StreamInfo {
      * @param startedAt The timestamp when the stream was started, -1 if not set
      * @param saveToHistory Whether to save the data to history
      */
-    private void set(String status, String game, int viewers, long startedAt,
+    private void set(String status, StreamCategory game, int viewers, long startedAt,
             StreamType streamType, boolean saveToHistory) {
         UpdateResult result;
         synchronized(this) {
             this.status = StringUtil.trim(StringUtil.removeLinebreakCharacters(status));
-            this.game = StringUtil.trim(StringUtil.nullToString(game));
+            this.game = game;
             this.viewers = viewers;
             this.streamType = streamType;
 
@@ -233,7 +233,7 @@ public class StreamInfo {
             if (saveToHistory) {
                 addHistoryItem(System.currentTimeMillis(),
                         new StreamInfoHistoryItem(System.currentTimeMillis(),
-                                viewers, status, game,
+                                viewers, status, game.name,
                                 streamType, getCommunities(),
                                 getTimeStarted(), getTimeStartedWithPicnic()));
             }
@@ -430,12 +430,14 @@ public class StreamInfo {
         return !hasDisplayName() || capitalizedName != null;
     }
     
-    public synchronized void setLogo(String logo) {
-        this.logo = logo;
+    public synchronized void setThumbnailUrl(String url) {
+        this.thumbnailUrl = url;
     }
     
-    public synchronized String getLogo() {
-        return logo;
+    public synchronized String getThumbnailUrl(int width, int height) {
+        return thumbnailUrl
+                .replace("{width}", String.valueOf(width))
+                .replace("{height}", String.valueOf(height));
     }
     
     public synchronized boolean setUserId(String userId) {
@@ -607,7 +609,7 @@ public class StreamInfo {
      * @return The name of the game or an empty String if no game is set
      */
     public synchronized String getGame() {
-        return game;
+        return game.name;
     }
     
     /**
