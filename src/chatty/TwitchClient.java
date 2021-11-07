@@ -2390,15 +2390,18 @@ public class TwitchClient {
             if (followerInfo.requestError) {
                 return;
             }
-            StreamInfo streamInfo = api.getStreamInfo(followerInfo.stream, null);
-            boolean changed = false;
-            if (followerInfo.type == Follower.Type.SUBSCRIBER) {
-                changed = streamInfo.setSubscriberCount(followerInfo.total);
-            } else if (followerInfo.type == Follower.Type.FOLLOWER) {
-                changed = streamInfo.setFollowerCount(followerInfo.total);
-            }
-            if (changed && streamInfo.isValid()) {
-                streamStatusWriter.streamStatus(streamInfo);
+            StreamInfo streamInfo = api.getCachedStreamInfo(followerInfo.stream);
+            if (streamInfo != null) {
+                boolean changed = false;
+                if (followerInfo.type == Follower.Type.SUBSCRIBER) {
+                    changed = streamInfo.setSubscriberCount(followerInfo.total);
+                }
+                else if (followerInfo.type == Follower.Type.FOLLOWER) {
+                    changed = streamInfo.setFollowerCount(followerInfo.total);
+                }
+                if (changed && streamInfo.isValid()) {
+                    streamStatusWriter.streamStatus(streamInfo);
+                }
             }
         }
 
