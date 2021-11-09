@@ -142,13 +142,7 @@ public class ChatSettings extends SettingsPanel {
     
     private static class BufferSizes extends JDialog {
         
-        private static final String INFO = "<html><body style='width:240px;padding:5px;'>"
-                + "Specify the buffer size per tab, specifying the lowercase name of the "
-                + "tab (for a channel that includes the leading #)."
-                + "<br /><br />This can "
-                + "be useful if you want to have a low default buffer size, to "
-                + "reduce memory usage, but want a huge scrollback on a few "
-                + "select channels.";
+        private static final String INFO = SettingsUtil.getInfo("info-buffer_sizes.html", null);
         
         private BufferSizes(SettingsDialog d) {
             super(d);

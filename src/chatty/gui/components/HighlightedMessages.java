@@ -21,6 +21,7 @@ import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.MyStyleConstants;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
@@ -58,6 +59,7 @@ public class HighlightedMessages extends JDialog {
     
     private final TextPane messages;
     private final DockedDialogHelper helper;
+    private final MainGui main;
     private String currentChannel;
     private int currentChannelMessageCount = 0;
     
@@ -89,6 +91,7 @@ public class HighlightedMessages extends JDialog {
             String title, String shortTitle, String label, ContextMenuListener contextMenuListener,
             DockedDialogManager dockedDialogs, String settingName) {
         super(owner);
+        this.main = owner;
         this.title = title;
         this.label = label;
         updateTitle();
@@ -307,6 +310,8 @@ public class HighlightedMessages extends JDialog {
     
     public void refreshStyles() {
         messages.refreshStyles();
+        Long bufferSize = (Long) main.getSettings().mapGet("bufferSizes", StringUtil.toLowerCase(content.getId()));
+        messages.setBufferSize(bufferSize != null ? bufferSize.intValue() : -1);
     }
     
     /**
