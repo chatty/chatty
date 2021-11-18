@@ -14,6 +14,7 @@ import chatty.util.GitHub.Asset;
 import chatty.util.GitHub.Release;
 import chatty.util.GitHub.Releases;
 import chatty.util.MiscUtil;
+import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -284,9 +285,19 @@ public class UpdateDialog extends JDialog {
         installDir = Stuff.getInstallDir(isStandalone);
         downloadButton.setVisible(true);
         if (asset == null || installDir == null) {
+            String reason = "";
+            if (!MiscUtil.OS_WINDOWS) {
+                reason = "only supported on Windows";
+            }
+            else if (!Stuff.installPossible() && Stuff.getInitError() != null) {
+                reason = Stuff.getInitError();
+            }
+            if (!StringUtil.isNullOrEmpty(reason)) {
+                reason = ", "+reason;
+            }
             downloadButton.setEnabled(false);
             downloadButtonInfo.setText("<html><body style='width:200px;text-align:center;'>"
-                    + "<small>(Automatic download not available)</small>");
+                    + "<small>(Automatic download not available"+reason+")</small>");
         } else {
             downloadButton.setEnabled(true);
             downloadButtonInfo.setText("<html><body><div style='width:200px;text-align:center;'>"

@@ -30,6 +30,7 @@ public class Stuff {
     private static Path jarPath = null;
     private static Path jarDir = null;
     private static Path tempDir = null;
+    private static String error;
     
     public static synchronized Path getTempDir() {
         checkInitialized();
@@ -50,6 +51,10 @@ public class Stuff {
     public static synchronized boolean installPossible() {
         checkInitialized();
         return jarDir != null && tempDir != null;
+    }
+    
+    public static synchronized String getInitError() {
+        return error;
     }
     
     public static synchronized Path getInstallDir(boolean standaloneInstaller) {
@@ -130,6 +135,7 @@ public class Stuff {
                 jarDir = jarPath.getParent();
             } else {
                 jarDir = null;
+                error = "JAR path not found";
             }
 
             if (jarDir != null) {
@@ -144,8 +150,14 @@ public class Stuff {
             }
 
             Path tempDirTemp = Paths.get(System.getProperty("java.io.tmpdir"));
-            if (Files.exists(tempDirTemp) && Files.isWritable(tempDirTemp)) {
-                tempDir = tempDirTemp;
+            if (Files.exists(tempDirTemp)) {
+                if (Files.isWritable(tempDirTemp)) {
+                    tempDir = tempDirTemp;
+                }
+                else {
+                    LOGGER.warning("Temp dir "+tempDirTemp+" write access denied");
+                    error = "Temp Dir "+tempDirTemp+" access denied";
+                }
             }
         } catch (Exception ex) {
             LOGGER.warning("Error initializing stuff: " + ex);
