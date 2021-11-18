@@ -2319,9 +2319,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
             Entry<Integer, Integer> range = rangesIt.next();
             int start = range.getKey();
             int end = range.getValue();
+            if (start < lastPrintedPos) {
+                /**
+                 * If the next element overlaps the previous (unusual, but can
+                 * happen for example with Filter), then just skip it.
+                 */
+                continue;
+            }
             if (start > lastPrintedPos) {
-                // If there is anything between the special stuff, print that
-                // first as regular text
+                /**
+                 * If there is anything between this special element and the
+                 * previous printed section, print that first as regular text.
+                 */
                 specialPrint(user, text, lastPrintedPos, start, style, highlightMatches);
             }
             AttributeSet rangeStyle = rangesStyle.get(start);
