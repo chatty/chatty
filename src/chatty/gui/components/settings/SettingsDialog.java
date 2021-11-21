@@ -94,6 +94,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final MainGui owner;
     
     private final NotificationSettings notificationSettings;
+    private final LiveStreamsSettings liveStreamsSettings;
     private final UsercolorSettings usercolorSettings;
     private final MsgColorSettings msgColorSettings;
     private final ImageSettings imageSettings;
@@ -118,6 +119,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         FILTER("Filter", Language.getString("settings.page.filter")),
         HISTORY("History", Language.getString("settings.page.history")),
         NOTIFICATIONS("Notifications", Language.getString("settings.page.notifications")),
+        LIVE_STREAMS("Live Streams", Language.getString("settings.page.liveStreams")),
         SOUNDS("Sounds", Language.getString("settings.page.sound")),
         USERCOLORS("Usercolors", Language.getString("settings.page.usercolors")),
         LOGGING("Log to file", Language.getString("settings.page.logging")),
@@ -180,6 +182,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         MENU.put(Page.WINDOW, Arrays.asList(new Page[]{
             Page.TABS,
             Page.NOTIFICATIONS,
+            Page.LIVE_STREAMS,
             Page.SOUNDS,
         }));
         MENU.put(Page.OTHER, Arrays.asList(new Page[]{
@@ -270,6 +273,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new SoundSettings(this), Page.SOUNDS.name);
         notificationSettings = new NotificationSettings(this, settings);
         cards.add(notificationSettings, Page.NOTIFICATIONS.name);
+        liveStreamsSettings = new LiveStreamsSettings(this);
+        cards.add(liveStreamsSettings, Page.LIVE_STREAMS.name);
         usercolorSettings = new UsercolorSettings(this);
         cards.add(usercolorSettings, Page.USERCOLORS.name);
         cards.add(new LogSettings(this), Page.LOGGING.name);
@@ -355,7 +360,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         // Initialize
         //------------
         loadSettings();
-        notificationSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.FOLLOWS.scope));
+        liveStreamsSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.FOLLOWS.scope));
         if (action != null) {
             editDirectly(action, parameter);
         }
@@ -423,11 +428,22 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 } else if (action.equals("selectMsgColor")) {
                     showPanel(Page.MSGCOLORS);
                     msgColorSettings.selectItem((String) parameter);
+                } else if (action.equals("show")) {
+                    showPage((String) parameter);
                 }
             }
         });
     }
-
+    
+    public void showPage(String page) {
+        try {
+            showPanel(Page.valueOf(page));
+        }
+        catch (IllegalArgumentException ex) {
+            LOGGER.warning("Invalid settings page: "+page);
+        }
+    }
+    
     private void showPanel(Page page) {
         cardManager.show(cards, page.name);
         currentlyShown = page;

@@ -42,9 +42,6 @@ public class NotificationSettings extends SettingsPanel {
     public final static long NOTIFICATION_TYPE_TRAY = 1;
     public final static long NOTIFICATION_TYPE_COMMAND = 2;
 
-    private final LinkLabel userReadPermission;
-    private final JCheckBox requestFollowedStreams;
-    
     private final ComboLongSetting nType;
     private final ComboLongSetting nScreen;
     private final ComboLongSetting nPosition;
@@ -301,34 +298,14 @@ public class NotificationSettings extends SettingsPanel {
         //=======
         // Other
         //=======
-        JPanel follows = addTitledPanel("Followed Streams", 2);
-        gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
-        requestFollowedStreams = d.addSimpleBooleanSetting("requestFollowedStreams",
-                "Request followed streams", "Allows Chatty to know "
-                        + "about live streams you follow to notify you and "
-                        + "display a list of them");
-        follows.add(requestFollowedStreams, gbc);
-        
-        gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
-        userReadPermission = new LinkLabel("", d.getLinkLabelListener());
-        follows.add(userReadPermission, gbc);
-        
+        add(new LinkLabel("Followed Streams setting moved to [settings:LIVE_STREAMS Live Streams Settings]",
+                d.getLinkLabelListener()), getGbc(10));
         
         updateSettingsState();
     }
     
     protected static String l(String id) {
         return Language.getString("settings.notifications."+id);
-    }
-    
-    protected void setUserReadPermission(boolean enabled) {
-        if (enabled) {
-            userReadPermission.setText("Required access available. ([help:followed ?])");
-        } else {
-            userReadPermission.setText("Followed streams access required. ([help:followed ?])");
-        }
-        requestFollowedStreams.setEnabled(enabled);
-        
     }
     
     private void updateSettingsState() {

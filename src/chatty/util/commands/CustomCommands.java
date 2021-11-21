@@ -114,6 +114,12 @@ public class CustomCommands {
             // still use the same Parameters
             parameters.remove("escape-pipe");
         }
+        if (command.getRaw() != null && command.getRaw().startsWith("/foreach ")) {
+            parameters.put("escape-greater", "true");
+        }
+        else {
+            parameters.remove("escape-greater");
+        }
         parameters.put("nested-custom-commands", String.valueOf(getCustomCommandCount(parameters) + 1));
         
         boolean performAsync = false;

@@ -4,14 +4,20 @@ package chatty.gui.components;
 import chatty.ChannelFavorites;
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Room;
 import chatty.gui.DockedDialogHelper;
 import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
+import chatty.gui.MainGui;
+import chatty.gui.TwitchUrl;
 import chatty.gui.components.LiveStreamsList.ListDataChangedListener;
+import chatty.gui.components.menus.CommandActionEvent;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.gui.components.settings.CommandSettings;
 import chatty.lang.Language;
 import chatty.util.api.StreamInfo;
+import chatty.util.commands.CustomCommand;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockContentContainer;
 import chatty.util.settings.Settings;
@@ -23,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.function.Function;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -83,6 +90,49 @@ public class LiveStreamsDialog extends JFrame {
         }
     }
     
+    public enum OpenAction {
+    
+        INFO("info"),
+        JOIN("join"),
+        STREAM("stream"),
+        STREAM_POPOUT("streamPopout"),
+        COMMAND("command");
+        
+        public final String key;
+        
+        OpenAction(String key) {
+            this.key = key;
+        }
+        
+        /**
+         * Get the label as defined in the localization file.
+         * 
+         * @return The string
+         */
+        public String getLabel() {
+            return Language.getString("streams.openAction."+key);
+        }
+        
+        /**
+         * Get the tooltip text as defined in the localization file, or null if
+         * none exists.
+         * 
+         * @return The string (or null if none exists)
+         */
+        public String getToolTipText() {
+            return Language.getString("streams.openAction."+key+".tip", false);
+        }
+        
+        public static OpenAction fromKey(String key) {
+            for (OpenAction s : OpenAction.values()) {
+                if (s.key.equals(key)) {
+                    return s;
+                }
+            }
+            return null;
+        }
+    }
+    
     
     private final ChannelInfoDialog channelInfo;
     
@@ -98,7 +148,7 @@ public class LiveStreamsDialog extends JFrame {
     
     private final DockedDialogHelper helper;
     
-    public LiveStreamsDialog(ContextMenuListener listener,
+    public LiveStreamsDialog(MainGui g, ContextMenuListener listener,
             ChannelFavorites favs, Settings settings,
             DockedDialogManager dockedDialogs) {
         
@@ -108,9 +158,55 @@ public class LiveStreamsDialog extends JFrame {
         ContextMenuListener localCml = new MyContextMenuListener();
         LiveStreamListener localLiveStreamListener = new LiveStreamListener() {
 
+            /**
+             * Actions other than INFO support several streams. One command is
+             * dispatched as a CommandActionEvent with all selected streams.
+             * This allows the command to either handle several streams at once
+             * (e.g. joining) or handle each streams separately (opening URL).
+             * 
+             * @param streams 
+             */
             @Override
-            public void liveStreamClicked(StreamInfo stream) {
-                openChannelInfoDialog(stream);
+            public void liveStreamClicked(Collection<StreamInfo> streams) {
+                if (streams.isEmpty()) {
+                    return;
+                }
+                Function<String, String> makeOpenCommand = url -> "/chain /foreach $1- > /openUrl " + url + " | /join $replace($1-, ,\\,)";
+                switch (OpenAction.fromKey(settings.getString("liveStreamsAction"))) {
+                    case INFO:
+                        openChannelInfoDialog(streams.iterator().next());
+                        break;
+                    case JOIN: {
+                            CustomCommand command = CustomCommand.parse("/join $replace($1-, ,\\,)");
+                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                            listener.streamInfosMenuItemClicked(e, streams);
+                        }
+                        break;
+                    case STREAM: {
+                            CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchStreamUrl("\\$1")));
+                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                            listener.streamInfosMenuItemClicked(e, streams);
+                        }
+                        break;
+                    case STREAM_POPOUT: {
+                            CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchPlayerUrl("\\$1")));
+                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                            listener.streamInfosMenuItemClicked(e, streams);
+                        }
+                        break;
+                    case COMMAND: {
+                            String commandValue = settings.getString("liveStreamsCommand");
+                            CustomCommand customCommand = CustomCommand.parse(commandValue.trim());
+                            if (customCommand.hasError()) {
+                                CommandSettings.showCommandInfoPopup(scroll, customCommand);
+                            }
+                            else {
+                                CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), customCommand);
+                                listener.streamInfosMenuItemClicked(e, streams);
+                            }
+                        }
+                        break;
+                }
             }
         };
         // Create list

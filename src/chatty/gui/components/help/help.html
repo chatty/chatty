@@ -433,6 +433,90 @@
             <code>Test | Message</code></dd>
     </dl>
     
+    <h3><a name="commands-foreach">Execute the same command for each entry in a list</a></h3>
+    <p>The <code>/foreach</code> command allows you to run the same command for
+        each entry of a space separated list. The command is run as a Custom
+        Command, with the <code>$1</code> replacement containing a single list
+        entry.</p>
+    
+    <dl class="defList">
+        <dt><code>/foreach [list] > [command]</code></dt>
+        <dd>The command consist of the comma-separated list, the
+            <code>&gt;</code> character and the command to execute.</dd>
+        <dd>Everything after the first <code>></code> character is interpreted
+            as the command. If you want to use a <code>></code> in the list
+            part, you can add another one in front for it to be treated
+            literally (<code>>></code>, this will happen automatically for
+            top-level replacements). Both the list and command section will
+            consume a single <code>></code> only if they are repeated (<code>>></code>
+            to <code>></code>, but <code>></code> unmodified).</dd>
+        <dd>List and command are trimmed for leading and trailing whitespace.</dd>
+        
+        <dt><code>/foreach a b c > /echo $1</code></dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            entered into the chat inputbox.</dd>
+        
+        <dt><code>//foreach a b c > /echo \$1</code></dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            entered into the chat inputbox. Note that the double slash at the
+            start runs this as a Custom Command, so the <code>$1</code> needs to
+            be escaped, so it is only replaced when the <code>/echo</code> is
+            run for each list entry.</dd>
+        
+        <dt><code>/foreach a &lt;b>> c > /echo $1</code></dt>
+        <dd>Outputs <code>a</code>, <code>&lt;b&gt;</code> and <code>c</code> when
+            entered into the chat inputbox. Note the escaped <code>></code> in
+            the list entry.</dd>
+        
+        <dt><code>Open Streams=/foreach $1- > /openUrl https://twitch.tv/\$1</code> (added as a Streams Context menu entry)</dt>
+        <dd>When several channels are selected and the command run, it will
+            replace <code>$1-</code> with the list of selected streams and then
+            open the URL for each one of them. Note that the <code>$1</code> in
+            the <code>/openUrl</code> command is escaped.</dd>
+        
+        <dt><code>/foreachtest /foreach a b c > /echo \$1</code> (added to the Custom Commands list)</dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            <code>/foreachtest</code> is entered into the chat inputbox.</dd>
+        <dd>Note the <code>\$1</code> with the escape character in front, which
+            preserves it for replacement when the <code>/echo</code> is run.
+            <p>This is what happens when you enter <code>/foreachtest</code>:</p>
+            <ol>
+                <li>Replacements are performed on the Custom Command
+                    <code>/foreach a b c > /echo \$1</code>. Since the <code>$1</code>
+                    is escaped it is treated as plain text and not replaced (the
+                    <code>\</code> is consumed).</li>
+                <li>The result <code>/foreach a b c > /echo $1</code> is run
+                    and the <code>/foreach</code> command will use everything
+                    after the <code>></code> as the Custom Command to run (and
+                    trim whitespace).</li>
+                <li>The Custom Command <code>/echo $1</code> is run with <code>a</code>
+                    as parameter, which results in <code>/echo a</code> being
+                    run. The same is repeated for <code>b</code> and <code>c</code>.</li>
+            </ol>
+            
+            <p>If the <code>$1</code> is not escaped:</p>
+            <ol>
+                <li>Replacements are performed on the Custom Command
+                    <code>/foreach a b c > /echo $1</code>. The <code>$1</code>
+                    is replaced with an empty string (no argument given with the
+                    <code>/foreachtest</code> command).</li>
+                <li>The result <code>/foreach a b c > /echo </code> is run
+                    and the <code>/foreach</code> command will use everything
+                    after the <code>></code> as the Custom Command to run (and
+                    trim whitespace).</li>
+                <li>The Custom Command <code>/echo</code> is run with <code>a</code>
+                    as parameter (although there is no replacement to make use
+                    of it), which results in <code>/echo</code> being run,
+                    resulting in an error message. The same is repeated for
+                    <code>b</code> and <code>c</code>.</li>
+            </ol>
+            <p>If the <code>$1</code> is not escaped, but you provide a command
+                argument, e.g. <code>/foreachtest 123</code>, then it will
+                replace the <code>$1</code> with <code>123</code> in the first
+                step, so <code>/echo 123</code> will be run three times.</p>
+        </dd>
+    </dl>
+    
     <h2>
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>

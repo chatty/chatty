@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -883,6 +884,24 @@ public class Helper {
             }
         }
         return result;
+    }
+    
+    public static String[] getForeachParams(String input) {
+        if (StringUtil.isNullOrEmpty(input)) {
+            return new String[2];
+        }
+        // A '>' not preceeded or followed by '>'
+        String[] split = input.split("(?<!>)>(?!>)", 2);
+        String list = null;
+        String command = null;
+        Function<String, String> prepare = s -> s.trim().replaceAll(">(>+)", "$1");
+        if (!split[0].trim().isEmpty()) {
+            list = prepare.apply(split[0]);
+        }
+        if (split.length == 2 && !split[1].trim().isEmpty()) {
+            command = prepare.apply(split[1]);
+        }
+        return new String[]{list, command};
     }
     
     public static void addUserParameters(User user, String msgId, String autoModMsgId, Parameters parameters) {

@@ -280,7 +280,7 @@ public class MainGui extends JFrame implements Runnable {
         channelInfoDialog = new ChannelInfoDialog(this, dockedDialogs);
         channelInfoDialog.addContextMenuListener(contextMenuListener);
         adminDialog = new AdminDialog(this, client.api, dockedDialogs);
-        liveStreamsDialog = new LiveStreamsDialog(contextMenuListener, client.channelFavorites, client.settings, dockedDialogs);
+        liveStreamsDialog = new LiveStreamsDialog(this, contextMenuListener, client.channelFavorites, client.settings, dockedDialogs);
         setLiveStreamsWindowIcons();
         
         // Some newer stuff
@@ -1581,6 +1581,14 @@ public class MainGui extends JFrame implements Runnable {
                         //newsDialog.showDialog();
                     }
                     break;
+                case "settings":
+                    if (!settingsDialog.isVisible()) {
+                        settingsDialog.showSettings("show", ref);
+                    }
+                    else {
+                        settingsDialog.showPage(ref);
+                    }
+                    break;
             }
         }
     }
@@ -2039,6 +2047,9 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("manualRefreshStreams")) {
                 client.api.manualRefreshStreams();
                 state.update(true);
+            }
+            if (cmd.equals("liveStreamsSettings")) {
+                settingsDialog.showSettings("show", "LIVE_STREAMS");
             }
             if (cmd.equals("sortOption_favFirst")) {
                 JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();

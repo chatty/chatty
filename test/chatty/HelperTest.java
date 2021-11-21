@@ -2,7 +2,9 @@
 package chatty;
 
 import chatty.util.StringUtil;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -227,6 +229,29 @@ public class HelperTest {
     
     private static void chainedTest(String input, String[] result) {
         assertArrayEquals(Helper.getChainedCommands(input).toArray(), result);
+    }
+    
+    @Test
+    public void getForeachParamsTest() {
+        foreachTest(null, null, null);
+        foreachTest("", null, null);
+        foreachTest("a b c", "a b c", null);
+        foreachTest(">", null, null);
+        foreachTest("a b c>abc", "a b c", "abc");
+        foreachTest("a b c > abc", "a b c", "abc");
+        foreachTest("a b c  >  abc", "a b c", "abc");
+        foreachTest(">abc", null, "abc");
+        foreachTest("     >abc", null, "abc");
+        foreachTest(">> >abc", ">", "abc");
+        foreachTest(">> >abc<<", ">", "abc<<");
+        foreachTest(">> >abc>>", ">", "abc>");
+        foreachTest(">> >abc>", ">", "abc>");
+        foreachTest("weaf >> fawef", "weaf > fawef", null);
+        foreachTest("abc >     ", "abc", null);
+    }
+    
+    private static void foreachTest(String input, String... result) {
+        assertArrayEquals(Helper.getForeachParams(input), result);
     }
     
     @Test

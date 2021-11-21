@@ -72,6 +72,7 @@ public class StreamInfo {
      */
     private int followerCount = 0;
     private int subscriberCount = 0;
+    private boolean isOpen = false;
     
     /**
      * The time the stream was changed from online -> offline, so recheck if
@@ -869,4 +870,16 @@ public class StreamInfo {
     public synchronized int getSubscriberCount() {
         return subscriberCount;
     }
+    
+    public synchronized void setIsOpen(boolean isOpen) {
+        if (isOpen != this.isOpen) {
+            this.isOpen = isOpen;
+            streamInfoUpdated();
+        }
+    }
+    
+    public synchronized boolean isOpen() {
+        return isOpen;
+    }
+    
 }

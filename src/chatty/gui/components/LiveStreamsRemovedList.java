@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -147,7 +148,9 @@ public class LiveStreamsRemovedList extends JPanel {
             if (e.getClickCount() == 2) {
                 RemovedListItem item = list.getSelectedValue();
                 if (item != null && streamListener != null) {
-                    streamListener.liveStreamClicked(item.getStreamInfo());
+                    Collection<StreamInfo> streams = new ArrayList<>();
+                    streams.add(item.getStreamInfo());
+                    streamListener.liveStreamClicked(streams);
                 }
             }
         }

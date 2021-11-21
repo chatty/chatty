@@ -58,6 +58,8 @@ public class StreamInfosContextMenu extends ContextMenu {
             addItem("favoriteGame", Language.getString("channelCm.favoriteGame"), SORT_SUBMENU, GAME_FAV_ICON);
             addItem("unfavoriteGame", Language.getString("channelCm.unfavoriteGame"), SORT_SUBMENU);
             
+            addItem("liveStreamsSettings", Language.getString("streams.cm.moreSettings"));
+            
             addItem("showRemovedList", Language.getString("streams.cm.removedStreams"));
             addSeparator();
             addItem("manualRefreshStreams", Language.getString("streams.cm.refresh"));

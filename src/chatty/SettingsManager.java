@@ -483,6 +483,9 @@ public class SettingsManager {
 
         settings.addString("liveStreamsSorting", "recent");
         settings.addBoolean("liveStreamsSortingFav", true);
+        settings.addString("liveStreamsAction", "info");
+        settings.addString("liveStreamsCommand", "");
+        settings.addBoolean("liveStreamsChatIcon", true);
         settings.addLong("historyRange", 0);
         settings.addBoolean("historyVerticalZoom", false);
         

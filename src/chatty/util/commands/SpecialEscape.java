@@ -24,6 +24,9 @@ public class SpecialEscape implements Item {
         if (parameters.get("escape-pipe") != null && result != null) {
             result = result.replaceAll("(\\|+)", "$1|");
         }
+        if (parameters.get("escape-greater") != null && result != null) {
+            result = result.replaceAll("(>+)", "$1>");
+        }
         return result;
     }
 

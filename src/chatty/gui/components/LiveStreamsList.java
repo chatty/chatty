@@ -21,8 +21,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -49,6 +51,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private static final int REPAINT_DELAY = 60;
     
     private final SortedListModel<StreamInfo> data;
+    private final MyCellRenderer renderer;
     private final List<ContextMenuListener> contextMenuListeners;
     private final LiveStreamListener liveStreamListener;
     
@@ -80,7 +83,8 @@ public class LiveStreamsList extends JList<StreamInfo> {
             ChannelFavorites channelFavorites, Settings settings) {
         data = new SortedListModel<>();
         setModel(data);
-        setCellRenderer(new MyCellRenderer(favs, gameFavs));
+        renderer = new MyCellRenderer(favs, gameFavs);
+        setCellRenderer(renderer);
         contextMenuListeners = new ArrayList<>();
         this.liveStreamListener = liveStreamListener;
         addListeners();
@@ -115,8 +119,13 @@ public class LiveStreamsList extends JList<StreamInfo> {
             if (setting.equals("gameFavorites")) {
                 updateGameFavs(settings);
             }
+            if (setting.equals("liveStreamsChatIcon")) {
+                renderer.setShowIsOpen((Boolean) value);
+                repaint();
+            }
         });
         updateGameFavs(settings);
+        renderer.setShowIsOpen(settings.getBoolean("liveStreamsChatIcon"));
     }
     
     public void setDockedDialogHelper(DockedDialogHelper helper) {
@@ -342,9 +351,8 @@ public class LiveStreamsList extends JList<StreamInfo> {
                             channels);
                 }
             } else if (a == Action.DOUBLE_CLICK || a == Action.SPACE) {
-                StreamInfo info = getSelectedValue();
-                if (info != null && liveStreamListener != null) {
-                    liveStreamListener.liveStreamClicked(info);
+                if (s != null && !s.isEmpty() && liveStreamListener != null) {
+                    liveStreamListener.liveStreamClicked(s);
                 }
             }
         });
@@ -379,11 +387,15 @@ public class LiveStreamsList extends JList<StreamInfo> {
         
         private final ImageIcon favIcon = new ImageIcon(getClass().getResource("/chatty/gui/star.png"));
         private final ImageIcon gameFavIcon = new ImageIcon(getClass().getResource("/chatty/gui/game.png"));
-        private final ImageIcon bothFavIcon = GuiUtil.combineIcons(favIcon, gameFavIcon, 2);
+        private final ImageIcon chatIcon = new ImageIcon(getClass().getResource("/chatty/gui/chat.png"));
+        
+        private final Map<Integer, ImageIcon> iconCache = new HashMap<>();
         
         private final JTextArea area;
         private final Set<String> favs;
         private final Set<String> gameFavs;
+        
+        private boolean showIsOpen;
         
         public MyCellRenderer(Set<String> favs, Set<String> gameFavs) {
             area = new JTextArea();
@@ -439,8 +451,9 @@ public class LiveStreamsList extends JList<StreamInfo> {
             
             boolean fav = favs.contains(info.stream);
             boolean gameFav = gameFavs.contains(info.getGame());
-            if (fav || gameFav) {
-                titleBorder.getLabel().setIcon(getFavIcon(fav, gameFav));
+            boolean showChatIcon = showIsOpen && info.isOpen();
+            if (fav || gameFav || showChatIcon) {
+                titleBorder.getLabel().setIcon(getTitleIcon(fav, gameFav, showChatIcon));
             }
             Border innerBorder = BorderFactory.createCompoundBorder(titleBorder, PADDING);
             Border border = BorderFactory.createCompoundBorder(MARGIN, innerBorder);
@@ -457,17 +470,36 @@ public class LiveStreamsList extends JList<StreamInfo> {
             return area;
         }
         
-        private ImageIcon getFavIcon(boolean fav, boolean gameFav) {
-            if (fav && gameFav) {
-                return bothFavIcon;
+        private ImageIcon getTitleIcon(boolean fav, boolean gameFav, boolean isOpen) {
+            int id = (fav ? 1 << 0 : 0) + (gameFav ? 1 << 1 : 0) + (isOpen ? 1 << 2 : 0);
+            ImageIcon icon = iconCache.get(id);
+            if (icon != null) {
+                return icon;
             }
-            else if (fav) {
-                return favIcon;
+            if (fav) {
+                icon = combineIcons(icon, favIcon);
             }
-            else if (gameFav) {
-                return gameFavIcon;
+            if (gameFav) {
+                icon = combineIcons(icon, gameFavIcon);
             }
-            return null;
+            if (isOpen) {
+                icon = combineIcons(icon, chatIcon);
+            }
+            if (icon != null) {
+                iconCache.put(id, icon);
+            }
+            return icon;
+        }
+        
+        private ImageIcon combineIcons(ImageIcon a, ImageIcon b) {
+            if (a == null) {
+                return b;
+            }
+            return GuiUtil.combineIcons(a, b, 2);
+        }
+        
+        public void setShowIsOpen(boolean showIsOpen) {
+            this.showIsOpen = showIsOpen;
         }
         
     }
