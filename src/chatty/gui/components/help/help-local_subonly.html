@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <title>Chatty Help - Short Guides</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <body>
+        <div id="backlink"><a href="help.html">Back to main help page</a></div>
+        <h1><a name="top">Local Subonly Mode (or similar)</a></h1>
+        <p>You can create your own local subonly mode by ignoring all messages
+            written by non-subscribers. This can also be applied to e.g. a
+            manually curated list of users via the Addressbook. The ignored
+            messages are collected in <code>Channels - Ignored</code>.</p>
+
+        <p>Features used: <a href="help-settings.html#Ignore">Ignore System</a>,
+            <a href="help-addressbook.html">Addressbook</a>,
+            <a href="help-settings.html#Commands">Custom Commands</a></p>
+
+        <h3>Create Ignore Entry</h3>
+        <p>Go to <code>Main - Settings - Ignore</code> and make sure <code>Enable Ignore</code>
+            is ticked. Then add to the list (press the Plus-Button):</p>
+        <p><code>!status:smb chanCat:subonly</code></p>
+        <p>The <code>status:</code> prefix matches on messages by user status.
+            The <code>!</code>
+            in front negates the effect, so in this case it ignores users that
+            are <em>not</em> a subscriber, moderator or the broadcaster of the
+            channel. See the <a href="help-settings.html#Highlight_Meta_Matching">Highlight help</a>
+            for more information on the <code>status:</code> prefix.</p>
+        <p>The second requirement for a match is <code>chanCat:subonly</code>,
+            which requires the channel the message was send in to be associated
+            with the Addressbook category <code>subonly</code>. This isn't quite
+            necessary, but makes it possible to toggle this Ignore list entry
+            per channel.</p>
+
+        <h3>Toggle the Addressbook category</h3>
+        <p>If you used the <code>chanCat:</code> prefix as shown above, you need
+            to add the <code>subonly</code> Addressbook category to a channel.
+            You can either use the <code>Channels - Addressbook</code> Dialog or
+            an <a href="help-addressbook.html#commands">Addressbook Command</a>.
+            In both cases you have to add the <em>channel</em>, so including the
+            leading <code>#</code>.</p>
+        
+        <p>An Addressbook command to toggle the category for a channel would be:</p>
+        <p><code>/ab change #joshimuz !subonly</code></p>
+        
+        <p>This toggles the <code>subonly</code> category for the given channel, so
+            when the category is there, it removes the category, and when the category is not there,
+            it adds the category.</p>
+        
+        <h3>Create Custom Command to toggle Addressbook category</h3>
+        <p>To do this a bit more conveniently, you can add it as a custom command. Go
+            to <code>Main - Settings - Commands</code> and add the following to the
+            list:</p>
+        <p><code>/Toggle_Subonly /ab change #$(chan) !subonly</code></p>
+        <p>If you enter <code>/Toggle_Subonly</code> (you can enter e.g.
+            <code>/Tog</code> and then press <kbd>TAB</kbd> to TAB Complete the
+            command), this automatically toggles the Addressbook category for
+            the channel where you entered the command (<code>$(chan)</code>).</p>
+
+        <p>To make this even more convenient, you can also add the Custom Command
+            to the <code>Commands - Channel Context Menu</code> setting or
+            trigger it via a button by adding it to the <code>Hotkeys</code>
+            setting (selecting Custom Command as Action and entering the name of
+            the added Custom Command).</p>
+        
+        <h3>Other uses</h3>
+        <p>This could also be changed or extended to allow users manually added
+            to the Addressbook. The Ignore entry could be changed to:</p>
+        <p><code>!status:smb !cat:allow chanCat:subonly</code></p>
+        <p>The <code>cat:</code> prefix requires the user to be associated with an Addressbook
+            category, although in this case it is negated with <code>!</code>,
+            so any user that has the <code>allow</code> category will <em>not</em>
+            match the Ignore list entry, and thus their message will show.</p>
+        
+        <p>Users can be added to the category via the User Context Menu
+            (right-click on a user in chat) or the ways detailed in the other
+            sections above (although in this case, unlike the <code>chanCat:</code>
+            prefix, the user name must be added without a leading <code>#</code>).</p>
+    </body>
+</html>
