@@ -573,11 +573,18 @@ public class TwitchConnection {
         } else if (!irc.isRegistered()) {
             listener.onJoinError(valid, null, JoinError.NOT_REGISTERED);
         } else {
-            listener.onJoinScheduled(valid);
+            List<String> toJoin = new ArrayList<>();
             for (String channel : valid) {
                 if (onChannel(channel)) {
                     listener.onJoinError(valid, channel, JoinError.ALREADY_JOINED);
-                } else {
+                }
+                else {
+                    toJoin.add(channel);
+                }
+            }
+            if (!toJoin.isEmpty()) {
+                listener.onJoinScheduled(toJoin);
+                for (String channel : toJoin) {
                     join(channel);
                 }
             }
