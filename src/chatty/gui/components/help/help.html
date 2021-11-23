@@ -20,6 +20,7 @@
 
                 <strong>Chat basics</strong>
                 <ul class="menu">
+                    <li><a href="#join">Joining Channels</a>
                     <li><a href="#symbols">User Status Symbols</a></li>
                     <li><a href="#userlist">Userlist</a></li>
                     <li><a href="#favorites">Favorites / History</a></li>
@@ -273,7 +274,7 @@
                 <code>/unhost</code>, <code>/raid</code>, <code>/unraid</code>,
                 <code>/color</code>
                 just like in normal Twitch Chat</li>
-        <li><code>/join &lt;channel&gt;</code> - Joins the given channel (can be several comma-separated channels)</li>
+        <li><code>/join &lt;channel&gt;</code> - Joins the given channels, see <a href="#join">Joining Channels</a> for more information</li>
         <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
         <li><code>/joinhosted</code> - Join currently hosted channel (if any)</li>
         <li><code>/favorite [channel]</code> and <code>/unfavorite [channel]</code> - Add/remove a channel to/from the Channel Favorites</li>
@@ -639,6 +640,52 @@
             such as showing live streams you follow or changing your stream
             title.</li>
     </ul>
+    
+    <h2>
+        <a name="join">Joining Channels</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>There are various ways of joining channels:</p>
+    <ul>
+        <li>The "Settings - Main - On start" setting for when Chatty is started</li>
+        <li>The "Main - Connect" dialog when connecting</li>
+        <li>The "Channels - Join Channel" dialog</li>
+        <li>The "Channels - Favorites / History" dialog</li>
+        <li>The <code>/join</code> <a href="#commands">command</a></li>
+        <li>The "Channels - Live Channels" dialog context menu or (if configured
+            that way) via double-click or space while a stream is selected</li>
+        <li>Right-clicking a Stream Status Notification</li>
+        <li>The user context menu</li>
+        <li>Loading a <a href="#layouts">Layout</a></li>
+    </ul>
+    
+    <h3>Channel list format</h3>
+    <p>In places where you can enter a channel name you can specify several
+        channels by separating them with a comma. Channels can be entered with
+        or without leading <code>#</code>. A lot of Twitch links should also
+        work.</p>
+    
+    <p>Various special elements can be added that are turned into channels:</p>
+    <ul>
+        <li>Can include <a href="help-addressbook.html">Addressbook</a> categories,
+            e.g. <code>[vip]</code> to join all entries associated with the
+            "vip" category. Can restrict to just channel entries <code>[vip #]</code>
+            (would only get Addressbook entries such as "#joshimuz") or
+            non-channel entries <code>[vip !#]</code> (entries such as "joshimuz").
+            Note that both channel entries and non-channel entries are otherwise
+            handled the same, both would join "#joshimuz" in this example.</li>
+        <li>Instead of Addressbook categories <code>[*]</code> can be used for all
+            favorited channels (favorited under "Channels - Favorites / History").</li>
+        <li>Can also restrict to just live channels e.g. <code>[vip live]</code>,
+            <code>[vip # live]</code> or <code>[* live]</code> (only works for
+            live channels Chatty already knows the status for, such as followed
+            channels).</li>
+    </ul>
+    
+    <p>Example: <code>/join #joshimuz, esl_csgo, [mod], https://twitch.tv/esamarathon, [* live]</code></p>
+        (joins <code>#joshimuz</code>, <code>#esl_csgo</code>, any entries
+        associated with the <code>mod</code> Addressbook category, <code>#esamarathon</code>
+        and any favorited channels that are live and followed)
     
     <h2>
         <a name="symbols">User Status Symbols</a>

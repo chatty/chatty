@@ -237,7 +237,6 @@ public class TwitchClient {
         if (settings.getBoolean("abAutoImport")) {
             addressbook.enableAutoImport();
         }
-        Helper.addressbook = addressbook;
         
         initDxSettings();
         
@@ -432,6 +431,24 @@ public class TwitchClient {
         if (Chatty.VERSION_CHECK_ENABLED) {
             checkNewVersion();
         }
+        
+        Helper.parseChannelHelper = new Helper.ParseChannelHelper() {
+            @Override
+            public Collection<String> getFavorites() {
+                return channelFavorites.getFavorites();
+            }
+
+            @Override
+            public Collection<String> getNamesByCategory(String category) {
+                return addressbook.getNamesByCategory(category);
+            }
+
+            @Override
+            public boolean isStreamLive(String stream) {
+                StreamInfo info = api.getCachedStreamInfo(stream);
+                return info != null && info.isValidEnough() && info.getOnline();
+            }
+        };
         
         // Connect or open connect dialog
         if (settings.getBoolean("connectOnStartup")) {
@@ -1957,7 +1974,7 @@ public class TwitchClient {
     /**
      * Command to join channel entered.
      * 
-     * @param channel 
+     * @param channelString 
      */
     public void commandJoinChannel(String channelString) {
         if (channelString == null) {
@@ -1968,7 +1985,7 @@ public class TwitchClient {
             g.printLine("No valid channel specified.");
         }
         else {
-            c.joinChannels(new HashSet<>(Arrays.asList(channelList)));
+            c.joinChannels(new LinkedHashSet<>(Arrays.asList(channelList)));
         }
     }
     
