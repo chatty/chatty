@@ -338,6 +338,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             
             private void paintLine(Graphics g, int y, int fadeLength, int baseAlpha, int lowestAlpha) {
                 fadeLength = Math.min(fadeLength, getWidth() / 3);
+                fadeLength = fadeLength > 0 ? fadeLength : 1;
                 int alphaStep = (baseAlpha - lowestAlpha) / fadeLength;
                 g.setColor(new Color(defaultForeground.getRed(), defaultForeground.getGreen(), defaultForeground.getBlue(), baseAlpha));
                 // Draw most of the line
