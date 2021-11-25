@@ -55,12 +55,20 @@ public class LiveStreamsSettings extends SettingsPanel {
             return t.equals(OpenAction.COMMAND.key);
         }, openCommand);
         
-        listSettings.add(d.addSimpleBooleanSetting("liveStreamsChatIcon"),
+        SimpleBooleanSetting notificationAction = d.addSimpleBooleanSetting("liveStreamsNotificationAction");
+        listSettings.add(notificationAction,
                 SettingsDialog.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
         
+        SettingsUtil.addSubsettings(streamsAction, (t) -> {
+            return !t.equals(OpenAction.INFO.key);
+        }, notificationAction);
+        
+        listSettings.add(d.addSimpleBooleanSetting("liveStreamsChatIcon"),
+                SettingsDialog.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+        
         listSettings.add(new JLabel(SettingConstants.HTML_PREFIX
-            +"Right-click on the Live Streams list for more options."),
-            SettingsDialog.makeGbc(0, 3, 2, 1));
+            +"More options are available in the Live Streams list context menu."),
+            SettingsDialog.makeGbc(0, 4, 2, 1));
         
         //--------------------------
         // Followed Streams

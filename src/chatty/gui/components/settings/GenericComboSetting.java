@@ -2,8 +2,11 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.components.settings.GenericComboSetting.Entry;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.JComboBox;
 
 /**
@@ -16,6 +19,8 @@ import javax.swing.JComboBox;
  */
 public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
 
+    private final Set<Consumer<GenericComboSetting>> listeners = new HashSet<>();
+    
     public GenericComboSetting() {
         // Empty list
     }
@@ -72,6 +77,7 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
             }
         }
         setSelectedItem(entry);
+        informSettingChangeListeners();
     }
 
     /**
@@ -145,6 +151,23 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
             for (E key : data.keySet()) {
                 add(key, data.get(key));
             }
+        }
+    }
+    
+    public void addSettingChangeListener(Consumer<GenericComboSetting> listener) {
+        if (listener != null) {
+            if (listeners.isEmpty()) {
+                addItemListener(e -> {
+                    informSettingChangeListeners();
+                });
+            }
+            listeners.add(listener);
+        }
+    }
+
+    public void informSettingChangeListeners() {
+        for (Consumer<GenericComboSetting> listener : listeners) {
+            listener.accept(this);
         }
     }
     

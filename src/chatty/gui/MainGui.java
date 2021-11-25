@@ -69,6 +69,7 @@ import chatty.gui.components.userinfo.UserNotes;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
+import chatty.gui.notifications.NotificationManager.NotificationWindowData;
 import chatty.gui.notifications.NotificationWindowManager;
 import chatty.lang.Language;
 import chatty.util.api.Emoticon.EmoticonImage;
@@ -143,7 +144,7 @@ public class MainGui extends JFrame implements Runnable {
     private HighlightedMessages ignoredMessages;
     private MainMenu menu;
     private LiveStreamsDialog liveStreamsDialog;
-    private NotificationWindowManager<String> notificationWindowManager;
+    private NotificationWindowManager<NotificationWindowData> notificationWindowManager;
     private NotificationManager notificationManager;
     private ErrorMessage errorMessage;
     private AddressbookDialog addressbookDialog;
@@ -2451,7 +2452,7 @@ public class MainGui extends JFrame implements Runnable {
         
     }
     
-    private class MyNotificationActionListener implements NotificationActionListener<String> {
+    private class MyNotificationActionListener implements NotificationActionListener<NotificationWindowData> {
 
         /**
          * Right-clicked on a notification.
@@ -2459,10 +2460,21 @@ public class MainGui extends JFrame implements Runnable {
          * @param data 
          */
         @Override
-        public void notificationAction(String data) {
+        public void notificationAction(NotificationWindowData data) {
             if (data != null) {
-                makeVisible();
-                client.joinChannel(data);
+                Notification notification = data.notification;
+                String channel = data.channel;
+                if (client.settings.getBoolean("liveStreamsNotificationAction")
+                        && notification.type == Notification.Type.STREAM_STATUS) {
+                    StreamInfo status = client.api.getCachedStreamInfo(Helper.toStream(channel));
+                    if (status != null) {
+                        liveStreamsDialog.handleStreamsAction(Arrays.asList(new StreamInfo[]{status}), true);
+                    }
+                }
+                else {
+                    makeVisible();
+                    client.joinChannel(channel);
+                }
             }
         }
     }
@@ -3115,15 +3127,15 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void showNotification(String title, String message, Color foreground, Color background, String channel) {
+    public void showNotification(String title, String message, Color foreground, Color background, NotificationWindowData data) {
         long setting = client.settings.getLong("nType");
         if (setting == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {
-            notificationWindowManager.showMessage(title, message, foreground, background, channel);
+            notificationWindowManager.showMessage(title, message, foreground, background, data);
         } else if (setting == NotificationSettings.NOTIFICATION_TYPE_TRAY) {
             trayIcon.displayInfo(title, message);
         } else if (setting == NotificationSettings.NOTIFICATION_TYPE_COMMAND) {
             GuiUtil.showCommandNotification(client.settings.getString("nCommand"),
-                    title, message, channel);
+                    title, message, data.channel);
         }
         eventLog.add(new chatty.gui.components.eventlog.Event(
                 chatty.gui.components.eventlog.Event.Type.NOTIFICATION,

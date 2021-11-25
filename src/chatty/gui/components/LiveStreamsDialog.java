@@ -147,6 +147,8 @@ public class LiveStreamsDialog extends JFrame {
     private boolean liveStreamListSelected = true;
     
     private final DockedDialogHelper helper;
+    private final ContextMenuListener listener;
+    private final Settings settings;
     
     public LiveStreamsDialog(MainGui g, ContextMenuListener listener,
             ChannelFavorites favs, Settings settings,
@@ -154,6 +156,9 @@ public class LiveStreamsDialog extends JFrame {
         
         setTitle("Live Streams");
         setPreferredSize(new Dimension(280,350));
+        
+        this.listener = listener;
+        this.settings = settings;
         
         ContextMenuListener localCml = new MyContextMenuListener();
         LiveStreamListener localLiveStreamListener = new LiveStreamListener() {
@@ -171,42 +176,7 @@ public class LiveStreamsDialog extends JFrame {
                 if (streams.isEmpty()) {
                     return;
                 }
-                Function<String, String> makeOpenCommand = url -> "/chain /foreach $1- > /openUrl " + url + " | /join $replace($1-, ,\\,)";
-                switch (OpenAction.fromKey(settings.getString("liveStreamsAction"))) {
-                    case INFO:
-                        openChannelInfoDialog(streams.iterator().next());
-                        break;
-                    case JOIN: {
-                            CustomCommand command = CustomCommand.parse("/join $replace($1-, ,\\,)");
-                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
-                            listener.streamInfosMenuItemClicked(e, streams);
-                        }
-                        break;
-                    case STREAM: {
-                            CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchStreamUrl("\\$1")));
-                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
-                            listener.streamInfosMenuItemClicked(e, streams);
-                        }
-                        break;
-                    case STREAM_POPOUT: {
-                            CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchPlayerUrl("\\$1")));
-                            CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
-                            listener.streamInfosMenuItemClicked(e, streams);
-                        }
-                        break;
-                    case COMMAND: {
-                            String commandValue = settings.getString("liveStreamsCommand");
-                            CustomCommand customCommand = CustomCommand.parse(commandValue.trim());
-                            if (customCommand.hasError()) {
-                                CommandSettings.showCommandInfoPopup(scroll, customCommand);
-                            }
-                            else {
-                                CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), customCommand);
-                                listener.streamInfosMenuItemClicked(e, streams);
-                            }
-                        }
-                        break;
-                }
+                handleStreamsAction(streams, false);
             }
         };
         // Create list
@@ -441,6 +411,63 @@ public class LiveStreamsDialog extends JFrame {
         liveStreamListSelected = !liveStreamListSelected;
         updateTitle();
         cardLayout.next(helper.getContent().getComponent());
+    }
+    
+    /**
+     * Handle streams action based on the liveStreams settings.
+     * 
+     * @param streams
+     * @param external Must be set to true if this is not triggered out of the
+     * Live Streams List
+     */
+    public void handleStreamsAction(Collection<StreamInfo> streams, boolean external) {
+        Function<String, String> makeOpenCommand = url -> "/chain /foreach $1- > /openUrl " + url + " | /join $replace($1-, ,\\,)";
+        switch (OpenAction.fromKey(settings.getString("liveStreamsAction"))) {
+            case INFO:
+                if (!external) {
+                    /**
+                     * Only open the Live Streams List specific Channel Info
+                     * Dialog when opened out of the Live Streams List.
+                     */
+                    openChannelInfoDialog(streams.iterator().next());
+                }
+                else {
+                    CustomCommand command = CustomCommand.parse("/join $replace($1-, ,\\,)");
+                    CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                    listener.streamInfosMenuItemClicked(e, streams);
+                }
+                break;
+            case JOIN: {
+                CustomCommand command = CustomCommand.parse("/join $replace($1-, ,\\,)");
+                CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                listener.streamInfosMenuItemClicked(e, streams);
+            }
+            break;
+            case STREAM: {
+                CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchStreamUrl("\\$1")));
+                CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                listener.streamInfosMenuItemClicked(e, streams);
+            }
+            break;
+            case STREAM_POPOUT: {
+                CustomCommand command = CustomCommand.parse(makeOpenCommand.apply(TwitchUrl.makeTwitchPlayerUrl("\\$1")));
+                CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), command);
+                listener.streamInfosMenuItemClicked(e, streams);
+            }
+            break;
+            case COMMAND: {
+                String commandValue = settings.getString("liveStreamsCommand");
+                CustomCommand customCommand = CustomCommand.parse(commandValue.trim());
+                if (customCommand.hasError()) {
+                    CommandSettings.showCommandInfoPopup(scroll, customCommand);
+                }
+                else {
+                    CommandActionEvent e = new CommandActionEvent(new ActionEvent(this, ActionEvent.ACTION_FIRST, "command"), customCommand);
+                    listener.streamInfosMenuItemClicked(e, streams);
+                }
+            }
+            break;
+        }
     }
     
     /**

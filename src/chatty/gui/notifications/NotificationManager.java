@@ -350,7 +350,7 @@ public class NotificationManager {
     
     public boolean showNotification(Notification n, String title, String message,
             String data, String channel) {
-        main.showNotification(title, message, n.foregroundColor, n.backgroundColor, data);
+        main.showNotification(title, message, n.foregroundColor, n.backgroundColor, new NotificationWindowData(n, data));
         return true;
     }
     
@@ -424,6 +424,18 @@ public class NotificationManager {
     private String getDisplayName(User user) {
         long displayNamesMode = settings.getLong("displayNamesMode");
         return Helper.makeDisplayNick(user, displayNamesMode);
+    }
+    
+    public static class NotificationWindowData {
+        
+        public final Notification notification;
+        public final String channel;
+        
+        public NotificationWindowData(Notification notification, String channel) {
+            this.notification = notification;
+            this.channel = channel;
+        }
+        
     }
     
 }

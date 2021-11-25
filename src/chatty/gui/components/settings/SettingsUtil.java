@@ -45,7 +45,7 @@ public class SettingsUtil {
     }
     
     public static void addSubsettings(ComboStringSetting control, Function<String, Boolean> req, Component... subs) {
-        control.addItemListener(e -> {
+        control.addSettingChangeListener(c -> {
             String selected = control.getSettingValue();
             for (Component sub : subs) {
                 sub.setEnabled(req.apply(selected));
