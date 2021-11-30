@@ -2465,6 +2465,7 @@ public class MainGui extends JFrame implements Runnable {
                 Notification notification = data.notification;
                 String channel = data.channel;
                 if (client.settings.getBoolean("liveStreamsNotificationAction")
+                        && notification != null
                         && notification.type == Notification.Type.STREAM_STATUS) {
                     StreamInfo status = client.api.getCachedStreamInfo(Helper.toStream(channel));
                     if (status != null) {
@@ -3150,7 +3151,7 @@ public class MainGui extends JFrame implements Runnable {
                 if (client.settings.getString("username").equalsIgnoreCase("joshimuz")) {
                     showNotification("[Test] It works!",
                             "Now you have your notifications Josh.. Kappa",
-                            Color.BLACK, Color.WHITE, channel);
+                            Color.BLACK, Color.WHITE, new NotificationWindowData(null, channel));
                 } else if (title != null && text != null) {
                     showNotification(title, text, Color.BLACK, Color.WHITE, null);
                 } else if (StringUtil.isNullOrEmpty(channel)) {
@@ -3160,7 +3161,7 @@ public class MainGui extends JFrame implements Runnable {
                 } else {
                     showNotification("[Status] "+Helper.toValidChannel(channel),
                             "Test Notification (this would pop up when a stream status changes)",
-                            Color.BLACK, Color.WHITE, channel);
+                            Color.BLACK, Color.WHITE, new NotificationWindowData(null, channel));
                 }
             }
         });
