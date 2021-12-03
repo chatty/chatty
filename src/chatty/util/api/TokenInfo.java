@@ -28,6 +28,8 @@ public class TokenInfo {
         SUBSCRIPTIONS("user_subscriptions", "subscriptions"),
         CHAN_MOD("channel:moderate", "chanMod"),
         AUTOMOD("moderator:manage:automod", "automod"),
+        BLOCKED_READ("moderator:read:blocked_terms", "blockedRead"),
+        BLOCKED_MANAGE("moderator:manage:blocked_terms", "blockedManage"),
         POINTS("channel:read:redemptions", "points");
         
         public String scope;

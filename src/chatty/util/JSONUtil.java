@@ -114,4 +114,17 @@ public class JSONUtil {
         return o.toJSONString();
     }
     
+    public static long getDatetime(JSONObject data, Object key, long errorValue) {
+        Object value = data.get(key);
+        if (value != null && value instanceof String) {
+            try {
+                return DateTime.parseDatetime((String) value);
+            }
+            catch (IllegalArgumentException ex) {
+                return errorValue;
+            }
+        }
+        return errorValue;
+    }
+    
 }

@@ -78,8 +78,15 @@ public abstract class ListTableModel<T> extends AbstractTableModel {
      */
     public int add(T item) {
         data.add(item);
-        fireTableRowsInserted(data.size(), data.size());
+        fireTableRowsInserted(data.size() - 1, data.size() - 1);
         return data.size();
+    }
+    
+    public void remove(T item) {
+        int index = indexOf(item);
+        if (index != -1) {
+            remove(index);
+        }
     }
 
     /**

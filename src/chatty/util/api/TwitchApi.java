@@ -4,6 +4,8 @@ package chatty.util.api;
 import chatty.Helper;
 import chatty.util.CachedBulkManager;
 import chatty.util.StringUtil;
+import chatty.util.api.BlockedTermsManager.BlockedTerm;
+import chatty.util.api.BlockedTermsManager.BlockedTerms;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamTagManager.StreamTagListener;
@@ -52,6 +54,7 @@ public class TwitchApi {
     protected final CachedBulkManager<Req, Boolean> m;
     protected final ResultManager resultManager;
     protected final UserInfoManager userInfoManager;
+    protected final BlockedTermsManager blockedTermsManager;
     
     private volatile Long tokenLastChecked = Long.valueOf(0);
     
@@ -74,6 +77,7 @@ public class TwitchApi {
         userInfoManager = new UserInfoManager(this);
         communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
+        blockedTermsManager = new BlockedTermsManager(requests);
         m = new CachedBulkManager<>(new CachedBulkManager.Requester<Req, Boolean>() {
 
             @Override
@@ -444,6 +448,34 @@ public class TwitchApi {
     
     public void performGameSearch(String search, CategoryResult listener) {
         requests.getGameSearch(search, listener);
+    }
+    
+    public void getBlockedTerms(String streamName, boolean refresh, Consumer<BlockedTerms> listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept(null);
+            }
+            else {
+                String streamId = r.getId(streamName);
+                blockedTermsManager.getBlockedTerms(streamId, streamName, refresh, listener);
+            }
+        }, streamName);
+    }
+    
+    public void addBlockedTerm(String streamName, String text, Consumer<BlockedTerm> listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept(null);
+            }
+            else {
+                String streamId = r.getId(streamName);
+                requests.addBlockedTerm(streamId, streamName, text, listener);
+            }
+        }, streamName);
+    }
+    
+    public void removeBlockedTerm(BlockedTerm term, Consumer<BlockedTerm> listener) {
+        requests.removeBlockedTerm(term, listener);
     }
     
     //-------------

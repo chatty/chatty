@@ -180,6 +180,9 @@ public class CommercialPanel extends JPanel {
     }
     
     public void changeChannel(String channel) {
+        if (channel.equals(currentChannel)) {
+            return;
+        }
         this.currentChannel = channel;
         
         // Load/reset last commercial run time

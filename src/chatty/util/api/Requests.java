@@ -8,6 +8,8 @@ import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
+import chatty.util.api.BlockedTermsManager.BlockedTerm;
+import chatty.util.api.BlockedTermsManager.BlockedTerms;
 import chatty.util.api.StreamTagManager.StreamTagsListener;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamTagManager.StreamTagListener;
@@ -35,6 +37,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
 import java.util.Arrays;
+import java.util.function.Consumer;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -447,6 +450,51 @@ public class Requests {
             }
             if (!handled) {
                 listener.autoModResult(action, msgId, AutoModActionResult.OTHER_ERROR);
+            }
+        });
+    }
+    
+    public void getBlockedTerms(String streamId, String login, String cursor) {
+        String url = String.format("https://api.twitch.tv/helix/moderation/blocked_terms?broadcaster_id=%s&moderator_id=%s&first=%d",
+                streamId,
+                api.localUserId,
+                BlockedTermsManager.MAX_RESULTS_PER_REQUEST);
+        if (!StringUtil.isNullOrEmpty(cursor)) {
+            url += "&after="+cursor;
+        }
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            api.blockedTermsManager.resultReceived(streamId, login, result);
+        });
+    }
+    
+    public void addBlockedTerm(String streamId, String streamName, String text, Consumer<BlockedTerm> listener) {
+        String url = String.format("https://api.twitch.tv/helix/moderation/blocked_terms?broadcaster_id=%s&moderator_id=%s",
+                streamId,
+                api.localUserId);
+        Map<String, String> data = new HashMap<>();
+        data.put("text", text);
+        newApi.add(url, "POST", data, api.defaultToken, (result, responseCode) -> {
+            BlockedTerms parsed = BlockedTerms.parse(result, streamId, streamName);
+            if (parsed != null && !parsed.hasError() && parsed.data.size() == 1) {
+                listener.accept(parsed.data.get(0));
+            }
+            else {
+                listener.accept(null);
+            }
+        });
+    }
+    
+    public void removeBlockedTerm(BlockedTerm term, Consumer<BlockedTerm> listener) {
+        String url = String.format("https://api.twitch.tv/helix/moderation/blocked_terms?broadcaster_id=%s&moderator_id=%s&id=%s",
+                term.streamId,
+                api.localUserId,
+                term.id);
+        newApi.add(url, "DELETE", api.defaultToken, (result, responseCode) -> {
+            if (responseCode == 204) {
+                listener.accept(term);
+            }
+            else {
+                listener.accept(null);
             }
         });
     }

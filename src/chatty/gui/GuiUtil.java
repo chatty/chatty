@@ -42,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -64,6 +65,8 @@ import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -864,6 +867,31 @@ public class GuiUtil {
         else {
             SwingUtilities.invokeLater(runnable);
         }
+    }
+    
+    /**
+     * Get notified of any text changes in the document.
+     * 
+     * @param doc
+     * @param listener 
+     */
+    public static void addChangeListener(Document doc, Consumer<DocumentEvent> listener) {
+        doc.addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                listener.accept(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                listener.accept(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                listener.accept(e);
+            }
+        });
     }
     
 }

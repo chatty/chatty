@@ -383,6 +383,9 @@ public class StatusPanel extends JPanel {
     }
     
     public void changeChannel(String channel) {
+        if (channel.equals(currentChannel)) {
+            return;
+        }
         currentChannel = channel;
         status.setText("");
         game.setText("");

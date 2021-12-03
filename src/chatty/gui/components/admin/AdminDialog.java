@@ -53,6 +53,7 @@ public class AdminDialog extends JDialog {
     
     private final StatusPanel statusPanel;
     private final CommercialPanel commercialPanel;
+    private final BlockedTermsPanel blockedTermsPanel;
 
     // Shared
     private final JTabbedPane tabs;
@@ -85,6 +86,7 @@ public class AdminDialog extends JDialog {
         
         statusPanel = new StatusPanel(this, main, api);
         commercialPanel = new CommercialPanel(main);
+        blockedTermsPanel = new BlockedTermsPanel(this, api);
         
         GridBagConstraints gbc;
         
@@ -97,10 +99,14 @@ public class AdminDialog extends JDialog {
             @Override
             public void stateChanged(ChangeEvent e) {
                 updateInfoText();
+                if (currentChannel != null) {
+                    changeChannel(currentChannel);
+                }
             }
         });
         tabs.addTab(Language.getString("admin.tab.status"), statusPanel);
         tabs.addTab(Language.getString("admin.tab.commercial"), commercialPanel);
+        tabs.addTab("Blocked Terms", blockedTermsPanel);
         gbc = makeGbc(0,0,2,1);
         gbc.insets = new Insets(0,0,0,0);
         gbc.fill = GridBagConstraints.BOTH;
@@ -212,6 +218,7 @@ public class AdminDialog extends JDialog {
         if (isVisible()) {
             statusPanel.update();
             commercialPanel.update();
+            blockedTermsPanel.update();
         }
         commercialPanel.checkScheduled();
     }
@@ -314,6 +321,9 @@ public class AdminDialog extends JDialog {
         this.currentChannel = channel;
         statusPanel.changeChannel(channel);
         commercialPanel.changeChannel(channel);
+        if (tabs.getSelectedComponent() == blockedTermsPanel) {
+            blockedTermsPanel.changeStream(channel);
+        }
         update();
     }
 
