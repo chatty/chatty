@@ -136,7 +136,6 @@ public class MainGui extends JFrame implements Runnable {
     private UserInfoManager userInfoDialog;
     private About aboutDialog;
     private ChannelInfoDialog channelInfoDialog;
-    private SettingsDialog settingsDialog;
     private AdminDialog adminDialog;
     private FavoritesDialog favoritesDialog;
     private JoinDialog joinDialog;
@@ -305,7 +304,9 @@ public class MainGui extends JFrame implements Runnable {
         
         //this.getContentPane().setBackground(new Color(0,0,0,0));
 
-        getSettingsDialog();
+        if (client.settings.getBoolean("initSettingsDialog")) {
+            getSettingsDialog(null);
+        }
         
         // Main Menu
         MainMenuListener menuListener = new MainMenuListener();
@@ -364,11 +365,8 @@ public class MainGui extends JFrame implements Runnable {
         hotkeyManager.registerPopout(popout);
     }
     
-    private SettingsDialog getSettingsDialog() {
-        if (settingsDialog == null) {
-            settingsDialog = new SettingsDialog(this,client.settings);
-        }
-        return settingsDialog;
+    private void getSettingsDialog(Consumer<SettingsDialog> action) {
+        SettingsDialog.get(this, action);
     }
     
     /**
@@ -1583,12 +1581,14 @@ public class MainGui extends JFrame implements Runnable {
                     }
                     break;
                 case "settings":
-                    if (!settingsDialog.isVisible()) {
-                        settingsDialog.showSettings("show", ref);
-                    }
-                    else {
-                        settingsDialog.showPage(ref);
-                    }
+                    getSettingsDialog(s -> {
+                        if (!s.isVisible()) {
+                            s.showSettings("show", ref);
+                        }
+                        else {
+                            s.showPage(ref);
+                        }
+                    });
                     break;
             }
         }
@@ -1668,7 +1668,7 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.equals("news")) {
                 //newsDialog.showDialog();
             } else if (cmd.equals("settings")) {
-                getSettingsDialog().showSettings();
+                getSettingsDialog(s -> s.showSettings());
             } else if (cmd.equals("saveSettings")) {
                 int result = JOptionPane.showOptionDialog(MainGui.this,
                         Language.getString("saveSettings.text")+"\n\n"+Language.getString("saveSettings.textBackup"),
@@ -1899,13 +1899,13 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.setBoolean("historyVerticalZoom", selected);
             }
             else if (cmd.startsWith("highlightSource.")) {
-                settingsDialog.showSettings("selectHighlight", JSONValue.parse(cmd.substring("highlightSource.".length())));
+                getSettingsDialog(s -> s.showSettings("selectHighlight", JSONValue.parse(cmd.substring("highlightSource.".length()))));
             }
             else if (cmd.startsWith("ignoreSource.")) {
-                settingsDialog.showSettings("selectIgnore", JSONValue.parse(cmd.substring("ignoreSource.".length())));
+                getSettingsDialog(s -> s.showSettings("selectIgnore", JSONValue.parse(cmd.substring("ignoreSource.".length()))));
             }
             else if (cmd.startsWith("msgColorSource.")) {
-                settingsDialog.showSettings("selectMsgColor", cmd.substring("msgColorSource.".length()));
+                getSettingsDialog(s -> s.showSettings("selectMsgColor", cmd.substring("msgColorSource.".length())));
             }
             else {
                 nameBasedStuff(e, channels.getActiveChannel().getStreamName());
@@ -2050,7 +2050,7 @@ public class MainGui extends JFrame implements Runnable {
                 state.update(true);
             }
             if (cmd.equals("liveStreamsSettings")) {
-                settingsDialog.showSettings("show", "LIVE_STREAMS");
+                getSettingsDialog(s -> s.showSettings("show", "LIVE_STREAMS"));
             }
             if (cmd.equals("sortOption_favFirst")) {
                 JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
@@ -2338,7 +2338,7 @@ public class MainGui extends JFrame implements Runnable {
                 MiscUtil.copyToClipboard(usericon.badgeType.toString());
             }
             else if (e.getActionCommand().startsWith("addUsericonOfBadgeType")) {
-                getSettingsDialog().showSettings(e.getActionCommand(), usericon);
+                getSettingsDialog(s -> s.showSettings(e.getActionCommand(), usericon));
             }
             else if (e.getActionCommand().equals("badgeImage")) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
@@ -2525,7 +2525,7 @@ public class MainGui extends JFrame implements Runnable {
      */
     public void addGuiCommands() {
         client.commands.addEdt("settings", p -> {
-            getSettingsDialog().showSettings();
+            getSettingsDialog(s -> s.showSettings());
         });
         client.commands.addEdt("customEmotes", p -> {
             printLine(emoticons.getCustomEmotesInfo());
@@ -3983,22 +3983,12 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void showSettings() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                getSettingsDialog().showSettings();
-            }
-        });
-    }
-    
     public void setColor(final String item) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                getSettingsDialog().showSettings("editUsercolorItem", item);
+                getSettingsDialog(s -> s.showSettings("editUsercolorItem", item));
             }
         });
     }
@@ -4008,7 +3998,7 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
-                getSettingsDialog().showSettings("editCustomNameItem", item);
+                getSettingsDialog(s -> s.showSettings("editCustomNameItem", item));
             }
         });
     }

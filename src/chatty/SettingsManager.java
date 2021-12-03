@@ -432,6 +432,7 @@ public class SettingsManager {
         settings.addLong("layoutsOptions", 3);
         settings.addBoolean("restoreLayout", true);
         settings.addBoolean("restoreLayoutWhisper", false);
+        settings.addBoolean("initSettingsDialog", false);
 
         // Popouts
         settings.addBoolean("popoutSaveAttributes", true);
