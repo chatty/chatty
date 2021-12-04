@@ -41,6 +41,8 @@ public class LaFCustomDefaults {
                     return LaFUtil.parseColor(value, null);
                 case "insets":
                     return createDefaultInsets(value);
+                case "boolean":
+                    return Boolean.valueOf(value);
             }
         }
         return null;
