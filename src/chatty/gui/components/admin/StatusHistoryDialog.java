@@ -53,14 +53,11 @@ public class StatusHistoryDialog extends JDialog {
     private StreamCategory currentGame;
     private CloseAction closeAction;
     
-    private final Dialog parentComponent;
-    
     public StatusHistoryDialog(Dialog parent, StatusHistory history) {
         super(parent);
         setTitle("Status History");
         setModal(true);
         setLayout(new GridBagLayout());
-        parentComponent = parent;
         
         table = new StatusHistoryTable(new TableContextMenu());
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -196,7 +193,6 @@ public class StatusHistoryDialog extends JDialog {
         table.requestFocusInWindow();
         setTitle(Language.getString("admin.presets.title", currentGame));
         updateFilter();
-        setLocationRelativeTo(parentComponent);
         table.setData(history.getEntries());
         closeAction = CloseAction.CANCEL;
         setVisible(true);

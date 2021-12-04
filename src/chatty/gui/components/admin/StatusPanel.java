@@ -275,6 +275,7 @@ public class StatusPanel extends JPanel {
                     setTags(null);
                     statusEdited();
                 } else if (e.getSource() == historyButton) {
+                    statusHistoryDialog.setLocationRelativeTo(StatusPanel.this);
                     StatusHistoryEntry result = statusHistoryDialog.showDialog(currentStreamCategory);
                     if (result != null) {
                         // A null value means that value shouldn't be used to
