@@ -29,6 +29,8 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -892,6 +894,50 @@ public class GuiUtil {
                 listener.accept(e);
             }
         });
+    }
+    
+    public static void addSimpleMouseListener(JComponent component, SimpleMouseListener listener) {
+        component.addMouseListener(new MouseAdapter() {
+
+            boolean inside = false;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    listener.contextMenu(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (inside) {
+                    listener.mouseClicked(e);
+                }
+                if (e.isPopupTrigger()) {
+                    listener.contextMenu(e);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                inside = true;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                inside = false;
+            }
+        });
+    }
+    
+    public static abstract class SimpleMouseListener {
+
+        public void mouseClicked(MouseEvent e) {
+        }
+
+        public void contextMenu(MouseEvent e) {
+        }
+
     }
     
 }
