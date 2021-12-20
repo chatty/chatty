@@ -213,6 +213,7 @@ public class TwitchClient {
         if (Chatty.getOriginalWdir() != null) {
             LOGGER.info("Working directory changed due to -appwdir (from: "+Chatty.getOriginalWdir()+")");
         }
+        Helper.checkSLF4JBinding();
         
         // Settings
         settingsManager = new SettingsManager();

@@ -14,6 +14,7 @@ import chatty.util.dnd.DockLayout;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.FileManager.SaveResult;
 import chatty.util.settings.Settings;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -27,6 +28,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 
 /**
  * Some Chatty-specific static helper methods.
@@ -1079,6 +1084,57 @@ public class Helper {
             }
         }
         return layouts;
+    }
+    
+    /**
+     * Check if the correct SLF4J binding was loaded, when more bindings than
+     * the one in the JAR are found, which seems almost impossible, but just in
+     * case. I haven't been able to have this happen when using the regular JAR
+     * since the classpath would be just the JAR and adding a binding as an
+     * extension library causes the following error, but I don't know if that is
+     * always the case.
+     *
+     * Failed to instantiate SLF4J LoggerFactory
+     * java.lang.NoClassDefFoundError: org/slf4j/spi/LoggerFactoryBinder at
+     *  java.lang.ClassLoader.defineClass1(Native Method) at
+     *  java.lang.ClassLoader.defineClass(ClassLoader.java:763)
+     *  ...
+     * Caused by: java.lang.ClassNotFoundException: org.slf4j.spi.LoggerFactoryBinder at
+     *  java.net.URLClassLoader.findClass(URLClassLoader.java:382) at
+     *  java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+     *  ...
+     */
+    public static void checkSLF4JBinding() {
+        try {
+            if (!org.slf4j.LoggerFactory.getILoggerFactory().getClass().getName().equals("org.slf4j.impl.JDK14LoggerFactory")) {
+                throw new RuntimeException("Wrong SLF4F binding: " + org.slf4j.LoggerFactory.getILoggerFactory().getClass().getName());
+            }
+        }
+        catch (Throwable ex) {
+            startError("An error occured getting logger binding. See debug logs for details.");
+            throw ex;
+        }
+    }
+    
+    /**
+     * Show a simple window with an error, intended only for use when other GUI
+     * has not been created yet.
+     * 
+     * @param msg 
+     */
+    public static void startError(String msg) {
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel label = new JLabel(msg);
+        label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        frame.add(label, BorderLayout.CENTER);
+        frame.setTitle("Chatty Start Error");
+        JButton closeButton = new JButton("OK");
+        closeButton.addActionListener(e -> System.exit(0));
+        frame.add(closeButton, BorderLayout.SOUTH);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
     
 }
