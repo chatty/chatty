@@ -97,13 +97,14 @@ public class DockedDialogHelper {
         if (isDocked) {
             return channels.getDock().hasContent(content);
         }
-        else {
-            return dialog.isVisible();
-        }
+        return dialog.isVisible();
     }
     
     public boolean isContentVisible() {
-        return channels.getDock().isContentVisible(content);
+        if (isDocked) {
+            return channels.getDock().isContentVisible(content);
+        }
+        return dialog.isVisible();
     }
     
     public void setDocked(boolean docked) {
