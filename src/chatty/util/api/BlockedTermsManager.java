@@ -57,8 +57,8 @@ public class BlockedTermsManager {
         }
     }
 
-    public void resultReceived(String streamId, String streamName, String json) {
-        BlockedTerms result = getResult(streamId, streamName, json);
+    public void resultReceived(String streamId, String streamName, String json, int responseCode) {
+        BlockedTerms result = getResult(streamId, streamName, json, responseCode);
         Consumer<BlockedTerms> listener = null;
         synchronized(cache) {
             listener = currentListener;
@@ -68,7 +68,7 @@ public class BlockedTermsManager {
         }
     }
     
-    private BlockedTerms getResult(String streamId, String streamName, String json) {
+    private BlockedTerms getResult(String streamId, String streamName, String json, int responseCode) {
         synchronized(cache) {
             if (currentLogin == null || !currentLogin.equals(streamName)) {
                 return null;
@@ -105,7 +105,15 @@ public class BlockedTermsManager {
                 //--------------------------
                 // Failed request
                 //--------------------------
-                return new BlockedTerms(streamId, streamName, "Error requesting data");
+                String errorText = "Error requesting data";
+                if (responseCode == 403) {
+                    errorText = "Access denied";
+                }
+                BlockedTerms errorTerms = new BlockedTerms(streamId, streamName, errorText);
+                // Cache error as well so it doesn't retry every time (can do
+                // that manually if an error occured where that makes sense)
+                cache.put(streamName, errorTerms);
+                return errorTerms;
             }
         }
         return null;
@@ -158,7 +166,7 @@ public class BlockedTermsManager {
                 for (Object o : data) {
                     if (o instanceof JSONObject) {
                         JSONObject entry = (JSONObject) o;
-                        BlockedTerm blockedTerm = BlockedTerm.parse(entry);
+                        BlockedTerm blockedTerm = BlockedTerm.parse(entry, streamName);
                         if (blockedTerm != null) {
                             terms.add(blockedTerm);
                         }
@@ -212,7 +220,7 @@ public class BlockedTermsManager {
 //            this.streamLogin = streamLogin;
 //        }
         
-        public static BlockedTerm parse(JSONObject data) {
+        public static BlockedTerm parse(JSONObject data, String streamLogin) {
             String id = JSONUtil.getString(data, "id");
             long createdAt = JSONUtil.getDatetime(data, "created_at", -1);
             long updatedAt = JSONUtil.getDatetime(data, "updated_at", -1);
@@ -221,7 +229,7 @@ public class BlockedTermsManager {
             String moderatorId = JSONUtil.getString(data, "moderator_id");
             String streamId = JSONUtil.getString(data, "broadcaster_id");
             if (!StringUtil.isNullOrEmpty(id, text, streamId)) {
-                return new BlockedTerm(id, createdAt, updatedAt, expiresAt, text, moderatorId, streamId, null);
+                return new BlockedTerm(id, createdAt, updatedAt, expiresAt, text, moderatorId, streamId, streamLogin);
             }
             return null;
         }

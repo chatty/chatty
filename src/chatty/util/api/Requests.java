@@ -463,7 +463,7 @@ public class Requests {
             url += "&after="+cursor;
         }
         newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.blockedTermsManager.resultReceived(streamId, login, result);
+            api.blockedTermsManager.resultReceived(streamId, login, result, responseCode);
         });
     }
     

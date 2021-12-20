@@ -6,7 +6,6 @@ import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.settings.Editor;
 import chatty.gui.components.settings.ListTableModel;
-import chatty.gui.components.settings.TableEditor;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.api.BlockedTermsManager;
@@ -15,15 +14,24 @@ import chatty.util.api.BlockedTermsManager.BlockedTerms;
 import chatty.util.api.TwitchApi;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -35,6 +43,7 @@ import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
@@ -43,6 +52,8 @@ import javax.swing.table.TableRowSorter;
  * @author tduva
  */
 public class BlockedTermsPanel extends JPanel {
+    
+    private static final Logger LOGGER = Logger.getLogger(BlockedTermsPanel.class.getName());
 
     private final JLabel statusLabel;
     private final JButton refreshButton;
@@ -57,7 +68,7 @@ public class BlockedTermsPanel extends JPanel {
     private String currentStream;
     private BlockedTerms currentTerms;
     private boolean loading;
-    private final Editor editor;
+    private final Map<String, Boolean> edited = new HashMap<>();
     
     private final TableRowSorter sorter;
     
@@ -71,17 +82,23 @@ public class BlockedTermsPanel extends JPanel {
         //--------------------------
         data = new Model(new String[]{
             "Text",
-            "Created"
+            "Created",
+            "Expires"
         });
         table = new JTable();
         table.setModel(data);
         table.setFillsViewportHeight(true);
-        table.getColumnModel().getColumn(1).setCellRenderer(new LastActivityRenderer());
+        table.getColumnModel().getColumn(1).setCellRenderer(new CreatedRenderer());
+        table.getColumnModel().getColumn(2).setCellRenderer(new ExpiresRenderer());
         sorter = new TableRowSorter(data);
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
         sortKeys.add(new RowSorter.SortKey(1, SortOrder.DESCENDING)); // Created At
         sorter.setSortKeys(sortKeys);
         table.setRowSorter(sorter);
+        table.setTransferHandler(new MyTransferHandler());
+        table.getTableHeader().setReorderingAllowed(false);
+        table.getColumnModel().getColumn(1).setMaxWidth(GuiUtil.getTableColumnHeaderWidth(table, 1)*2);
+        table.getColumnModel().getColumn(2).setMaxWidth(GuiUtil.getTableColumnHeaderWidth(table, 2)*2);
         
         table.addMouseListener(new MouseAdapter() {
 
@@ -109,8 +126,6 @@ public class BlockedTermsPanel extends JPanel {
         //--------------------------
         // Other Elements
         //--------------------------
-        editor = new Editor(dialog);
-        
         statusLabel = new JLabel();
         refreshButton = new JButton(Language.getString("admin.button.reload"));
         refreshButton.setMargin(SMALL_BUTTON_INSETS);
@@ -188,12 +203,13 @@ public class BlockedTermsPanel extends JPanel {
                     if (term == null) {
                         statusLabel.setText("An error occured adding term");
                     }
-                    else {
+                    else if (term.streamLogin.equals(currentStream)) {
                         data.add(term);
                         if (term.text.equals(input.getText())) {
                             // Only clear if successfully added and still same
                             input.setText(null);
                         }
+                        setEdited(true);
                     }
                 });
             });
@@ -204,16 +220,18 @@ public class BlockedTermsPanel extends JPanel {
         int selected = table.getSelectedRow();
         if (selected != -1) {
             BlockedTerm selectedTerm = data.get(table.convertRowIndexToModel(selected));
-            String result = editor.showDialog("Edit (Removes re-adds the term)", selectedTerm.text, "");
+            Editor editor = new Editor(SwingUtilities.getWindowAncestor(this));
+            String result = editor.showDialog("Edit (Removes and adds the term)", selectedTerm.text, "");
             if (result != null && !result.equals(selectedTerm.text)) {
                 api.removeBlockedTerm(selectedTerm, removed -> {
                     SwingUtilities.invokeLater(() -> {
                         if (removed == null) {
                             statusLabel.setText("An error occured removing term");
                         }
-                        else {
+                        else if (removed.streamLogin.equals(currentStream)) {
                             data.remove(removed);
                             addEntry(result);
+                            setEdited(true);
                         }
                     });
                 });
@@ -235,11 +253,24 @@ public class BlockedTermsPanel extends JPanel {
                         if (removed == null) {
                             statusLabel.setText("An error occured removing item");
                         }
-                        else {
+                        else if (removed.streamLogin.equals(currentStream))  {
                             data.remove(removed);
+                            setEdited(true);
                         }
                     });
                 });
+            }
+        }
+    }
+    
+    private void importData(String preset) {
+        Editor editor = new Editor(SwingUtilities.getWindowAncestor(this));
+        editor.setAllowLinebreaks(true);
+        String result = editor.showDialog("Import entries (one entry per line)", preset, "Can also copy&paste in table to trigger export/import.");
+        if (result != null) {
+            String[] split = result.split("\n");
+            for (String item : split) {
+                addEntry(item);
             }
         }
     }
@@ -267,8 +298,21 @@ public class BlockedTermsPanel extends JPanel {
     public void changeStream(String stream) {
         if (stream != null && !stream.equals(currentStream)) {
             currentStream = stream;
-            loadData();
+            if (isEdited()) {
+                refreshData();
+            }
+            else {
+                loadData();
+            }
         }
+    }
+    
+    private void setEdited(boolean newValue) {
+        edited.put(currentStream, newValue);
+    }
+    
+    private boolean isEdited() {
+        return edited.containsKey(currentStream) && edited.get(currentStream);
     }
     
     private void setData(BlockedTerms terms) {
@@ -291,13 +335,16 @@ public class BlockedTermsPanel extends JPanel {
     private void refreshData() {
         loading = true;
         update();
-        api.getBlockedTerms(currentStream, true, t -> setData(t));
+        api.getBlockedTerms(currentStream, true, t -> {
+            setEdited(false);
+            setData(t);
+        });
     }
     
     public void update() {
         if (currentTerms != null) {
             if (currentTerms.hasError()) {
-                statusLabel.setText("An error occured getting terms");
+                statusLabel.setText(currentTerms.error);
             }
             else {
                 statusLabel.setText(Language.getString("admin.termsLoaded",
@@ -309,6 +356,7 @@ public class BlockedTermsPanel extends JPanel {
             }
         }
         refreshButton.setEnabled(!loading);
+        table.repaint();
     }
     
     private void popupMenu(MouseEvent e) {
@@ -323,11 +371,16 @@ public class BlockedTermsPanel extends JPanel {
                         case "delete":
                             deleteEntries();
                             break;
+                        case "import":
+                            importData("");
+                            break;
                     }
                 }
             };
             menu.addItem("edit", "Edit");
             menu.addItem("delete", "Delete");
+            menu.addSeparator();
+            menu.addItem("import", "Import");
             menu.show(table, e.getX(), e.getY());
         }
     }
@@ -343,7 +396,7 @@ public class BlockedTermsPanel extends JPanel {
         }
     }
     
-    private static class LastActivityRenderer extends DefaultTableCellRenderer {
+    private static class CreatedRenderer extends DefaultTableCellRenderer {
         
         @Override
         public void setValue(Object value) {
@@ -351,9 +404,31 @@ public class BlockedTermsPanel extends JPanel {
                 return;
             }
             Long lastActivity = (Long)value;
-            setText(DateTime.agoText(lastActivity));
+            setText(DateTime.agoSingleCompact(lastActivity)+" ago");
             JLabel label = (JLabel)this;
             label.setHorizontalAlignment(JLabel.CENTER);
+            label.setToolTipText("Created or updated at "+DateTime.formatFullDatetime(lastActivity));
+        }
+        
+    }
+    
+    private static class ExpiresRenderer extends DefaultTableCellRenderer {
+        
+        @Override
+        public void setValue(Object value) {
+            if (value == null) {
+                return;
+            }
+            Long lastActivity = (Long)value;
+            if (lastActivity.longValue() <= 0) {
+                setText("");
+            }
+            else {
+                setText(DateTime.duration(lastActivity - System.currentTimeMillis(), 0, 1, 0));
+                JLabel label = (JLabel) this;
+                label.setHorizontalAlignment(JLabel.CENTER);
+                label.setToolTipText("Expires at "+DateTime.formatFullDatetime(lastActivity));
+            }
         }
         
     }
@@ -371,7 +446,12 @@ public class BlockedTermsPanel extends JPanel {
                 case 0:
                     return entry.text;
                 case 1:
+                    if (entry.expiresAt != -1) {
+                        return entry.updatedAt;
+                    }
                     return entry.createdAt;
+                case 2:
+                    return entry.expiresAt;
             }
             return null;
         }
@@ -386,9 +466,52 @@ public class BlockedTermsPanel extends JPanel {
         public Class getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 1:
+                case 2:
                     return Long.class;
             }
             return String.class;
+        }
+
+    }
+    
+    /**
+     * Only use first row value (terms text) when copying from table and show
+     * import dialog when pasting something.
+     */
+    private class MyTransferHandler extends TransferHandler {
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            if (c instanceof JTable) {
+                JTable table = (JTable) c;
+                StringBuilder b = new StringBuilder();
+                int[] selected = table.getSelectedRows();
+                for (int row=0;row<selected.length;row++) {
+                    Object obj = table.getValueAt(selected[row], 0);
+                    b.append(String.valueOf(obj)).append("\n");
+                }
+                b.deleteCharAt(b.length() - 1);
+                return new StringSelection(b.toString());
+            }
+            return null;
+        }
+        
+        @Override
+        public boolean importData(TransferSupport support) {
+            try {
+                String data = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
+                BlockedTermsPanel.this.importData(data);
+                return true;
+            }
+            catch (UnsupportedFlavorException | IOException ex) {
+                LOGGER.warning("Error importing table data: "+ex);
+            }
+            return false;
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
         }
 
     }

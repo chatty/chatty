@@ -69,6 +69,8 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -938,6 +940,19 @@ public class GuiUtil {
         public void contextMenu(MouseEvent e) {
         }
 
+    }
+    
+    public static int getTableColumnHeaderWidth(JTable table, int column) {
+        TableColumn tableColumn = table.getColumnModel().getColumn(column);
+        Object value = tableColumn.getHeaderValue();
+        TableCellRenderer renderer = tableColumn.getHeaderRenderer();
+
+        if (renderer == null) {
+            renderer = table.getTableHeader().getDefaultRenderer();
+        }
+
+        Component c = renderer.getTableCellRendererComponent(table, value, false, false, -1, column);
+        return c.getPreferredSize().width;
     }
     
 }
