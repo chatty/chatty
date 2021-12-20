@@ -272,6 +272,11 @@ public class FollowersDialog extends JDialog {
                 return content;
             }
         });
+        helper.setChannelChangeListener((channel) -> {
+            if (isVisible()) {
+                showDialog(Helper.toStream(channel));
+            }
+        });
         
         pack();
         setSize(300,400);
@@ -380,7 +385,10 @@ public class FollowersDialog extends JDialog {
     
     private void openMainContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
-            new MyContextMenu(helper.isDocked()).show(e.getComponent(), e.getX(), e.getY());
+            ContextMenu menu = new MyContextMenu();
+            menu.addSeparator();
+            helper.addToContextMenu(menu);
+            menu.show(e.getComponent(), e.getX(), e.getY());
         }
     }
     
@@ -862,12 +870,10 @@ public class FollowersDialog extends JDialog {
     
     private class MyContextMenu extends ContextMenu {
 
-        public MyContextMenu(boolean isDocked) {
+        public MyContextMenu() {
             final String saveMenu = "Export list to file";
             addItem("saveSimple", "Names only", saveMenu);
             addItem("saveVerbose", "Names and extra info", saveMenu);
-            addSeparator();
-            addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
         }
         
         @Override

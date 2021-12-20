@@ -201,7 +201,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         }
     }
     
-    protected void addSeparator(String parent) {
+    public void addSeparator(String parent) {
         addSeparator(-1, parent);
     }
     
@@ -244,7 +244,7 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         getSubmenu(name, -1).setIcon(icon);
     }
     
-    protected JMenuItem getItem(String action) {
+    public JMenuItem getItem(String action) {
         return items.get(action);
     }
  

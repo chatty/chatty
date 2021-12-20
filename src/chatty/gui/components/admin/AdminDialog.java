@@ -2,6 +2,7 @@
 package chatty.gui.components.admin;
 
 import chatty.Chatty;
+import chatty.Helper;
 import chatty.gui.DockedDialogHelper;
 import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
@@ -179,6 +180,11 @@ public class AdminDialog extends JDialog {
             }
             
         });
+        helper.setChannelChangeListener(channel -> {
+            if (isVisible()) {
+                setChannel(Helper.toStream(channel));
+            }
+        });
         helper.installContextMenu(tabs);
         helper.installContextMenu(mainPanel);
         helper.installContextMenu(infoText);
@@ -319,8 +325,10 @@ public class AdminDialog extends JDialog {
      */
     private void changeChannel(String channel) {
         this.currentChannel = channel;
-        statusPanel.changeChannel(channel);
         commercialPanel.changeChannel(channel);
+        if (tabs.getSelectedComponent() == statusPanel) {
+            statusPanel.changeChannel(channel);
+        }
         if (tabs.getSelectedComponent() == blockedTermsPanel) {
             blockedTermsPanel.changeStream(channel);
         }

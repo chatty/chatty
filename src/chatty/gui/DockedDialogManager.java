@@ -1,7 +1,10 @@
 
 package chatty.gui;
 
+import chatty.gui.components.Channel;
 import chatty.gui.components.menus.TabContextMenu;
+import chatty.util.BatchAction;
+import chatty.util.Debugging;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockContentContainer;
 import chatty.util.dnd.DockManager;
@@ -112,6 +115,43 @@ public class DockedDialogManager {
             if (helper.isDocked()) {
                 helper.setVisible(false, false);
             }
+        }
+    }
+    
+    private final Object channelChangedUnique = new Object();
+    
+    public void activeContentChanged() {
+        DockContent content = channels.getActiveContent();
+        if (content.getComponent() instanceof Channel) {
+            Channel chan = (Channel) content.getComponent();
+            if (chan.getType() == Channel.Type.CHANNEL) {
+                String channel = chan.getChannel();
+                Debugging.println("changechan", "Set channel to %s", channel);
+                /**
+                 * Batch up, only using the last action, so that quickly
+                 * changing channels doesn't trigger too many change
+                 * notifications.
+                 */
+                BatchAction.queue(channelChangedUnique, 300, true, true, () -> {
+                    for (DockedDialogHelper helper : dialogs.values()) {
+                        helper.channelChanged(channel);
+                    }
+                });
+            }
+        }
+        else {
+            /**
+             * Overwrite with an action doing nothing, this way if the content
+             * quickly changes to something that that is not a Channel, it won't
+             * change channel. For example clicking from another window into a
+             * docked previously not active Admin Panel, which could first make
+             * a channel in the window active, then very quickly after that the
+             * Admin Panel. This still doesn't help in every case, but at least
+             * in some.
+             */
+            BatchAction.queue(channelChangedUnique, 300, true, true, () -> {
+                Debugging.println("changechan", "Prevented channel change");
+            });
         }
     }
     

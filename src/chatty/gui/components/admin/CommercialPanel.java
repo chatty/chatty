@@ -356,7 +356,9 @@ public class CommercialPanel extends JPanel {
         }
         String message = "<html><body style='width:240'>"
                 + "There is currently a commercial scheduled on '"+currentChannel
-                +"'. Changing channel to '"+channel+"' will cancel that.";
+                + "'. Changing channel to '"+channel+"' will cancel that.<br /><br />"
+                + "You can set the channel to not change automatically in the "
+                + "Admin Panel context menu.";
         String[] options = new String[]{"Change channel", "Don't change"};
         int result = JOptionPane.showOptionDialog(main, message, 
                 "Changing channel will cancel commercial", JOptionPane.YES_NO_OPTION, 

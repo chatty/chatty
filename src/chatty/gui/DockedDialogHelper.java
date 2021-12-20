@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.util.MiscUtil;
 import chatty.util.dnd.DockContent;
@@ -10,6 +11,10 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import javax.swing.JMenu;
 
 /**
  * Manages docking related actions, such as docking, undocking, settings and so
@@ -36,6 +41,7 @@ public class DockedDialogHelper {
     public final static int DOCKED = 1 << 0;
     public final static int AUTO_OPEN = 1 << 1;
     public final static int AUTO_OPEN_ACTIVITY = 1 << 2;
+    public final static int FIXED_CHANNEL = 1 << 3;
     
     private final DockedDialog dialog;
     private final DockContent content;
@@ -46,6 +52,9 @@ public class DockedDialogHelper {
     private boolean isDocked;
     private boolean autoOpen;
     private boolean autoOpenActivity;
+    private boolean fixedChannel;
+    
+    private Consumer<String> channelChangeListener;
     
     public DockedDialogHelper(DockedDialog dialog, MainGui gui, Channels channels, Settings settings) {
         this.dialog = dialog;
@@ -149,6 +158,18 @@ public class DockedDialogHelper {
                 autoOpenActivity = !autoOpenActivity;
                 saveSettings();
                 break;
+            case "dockToggleFixedChannel":
+                fixedChannel = !fixedChannel;
+                saveSettings();
+                break;
+        }
+        if (e.getActionCommand().startsWith("dockChangeChannel.")) {
+            String channel = e.getActionCommand().substring("dockChangeChannel.".length());
+            if (!channel.isEmpty()) {
+                if (channelChangeListener != null) {
+                    channelChangeListener.accept(channel);
+                }
+            }
         }
     }
     
@@ -156,6 +177,7 @@ public class DockedDialogHelper {
         int value = isDocked ? DOCKED : 0;
         value = value | (autoOpen ? AUTO_OPEN : 0);
         value = value | (autoOpenActivity ? AUTO_OPEN_ACTIVITY : 0);
+        value = value | (fixedChannel ? FIXED_CHANNEL : 0);
         settings.mapPut("dock", content.getId(), value);
     }
     
@@ -168,6 +190,7 @@ public class DockedDialogHelper {
         setDocked(MiscUtil.isBitEnabled(value, DOCKED));
         setVisible(MiscUtil.isBitEnabled(value, AUTO_OPEN), false);
         autoOpenActivity = MiscUtil.isBitEnabled(value, AUTO_OPEN);
+        fixedChannel = MiscUtil.isBitEnabled(value, FIXED_CHANNEL);
     }
     
     public void loadTabSettings() {
@@ -227,25 +250,66 @@ public class DockedDialogHelper {
     
     private void openContextMenu(MouseEvent e) {
         if (e.isPopupTrigger()) {
-            new MyContextMenu().show(e.getComponent(), e.getX(), e.getY());
+            ContextMenu menu = new MyContextMenu();
+            addToContextMenu(menu);
+            menu.show(e.getComponent(), e.getX(), e.getY());
         }
     }
     
     public void addToContextMenu(ContextMenu menu) {
+        //--------------------------
+        // Dock
+        //--------------------------
         menu.addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
+        //--------------------------
+        // Channel Change
+        //--------------------------
+        if (channelChangeListener != null) {
+            String changeChanLabel = "Channel";
+            String openChansLabel = "Change to";
+            JMenu changeChanMenu = new JMenu(changeChanLabel);
+            JMenu openChansMenu = new JMenu(openChansLabel);
+            openChansMenu.setToolTipText("All open chans, active tabs marked with *");
+            menu.registerSubmenu(changeChanMenu);
+            menu.registerSubmenu(openChansMenu);
+            List<Channel> open = channels.getChannelsOfType(Channel.Type.CHANNEL);
+            Collections.sort(open, (o1, o2) -> {
+                // Stream name should always be available for regular channels
+                return o1.getChannel().compareTo(o2.getChannel());
+            });
+            for (Channel chan : open) {
+                // Add menu item for each channel, mark visible with *
+                menu.addItem("dockChangeChannel."+chan.getChannel(),
+                        chan.getChannel()+(chan.getDockContent().isContentVisible() ? "*" : ""),
+                        openChansLabel);
+            }
+            if (!open.isEmpty()) {
+                changeChanMenu.add(openChansMenu);
+                menu.addSeparator(changeChanLabel);
+            }
+            menu.add(changeChanMenu);
+            menu.addCheckboxItem("dockToggleFixedChannel", "Fixed", changeChanLabel, fixedChannel);
+            menu.getItem("dockToggleFixedChannel").setToolTipText("Stay on the channel it was opened on (or the first channel joined if it was open on start)");
+        }
     }
     
     private class MyContextMenu extends ContextMenu {
-
-        public MyContextMenu() {
-            addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
-        }
         
         @Override
         public void actionPerformed(ActionEvent e) {
             menuAction(e);
         }
         
+    }
+    
+    public void setChannelChangeListener(Consumer<String> listener) {
+        channelChangeListener = listener;
+    }
+    
+    public void channelChanged(String channel) {
+        if (channelChangeListener != null && !fixedChannel) {
+            channelChangeListener.accept(channel);
+        }
     }
     
     public static abstract class DockedDialog {

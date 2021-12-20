@@ -2391,6 +2391,7 @@ public class MainGui extends JFrame implements Runnable {
                     openFollowerDialog();
                 }
             }
+            dockedDialogs.activeContentChanged();
         }
     }
     
