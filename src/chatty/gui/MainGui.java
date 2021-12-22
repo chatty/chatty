@@ -4639,7 +4639,9 @@ public class MainGui extends JFrame implements Runnable {
         adminDialog.updateAccess(
                 scopes.contains(TokenInfo.Scope.EDITOR.scope),
                 scopes.contains(TokenInfo.Scope.EDIT_BROADCAST.scope),
-                scopes.contains(TokenInfo.Scope.COMMERICALS.scope));
+                scopes.contains(TokenInfo.Scope.COMMERICALS.scope),
+                scopes.contains(TokenInfo.Scope.BLOCKED_READ.scope)
+                        && scopes.contains(TokenInfo.Scope.BLOCKED_MANAGE.scope));
         emotesDialog.setUserEmotes(scopes.contains(TokenInfo.Scope.SUBSCRIPTIONS.scope));
     }
     

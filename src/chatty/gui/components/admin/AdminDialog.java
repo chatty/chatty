@@ -37,6 +37,9 @@ public class AdminDialog extends JDialog {
     private final static String COMMERCIALS_TEXT = "[help-admin:commercials Help]";
     private final static String COMMERCIALS_TEXT_NO_ACCESS
             = "No Commercial Access available. [help-admin:access More information..]";
+    private final static String BLOCKED_TERMS_TEXT = "[help-admin: Help]";
+    private final static String BLOCKED_TERMS_TEXT_NO_ACCESS
+            = "Required access not available. [help-admin:access More information..]";
     
     // Colors for hideable labels
     private static final Color LABEL_INVISIBLE = new Color(0, 0, 0, 0);
@@ -70,6 +73,7 @@ public class AdminDialog extends JDialog {
     // Current access (not currentChannel specific)
     private boolean commercialAccess;
     private boolean editorAccess;
+    private boolean blockedTermsAccess;
     
     private final DockContent content;
     protected final DockedDialogHelper helper;
@@ -236,14 +240,25 @@ public class AdminDialog extends JDialog {
         if (tabs.getSelectedIndex() == 0) {
             if (editorAccess) {
                 infoText.setText(EDITOR_TEXT);
-            } else {
+            }
+            else {
                 infoText.setText(EDITOR_TEXT_NO_ACCESS);
             }
-        } else {
+        }
+        else if (tabs.getSelectedIndex() == 1) {
             if (commercialAccess) {
                 infoText.setText(COMMERCIALS_TEXT);
-            } else {
+            }
+            else {
                 infoText.setText(COMMERCIALS_TEXT_NO_ACCESS);
+            }
+        }
+        else {
+            if (blockedTermsAccess) {
+                infoText.setText(BLOCKED_TERMS_TEXT);
+            }
+            else {
+                infoText.setText(BLOCKED_TERMS_TEXT_NO_ACCESS);
             }
         }
     }
@@ -256,9 +271,10 @@ public class AdminDialog extends JDialog {
      * @param edit_broadcast
      * @param commercials 
      */
-    public void updateAccess(boolean editor, boolean edit_broadcast, boolean commercials) {
+    public void updateAccess(boolean editor, boolean edit_broadcast, boolean commercials, boolean blockedTerms) {
         this.editorAccess = editor && edit_broadcast;
         this.commercialAccess = commercials;
+        this.blockedTermsAccess = blockedTerms;
         updateInfoText();
     }
 
