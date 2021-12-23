@@ -831,7 +831,7 @@ public class SettingsManager {
                     break;
             }
             if (key.startsWith("set:") && key.length() > 4) {
-                LOGGER.info("Setting commandline setting: "+settings.setTextual(key.substring(4)+" "+value));
+                LOGGER.info("Setting commandline setting: "+settings.setTextual(key.substring(4)+" "+value, true));
             }
         }
     }

@@ -1230,7 +1230,10 @@ public class TwitchClient {
         // Settings/Customization
         //-----------------------
         commands.add("set", p -> {
-            g.printSystem(settings.setTextual(p.getArgs()));
+            g.printSystem(settings.setTextual(p.getArgs(), true));
+        });
+        commands.add("set2", p -> {
+            g.printSystem(settings.setTextual(p.getArgs(), false));
         });
         commands.add("get", p -> {
             g.printSystem(settings.getTextual(p.getArgs()));
@@ -1242,10 +1245,22 @@ public class TwitchClient {
             g.printSystem(settings.resetTextual(p.getArgs()));
         });
         commands.add("add", p -> {
-            g.printSystem(settings.addTextual(p.getArgs()));
+            g.printSystem(settings.addTextual(p.getArgs(), true));
+        });
+        commands.add("add2", p -> {
+            g.printSystem(settings.addTextual(p.getArgs(), false));
+        });
+        commands.add("addUnique", p -> {
+            g.printSystem(settings.addUniqueTextual(p.getArgs(), true));
+        });
+        commands.add("addUnique2", p -> {
+            g.printSystem(settings.addUniqueTextual(p.getArgs(), false));
         });
         commands.add("remove", p -> {
-            g.printSystem(settings.removeTextual(p.getArgs()));
+            g.printSystem(settings.removeTextual(p.getArgs(), true));
+        });
+        commands.add("remove2", p -> {
+            g.printSystem(settings.removeTextual(p.getArgs(), false));
         });
         commands.add("setcolor", p -> {
             if (p.hasArgs()) {
@@ -1440,6 +1455,9 @@ public class TwitchClient {
                         }
                     }
                 }
+            }
+            else {
+                g.printSystem("Usage: /foreach [list] > [command]");
             }
         });
     }

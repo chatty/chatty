@@ -23,9 +23,13 @@
                 toggle it and any other value to disable it.</dd>
         <dd>Can be used to set the value of a key of a Map setting (for example
             <code>/set lafCustomTheme selectionBackgroundColor 255 180 0</code>).</dd>
+        <dd>The <code>/set2</code> command works the same, but in case of Map
+            settings omits outputting all values of the Map.</dd>
         
         <dt><code>/get &lt;setting&gt;</code></dt>
         <dd>Shows the current value of a setting.</dd>
+        <dd>For Map settings <code>/get &lt;setting&gt; &lt;key&gt;</code> can
+            be used to get the value of a specific key only.</dd>
         
         <dt><code>/reset &lt;setting&gt;</code></dt>
         <dd>Resets the setting to the default (hard-coded) value.</dd>
@@ -36,10 +40,19 @@
         
         <dt><code>/add &lt;setting&gt; &lt;value&gt;</code></dt>
         <dd>Adds an item to a List setting.</dd>
+        <dd>The <code>/add2</code> command works the same, but omits outputting
+            all values of the List.</dd>
+        
+        <dt><code>/addUnique &lt;setting&gt; &lt;value&gt;</code></dt>
+        <dd>Adds an item to a List setting if it hasn't already been added.</dd>
+        <dd>The <code>/addUnique2</code> command works the same, but omits
+            outputting all values of the List.</dd>
         
         <dt><code>/remove &lt;setting&gt; &lt;value&gt;</code></dt>
         <dd>Removes an item from a List setting or removes a key (and the
             associated value) from a Map setting.</dd>
+        <dd>The <code>/remove2</code> command works the same, but omits
+            outputting all values of the setting.</dd>
     </dl>
 
     <p><em>Tip:</em> You can use <a href="help.html#nickCompletion">TAB Completion</a>

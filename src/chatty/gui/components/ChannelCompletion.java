@@ -60,9 +60,8 @@ public class ChannelCompletion implements AutoCompletionServer {
         "dir", "wdir", "openDir", "openWdir", "showLogDir", "openLogDir",
         "showBackupDir", "openBackupDir", "showDebugDir", "openDebugDir",
         "showTempDir", "openTempDir", "showJavaDir", "openJavaDir",
-        "showFallbackFontDir", "openFallbackFontDir",
+        "showFallbackFontDir", "openFallbackFontDir", "customCompletion",
         "clearChat", "refresh", "changeToken", "testNotification", "server",
-        "set", "add", "clearSetting", "remove", "customCompletion",
         "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
         "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
         "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",
@@ -70,6 +69,20 @@ public class ChannelCompletion implements AutoCompletionServer {
         "setcolor", "untimeout", "userinfo", "joinHosted", "favorite", "unfavorite",
         "popoutchannel", "setSize"
     }));
+    
+    private final Set<String> settingCommands = new TreeSet<>(Arrays.asList(new String[]{
+        "set", "set2", "add", "add2", "addUnique", "addUnique2", "clearSetting",
+        "remove", "remove2", "get"
+    }));
+    
+    private boolean isSettingPrefix(String prefix) {
+        for (String command : settingCommands) {
+            if (prefix.equals("/"+StringUtil.toLowerCase(command)+" ")) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Must be all lowercase for comparison.
@@ -142,11 +155,7 @@ public class ChannelCompletion implements AutoCompletionServer {
      */
     private AutoCompletionServer.CompletionItems getRegularCompletionItems(String prefix, String search, String searchCase) {
         List<String> items;
-        if (prefix.startsWith("/")
-                && (prefix.equals("/set ") || prefix.equals("/get ")
-                || prefix.equals("/add ") || prefix.equals("/remove ")
-                || prefix.equals("/clearsetting ")
-                || prefix.equals("/reset "))) {
+        if (prefix.startsWith("/") && isSettingPrefix(prefix)) {
                 //--------------
             // Setting Names
             //--------------
@@ -156,7 +165,10 @@ public class ChannelCompletion implements AutoCompletionServer {
                 //--------------
             // Command Names
             //--------------
-            items = filterCompletionItems(commands, search);
+            List<String> c = new ArrayList<>();
+            c.addAll(commands);
+            c.addAll(settingCommands);
+            items = filterCompletionItems(c, search);
             items.addAll(filterCompletionItems(main.getCustomCommandNames(), search));
         } else {
                 //--------------------

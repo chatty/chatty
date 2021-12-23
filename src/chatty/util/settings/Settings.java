@@ -433,9 +433,15 @@ public class Settings {
      * @throws SettingNotFoundException if a setting with this name doesn't
      * exist or isn't a Map setting
      */
-    public void mapRemove(String settingName, Object key) {
+    public Object mapRemove(String settingName, Object key) {
         synchronized (LOCK) {
-            getMapInternal(settingName).remove(key);
+            return getMapInternal(settingName).remove(key);
+        }
+    }
+    
+    public boolean mapContainsKey(String settingName, Object key) {
+        synchronized(LOCK) {
+            return getMapInternal(settingName).containsKey(key);
         }
     }
 
@@ -604,15 +610,15 @@ public class Settings {
             return "Setting '"+setting+"' is '"+getString(setting)+"'.";
         }
         if (isMapSetting(setting)) {
-            return "Setting '"+setting+"' is '"+getMap(setting)+"'.";
+            return "Setting '"+setting+"' (Map) is '"+getMap(setting)+"'.";
         }
         if (isListSetting(setting)) {
-            return "Setting '"+setting+"' is '"+getList(setting)+"'.";
+            return "Setting '"+setting+"' (List) is '"+getList(setting)+"'.";
         }
         return null;
     }
     
-    public String addTextual(String text) {
+    public String addTextual(String text, boolean verbose) {
         if (text == null || text.isEmpty()) {
             return "Usage: /add <setting> <value>";
         }
@@ -637,12 +643,64 @@ public class Settings {
             } else {
                 return settingInvalidMessage(setting);
             }
-            return "Setting '"+setting+"' (List): Added '"+parameter+"', now: "+getList(setting);
+            if (verbose) {
+                return String.format("Setting '%s' (List): Added '%s', now %s",
+                        setting, parameter, getList(setting));
+            }
+            return String.format("Setting '%s' (List): Added '%s'",
+                    setting, parameter);
         }
         return settingInvalidMessage(setting);
     }
     
-    public String removeTextual(String text) {
+    public String addUniqueTextual(String text, boolean verbose) {
+        if (text == null || text.isEmpty()) {
+            return "Usage: /addUnique <setting> <value>";
+        }
+        String[] split = text.trim().split(" ", 2);
+        if (split.length < 2) {
+            return "Usage: /addUnique <setting> <value>";
+        }
+        String setting = split[0];
+        String parameter = split[1];
+        if (isListSetting(setting)) {
+            Object value;
+            if (isOfSubtype(setting, Setting.STRING)) {
+                value = parameter;
+            }
+            else if (isOfSubtype(setting, Setting.LONG)) {
+                try {
+                    value = Long.parseLong(parameter);
+                } catch (NumberFormatException ex) {
+                    return settingInvalidMessage(setting);
+                }
+            }
+            else {
+                return settingInvalidMessage(setting);
+            }
+            boolean changed = setAdd(setting, value);
+            if (changed) {
+                setSettingChanged(setting);
+                if (verbose) {
+                    return String.format("Setting '%s' (List): Added '%s', now %s",
+                            setting, parameter, getList(setting));
+                }
+                return String.format("Setting '%s' (List): Added '%s'",
+                        setting, parameter);
+            }
+            else {
+                if (verbose) {
+                    return String.format("Setting '%s' (List): Value '%s' already found (nothing changed), currently %s",
+                        setting, parameter, getList(setting));
+                }
+                return String.format("Setting '%s' (List): Value '%s' already found (nothing changed)",
+                        setting, parameter);
+            }
+        }
+        return settingInvalidMessage(setting);
+    }
+    
+    public String removeTextual(String text, boolean verbose) {
         if (text == null || text.isEmpty()) {
             return "Usage: /remove <setting> <value>";
         }
@@ -654,29 +712,60 @@ public class Settings {
         String setting = split[0];
         String parameter = split[1];
         if (isListSetting(setting)) {
+            boolean removed = false;
             if (isOfSubtype(setting, Setting.STRING)) {
-                listRemove(setting, parameter);
-                setSettingChanged(setting);
+                removed = listRemove(setting, parameter);
+                if (removed) {
+                    setSettingChanged(setting);
+                }
             } else if (isOfSubtype(setting, Setting.LONG)) {
                 try {
-                    listRemove(setting, Long.parseLong(parameter));
-                    setSettingChanged(setting);
+                    removed = listRemove(setting, Long.parseLong(parameter));
+                    if (removed) {
+                        setSettingChanged(setting);
+                    }
                 } catch (NumberFormatException ex) {
                     return settingInvalidMessage(setting);
                 }
             } else {
                 return settingInvalidMessage(setting);
             }
-            return "Setting '"+setting+"' (List): Removed '"+parameter+"', now: "+getList(setting);
+            if (removed) {
+                if (verbose) {
+                    return String.format("Setting '%s' (List): Removed '%s', now %s",
+                            setting, parameter, getList(setting));
+                }
+                return String.format("Setting '%s' (List): Removed '%s'",
+                        setting, parameter);
+            }
+            if (verbose) {
+                return String.format("Setting '%s' (List): Value '%s' not found (nothing changed), currently %s",
+                    setting, parameter, getList(setting));
+            }
+            return String.format("Setting '%s' (List): Value '%s' not found (nothing changed)",
+                    setting, parameter);
         } else if (isMapSetting(setting)) {
-            mapRemove(setting, parameter);
-            setSettingChanged(setting);
-            return "Setting '"+setting+"' (Map): Removed '"+parameter+"', now: "+getMap(setting);
+            if (mapContainsKey(setting, parameter)) {
+                Object removedValue = mapRemove(setting, parameter);
+                setSettingChanged(setting);
+                if (verbose) {
+                    return String.format("Setting '%s' (Map): Removed '%s' ('%s'), now %s",
+                            setting, parameter, removedValue, getMap(setting));
+                }
+                return String.format("Setting '%s' (Map): Removed '%s' ('%s')",
+                        setting, parameter, removedValue);
+            }
+            if (verbose) {
+                return String.format("Setting '%s' (Map): Key '%s' not found (nothing changed), currently %s",
+                    setting, parameter, getMap(setting));
+            }
+            return String.format("Setting '%s' (Map): Key '%s' not found (nothing changed)",
+                    setting, parameter);
         }
         return settingInvalidMessage(setting);
     }
     
-    public String setTextual(String text) {
+    public String setTextual(String text, boolean verbose) {
         if (text == null || text.isEmpty()) {
             return "Usage: /set <setting> <value>";
         }
@@ -717,7 +806,8 @@ public class Settings {
             listClear(setting);
             listAdd(setting, parameter);
             setSettingChanged(setting);
-            return "Setting '"+setting+"' (List) set to "+getList(setting);
+            return String.format("Setting '%s' (List): Set to %s",
+                    setting, getList(setting));
         }
         else if (isMapSetting(setting)
                 && (isOfSubtype(setting, Setting.STRING) || isOfSubtype(setting, Setting.LONG))) {
@@ -736,7 +826,12 @@ public class Settings {
             }
             mapPut(setting, mapParameters[0], value);
             setSettingChanged(setting);
-            return "Setting '"+setting+"' (Map) set to "+getMap(setting);
+            if (verbose) {
+                return String.format("Setting '%s' (Map): Set '%s' to '%s', now %s",
+                        setting, mapParameters[0], value, getMap(setting));
+            }
+            return String.format("Setting '%s' (Map): Set '%s' to '%s'",
+                    setting, mapParameters[0], value);
         }
         return settingInvalidMessage(setting);
     }
@@ -764,8 +859,19 @@ public class Settings {
         if (text == null || text.isEmpty()) {
             return "Usage: /get <setting>";
         }
-        String[] split = text.split(" ");
+        String[] split = text.split(" ", 2);
         String setting = split[0];
+        if (split.length == 2 && isMapSetting(setting)) {
+            String key = split[1];
+            if (mapContainsKey(setting, key)) {
+                return String.format("Setting '%s' (Map) key '%s' has value '%s'.",
+                        setting, key, mapGet(setting, key));
+            }
+            else {
+                return String.format("Setting '%s' (Map) does not contain key '%s'.",
+                        setting, key);
+            }
+        }
         String output = settingToString(setting);
         if (output != null) {
             return output;
