@@ -389,9 +389,22 @@
     <h3><a name="commands-chain">Execute several commands</a></h3>
     <p>The <code>/chain</code> command allows you to run several commands at the
         same time. Each part separated by a <code>|</code> is basicially
-        entered into the inputbox again. Whitespace around each part is trimmed.
-        Escape <code>|</code> with <code>|</code> to use it directly.</p>
+        entered into the inputbox again.</p>
     
+    <dl class="defList">
+        <dt><code>/chain [command1] | [command2] | [command3]</code></dt>
+        <dd>Runs command1, then command2, then command3. This can be repeated
+            further by adding more parts separated by <code>|</code>.</dd>
+        <dd>Whitespace around each command is trimmed.</dd>
+        <dd><em>Note:</em> A <code>|</code> character in a command would be
+            interpreted as a command separator. Escape <code>|</code> with
+            itself to use the character without special meaning (<code>||</code>).
+            If used in a Custom Command, the function <code>$cs()</code> (as in
+            <u>c</u>hain <u>s</u>afe) can be used around replacements for
+            escaping (e.g. <code>$cs($1-)</code>).</dd>
+    </dl>
+    
+    <p>Examples:</p>
     <dl class="defList">
         <dt><code>/chain /echo a | /echo b</code></dt>
         <dd>Outputs <code>a</code> and <code>b</code></dd>
@@ -404,26 +417,44 @@
         replacements, consider the following:</p>
     
     <dl class="defList">
-        <dt><code>/chain /echo $(msg) | /echo abc</code></dt>
+        <dt><code>/chain /echo $cs($(msg)) | /echo abc</code></dt>
         <dd>All replacements are performed before the <code>/chain</code>
             command is executed, so anything in <code>$(msg)</code> is put in
             first. If <code>$(msg)</code> contained <code>Hello World!</code>:<br />
             <code>/chain /echo Hello World! | /echo abc</code></dd>
-        <dd>This means that if a replacement contains a <code>|</code> character
-            it would add an additional command. If <code>$(msg)</code> contained <code>Hello | World!</code>, then <code>World!</code> would be
-            separately entered into the inputbox (so it would output two <code>/echo</code>
-            info messages and send <code>World!</code> to chat):<br />
+        <dt><code>/chain /echo $(msg) | /echo abc</code></dt>
+        <dd>Assuming no escaping were to take place: If <code>$(msg)</code>
+            would contain <code>Hello | World!</code> then the <code>|</code>
+            in it would be interpreted as a command separator and thus <code>World!</code>
+            would be separately entered into the inputbox (so it would output
+            two <code>/echo</code> info messages and send <code>World!</code> to
+            chat):<br />
             <code>/chain /echo Hello | World! | /echo abc</code></dd>
-        <dd>Since this could cause issues, any top-level replacement will escape
-            the <code>|</code> character automatically if the Custom Command
-            begins with the <code>/chain</code> command (so it would output
+        <dd>This could cause serious issues, so it is recommended to always
+            make sure text is safe to be used in the <code>/chain</code> command:
+            <ul>
+                <li>Wrap replacements in the <code>$cs()</code> function (as in <u>c</u>hain <u>s</u>afe)
+                    when used in a <code>/chain</code> command to escape
+                    <code>|</code> characters: <code>$cs($(msg))</code></li>
+                <li>In addition, any top-level replacement will escape
+                    <code>|</code> characters automatically if the Custom Command
+                    begins with <code>/chain </code> (so the above
+                    example should normally not cause issues). However it is
+                    good practice to always use the <code>$cs()</code> function
+                    anyway (it won't be escaped twice) in case something changes
+                    in the future so that the Custom Command doesn't begin with
+                    <code>/chain</code> anymore.<br />
+                    You can prevent this automatic escaping (if you are
+                    absolutely sure that you want replacements to be able to
+                    insert any command) by adding a backslash in front (this
+                    doesn't work when you enter the <code>/chain</code> command
+                    directly into the inputbox):<br />
+                    <code>\/chain /echo Hello | World! | /echo abc</code></li>
+            </ul>
+            When properly escaped, it will turn into this (which outputs
             <code>Hello | World!</code> and <code>abc</code>):<br />
-            <code>/chain /echo Hello || World! | /echo abc</code></dd>
-        <dd>You can prevent this automatic escaping (if you are absolutely sure that
-            you want replacements to be able to insert any command) by adding
-            a backslash in front (this doesn't work when you enter the <code>/chain</code>
-            command directly into the inputbox):<br />
-            <code>\/chain /echo Hello | World! | /echo abc</code></dd>
+            <code>/chain /echo Hello || World! | /echo abc</code>
+        </dd>
         
         <dt><code>/chain /echo abc $(chain-test)</code></dt>
         <dd>You can test this by using the <code>$(chain-test)</code> replacement.
@@ -436,23 +467,40 @@
     
     <h3><a name="commands-foreach">Execute the same command for each entry in a list</a></h3>
     <p>The <code>/foreach</code> command allows you to run the same command for
-        each entry of a space separated list. The command is run as a Custom
-        Command, with the <code>$1</code> replacement containing a single list
-        entry.</p>
+        each entry of a space separated list. The command section is run as a
+        Custom Command, with the <code>$1</code> replacement containing a single
+        list entry.</p>
     
     <dl class="defList">
         <dt><code>/foreach [list] > [command]</code></dt>
-        <dd>The command consist of the comma-separated list, the
-            <code>&gt;</code> character and the command to execute.</dd>
-        <dd>Everything after the first <code>></code> character is interpreted
-            as the command. If you want to use a <code>></code> in the list
-            part, you can add another one in front for it to be treated
-            literally (<code>>></code>, this will happen automatically for
-            top-level replacements). Both the list and command section will
-            consume a single <code>></code> only if they are repeated (<code>>></code>
-            to <code>></code>, but <code>></code> unmodified).</dd>
+        <dd>The command consist of the comma-separated list, the <code>&gt;</code>
+            character and the command to execute (whereas the command is run as
+            it's own Custom Command with the <code>$1</code> replacement).</dd>
         <dd>List and command are trimmed for leading and trailing whitespace.</dd>
-        
+        <dd><em>Note:</em> Everything after the first <code>&gt;</code>
+            character is interpreted as the command. If you want to use a
+            <code>&gt;</code> in the list section you have to escape it with
+            itself for it to be treated literally (<code>&gt;&gt;</code>). Both the
+            list and command section will consume a single <code>&gt;</code> only
+            if they are repeated (<code>&gt;&gt;</code> to <code>&gt;</code>, but
+            <code>></code> unmodified).</dd>
+        <dd>If you use a Custom Command replacement in the <code>[list]</code>
+            section, make sure the text is safe to use:
+            <ul>
+                <li>Wrap replacements in the <code>$fs()</code> function (as in <u>f</u>oreach <u>s</u>afe)
+                    to escape <code>&gt;</code> characters: <code>$fs($1-)</code></li>
+                <li>In addition, any top-level replacements will escape <code>&gt;</code>
+                    characters automatically if the Custom Command begins with
+                    <code>/foreach </code>. However it is good practice to
+                    always use the <code>$fs()</code> function anyway (it won't
+                    be escaped twice) in case something changes in the future so
+                    that the Custom Command doesn't begin with <code>/foreach</code>
+                    anymore.</li>
+            </ul>
+        </dd>
+    </dl>
+    <p>Examples:</p>
+    <dl class="defList">
         <dt><code>/foreach a b c > /echo $1</code></dt>
         <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
             entered into the chat inputbox.</dd>
@@ -465,16 +513,19 @@
             run for each list entry.</dd>
         
         <dt><code>/foreach a &lt;b>> c > /echo $1</code></dt>
-        <dd>Outputs <code>a</code>, <code>&lt;b&gt;</code> and <code>c</code> when
-            entered into the chat inputbox. Note the escaped <code>></code> in
-            the list entry.</dd>
+        <dd>Outputs <code>a</code>, <code>&lt;b&gt;</code> and <code>c</code>
+            when entered into the chat inputbox. Note the escaped <code>&gt;</code>
+            in the list entry.</dd>
         
-        <dt><code>Open Streams=/foreach $1- > /openUrl https://twitch.tv/\$1</code> (added as a Streams Context menu entry)</dt>
+        <dt><code>Open Streams=/foreach $fs($1-) > /openUrl https://twitch.tv/\$1</code> (added as a Streams Context menu entry)</dt>
         <dd>When several channels are selected and the command run, it will
             replace <code>$1-</code> with the list of selected streams and then
             open the URL for each one of them. Note that the <code>$1</code> in
             the <code>/openUrl</code> command is escaped.</dd>
-        
+    </dl>
+    
+    <p>Detailed Explanation Example:</p>
+    <dl class="defList">
         <dt><code>/foreachtest /foreach a b c > /echo \$1</code> (added to the Custom Commands list)</dt>
         <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
             <code>/foreachtest</code> is entered into the chat inputbox.</dd>

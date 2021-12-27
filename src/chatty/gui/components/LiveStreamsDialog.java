@@ -421,7 +421,7 @@ public class LiveStreamsDialog extends JFrame {
      * Live Streams List
      */
     public void handleStreamsAction(Collection<StreamInfo> streams, boolean external) {
-        Function<String, String> makeOpenCommand = url -> "/chain /foreach $1- > /openUrl " + url + " | /join $replace($1-, ,\\,)";
+        Function<String, String> makeOpenCommand = url -> "/chain /foreach $fs($1-) > /openUrl " + url + " | /join $replace($1-, ,\\,)";
         switch (OpenAction.fromKey(settings.getString("liveStreamsAction"))) {
             case INFO:
                 if (!external) {

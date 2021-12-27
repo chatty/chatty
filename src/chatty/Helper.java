@@ -912,6 +912,13 @@ public class Helper {
         return result;
     }
     
+    public static String escapeForChainCommand(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replaceAll("(\\|+)", "$1|");
+    }
+    
     public static String[] getForeachParams(String input) {
         if (StringUtil.isNullOrEmpty(input)) {
             return new String[2];
@@ -928,6 +935,13 @@ public class Helper {
             command = prepare.apply(split[1]);
         }
         return new String[]{list, command};
+    }
+    
+    public static String escapeForForeachCommand(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replaceAll("(>+)", "$1>");
     }
     
     public static void addUserParameters(User user, String msgId, String autoModMsgId, Parameters parameters) {

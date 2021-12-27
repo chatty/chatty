@@ -212,6 +212,12 @@ public class Parser {
         else if (type.equals("urlencode")) {
             return urlencode(isRequired);
         }
+        else if (type.equals("cs")) {
+            return escape(Escape.Type.CHAIN, isRequired);
+        }
+        else if (type.equals("fs")) {
+            return escape(Escape.Type.FOREACH, isRequired);
+        }
         else if (type.equals("sort")) {
             return sort(isRequired);
         }
@@ -400,6 +406,13 @@ public class Parser {
         Item item = param();
         expect(")");
         return new UrlEncode(item, isRequired);
+    }
+    
+    private Item escape(Escape.Type type, boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        expect(")");
+        return new Escape(item, type, isRequired);
     }
     
     private Item sort(boolean isRequired) throws ParseException {
