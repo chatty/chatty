@@ -165,6 +165,9 @@ public class MainSettings extends SettingsPanel {
         });
         gbc = d.makeGbc(0, 4, 2, 1);
         dirPanel.add(openBackupButton, gbc);
+        
+        dirPanel.add(d.addSimpleBooleanSetting("initSettingsDialog"),
+            SettingsDialog.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
     }
     
     public static Map<String, String> getLanguageOptions() {
