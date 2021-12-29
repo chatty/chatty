@@ -912,6 +912,8 @@ public class Helper {
         return result;
     }
     
+    public static String ESCAPE_FOR_CHAIN_COMMAND = "escape-pipe";
+    
     public static String escapeForChainCommand(String input) {
         if (input == null) {
             return null;
@@ -936,6 +938,8 @@ public class Helper {
         }
         return new String[]{list, command};
     }
+    
+    public static String ESCAPE_FOR_FOREACH_COMMAND = "escape-greater";
     
     public static String escapeForForeachCommand(String input) {
         if (input == null) {

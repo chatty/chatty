@@ -22,10 +22,10 @@ public class SpecialEscape implements Item {
     @Override
     public String replace(Parameters parameters) {
         String result = item.replace(parameters);
-        if (parameters.get("escape-pipe") != null && result != null) {
+        if (parameters.get(Helper.ESCAPE_FOR_CHAIN_COMMAND) != null && result != null) {
             result = Helper.escapeForChainCommand(result);
         }
-        if (parameters.get("escape-greater") != null && result != null) {
+        if (parameters.get(Helper.ESCAPE_FOR_FOREACH_COMMAND) != null && result != null) {
             result = Helper.escapeForForeachCommand(result);
         }
         return result;

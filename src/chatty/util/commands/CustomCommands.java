@@ -107,18 +107,18 @@ public class CustomCommands {
         parameters.put("chain-test", "| /echo Test || Message");
         parameters.put("allow-request", "true");
         if (command.getRaw() != null && command.getRaw().startsWith("/chain ")) {
-            parameters.put("escape-pipe", "true");
+            parameters.put(Helper.ESCAPE_FOR_CHAIN_COMMAND, "true");
         }
         else {
             // Need to remove, so it doesn't stay for chained commands which
             // still use the same Parameters
-            parameters.remove("escape-pipe");
+            parameters.remove(Helper.ESCAPE_FOR_CHAIN_COMMAND);
         }
         if (command.getRaw() != null && command.getRaw().startsWith("/foreach ")) {
-            parameters.put("escape-greater", "true");
+            parameters.put(Helper.ESCAPE_FOR_FOREACH_COMMAND, "true");
         }
         else {
-            parameters.remove("escape-greater");
+            parameters.remove(Helper.ESCAPE_FOR_FOREACH_COMMAND);
         }
         parameters.put("nested-custom-commands", String.valueOf(getCustomCommandCount(parameters) + 1));
         

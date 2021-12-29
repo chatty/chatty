@@ -35,12 +35,12 @@ public class Escape implements Item {
         // Don't escape if SpecialEscape already will anyway
         switch (type) {
             case CHAIN:
-                if (parameters.get("escape-pipe") == null) {
+                if (parameters.get(Helper.ESCAPE_FOR_CHAIN_COMMAND) == null) {
                     return Helper.escapeForChainCommand(value);
                 }
                 break;
             case FOREACH:
-                if (parameters.get("escape-greater") == null) {
+                if (parameters.get(Helper.ESCAPE_FOR_FOREACH_COMMAND) == null) {
                     return Helper.escapeForForeachCommand(value);
                 }
                 break;
