@@ -38,10 +38,12 @@ public class Escape implements Item {
                 if (parameters.get("escape-pipe") == null) {
                     return Helper.escapeForChainCommand(value);
                 }
+                break;
             case FOREACH:
                 if (parameters.get("escape-greater") == null) {
                     return Helper.escapeForForeachCommand(value);
                 }
+                break;
         }
         return value;
     }

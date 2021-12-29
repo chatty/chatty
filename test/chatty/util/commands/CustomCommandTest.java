@@ -195,15 +195,95 @@ public class CustomCommandTest {
             "abc", "abc",
             "a b c", "a+b+c"
         });
+        
+        //-------------
+        // cs() / fs()
+        //-------------
+        test("$cs($1-)", new String[] {
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">a||b||c<"
+        });
+        
+        test("$fs($1-)", new String[] {
+            "a|b|c", "a|b|c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a|b|c<"
+        });
+        
+        test("$cs($fs($1-))", new String[] {
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a||b||c<"
+        });
+        
+        test("$cs($fs($1-))", new String[]{
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a||b||c<"
+        }, new String[]{
+            "escape-pipe", "true"
+        });
+        
+        test("$cs($fs($1-))", new String[]{
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a||b||c<"
+        }, new String[]{
+            "escape-greater", "true"
+        });
+        
+        test("$1-", new String[]{
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">a||b||c<"
+        }, new String[]{
+            "escape-pipe", "true"
+        });
+        
+        test("$1-", new String[]{
+            "a|b|c", "a|b|c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a|b|c<"
+        }, new String[]{
+            "escape-greater", "true"
+        });
+        
+        test("$1-", new String[]{
+            "a|b|c", "a||b||c",
+            "a>b<c", "a>>b<c",
+            "a b c", "a b c",
+            ">a|b|c<", ">>a||b||c<"
+        }, new String[]{
+            "escape-greater", "true",
+            "escape-pipe", "true"
+        });
     }
     
     private void test(String command, String[] tests) {
+        test(command, tests, null);
+    }
+    
+    private void test(String command, String[] tests, String[] params) {
         CustomCommand c = CustomCommand.parse(command);
         if (c.hasError()) {
             throw new RuntimeException(c.getError());
         }
         for (int i=0; i<tests.length; i += 2) {
-            assertEquals(tests[i+1], c.replace(Parameters.create(tests[i])));
+            Parameters parameters = Parameters.create(tests[i]);
+            if (params != null) {
+                for (int j = 0; j < params.length; j += 2) {
+                    parameters.put(params[j], params[j + 1]);
+                }
+            }
+            assertEquals(tests[i+1], c.replace(parameters));
         }
     }
     
