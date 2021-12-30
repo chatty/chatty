@@ -955,6 +955,12 @@ public class SettingsManager {
         if (switchedFromVersionBefore("0.9.7-b4")) {
             settings.setLong("mentionsInfo", settings.getLong("mentions"));
         }
+        if (switchedFromVersionBefore("0.16")) {
+            // Y is "Week year", which may not be what is expected sometimes
+            for (String setting : new String[]{"timestamp", "logTimestamp", "userDialogTimestamp"}) {
+                settings.setString(setting, settings.getString(setting).replace("Y", "y"));
+            }
+        }
         
         overrideHotkeySettings();
     }

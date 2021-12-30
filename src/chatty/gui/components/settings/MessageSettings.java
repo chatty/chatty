@@ -171,7 +171,7 @@ public class MessageSettings extends SettingsPanel {
         });
         
         private static final List<String> DATE_FORMATS = Arrays.asList(new String[]{
-            "YYYY-MM-dd", "MMM d", "d MMM", "dd.MM.", ""
+            "yyyy-MM-dd", "MMM d", "d MMM", "dd.MM.", ""
         });
         
         private static final List<String> BEFORE = Arrays.asList(new String[]{
@@ -401,7 +401,7 @@ public class MessageSettings extends SettingsPanel {
     
     public static void main(String[] args) {
         TimestampEditor s = new TimestampEditor(null);
-        s.showDialog("[YYYY-MM-dd HH:mm]");
+        s.showDialog("[yyyy-MM-dd HH:mm]");
         System.exit(0);
     }
     
