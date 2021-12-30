@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -54,6 +56,8 @@ import javax.swing.table.TableRowSorter;
 public class BlockedTermsPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(BlockedTermsPanel.class.getName());
+    
+    private static final int BULK_EDIT_DELAY = 500;
 
     private final JLabel statusLabel;
     private final JButton refreshButton;
@@ -247,19 +251,35 @@ public class BlockedTermsPanel extends JPanel {
             toDelete.add(term);
         }
         if (toDelete.size() == 1 || JOptionPane.showConfirmDialog(table, "Delete "+toDelete.size()+" items?", "Delete items", JOptionPane.OK_CANCEL_OPTION) == 0) {
-            for (BlockedTerm term : toDelete) {
-                api.removeBlockedTerm(term, removed -> {
-                    SwingUtilities.invokeLater(() -> {
-                        if (removed == null) {
-                            statusLabel.setText("An error occured removing item");
+            Thread thread = new Thread("deleteTerms") {
+                
+                @Override
+                public void run() {
+                    for (BlockedTerm term : toDelete) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(BULK_EDIT_DELAY);
+                            SwingUtilities.invokeLater(() -> {
+                                api.removeBlockedTerm(term, removed -> {
+                                    SwingUtilities.invokeLater(() -> {
+                                        if (removed == null) {
+                                            statusLabel.setText("An error occured removing item");
+                                        }
+                                        else if (removed.streamLogin.equals(currentStream)) {
+                                            data.remove(removed);
+                                            setEdited(true);
+                                        }
+                                    });
+                                });
+                            });
                         }
-                        else if (removed.streamLogin.equals(currentStream))  {
-                            data.remove(removed);
-                            setEdited(true);
+                        catch (InterruptedException ex) {
+                            Logger.getLogger(BlockedTermsPanel.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                    });
-                });
-            }
+                    }
+                }
+                
+            };
+            thread.start();
         }
     }
     
@@ -269,9 +289,25 @@ public class BlockedTermsPanel extends JPanel {
         String result = editor.showDialog("Import entries (one entry per line)", preset, "Can also copy&paste in table to trigger export/import.");
         if (result != null) {
             String[] split = result.split("\n");
-            for (String item : split) {
-                addEntry(item);
-            }
+            Thread thread = new Thread("importTerms") {
+
+                @Override
+                public void run() {
+                    for (String item : split) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(BULK_EDIT_DELAY);
+                        }
+                        catch (InterruptedException ex) {
+                            Logger.getLogger(BlockedTermsPanel.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        SwingUtilities.invokeLater(() -> {
+                            addEntry(item);
+                        });
+                    }
+                }
+
+            };
+            thread.start();
         }
     }
     
