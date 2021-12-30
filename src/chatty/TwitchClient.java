@@ -1145,6 +1145,24 @@ public class TwitchClient {
         commands.add("openwdir", p -> {
             MiscUtil.openFolder(new File(Chatty.getWorkingDirectory()), g);
         });
+        commands.add("showJarDir", p -> {
+            Path path = Stuff.determineJarPath();
+            if (path != null) {
+                g.printSystem("JAR directory: "+path.getParent());
+            }
+            else {
+                g.printSystem("JAR directory unknown");
+            }
+        });
+        commands.add("openJarDir", p -> {
+            Path path = Stuff.determineJarPath();
+            if (path != null) {
+                MiscUtil.openFolder(path.getParent().toFile(), g);
+            }
+            else {
+                g.printSystem("JAR directory unknown");
+            }
+        });
         commands.add("showBackupDir", p -> {
             g.printSystem("Backup directory: "+Chatty.getBackupDirectory());
         });
