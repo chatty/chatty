@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -40,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
@@ -124,8 +126,33 @@ public class BlockedTermsPanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 popupMenu(e);
             }
+            
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editEntry();
+                }
+            }
+            
         });
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        
+        table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeItems");
+        table.getActionMap().put("removeItems", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteEntries();
+            }
+        });
+        table.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "editItem");
+        table.getActionMap().put("editItem", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editEntry();
+            }
+        });
         
         //--------------------------
         // Other Elements
@@ -225,7 +252,7 @@ public class BlockedTermsPanel extends JPanel {
         if (selected != -1) {
             BlockedTerm selectedTerm = data.get(table.convertRowIndexToModel(selected));
             Editor editor = new Editor(SwingUtilities.getWindowAncestor(this));
-            String result = editor.showDialog("Edit (Removes and adds the term)", selectedTerm.text, "");
+            String result = editor.showDialog("Edit (Removes the term and adds the edited one)", selectedTerm.text, null);
             if (result != null && !result.equals(selectedTerm.text)) {
                 api.removeBlockedTerm(selectedTerm, removed -> {
                     SwingUtilities.invokeLater(() -> {
