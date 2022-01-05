@@ -65,10 +65,69 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.15">Version 0.16</a> <a name="latest">(This one!)</a> (2021-??-??)
+        <a name="0.16">Version 0.16</a> <a name="latest">(This one!)</a> (2022-01-06)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Beta, TBD (see <a href="https://github.com/chatty/chatty/releases/tag/v0.16-b4">GitHub Releases</a> for beta changes)</p>
+    <p>With the v5 Twitch API shutting down early 2022 more features have been
+        migrated to the new API, which does not provide all the features or
+        information that you may be used to (or limited to the broadcaster).
+        A new feature (in beta) is the Blocked Terms API that allows moderators
+        to view and edit a channel's Blocked Terms through the Admin Dialog.</p>
+    
+    <pre>
+### Twitch Features
+- Changed various features to new API, some notes:
+  - Admin Dialog: New API only allows the broadcaster to set the title/game (old
+    API is being used for editors until it is turned off)
+  - Commercials: New API only allows the broadcaster to run commercials (editors
+    will trigger the chat command instead)
+  - Subscribers List: Subscription time not available anymore, but subscription
+    tiers and total subpoints are now available in the new API
+  - User Dialog: Some information removed that isn't in the new API, added some
+    subscriber information from the user's subscriber badge (if available)
+- Added page to Admin Dialog for viewing and editing Blocked Terms (AutoMod)
+- Added info messages about your message being handled by AutoMod
+- Added more info messages for Point Redemptions
+- Removed follow/unfollow feature because Twitch removed the API
+
+### Settings
+- Custom Badges: Added ability to match on message tags
+- Matching: Added `config:live` prefix to check for live stream
+- Highlight: Added setting to mark matches from all highlight entries instead of
+  just the first matching one
+- Notifications: Added ability to specify several channels in "Channel" field
+- Updating: Added setting to only update JAR
+- Added ability to set separate buffer size for Highlights/Ignore panel
+- Added more User Dialog Message History highlight options
+- Added Live Streams settings page with some Live Streams list settings and more
+  (e.g. you can toggle the new icon in the Live Streams list for open channels)
+
+### Other
+- Added FFZ custom VIP badge
+- Joining channels:
+  - Changed /join command to comma-separated list and same features as other
+    ways to join channels (Connect Dialog, Join Dialog etc.)
+  - Added more options for joining channels (Addressbook categories, favorites,
+    live resctriction)
+  - Some Twitch URLs can be specified for joining channels
+  - Reduced join delay a bit
+- Automatically change channel for Followers/Admin panel, added options in the
+  panel's context menus to use fixed channel and to manually change the channel
+- Added more Setting Commands, including alternatives with less verbose output
+- Added option to print output of /proc command
+- Added /foreach command
+- Made Stream Chat dockable
+- Initialize Settings Dialog when first opened to improve startup times
+- Various other UI improvements
+- Updated help
+
+### Bugfixes
+- Added method to interrupt long-running regular expressions which would cause
+  the program to hang
+- Fixed icons in Live Streams List not showing up properly in some cases
+- Fixed error when setting maximum tab width too low
+- Various other bugfixes
+    </pre>
     
     <h2>
         <a name="0.15">Version 0.15</a> (2021-07-03)

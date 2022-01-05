@@ -969,7 +969,11 @@
             <ul>
                 <li><code>config:firstmsg</code> - Restrict matching to the
                     first message of this user in this channel during the
-                    current session (first message in User Dialog)</li>
+                    current session (first message in User Dialog).<br />
+                    To match on the first message of this user in the channel
+                    overall, you can match on the message tags that Twitch
+                    sends: <code>config:t|first-msg=1</code> (as long as Twitch
+                    doesn't change it)</li>
                 <li><code>config:repeatedmsg</code> - Matches if a user repeats
                     the same message (this requires the <a href="#RepeatMsg">Repetition Detection</a> in
                     the Moderation settings to be enabled). Can optionally
