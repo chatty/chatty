@@ -203,3 +203,7 @@ td.symbol {
     font-size: 1.1em;
     text-align: center;
 }
+
+.m {
+    font-family: monospace;
+}

@@ -74,6 +74,9 @@
         A new feature (in beta) is the Blocked Terms API that allows moderators
         to view and edit a channel's Blocked Terms through the Admin Dialog.</p>
     
+    <p>Some new APIs require new access scopes, so you probably have to renew
+        your Chatty login (check <span class="m">&lt;Main - Account&gt;</span>).</p>
+    
     <pre>
 ### Twitch Features
 - Changed various features to new API, some notes:
@@ -119,11 +122,12 @@
 - Made Stream Chat dockable
 - Initialize Settings Dialog when first opened to improve startup times
 - Various other UI improvements
+- Changed to OpenJDK 17 (Adoptium) for Windows Standalone
 - Updated help
 
 ### Bugfixes
 - Added method to interrupt long-running regular expressions which would cause
-  the program to hang
+  the program to hang (e.g. catastrophic backtracking)
 - Fixed icons in Live Streams List not showing up properly in some cases
 - Fixed error when setting maximum tab width too low
 - Various other bugfixes
