@@ -195,7 +195,7 @@ public class DockedDialogHelper {
     
     public void loadTabSettings() {
         if (content instanceof DockStyledTabContainer) {
-            ((DockStyledTabContainer)content).setSettings(0, (int)settings.getLong("tabsMessage"), 0, 0, 0, -1);
+            ((DockStyledTabContainer)content).setSettings(0, settings.getLong("tabsMessage"), 0, 0, 0, -1);
         }
     }
     

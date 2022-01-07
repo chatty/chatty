@@ -38,6 +38,8 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
         public final static int DOT2 = 1 << 5;
         public final static int ASTERISK = 1 << 6;
         public final static int LINE = 1 << 7;
+        public final static int CUSTOM_COLOR = 1 << 8;
+        public final static int CUSTOM_COLOR_START_BIT = 16;
         
         //--------------------------
         // Borders
@@ -54,15 +56,15 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
         // Status variables
         //--------------------------
         private boolean isLive;
-        private int liveSetting;
+        private long liveSetting;
         private boolean hasMessages;
-        private int messageSetting;
+        private long messageSetting;
         private boolean hasHighlight;
-        private int highlightSetting;
+        private long highlightSetting;
         private boolean hasStatus;
-        private int statusSetting;
+        private long statusSetting;
         private boolean isActive;
-        private int activeSetting;
+        private long activeSetting;
         private boolean isJoining;
         
         //--------------------------
@@ -84,6 +86,9 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
         private boolean dot1;
         private boolean dot2;
         private boolean line;
+        private Color dot1Color;
+        private Color dot2Color;
+        private Color lineColor;
         
         public DockStyledTabContainer(T content, String title, DockManager m) {
             super(title, content, m);
@@ -159,7 +164,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             return isJoining;
         }
         
-        public void setSettings(int liveSetting, int messageSetting, int highlightSetting, int statusSetting, int activeSetting, int maxWidth) {
+        public void setSettings(long liveSetting, long messageSetting, long highlightSetting, long statusSetting, long activeSetting, long maxWidth) {
             this.liveSetting = liveSetting;
             this.messageSetting = messageSetting;
             this.highlightSetting = highlightSetting;
@@ -178,6 +183,9 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             fontNoBold = false;
             fontItalic = false;
             fontBold = false;
+            dot1Color = new Color(255, 100, 100);
+            dot2Color = new Color(100, 100, 255);
+            lineColor = defaultForeground;
             foreground = defaultForeground;
             suffix = "";
             update(isLive, liveSetting);
@@ -214,18 +222,31 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             }
         }
         
-        private void update(boolean enabled, int setting) {
+        private void update(boolean enabled, long setting) {
             if (enabled) {
+                Color customColor = null;
+                if (isEnabled(setting, CUSTOM_COLOR)) {
+                    customColor = decodeColor(setting, CUSTOM_COLOR_START_BIT);
+                }
                 if (isEnabled(setting, DOT1)) {
                     border = BORDER_ACTIVE;
                     dot1 = true;
+                    if (customColor != null) {
+                        dot1Color = customColor;
+                    }
                 }
                 if (isEnabled(setting, DOT2)) {
                     border = BORDER_ACTIVE;
                     dot2 = true;
+                    if (customColor != null) {
+                        dot2Color = customColor;
+                    }
                 }
                 if (isEnabled(setting, LINE)) {
                     line = true;
+                    if (customColor != null) {
+                        lineColor = customColor;
+                    }
                 }
                 if (isEnabled(setting, ITALIC)) {
                     fontItalic = true;
@@ -234,10 +255,20 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
                     fontBold = true;
                 }
                 if (isEnabled(setting, COLOR1)) {
-                    foreground = LaF.getTabForegroundUnread();
+                    if (customColor != null) {
+                        foreground = customColor;
+                    }
+                    else {
+                        foreground = LaF.getTabForegroundUnread();
+                    }
                 }
                 if (isEnabled(setting, COLOR2)) {
-                    foreground = LaF.getTabForegroundHighlight();
+                    if (customColor != null) {
+                        foreground = customColor;
+                    }
+                    else {
+                        foreground = LaF.getTabForegroundHighlight();
+                    }
                 }
                 if (isEnabled(setting, ASTERISK)) {
                     suffix = "*";
@@ -266,8 +297,22 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
          * @param optionConstant
          * @return 
          */
-        private boolean isEnabled(int settingValue, int optionConstant) {
+        private boolean isEnabled(long settingValue, long optionConstant) {
             return (settingValue & optionConstant) != 0;
+        }
+        
+        public static long encodeColor(Color color, long value, int startBit) {
+            value |= (long) color.getRed() << startBit;
+            value |= (long) color.getGreen() << startBit + 8;
+            value |= (long) color.getBlue() << startBit + 16;
+            return value;
+        }
+
+        public static Color decodeColor(long value, int startBit) {
+            int red = (int) ((value >> startBit) & ((1 << 8) - 1));
+            int green = (int) ((value >> startBit + 8) & ((1 << 8) - 1));
+            int blue = (int) ((value >> startBit + 16) & ((1 << 8) - 1));
+            return new Color(red, green, blue);
         }
         
         @Override
@@ -296,17 +341,17 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
 
         private class TabComponent extends JLabel implements DockTabComponent {
             
-            private int maxWidth;
+            private long maxWidth;
             
             @Override
             public void paintComponent(Graphics g) {
                 int b = (int) (getHeight() * 0.2);
                 if (dot1) {
-                    g.setColor(new Color(255, 100, 100));
+                    g.setColor(dot1Color);
                     g.fillRect(getWidth() - 4, b, 4, 4);
                 }
                 if (dot2) {
-                    g.setColor(new Color(100, 100, 255));
+                    g.setColor(dot2Color);
                     g.fillRect(getWidth() - 4, b+6, 4, 4);
                 }
 //                if (line && getTitle().equals("#tduvatest")) {
@@ -340,7 +385,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
                 fadeLength = Math.min(fadeLength, getWidth() / 3);
                 fadeLength = fadeLength > 0 ? fadeLength : 1;
                 int alphaStep = (baseAlpha - lowestAlpha) / fadeLength;
-                g.setColor(new Color(defaultForeground.getRed(), defaultForeground.getGreen(), defaultForeground.getBlue(), baseAlpha));
+                g.setColor(new Color(lineColor.getRed(), lineColor.getGreen(), lineColor.getBlue(), baseAlpha));
                 // Draw most of the line
                 g.drawLine(fadeLength, y, getWidth() - fadeLength - 1, y);
                 for (int i = 0; i < fadeLength; i++) {
@@ -348,7 +393,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
                     int xLeft = i;
                     int xRight = getWidth() - 1 - i;
                     int pixelAlpha = lowestAlpha + i * alphaStep;
-                    g.setColor(new Color(defaultForeground.getRed(), defaultForeground.getGreen(), defaultForeground.getBlue(), pixelAlpha));
+                    g.setColor(new Color(lineColor.getRed(), lineColor.getGreen(), lineColor.getBlue(), pixelAlpha));
                     g.drawLine(xLeft, y, xLeft, y);
                     g.drawLine(xRight, y, xRight, y);
 //                    System.out.println(xLeft + " " + xRight + " " + pixelAlpha);
@@ -404,7 +449,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
                 return this;
             }
             
-            public void setMaxWidth(int maxWidth) {
+            public void setMaxWidth(long maxWidth) {
                 this.maxWidth = maxWidth;
             }
             
@@ -412,7 +457,7 @@ public class DockStyledTabContainer<T extends JComponent> extends DockContentCon
             public Dimension getPreferredSize() {
                 Dimension d = super.getPreferredSize();
                 if (maxWidth > 0 && d.width > maxWidth) {
-                    return new Dimension(maxWidth, d.height);
+                    return new Dimension((int) maxWidth, d.height);
                 }
                 return d;
             }

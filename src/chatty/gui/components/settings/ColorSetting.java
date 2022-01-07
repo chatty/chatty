@@ -56,11 +56,15 @@ public class ColorSetting extends JPanel implements StringSetting {
      * The base color as a string
      */
     private String baseColor;
+    
+    private boolean useBaseColor = true;
+    
     /**
      * Primary and secondary colors as Color objects.
      */
     private Color currentColor;
     private Color secondaryColor;
+    private String previewText;
     
     private final Set<ColorSettingListener> listeners = new HashSet<>();
     
@@ -83,6 +87,7 @@ public class ColorSetting extends JPanel implements StringSetting {
         this.type = type;
         this.baseColorSetting = baseColorSetting;
         this.colorChooser = chooser;
+        this.previewText = text;
         
         // Set text and size of preview
         if (!text.isEmpty()) {
@@ -97,7 +102,7 @@ public class ColorSetting extends JPanel implements StringSetting {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String result = colorChooser.chooseColorString(type, currentColor, secondaryColor, name, text);
+                String result = colorChooser.chooseColorString(type, currentColor, secondaryColor, name, previewText);
                 setSettingValue(result);
             }
         });
@@ -142,7 +147,12 @@ public class ColorSetting extends JPanel implements StringSetting {
     public void updated() {
         // Update Color objects based on current values
         currentColor = HtmlColors.decode(getSettingValue());
-        secondaryColor = HtmlColors.decode(baseColor);
+        if (useBaseColor) {
+            secondaryColor = HtmlColors.decode(baseColor);
+        }
+        else {
+            secondaryColor = null;
+        }
         
         // Choose the approriate background/foreground colors depending on type
         Color foregroundColor;
@@ -180,8 +190,24 @@ public class ColorSetting extends JPanel implements StringSetting {
         this.baseColorSetting = setting;
     }
     
+    public void setUseBaseColor(boolean use) {
+        this.useBaseColor = use;
+        updated();
+    }
+    
+    public void setPreviewText(String previewText) {
+        if (previewText == null) {
+            previewText = "";
+        }
+        preview.setText(" "+previewText);
+        this.previewText = previewText;
+    }
+    
     @Override
     public void setEnabled(boolean enabled) {
+        // Call so isEnabled() returns the correct value
+        super.setEnabled(enabled);
+        // Change state of children
         preview.setEnabled(enabled);
         textField.setEnabled(enabled);
         chooseColor.setEnabled(enabled);
