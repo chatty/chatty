@@ -72,7 +72,7 @@ public class ChannelCompletion implements AutoCompletionServer {
     
     private final Set<String> settingCommands = new TreeSet<>(Arrays.asList(new String[]{
         "set", "set2", "add", "add2", "addUnique", "addUnique2", "clearSetting",
-        "remove", "remove2", "get"
+        "remove", "remove2", "get", "reset"
     }));
     
     private boolean isSettingPrefix(String prefix) {

@@ -81,6 +81,7 @@ import chatty.util.settings.SettingsListener;
 import chatty.util.srl.SpeedrunsLive;
 import java.awt.Color;
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -208,7 +209,8 @@ public class TwitchClient {
         LOGGER.info(Helper.systemInfo());
         LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
                 +" [Settings Directory] "+Chatty.getUserDataDirectory()
-                +" [Classpath] "+System.getProperty("java.class.path"));
+                +" [Classpath] "+System.getProperty("java.class.path")
+                +" [Launch Options] "+ManagementFactory.getRuntimeMXBean().getInputArguments());
         
         if (Chatty.getOriginalWdir() != null) {
             LOGGER.info("Working directory changed due to -appwdir (from: "+Chatty.getOriginalWdir()+")");
