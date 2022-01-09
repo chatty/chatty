@@ -83,7 +83,6 @@ public class EmotesetManager {
         if (changed) {
             requestUserEmotes();
         }
-        newSets.remove("0");
         // Filter out emotesets in the new format for now
         newSets.removeIf(s -> s.contains("-"));
         api.getEmotesBySets(newSets);

@@ -151,6 +151,28 @@ public class EmoteSettings extends SettingsPanel {
         
         emojiSettings.add(d.addSimpleBooleanSetting("emojiReplace"),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
+        //==========================
+        // Manually added Emotes
+        //==========================
+        JPanel localEmoteSettings = addTitledPanel(Language.getString("settings.section.localEmotes"), 3);
+        
+        localEmoteSettings.add(new JLabel(SettingConstants.HTML_PREFIX+"Emotes configured in this section will always be available for your sent messages, however other people will only see them in your messages if you actually have access to them."),
+                d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
+        
+        Map<Long, String> smiliesDef = new LinkedHashMap<>();
+        smiliesDef.put(0L, "Off");
+        smiliesDef.put(1L, "Robot");
+        smiliesDef.put(2L, "Glitch");
+        smiliesDef.put(3L, "Monkey");
+        smiliesDef.put(10L, "Robot (Set automatically)");
+        smiliesDef.put(20L, "Glitch (Set automatically)");
+        smiliesDef.put(30L, "Monkey (Set automatically)");
+        
+        ComboLongSetting smilies = new ComboLongSetting(smiliesDef);
+        d.addLongSetting("smilies", smilies);
+        
+        SettingsUtil.addLabeledComponent(localEmoteSettings, "smilies", 0, 1, 1, GridBagConstraints.WEST, smilies);
     }
     
     private static class IgnoredEmotesDialog extends JDialog {

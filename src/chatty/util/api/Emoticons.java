@@ -121,6 +121,8 @@ public class Emoticons {
      */
     private final Set<Emoticon> otherGlobalEmotes = new HashSet<>();
     
+    private final Set<Emoticon> smilies = new HashSet<>();
+    
     /**
      * All loaded Twitch Emotes, by their Twitch Emote Id.
      */
@@ -379,6 +381,21 @@ public class Emoticons {
      */
     public void addTempEmoticon(Emoticon emote) {
         twitchEmotesById.put(emote.stringId, emote);
+    }
+    
+    public void setSmilies(Set<Emoticon> emotes) {
+        smilies.clear();
+        if (emotes != null) {
+            smilies.addAll(emotes);
+            LOGGER.info("Set " + smilies.size() + " smilies");
+        }
+    }
+    
+    public Set<Emoticon> getSmilies() {
+        if (smilies != null) {
+            return smilies;
+        }
+        return EMPTY_SET;
     }
     
     private static int clearOldEmoticonImages(Collection<Emoticon> emotes) {
@@ -793,7 +810,7 @@ public class Emoticons {
     
     public static final String toRegex(String emoteCode) {
         for (Map.Entry<String, String> entry : EMOTICONS_MAP.entrySet()) {
-            if (entry.getValue().equals(emoteCode)) {
+            if (entry.getValue().equals(emoteCode) || emoteCode.matches(entry.getKey())) {
                 return entry.getKey();
             }
         }

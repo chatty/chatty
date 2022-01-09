@@ -2560,6 +2560,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, Emoticon
         
         // All-channels emotes
         if (user.isLocalUser()) {
+            findEmoticons(main.emoticons.getSmilies(), text, ranges, rangesStyle);
             findEmoticons(main.emoticons.getUsableGlobalEmotes(), text, ranges, rangesStyle);
         }
         else {

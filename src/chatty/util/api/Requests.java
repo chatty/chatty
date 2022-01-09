@@ -557,26 +557,6 @@ public class Requests {
         });
     }
     
-    public void requestEmotesets(Set<String> emotesets) {
-        if (emotesets != null && !emotesets.isEmpty()) {
-            String emotesetsParam = StringUtil.join(emotesets, ",");
-            String url = "https://api.twitch.tv/kraken/chat/emoticon_images?emotesets="+emotesetsParam;
-            if (attemptRequest(url)) {
-                TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-                execute(request, r -> {
-                    EmoticonUpdate result = EmoticonParsing.parseEmoticonSets(r.text, EmoticonUpdate.Source.OTHER);
-                    if (result != null) {
-                        listener.receivedEmoticons(result);
-                    } else {
-                        api.emoticonManager2.addError(emotesets);
-                    }
-                });
-            }
-        }
-        
-            //requestResult(REQUEST_TYPE_EMOTICONS,"")
-    }
-    
     public void requestEmotesetsNew(Set<String> emotesets) {
         if (emotesets != null && !emotesets.isEmpty()) {
             String emotesetsParam = StringUtil.join(emotesets, "&emote_set_id=");

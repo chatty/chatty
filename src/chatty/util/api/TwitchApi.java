@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.Helper;
 import chatty.util.CachedBulkManager;
+import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.BlockedTermsManager.BlockedTerm;
 import chatty.util.api.BlockedTermsManager.BlockedTerms;
@@ -198,6 +199,9 @@ public class TwitchApi {
     private static final Object USER_EMOTES_UNIQUE = new Object();
     
     public void getUserEmotes(String userId) {
+        if (Debugging.isEnabled("!useremotes")) {
+            return;
+        }
         m.query(USER_EMOTES_UNIQUE,
                 null,
                 CachedBulkManager.ASAP | CachedBulkManager.WAIT | CachedBulkManager.REFRESH,

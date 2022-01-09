@@ -113,6 +113,7 @@ public class Emoticon {
     public final Type type;
     public final SubType subType;
     public final String code;
+    public final String regex;
     public final String emoteset;
     private final Set<String> streamRestrictions;
     public final String url;
@@ -146,6 +147,7 @@ public class Emoticon {
         private final String search;
         private final String url;
         
+        private String regex;
         private SubType subtype;
         private String urlX2;
         private int width = -1;
@@ -165,6 +167,11 @@ public class Emoticon {
             this.type = type;
             this.search = search;
             this.url = url;
+        }
+        
+        public Builder setRegex(String regex) {
+            this.regex = regex;
+            return this;
         }
         
         public Builder setSize(int width, int height) {
@@ -320,6 +327,8 @@ public class Emoticon {
 
         // Save before adding word boundary matching
         this.code = code;
+        
+        this.regex = builder.regex;
 
         this.type = builder.type;
         this.emoteset = builder.emoteset;
@@ -374,7 +383,8 @@ public class Emoticon {
     
     private void createMatcher() {
         if (matcher == null) {
-            String search = code;
+            // Use separate regex if available (e.g. for smilies)
+            String search = !StringUtil.isNullOrEmpty(regex) ? regex : code;
             int flags = 0;
             
             if (type == Type.EMOJI) {
@@ -392,6 +402,8 @@ public class Emoticon {
                 if (search.length() < 4) {
                     // Turn some of the "smiley" emotes back into regex (they
                     // still seem to be parsed with the regex serverside)
+                    // This is only the fallback for smilies that still come
+                    // from the Twitch API for now
                     search = Emoticons.toRegex(search);
                 }
                 // Any regular emotes should be separated by spaces
@@ -407,7 +419,8 @@ public class Emoticon {
             try {
                 matcher = Pattern.compile(search, flags).matcher("");
             } catch (PatternSyntaxException ex) {
-                LOGGER.warning("Error compiling pattern for '" + search + "' [" + ex.getLocalizedMessage() + "]");
+                LOGGER.warning(String.format("Error compiling emote pattern: '%s' (id: %s, type: %s) [%s]",
+                        search, stringId, type, ex.getLocalizedMessage()));
                 // Compile a pattern that doesn't match anything, so a Matcher
                 // is still available
                 matcher = Pattern.compile("(?!)").matcher("");

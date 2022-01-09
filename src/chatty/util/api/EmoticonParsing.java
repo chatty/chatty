@@ -80,6 +80,9 @@ public class EmoticonParsing {
                     // Stream restriction is required
                     add = false;
                 }
+                if (type.equals("smilies") && !Debugging.isEnabled("smilies+")) {
+                    add = false;
+                }
                 if (add) {
                     emotes.add(builder.build());
                     emotesets.add(set);
@@ -96,6 +99,9 @@ public class EmoticonParsing {
                 updateBuilder.setTypeToRemove(Emoticon.Type.TWITCH);
                 updateBuilder.setsSetsAddedToRemove(emotesets);
                 updateBuilder.setSource(source);
+            }
+            else {
+                updateBuilder.setSetsAdded(emotesets);
             }
             if (!setInfos.isEmpty()) {
                 updateBuilder.setSetInfos(setInfos);

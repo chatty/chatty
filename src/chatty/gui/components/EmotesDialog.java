@@ -1319,6 +1319,10 @@ public class EmotesDialog extends JDialog {
             reset();
             Set<Emoticon> emotes = emoteManager.getGlobalTwitchEmotes();
             addEmotes(emotes, Language.getString("emotesDialog.globalTwitch"));
+            Collection<Emoticon> smilies = emoteManager.getSmilies();
+            if (smilies != null) {
+                addEmotes(smilies, "Smilies");
+            }
             relayout();
         }
 
