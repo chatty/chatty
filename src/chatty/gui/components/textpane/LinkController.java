@@ -814,6 +814,8 @@ public class LinkController extends MouseAdapter {
             } else {
                 result = TwitchEmotesApi.getEmoteType(emote, emoteInfo, true);
             }
+        } else if (emote.type == Emoticon.Type.CUSTOM2) {
+            result = "Local Emote";
         } else {
             result = emote.type.label;
             if (emote.type != Emoticon.Type.EMOJI) {

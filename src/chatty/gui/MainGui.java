@@ -174,6 +174,7 @@ public class MainGui extends JFrame implements Runnable {
     protected DockedDialogManager dockedDialogs;
     private final IgnoredMessages ignoredMessagesHelper = new IgnoredMessages(this);
     public final HotkeyManager hotkeyManager = new HotkeyManager(this);
+    public final LocalEmotesSetting localEmotes;
 
     // Listeners that need to be returned by methods
     private ActionListener actionListener;
@@ -185,6 +186,7 @@ public class MainGui extends JFrame implements Runnable {
     public MainGui(TwitchClient client) {
         this.client = client;
         msgColorManager = new MsgColorManager(client.settings);
+        localEmotes = new LocalEmotesSetting(client.settings, this);
         repeatMsg = new RepeatMsgHelper(client.settings);
         SwingUtilities.invokeLater(this);
     }
@@ -1010,6 +1012,8 @@ public class MainGui extends JFrame implements Runnable {
             client.api.checkToken();
         }
         
+        localEmotes.init();
+        emoticons.setLocalEmotes(localEmotes.getData());
         emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
         emoticons.loadFavoritesFromSettings(client.settings);
         client.api.getEmotesBySets(emoticons.getFavoritesNonGlobalEmotesets());
@@ -2324,6 +2328,12 @@ public class MainGui extends JFrame implements Runnable {
                 emoticons.removeFavorite(emote);
                 client.settings.listRemove("favoriteEmotes", emote.code);
                 emotesDialog.favoritesUpdated();
+            }
+            else if (e.getActionCommand().equals("addCustomLocalEmote")) {
+                localEmotes.add(emote);
+            }
+            else if (e.getActionCommand().equals("removeCustomLocalEmote")) {
+                localEmotes.remove(emote);
             }
             if (emote.hasStreamSet()) {
                 nameBasedStuff(e, emote.getStream());
@@ -4381,7 +4391,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         else if (type.equals("globaltwitch")) {
-            client.emotesetManager.requestUserEmotes();
+            client.api.refreshSets(new HashSet<>(Arrays.asList(new String[]{"0"})));
         }
         else if (type.equals("globalother")) {
             if (client.settings.getBoolean("ffz")) {
@@ -4394,14 +4404,10 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void updateEmoticons(final EmoticonUpdate update) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                emoticons.updateEmoticons(update);
-                emotesDialog.update();
-                autoSetSmilies(update);
-            }
+        SwingUtilities.invokeLater(() -> {
+            emoticons.updateEmoticons(update);
+            emotesDialog.update();
+            autoSetSmilies(update);
         });
     }
     
@@ -5073,6 +5079,9 @@ public class MainGui extends JFrame implements Runnable {
                     hotkeyManager.loadFromSettings(client.settings);
                 } else if (setting.equals("streamChatChannels")) {
                     client.updateStreamChatLogos();
+                } else if (setting.equals("localEmotes")) {
+                    emoticons.setLocalEmotes(localEmotes.getData());
+                    emotesDialog.update();
                 }
             }
             if (type == Setting.LONG) {

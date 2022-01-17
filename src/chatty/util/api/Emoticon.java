@@ -65,7 +65,7 @@ public class Emoticon {
     
     public static enum Type {
         TWITCH("Twitch"), FFZ("FFZ"), BTTV("BTTV"), CUSTOM("Custom"),
-        EMOJI("Emoji"), NOT_FOUND_FAVORITE("NotFoundFavorite");
+        EMOJI("Emoji"), NOT_FOUND_FAVORITE("NotFoundFavorite"), CUSTOM2("Custom2");
         
         public String label;
         
@@ -264,7 +264,7 @@ public class Emoticon {
      * applicable type
      */
     public String getEmoteUrl(int factor, ImageType imageType) {
-        if (type == Type.TWITCH) {
+        if (type == Type.TWITCH || type == Type.CUSTOM2) {
             if (stringId != null) {
                 return getTwitchEmoteUrlById(stringId, factor, imageType);
             }
@@ -794,7 +794,7 @@ public class Emoticon {
             // Determine which URL to load the image from
             String url = Emoticon.this.url;
             int urlFactor = 1;
-            if (type == Type.TWITCH || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
+            if (type == Type.TWITCH || type == Type.CUSTOM2 || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
                 if (scaledSize.width > defaultSize.width) {
                     urlFactor = 2;
                     if (isAnimated() && (float)scaledSize.width / defaultSize.width < 1.6) {

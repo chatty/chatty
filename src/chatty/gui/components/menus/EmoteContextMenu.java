@@ -110,6 +110,15 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             }
         }
+        
+        if (emoteManager.canAddCustomLocal(emote)) {
+            if (!emoteManager.isCustomLocal(emote)) {
+                addItem("addCustomLocalEmote", "Add local emote");
+            }
+            else {
+                addItem("removeCustomLocalEmote", "Remove local emote");
+            }
+        }
 
         if (Chatty.DEBUG) {
             addItem("", String.valueOf(System.identityHashCode(emote)));

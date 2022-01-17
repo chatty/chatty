@@ -2,25 +2,39 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.api.Emoticon;
+import chatty.util.api.Emoticon.EmoticonUser;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
  * @author tduva
  */
 public class EmoteSettings extends SettingsPanel {
+    
+    protected final LocalEmotesDialog localEmotesDialog;
     
     protected EmoteSettings(SettingsDialog d) {
         
@@ -153,11 +167,11 @@ public class EmoteSettings extends SettingsPanel {
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
         //==========================
-        // Manually added Emotes
+        // Local Emotes
         //==========================
         JPanel localEmoteSettings = addTitledPanel(Language.getString("settings.section.localEmotes"), 3);
         
-        localEmoteSettings.add(new JLabel(SettingConstants.HTML_PREFIX+"Emotes configured in this section will always be available for your sent messages, however other people will only see them in your messages if you actually have access to them."),
+        localEmoteSettings.add(new LinkLabel(SettingConstants.HTML_PREFIX+"Emotes configured in this section will always be available in your sent messages, however other people will only see them in your messages if you actually have access to them. [help-settings:EmoticonsLocal Learn More]", d.getLinkLabelListener()),
                 d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST));
         
         Map<Long, String> smiliesDef = new LinkedHashMap<>();
@@ -172,7 +186,25 @@ public class EmoteSettings extends SettingsPanel {
         ComboLongSetting smilies = new ComboLongSetting(smiliesDef);
         d.addLongSetting("smilies", smilies);
         
-        SettingsUtil.addLabeledComponent(localEmoteSettings, "smilies", 0, 1, 1, GridBagConstraints.WEST, smilies);
+        SettingsUtil.addLabeledComponent(localEmoteSettings, "smilies", 0, 2, 1, GridBagConstraints.WEST, smilies);
+        
+        localEmotesDialog = new LocalEmotesDialog(d);
+        JButton localEmotesButton = new JButton("View Local Emotes");
+        localEmotesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        localEmotesButton.addActionListener(e -> {
+            localEmotesDialog.setLocationRelativeTo(d);
+            localEmotesDialog.setVisible(true);
+        });
+        localEmoteSettings.add(localEmotesButton,
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+    }
+
+    public void setData(Collection<Emoticon> data) {
+        localEmotesDialog.setData(data);
+    }
+    
+    public Collection<Emoticon> getData() {
+        return localEmotesDialog.getData();
     }
     
     private static class IgnoredEmotesDialog extends JDialog {
@@ -210,6 +242,89 @@ public class EmoteSettings extends SettingsPanel {
             GuiUtil.installEscapeCloseOperation(this);
         }
         
+    }
+    
+    private static class LocalEmotesDialog extends JDialog {
+        
+        private final TableEditor<Emoticon> editor;
+        
+        private LocalEmotesDialog(SettingsDialog d) {
+            super(d);
+            setTitle("Local Emotes");
+            setModal(true);
+            setLayout(new GridBagLayout());
+            
+            editor = new TableEditor<>(TableEditor.SORTING_MODE_SORTED, false);
+            editor.setItemEditor(new TableEditor.ItemEditor() {
+                @Override
+                public Object showEditor(Object preset, Component c, boolean edit, int column) {
+                    JOptionPane.showMessageDialog(c, "Emotes should be added through the Emote Context Menu (e.g. right-click on an Emote in chat).");
+                    return null;
+                }
+            });
+            editor.setModel(new ListTableModel<Emoticon>(new String[]{"Image", "Code", "Id"}) {
+                
+                @Override
+                public Object getValueAt(int rowIndex, int columnIndex) {
+                    switch (columnIndex) {
+                        case 0: return get(rowIndex);
+                        case 1: return get(rowIndex).code;
+                        case 2: return get(rowIndex).stringId;
+                    }
+                    return null;
+                }
+            });
+            editor.setRendererForColumn(0, new EmoteRenderer(new EmoticonUser() {
+                @Override
+                public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
+                    editor.repaint();
+                }
+            }));
+            
+            GridBagConstraints gbc;
+            gbc = SettingsDialog.makeGbc(0, 1, 1, 1);
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            gbc.fill = GridBagConstraints.BOTH;
+            add(editor, gbc);
+            
+            pack();
+            GuiUtil.installEscapeCloseOperation(this);
+        }
+        
+        public void setData(Collection<Emoticon> data) {
+            editor.setData(new ArrayList<>(data));
+        }
+        
+        public List<Emoticon> getData() {
+            return editor.getData();
+        }
+        
+    }
+    
+    public static class EmoteRenderer extends JLabel implements TableCellRenderer {
+
+        private final EmoticonUser emoticonUser;
+        
+        public EmoteRenderer(EmoticonUser emoticonUser) {
+            this.emoticonUser = emoticonUser;
+        }
+        
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                Object value, boolean isSelected, boolean hasFocus,
+                int row, int column) {
+            
+            // Just return if null
+            if (value == null) {
+                return this;
+            }
+            
+            Emoticon emote = (Emoticon) value;
+            setIcon(emote.getIcon(emoticonUser).getImageIcon());
+            return this;
+        }
+
     }
     
 }

@@ -95,13 +95,14 @@ public class EmoticonParsing {
             // Result
             //--------------------------
             EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
-            if (source == Source.CHANNEL) {
+            if (source == Source.HELIX_CHANNEL) {
                 updateBuilder.setTypeToRemove(Emoticon.Type.TWITCH);
                 updateBuilder.setsSetsAddedToRemove(emotesets);
                 updateBuilder.setSource(source);
             }
             else {
                 updateBuilder.setSetsAdded(emotesets);
+                updateBuilder.setSource(source);
             }
             if (!setInfos.isEmpty()) {
                 updateBuilder.setSetInfos(setInfos);

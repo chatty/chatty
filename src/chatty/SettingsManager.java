@@ -252,6 +252,7 @@ public class SettingsManager {
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addLong("smilies", 10);
+        settings.addList("localEmotes", new ArrayList(), Setting.LIST);
         
         settings.addString("emoji", "twemoji");
         settings.addBoolean("emojiReplace", true);

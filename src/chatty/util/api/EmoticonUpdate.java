@@ -15,7 +15,7 @@ import java.util.Set;
 public class EmoticonUpdate {
     
     public enum Source {
-        USER_EMOTES, OTHER, CHANNEL
+        USER_EMOTES, OTHER, HELIX_CHANNEL, HELIX_SETS
     }
     
     public final Source source;
@@ -105,7 +105,7 @@ public class EmoticonUpdate {
         
     }
     
-    public EmoticonUpdate(Builder builder) {
+    private EmoticonUpdate(Builder builder) {
         this.emotesToAdd = builder.emotesToAdd;
         this.typeToRemove = builder.typeToRemove;
         this.subTypeToRemove = builder.subTypeToRemove;

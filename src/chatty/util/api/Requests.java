@@ -540,7 +540,7 @@ public class Requests {
     
     public void requestEmotesByChannelId(String stream, String id, String requestId) {
         newApi.add("https://api.twitch.tv/helix/chat/emotes?broadcaster_id="+id, "GET", api.defaultToken, (result, responseCode) -> {
-            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.CHANNEL, stream, id);
+            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.HELIX_CHANNEL, stream, id);
             if (parsed != null) {
                 listener.receivedEmoticons(parsed);
                 api.setReceived(requestId);
@@ -562,7 +562,7 @@ public class Requests {
             String emotesetsParam = StringUtil.join(emotesets, "&emote_set_id=");
             String url = "https://api.twitch.tv/helix/chat/emotes/set?emote_set_id="+emotesetsParam;
             newApi.add(url, "GET", api.defaultToken, (text, responseCode) -> {
-                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.OTHER, null, null);
+                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.HELIX_SETS, null, null);
                 if (result != null) {
                     listener.receivedEmoticons(result);
                 }
@@ -591,7 +591,7 @@ public class Requests {
                         //api.emoticonManager2.addRequested(result.setsAdded);
                     }
                 }
-                else if (r.responseCode == 404) {
+                else if (String.valueOf(r.responseCode).startsWith("4")) {
                     api.setNotFound("userEmotes");
                 }
                 else {

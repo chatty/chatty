@@ -15,6 +15,9 @@ import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 
 /**
@@ -198,8 +201,12 @@ public class TwitchApi {
     
     private static final Object USER_EMOTES_UNIQUE = new Object();
     
+    // After full shutdown, some temporary shutdowns before, but might as well
+    // still try to request it
+    private static final Instant OLD_API_SHUTDOWN = ZonedDateTime.of(2022, 3, 2, 0, 0, 0, 0, ZoneId.systemDefault()).toInstant();
+    
     public void getUserEmotes(String userId) {
-        if (Debugging.isEnabled("!useremotes")) {
+        if (Debugging.isEnabled("!useremotes") || Instant.now().isAfter(OLD_API_SHUTDOWN)) {
             return;
         }
         m.query(USER_EMOTES_UNIQUE,
@@ -212,6 +219,10 @@ public class TwitchApi {
     
     public void refreshEmotes() {
         emoticonManager2.refresh();
+    }
+    
+    public void refreshSets(Set<String> emotesets) {
+        emoticonManager2.refresh(emotesets);
     }
     
     public void requestEmotesNow() {

@@ -136,6 +136,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final NameSettings nameSettings;
     private final HighlightSettings highlightSettings;
     private final IgnoreSettings ignoreSettings;
+    private final EmoteSettings emoteSettings;
     
     private final MatchingPresets matchingPresets;
     
@@ -290,7 +291,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
         cards.add(new MainSettings(this), Page.MAIN.name);
         cards.add(new MessageSettings(this), Page.MESSAGES.name);
         cards.add(new ModerationSettings(this), Page.MODERATION.name);
-        cards.add(new EmoteSettings(this), Page.EMOTES.name);
+        emoteSettings = new EmoteSettings(this);
+        cards.add(emoteSettings, Page.EMOTES.name);
         imageSettings = new ImageSettings(this);
         cards.add(imageSettings, Page.USERICONS.name);
         cards.add(new LookSettings(this), Page.LOOK.name);
@@ -502,6 +504,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         hotkeySettings.setData(owner.hotkeyManager.getActionsMap(),
                 owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
         notificationSettings.setData(owner.getNotificationData());
+        emoteSettings.setData(owner.localEmotes.getData());
     }
     
     public void updateBackgroundColor() {
@@ -577,6 +580,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         owner.setUsericonData(imageSettings.getData());
         owner.hotkeyManager.setData(hotkeySettings.getData());
         owner.setNotificationData(notificationSettings.getData());
+        owner.localEmotes.setData(emoteSettings.getData());
         if (restartRequired) {
             JOptionPane.showMessageDialog(this, RESTART_REQUIRED_INFO, "Info", JOptionPane.INFORMATION_MESSAGE);
         }
