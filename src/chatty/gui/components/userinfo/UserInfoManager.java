@@ -8,6 +8,7 @@ import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
+import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.UserInfo;
 import chatty.util.commands.CustomCommand;
@@ -49,7 +50,7 @@ public class UserInfoManager {
     private SimpleDateFormat timestampFormat;
     
     public UserInfoManager(final MainGui owner, Settings settings,
-            final ContextMenuListener contextMenuListener) {
+            final ContextMenuListener contextMenuListener, TwitchApi api) {
         this.main = owner;
         this.settings = settings;
         this.contextMenuListener = contextMenuListener;
@@ -81,12 +82,17 @@ public class UserInfoManager {
 
             @Override
             public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {
-                return main.getSingleFollower(stream, streamId, user, userId, refresh);
+                return api.getSingleFollower(stream, streamId, user, userId, refresh);
             }
 
             @Override
             public UserInfo getCachedUserInfo(String channel, Consumer<UserInfo> result) {
-                return main.getCachedUserInfo(channel, result);
+                return api.getCachedUserInfo(channel, result);
+            }
+            
+            @Override
+            public void requestFollowerInfo(String stream) {
+                api.getFollowers(stream);
             }
 
         };
@@ -112,6 +118,12 @@ public class UserInfoManager {
     public void setFollowInfo(String stream, String user, TwitchApi.RequestResultCode result, Follower follow) {
         for (UserInfoDialog dialog : dialogs) {
             dialog.setFollowInfo(stream, user, follow, result);
+        }
+    }
+    
+    public void setFollowerInfo(FollowerInfo info) {
+        for (UserInfoDialog dialog : dialogs) {
+            dialog.setFollowerInfo(info);
         }
     }
     

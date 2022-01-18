@@ -15,6 +15,7 @@ import chatty.util.Pronouns;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
+import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.UserInfo;
 import chatty.util.commands.CustomCommand;
@@ -553,4 +554,18 @@ public class UserInfoDialog extends JDialog {
         }
         return null;
     }
+    
+    protected void getFollowCount() {
+        if (requester != null) {
+            requester.requestFollowerInfo(currentUser.getName());
+        }
+    }
+    
+    public void setFollowerInfo(FollowerInfo info) {
+        if (currentUser == null || !currentUser.getName().equals(info.stream)) {
+            return;
+        }
+        infoPanel.setFollowerInfo(info);
+    }
+    
 }

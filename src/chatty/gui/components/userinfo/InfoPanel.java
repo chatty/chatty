@@ -12,6 +12,7 @@ import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.BadgeManager;
 import chatty.util.api.Follower;
+import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.UserInfo;
 import chatty.util.commands.CustomCommand;
@@ -225,6 +226,8 @@ public class InfoPanel extends JPanel {
             setUserInfo(requestedInfo);
         }
         
+        owner.getFollowCount();
+        
         // Follower Info
         Follower follow = owner.getFollowInfo(false);
         currentFollower = null;
@@ -269,7 +272,6 @@ public class InfoPanel extends JPanel {
                     !StringUtil.isNullOrEmpty(info.broadcasterType)
                             ? StringUtil.firstToUpperCase(info.broadcasterType)
                             : "Regular");
-            followers.setToolTipText(tooltip);
             createdAt.setToolTipText(tooltip);
 
             // Should mostly already be set, but just in case
@@ -304,6 +306,11 @@ public class InfoPanel extends JPanel {
         // For button containing $(followage) and such
         owner.updateButtons();
         infoLabelSize.check();
+    }
+    
+    public void setFollowerInfo(FollowerInfo info) {
+        followers.setText(Language.getString("userDialog.followers",
+                    Helper.formatViewerCount(info.total)));
     }
     
     private String formatAgoTime(long time, boolean compact) {
