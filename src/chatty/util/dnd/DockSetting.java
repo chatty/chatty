@@ -50,6 +50,11 @@ public class DockSetting {
         TAB_SCROLL_ANYWHERE,
         
         /**
+         * Close Tabs with Middle Mouse Button.
+         */
+        TAB_CLOSE_MMB,
+        
+        /**
          * The fill {@link Color} of the box that shows where a drag&drop
          * movement accepts a drop.
          */

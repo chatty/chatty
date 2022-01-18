@@ -52,10 +52,12 @@ public class TabSettings extends SettingsPanel {
         main.add(mainTabs, gbc);
         
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel layoutPanel = new JPanel(new GridBagLayout());
         JPanel orderPanel = new JPanel(new GridBagLayout());
         
-        mainTabs.addTab("Main", mainPanel);
-        mainTabs.addTab("Tab Order", orderPanel);
+        mainTabs.addTab(Language.getString("settings.tabs.tab.behavior"), mainPanel);
+        mainTabs.addTab(Language.getString("settings.tabs.tab.layout"), layoutPanel);
+        mainTabs.addTab(Language.getString("settings.tabs.tab.order"), orderPanel);
         
         //--------------------------
         // Tabs Order
@@ -109,6 +111,9 @@ public class TabSettings extends SettingsPanel {
         mainPanel.add(d.addComboStringSetting("tabsOpen", false, "main", "active", "active2", "activeChan"),
                 d.makeGbc(1, 1, 3, 1, GridBagConstraints.WEST));
         
+        mainPanel.add(d.addSimpleBooleanSetting("tabsCloseMMB"),
+                d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
+        
         //--------------------------
         // Tabs Location
         //--------------------------
@@ -119,10 +124,10 @@ public class TabSettings extends SettingsPanel {
         tabPlacementOptions.put("right", Language.getString("settings.tabs.option.right"));
         ComboStringSetting tabPlacementSetting = new ComboStringSetting(tabPlacementOptions);
         d.addStringSetting("tabsPlacement", tabPlacementSetting);
-        mainPanel.add(new JLabel(Language.getString("settings.tabs.placement")),
-                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
-        mainPanel.add(tabPlacementSetting,
-                d.makeGbc(1, 2, 3, 1, GridBagConstraints.WEST)
+        layoutPanel.add(new JLabel(Language.getString("settings.tabs.placement")),
+                d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
+        layoutPanel.add(tabPlacementSetting,
+                d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST)
         );
         
         //-------------
@@ -133,16 +138,24 @@ public class TabSettings extends SettingsPanel {
         tabLayoutOptions.put("scroll",  Language.getString("settings.tabs.option.scroll"));
         ComboStringSetting tabLayoutSetting = new ComboStringSetting(tabLayoutOptions);
         d.addStringSetting("tabsLayout", tabLayoutSetting);
-        mainPanel.add(new JLabel(Language.getString("settings.tabs.layout")),
-                d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
-        mainPanel.add(tabLayoutSetting,
-                d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST));
+        layoutPanel.add(new JLabel(Language.getString("settings.tabs.layout")),
+                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
+        layoutPanel.add(tabLayoutSetting,
+                d.makeGbc(1, 4, 3, 1, GridBagConstraints.WEST));
         
-        SettingsUtil.addLabeledComponent(mainPanel, "tabsMaxWidth", 0, 4, 3, GridBagConstraints.WEST,
+        SettingsUtil.addLabeledComponent(layoutPanel, "tabsMaxWidth", 0, 5, 3, GridBagConstraints.WEST,
                 d.addSimpleLongSetting("tabsMaxWidth", 3, true));
         
+        // Fill up remaining space to top-align components
+        gbc = SettingsDialog.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST);
+        gbc.weighty = 1;
+        layoutPanel.add(new JLabel(), gbc);
+        
+        //--------------------------
+        // Close Empty Tab Panes
+        //--------------------------
         mainPanel.add(d.addSimpleBooleanSetting("tabsCloseEmpty"),
-                SettingsDialog.makeGbc(0, 5, 4, 1, GridBagConstraints.WEST));
+                SettingsDialog.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST));
         
         //----------------
         // Tabs Scrolling
@@ -150,9 +163,12 @@ public class TabSettings extends SettingsPanel {
         JCheckBox scroll = d.addSimpleBooleanSetting("tabsMwheelScrolling");
         JCheckBox scroll2 = d.addSimpleBooleanSetting("tabsMwheelScrollingAnywhere");
         mainPanel.add(scroll,
-                d.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 7, 4, 1, GridBagConstraints.WEST));
+        gbc = d.makeGbcSub(0, 8, 4, 1, GridBagConstraints.NORTHWEST);
+        // Fill up remaining space
+        gbc.weighty = 1;
         mainPanel.add(scroll2,
-                d.makeGbcSub(0, 7, 4, 1, GridBagConstraints.WEST));
+                gbc);
 
         SettingsUtil.addSubsettings(scroll, scroll2);
 

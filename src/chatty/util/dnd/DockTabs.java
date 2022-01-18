@@ -57,6 +57,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
     
     private boolean mouseWheelScrolling = true;
     private boolean mouseWheelScrollingAnywhere = true;
+    private boolean closeTabMMB = true;
     private DockSetting.TabOrder order = DockSetting.TabOrder.INSERTION;
     private Comparator<DockContent> customComparator;
     
@@ -107,6 +108,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
                 repaint();
                 base.requestStopDrag(null);
                 openPopupMenu(e);
+                closeTab(e);
             }
             
             @Override
@@ -208,15 +210,25 @@ public class DockTabs extends JTabbedPane implements DockChild {
         if (!e.isPopupTrigger()) {
             return;
         }
-        final int index = indexAtLocation(e.getX(), e.getY());
-        if (index != -1) {
-            DockContent content = getContent(index);
-            if (content != null) {
-                JPopupMenu menu = content.getContextMenu();
-                if (menu != null) {
-                    menu.show(this, e.getX(), e.getY());
-                }
+        DockContent content = getContentForEvent(e);
+        if (content != null) {
+            JPopupMenu menu = content.getContextMenu();
+            if (menu != null) {
+                menu.show(this, e.getX(), e.getY());
             }
+        }
+    }
+    
+    private void closeTab(MouseEvent e) {
+        if (!SwingUtilities.isMiddleMouseButton(e) || e.isPopupTrigger()) {
+            return;
+        }
+        if (!closeTabMMB) {
+            return;
+        }
+        DockContent content = getContentForEvent(e);
+        if (content != null) {
+            content.remove();
         }
     }
     
@@ -703,6 +715,9 @@ public class DockTabs extends JTabbedPane implements DockChild {
             case TAB_SCROLL_ANYWHERE:
                 mouseWheelScrollingAnywhere = DockSetting.getBoolean(value);
                 break;
+            case TAB_CLOSE_MMB:
+                closeTabMMB = DockSetting.getBoolean(value);
+                break;
             case TAB_PLACEMENT:
                 setTabPlacement(DockSetting.getInteger(value));
                 break;
@@ -786,6 +801,14 @@ public class DockTabs extends JTabbedPane implements DockChild {
      */
     private int getIndexForPoint(Point p) {
         return indexAtLocation(p.x, p.y);
+    }
+    
+    private DockContent getContentForEvent(MouseEvent e) {
+        final int index = indexAtLocation(e.getX(), e.getY());
+        if (index != -1) {
+            return getContent(index);
+        }
+        return null;
     }
     
     private boolean isNearLastTab(Point p) {
