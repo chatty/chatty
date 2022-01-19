@@ -11,6 +11,7 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.settings.SettingsUtil;
 import chatty.lang.Language;
+import chatty.util.ChattyMisc;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
@@ -535,6 +536,7 @@ public class EmotesDialog extends JDialog {
     }
     
     private void showPanel(EmotesPanel panel) {
+        currentPanel = panel;
         panel.update();
         cardLayout.show(emotesPanel, panel.label);
         for (JToggleButton button : buttons.keySet()) {
@@ -545,7 +547,6 @@ public class EmotesDialog extends JDialog {
         if (!panel.label.equals(EMOTE_DETAILS)) {
             detailsEmote = null;
         }
-        currentPanel = panel;
         updateRefreshButton();
     }
     
@@ -642,20 +643,57 @@ public class EmotesDialog extends JDialog {
     }
     
     private EmoteLabel createEmoteLabel(Emoticon emote) {
-        Border border = null;
+        return new EmoteLabel(emote, mouseListener, scale, imageType, emoteUser, getEndangeredBorder(emote));
+    }
+    
+    private static final Border ENDANGERED_BORDER_ADDED = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2);
+    private static final Border ENDANGERED_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
+    
+    private Border getEndangeredBorder(Emoticon emote) {
+        if (!currentPanel.label.equals(MY_EMOTES)) {
+            return null;
+        }
+        if (ChattyMisc.getTypeByEmoteId(emote.stringId) != null) {
+            return null;
+        }
         if (emote.type == Emoticon.Type.TWITCH
                 && !emoteManager.isHelixEmoteId(emote)) {
             hasEndangeredEmotes = true;
             if (hlEndangeredCheckbox.isSelected()) {
                 if (emoteManager.isCustomLocal(emote)) {
-                    border = BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2);
+                    return ENDANGERED_BORDER_ADDED;
                 }
                 else {
-                    border = BorderFactory.createLineBorder(Color.MAGENTA, 2);
+                    return ENDANGERED_BORDER;
                 }
             }
         }
-        return new EmoteLabel(emote, mouseListener, scale, imageType, emoteUser, border);
+        return null;
+    }
+    
+    private Border hasEndangeredEmotes(Collection<Emoticon> emotes) {
+        Border result = null;
+        for (Emoticon emote : emotes) {
+            Border border = getEndangeredBorder(emote);
+            if (border == ENDANGERED_BORDER) {
+                result = ENDANGERED_BORDER;
+            }
+            else if (border == ENDANGERED_BORDER_ADDED && result == null) {
+                result = ENDANGERED_BORDER_ADDED;
+            }
+        }
+        return result;
+    }
+    
+    private String getEndangeredEmoteText(Collection<Emoticon> emotes) {
+        Border border = hasEndangeredEmotes(emotes);
+        if (border == ENDANGERED_BORDER) {
+            return " [endangered]";
+        }
+        else if (border == ENDANGERED_BORDER_ADDED) {
+            return " [endangered/added]";
+        }
+        return "";
     }
     
     //==================
@@ -798,8 +836,8 @@ public class EmotesDialog extends JDialog {
             if (!emotes.isEmpty()) {
                 List<Emoticon> sorted = new ArrayList<>(emotes);
                 Collections.sort(sorted, new SortEmotesByTypeAndName());
-                addTitle(String.format("%s [%s] (%d emotes)",
-                        stream, emoteset, emotes.size()),
+                addTitle(String.format("%s [%s] (%d emotes)%s",
+                        stream, emoteset, emotes.size(), getEndangeredEmoteText(sorted)),
                         null,
                         Arrays.asList(new String[]{emoteset}));
                 if (!allowHide || !isHidden(emoteset)) {
@@ -830,10 +868,11 @@ public class EmotesDialog extends JDialog {
             if (!sorted.isEmpty()) {
                 Collections.sort(sorted, new SortEmotesByEmotesetAndName());
                 boolean show = !allowHide || !isHidden(sets);
-                addTitle(String.format("%s %s (%d emotes)",
+                addTitle(String.format("%s %s (%d emotes)%s",
                                 titlePrefix,
                                 StringUtil.shortenTo(sets.toString(), 14),
-                                sorted.size()),
+                                sorted.size(),
+                                getEndangeredEmoteText(sorted)),
                         String.format("%s %s (%d emotes) [Click to hide/show]",
                                 titlePrefix,
                                 sets,
@@ -1038,8 +1077,8 @@ public class EmotesDialog extends JDialog {
                     emotesets = new HashSet<>(Arrays.asList(new String[]{specialEmoteSet}));
                 }
                 boolean show = emotesets == null || !isHidden(emotesets);
-                addTitle(String.format("%s (%d emotes)",
-                        title, emotes.size()), null, emotesets);
+                addTitle(String.format("%s (%d emotes)%s",
+                        title, emotes.size(), getEndangeredEmoteText(emotes)), null, emotesets);
                 if (show) {
                     addEmotesPanel(sortEmotes(emotes));
                 }
