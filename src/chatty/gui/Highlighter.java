@@ -235,9 +235,6 @@ public class Highlighter {
         Blacklist blacklist = null;
         if (!blacklistItems.isEmpty()) {
             blacklist = new Blacklist(type, text, channel, ab, user, localUser, tags, blacklistItems);
-            if (blacklist.block) {
-                return false;
-            }
         }
         
         /**
@@ -247,9 +244,10 @@ public class Highlighter {
         lastTextMatches = null;
         
         // Try to match own name first (if enabled)
-        if (highlightUsername && usernameItem != null &&
-                usernameItem.matches(type, text, blacklist,
-                        channel, ab, user, localUser, tags)) {
+        if (highlightUsername
+                && usernameItem != null
+                && (blacklist == null || !blacklist.block)
+                && usernameItem.matches(type, text, blacklist, channel, ab, user, localUser, tags)) {
             fillLastMatchVariables(usernameItem, text);
             addMatch(user, usernameItem);
             return true;
@@ -258,7 +256,10 @@ public class Highlighter {
         // Then try to match against the items
         boolean alreadyMatched = false;
         for (HighlightItem item : items) {
-            if (item.matches(type, text, blacklist, channel, ab, user, localUser, tags)) {
+            boolean blacklistBlocks = blacklist != null
+                    && blacklist.block
+                    && !item.overrideBlacklist;
+            if (!blacklistBlocks && item.matches(type, text, item.overrideBlacklist ? null : blacklist, channel, ab, user, localUser, tags)) {
                 if (!alreadyMatched) {
                     // Only for the first match
                     fillLastMatchVariables(item, text);
@@ -514,6 +515,8 @@ public class Highlighter {
          * matches.
          */
         private boolean blacklistBlock;
+        
+        private boolean overrideBlacklist;
         
         //--------------------------
         // Debugging
@@ -810,6 +813,9 @@ public class Highlighter {
                         }
                         else if (part.equals("block")) {
                             blacklistBlock = true;
+                        }
+                        else if (part.equals("!blacklist")) {
+                            overrideBlacklist = true;
                         }
                         else if (part.equals("info")) {
                             appliesToType = Type.INFO;
