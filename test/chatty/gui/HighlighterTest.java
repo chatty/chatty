@@ -691,6 +691,8 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "Hello testi"));
         updateBlacklist("testi");
         assertFalse(highlighter.check(user, "Hello testi"));
+        update("config:!blacklist test");
+        assertTrue(highlighter.check(user, "Hello testi"));
         
         updateBlacklist();
         update("w:ROM");
