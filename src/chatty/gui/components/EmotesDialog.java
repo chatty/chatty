@@ -642,7 +642,7 @@ public class EmotesDialog extends JDialog {
         
     }
     
-    private EmoteLabel createEmoteLabel(Emoticon emote) {
+    private EmoteLabel createEmoteLabel(Emoticon emote, float scale) {
         return new EmoteLabel(emote, mouseListener, scale, imageType, emoteUser, getEndangeredBorder(emote));
     }
     
@@ -1033,7 +1033,7 @@ public class EmotesDialog extends JDialog {
                 }
                 prevEmoteset = emote.emoteset;
                 prevEmotesetInfo = emote.getEmotesetInfo();
-                panel.add(createEmoteLabel(emote));
+                panel.add(createEmoteLabel(emote, scale));
             }
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.insets = EMOTE_INSETS;
@@ -1752,7 +1752,7 @@ public class EmotesDialog extends JDialog {
                 String label) {
             lgbc.anchor = GridBagConstraints.CENTER;
             lgbc.gridy = 0;
-            panel.add(createEmoteLabel(emote), lgbc);
+            panel.add(createEmoteLabel(emote, scale), lgbc);
             
             lgbc.gridy = 1;
             JLabel title = new JLabel(label);
