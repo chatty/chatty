@@ -29,8 +29,8 @@ about: Create a report to help us improve
 - OS (e.g. Windows 7): 
 - Chatty Version (e.g. v0.9.1 Standalone): 
 - Java Version (if not using Standalone): 
-- When has the issue first occured (Chatty Version or timeframe): 
-- How often does the issue occur (everytime, sometimes): 
+- When has the issue first occurred (Chatty Version or timeframe): 
+- How often does the issue occur (every time, sometimes): 
 
 (*Tip:* Use `/appinfo` in Chatty to get some of this information.)
 
