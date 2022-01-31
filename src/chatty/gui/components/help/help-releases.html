@@ -81,7 +81,30 @@
         by this). Read more about this in the <a href="help-settings.html#EmoticonsLocal">help</a>.</p>
     
     <pre>
-Beta, full list of changes TBD
+### Twitch Features
+- Switched Global Emotes to new API
+  - Some new Global Emotes that weren't in the old API should be available now
+  - Added separate Smilies (as in :) etc.) setting to select which set should be
+    displayed locally (since this isn't handled well in the new API), the
+    setting is automatically set based on the old API as long as it's available
+- Added Local Emotes setting
+  - Allows you to manually configure Emotes that should always be displayed
+    in your local client as usable by you, for Emotes that are not available
+    through the API
+  - As long as the old API is available, some Emotes available through that but
+    not through the new API can be marked as "endangered" in the Emotes Dialog
+- Added follower count to User Dialog again (previously removed due to being
+  slightly more difficult to implement with the new API)
+
+### Other
+- Tab Info Settings: Added custom color setting affecting color related options
+- Added setting to close tabs with middle mouse button
+- Added prefix `config:!blacklist` to circumvent the Highlight/Ignore blacklist
+- Updated Emoji (Twemoji set)
+- Updated help
+
+### Bugfixes
+- Added workaround for online/offline spam in followed channels doing a rerun
     </pre>
     
     <h2>
