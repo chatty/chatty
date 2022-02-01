@@ -1,6 +1,7 @@
 
 package chatty.util.api.pubsub;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.json.simple.JSONObject;
 
@@ -11,7 +12,7 @@ import org.json.simple.JSONObject;
 public class Helper {
     
     public static String createOutgoingMessage(String type, String nonce, Object data) {
-        JSONObject object = new JSONObject();
+        Map<String, Object> object = new HashMap<>();
         object.put("type", type);
         if (nonce != null) {
             object.put("nonce", nonce);
@@ -19,7 +20,7 @@ public class Helper {
         if (data != null) {
             object.put("data", data);
         }
-        return object.toJSONString();
+        return new JSONObject(object).toJSONString();
     }
     
     public static String getStreamFromTopic(String topic, Map<String, String> userIds) {

@@ -666,7 +666,9 @@ public class DockManager {
             popoutTypeDrag = (DockSetting.PopoutType) value;
         }
         else if (setting == DockSetting.Type.POPOUT_ICONS) {
-            popoutIcons = (List<Image>) value;
+            @SuppressWarnings("unchecked") // POPOUT_ICONS always must be this
+            List<Image> images = (List<Image>) value;
+            popoutIcons = images;
         }
         else if (setting == DockSetting.Type.POPOUT_PARENT) {
             if (popoutParent != value) {

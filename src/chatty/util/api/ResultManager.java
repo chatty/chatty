@@ -44,6 +44,7 @@ public class ResultManager {
         }
     }
     
+    @SuppressWarnings("unchecked") // Cast
     public <T> void inform(Type type, Consumer<T> func) {
         if (!listeners.containsKey(type)) {
             return;

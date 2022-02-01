@@ -137,12 +137,10 @@ public class ChannelInfoManager {
      * @return The created JSON
      */
     protected String makeChannelInfoJson(ChannelStatus info) {
-        JSONObject root = new JSONObject();
-        Map channel = new HashMap();
-        channel.put("status",info.title);
-        channel.put("game",info.category.name);
-        root.put("channel",channel);
-        return root.toJSONString();
+        Map<String, String> channel = new HashMap<>();
+        channel.put("status", info.title);
+        channel.put("game", info.category.name);
+        return JSONUtil.listMapToJSON("channel", channel);
     }
     
 }

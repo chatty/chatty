@@ -323,9 +323,8 @@ public class Requests {
         List<String> tagIds = new ArrayList<>();
         tags.forEach(t -> tagIds.add(t.getId()));
         String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
-        JSONObject data = new JSONObject();
-        data.put("tag_ids", tagIds);
-        newApi.add(url, "PUT", data.toJSONString(), api.defaultToken, (text, responseCode) -> {
+        String json = JSONUtil.listMapToJSON("tag_ids", tagIds);
+        newApi.add(url, "PUT", json, api.defaultToken, (text, responseCode) -> {
             if (responseCode == 204) {
                 listener.result(null);
             } else if (responseCode == 400 || responseCode == 403) {
@@ -390,10 +389,9 @@ public class Requests {
         String url = "https://api.twitch.tv/kraken/channels/"+userId+"/commercial";
         if (attemptRequest(url)) {
             TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            JSONObject data = new JSONObject();
-            data.put("duration", length);
+            String json = JSONUtil.listMapToJSON("duration", length);
             request.setToken(token);
-            request.setData(data.toJSONString(), "POST");
+            request.setData(json, "POST");
             request.setContentType("application/json");
             execute(request, r -> {
                 String resultText = "Unknown response: " + r.responseCode;
@@ -419,10 +417,11 @@ public class Requests {
     
     public void runCommercial(String userId, String stream, int length) {
         String url = "https://api.twitch.tv/helix/channels/commercial";
-        JSONObject data = new JSONObject();
-        data.put("broadcaster_id", userId);
-        data.put("length", length);
-        newApi.add(url, "POST", data.toJSONString(), api.defaultToken, (result, responseCode) -> {
+        String json = JSONUtil.listMapToJSON(
+                "broadcaster_id", userId,
+                "length", length
+        );
+        newApi.add(url, "POST", json, api.defaultToken, (result, responseCode) -> {
             String resultText = "Failed to start commercial (error " + responseCode + ")";
             RequestResultCode resultCode = RequestResultCode.UNKNOWN;
             if (responseCode == 204 || responseCode == 200) {
@@ -435,12 +434,12 @@ public class Requests {
     
     public void autoMod(AutoModAction action, String msgId, String token, String localUserId) {
         String url = "https://api.twitch.tv/helix/moderation/automod/message";
-        JSONObject data = new JSONObject();
-        data.put("user_id", localUserId);
-        data.put("msg_id", msgId);
-        data.put("action", action == AutoModAction.ALLOW ? "ALLOW" : "DENY");
+        String json = JSONUtil.listMapToJSON(
+                "user_id", localUserId,
+                "msg_id", msgId,
+                "action", action == AutoModAction.ALLOW ? "ALLOW" : "DENY");
         
-        newApi.add(url, "POST", data.toJSONString(), token, (text, responseCode) -> {
+        newApi.add(url, "POST", json, token, (text, responseCode) -> {
             boolean handled = false;
             for (AutoModActionResult result : AutoModActionResult.values()) {
                 if (responseCode == result.responseCode) {

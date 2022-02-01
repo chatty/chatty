@@ -58,8 +58,8 @@ public class DockedDialogManager {
         return content;
     }
     
-    public DockStyledTabContainer createStyledContent(JComponent component, String title, String id) {
-        DockStyledTabContainer content = new DockStyledTabContainer(component, title, getDockManager()) {
+    public DockStyledTabContainer<JComponent> createStyledContent(JComponent component, String title, String id) {
+        DockStyledTabContainer<JComponent> content = new DockStyledTabContainer<JComponent>(component, title, getDockManager()) {
             
             @Override
             public JPopupMenu getContextMenu() {

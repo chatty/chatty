@@ -95,7 +95,7 @@ public class ModeratorActionData extends MessageData {
         JSONParser parser = new JSONParser();
         JSONObject root = (JSONObject)parser.parse(message);
         
-        String msgType = (String)root.getOrDefault("type", "");
+        String msgType = JSONUtil.getString(root, "type", "");
         
         JSONObject data = (JSONObject)root.get("data");
         

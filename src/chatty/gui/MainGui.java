@@ -5133,7 +5133,9 @@ public class MainGui extends JFrame implements Runnable {
                 updateChannelsSettings();
             }
             else if (setting.equals("ignoredEmotes")) {
-                emoticons.setIgnoredEmotes(client.settings.getList("ignoredEmotes"));
+                @SuppressWarnings("unchecked") // Setting
+                List<String> data = client.settings.getList("ignoredEmotes");
+                emoticons.setIgnoredEmotes(data);
             }
             else if (LaF.shouldUpdate(setting)) {
                 updateLaF();

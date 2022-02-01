@@ -918,8 +918,11 @@ public class SettingsManager {
              * not all favorites were migrated correctly).
              */
             LOGGER.info("Migrating Favorites/History");
+            @SuppressWarnings("unchecked") // Setting
             List<String> favs = settings.getList("channelFavorites");
+            @SuppressWarnings("unchecked") // Setting
             Map<String, Long> history = settings.getMap("channelHistory");
+            @SuppressWarnings("unchecked") // Setting
             Map<String, List> data = settings.getMap("roomFavorites");
             // Migrate history
             for (String stream : history.keySet()) {
@@ -1035,6 +1038,7 @@ public class SettingsManager {
         for (DefaultHotkey hotkey : defaultHotkeys) {
             // Check version of when the default hotkey was added
             if (switchedFromVersionBefore(hotkey.version)) {
+                @SuppressWarnings("unchecked") // Setting
                 List<List> setting = settings.getList("hotkeys");
                 Iterator<List> it = setting.iterator();
                 // Remove hotkey if already in setting

@@ -48,7 +48,7 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
     }
     
     public void edit(String item) {
-        MapItem preset = new MapItem(item, "");
+        MapItem<T> preset = new MapItem<>(item, valueFromString(""));
         int index = data.indexOf(preset);
         if (index == -1) {
             addItem(preset);

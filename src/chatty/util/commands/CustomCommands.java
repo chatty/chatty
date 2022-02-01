@@ -216,6 +216,7 @@ public class CustomCommands {
      * Load the commands from the settings.
      */
     public synchronized void loadFromSettings() {
+        @SuppressWarnings("unchecked") // Setting
         List<String> commandsToLoad = settings.getList("commands");
         commands.clear();
         replacements.clear();

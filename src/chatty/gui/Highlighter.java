@@ -1106,10 +1106,10 @@ public class Highlighter {
                         else {
                             p = compilePattern(Pattern.quote(split[1]));
                         }
-                        items.add(new Pair(split[0], p));
+                        items.add(new Pair<>(split[0], p));
                     }
                     else {
-                        items.add(new Pair(split[0], null));
+                        items.add(new Pair<>(split[0], null));
                     }
                 }
             });

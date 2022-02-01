@@ -105,10 +105,10 @@ public class ChannelStatus {
     }
     
     public String makePutJson() {
-        JSONObject root = new JSONObject();
-        root.put("title", title);
-        root.put("game_id", category.id);
-        return root.toJSONString();
+        return JSONUtil.listMapToJSON(
+                "title", title,
+                "game_id", category.id
+        );
     }
     
 }

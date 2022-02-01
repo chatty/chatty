@@ -106,12 +106,22 @@ public class JSONUtil {
         return errorValue;
     }
     
+    @SuppressWarnings("unchecked") // Raw type
     public static String listToJSON(Object... args) {
         JSONArray o = new JSONArray();
         for (Object a : args) {
             o.add(a);
         }
         return o.toJSONString();
+    }
+    
+    @SuppressWarnings("unchecked") // Raw type
+    public static String listMapToJSON(Object... args) {
+        JSONObject m = new JSONObject();
+        for (int i=0; i<args.length; i+=2) {
+            m.put(args[i], i+1 < args.length ? args[i+1] : null);
+        }
+        return m.toJSONString();
     }
     
     public static long getDatetime(JSONObject data, Object key, long errorValue) {

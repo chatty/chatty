@@ -102,7 +102,7 @@ public class InfoMessage {
     public Pair<String, String> getLink() {
         if (tags != null) {
             if (tags.getHosted() != null) {
-                return new Pair("Join", "join."+tags.getHosted());
+                return new Pair<>("Join", "join."+tags.getHosted());
             }
         }
         return null;

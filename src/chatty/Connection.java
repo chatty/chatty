@@ -29,7 +29,7 @@ public class Connection implements Runnable {
     
     private final InetSocketAddress address;
     private final Irc irc;
-    private final RingBuffer<Msg> debugBuffer = new RingBuffer(20);
+    private final RingBuffer<Msg> debugBuffer = new RingBuffer<>(20);
     private int debugCounter = -1;
     
     private Socket socket;

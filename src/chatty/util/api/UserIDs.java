@@ -66,7 +66,7 @@ public class UserIDs {
      * @param usernames 
      */
     public void waitForUserIDs(UserIdResultListener result, String... usernames) {
-        Collection names = prepareNames(usernames);
+        Collection<String> names = prepareNames(usernames);
         addRequest(result, names, true);
         checkDoneRequests(true);
         checkRequest();
@@ -82,7 +82,7 @@ public class UserIDs {
      * @param usernames 
      */
     public void getUserIDsAsap(UserIdResultListener result, String... usernames) {
-        Collection names = prepareNames(usernames);
+        Collection<String> names = prepareNames(usernames);
         addRequest(result, names, false);
         checkDoneRequests(true);
         performRequest();
@@ -95,7 +95,7 @@ public class UserIDs {
      * @param usernames 
      */
     public void getUserIDs(UserIdResultListener result, String... usernames) {
-        Collection names = prepareNames(usernames);
+        Collection<String> names = prepareNames(usernames);
         getUserIDs(result, names);
     }
     

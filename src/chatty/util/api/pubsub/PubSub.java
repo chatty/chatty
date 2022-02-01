@@ -4,13 +4,15 @@ package chatty.util.api.pubsub;
 import chatty.util.jws.JWSClient;
 import chatty.util.jws.MessageHandler;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 /**
  * An implementation that is able to listen and unlisten to topics and do some
@@ -115,10 +117,10 @@ public class PubSub extends JWSClient {
         // Send separately for now, in case one topic errors, they don't all
         // error
         for (String topic : topics) {
-            JSONArray topicsArray = new JSONArray();
+            List<String> topicsArray = new ArrayList<>();
             topicsArray.add(topic);
 
-            JSONObject data = new JSONObject();
+            Map<String, Object> data = new HashMap<>();
             data.put("topics", topicsArray);
             data.put("auth_token", token);
             sendMessage(Helper.createOutgoingMessage(listen ? "LISTEN" : "UNLISTEN", "", data));

@@ -185,6 +185,7 @@ public class Chatty {
      * @param parameters The Map of parsed parameters
      * @return The JSON String
      */
+    @SuppressWarnings("unchecked") // Raw type
     private static String encodeParametersToJSON(Map<String, String> parameters) {
         JSONObject object = new JSONObject();
         object.putAll(parameters);
@@ -207,7 +208,7 @@ public class Chatty {
             }
             return result;
         } catch (Exception ex) {
-            return new HashMap();
+            return new HashMap<>();
         }
     }
     
