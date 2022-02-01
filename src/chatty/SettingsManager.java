@@ -839,10 +839,17 @@ public class SettingsManager {
         }
     }
     
+    private static String previousVersion;
+    
     /**
      * Override some now unused settings or change settings on version change.
      */
     public void overrideSettings() {
+        previousVersion = settings.getString("currentVersion");
+        if (!Chatty.VERSION.equals(previousVersion)) {
+            LOGGER.info("Changed from version "+previousVersion);
+        }
+        
         settings.setBoolean("ignoreJoinsParts", false);
         if (switchedFromVersionBefore("0.7.2")) {
             String value = settings.getString("timeoutButtons");
@@ -980,12 +987,17 @@ public class SettingsManager {
      * the given one, this returns true. Usually the current version would be
      * used if a new condition is added, to change a setting only on the switch
      * to the given version.
+     * 
+     * This can be used after the settings have been properly loaded.
      *
      * @param version The version to check against
      * @return true if the given version is greater than the current version
      */
-    private boolean switchedFromVersionBefore(String version) {
-        return Version.compareVersions(settings.getString("currentVersion"), version) == 1;
+    public static boolean switchedFromVersionBefore(String version) {
+        if (previousVersion != null) {
+            return Version.compareVersions(previousVersion, version) == 1;
+        }
+        return false;
     }
     
     public void debugSettings() {

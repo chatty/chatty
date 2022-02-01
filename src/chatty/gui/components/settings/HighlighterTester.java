@@ -351,7 +351,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
     }
     
     private HighlightItem createItem(String value) {
-        return new HighlightItem(value, type, false,
+        String typeSuffix = editingBlacklistItem ? "Blacklist" : "";
+        return new HighlightItem(value, type+typeSuffix, false,
                 testPresets != null ? testPresets : new HashMap<>());
     }
     

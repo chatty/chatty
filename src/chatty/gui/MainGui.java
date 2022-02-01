@@ -26,6 +26,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.Irc;
 import chatty.Room;
+import chatty.SettingsManager;
 import chatty.gui.components.admin.StatusHistory;
 import chatty.gui.colors.UsercolorItem;
 import chatty.util.api.usericons.Usericon;
@@ -1087,7 +1088,17 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateMatchingPresets() {
-        Highlighter.HighlightItem.setGlobalPresets(Highlighter.HighlightItem.makePresets(client.settings.getList("matchingPresets")));
+        @SuppressWarnings("unchecked") // Setting
+        List<String> settingValue = client.settings.getList("matchingPresets");
+        Map<String, CustomCommand> presets = Highlighter.HighlightItem.makePresets(settingValue);
+        if (SettingsManager.switchedFromVersionBefore("0.18")) {
+            for (String name : presets.keySet()) {
+                if (name.equals("_global_highlight") || name.equals("_global_ignore")) {
+                    EventLog.addSystemEvent("matching.presetsBlacklist");
+                }
+            }
+        }
+        Highlighter.HighlightItem.setGlobalPresets(presets);
         Highlighter.HighlightItem.setTwitchApi(client.api);
         updateHighlight();
         updateIgnore();

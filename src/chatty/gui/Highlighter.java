@@ -83,18 +83,18 @@ public class Highlighter {
      * @throws NullPointerException if newItems is null
      */
     public void update(List<String> newItems) {
-        compile(newItems, items);
+        compile(newItems, items, "");
     }
     
     public void updateBlacklist(List<String> newItems) {
-        compile(newItems, blacklistItems);
+        compile(newItems, blacklistItems, "Blacklist");
     }
     
-    private void compile(List<String> newItems, List<HighlightItem> into) {
+    private void compile(List<String> newItems, List<HighlightItem> into, String typeSuffix) {
         into.clear();
         for (String item : newItems) {
             if (item != null && !item.isEmpty()) {
-                HighlightItem compiled = new HighlightItem(item, type);
+                HighlightItem compiled = new HighlightItem(item, type+typeSuffix);
                 if (!compiled.hasError()) {
                     into.add(compiled);
                 }
