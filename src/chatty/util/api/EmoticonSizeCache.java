@@ -35,6 +35,10 @@ public class EmoticonSizeCache {
         return data.get(id);
     }
     
+    public synchronized static void removeSize(String id) {
+        data.remove(id);
+    }
+    
     public synchronized static void saveToFile() {
         try (BufferedWriter writer = Files.newBufferedWriter(FILE, CHARSET)) {
             for (String id : data.keySet()) {

@@ -8,6 +8,8 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.DateTime;
 import chatty.util.HalfWeakSet;
 import chatty.util.ImageCache;
+import chatty.util.ImageCache.ImageRequest;
+import chatty.util.ImageCache.ImageResult;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
 import java.awt.Color;
@@ -107,8 +109,7 @@ public class Emoticon {
     private static final float MAX_WIDTH = 100;
     private static final float MAX_HEIGHT = 50;
     
-    private static final int MAX_SCALED_WIDTH = 250;
-    private static final int MAX_SCALED_HEIGHT = 150;
+    
     
     public final Type type;
     public final SubType subType;
@@ -256,7 +257,10 @@ public class Emoticon {
     }
     
     /**
-     * Get the built URL for this emote if applicable to the emote type.
+     * Get the built URL for this emote if applicable to the emote type. It's
+     * important that the returned URL matches the URL factor, so that the
+     * ImageRequest can correctly calculate the base size. It will attempt to
+     * get factor 1 if 2 returns null.
      * 
      * @param factor The size factor (1 or 2)
      * @param imageType
@@ -272,7 +276,7 @@ public class Emoticon {
             return getBttvEmoteUrl(stringId, factor);
         } else if (type == Type.FFZ) {
             return getFFZUrl(factor);
-        } else if (type == Type.EMOJI) {
+        } else if (factor == 1) {
             return url;
         }
         return null;
@@ -676,6 +680,10 @@ public class Emoticon {
         }
     }
     
+    private void removeCachedSize() {
+        EmoticonSizeCache.removeSize(getCachedSizeId());
+    }
+    
     /**
      * Get the size of this emoticon without scaling. If no size was given when
      * creating the Emoticon, the size is looked up in the size cache or if that
@@ -696,77 +704,7 @@ public class Emoticon {
         return new Dimension(width, height);
     }
     
-    /**
-     * Scale the given Dimension based on the given settings. Also checks if the
-     * resulting size is within reasonable boundaries.
-     *
-     * @param d The dimension to modify
-     * @param scaleFactor The scale factor, values smaller or equal to 0 are
-     * ignored
-     * @param maxHeight The maximum height, values smaller or equal to 0 are
-     * ignored
-     * @return A new Dimension that has been scaled accordingly
-     */
-    private static Dimension getScaledSize(Dimension d, float scaleFactor, int maxHeight) {
-        float scaledWidth = d.width;
-        float scaledHeight = d.height;
-        
-        if (scaleFactor > 0) {
-            scaledWidth *= scaleFactor;
-            scaledHeight *= scaleFactor;
-        }
-        
-        if (maxHeight > 0 && scaledHeight > maxHeight) {
-            scaledWidth = scaledWidth / (scaledHeight / maxHeight);
-            scaledHeight = maxHeight;
-        }
-        
-        /**
-         * Convert into int before checking
-         */
-        int resultWidth = (int)scaledWidth;
-        int resultHeight = (int)scaledHeight;
-        if (resultWidth < 1) {
-            resultWidth = 1;
-        }
-        if (resultHeight < 1) {
-            resultHeight = 1;
-        }
-        
-        /**
-         * This shouldn't really happen, but just in case, so no ridicously
-         * huge (default) image is created.
-         */
-        if (resultWidth > MAX_SCALED_WIDTH) {
-            resultWidth = MAX_SCALED_WIDTH;
-        }
-        if (resultHeight > MAX_SCALED_HEIGHT) {
-            resultHeight = MAX_SCALED_HEIGHT;
-        }
-        return new Dimension(resultWidth, resultHeight);
-    }
     
-    /**
-     * Gets the size from the image, including correcting for the given URL
-     * factor for Twitch emotes.
-     * 
-     * @param icon The ImageIcon to get the size from
-     * @param urlFactor Only 1 and 2 should be valid at the moment
-     * @return The size of the given image
-     */
-    private Dimension getSizeFromImage(ImageIcon icon, int urlFactor) {
-        int imageWidth = icon.getIconWidth();
-        int imageHeight = icon.getIconHeight();
-        if (urlFactor > 1) {
-            imageWidth /= urlFactor;
-            imageHeight /= urlFactor;
-        }
-        return new Dimension(imageWidth, imageHeight);
-    }
-    
-    private Image getScaledImage(Image img, int w, int h) {
-        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-    }
     
 
     /**
@@ -786,87 +724,39 @@ public class Emoticon {
             
             // Get the assumed size or size loaded from the size cache
             Dimension defaultSize = getDefaultSize();
-            Dimension scaledSize = getScaledSize(defaultSize, image.scaleFactor,
-                    image.maxHeight);
             
-            //System.out.println(defaultSize+" "+scaledSize+" "+image);
+            /**
+             * Especially Emoji need this, since their emote images aren't the
+             * intended size, this forces the set width/height to be used.
+             */
+            boolean hasSetSize = width != -1 && height != -1;
             
-            // Determine which URL to load the image from
-            String url = Emoticon.this.url;
-            int urlFactor = 1;
-            if (type == Type.TWITCH || type == Type.CUSTOM2 || type == Type.BTTV || type == Type.FFZ || type == Type.EMOJI) {
-                if (scaledSize.width > defaultSize.width) {
-                    urlFactor = 2;
-                    if (isAnimated() && (float)scaledSize.width / defaultSize.width < 1.6) {
-                        // For animated emotes, which currently are not resized,
-                        // only load the 2x version if scale is high enough,
-                        // otherwise it just looks ridiculous
-                        urlFactor = 1;
-                    }
-                }
-                String builtUrl = getEmoteUrl(urlFactor, image.imageType);
-                if (builtUrl == null) {
-                    LOGGER.warning("Couldn't build URL for "+type+"/"+code);
-                    //return null;
-                } else {
-                    url = builtUrl;
-                }
+            ImageRequest request = new ImageCache.ImageRequest(
+                    scale -> getEmoteUrl(scale, image.imageType),
+                    image.scaleFactor,
+                    image.maxHeight,
+                    defaultSize,
+                    hasSetSize);
+            
+            if (!request.valid) {
+                return null;
             }
-
-            ImageIcon icon = loadEmote(url);
-            image.setLoadedFrom(url);
+            
+            ImageResult result = loadEmote(request);
+            image.setLoadedFrom(request.getRequestedURL().toString());
             
             /**
              * If an error occured loading the image, return null.
              */
-            if (icon == null) {
+            if (result == null || !result.isValidImage()) {
                 return null;
             }
             
             /**
-             * Only doing this on ERRORED, waiting for COMPLETE would not allow
-             * animated GIFs to load
+             * Max size fallback, just in case.
              */
-            if (icon.getImageLoadStatus() == MediaTracker.ERRORED) {
-                icon.getImage().flush();
-                return null;
-            }
-            
-            /**
-             * Determine the size to actually scale the image to. If a size has
-             * already been specified (when importing the emote from an API or
-             * when no size was given but the actual image size was set before)
-             * then use the scaledSize as calculated before. Otherwise use the
-             * actual size from the image to calculate the scaled targetSize.
-             */
-            Dimension actualImageSize = getSizeFromImage(icon, urlFactor);
-            Dimension targetSize;
-            if (width == -1 || height == -1) {
-                targetSize = getScaledSize(actualImageSize, image.scaleFactor,
-                    image.maxHeight);
-            } else {
-                targetSize = scaledSize;
-            }
-            
-            /**
-             * Scale to targetSize, unless image is already the correct size.
-             * Don't resize files ending on .gif, which should only apply to
-             * some BTTV emotes which are animated. Filename is not necessarily
-             * available though, it also seems like animated GIFs are not fully
-             * loaded according to the MediaTracker though, so check that as
-             * well. Not quite sure what that means exactly though.
-             */
-            boolean gif = isAnimated || (icon.getDescription() != null && icon.getDescription().startsWith("GIF"));
-            if ((icon.getIconWidth() != targetSize.width
-                    || icon.getIconHeight() != targetSize.height)
-                    && !gif) {
-                Image scaled = getScaledImage(icon.getImage(), targetSize.width,
-                        targetSize.height);
-                icon.setImage(scaled);
-            } else if (icon.getIconWidth() > MAX_SCALED_WIDTH
-                    || icon.getIconHeight() > MAX_SCALED_HEIGHT) {
-                // Fail-safe for accidentally large images that can't be scaled
-                // (e.g. GIF)
+            if (result.icon.getIconWidth() > ImageRequest.MAX_SCALED_WIDTH
+                    || result.icon.getIconHeight() > ImageRequest.MAX_SCALED_HEIGHT) {
                 return null;
             }
 
@@ -875,25 +765,27 @@ public class Emoticon {
              * save it for later if not the default emote size).
              */
             if (width == -1 || height == -1) {
-                width = actualImageSize.width;
-                height = actualImageSize.height;
+                width = result.actualBaseSize.width;
+                height = result.actualBaseSize.height;
                 if (width != DEFAULT_WIDTH || height != DEFAULT_HEIGHT) {
                     // setCachedSize checks for type
                     setCachedSize(width, height);
                 }
+                else {
+                    /**
+                     * In case an invalid/different size was cached before, but
+                     * now it's the default size.
+                     */
+                    removeCachedSize();
+                }
             }
-            return icon;
+            return result.icon;
         }
         
-        private ImageIcon loadEmote(String url) {
-            try {
-                return ImageCache.getImage(new URL(url), "emote_" + type, CACHE_TIME);
-            } catch (MalformedURLException ex) {
-                LOGGER.warning("Invalid url for " + code + ": " + url);
-                return null;
-            }
+        private ImageResult loadEmote(ImageRequest request) {
+            return ImageCache.getImage(request, "emote_" + type, CACHE_TIME);
         }
-        
+
         /**
          * The image should be done loading, replace the defaulticon with the
          * actual loaded icon and tell the user that it's loaded.
@@ -1179,7 +1071,7 @@ public class Emoticon {
          */
         private Image getDefaultImage(boolean error) {
             // Determine the assumed size of the emote, for the placerholder image
-            Dimension d = getScaledSize(getDefaultSize(), scaleFactor, maxHeight);
+            Dimension d = ImageRequest.getScaledSize(getDefaultSize(), scaleFactor, maxHeight);
             int width = d.width;
             int height = d.height;
 

@@ -2,6 +2,10 @@
 package chatty.util;
 
 import chatty.util.gif.GifUtil;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -97,7 +102,7 @@ public class ImageCache {
             setDefaultPath(Paths.get("cache"));
             URL testUrl = new URL("http://127.0.0.1");
             //testUrl = new URL("http://static-cdn.jtvnw.net/jtv_user_pictures/chansub-global-emoticon-7ba1fb012fce74a9-30x30.png");
-            System.out.println(getImage(testUrl, "test", 30));
+//            System.out.println(getImage(testUrl, "test", 30));
         } catch (MalformedURLException ex) {
             Logger.getLogger(ImageCache.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -277,13 +282,13 @@ public class ImageCache {
      *
      * @see getImage(URL, Path, String, int)
      *
-     * @param url
+     * @param request
      * @param prefix
      * @param expireTime
      * @return 
      */
-    public static ImageIcon getImage(URL url, String prefix, int expireTime) {
-        return getImage(url, defaultPath, prefix, expireTime);
+    public static ImageResult getImage(ImageRequest request, String prefix, int expireTime) {
+        return getImage(request, defaultPath, prefix, expireTime);
     }
     
     /**
@@ -319,31 +324,31 @@ public class ImageCache {
      * You can actually delete the cache with {@see clearOldFiles(Path, int)}.
      * </p>
      *
-     * @param url The URL to get the image from
+     * @param request 
      * @param path The path to cache the image in
      * @param prefix The prefix to use for the cache file
      * @param expireTime The expire time of the cache in seconds
      * @return The ImageIcon or null if an error occured
      */
-    public static ImageIcon getImage(URL url, Path path, String prefix, int expireTime) {
-        if (cachingEnabled && !isLocalURL(url)) {
-            ImageIcon image = getCachedImage(url, path, prefix, expireTime);
+    public static ImageResult getImage(ImageRequest request, Path path, String prefix, int expireTime) {
+        if (cachingEnabled && !isLocalURL(request.requestedURL)) {
+            ImageResult image = getCachedImage(request, path, prefix, expireTime);
             if (image != null) {
                 return image;
             }
         }
-        return getImageDirectly(url);
+        return getImageDirectly(request);
     }
     
     /**
      * Requests the image from the given URL directly, without caching.
      * 
-     * @param url The URL of the image
+     * @param request 
      * @return The ImageIcon or null if an error occured
      */
-    public static ImageIcon getImageDirectly(URL url) {
+    public static ImageResult getImageDirectly(ImageRequest request) {
         try {
-            return GifUtil.getGifFromUrl(url);
+            return GifUtil.getGifFromUrl(request);
         } catch (Exception ex) {
             LOGGER.warning("Error loading image: "+ex);
         }
@@ -380,39 +385,39 @@ public class ImageCache {
      * for it to be considered expired and trying to request again
      * @return The ImageIcon or null if an error occured
      */
-    private static ImageIcon getCachedImage(URL url, Path path, String prefix,
+    private static ImageResult getCachedImage(ImageRequest request, Path path, String prefix,
             int expireTime) {
         
-        String id = sha1(url.toString());
+        String id = sha1(request.requestedURL.toString());
         
         path = path.resolve(GLOBAL_PREFIX+prefix).resolve(id.substring(0, 1));
         path.toFile().mkdirs();
         Path file = path.resolve(getFilename(prefix, id));
-        ImageIcon result = null;
+        ImageResult result = null;
         
         Object o = getLockObject(id);
         synchronized(o) {
-            result = getCachedImage2(url, file, expireTime);
+            result = getCachedImage2(request, file, expireTime);
         }
         removeLockObject(id);
         return result;
     }
     
-    private static ImageIcon getCachedImage2(URL url, Path file, int expireTime) {
-        ImageIcon fromFile = getImageFromFile(file);
+    private static ImageResult getCachedImage2(ImageRequest request, Path file, int expireTime) {
+        ImageResult fromFile = getImageFromFile(file, request);
         if (fromFile == null) {
             // The image was NOT read from file successfully
             //System.out.println("Loading image from server (cache not found)"+url);
-            if (saveFile(url, file)) {
-                fromFile = getImageFromFile(file);
+            if (saveFile(request.requestedURL, file)) {
+                fromFile = getImageFromFile(file, request);
             }
         } else {
             // The image was read from file successfully
             if (hasExpired(expireTime, file)) {
                 //System.out.println("Loading image from server (expired)"+url);
-                if (saveFile(url, file)) {
+                if (saveFile(request.requestedURL, file)) {
                     // Only use new image from file if it was saved successfully
-                    fromFile = getImageFromFile(file);
+                    fromFile = getImageFromFile(file, request);
                 }
             }
         }
@@ -447,14 +452,14 @@ public class ImageCache {
         return false;
     }
     
-    private static ImageIcon getImageFromFile(Path file) {
+    private static ImageResult getImageFromFile(Path file, ImageRequest request) {
         try {
-            URL url = file.toUri().toURL();
-            return GifUtil.getGifFromUrl(url);
+            request.setCacheFile(file);
+            return GifUtil.getGifFromUrl(request);
         } catch (FileNotFoundException ex) {
             // Fail silently, images are expected to often be not cached yet
         } catch (Exception ex) {
-            LOGGER.warning("Error loading image from file: "+ex);
+            LOGGER.warning("Error loading image from file: "+ex+" "+Debugging.getStacktrace(ex));
         }
         return null;
     }
@@ -505,6 +510,262 @@ public class ImageCache {
         synchronized(lockObjects) {
             lockObjects.remove(file);
         }
+    }
+    
+    /**
+     * Handles determining the scaled size and fitting URL for loading an image.
+     */
+    public static class ImageRequest {
+        
+        public static final int MAX_SCALED_WIDTH = 250;
+        public static final int MAX_SCALED_HEIGHT = 150;
+        
+        public final int urlFactor;
+        public final int maxHeight;
+        public final float scaleFactor;
+        public final boolean valid;
+        public final boolean resize;
+        public final Dimension defaultSize;
+        
+        private final URL requestedURL;
+        private URL cacheURL;
+
+        public ImageRequest(URL url) {
+            this.requestedURL = url;
+            this.urlFactor = 1;
+            this.maxHeight = -1;
+            this.scaleFactor = -1;
+            this.valid = true;
+            this.resize = false;
+            this.defaultSize = null;
+        }
+        
+        /**
+         * An image request with resizing.
+         * 
+         * @param urlRequester Must return an URL for an URL factor (1 or 2) or
+         * null if the factor can't be served
+         * @param scaleFactor The image scale for resizing
+         * @param maxHeight The max height of the image
+         * @param defaultSize The default base size
+         * @param forceDefaultAsBase Use the defaultSize for resizing, even if
+         * the actualBaseSize is different
+         */
+        public ImageRequest(Function<Integer, String> urlRequester, float scaleFactor, int maxHeight, Dimension defaultSize, boolean forceDefaultAsBase) {
+            // Determine URL
+            Dimension expectedSize = getScaledSize(defaultSize, scaleFactor, maxHeight);
+            int actualUrlFactor = 1;
+            String preferredUrl = null;
+            if (expectedSize.width > defaultSize.width) {
+                preferredUrl = urlRequester.apply(2);
+                if (preferredUrl != null) {
+                    actualUrlFactor = 2;
+                }
+            }
+            if (preferredUrl == null) {
+                preferredUrl = urlRequester.apply(1);
+            }
+            URL actualUrl = null;
+            try {
+                actualUrl = new URL(preferredUrl);
+            }
+            catch (MalformedURLException ex) {
+                LOGGER.warning("Invalid image URL: "+preferredUrl);
+            }
+            
+            // Init
+            this.maxHeight = maxHeight;
+            this.scaleFactor = scaleFactor;
+            this.requestedURL = actualUrl;
+            this.urlFactor = actualUrlFactor;
+            this.valid = requestedURL != null;
+            this.resize = true;
+            this.defaultSize = forceDefaultAsBase ? defaultSize : null;
+        }
+        
+        public void setCacheFile(Path file) throws MalformedURLException {
+            this.cacheURL = file.toUri().toURL();
+        }
+        
+        /**
+         * This may be a cache file or the originally requested URL.
+         * 
+         * @return 
+         */
+        public URL getLoadFromURL() {
+            return cacheURL != null ? cacheURL : requestedURL;
+        }
+        
+        /**
+         * This is the original URL that was requested.
+         * 
+         * @return 
+         */
+        public URL getRequestedURL() {
+            return requestedURL;
+        }
+        
+        /**
+         * Resize image if enabled and necessary and return created result.
+         * 
+         * @param icon
+         * @param isGif
+         * @return 
+         */
+        public ImageResult finishIcon(ImageIcon icon, boolean isGif) {
+            Dimension actualBaseSize = getSizeFromImage(icon);
+            Dimension baseSize = defaultSize != null ? defaultSize : actualBaseSize;
+            Dimension scaledSize = getScaledSize(baseSize, scaleFactor, maxHeight);
+            if (resize && !baseSize.equals(scaledSize)) {
+                Image image = getScaledImage(icon.getImage(), scaledSize.width, scaledSize.height);
+                icon.setImage(image);
+            }
+            return new ImageResult(icon, actualBaseSize, isGif);
+        }
+        
+        /**
+         * Get the scaled size, taking into account the actualBaseSize only if
+         * this request isn't forced to use the defaultSize.
+         * 
+         * @param actualBaseSize The urlFactor corrected actual size
+         * @return The scaled size, or null if no resizing should be performed
+         */
+        public Dimension getScaledSizeIfNecessary(Dimension actualBaseSize) {
+            Dimension baseSize = defaultSize != null ? defaultSize : actualBaseSize;
+            Dimension scaledSize = getScaledSize(baseSize, scaleFactor, maxHeight);
+            if (resize && !baseSize.equals(scaledSize)) {
+                return scaledSize;
+            }
+            return null;
+        }
+        
+        /**
+         * Scale the given Dimension based on the given settings. Also checks if
+         * the resulting size is within reasonable boundaries.
+         *
+         * @param d The dimension to modify
+         * @param scaleFactor The scale factor, values smaller or equal to 0 are
+         * ignored
+         * @param maxHeight The maximum height, values smaller or equal to 0 are
+         * ignored
+         * @return A new Dimension that has been scaled accordingly
+         */
+        public static Dimension getScaledSize(Dimension d, float scaleFactor, int maxHeight) {
+            float scaledWidth = d.width;
+            float scaledHeight = d.height;
+
+            if (scaleFactor > 0) {
+                scaledWidth *= scaleFactor;
+                scaledHeight *= scaleFactor;
+            }
+
+            if (maxHeight > 0 && scaledHeight > maxHeight) {
+                scaledWidth = scaledWidth / (scaledHeight / maxHeight);
+                scaledHeight = maxHeight;
+            }
+
+            /**
+             * Convert into int before checking
+             */
+            int resultWidth = (int) scaledWidth;
+            int resultHeight = (int) scaledHeight;
+            if (resultWidth < 1) {
+                resultWidth = 1;
+            }
+            if (resultHeight < 1) {
+                resultHeight = 1;
+            }
+
+            /**
+             * This shouldn't really happen, but just in case, so no ridicously
+             * huge (default) image is created.
+             */
+            if (resultWidth > MAX_SCALED_WIDTH) {
+                resultWidth = MAX_SCALED_WIDTH;
+            }
+            if (resultHeight > MAX_SCALED_HEIGHT) {
+                resultHeight = MAX_SCALED_HEIGHT;
+            }
+            return new Dimension(resultWidth, resultHeight);
+        }
+
+        /**
+         * Gets the URL factor corrected size from the image.
+         *
+         * @param icon The ImageIcon to get the size from
+         * @return The size of the given image
+         */
+        public Dimension getSizeFromImage(ImageIcon icon) {
+            return getUrlFactorCorrectedSize(icon.getIconWidth(), icon.getIconHeight());
+        }
+        
+        /**
+         * Gets the URL factor corrected size from the image.
+         *
+         * @param image The image to get the size from
+         * @return The size of the given image
+         */
+        public Dimension getSizeFromImage(BufferedImage image) {
+            return getUrlFactorCorrectedSize(image.getWidth(), image.getHeight());
+        }
+        
+        /**
+         * Corrects the given size based on the stored URL factor, resulting in
+         * the base size (so if a 2x URL was used it would divide by 2).
+         * 
+         * @param width
+         * @param height
+         * @return 
+         */
+        private Dimension getUrlFactorCorrectedSize(int width, int height) {
+            if (urlFactor > 1) {
+                width /= urlFactor;
+                height /= urlFactor;
+            }
+            return new Dimension(width, height);
+        }
+
+        private Image getScaledImage(Image img, int width, int height) {
+            return img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        }
+        
+    }
+    
+    /**
+     * Holds some additional information related to the loaded image.
+     */
+    public static class ImageResult {
+        
+        /**
+         * The loaded icon, possibly resized.
+         */
+        public final ImageIcon icon;
+        
+        /**
+         * The URL factor corrected base size of the actual loaded image.
+         */
+        public final Dimension actualBaseSize;
+        
+        /**
+         * Whether the image was loaded through the special GIF loader. It may
+         * still be a GIF even if this is false, although only if an error
+         * occured with the special GIF loader.
+         */
+        public final boolean loadedAsGif;
+        
+        public ImageResult(ImageIcon icon, Dimension actualBaseSize, boolean loadedAsGif) {
+            this.icon = icon;
+            this.actualBaseSize = actualBaseSize;
+            this.loadedAsGif = loadedAsGif;
+        }
+        
+        public boolean isValidImage() {
+            return icon != null
+                    && icon.getImageLoadStatus() != MediaTracker.ERRORED
+                    && icon.getIconWidth() != -1
+                    && icon.getIconHeight() != -1;
+        }
+        
     }
     
 }
