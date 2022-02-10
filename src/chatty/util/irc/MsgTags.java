@@ -73,6 +73,14 @@ public class MsgTags extends IrcMsgTags {
     public String getReplyParentMsgId() {
         return get("reply-parent-msg-id");
     }
+
+    public boolean isHistorical() {
+        return hasValue("historical");
+    }
+
+    public long getReceivedTimestamp() {
+        return getLong("rm-received-ts", System.currentTimeMillis());
+    }
     
     //================
     // Factory Methods
