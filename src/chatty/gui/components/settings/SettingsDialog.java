@@ -504,6 +504,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         usercolorSettings.setData(owner.getUsercolorData());
         msgColorSettings.setData(owner.getMsgColorData());
         imageSettings.setData(owner.getUsericonData());
+        imageSettings.setHiddenBadgesData(owner.getHiddenBadgesData());
         imageSettings.setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
         hotkeySettings.setData(owner.hotkeyManager.getActionsMap(),
                 owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
@@ -582,6 +583,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         owner.setUsercolorData(usercolorSettings.getData());
         owner.setMsgColorData(msgColorSettings.getData());
         owner.setUsericonData(imageSettings.getData());
+        owner.setHiddenBadgesData(imageSettings.getHiddenBadgesData());
         owner.hotkeyManager.setData(hotkeySettings.getData());
         owner.setNotificationData(notificationSettings.getData());
         owner.localEmotes.setData(emoteSettings.getData());

@@ -32,6 +32,11 @@ public class UsericonContextMenu extends ContextMenu {
             }
         }
         
+        if (usericon.source != Usericon.SOURCE_CUSTOM) {
+            addSeparator();
+            addItem("hideUsericonOfBadgeType", "Hide badges of this type");
+        }
+        
         //--------
         // Submenu
         //--------
@@ -52,14 +57,14 @@ public class UsericonContextMenu extends ContextMenu {
         if (!usericon.channelRestriction.isEmpty()) {
             addItem("", "Channel: "+usericon.channelRestriction, infoMenu);
         }
-        if (!usericon.badgeType.isEmpty()) {
-            if (usericon.source == Usericon.SOURCE_TWITCH2
-                    || usericon.source == Usericon.SOURCE_OTHER) {
-                // Only show add options if original Twitch emote (custom emote
-                // would already be added)
+        if (usericon.source != Usericon.SOURCE_CUSTOM) {
+            if (usericon.badgeType.isEmpty()) {
+                addItem("addUsericonOfBadgeType", "Override/Hide (" + usericon.type.label + ")", infoMenu);
+            }
+            else {
                 addSeparator(infoMenu);
-                addItem("addUsericonOfBadgeType", "Override/Hide ("+usericon.badgeType+")", infoMenu);
-                addItem("addUsericonOfBadgeTypeAllVariants", "Override/Hide (all "+usericon.badgeType.id+" variants)", infoMenu);
+                addItem("addUsericonOfBadgeType", "Override/Hide (" + usericon.badgeType + ")", infoMenu);
+                addItem("addUsericonOfBadgeTypeAllVariants", "Override/Hide (all " + usericon.badgeType.id + " variants)", infoMenu);
             }
         }
         

@@ -169,6 +169,9 @@ public class RawMessageTest {
         if (type.equals("first")) {
             return "@color=;display-name=Test;id=123;first-msg=1;mod=0;room-id=123;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hello";
         }
+        if (type.equals("firstsub")) {
+            return "@color=;badges=founder/0;display-name=Test;id=123;first-msg=1;mod=0;room-id=123;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hello";
+        }
         return null;
     }
     

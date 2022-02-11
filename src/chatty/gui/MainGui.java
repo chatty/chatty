@@ -2367,6 +2367,14 @@ public class MainGui extends JFrame implements Runnable {
             else if (e.getActionCommand().startsWith("addUsericonOfBadgeType")) {
                 getSettingsDialog(s -> s.showSettings(e.getActionCommand(), usericon));
             }
+            else if (e.getActionCommand().startsWith("hideUsericonOfBadgeType")) {
+                if (client.usericonManager.hideBadge(usericon)) {
+                    JOptionPane.showMessageDialog(rootPane, "Badges of type '"+usericon.readableLenientType()+"' will not show up in new messages.\n\nSee: <Main - Settings - Badges - View Hidden Badges>");
+                }
+                else {
+                    JOptionPane.showMessageDialog(rootPane, "Badges of type '"+usericon.readableLenientType()+"' are already hidden.\n\nSee: <Main - Settings - Badges - View Hidden Badges>");
+                }
+            }
             else if (e.getActionCommand().equals("badgeImage")) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
             }
@@ -2532,12 +2540,20 @@ public class MainGui extends JFrame implements Runnable {
         return client.usericonManager.getCustomData();
     }
     
+    public List<Usericon> getHiddenBadgesData() {
+        return client.usericonManager.getHiddenBadgesData();
+    }
+    
     public Set<String> getTwitchBadgeTypes() {
         return client.usericonManager.getTwitchBadgeTypes();
     }
     
     public void setUsericonData(List<Usericon> data) {
         client.usericonManager.setCustomData(data);
+    }
+    
+    public void setHiddenBadgesData(List<Usericon> data) {
+        client.usericonManager.setHiddenBadgesData(data);
     }
     
     public List<Notification> getNotificationData() {
@@ -3353,6 +3369,7 @@ public class MainGui extends JFrame implements Runnable {
                             hasReplacements ? filter.getLastTextMatches() : null,
                             hasReplacements ? filter.getLastReplacement() : null,
                             tags);
+                    message.localUser = localUser;
                     
                     // Custom color
                     boolean hlByPoints = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");

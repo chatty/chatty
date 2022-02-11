@@ -27,6 +27,7 @@ public class UserMessage extends Message {
     public boolean action;
     public Object colorSource;
     public Object highlightSource;
+    public User localUser;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
             String id, int bits, List<Match> highlightMatches,

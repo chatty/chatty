@@ -263,6 +263,8 @@ public class SettingsManager {
         settings.addList("customUsericons", new ArrayList(), Setting.LIST);
         settings.addBoolean("customUsericonsEnabled", false);
         
+        settings.addList("hiddenUsericons", new ArrayList(), Setting.LIST);
+        
         settings.addBoolean("botBadgeEnabled", true);
         settings.addBoolean("botNamesBTTV", true);
         settings.addBoolean("botNamesFFZ", true);
