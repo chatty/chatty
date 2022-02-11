@@ -1,7 +1,6 @@
 
 package chatty.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,12 +26,12 @@ public class Sound {
     private static final Logger LOGGER = Logger.getLogger(Sound.class.getName());
     
     private static final Map<String, Long> lastPlayed = new HashMap<>();
+    private static final Map<Path, Clip> cache = new HashMap<>();
     
     private static Mixer mixer;
     private static String mixerName;
     
     public static void play(Path file, float volume, String id, int delay) throws Exception {
-        
         if (lastPlayed.containsKey(id)) {
             long timePassed = (System.currentTimeMillis() - lastPlayed.get(id)) / 1000;
             if (timePassed < delay) {
@@ -45,47 +44,63 @@ public class Sound {
         }
         
         try {
-            // getAudioInputStream() also accepts a File or InputStream
-            AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
-            
-            DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
-            final Clip clip;
-            if (mixer != null) {
-                clip = (Clip)mixer.getLine(info);
-            } else {
-                clip = (Clip)AudioSystem.getLine(info);
+            Clip clip = cache.get(file);
+            if (clip == null) {
+                clip = createClip(file, id);
+                cache.put(file, clip);
             }
-            clip.open(ais);
-            
-            // Volume, use what is available
-            String volumeInfo;
-            FloatControl gain = getFirstAvailableControl(clip,
-                    FloatControl.Type.MASTER_GAIN, FloatControl.Type.VOLUME);
-            if (gain != null) {
-                gain.setValue(calculateGain(volume,
-                        gain.getMinimum(), gain.getMaximum()));
-                volumeInfo = gain.toString();
-            } else {
-                volumeInfo = "no volume control";
+            if (clip.isActive()) {
+                return;
             }
-            
-            clip.addLineListener(new LineListener() {
-
-                @Override
-                public void update(LineEvent event) {
-                    LOGGER.info("LineEvent: "+event);
-                    if (event.getType() == LineEvent.Type.STOP) {
-                        clip.close();
-                    }
-                }
-            });
-            
+            String volumeInfo = setVolume(clip, volume);
+            clip.setFramePosition(0);
             clip.start();
             LOGGER.info("Playing sound "+id+"/"+file+" ("+volumeInfo+") EDT:"+SwingUtilities.isEventDispatchThread());
         } catch (Exception ex) {
             LOGGER.warning("Couldn't play sound ("+id+"/"+file+"): "+ex);
             throw ex;
         }
+    }
+    
+    private static Clip createClip(Path file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+        // getAudioInputStream() also accepts a File or InputStream
+        AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
+
+        DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
+        final Clip clip;
+        if (mixer != null) {
+            clip = (Clip) mixer.getLine(info);
+        }
+        else {
+            clip = (Clip) AudioSystem.getLine(info);
+        }
+        clip.open(ais);
+
+        clip.addLineListener(new LineListener() {
+
+            @Override
+            public void update(LineEvent event) {
+                LOGGER.info("LineEvent: " + event);
+            }
+        });
+        LOGGER.info("Created sound clip " + id + "/" + file + " EDT:" + SwingUtilities.isEventDispatchThread());
+        return clip;
+    }
+    
+    private static String setVolume(Clip clip, float volume) {
+        // Volume, use what is available
+        String volumeInfo;
+        FloatControl gain = getFirstAvailableControl(clip,
+                FloatControl.Type.MASTER_GAIN, FloatControl.Type.VOLUME);
+        if (gain != null) {
+            gain.setValue(calculateGain(volume,
+                    gain.getMinimum(), gain.getMaximum()));
+            volumeInfo = gain.toString();
+        }
+        else {
+            volumeInfo = "no volume control";
+        }
+        return volumeInfo;
     }
     
     private static FloatControl getFirstAvailableControl(Clip clip,
@@ -136,6 +151,7 @@ public class Sound {
         if (mixerName != null && mixerName.equals(name)) {
             return;
         }
+        clearCache();
         mixerName = name;
         if (name == null || name.isEmpty()) {
             mixer = null;
@@ -151,6 +167,13 @@ public class Sound {
         }
         mixer = null;
         LOGGER.info("Could not find sound device "+name);
+    }
+    
+    private static void clearCache() {
+        for (Line line : cache.values()) {
+            line.close();
+        }
+        cache.clear();
     }
     
 }
