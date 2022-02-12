@@ -616,7 +616,7 @@ public class ImageCache {
             Dimension actualBaseSize = getSizeFromImage(icon);
             Dimension baseSize = defaultSize != null ? defaultSize : actualBaseSize;
             Dimension scaledSize = getScaledSize(baseSize, scaleFactor, maxHeight);
-            if (resize && !baseSize.equals(scaledSize)) {
+            if (resize && !actualBaseSize.equals(scaledSize)) {
                 Image image = getScaledImage(icon.getImage(), scaledSize.width, scaledSize.height);
                 icon.setImage(image);
             }
@@ -633,7 +633,7 @@ public class ImageCache {
         public Dimension getScaledSizeIfNecessary(Dimension actualBaseSize) {
             Dimension baseSize = defaultSize != null ? defaultSize : actualBaseSize;
             Dimension scaledSize = getScaledSize(baseSize, scaleFactor, maxHeight);
-            if (resize && !baseSize.equals(scaledSize)) {
+            if (resize && !actualBaseSize.equals(scaledSize)) {
                 return scaledSize;
             }
             return null;
