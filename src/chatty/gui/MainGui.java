@@ -67,6 +67,7 @@ import chatty.gui.components.textpane.SubscriberMessage;
 import chatty.gui.components.textpane.UserNotice;
 import chatty.gui.components.userinfo.UserInfoManager;
 import chatty.gui.components.userinfo.UserNotes;
+import chatty.gui.emoji.EmojiUtil;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
@@ -3241,10 +3242,20 @@ public class MainGui extends JFrame implements Runnable {
         printMessage(user, text, action, MsgTags.EMPTY);
     }
     
-    public void printMessage(User user, String text, boolean action, MsgTags tags0) {
+    public void printMessage(User user, String text2, boolean action, MsgTags tags0) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                /**
+                 * Replace the ZWF replacement (which consists of two chars)
+                 * with the ZFW before anything that relies on character
+                 * position (like Highlights or Emote parsing) is performed.
+                 * Twitch emote indices work with codepoint counts, so it's
+                 * fine.
+                 */
+                boolean decodeZWF = client.settings.getLong("emojiZWJ") > 0;
+                String text = decodeZWF ? EmojiUtil.decodeZWJ(text2) : text2;
+                
                 MsgTags tags = tags0;
                 Channel chan;
                 String channel = user.getChannel();

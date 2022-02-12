@@ -5,6 +5,7 @@ import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
+import chatty.gui.emoji.EmojiUtil;
 import chatty.util.BotNameManager;
 import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
@@ -496,6 +497,9 @@ public class TwitchConnection {
         if (!spamProtection.check()) {
             return false;
         } else {
+            if (settings.getLong("emojiZWJ") == 2) {
+                message = EmojiUtil.encodeZWJ(message);
+            }
             if (Helper.isChatroomChannel(channel)) {
                 sentMessages.messageSent(channel, message);
             }

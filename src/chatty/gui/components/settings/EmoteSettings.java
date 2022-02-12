@@ -166,6 +166,8 @@ public class EmoteSettings extends SettingsPanel {
         emojiSettings.add(d.addSimpleBooleanSetting("emojiReplace"),
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
+        SettingsUtil.addLabeledComponent(emojiSettings, "emojiZWJ", 0, 2, 1, GridBagConstraints.WEST, d.addComboLongSetting("emojiZWJ", 0, 1, 2));
+        
         //==========================
         // Local Emotes
         //==========================

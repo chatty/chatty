@@ -44,6 +44,20 @@ public class EmojiUtil {
         return EMOJI_PATTERN.matcher(text).find();
     }
     
+    public static final String ZWJ = "\u200d";
+    public static final String ZWJ_REPLACEMENT = "\uDB40\uDC02"; // U+E0002
+    
+    private static final Pattern ZWJ_REPLACEMENT_ENCODE = Pattern.compile(ZWJ);
+    private static final Pattern ZWJ_REPLACEMENT_DECODE = Pattern.compile(ZWJ_REPLACEMENT);
+    
+    public static String encodeZWJ(String input) {
+        return ZWJ_REPLACEMENT_ENCODE.matcher(input).replaceAll(ZWJ_REPLACEMENT);
+    }
+    
+    public static String decodeZWJ(String input) {
+        return ZWJ_REPLACEMENT_DECODE.matcher(input).replaceAll(ZWJ);
+    }
+    
     /**
      * One Emoji set specifiying an identifier, human-readable name and image
      * path in the jar relative to this file.
