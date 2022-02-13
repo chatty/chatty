@@ -5,11 +5,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 /**
  * Static methods to play sounds.
@@ -25,13 +29,58 @@ public class Sound {
     
     private static final Logger LOGGER = Logger.getLogger(Sound.class.getName());
     
-    private static final Map<String, Long> lastPlayed = new HashMap<>();
-    private static final Map<Path, Clip> cache = new HashMap<>();
+    //==========================
+    // Instance
+    //==========================
+    private static Sound instance;
     
-    private static Mixer mixer;
-    private static String mixerName;
+    public static Sound get() {
+        if (instance == null) {
+            instance = new Sound();
+        }
+        return instance;
+    }
     
+    /**
+     * Should only be called from the EDT.
+     * 
+     * @param file
+     * @param volume
+     * @param id
+     * @param delay
+     * @throws Exception 
+     */
     public static void play(Path file, float volume, String id, int delay) throws Exception {
+        get().playInternal(file, volume, id, delay);
+    }
+    
+    /**
+     * Should only be called from the EDT.
+     * 
+     * @param name 
+     */
+    public static void setDeviceName(String name) {
+        get().setDeviceNameInternal(name);
+    }
+    
+    //==========================
+    // Class
+    //==========================
+    private final Map<String, Long> lastPlayed = new HashMap<>();
+    private final List<Pair<Clip, ElapsedTime>> clips = new LinkedList<>();
+    
+    private Mixer mixer;
+    private String mixerName;
+    
+    Sound() {
+        Timer timer = new Timer(10*1000, e -> {
+            clearClips();
+        });
+        timer.setRepeats(true);
+        timer.start();
+    }
+    
+    public void playInternal(Path file, float volume, String id, int delay) throws Exception {
         if (lastPlayed.containsKey(id)) {
             long timePassed = (System.currentTimeMillis() - lastPlayed.get(id)) / 1000;
             if (timePassed < delay) {
@@ -44,25 +93,19 @@ public class Sound {
         }
         
         try {
-            Clip clip = cache.get(file);
-            if (clip == null) {
-                clip = createClip(file, id);
-                cache.put(file, clip);
-            }
-            if (clip.isActive()) {
-                return;
-            }
+            Clip clip = createClip(file, id);
+            clips.add(new Pair<>(clip, new ElapsedTime(true)));
             String volumeInfo = setVolume(clip, volume);
-            clip.setFramePosition(0);
             clip.start();
-            LOGGER.info("Playing sound "+id+"/"+file+" ("+volumeInfo+") EDT:"+SwingUtilities.isEventDispatchThread());
+            LOGGER.info(String.format("Playing[%s]: %sms %s (%s) EDT: %s",
+                    id, clip.getMicrosecondLength() / 1000, file, volumeInfo, SwingUtilities.isEventDispatchThread()));
         } catch (Exception ex) {
             LOGGER.warning("Couldn't play sound ("+id+"/"+file+"): "+ex);
             throw ex;
         }
     }
     
-    private static Clip createClip(Path file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+    private Clip createClip(Path file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         // getAudioInputStream() also accepts a File or InputStream
         AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
 
@@ -76,18 +119,20 @@ public class Sound {
         }
         clip.open(ais);
 
-        clip.addLineListener(new LineListener() {
-
-            @Override
-            public void update(LineEvent event) {
-                LOGGER.info("LineEvent: " + event);
+        clip.addLineListener(event -> {
+            boolean simulateIssue = Debugging.isEnabled("soundNoStop") && ThreadLocalRandom.current().nextBoolean();
+            if (simulateIssue && event.getType() == LineEvent.Type.STOP) {
+                return;
+            }
+            LOGGER.info("LineEvent["+id+"]: " + event.getType());
+            if (event.getType() == LineEvent.Type.STOP) {
+                clip.close();
             }
         });
-        LOGGER.info("Created sound clip " + id + "/" + file + " EDT:" + SwingUtilities.isEventDispatchThread());
         return clip;
     }
     
-    private static String setVolume(Clip clip, float volume) {
+    private String setVolume(Clip clip, float volume) {
         // Volume, use what is available
         String volumeInfo;
         FloatControl gain = getFirstAvailableControl(clip,
@@ -147,11 +192,10 @@ public class Sound {
         return result;
     }
     
-    public static void setDeviceName(String name) {
+    public void setDeviceNameInternal(String name) {
         if (mixerName != null && mixerName.equals(name)) {
             return;
         }
-        clearCache();
         mixerName = name;
         if (name == null || name.isEmpty()) {
             mixer = null;
@@ -169,11 +213,35 @@ public class Sound {
         LOGGER.info("Could not find sound device "+name);
     }
     
-    private static void clearCache() {
-        for (Line line : cache.values()) {
-            line.close();
+    /**
+     * Backup for closing clips if the Stop event does not get received for some
+     * reason.
+     */
+    private void clearClips() {
+        if (clips.isEmpty()) {
+            return;
         }
-        cache.clear();
+        Iterator<Pair<Clip, ElapsedTime>> it = clips.iterator();
+        int clipsClosed = 0;
+        while (it.hasNext()) {
+            Pair<Clip, ElapsedTime> entry = it.next();
+            Clip clip = entry.key;
+            if (!clip.isOpen()) {
+                it.remove();
+            }
+            else {
+                long clipLength = clip.getMicrosecondLength();
+                boolean clipLengthPassed = clipLength != AudioSystem.NOT_SPECIFIED && entry.value.millisElapsed(clipLength / 1000 + 1000);
+                if (clipLengthPassed || entry.value.secondsElapsed(120)) {
+                    clipsClosed++;
+                    clip.close();
+                    it.remove();
+                }
+            }
+        }
+        if (clipsClosed > 0) {
+            LOGGER.warning(String.format("%d clips closed which should already have been closed", clipsClosed));
+        }
     }
     
 }
