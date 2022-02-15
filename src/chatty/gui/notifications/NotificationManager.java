@@ -373,7 +373,7 @@ public class NotificationManager {
         }
         Path path = Paths.get(soundsPath, n.soundFile);
         try {
-            Sound.play(path, n.soundVolume, "id", 0);
+            Sound.play(path, n.soundVolume, "notification_"+n.type.toString(), 0);
         } catch (Exception ex) {
             // Do nothing further (already logged)
         }
