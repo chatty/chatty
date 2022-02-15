@@ -379,12 +379,22 @@ public class Emoticons {
          */
         if (!emote.hasStreamRestrictions()) {
             if (emote.hasGlobalEmoteset() || localEmotesets.contains(emote.emoteset)) {
+                /**
+                 * Remove first to ensure emote is updated. When new emotes are
+                 * received from the API, the ones used for received messages
+                 * (twitchEmotesById), as well as other collections, are updated
+                 * with the new object, so this one should be too, so that the
+                 * same object is used for sent messages (especially to have
+                 * animated emotes synchronized).
+                 */
+                usableGlobalEmotes.remove(emote);
                 usableGlobalEmotes.add(emote);
             }
         }
         else {
             if (emote.hasGlobalEmoteset() || allLocalEmotesets.contains(emote.emoteset)) {
                 for (String stream : emote.getStreamRestrictions()) {
+                    MiscUtil.getSetFromMap(usableStreamEmotes, stream).remove(emote);
                     MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
                 }
             }
