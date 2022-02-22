@@ -1,6 +1,7 @@
 
 package chatty.gui.components.eventlog;
 
+import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.lang.Language;
 import java.awt.BorderLayout;
@@ -169,15 +170,19 @@ public class EventLog extends JDialog {
     }
     
     public static void addSystemEvent(String id, String title, String text) {
-        if (main != null) {
-            main.add(new Event(Event.Type.SYSTEM, id, title, text, null, null));
-        }
+        GuiUtil.edt(() -> {
+            if (main != null) {
+                main.add(new Event(Event.Type.SYSTEM, id, title, text, null, null));
+            }
+        });
     }
     
     public static void removeSystemEvent(String id) {
-        if (main != null) {
-            main.remove(new Event(Event.Type.SYSTEM, id, null, null, null, null));
-        }
+        GuiUtil.edt(() -> {
+            if (main != null) {
+                main.remove(new Event(Event.Type.SYSTEM, id, null, null, null, null));
+            }
+        });
     }
     
     public static void setMain(EventLog main) {

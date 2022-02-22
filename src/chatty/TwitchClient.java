@@ -1559,6 +1559,9 @@ public class TwitchClient {
         } else if (command.equals("addevent")) {
             String[] split = parameter.split(" ", 3);
             EventLog.addSystemEvent(split[0], split[1], split[2]);
+        } else if (command.equals("addevent2")) {
+            String[] split = parameter.split(" ", 3);
+            new Thread(() -> EventLog.addSystemEvent(split[0], split[1], split[2])).start();
         } else if (command.equals("removechan")) {
             g.removeChannel(parameter);
         } else if (command.equals("tt")) {
