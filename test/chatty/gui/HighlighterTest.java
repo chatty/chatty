@@ -908,6 +908,10 @@ public class HighlighterTest {
         assertFalse(highlighter.check(user, "Testi Abc"));
         assertFalse(highlighter.check(user, "Testi"));
         assertFalse(highlighter.check(user, "Testi Abcd"));
+        
+        update("+text:a");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertFalse(highlighter.check(user, "Test 123"));
     }
     
     @Test

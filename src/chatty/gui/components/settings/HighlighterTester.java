@@ -10,6 +10,7 @@ import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
+import chatty.util.Replacer2;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import chatty.util.irc.MsgTags;
@@ -71,6 +72,7 @@ import javax.swing.text.StyledDocument;
 public class HighlighterTester extends JDialog implements StringEditor {
     
     public static Map<String, CustomCommand> testPresets;
+    public static Replacer2 substitutionItem;
     
     private static final int MAX_INPUT_LENGTH = 50*1000;
 
@@ -106,6 +108,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
      * Previous automatically set test text.
      */
     private String prevTestText;
+    private Replacer2.Result substitutionResult;
     
     private HighlightItem highlightItem;
     private HighlightItem blacklistItem;
@@ -294,6 +297,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 fb.insertString(offset, StringUtil.removeLinebreakCharacters(string), attr);
                 updateMatches((DefaultStyledDocument)fb.getDocument());
                 updateInfoText();
+                updateParseResult(); // For updating substituted test text
             }
             
             @Override
@@ -302,6 +306,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 fb.remove(offset, length);
                 updateMatches((DefaultStyledDocument)fb.getDocument());
                 updateInfoText();
+                updateParseResult();
             }
 
             @Override
@@ -309,6 +314,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                 fb.replace(offset, length, StringUtil.removeLinebreakCharacters(text), attrs);
                 updateMatches((DefaultStyledDocument)fb.getDocument());
                 updateInfoText();
+                updateParseResult();
             }
             
         });
@@ -354,6 +360,22 @@ public class HighlighterTester extends JDialog implements StringEditor {
         String typeSuffix = editingBlacklistItem ? "Blacklist" : "";
         return new HighlightItem(value, type+typeSuffix, false,
                 testPresets != null ? testPresets : new HashMap<>());
+    }
+    
+    private String getTestText() {
+        String text = testInput.getText();
+        if (type.equals("highlight")) {
+            if (substitutionItem != null) {
+                substitutionResult = substitutionItem.replace(text);
+                if (substitutionResult != null) {
+                    text = substitutionResult.getChangedText();
+                }
+            }
+            else {
+                substitutionResult = null;
+            }
+        }
+        return text;
     }
     
     private void updateItem() {
@@ -421,6 +443,9 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (blacklistItem != null) {
             text += "\n### Blacklist ###\n"+blacklistItem.getMatchInfo();
         }
+        if (substitutionResult != null) {
+            text += "---\nTest text after applying substitutions: "+substitutionResult.getChangedText();
+        }
         parseResult.setText(text);
     }
     
@@ -429,14 +454,14 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (blacklistItem != null) {
             // Match ANY type, same as the other matching in this (ignoring
             // non-text prefixes)
-            blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, testInput.getText(), null,
+            blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, getTestText(), null,
                     null, null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
             testResult.setText("Empty item.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Error: "+highlightItem.getError());
-        } else if (highlightItem.matchesTest(testInput.getText(), blacklist)) {
+        } else if (highlightItem.matchesTest(getTestText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
             String failedReason = highlightItem.getFailedReason();
@@ -462,7 +487,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
             // Regular item
             if (highlightItem != null) {
-                List<Match> matches = highlightItem.getTextMatches(testInput.getText());
+                List<Match> matches = highlightItem.getTextMatches(getTestText(), substitutionResult);
                 if (matches != null) {
                     for (int i = 0; i < matches.size(); i++) {
                         Match m = matches.get(i);
@@ -477,13 +502,13 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
             // Blacklist item
             if (blacklistItem != null) {
-                List<Match> blacklistMatches = blacklistItem.getTextMatches(testInput.getText());
+                List<Match> blacklistMatches = blacklistItem.getTextMatches(getTestText(), substitutionResult);
                 if (blacklistMatches != null) {
                     for (int i = 0; i < blacklistMatches.size(); i++) {
                         Match m = blacklistMatches.get(i);
                         doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
                     }
-                } else if (blacklistItem.matchesTest(testInput.getText(), null)) {
+                } else if (blacklistItem.matchesTest(getTestText(), null)) {
                     doc.setCharacterAttributes(0, doc.getLength(), blacklistAttr, false);
                 }
             }
@@ -524,7 +549,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
     
     private void updateTestText() {
         HighlightItem item = editingBlacklistItem ? blacklistItem : highlightItem;
-        boolean matches = item != null && item.matchesAny(testInput.getText(), null);
+        boolean matches = item != null && item.matchesAny(getTestText(), null);
         if (!matches && (testInput.getText().isEmpty() || testInput.getText().equals(prevTestText))) {
             if (item != null && item.getTextWithoutPrefix().length() < 20) {
                 testInput.setText(TEST_PRESET_EXAMPLE+item.getTextWithoutPrefix());

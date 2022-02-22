@@ -635,6 +635,8 @@ public class SettingsManager {
         matchingPresetsDefault.add("# _special replaces every letter of words surrounded by ~ with: (<letter>[\\W_]*?)+");
         matchingPresetsDefault.add("_special $replace($1-,$\"~([^~]+)~\",$replace($(g1),$\"(\\w)\",$\"($1[\\\\W_]*?)+\",regRef),regCustom)");
         settings.addList("matchingPresets", matchingPresetsDefault, Setting.STRING);
+        settings.addList("matchingSubstitutes", new ArrayList(), Setting.STRING);
+        settings.addBoolean("matchingSubstitutesEnabled", false);
         
         // Repeated Messages
         settings.addBoolean("repeatMsg", false);

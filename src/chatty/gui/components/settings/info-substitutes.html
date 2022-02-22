@@ -1,0 +1,24 @@
+<p>Each list entry must have the format: "<code>[target] [search] [search] ..</code>" (for
+    example "<code>a 𝒜 @ à</code>") whereas
+    each "search" (<code>𝒜</code>, <code>@</code> and <code>à</code>) will be replaced by "target" (<code>a</code>) before Highlight matching takes
+    place. This is intended to normalize lookalikes to a single character for
+    easier matching. The original "search" characters can not be matched on. In
+    other places, for example for display in chat, the original message will be used.</p>
+
+<ul>
+    <li>Each "search" is separated by on or several spaces.</li>
+    <li>A "search" can be a single Unicode character (char) or several characters
+        (word). Replacement takes place in two steps, first chars are replaced,
+        then words are replaced.</li>
+    <li>Any "search" words that are shorter than the "target" are invalid and
+        will be ignored (if the "target" is a single ASCII character that can
+        never occur).</li>
+    <li>Replacing is case-insensitive, so when <code>à</code> is specified then
+        both <code>à</code> and <code>À</code> will be replaced.</li>
+    <li>Adding a single "<code>#</code>" in place of a "search" will cause all
+        following eligible single characters to automatically be added with
+        various diacritic marks. Example: "<code>a # a</code>" will search for
+        the characters <code>a</code>, <code>à</code>, <code>á</code>, <code>â</code>, <code>ã</code> (and so on) and replace them with <code>a</code>.
+        Adding another "<code>#</code>" will toggle the feature off again for following
+        characters.</li>
+</ul>

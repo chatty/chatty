@@ -11,6 +11,7 @@ import chatty.util.MiscUtil;
 import chatty.util.Pair;
 import chatty.util.TimeoutPatternMatcher;
 import chatty.util.RepeatMsgHelper;
+import chatty.util.Replacer2;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.TwitchApi;
@@ -67,6 +68,7 @@ public class Highlighter {
     private boolean includeAllTextMatches;
     private List<Match> lastTextMatches;
     private String lastReplacement;
+    private Replacer2 substitutions;
     
     // Settings
     private boolean highlightUsername;
@@ -88,6 +90,10 @@ public class Highlighter {
     
     public void updateBlacklist(List<String> newItems) {
         compile(newItems, blacklistItems, "Blacklist");
+    }
+    
+    public void updateSubstitutions(Replacer2 replacer) {
+        this.substitutions = replacer;
     }
     
     private void compile(List<String> newItems, List<HighlightItem> into, String typeSuffix) {
@@ -232,6 +238,13 @@ public class Highlighter {
      */
     public boolean check(HighlightItem.Type type, String text, String channel,
             Addressbook ab, User user, User localUser, MsgTags tags) {
+        Replacer2.Result subResult = null;
+        if (substitutions != null) {
+            subResult = substitutions.replace(text);
+            if (subResult != null) {
+                text = subResult.getChangedText();
+            }
+        }
         Blacklist blacklist = null;
         if (!blacklistItems.isEmpty()) {
             blacklist = new Blacklist(type, text, channel, ab, user, localUser, tags, blacklistItems);
@@ -248,7 +261,7 @@ public class Highlighter {
                 && usernameItem != null
                 && (blacklist == null || !blacklist.block)
                 && usernameItem.matches(type, text, blacklist, channel, ab, user, localUser, tags)) {
-            fillLastMatchVariables(usernameItem, text);
+            fillLastMatchVariables(usernameItem, text, subResult);
             addMatch(user, usernameItem);
             return true;
         }
@@ -262,12 +275,12 @@ public class Highlighter {
             if (!blacklistBlocks && item.matches(type, text, item.overrideBlacklist ? null : blacklist, channel, ab, user, localUser, tags)) {
                 if (!alreadyMatched) {
                     // Only for the first match
-                    fillLastMatchVariables(item, text);
+                    fillLastMatchVariables(item, text, subResult);
                     addMatch(user, item);
                     alreadyMatched = true;
                 }
                 else if (includeAllTextMatches) {
-                    List<Match> matches = item.getTextMatches(text);
+                    List<Match> matches = item.getTextMatches(text, subResult);
                     if (lastTextMatches == null && matches != null) {
                         // Can happen if first match has no pattern
                         lastTextMatches = new ArrayList<>();
@@ -292,13 +305,13 @@ public class Highlighter {
         
         // Then see if there is a recent match ("Highlight follow-up")
         if (highlightNextMessages && user != null && hasRecentMatch(user.getName())) {
-            fillLastMatchVariables(lastHighlightedItem.get(user.getName()), null);
+            fillLastMatchVariables(lastHighlightedItem.get(user.getName()), null, subResult);
             return true;
         }
         return false;
     }
     
-    private void fillLastMatchVariables(HighlightItem item, String text) {
+    private void fillLastMatchVariables(HighlightItem item, String text, Replacer2.Result subResult) {
         lastMatchItem = item;
         lastMatchItems = new ArrayList<>();
         lastMatchItems.add(item);
@@ -308,7 +321,7 @@ public class Highlighter {
         lastMatchNoSound = item.noSound();
         lastReplacement = item.getReplacement();
         if (text != null) {
-            lastTextMatches = item.getTextMatches(text);
+            lastTextMatches = item.getTextMatches(text, subResult);
         }
     }
     
@@ -1481,7 +1494,7 @@ public class Highlighter {
          * @param text The string to look for matches in
          * @return List of Match objects, or null if no text pattern is set
          */
-        public List<Match> getTextMatches(String text) {
+        public List<Match> getTextMatches(String text, Replacer2.Result subResult) {
             if (pattern == null) {
                 return null;
             }
@@ -1498,7 +1511,12 @@ public class Highlighter {
                      * probably not make much sense anyway.
                      */
                     if (!m.group().isEmpty()) {
-                        result.add(new Match(m.start(), m.end()));
+                        if (subResult != null) {
+                            result.add(new Match(subResult.getIndex(m.start()), subResult.getIndex(m.end())));
+                        }
+                        else {
+                            result.add(new Match(m.start(), m.end()));
+                        }
                     }
                 }
             } catch (Exception ex) {
@@ -1909,7 +1927,7 @@ public class Highlighter {
                     if (item.blacklistBlock) {
                         block = true;
                     }
-                    List<Match> matches = item.getTextMatches(text);
+                    List<Match> matches = item.getTextMatches(text, null);
                     if (matches != null) {
                         blacklisted.addAll(matches);
                     } else {
@@ -1962,7 +1980,7 @@ public class Highlighter {
             }
             if (items != null) {
                 for (HighlightItem item : items) {
-                    List<Match> m = item.getTextMatches(text);
+                    List<Match> m = item.getTextMatches(text, null);
                     if (m != null) {
                         matches.addAll(m);
                     } else {

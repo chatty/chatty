@@ -1078,6 +1078,16 @@ public class MainGui extends JFrame implements Runnable {
         BatchAction.queue(highlighter, () -> {
             highlighter.update(StringUtil.getStringList(client.settings.getList("highlight")));
             highlighter.updateBlacklist(StringUtil.getStringList(client.settings.getList("highlightBlacklist")));
+            
+            if (client.settings.getBoolean("matchingSubstitutesEnabled")) {
+                @SuppressWarnings("unchecked") // Setting
+                List<String> substitutionsValue = client.settings.getList("matchingSubstitutes");
+                highlighter.updateSubstitutions(Replacer2.create(substitutionsValue));
+            }
+            else {
+                // Remove if it was enabled before
+                highlighter.updateSubstitutions(null);
+            }
         });
     }
     
@@ -5052,6 +5062,8 @@ public class MainGui extends JFrame implements Runnable {
                     channels.setCompletionEnabled(bool);
                 } else if (setting.equals("animatedEmotes")) {
                     emotesDialog.setEmoteImageType(Emoticon.makeImageType(bool));
+                } else if (setting.equals("matchingSubstitutesEnabled")) {
+                    updateHighlight();
                 }
                 if (setting.startsWith("title") || setting.equals("tabsChanTitles")) {
                     updateState(true);
@@ -5095,7 +5107,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             if (type == Setting.LIST) {
-                if (setting.equals("highlight") || setting.equals("highlightBlacklist")) {
+                if (setting.equals("highlight") || setting.equals("highlightBlacklist") || setting.equals("matchingSubstitutes")) {
                     updateHighlight();
                 } else if (setting.equals("ignore") || setting.equals("ignoreBlacklist")) {
                     updateIgnore();
