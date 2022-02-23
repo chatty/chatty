@@ -92,7 +92,7 @@ public class Replacer2Test {
         test(new String[]{
             "test t" // Invalid, since "test" is longer than "t"
         }, "t",
-                null
+                (String[]) null
         );
         
         test(new String[]{
