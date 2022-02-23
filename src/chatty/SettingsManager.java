@@ -605,6 +605,7 @@ public class SettingsManager {
         settings.addBoolean("highlightOwnText", false);
         settings.addBoolean("highlightNextMessages", false);
         settings.addBoolean("highlightIgnored", false);
+        settings.addBoolean("highlightOverrideIgnored", false);
         settings.addList("noHighlightUsers", new ArrayList(), Setting.STRING);
         settings.addList("highlightBlacklist", new ArrayList(), Setting.STRING);
         settings.addBoolean("highlightMatches", true);

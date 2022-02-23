@@ -3315,18 +3315,30 @@ public class MainGui extends JFrame implements Runnable {
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
-                boolean ignored = checkMsg(ignoreList, "ignore", text, user, localUser, tags, isOwnMessage) || ignoredUser;
+                boolean ignored = checkMsg(ignoreList, "ignore", text, user, localUser, tags, isOwnMessage, false) || ignoredUser;
+                
+                boolean highlighted = false;
+                List<Match> highlightMatches = null;
+                if ((client.settings.getBoolean("highlightIgnored")
+                        || client.settings.getBoolean("highlightOverrideIgnored")
+                        || highlighter.hasOverrideIgnored()
+                        || !ignored)
+                        && !client.settings.listContains("noHighlightUsers", user.getName())) {
+                    boolean rejectIgnoredWithoutPrefix = client.settings.getBoolean("highlightOverrideIgnored")
+                                              || client.settings.getBoolean("highlightIgnored")
+                                              ? false : ignored;
+                    highlighted = checkMsg(highlighter, "highlight", text, user, localUser, tags, isOwnMessage, rejectIgnoredWithoutPrefix);
+                    if (highlighted) {
+                        if (client.settings.getBoolean("highlightOverrideIgnored")
+                                || highlighter.getLastMatchItem().overrideIgnored()) {
+                            ignored = false;
+                        }
+                    }
+                }
                 
                 if (!ignored || client.settings.getBoolean("logIgnored")) {
                     client.chatLog.bits(chan.getFilename(), user, bitsAmount);
                     client.chatLog.message(chan.getFilename(), user, text, action, null);
-                }
-                
-                boolean highlighted = false;
-                List<Match> highlightMatches = null;
-                if ((client.settings.getBoolean("highlightIgnored") || !ignored)
-                        && !client.settings.listContains("noHighlightUsers", user.getName())) {
-                    highlighted = checkMsg(highlighter, "highlight", text, user, localUser, tags, isOwnMessage);
                 }
                 
                 TagEmotes tagEmotes = Emoticons.parseEmotesTag(tags.getRawEmotes());
@@ -3382,7 +3394,7 @@ public class MainGui extends JFrame implements Runnable {
                         printInfo(chan, InfoMessage.createInfo("Own message ignored."));
                     }
                 } else {
-                    boolean hasReplacements = checkMsg(filter, "filter", text, user, localUser, tags, isOwnMessage);
+                    boolean hasReplacements = checkMsg(filter, "filter", text, user, localUser, tags, isOwnMessage, false);
 
                     // Print message, but determine how exactly
                     UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bitsForEmotes,
@@ -3524,26 +3536,29 @@ public class MainGui extends JFrame implements Runnable {
     
     private boolean checkHighlight(HighlightItem.Type type, String text,
             String channel, Addressbook ab, User user, User localUser, MsgTags tags, Highlighter hl,
-            String setting, boolean isOwnMessage) {
+            String setting, boolean isOwnMessage, boolean ignored) {
         if (client.settings.getBoolean(setting + "Enabled")) {
             if (client.settings.getBoolean(setting + "OwnText") ||
                     !isOwnMessage) {
-                return hl.check(type, text, channel, ab, user, localUser, tags);
+                return hl.check(type, text, channel, ab, user, localUser, tags, ignored);
             }
         }
         return false;
     }
     
     private boolean checkMsg(Highlighter hl, String setting, String text,
-            User user, User localUser, MsgTags tags, boolean isOwnMessage) {
+            User user, User localUser, MsgTags tags, boolean isOwnMessage,
+            boolean ignored) {
         return checkHighlight(HighlightItem.Type.REGULAR, text, null, null,
-                user, localUser, tags, hl, setting, isOwnMessage);
+                user, localUser, tags, hl, setting, isOwnMessage, ignored);
     }
     
     private boolean checkInfoMsg(Highlighter hl, String setting, String text,
-            User user, MsgTags tags, String channel, Addressbook ab) {
+            User user, MsgTags tags, String channel, Addressbook ab,
+            boolean ignored) {
         return checkHighlight(HighlightItem.Type.INFO, text, channel, ab,
-                user, client.getLocalUser(channel), tags, hl, setting, false);
+                user, client.getLocalUser(channel), tags, hl, setting, false,
+                ignored);
     }
     
     protected void ignoredMessagesCount(String channel, String message) {
@@ -3699,14 +3714,27 @@ public class MainGui extends JFrame implements Runnable {
             user = ((UserNotice)message).user;
         }
         MsgTags tags = message.tags;
-        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, user, tags, channel.getChannel(), client.addressbook);
+        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, user, tags, channel.getChannel(), client.addressbook, false);
+        boolean highlighted = false;
+        boolean ignoreCheck = !ignored
+                || highlighter.hasOverrideIgnored()
+                || client.settings.getBoolean("highlightOverrideIgnored");
+        if (ignoreCheck && !message.isHidden()) {
+            boolean rejectIgnoredWithoutPrefix = client.settings.getBoolean("highlightOverrideIgnored") ? false : ignored;
+            highlighted = checkInfoMsg(highlighter, "highlight", message.text, user, tags, channel.getChannel(), client.addressbook, rejectIgnoredWithoutPrefix);
+            if (highlighted) {
+                if (client.settings.getBoolean("highlightOverrideIgnored")
+                        || highlighter.getLastMatchItem().overrideIgnored()) {
+                    ignored = false;
+                }
+            }
+        }
         if (!ignored) {
             //----------------
             // Output Message
             //----------------
             if (!message.isHidden()) {
                 User localUser = client.getLocalUser(channel.getChannel());
-                boolean highlighted = checkInfoMsg(highlighter, "highlight", message.text, user, tags, channel.getChannel(), client.addressbook);
                 if (highlighted) {
                     message.highlighted = true;
                     message.highlightMatches = highlighter.getLastTextMatches();

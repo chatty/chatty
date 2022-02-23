@@ -92,6 +92,12 @@ public class HighlightSettings extends SettingsPanel {
         JCheckBox highlightIgnored = d.addSimpleBooleanSetting("highlightIgnored");
         base.add(highlightIgnored, gbc);
         
+        gbc = d.makeGbc(1, 3, 1, 1);
+        gbc.insets = settingInsets;
+        gbc.anchor = GridBagConstraints.WEST;
+        JCheckBox highlightOverrideIgnored = d.addSimpleBooleanSetting("highlightOverrideIgnored");
+        base.add(highlightOverrideIgnored, gbc);
+        
         gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
         gbc.insets = settingInsets;
         JCheckBox highlightMatches = d.addSimpleBooleanSetting("highlightMatches");
@@ -173,6 +179,7 @@ public class HighlightSettings extends SettingsPanel {
         
         SettingsUtil.addSubsettings(highlightEnabled, highlightUsername,
                 highlightNextMessages, highlightOwnText, highlightIgnored,
+                highlightOverrideIgnored,
                 highlightMatches, items, noHighlightUsersButton,
                 highlightBlacklistButton);
         

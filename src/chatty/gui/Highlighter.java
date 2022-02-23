@@ -73,6 +73,7 @@ public class Highlighter {
     // Settings
     private boolean highlightUsername;
     private boolean highlightNextMessages;
+    private boolean hasOverrideIgnored;
     
     public Highlighter(String type) {
         this.type = type;
@@ -86,6 +87,12 @@ public class Highlighter {
      */
     public void update(List<String> newItems) {
         compile(newItems, items, "");
+        hasOverrideIgnored = false;
+        items.forEach(item -> {
+            if (item.overrideIgnored()) {
+                hasOverrideIgnored = true;
+            }
+        });
     }
     
     public void updateBlacklist(List<String> newItems) {
@@ -204,6 +211,18 @@ public class Highlighter {
     }
     
     /**
+     * At least one of the Highlight items has the "config:!ignore" prefix, so
+     * Highlight should be checked even if the message has been ignored (and it
+     * should remove the ignore status if the message indeed matches a Highlight
+     * item with that prefix).
+     * 
+     * @return 
+     */
+    public boolean hasOverrideIgnored() {
+        return hasOverrideIgnored;
+    }
+    
+    /**
      * Check if this matches as a REGULAR message, getting all additional data
      * from the User. See  for more.
      * 
@@ -213,7 +232,7 @@ public class Highlighter {
      * @see #check(HighlightItem.Type, String, String, Addressbook, User)
      */
     public boolean check(User user, String text) {
-        return check(HighlightItem.Type.REGULAR, text, null, null, user, null, MsgTags.EMPTY);
+        return check(HighlightItem.Type.REGULAR, text, null, null, user, null, MsgTags.EMPTY, false);
     }
     
     /**
@@ -234,10 +253,15 @@ public class Highlighter {
      * @param ab The Addressbook for checking channel category
      * @param user The User associated with this message, for checking username
      * and user Addressbook category
+     * @param localUser
+     * @param tags
+     * @param ignored When true items don't match if the "config:!ignore" prefix
+     * hasn't been set
      * @return true if the message matches, false otherwise
      */
     public boolean check(HighlightItem.Type type, String text, String channel,
-            Addressbook ab, User user, User localUser, MsgTags tags) {
+            Addressbook ab, User user, User localUser, MsgTags tags,
+            boolean ignored) {
         Replacer2.Result subResult = null;
         if (substitutions != null) {
             subResult = substitutions.replace(text);
@@ -260,6 +284,7 @@ public class Highlighter {
         if (highlightUsername
                 && usernameItem != null
                 && (blacklist == null || !blacklist.block)
+                && !ignored
                 && usernameItem.matches(type, text, blacklist, channel, ab, user, localUser, tags)) {
             fillLastMatchVariables(usernameItem, text, subResult);
             addMatch(user, usernameItem);
@@ -272,7 +297,11 @@ public class Highlighter {
             boolean blacklistBlocks = blacklist != null
                     && blacklist.block
                     && !item.overrideBlacklist;
-            if (!blacklistBlocks && item.matches(type, text, item.overrideBlacklist ? null : blacklist, channel, ab, user, localUser, tags)) {
+            boolean ignoredBlocks = ignored && !item.overrideIgnored();
+            if (!blacklistBlocks
+                    && !ignoredBlocks
+                    && item.matches(type, text, item.overrideBlacklist ? null : blacklist, channel, ab, user, localUser, tags)) {
+                // Item matched
                 if (!alreadyMatched) {
                     // Only for the first match
                     fillLastMatchVariables(item, text, subResult);
@@ -530,6 +559,8 @@ public class Highlighter {
         private boolean blacklistBlock;
         
         private boolean overrideBlacklist;
+        
+        private boolean overrideIgnored;
         
         //--------------------------
         // Debugging
@@ -829,6 +860,9 @@ public class Highlighter {
                         }
                         else if (part.equals("!blacklist")) {
                             overrideBlacklist = true;
+                        }
+                        else if (part.equals("!ignore")) {
+                            overrideIgnored = true;
                         }
                         else if (part.equals("info")) {
                             appliesToType = Type.INFO;
@@ -1614,6 +1648,10 @@ public class Highlighter {
                 }
             }
             return result.toString();
+        }
+        
+        public boolean overrideIgnored() {
+            return overrideIgnored;
         }
         
         private static void addPatternWarning(StringBuilder b, Object pattern) {
