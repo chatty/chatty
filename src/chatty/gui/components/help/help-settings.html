@@ -1099,6 +1099,33 @@
             in the message, while <code>blacklist:!cheesecake reg:^!\w+</code>
             will only prevent the match when it fully encompasses the regular
             text match, so only when the message starts with <code>!cheesecake</code>.</li>
+        <li><a name="Highlight_Prefix-if"><code>if:</code></a> to specify
+            additional conditions that have an "or" relationship to eachother.
+            This is a comma-separated list (enclose spaces and commas in quotes
+            to ignore them) of Highlight items, whereas at least one has to
+            match.
+            <br/><br />
+            Prefixes in an item always have an "and" relationship, so they all
+            have to match (<code>cat:abc user:a_name</code> requires the "abc"
+            Addressbook category <em>and</em> the "a_name" username), the <code>if:</code> allows for
+            some more flexibility (<code>if:"cat:abc","user:a_name"</code> requires
+            only one of them).
+            <br/><br />
+            Example: <code>config:any if:"config:info start:[AutoMod]"," " reg:complicated regex</code>
+            <ul>
+                <li><code>config:any</code> - Match any type of message,
+                    otherwise it would only match regular chat messages, as is
+                    the default</li>
+                <li>First <code>if:</code> entry: <code>"config:info start:[AutoMod]"</code> - Match info
+                    messages starting with "[AutoMod]" (note the quotes due to
+                    the spaces)</li>
+                <li>Second <code>if:</code> entry: <code>" "</code> - This one is a bit weird,
+                    it just specifies an empty item, which matches any regular
+                    chat message (could also have <code>reg:.*</code> or something).</li>
+                <li><code>reg:complicated regex</code> - The other stuff was
+                    just to narrow down which messages to match on, so now match
+                    the actual text.</li>
+            </ul></li>
     </ul>
     
     <h3><a name="Highlight_Meta_Behaviour">Meta Prefixes (Behaviour)</a></h3>
