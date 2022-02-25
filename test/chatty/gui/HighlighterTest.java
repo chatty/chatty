@@ -1214,7 +1214,7 @@ public class HighlighterTest {
     }
     
     @Test
-    public void testSubsitutions() {
+    public void testSubstitutes() {
         update();
         updateBlacklist();
         
