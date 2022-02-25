@@ -68,12 +68,14 @@ public class Highlighter {
     private boolean includeAllTextMatches;
     private List<Match> lastTextMatches;
     private String lastReplacement;
-    private Replacer2 substitutions;
+    private Replacer2 substitutes;
+    private boolean substitutesDefault;
     
     // Settings
     private boolean highlightUsername;
     private boolean highlightNextMessages;
     private boolean hasOverrideIgnored;
+    private boolean hasSubstitutesEnabled;
     
     public Highlighter(String type) {
         this.type = type;
@@ -93,14 +95,30 @@ public class Highlighter {
                 hasOverrideIgnored = true;
             }
         });
+        updateSubstitutesState();
     }
     
     public void updateBlacklist(List<String> newItems) {
         compile(newItems, blacklistItems, "Blacklist");
     }
     
-    public void updateSubstitutions(Replacer2 replacer) {
-        this.substitutions = replacer;
+    public void setSubstitutitesDefault(boolean value) {
+        this.substitutesDefault = value;
+        updateSubstitutesState();
+    }
+    
+    private void updateSubstitutesState() {
+        hasSubstitutesEnabled = false;
+        for (HighlightItem item : items) {
+            if (item.substitutesEnabled(substitutesDefault)) {
+                hasSubstitutesEnabled = true;
+                break;
+            }
+        }
+    }
+    
+    public void updateSubstitutes(Replacer2 replacer) {
+        this.substitutes = replacer;
     }
     
     private void compile(List<String> newItems, List<HighlightItem> into, String typeSuffix) {
@@ -263,15 +281,16 @@ public class Highlighter {
             Addressbook ab, User user, User localUser, MsgTags tags,
             boolean ignored) {
         Replacer2.Result subResult = null;
-        if (substitutions != null) {
-            subResult = substitutions.replace(text);
-            if (subResult != null) {
-                text = subResult.getChangedText();
-            }
+        if (substitutes != null && hasSubstitutesEnabled) {
+            subResult = substitutes.replace(text);
         }
         Blacklist blacklist = null;
+        Blacklist subBlacklist = null;
         if (!blacklistItems.isEmpty()) {
             blacklist = new Blacklist(type, text, channel, ab, user, localUser, tags, blacklistItems);
+            if (subResult != null) {
+                subBlacklist = new Blacklist(type, subResult.getChangedText(), channel, ab, user, localUser, tags, blacklistItems);
+            }
         }
         
         /**
@@ -286,7 +305,7 @@ public class Highlighter {
                 && (blacklist == null || !blacklist.block)
                 && !ignored
                 && usernameItem.matches(type, text, blacklist, channel, ab, user, localUser, tags)) {
-            fillLastMatchVariables(usernameItem, text, subResult);
+            fillLastMatchVariables(usernameItem, text, null);
             addMatch(user, usernameItem);
             return true;
         }
@@ -294,22 +313,28 @@ public class Highlighter {
         // Then try to match against the items
         boolean alreadyMatched = false;
         for (HighlightItem item : items) {
-            boolean blacklistBlocks = blacklist != null
-                    && blacklist.block
+            // On what does matching take place (changed text or not)
+            boolean subEnabled = item.substitutesEnabled(substitutesDefault) && subResult != null;
+            String itemText = subEnabled && subResult != null ? subResult.getChangedText() : text;
+            Replacer2.Result itemSubResult = subEnabled ? subResult : null;
+            Blacklist itemBlacklist = subEnabled ? subBlacklist : blacklist;
+            
+            boolean blacklistBlocks = itemBlacklist != null
+                    && itemBlacklist.block
                     && !item.overrideBlacklist;
             boolean ignoredBlocks = ignored && !item.overrideIgnored();
             if (!blacklistBlocks
                     && !ignoredBlocks
-                    && item.matches(type, text, item.overrideBlacklist ? null : blacklist, channel, ab, user, localUser, tags)) {
+                    && item.matches(type, itemText, item.overrideBlacklist ? null : itemBlacklist, channel, ab, user, localUser, tags)) {
                 // Item matched
                 if (!alreadyMatched) {
                     // Only for the first match
-                    fillLastMatchVariables(item, text, subResult);
+                    fillLastMatchVariables(item, itemText, itemSubResult);
                     addMatch(user, item);
                     alreadyMatched = true;
                 }
                 else if (includeAllTextMatches) {
-                    List<Match> matches = item.getTextMatches(text, subResult);
+                    List<Match> matches = item.getTextMatches(itemText, itemSubResult);
                     if (lastTextMatches == null && matches != null) {
                         // Can happen if first match has no pattern
                         lastTextMatches = new ArrayList<>();
@@ -334,7 +359,7 @@ public class Highlighter {
         
         // Then see if there is a recent match ("Highlight follow-up")
         if (highlightNextMessages && user != null && hasRecentMatch(user.getName())) {
-            fillLastMatchVariables(lastHighlightedItem.get(user.getName()), null, subResult);
+            fillLastMatchVariables(lastHighlightedItem.get(user.getName()), null, null);
             return true;
         }
         return false;
@@ -562,6 +587,13 @@ public class Highlighter {
         private boolean overrideBlacklist;
         
         private boolean overrideIgnored;
+        
+        /**
+         * 0 - Always disabled
+         * 1 - Depends on default
+         * 2 - Always enabled
+         */
+        private int substitutesEnabled = 1;
         
         //--------------------------
         // Debugging
@@ -864,6 +896,12 @@ public class Highlighter {
                         }
                         else if (part.equals("!ignore")) {
                             overrideIgnored = true;
+                        }
+                        else if (part.equals("s")) {
+                            substitutesEnabled = 2;
+                        }
+                        else if (part.equals("!s")) {
+                            substitutesEnabled = 0;
                         }
                         else if (part.equals("info")) {
                             appliesToType = Type.INFO;
@@ -1569,7 +1607,7 @@ public class Highlighter {
                      */
                     if (!m.group().isEmpty()) {
                         if (subResult != null) {
-                            result.add(new Match(subResult.getIndex(m.start()), subResult.getIndex(m.end())));
+                            result.add(new Match(subResult.indexToOriginal(m.start()), subResult.indexToOriginal(m.end())));
                         }
                         else {
                             result.add(new Match(m.start(), m.end()));
@@ -1675,6 +1713,16 @@ public class Highlighter {
         
         public boolean overrideIgnored() {
             return overrideIgnored;
+        }
+        
+        public boolean substitutesEnabled(boolean substitutesDefault) {
+            if (substitutesEnabled == 0) {
+                return false;
+            }
+            if (substitutesEnabled == 2) {
+                return true;
+            }
+            return substitutesDefault;
         }
         
         private static void addPatternWarning(StringBuilder b, Object pattern) {
@@ -2059,7 +2107,7 @@ public class Highlighter {
         public final int start;
         public final int end;
 
-        private Match(int start, int end) {
+        public Match(int start, int end) {
             this.start = start;
             this.end = end;
         }
@@ -2136,6 +2184,35 @@ public class Highlighter {
         @Override
         public int compareTo(Match o) {
             return start - o.start;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Match other = (Match) obj;
+            if (this.start != other.start) {
+                return false;
+            }
+            if (this.end != other.end) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 73 * hash + this.start;
+            hash = 73 * hash + this.end;
+            return hash;
         }
 
     }

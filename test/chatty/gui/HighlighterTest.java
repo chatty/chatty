@@ -7,6 +7,7 @@ import chatty.User;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.HighlightItem.Type;
 import chatty.gui.Highlighter.Match;
+import chatty.util.Replacer2;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -1210,6 +1211,82 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "What a nice kitty cat, isn't it a nice cat!"));
         assertEquals(highlighter.getLastTextMatches().size(), 4);
         assertEquals(highlighter.getLastMatchItems().size(), 3);
+    }
+    
+    @Test
+    public void testSubsitutions() {
+        update();
+        updateBlacklist();
+        
+        highlighter.updateSubstitutes(Replacer2.create(Arrays.asList(new String[]{
+            "a 𝒜"
+        })));
+        highlighter.setIncludeAllTextMatches(false);
+        highlighter.setSubstitutitesDefault(false);
+        
+        update("cat", "config:s hat", "config:!s bat");
+        
+        // Matching in general and text match indices
+        List<Match> expected = new ArrayList<>();
+        expected.add(new Match(5, 9));
+        assertFalse(highlighter.check(user, "Nice c𝒜t!"));
+        assertNull(highlighter.getLastTextMatches());
+        assertTrue(highlighter.check(user, "Nice h𝒜t!"));
+        assertEquals(expected, highlighter.getLastTextMatches());
+        assertFalse(highlighter.check(user, "Nice b𝒜t!"));
+        assertNull(highlighter.getLastTextMatches());
+        
+        highlighter.setSubstitutitesDefault(true);
+        assertTrue(highlighter.check(user, "Nice c𝒜t!"));
+        assertEquals(expected, highlighter.getLastTextMatches());
+        assertTrue(highlighter.check(user, "Nice h𝒜t!"));
+        assertEquals(expected, highlighter.getLastTextMatches());
+        assertFalse(highlighter.check(user, "Nice b𝒜t!"));
+        assertNull(highlighter.getLastTextMatches());
+        
+        // All text matches
+        highlighter.setIncludeAllTextMatches(true);
+        List<Match> expected2 = new ArrayList<>();
+        expected2.add(new Match(5, 9));
+        expected2.add(new Match(11, 15));
+        assertTrue(highlighter.check(user, "Nice h𝒜t, c𝒜t!"));
+        assertEquals(expected2, highlighter.getLastTextMatches());
+        assertTrue(highlighter.check(user, "Nice h𝒜t!"));
+        assertEquals(expected, highlighter.getLastTextMatches());
+        assertFalse(highlighter.check(user, "Nice b𝒜t!"));
+        assertNull(highlighter.getLastTextMatches());
+        highlighter.setIncludeAllTextMatches(false);
+        
+        // Blacklist
+        update("t", "hat", "config:!s b𝒜t", "!");
+        updateBlacklist("cat", "bat");
+        assertFalse(highlighter.check(user, "Nice c𝒜t"));
+        assertTrue(highlighter.check(user, "Nice h𝒜t"));
+        assertTrue(highlighter.check(user, "Nice b𝒜t"));
+        assertTrue(highlighter.check(user, "Nice c𝒜t!"));
+        
+        update("1", "config:!s 2");
+        updateBlacklist("config:block cat");
+        assertFalse(highlighter.check(user, "1 c𝒜t"));
+        assertTrue(highlighter.check(user, "2 c𝒜t"));
+        assertTrue(highlighter.check(user, "12 c𝒜t"));
+        
+        // Not having substiutions, but default enabled shouldn't break anything
+        highlighter.updateSubstitutes(null);
+        
+        update("test");
+        updateBlacklist();
+        assertTrue(highlighter.check(user, "Hello testi"));
+        updateBlacklist("testi");
+        assertFalse(highlighter.check(user, "Hello testi"));
+        
+        highlighter.setSubstitutitesDefault(false);
+        
+        update("test");
+        updateBlacklist();
+        assertTrue(highlighter.check(user, "Hello testi"));
+        updateBlacklist("testi");
+        assertFalse(highlighter.check(user, "Hello testi"));
     }
     
 }

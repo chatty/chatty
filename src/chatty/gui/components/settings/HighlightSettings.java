@@ -269,6 +269,9 @@ public class HighlightSettings extends SettingsPanel {
             substitutesEnabled.addItemListener(e -> updateTestSubstitutes());
             add(substitutesEnabled, gbc);
             
+            gbc = d.makeGbc(0, 2, 2, 1);
+            add(new JLabel("<html><body style='width:340px;padding:4px;padding-top:0'>Independent of this setting the <code>config:s</code> prefix can enable and <code>config:!s</code> disable this feature on a per Highlight-item basis."), gbc);
+            
             JButton addDefaults = new JButton("Add default entries");
             addDefaults.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
             addDefaults.addActionListener(e -> {
@@ -282,7 +285,7 @@ public class HighlightSettings extends SettingsPanel {
             gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.EAST);
             add(addDefaults, gbc);
             
-            gbc = d.makeGbc(0, 2, 2, 1);
+            gbc = d.makeGbc(0, 3, 2, 1);
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
@@ -301,7 +304,7 @@ public class HighlightSettings extends SettingsPanel {
                     setVisible(false);
                 }
             });
-            gbc = d.makeGbc(0, 3, 2, 1);
+            gbc = d.makeGbc(0, 4, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1;
             gbc.insets = new Insets(5, 5, 5, 5);
@@ -312,18 +315,16 @@ public class HighlightSettings extends SettingsPanel {
         }
         
         private void updateTestSubstitutes() {
-            if (substitutesEnabled.isSelected()) {
-                HighlighterTester.substitutionItem = Replacer2.create(substitutes.getSettingValue());
-            }
-            else {
-                HighlighterTester.substitutionItem = null;
-            }
+            HighlighterTester.substitutesItem = Replacer2.create(substitutes.getSettingValue());
+            HighlighterTester.substitutesDefault = substitutesEnabled.isSelected();
         }
         
     }
     
     private static class SubstitutesEditor extends JDialog implements StringEditor {
-
+        
+        private static final int INPUT_LENGTH_LIMIT = 100*1000;
+        
         private final JTextArea itemValue = new JTextArea(4, 20);
         private final JTextArea info = new JTextArea(20, 68);
         private final JButton okButton = new JButton(Language.getString("dialog.button.save"));
@@ -341,6 +342,7 @@ public class HighlightSettings extends SettingsPanel {
             GridBagConstraints gbc = SettingsDialog.makeGbc(0, 0, 2, 1);
             itemValue.setFont(new Font(Font.MONOSPACED, 0, itemValue.getFont().getSize()));
             itemValue.setLineWrap(true);
+            GuiUtil.installLengthLimitDocumentFilter(itemValue, INPUT_LENGTH_LIMIT, false);
             
             info.setEditable(false);
             info.setFont(new Font(Font.MONOSPACED, 0, info.getFont().getSize()));

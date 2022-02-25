@@ -1078,16 +1078,11 @@ public class MainGui extends JFrame implements Runnable {
         BatchAction.queue(highlighter, () -> {
             highlighter.update(StringUtil.getStringList(client.settings.getList("highlight")));
             highlighter.updateBlacklist(StringUtil.getStringList(client.settings.getList("highlightBlacklist")));
-            
-            if (client.settings.getBoolean("matchingSubstitutesEnabled")) {
-                @SuppressWarnings("unchecked") // Setting
-                List<String> substitutionsValue = client.settings.getList("matchingSubstitutes");
-                highlighter.updateSubstitutions(Replacer2.create(substitutionsValue));
-            }
-            else {
-                // Remove if it was enabled before
-                highlighter.updateSubstitutions(null);
-            }
+
+            @SuppressWarnings("unchecked") // Setting
+            List<String> substitutesValue = client.settings.getList("matchingSubstitutes");
+            highlighter.updateSubstitutes(Replacer2.create(substitutesValue));
+            highlighter.setSubstitutitesDefault(client.settings.getBoolean("matchingSubstitutesEnabled"));
         });
     }
     

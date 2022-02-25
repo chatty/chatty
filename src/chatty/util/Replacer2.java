@@ -76,8 +76,8 @@ public class Replacer2 {
                          * replacing directly looks up codepoints from the map.
                          */
                         // Uppercase may rarely turn into two characters?
-                        addChar(charsMapping, target, part.toUpperCase(Locale.ROOT));
-                        addChar(charsMapping, target, part.toLowerCase(Locale.ROOT));
+                        addAdditionalChar(charsMapping, target, part, part.toUpperCase(Locale.ROOT));
+                        addAdditionalChar(charsMapping, target, part, part.toLowerCase(Locale.ROOT));
                     }
                     else if (!part.isEmpty()) {
                         // Built into a regex, so quote just in case
@@ -103,13 +103,34 @@ public class Replacer2 {
         return new Replacer2(wordsPattern, wordsMapping, charsMapping);
     }
     
-    private static void addChar(Map<Integer, String> map, String target, String part) {
-        if (validChar(target, part)) {
-            int codepoint = part.codePointAt(0);
-            if (!map.containsKey(codepoint)) {
+    private static void addAdditionalChar(Map<Integer, String> map, String target, String source, String additional) {
+        if (validChar(target, additional)) {
+            int codepoint = additional.codePointAt(0);
+            if (!map.containsKey(codepoint) && checkName(codepoint, source.codePointAt(0))) {
                 map.put(codepoint, target);
             }
         }
+    }
+    
+    private static final Pattern NAME_CHECK = Pattern.compile("(CAPITAL|SMALL) ");
+    
+    /**
+     * Checks that both codepoints share the same name, except for "CAPITAL" or
+     * "SMALL". If no name can be retrieved for either one, the check fails.
+     * 
+     * @param codepointA
+     * @param codepointB
+     * @return 
+     */
+    private static boolean checkName(int codepointA, int codepointB) {
+        String a = Character.getName(codepointA);
+        String b = Character.getName(codepointB);
+        if (a == null || b == null) {
+            return false;
+        }
+        a = NAME_CHECK.matcher(a).replaceAll("");
+        b = NAME_CHECK.matcher(b).replaceAll("");
+        return a.equals(b);
     }
     
     private static boolean singleCodepoint(String input) {
@@ -401,12 +422,12 @@ public class Replacer2 {
          * @param index An index of the changed String
          * @return The corresponding index of the original String
          */
-        public int getIndex(int index) {
+        public int indexToOriginal(int index) {
             return index + getOffset(index);
         }
         
         /**
-         * Same as {@link getIndex(int)}, but only the offset without including
+         * Same as {@link #indexToOriginal(int)}, but only the offset without including
          * the given index.
          * 
          * @param index
@@ -428,6 +449,23 @@ public class Replacer2 {
                 }
             }
             return resultOffset;
+        }
+        
+        public int indexToChanged(int index) {
+            if (offsets == null) {
+                return 0;
+            }
+            for (Map.Entry<Integer, Integer> entry : offsets.entrySet()) {
+                int changedIndex = entry.getKey();
+                int offset = entry.getValue();
+                if (index > changedIndex) {
+                    index -= offset;
+                }
+                else {
+                    break;
+                }
+            }
+            return index;
         }
         
         /**
@@ -475,14 +513,14 @@ public class Replacer2 {
         "h # h 𝑯 Ꮒ 𝚮 𝕳 𝓱 ｈ 𝛨 𝖧 𝔥 ℋ ℌ ℍ ℎ 𝘩 ⲏ 𝙝 𐋏 𝜢 𝐡 𝓗 𝞖 𝝜 𝗛 𝕙 𝘏 𝖍 𝚑 ꓧ 𝐇 𝒉 հ 𝒽 𝙃 𝗁 η 𝙷 𝗵 һ Ꮋ ᕼ 𝐻 н",
         "i # i 𝓲 𝞲 ꙇ ⅈ ｉ 𝔦 𝘪 ӏ 𝙞 𝚤 𝐢 і 𝑖 ˛ 𝕚 𝖎 Ꭵ 𝚒 𑣃 ɩ ɪ 𝒊 𝛊 ⅰ ı 𝒾 𝜾 ⍳ 𝜄 ꭵ 𝗂 𝝸 ℹ ι 𝗶 ͺ ι",
         "j # j 𝓳 𝑱 ⅉ 𝔧 ｊ 𝒥 𝘫 ᒍ 𝖩 𝙟 𝗝 𝐣 ј 𝑗 ꓙ 𝕛 𝓙 𝖏 𝔍 𝚓 𝘑 𝙅 Ꭻ 𝒋 𝐉 𝒿 Ʝ ϳ 𝐽 𝗃 𝕁 𝗷 𝕵 𝙹 Ϳ",
-        "k # k 𝓴 𝑲 𝚱 𝔨 𝒦 ｋ 𝜥 𝘬 𝛫 𝖪 𝙠 𝝟 𝗞 𝐤 ⲕ ᛕ ꓗ 𝑘 𝕜 𝓚 𝞙 𝖐 𝔎 𝚔 𝘒 Ꮶ 𝙆 k 𝒌 𐔘 𝐊 𝓀 𝐾 𝗄 𝕂 𝗸 𝕶 κ к 𝙺",
-        "l # l 𝚰 𝘭 𝖨 𝐥 𝖫 𝔩 ℐ ℑ 𐊊 𐌉 ℒ ℓ ⲓ 𝜤 𝞘 𝚕 𝟏 ∣ 𝙇 ᒪ 𝗅 𝕀 1 𝐿 𝙄 𝕃 𝓁 ι 𐌠 𝐼 𝑰 ǀ 𖼖 ᛁ 𝟭 𝕴 𝑳 𑢣 ｉ ｌ 𝛪 ӏ ⵏ 𝗟 ⳑ 𝝞 𝕝 𝟣 і 𝙡 𝓘 𝗜 𝓛 Ꮮ 𐔦 𝟙 𝑙 𝘐 𝔏 ꓡ 𝒍 𝘓 𝖑 ￨ 🯱 𝐈 i ɩ 𝈪 𝐋 ⅰ ۱ ꓲ 𖼨 𑢲 𝙸 𝟷 𝕷 𐑃 𝓵 | ⅼ ⏽ 𝙻 𝗹",
+        "k # k 𝓴 𝑲 𝚱 𝔨 𝒦 ｋ 𝜥 𝘬 𝛫 𝖪 𝙠 𝝟 𝗞 𝐤 ⲕ ᛕ ꓗ 𝑘 𝕜 𝓚 𝞙 𝖐 𝔎 𝚔 𝘒 Ꮶ K 𝙆 𝒌 𐔘 𝐊 𝓀 𝐾 𝗄 𝕂 𝗸 𝕶 κ к 𝙺",
+        "l # l 𝚰 𝘭 𝖨 𝐥 𝖫 𝔩 ℐ ℑ 𐊊 𐌉 ℒ ℓ ⲓ 𝜤 𝞘 𝚕 𝟏 ∣ 𝙇 ᒪ 𝗅 𝕀 𝐿 𝙄 𝕃 𝓁 ι 𐌠 𝐼 𝑰 ǀ 𖼖 ᛁ 𝟭 𝕴 𝑳 𑢣 ｉ ｌ 𝛪 ӏ ⵏ 𝗟 ⳑ 𝝞 𝕝 𝟣 і 𝙡 𝓘 𝗜 𝓛 Ꮮ 𐔦 𝟙 𝑙 𝘐 𝔏 ꓡ 𝒍 𝘓 𝖑 ￨ 🯱 𝐈 ɩ 𝈪 𝐋 ⅰ ۱ ꓲ 𖼨 𑢲 𝙸 𝟷 𝕷 𐑃 𝓵 | ⅼ ⏽ 𝙻 𝗹",
         "m # m 𝛭 𝑴 𝚳 𝜧 𐌑 𝖬 ｍ 𝗠 ᛖ 𝝡 ⲙ 𝓜 𝞛 ꓟ 𝔐 𝘔 𝙈 𐊰 𝐌 𝑀 ᗰ ℳ 𝕄 Ꮇ 𝕸 ϻ 𝙼 μ м ⅿ",
         "n # n 𝘯 𝛮 𝖭 𝚴 𝜨 𝐧 𝔫 ｎ 𝒩 𝕟 𝓝 𝙣 ℕ 𝝢 𝗡 𝚗 𝘕 ⲛ 𝞜 𝑛 ꓠ 𝒏 𝐍 𝖓 𝔑 𝗇 𐔓 𝙉 𝙽 𝓃 𝑁 ո 𝓷 𝑵 ռ 𝗻 ν 𝕹",
-        "o # o 𝘰 𑣠 ం ಂ ം ං 𝖮 օ 〇 𝐨 𐊒 𑣗 𝔬 𝒪 𝜪 ᴏ ᴑ 𐓪 𝞞 𝚘 𑣈 𝘖 ဝ ⲟ 𝛐 ഠ ଠ 𝟎 𝛔 𝗈 𝝈 𝕆 𝙊 𐔖 0 𐊫 ℴ 𝝄 𝑂 𝞸 𝚶 𝞼 ꬽ о ο ၀ 𝛰 σ 𝟬 ｏ ๐ ໐ 𝕠 𐐬 ዐ 𝓞 𝙤 𝝤 ⵔ 𝟢 𝗢 𝟘 𝑜 𝒐 𝜎 𝐎 𝖔 ௦ ੦ ० ૦ ౦ ೦ ൦ 𝔒 ০ ୦ 🯰 𝜊 𑓐 𝝾 𝙾 ꓳ 𑢵 ۵ 𝞂 𝓸 𝟶 𝑶 𐓂 𝗼 𝕺 ჿ",
+        "o # o 𝘰 𑣠 ం ಂ ം ං 𝖮 օ 〇 𝐨 𐊒 𑣗 𝔬 𝒪 𝜪 ᴏ ᴑ 𐓪 𝞞 𝚘 𑣈 𝘖 ဝ ⲟ 𝛐 ഠ ଠ 𝟎 𝛔 𝗈 𝝈 𝕆 𝙊 𐔖 𐊫 ℴ 𝝄 𝑂 𝞸 𝚶 𝞼 ꬽ о ο ၀ 𝛰 σ 𝟬 ｏ ๐ ໐ 𝕠 𐐬 ዐ 𝓞 𝙤 𝝤 ⵔ 𝟢 𝗢 𝟘 𝑜 𝒐 𝜎 𝐎 𝖔 ௦ ੦ ० ૦ ౦ ೦ ൦ 𝔒 ০ ୦ 🯰 𝜊 𑓐 𝝾 𝙾 ꓳ 𑢵 ۵ 𝞂 𝓸 𝟶 𝑶 𐓂 𝗼 𝕺 ჿ",
         "p # p 𝖯 𝔭 𝘱 𝜬 𝒫 𐊕 𝐩 𝞠 ℙ 𝘗 𝖕 𝜚 𝚙 ⲣ 𝝔 𝛒 𝟈 𝝆 𝓅 𝙋 𝗉 𝑃 𝚸 𝞺 р ρ 𝛲 𝝦 𝙥 ｐ 𝛠 𝓟 ꓑ 𝑝 𝗣 𝕡 𝐏 𝞎 Ꮲ 𝔓 𝒑 𝜌 ᑭ 𝞀 ϱ 𝙿 𝗽 ⍴ 𝑷 𝕻 𝓹",
         "q # q 𝖰 𝔮 𝘲 𝙦 𝒬 𝐪 𝓠 𝑞 𝗤 ⵕ 𝕢 𝘘 𝖖 ℚ ԛ 𝚚 𝐐 գ 𝔔 𝒒 զ 𝓆 𝙌 𝗊 𝚀 𝗾 𝑄 𝑸 𝕼 𝓺",
-        "r # r ʀ 𝔯 ꮁ 𝘳 ⲅ ꭇ 𝖱 ᖇ ꭈ 𐒴 𝙧 𝗥 𝐫 𝑟 Ꮢ 𝕣 𝓡 𝖗 ℛ ℜ 𝚛 ℝ 𝘙 Ꭱ 𖼵 𝙍 ꓣ 𝒓 ᴦ 𝐑 𝓇 𝑅 𝗋 𝗿 г 𝕽 𝚁 𝈖 𝓻 𝑹",
+        "r # r 𝔯 ꮁ 𝘳 ⲅ ꭇ 𝖱 ᖇ ꭈ 𐒴 𝙧 𝗥 𝐫 𝑟 Ꮢ 𝕣 𝓡 𝖗 ℛ ℜ 𝚛 ℝ 𝘙 Ꭱ 𖼵 𝙍 ꓣ 𝒓 ᴦ Ʀ 𝐑 𝓇 𝑅 𝗋 𝗿 г 𝕽 𝚁 𝈖 𝓻 𝑹",
         "s # s 𝔰 𝒮 𝘴 𝖲 𝙨 𝗦 𝐬 𐊖 𝑠 ｓ 𝕤 ѕ Ꮥ 𝓢 𝖘 𝔖 Ꮪ 𝚜 𝘚 𑣁 𝙎 ꓢ 𝒔 𖼺 𝐒 𝓈 ꮪ 𝑆 𝗌 𝕊 𝘀 ꜱ 𝕾 𝚂 𝓼 𐑈 ƽ 𝑺 տ",
         "t # t 𝒯 𝜯 т 𝐭 τ 𝖳 𝔱 𝗧 𝕥 𐊗 𐌕 𝙩 𝝩 🝨 𝚝 ｔ ꓔ 𖼊 𝓣 𝞣 𝑡 ⟙ 𝔗 𝒕 𝘛 𝖙 𝙏 Ꭲ 𝗍 ⊤ 𝐓 ⲧ 𝑇 𐊱 𝕋 𑢼 𝓉 𝕿 𝓽 𝚃 𝘁 𝘵 𝛵 𝑻 𝚻",
         "u # u 𝒰 ሀ 𝐮 ⋃ 𝖴 υ 𝔲 𝗨 𑣘 𝕦 ʋ ᑌ 𝙪 ꭎ 𐓶 𝚞 ꭒ 𝓤 𝑢 𝔘 𝒖 𝛖 ᴜ 𝘜 𖽂 𝖚 ꞟ 𝜐 𝙐 𝗎 𝐔 𝑈 𑢸 ∪ 𝕌 𝓊 𝝊 𝖀 𝓾 𝞾 𝞄 𝚄 ꓴ 𝘂 𐓎 𝘶 𝑼 ս",
@@ -501,22 +539,21 @@ public class Replacer2 {
     
     public static void main(String[] args) {
         Replacer2 item = create(Arrays.asList(new String[]{"a @ 𝒜 а", "t 𝒯", "t test", "hattrick hhat hat", "o ()"}));
-//        String message = "hh𝒜t testi𝒜bc bac𝒜 hat Аbc";
-        String message = "test123";
+        String message = "hh𝒜t testi𝒜bc bac𝒜 hat Аbc";
         System.out.println("'"+message+"'");
         Result result = item.replace(message);
         System.out.println(result);
 //        System.out.println("###"+result.changedText+"### "+result.offsets);
-        Pattern testPattern = Pattern.compile("123");
-        Matcher m = testPattern.matcher(result.changedText);
+        Pattern testPattern = Pattern.compile("testi𝒜bc");
+        Matcher m = testPattern.matcher(message);
         if (m.find()) {
             int start = m.start();
             int end = m.end();
             System.out.println("Range: "+start+"-"+end);
-            System.out.println("'" + result.changedText.substring(start, end) + "'");
-            int start2 = result.getIndex(start);
-            int end2 = result.getIndex(end);
-            System.out.println("'" + message.substring(start2, end2) + "' Converted Range: " + start2 + "-" + end2);
+            System.out.println("'" + message.substring(start, end) + "'");
+            int start2 = result.indexToChanged(start);
+            int end2 = result.indexToChanged(end);
+            System.out.println("'" + result.changedText.substring(start2, end2) + "' Converted Range: " + start2 + "-" + end2);
         }
         
         List<String> data = LOOKALIKES;
@@ -532,6 +569,8 @@ public class Replacer2 {
             }
         }
         System.out.println(System.currentTimeMillis() - startTime);
+        
+//        System.out.println("S".replaceAll("(?iu)ſ", "abc"));
     }
     
     
