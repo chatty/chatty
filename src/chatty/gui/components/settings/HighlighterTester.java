@@ -388,11 +388,11 @@ public class HighlighterTester extends JDialog implements StringEditor {
         } else {
             highlightItem = createItem(value);
         }
-        updateParseResult();
         updateInfoText();
         updateMatches(doc);
         updateSaveButton();
         updateTestText();
+        updateParseResult();
         
         itemFields.update();
 //        System.out.println(highlightItem.getMatchInfo());
@@ -407,11 +407,11 @@ public class HighlighterTester extends JDialog implements StringEditor {
             blacklistItem = createItem(value);
             addToBlacklistButton.setEnabled(!blacklistItem.hasError());
         }
-        updateParseResult();
         updateInfoText();
         updateMatches(doc);
         updateSaveButton();
         updateTestText();
+        updateParseResult();
     }
         
     public void updateParseResult() {
@@ -447,7 +447,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             text += "\n### Blacklist ###\n"+blacklistItem.getMatchInfo();
         }
         if (substitutionResult != null) {
-            text += "---\nTest text after applying substitutions: "+substitutionResult.getChangedText();
+            text += "---\nTest text after applying substitutes: "+substitutionResult.getChangedText();
         }
         parseResult.setText(text);
     }
