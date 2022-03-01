@@ -569,6 +569,59 @@
         </dd>
     </dl>
     
+    <h3><a name="commands-runin">Run a command in a specific open channel</a></h3>
+    <p>The <code>/runin</code> command runs a command in the context of a
+        specific open channel, as if you had entered it into the channel's
+        inputbox. Without this, commands usually run in the context of the
+        currently active channel.</p>
+    
+    <dl class="defList">
+        <dt><code>/runin [channel] [command]</code></dt>
+        <dd>The channel must be a regular channel with or without leading "#" (<code>#channelname</code>)
+            or a whisper channel (<code>$username</code>).</dd>
+        <dd>The command can be anything you could enter into a chat inputbox.</dd>
+    </dl>
+    
+    <p>Examples:</p>
+    <dl class="defList">
+        <dt><code>/runin #chan2 /echo abc</code></dt>
+        <dd>Outputs the info message "abc" in the channel "#chan2" (if it is
+            open in Chatty).</dd>
+        
+        <dt><code>//runin #chan2 //echo Channel context: \\$(chan) -> \$(chan)</code></dt>
+        <dd>This example is entered directly into a chat inputbox and outputs
+            an info message about the changed channel context in "#chan2". Let's say the
+            command is entered in the channel "#chan1".</dd>
+        <dd>The command begins with two slashes (<code>//</code>), so it is
+            interpreted as an anonymous Custom Command:
+            <ul>
+                <li><code>\\$(chan)</code> turns into <code>\#chan1</code> (the <code>\\</code> escaped
+                    the backslash itself, not the <code>$</code>, so the replacement is performed)</li>
+                <li><code>\$(chan)</code> turns into <code>$(chan)</code> (this <code>\</code> actually escapes the
+                    <code>$</code>, so the replacement is not performed here)</li>
+            </ul>
+            The result <code>/runin #chan2 //echo Channel context: \#chan1 -> $(chan)</code>
+            is run, which runs <code>//echo Channel context: \#chan1 -> $(chan)</code>
+            in "#chan2".</dd>
+        <dd>Yet again, the command begins with two slashes (<code>//</code>) and
+            is interpreted as an anonymous Custom Command:
+            <ul>
+                <li><code>\#chan1</code> turns into <code>#chan1</code> (the
+                    backslash removes any special meaning from the following
+                    characters, which in this case is not necessary, but it you
+                    had entered this in a whisper channel <code>$user1</code>
+                    then the <code>$</code> would have had to be escaped)</li>
+                <li><code>$(chan)</code> turns into <code>#chan2</code> (this
+                    Custom Command is run in the new channel context, so it
+                    turns into the target channel, which does not need to be
+                    escaped further, even if it were <code>$user2</code>, since
+                    it doesn't get interpreted as a Custom Command after this)</li>
+            </ul>
+            The resulting command <code>/echo Channel context: #chan1 -> #chan2</code>
+            is then run and outputs an info message.
+        </dd>
+    </dl>
+    
     <h2>
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>

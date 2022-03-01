@@ -1480,6 +1480,29 @@ public class TwitchClient {
                 g.printSystem("Usage: /foreach [list] > [command]");
             }
         });
+        commands.add("runin", p -> {
+            String[] split;
+            if (!p.hasArgs() || (split = p.getArgs().split(" ", 2)).length != 2) {
+                g.printSystem("Usage: /runin [channel] [command]");
+                return;
+            }
+            String chan = split[0];
+            String command = split[1];
+            if (Helper.isValidStream(chan)) {
+                chan = Helper.toChannel(chan);
+            }
+            chan = StringUtil.toLowerCase(chan);
+            /**
+             * Whisper channels ($) don't count as "open" in the same way
+             * regular channels do.
+             */
+            if (isChannelOpen(chan) || Helper.isValidWhisperChannel(chan)) {
+                textInput(c.getRoomByChannel(chan), command, p.getParameters().copy());
+            }
+            else {
+                g.printSystem("Invalid channel: " + chan);
+            }
+        });
     }
     
     /**
