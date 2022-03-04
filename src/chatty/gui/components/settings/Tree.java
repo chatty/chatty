@@ -2,12 +2,15 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.components.settings.SettingsDialog.Page;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTree;
@@ -26,7 +29,7 @@ import javax.swing.tree.TreePath;
  */
 public class Tree {
     
-    public static JTree createTree(Map<Page, List<Page>> nodes) {
+    public static JTree createTree(Map<Page, List<Page>> nodes, Color highlightColor) {
         
         // Create nodes structure based on Map
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
@@ -45,25 +48,7 @@ public class Tree {
         tree.setShowsRootHandles(false);
         
         // Disable icons and use default renderer
-        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
-            
-            // Border to give text some more space
-            private final Border BORDER = BorderFactory.createEmptyBorder(0, 3, 0, 1);
-            
-            @Override
-            public Component getTreeCellRendererComponent(JTree tree, Object value,
-                                                  boolean sel,
-                                                  boolean expanded,
-                                                  boolean leaf, int row,
-                                                  boolean hasFocus) {
-                Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-                if (c instanceof JLabel) {
-                    JLabel label = (JLabel)c;
-                    label.setBorder(BORDER);
-                }
-                return c;
-            }
-        };
+        DefaultTreeCellRenderer renderer = new HighlightTreeCellRenderer(highlightColor);
         renderer.setLeafIcon(null);
         renderer.setOpenIcon(null);
         tree.setCellRenderer(renderer);
@@ -117,6 +102,54 @@ public class Tree {
                 tree.setSelectionPath(new TreePath(node.getPath()));
             }
         }
+    }
+    
+    public static class HighlightTreeCellRenderer extends DefaultTreeCellRenderer {
+
+        // Border to give text some more space
+        private final Border BORDER = BorderFactory.createEmptyBorder(0, 3, 0, 1);
+        
+        private final Set<Object> highlighted = new HashSet<>();
+        private final Color highlightColor;
+        
+        private HighlightTreeCellRenderer(Color highlightColor) {
+            this.highlightColor = highlightColor;
+        }
+        
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+                                                      boolean sel,
+                                                      boolean expanded,
+                                                      boolean leaf, int row,
+                                                      boolean hasFocus) {
+            Component c = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            if (c instanceof JLabel) {
+                JLabel label = (JLabel) c;
+                label.setBorder(BORDER);
+                if (value instanceof DefaultMutableTreeNode) {
+                    Object userObject = ((DefaultMutableTreeNode) value).getUserObject();
+                    if (highlighted.contains(userObject) && !sel) {
+                        label.setBackground(highlightColor);
+                        label.setOpaque(true);
+                    }
+                    else {
+                        label.setBackground(null);
+                        label.setOpaque(false);
+                    }
+                }
+            }
+            return c;
+        }
+        
+        public void setHighlight(Object o, boolean highlight) {
+            if (highlight) {
+                highlighted.add(o);
+            }
+            else {
+                highlighted.remove(o);
+            }
+        }
+
     }
     
 }

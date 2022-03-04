@@ -8,16 +8,19 @@ import chatty.gui.LaF.LaFSettings;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.gui.components.settings.Tree.HighlightTreeCellRenderer;
 import chatty.lang.Language;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
 import chatty.util.api.TokenInfo;
 import chatty.util.api.usericons.Usericon;
+import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -124,19 +127,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
     private final HashMap<String,ListSetting> listSettings = new HashMap<>();
     private final HashMap<String,MapSetting> mapSettings = new HashMap<>();
     
+    private final Map<Page, SettingsPanel> panels = new LinkedHashMap<>();
+    
     final Settings settings;
     private final MainGui owner;
-    
-    private final NotificationSettings notificationSettings;
-    private final LiveStreamsSettings liveStreamsSettings;
-    private final UsercolorSettings usercolorSettings;
-    private final MsgColorSettings msgColorSettings;
-    private final ImageSettings imageSettings;
-    private final HotkeySettings hotkeySettings;
-    private final NameSettings nameSettings;
-    private final HighlightSettings highlightSettings;
-    private final IgnoreSettings ignoreSettings;
-    private final EmoteSettings emoteSettings;
     
     private final MatchingPresets matchingPresets;
     
@@ -260,8 +254,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc;
 
+        //--------------------------
         // Create and add tree
-        selection = Tree.createTree(MENU);
+        //--------------------------
+        selection = Tree.createTree(MENU, searchHighlightColor);
         selection.setSelectionRow(0);
         selection.setBorder(BorderFactory.createEtchedBorder());
         JScrollPane selectionScroll = new JScrollPane(selection);
@@ -274,8 +270,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.weightx = 0;
         gbc.weighty = 1;
         add(selectionScroll, gbc);
-
-        // Create setting pages, the order here doesn't matter
+        
+        //--------------------------
+        // Create setting pages
+        //--------------------------
         cardManager = new CardLayout();
         cards = new JPanel(cardManager) {
             
@@ -288,44 +286,39 @@ public class SettingsDialog extends JDialog implements ActionListener {
             }
             
         };
-        cards.add(new MainSettings(this), Page.MAIN.name);
-        cards.add(new MessageSettings(this), Page.MESSAGES.name);
-        cards.add(new ModerationSettings(this), Page.MODERATION.name);
-        emoteSettings = new EmoteSettings(this);
-        cards.add(emoteSettings, Page.EMOTES.name);
-        imageSettings = new ImageSettings(this);
-        cards.add(imageSettings, Page.USERICONS.name);
-        cards.add(new LookSettings(this), Page.LOOK.name);
-        cards.add(new FontSettings(this), Page.FONTS.name);
-        cards.add(new ColorSettings(this, settings), Page.CHATCOLORS.name);
-        highlightSettings = new HighlightSettings(this);
-        cards.add(highlightSettings, Page.HIGHLIGHT.name);
-        ignoreSettings = new IgnoreSettings(this);
-        cards.add(ignoreSettings, Page.IGNORE.name);
-        cards.add(new FilterSettings(this), Page.FILTER.name);
-        msgColorSettings = new MsgColorSettings(this);
-        cards.add(msgColorSettings, Page.MSGCOLORS.name);
-        cards.add(new HistorySettings(this), Page.HISTORY.name);
-        cards.add(new SoundSettings(this), Page.SOUNDS.name);
-        notificationSettings = new NotificationSettings(this, settings);
-        cards.add(notificationSettings, Page.NOTIFICATIONS.name);
-        liveStreamsSettings = new LiveStreamsSettings(this);
-        cards.add(liveStreamsSettings, Page.LIVE_STREAMS.name);
-        usercolorSettings = new UsercolorSettings(this);
-        cards.add(usercolorSettings, Page.USERCOLORS.name);
-        cards.add(new LogSettings(this), Page.LOGGING.name);
-        cards.add(new WindowSettings(this), Page.WINDOW.name);
-        cards.add(new TabSettings(this), Page.TABS.name);
-        cards.add(new CommandSettings(this), Page.COMMANDS.name);
-        cards.add(new OtherSettings(this), Page.OTHER.name);
-        cards.add(new AdvancedSettings(this), Page.ADVANCED.name);
-        hotkeySettings = new HotkeySettings(this);
-        cards.add(hotkeySettings, Page.HOTKEYS.name);
-        cards.add(new CompletionSettings(this), Page.COMPLETION.name);
-        cards.add(new ChatSettings(this), Page.CHAT.name);
-        nameSettings = new NameSettings(this);
-        cards.add(nameSettings, Page.NAMES.name);
-        cards.add(new StreamSettings(this), Page.STREAM.name);
+        
+        panels.put(Page.MAIN, new MainSettings(this));
+        panels.put(Page.MESSAGES, new MessageSettings(this));
+        panels.put(Page.MODERATION, new ModerationSettings(this));
+        panels.put(Page.EMOTES, new EmoteSettings(this));
+        panels.put(Page.USERICONS, new ImageSettings(this));
+        panels.put(Page.LOOK, new LookSettings(this));
+        panels.put(Page.FONTS, new FontSettings(this));
+        panels.put(Page.CHATCOLORS, new ColorSettings(this, settings));
+        panels.put(Page.HIGHLIGHT, new HighlightSettings(this));
+        panels.put(Page.IGNORE, new IgnoreSettings(this));
+        panels.put(Page.FILTER, new FilterSettings(this));
+        panels.put(Page.MSGCOLORS, new MsgColorSettings(this));
+        panels.put(Page.HISTORY, new HistorySettings(this));
+        panels.put(Page.SOUNDS, new SoundSettings(this));
+        panels.put(Page.NOTIFICATIONS, new NotificationSettings(this, settings));
+        panels.put(Page.LIVE_STREAMS, new LiveStreamsSettings(this));
+        panels.put(Page.USERCOLORS, new UsercolorSettings(this));
+        panels.put(Page.LOGGING, new LogSettings(this));
+        panels.put(Page.WINDOW, new WindowSettings(this));
+        panels.put(Page.TABS, new TabSettings(this));
+        panels.put(Page.COMMANDS, new CommandSettings(this));
+        panels.put(Page.OTHER, new OtherSettings(this));
+        panels.put(Page.ADVANCED, new AdvancedSettings(this));
+        panels.put(Page.HOTKEYS, new HotkeySettings(this));
+        panels.put(Page.COMPLETION, new CompletionSettings(this));
+        panels.put(Page.CHAT, new ChatSettings(this));
+        panels.put(Page.NAMES, new NameSettings(this));
+        panels.put(Page.STREAM, new StreamSettings(this));
+        
+        for (Map.Entry<Page, SettingsPanel> entry : panels.entrySet()) {
+            cards.add(entry.getValue(), entry.getKey().name);
+        }
         
         matchingPresets = new MatchingPresets(this);
         
@@ -338,14 +331,18 @@ public class SettingsDialog extends JDialog implements ActionListener {
             }
         });
         
+        //--------------------------
         // Cards
-        gbc = makeGbc(1,0,2,1);
+        //--------------------------
+        gbc = makeGbc(1,0,3,1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
         add(cards, gbc);
         
+        //--------------------------
         // Help Link
+        //--------------------------
         gbc = makeGbc(0,2,1,1);
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.insets = new Insets(0,10,0,0);
@@ -357,10 +354,40 @@ public class SettingsDialog extends JDialog implements ActionListener {
             }
         }), gbc);
         
-        // Buttons
-        ok.setMnemonic(KeyEvent.VK_S);
+        //--------------------------
+        // Search
+        //--------------------------
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JTextField searchField = new JTextField(10);
+        GuiUtil.addChangeListener(searchField.getDocument(), e -> {
+            search(searchField.getText());
+        });
+        
+        JLabel searchLabel = new JLabel(Language.getString("settings.search"));
+        searchLabel.setLabelFor(searchField);
+        
+        JButton resetSearchButton = new JButton(Language.getString("settings.resetSearch"));
+        resetSearchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        resetSearchButton.addActionListener(e -> {
+            searchField.setText("");
+        });
+        
+        searchPanel.add(searchLabel);
+        searchPanel.add(searchField);
+        searchPanel.add(resetSearchButton);
+        
         gbc = makeGbc(1,2,1,1);
-        gbc.weightx = 0.5;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.insets = new Insets(2, 10, 0, 0);
+        add(searchPanel, gbc);
+        
+        //--------------------------
+        // Buttons
+        //--------------------------
+        ok.setMnemonic(KeyEvent.VK_S);
+        gbc = makeGbc(2,2,1,1);
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(4,3,8,8);
         gbc.ipadx = 16;
@@ -368,8 +395,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         ok.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         add(ok,gbc);
         cancel.setMnemonic(KeyEvent.VK_C);
-        gbc = makeGbc(2,2,1,1);
-        gbc.weightx = 0;
+        gbc = makeGbc(3,2,1,1);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(4,3,8,8);
         gbc.ipadx = 16;
@@ -385,6 +411,23 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     /**
+     * Get the panel of the given class. As long as only one panel per class is
+     * added (which should be normal for this), this should work fine.
+     * 
+     * @param <T>
+     * @param c
+     * @return 
+     */
+    private <T> T getPanel(Class<T> c) {
+        for (SettingsPanel panel : panels.values()) {
+            if (panel.getClass().equals(c)) {
+                return c.cast(panel);
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Opens the settings dialog
      */
     public void showSettings() {
@@ -396,7 +439,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         // Initialize
         //------------
         loadSettings();
-        liveStreamsSettings.setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.FOLLOWS.scope));
+        getPanel(LiveStreamsSettings.class).setUserReadPermission(settings.getList("scopes").contains(TokenInfo.Scope.FOLLOWS.scope));
         if (action != null) {
             editDirectly(action, parameter);
         }
@@ -443,31 +486,31 @@ public class SettingsDialog extends JDialog implements ActionListener {
             public void run() {
                 if (action.equals("editUsercolorItem")) {
                     showPanel(Page.USERCOLORS);
-                    usercolorSettings.editItem((String)parameter);
+                    getPanel(UsercolorSettings.class).editItem((String)parameter);
                 } else if (action.equals("editCustomNameItem")) {
                     showPanel(Page.NAMES);
-                    nameSettings.editCustomName((String)parameter);
+                    getPanel(NameSettings.class).editCustomName((String)parameter);
                 } else if (action.equals("addUsericonOfBadgeType")) {
                     showPanel(Page.USERICONS);
                     Usericon icon = (Usericon)parameter;
-                    imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.toString());
+                    getPanel(ImageSettings.class).addUsericonOfBadgeType(icon.type, icon.badgeType.toString());
                 } else if (action.equals("addUsericonOfBadgeTypeAllVariants")) {
                     showPanel(Page.USERICONS);
                     Usericon icon = (Usericon)parameter;
-                    imageSettings.addUsericonOfBadgeType(icon.type, icon.badgeType.id);
+                    getPanel(ImageSettings.class).addUsericonOfBadgeType(icon.type, icon.badgeType.id);
                 } else if (action.equals("selectHighlight")) {
                     showPanel(Page.HIGHLIGHT);
                     @SuppressWarnings("unchecked") // By convention
                     Collection<String> data = (Collection<String>) parameter;
-                    highlightSettings.selectItems(data);
+                    getPanel(HighlightSettings.class).selectItems(data);
                 } else if (action.equals("selectIgnore")) {
                     showPanel(Page.IGNORE);
                     @SuppressWarnings("unchecked") // By convention
                     Collection<String> data = (Collection<String>) parameter;
-                    ignoreSettings.selectItems(data);
+                    getPanel(IgnoreSettings.class).selectItems(data);
                 } else if (action.equals("selectMsgColor")) {
                     showPanel(Page.MSGCOLORS);
-                    msgColorSettings.selectItem((String) parameter);
+                    getPanel(MsgColorSettings.class).selectItem((String) parameter);
                 } else if (action.equals("show")) {
                     showPage((String) parameter);
                 }
@@ -501,23 +544,23 @@ public class SettingsDialog extends JDialog implements ActionListener {
         loadListSettings();
         loadMapSettings();
         updateBackgroundColor();
-        usercolorSettings.setData(owner.getUsercolorData());
-        msgColorSettings.setData(owner.getMsgColorData());
-        imageSettings.setData(owner.getUsericonData());
-        imageSettings.setHiddenBadgesData(owner.getHiddenBadgesData());
-        imageSettings.setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
-        hotkeySettings.setData(owner.hotkeyManager.getActionsMap(),
+        getPanel(UsercolorSettings.class).setData(owner.getUsercolorData());
+        getPanel(MsgColorSettings.class).setData(owner.getMsgColorData());
+        getPanel(ImageSettings.class).setData(owner.getUsericonData());
+        getPanel(ImageSettings.class).setHiddenBadgesData(owner.getHiddenBadgesData());
+        getPanel(ImageSettings.class).setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
+        getPanel(HotkeySettings.class).setData(owner.hotkeyManager.getActionsMap(),
                 owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
-        notificationSettings.setData(owner.getNotificationData());
-        emoteSettings.setData(owner.localEmotes.getData());
+        getPanel(NotificationSettings.class).setData(owner.getNotificationData());
+        getPanel(EmoteSettings.class).setData(owner.localEmotes.getData());
     }
     
     public void updateBackgroundColor() {
         Color foreground = HtmlColors.decode(getStringSetting("foregroundColor"));
-        msgColorSettings.setDefaultForeground(foreground);
+        getPanel(MsgColorSettings.class).setDefaultForeground(foreground);
         Color background = HtmlColors.decode(getStringSetting("backgroundColor"));
-        usercolorSettings.setDefaultBackground(background);
-        msgColorSettings.setDefaultBackground(background);
+        getPanel(UsercolorSettings.class).setDefaultBackground(background);
+        getPanel(MsgColorSettings.class).setDefaultBackground(background);
     }
     
     /**
@@ -580,13 +623,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
         saveIntegerSettings();
         saveListSettings();
         saveMapSettings();
-        owner.setUsercolorData(usercolorSettings.getData());
-        owner.setMsgColorData(msgColorSettings.getData());
-        owner.setUsericonData(imageSettings.getData());
-        owner.setHiddenBadgesData(imageSettings.getHiddenBadgesData());
-        owner.hotkeyManager.setData(hotkeySettings.getData());
-        owner.setNotificationData(notificationSettings.getData());
-        owner.localEmotes.setData(emoteSettings.getData());
+        owner.setUsercolorData(getPanel(UsercolorSettings.class).getData());
+        owner.setMsgColorData(getPanel(MsgColorSettings.class).getData());
+        owner.setUsericonData(getPanel(ImageSettings.class).getData());
+        owner.setHiddenBadgesData(getPanel(ImageSettings.class).getHiddenBadgesData());
+        owner.hotkeyManager.setData(getPanel(HotkeySettings.class).getData());
+        owner.setNotificationData(getPanel(NotificationSettings.class).getData());
+        owner.localEmotes.setData(getPanel(EmoteSettings.class).getData());
         if (restartRequired) {
             JOptionPane.showMessageDialog(this, RESTART_REQUIRED_INFO, "Info", JOptionPane.INFORMATION_MESSAGE);
         }
@@ -1072,6 +1115,169 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     protected LinkLabelListener getSettingsHelpLinkLabelListener() {
         return settingsHelpLinkLabelListener;
+    }
+    
+    //==========================
+    // Search
+    //==========================
+    private final Color searchHighlightColor = ColorCorrectionNew.offset(getBackground(), 0.8f);
+    private final Map<Component, State> stateBeforeSearch = new HashMap<>();
+    
+    private static class State {
+        private final Color color;
+        private final boolean opaque;
+
+        public State(Color color, boolean opaque) {
+            this.color = color;
+            this.opaque = opaque;
+        }
+        
+    }
+    
+    /**
+     * Search for a given text in the Settings Dialog. The previous search
+     * results are reset. The search is case-insensitive.
+     * 
+     * @param search Must be longer than 2 characters, otherwise the search is
+     * just reset
+     */
+    private void search(String search) {
+        resetSearchHighlights();
+        if (search != null && search.length() > 2) {
+            search = StringUtil.toLowerCase(search);
+            for (Map.Entry<Page, SettingsPanel> panel : panels.entrySet()) {
+                int numResults = search2(search, panel.getValue());
+                if (numResults > 0) {
+                    ((HighlightTreeCellRenderer) selection.getCellRenderer()).setHighlight(panel.getKey(), true);
+                }
+            }
+        }
+        selection.repaint();
+    }
+    
+    private void addSearchHighlight(Component comp) {
+        if (stateBeforeSearch.containsKey(comp)) {
+            return;
+        }
+        JComponent component = (JComponent) comp;
+        Color color = comp.isBackgroundSet() ? comp.getBackground() : null;
+        stateBeforeSearch.put(comp, new State(color, component.isOpaque()));
+        if (!component.isOpaque()) {
+            component.setOpaque(true);
+        }
+        comp.setBackground(searchHighlightColor);
+    }
+    
+    private void resetSearchHighlights() {
+        // Tree
+        for (Page page : panels.keySet()) {
+            ((HighlightTreeCellRenderer) selection.getCellRenderer()).setHighlight(page, false);
+        }
+        // Components
+        for (Map.Entry<Component, State> entry : stateBeforeSearch.entrySet()) {
+            Component comp = entry.getKey();
+            if (comp instanceof JTabbedPane) {
+                JTabbedPane tabs = (JTabbedPane) comp;
+                for (int i=0; i<tabs.getTabCount(); i++) {
+                    tabs.setBackgroundAt(i, null);
+                }
+            }
+            else {
+                JComponent component = (JComponent) entry.getKey();
+                component.setBackground(entry.getValue().color);
+                component.setOpaque(entry.getValue().opaque);
+            }
+        }
+        stateBeforeSearch.clear();
+    }
+    
+    /**
+     * Recursive search through all components.
+     * 
+     * @param search
+     * @param container
+     * @return 
+     */
+    private int search2(String search, Container container) {
+        int numResults = 0;
+        for (Component comp : container.getComponents()) {
+            int subResults = 0;
+            // Search children of container
+            if (comp instanceof Container
+                    && !(comp instanceof JList)
+                    && !(comp instanceof JTable)) {
+                subResults = search2(search, (Container) comp);
+            }
+            // Highlight parent if results have been found
+            if (subResults > 0) {
+                if (comp instanceof JTabbedPane) {
+                    JTabbedPane tabs = (JTabbedPane) comp;
+                    boolean highlighted = false;
+                    for (int i = 0; i < tabs.getTabCount(); i++) {
+                        for (Component hl : stateBeforeSearch.keySet()) {
+                            if (SwingUtilities.isDescendingFrom(hl, tabs.getComponentAt(i))) {
+                                tabs.setBackgroundAt(i, searchHighlightColor);
+                                highlighted = true;
+                            }
+                        }
+                    }
+                    if (highlighted) {
+                        stateBeforeSearch.put(tabs, null);
+                    }
+                }
+            }
+            // Check this component
+            if (checkSearchComponent(comp, search)) {
+                numResults++;
+                addSearchHighlight(comp);
+            }
+            numResults += subResults;
+        }
+        return numResults;
+    }
+    
+    /**
+     * Check a single component for the searched text.
+     * 
+     * @param comp
+     * @param search
+     * @return 
+     */
+    private boolean checkSearchComponent(Component comp, String search) {
+        if (comp instanceof JLabel) {
+            if (checkSearchText(((JLabel) comp).getText(), search)) {
+                return true;
+            }
+            if (checkSearchText(((JLabel) comp).getToolTipText(), search)) {
+                return true;
+            }
+        }
+        if (comp instanceof JEditorPane) {
+            if (checkSearchText(((JEditorPane) comp).getText(), search)) {
+                return true;
+            }
+        }
+        if (comp instanceof JCheckBox) {
+            if (checkSearchText(((JCheckBox) comp).getText(), search)) {
+                return true;
+            }
+            if (checkSearchText(((JCheckBox) comp).getToolTipText(), search)) {
+                return true;
+            }
+        }
+        if (comp instanceof JButton) {
+            if (checkSearchText(((JButton) comp).getText(), search)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean checkSearchText(String text, String search) {
+        if (text == null || search == null) {
+            return false;
+        }
+        return StringUtil.toLowerCase(text).contains(search);
     }
     
 }
