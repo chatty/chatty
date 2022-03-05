@@ -51,6 +51,7 @@ public class NotificationSettings extends SettingsPanel {
     private final EditorStringSetting nCommand;
     
     private final PathSetting soundsPath;
+    private final ComboStringSetting soundFiles;
     
     private final JLabel filesResult = new JLabel();
     
@@ -241,6 +242,56 @@ public class NotificationSettings extends SettingsPanel {
         soundSettings.add(devicePanel, gbc);
         
         //--------------------------
+        // Sound Test
+        //--------------------------
+        JPanel soundTestPanel = new JPanel(new GridBagLayout());
+        soundTestPanel.setBorder(BorderFactory.createTitledBorder("Test sounds / Output Device"));
+        
+        SliderLongSetting volumeSlider = new SliderLongSetting(JSlider.HORIZONTAL, 0, 100, 0);
+        volumeSlider.setMajorTickSpacing(10);
+        volumeSlider.setMinorTickSpacing(5);
+        volumeSlider.setPaintTicks(true);
+        volumeSlider.setSettingValue(50L);
+        
+        soundFiles = new ComboStringSetting(new String[]{});
+        
+        JButton playSound = new JButton("Play");
+        playSound.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String file = soundFiles.getSettingValue();
+                    if (file != null && !file.isEmpty()) {
+                        long volume = volumeSlider.getSettingValue();
+                        Sound.play(soundsPath.getCurrentPath().resolve(file), volume, "test", -1);
+                    }
+                }
+                catch (Exception ex) {
+                    GuiUtil.showNonModalMessage(d, "Error Playing Sound",
+                            ex.toString(),
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        soundTestPanel.add(new JLabel("File:"),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.EAST));
+        soundTestPanel.add(soundFiles,
+                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
+        soundTestPanel.add(new JLabel("Volume:"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.EAST));
+        soundTestPanel.add(playSound,
+                d.makeGbc(2, 0, 1, 1, GridBagConstraints.WEST));
+        soundTestPanel.add(volumeSlider,
+                d.makeGbc(1, 1, 2, 1, GridBagConstraints.WEST));
+        
+        gbc = d.makeGbc(0, 10, 3, 1);
+        gbc.insets = new Insets(20, 20, 5, 20);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        soundSettings.add(soundTestPanel, gbc);
+        
+        //--------------------------
         // Info
         //--------------------------
         soundSettings.add(new JLabel("<html><body width='300px'>Wav files that probably work are uncompressed PCM, 8-48kHz, 8/16bit "
@@ -353,6 +404,10 @@ public class NotificationSettings extends SettingsPanel {
             }
             Arrays.sort(fileNames);
             editor.setSoundFiles(path, fileNames);
+            soundFiles.clear();
+            for (String fileName : fileNames) {
+                soundFiles.add(fileName);
+            }
         }
         if (showMessage) {
             JOptionPane.showMessageDialog(this, resultText+warningText);
