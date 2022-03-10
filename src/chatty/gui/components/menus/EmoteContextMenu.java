@@ -59,6 +59,8 @@ public class EmoteContextMenu extends ContextMenu {
                 addItem("bttvlink", "BetterTTV Emote", ICON_WEB);
             } else if (emote.type == Emoticon.Type.CUSTOM) {
                 addItem("", "Custom Emote");
+            } else if (emote.type == Emoticon.Type.CUSTOM2) {
+                addItem("", "Local Emote");
             } else if (emote.type == Emoticon.Type.EMOJI) {
                 addItem("", "Emoji");
             }

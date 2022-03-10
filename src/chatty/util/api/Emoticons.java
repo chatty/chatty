@@ -909,7 +909,7 @@ public class Emoticons {
     }
     
     private void findFavorites() {
-        favorites.find(twitchEmotesById, otherGlobalEmotes, emoji, customEmotes);
+        favorites.find(twitchEmotesById, otherGlobalEmotes, emoji, customEmotes, localEmotes);
     }
     
     public Set<String> getFavoritesNonGlobalEmotesets() {

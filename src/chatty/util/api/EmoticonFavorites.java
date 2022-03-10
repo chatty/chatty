@@ -208,7 +208,14 @@ public class EmoticonFavorites {
     
     private void checkFavorite(Emoticon emote) {
         Favorite f = favoritesNotFound.get(emote.code);
-        if (f != null && Objects.equals(f.emoteset, emote.emoteset)) {
+        /**
+         * Allow local emotes (CUSTOM2) to match even without the emoteset check
+         * (since the emoteset is not saved with them, but they may replace
+         * emotes that were previously available through the API and could have
+         * been added as favorites then).
+         */
+        if (f != null && (Objects.equals(f.emoteset, emote.emoteset)
+                            || emote.type == Emoticon.Type.CUSTOM2)) {
             favorites.put(f, emote);
             favoritesNotFound.remove(emote.code);
         }
