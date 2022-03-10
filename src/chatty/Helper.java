@@ -960,7 +960,11 @@ public class Helper {
     public static void addUserParameters(User user, String msgId, String autoModMsgId, Parameters parameters) {
         if (msgId != null) {
             parameters.put("msg-id", msgId);
-            parameters.put("msg", user.getMessageText(msgId));
+            User.TextMessage m = user.getMessage(msgId);
+            if (m != null) {
+                parameters.put("msg", m.text);
+                parameters.put("msg-time", String.valueOf(m.getTime()));
+            }
         }
         if (autoModMsgId != null) {
             parameters.put("automod-msg-id", autoModMsgId);

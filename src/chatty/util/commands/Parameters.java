@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.Room;
 import chatty.User;
 import chatty.util.StringUtil;
 import chatty.util.api.usericons.Usericon;
@@ -244,6 +245,15 @@ public class Parameters {
             switch (name) {
                 case "twitch-badge-info": return user.getTwitchBadges().toString();
                 case "twitch-badges": return Usericon.makeBadgeInfo(user.getTwitchBadges());
+            }
+        }
+        
+        if (user.getRoom() != null) {
+            Room room = user.getRoom();
+            switch (name) {
+                case "user-channel": return room.getChannel();
+                case "user-stream": return room.getStream();
+                case "user-stream-id": return room.getStreamId();
             }
         }
         return null;

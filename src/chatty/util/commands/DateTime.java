@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,12 +45,14 @@ class DateTime implements Item {
     private final Item format;
     private final Item zone;
     private final Item locale;
+    private final Item timestamp;
     private final boolean isRequired;
     
-    public DateTime(Item format, Item zone, Item locale, boolean isRequired) {
+    public DateTime(Item format, Item zone, Item locale, Item timestamp, boolean isRequired) {
         this.format = format;
         this.zone = zone;
         this.locale = locale;
+        this.timestamp = timestamp;
         this.isRequired = isRequired;
     }
 
@@ -73,12 +76,18 @@ class DateTime implements Item {
             localeString = locale.replace(parameters);
         }
         
-        if (!Item.checkReq(isRequired, formatString, zoneString, localeString)) {
+        String timestampString = "";
+        if (timestamp != null) {
+            timestampString = timestamp.replace(parameters);
+        }
+        
+        if (!Item.checkReq(isRequired, formatString, zoneString, localeString, timestampString)) {
             return null;
         }
         
         zoneString = zoneString.trim();
         localeString = localeString.trim();
+        timestampString = timestampString.trim();
         
         //-----------
         // Formatter
@@ -121,11 +130,27 @@ class DateTime implements Item {
             formatter = formatter.withLocale(Locale.forLanguageTag(localeString));
         }
         
+        //-----------
+        // Timestamp
+        //-----------
+        long parsedTimestamp = -1;
+        if (!timestampString.isEmpty()) {
+            try {
+                parsedTimestamp = Long.parseLong(timestampString);
+            }
+            catch (NumberFormatException ex) {
+                return "Invalid timestamp";
+            }
+        }
+        
         //--------
         // Output
         //--------
         // This could still throw an error (although not sure how likely)
         try {
+            if (parsedTimestamp != -1) {
+                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(parsedTimestamp), zoneId).format(formatter);
+            }
             return ZonedDateTime.now(zoneId).format(formatter);
         } catch (Exception ex) {
             return "Time format error";

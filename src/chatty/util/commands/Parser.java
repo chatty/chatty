@@ -391,14 +391,18 @@ public class Parser {
         Item format = param();
         Item timezone = null;
         Item locale = null;
+        Item timestamp = null;
         if (accept(",")) {
             timezone = param();
         }
         if (accept(",")) {
             locale = param();
         }
+        if (accept(",")) {
+            timestamp = param();
+        }
         expect(")");
-        return new DateTime(format, timezone, locale, isRequired);
+        return new DateTime(format, timezone, locale, timestamp, isRequired);
     }
     
     private Item urlencode(boolean isRequired) throws ParseException {
