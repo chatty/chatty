@@ -5,7 +5,6 @@ import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
 import chatty.util.api.Emoticon;
-import chatty.util.api.Emoticon.EmoticonUser;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -27,6 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
+import chatty.util.api.CachedImage.CachedImageUser;
 
 /**
  *
@@ -60,20 +60,10 @@ public class EmoteSettings extends SettingsPanel {
         //------------
         // Emote Size
         //------------
-        // Emote Scale Defintion, used for both Chat and Emotes Dialog
-        final Map<Long, String> scaleDef = new LinkedHashMap<>();
-        for (int i=50;i<=200;i += 10) {
-            if (i == 10) {
-                scaleDef.put((long)i, "Normal");
-            } else {
-                scaleDef.put((long)i, (i)+"%");
-            }
-        }
-        
         // Chat Emote Scale
         main.add(new JLabel(Language.getString("settings.emoticons.chatScale")),
                 d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
-        ComboLongSetting emoteScale = new ComboLongSetting(scaleDef);
+        ComboLongSetting emoteScale = new ComboLongSetting(makeScaleValues());
         d.addLongSetting("emoteScale", emoteScale);
         main.add(emoteScale, d.makeGbc(1, 3, 1, 1, GridBagConstraints.CENTER));
         
@@ -88,7 +78,7 @@ public class EmoteSettings extends SettingsPanel {
         // Emotes Dialog Emote Scale
         main.add(new JLabel(Language.getString("settings.emoticons.dialogScale")),
                 d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
-        ComboLongSetting emoteScaleDialog = new ComboLongSetting(scaleDef);
+        ComboLongSetting emoteScaleDialog = new ComboLongSetting(makeScaleValues());
         d.addLongSetting("emoteScaleDialog", emoteScaleDialog);
         main.add(emoteScaleDialog, d.makeGbc(1, 4, 1, 1, GridBagConstraints.CENTER));
         
@@ -200,6 +190,18 @@ public class EmoteSettings extends SettingsPanel {
         localEmoteSettings.add(localEmotesButton,
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
     }
+    
+    public static Map<Long, String> makeScaleValues() {
+        final Map<Long, String> scaleDef = new LinkedHashMap<>();
+        for (int i=50;i<=200;i += 10) {
+            if (i == 10) {
+                scaleDef.put((long)i, "Normal");
+            } else {
+                scaleDef.put((long)i, (i)+"%");
+            }
+        }
+        return scaleDef;
+    }
 
     public void setData(Collection<Emoticon> data) {
         localEmotesDialog.setData(data);
@@ -276,7 +278,7 @@ public class EmoteSettings extends SettingsPanel {
                     return null;
                 }
             });
-            editor.setRendererForColumn(0, new EmoteRenderer(new EmoticonUser() {
+            editor.setRendererForColumn(0, new EmoteRenderer(new CachedImageUser() {
                 @Override
                 public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
                     editor.repaint();
@@ -306,9 +308,9 @@ public class EmoteSettings extends SettingsPanel {
     
     public static class EmoteRenderer extends JLabel implements TableCellRenderer {
 
-        private final EmoticonUser emoticonUser;
+        private final CachedImageUser emoticonUser;
         
-        public EmoteRenderer(EmoticonUser emoticonUser) {
+        public EmoteRenderer(CachedImageUser emoticonUser) {
             this.emoticonUser = emoticonUser;
         }
         

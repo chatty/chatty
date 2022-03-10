@@ -4,7 +4,8 @@ package chatty.gui.components.menus;
 import chatty.Room;
 import chatty.User;
 import chatty.gui.components.Channel;
-import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.Emoticon;
+import chatty.util.api.CachedImage;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.dnd.DockContent;
@@ -67,16 +68,16 @@ public class ContextMenuAdapter implements ContextMenuListener {
     }
 
     @Override
-    public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote) {
+    public void emoteMenuItemClicked(ActionEvent e, CachedImage<Emoticon> emote) {
         if (listener != null) {
             listener.emoteMenuItemClicked(e, emote);
         }
     }
 
     @Override
-    public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+    public void usericonMenuItemClicked(ActionEvent e, CachedImage<Usericon> usericonImage) {
         if (listener != null) {
-            listener.usericonMenuItemClicked(e, usericon);
+            listener.usericonMenuItemClicked(e, usericonImage);
         }
     }
 

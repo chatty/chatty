@@ -3,7 +3,8 @@ package chatty.util;
 
 import chatty.gui.GuiUtil;
 import chatty.util.api.Emoticon;
-import chatty.util.api.Emoticon.EmoticonUser;
+import chatty.util.api.CachedImage;
+import chatty.util.api.CachedImage.ImageType;
 import java.awt.Image;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import chatty.util.api.CachedImage.CachedImageUser;
 
 /**
  * This does currently not support proper cleanup of images (e.g. references in
@@ -30,7 +32,7 @@ public class CombinedEmoticon extends Emoticon {
      * Store for which EmoticonImage (as in, scale etc.) the combined image has
      * already been created, to prevent it being created more than once.
      */
-    private final Set<EmoticonImage> alreadyMade = new HashSet<>();
+    private final Set<CachedImage<Emoticon>> alreadyMade = new HashSet<>();
     
     public static String getCode(List<Emoticon> emotes) {
         StringBuilder result = new StringBuilder();
@@ -81,15 +83,15 @@ public class CombinedEmoticon extends Emoticon {
      * @return 
      */
     @Override
-    public EmoticonImage getIcon(float scaleFactor, int maxHeight, ImageType imageType, EmoticonUser user) {
-        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
+    public CachedImage<Emoticon> getIcon(float scaleFactor, int maxHeight, ImageType imageType, CachedImageUser user) {
+        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
         Debugging.println("combinedemotes", "Get: %s [%s] %s", emotes, System.identityHashCode(this), alreadyMade.contains(emoteImage));
         if (alreadyMade.contains(emoteImage)) {
             return emoteImage;
         }
         boolean allLoaded = true;
         for (Emoticon emote : emotes) {
-            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, new EmoticonUser() {
+            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, new CachedImageUser() {
 
                 @Override
                 public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
@@ -118,8 +120,8 @@ public class CombinedEmoticon extends Emoticon {
      * @param maxHeight
      * @param user 
      */
-    private void makeImage(float scaleFactor, int maxHeight, EmoticonUser user) {
-        EmoticonImage emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
+    private void makeImage(float scaleFactor, int maxHeight, CachedImageUser user) {
+        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
         if (alreadyMade.contains(emoteImage)) {
             return;
         }
@@ -127,9 +129,9 @@ public class CombinedEmoticon extends Emoticon {
         LinkedHashMap<ImageIcon, Integer> data = new LinkedHashMap<>();
         // Build list images and offsets
         for (Emoticon emote : emotes) {
-            EmoticonImage image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, null);
+            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, null);
             if (!image.isLoaded()) {
-                LOGGER.warning(image.getEmoticon()+" not loaded for "+emotes);
+                LOGGER.warning(image.getObject()+" not loaded for "+emotes);
                 return;
             }
             int yOffset = ChattyMisc.getCombinedEmotesInfo().getOffset(emote.code);

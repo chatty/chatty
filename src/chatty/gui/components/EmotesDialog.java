@@ -19,10 +19,9 @@ import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
-import chatty.util.api.Emoticon.EmoticonImage;
-import chatty.util.api.Emoticon.EmoticonUser;
-import chatty.util.api.Emoticon.ImageType;
 import chatty.util.api.Emoticons;
+import chatty.util.api.CachedImage;
+import chatty.util.api.CachedImage.ImageType;
 import chatty.util.colors.ColorCorrection;
 import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.colors.HtmlColors;
@@ -73,6 +72,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import chatty.util.api.CachedImage.CachedImageUser;
 
 /**
  * Dialog showing emoticons that can be clicked on to insert them in the last
@@ -131,7 +131,7 @@ public class EmotesDialog extends JDialog {
     // References
     //------------
     private final Emoticons emoteManager;
-    private final EmoticonUser emoteUser;
+    private final CachedImageUser emoteUser;
     private final SimpleMouseListener mouseListener;
     private final ContextMenuListener contextMenuListener;
     private final MainGui main;
@@ -159,7 +159,7 @@ public class EmotesDialog extends JDialog {
         super(owner);
         
         this.main = main;
-        emoteUser = new Emoticon.EmoticonUser() {
+        emoteUser = new CachedImageUser() {
 
             @Override
             public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
@@ -359,7 +359,7 @@ public class EmotesDialog extends JDialog {
      * @param e 
      */
     private void openContextMenu(MouseEvent e) {
-        EmoticonImage emote = ((EmoteLabel) e.getSource()).emote;
+        CachedImage<Emoticon> emote = ((EmoteLabel) e.getSource()).emote;
         JPopupMenu m = new EmoteContextMenu(emote, contextMenuListener);
         m.show(e.getComponent(), e.getX(), e.getY());
     }
@@ -609,14 +609,14 @@ public class EmotesDialog extends JDialog {
         private static final Border BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 1);
         
         public final String code;
-        public final EmoticonImage emote;
+        public final CachedImage<Emoticon> emote;
         public final boolean noInsert;
 
         public EmoteLabel(Emoticon emote, SimpleMouseListener mouseListener, float scale,
-                ImageType imageType, EmoticonUser emoteUser, Border extraBorder) {
+                ImageType imageType, CachedImageUser emoteUser, Border extraBorder) {
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             GuiUtil.addSimpleMouseListener(this, mouseListener);
-            EmoticonImage emoteImage = emote.getIcon(scale, 0, imageType, emoteUser);
+            CachedImage<Emoticon> emoteImage = emote.getIcon(scale, 0, imageType, emoteUser);
             this.code = emote.code;
             this.emote = emoteImage;
             setIcon(emoteImage.getImageIcon());

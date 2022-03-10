@@ -253,17 +253,19 @@ public class FrankerFaceZ {
             // If type is ROOM, stream should be available
             emotes = FrankerFaceZParsing.parseRoomEmotes(result, stream);
             addRoomBadgeUsernames(stream, FrankerFaceZParsing.parseRoomBadges(result));
-            String modIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "mod_urls");
+            String modIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "mod_urls", "1");
+            String modIconUrl2 = FrankerFaceZParsing.parseCustomBadge(result, stream, "mod_urls", "2");
             if (modIconUrl != null) {
                 // With added color
                 usericons.add(UsericonFactory.createTwitchLikeIcon(Usericon.Type.MOD,
-                        stream, modIconUrl, Usericon.SOURCE_FFZ, "Moderator (FFZ)"));
+                        stream, modIconUrl, modIconUrl2, Usericon.SOURCE_FFZ, "Moderator (FFZ)"));
             }
-            String vipIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "vip_badge");
+            String vipIconUrl = FrankerFaceZParsing.parseCustomBadge(result, stream, "vip_badge", "1");
+            String vipIconUrl2 = FrankerFaceZParsing.parseCustomBadge(result, stream, "vip_badge", "2");
             if (vipIconUrl != null) {
                 // Just the badge, with no added color
                 usericons.add(UsericonFactory.createIconFromUrl(Usericon.Type.VIP,
-                        stream, vipIconUrl, Usericon.SOURCE_FFZ, null, "VIP (FFZ)"));
+                        stream, vipIconUrl, vipIconUrl2, Usericon.SOURCE_FFZ, null, "VIP (FFZ)"));
             }
         } else if (type == Type.FEATURE_FRIDAY) {
             emotes = FrankerFaceZParsing.parseSetEmotes(result, Emoticon.SubType.FEATURE_FRIDAY, null);

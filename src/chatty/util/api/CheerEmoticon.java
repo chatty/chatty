@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.Helper;
+import chatty.util.api.CachedImage.ImageType;
 import java.awt.Color;
 import java.util.Objects;
 import java.util.Set;

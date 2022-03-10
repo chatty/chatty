@@ -10,8 +10,8 @@ import chatty.util.StringUtil;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.TwitchEmotesApi.EmotesetInfo;
 import chatty.util.api.Emoticon;
-import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons;
+import chatty.util.api.CachedImage;
 import java.awt.event.ActionEvent;
 
 /**
@@ -25,10 +25,10 @@ public class EmoteContextMenu extends ContextMenu {
     
     private static Emoticons emoteManager;
     private final ContextMenuListener listener;
-    private final EmoticonImage emoteImage;
+    private final CachedImage<Emoticon> emoteImage;
     
-    public EmoteContextMenu(EmoticonImage emoteImage, ContextMenuListener listener) {
-        Emoticon emote = emoteImage.getEmoticon();
+    public EmoteContextMenu(CachedImage<Emoticon> emoteImage, ContextMenuListener listener) {
+        Emoticon emote = emoteImage.getObject();
         this.listener = listener;
         this.emoteImage = emoteImage;
         

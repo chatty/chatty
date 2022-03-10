@@ -42,7 +42,8 @@ public class StyleManager implements StyleServer {
             "deletedMessagesMode", "deletedMessagesMaxLength","searchResultColor",
             "lineSpacing", "bufferSize", "actionColored","combineBanMessages",
             "timestampTimezone", "autoScrollTimeout", "searchResultColor2",
-            "inputFont","emoteScale", "emoteMaxHeight", "botBadgeEnabled",
+            "inputFont","emoteScale", "emoteMaxHeight", "usericonScale",
+            "customUsericonScaleMode", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired", "showAnimatedEmotes",
             "animatedEmotes",
@@ -200,6 +201,8 @@ public class StyleManager implements StyleServer {
         addBooleanSetting(Setting.EMOTICONS_ENABLED, "emoticonsEnabled");
         addLongSetting(Setting.EMOTICON_SCALE_FACTOR, "emoteScale");
         addLongSetting(Setting.EMOTICON_MAX_HEIGHT, "emoteMaxHeight");
+        addLongSetting(Setting.USERICON_SCALE_FACTOR, "usericonScale");
+        addLongSetting(Setting.CUSTOM_USERICON_SCALE_MODE, "customUsericonScaleMode");
         addBooleanSetting(Setting.USERICONS_ENABLED, "usericonsEnabled");
         addBooleanSetting(Setting.SHOW_BANMESSAGES, "showBanMessages");
         addBooleanSetting(Setting.AUTO_SCROLL, "autoScroll");

@@ -4,7 +4,8 @@ package chatty.gui.components.menus;
 import chatty.Room;
 import chatty.User;
 import chatty.gui.components.Channel;
-import chatty.util.api.Emoticon.EmoticonImage;
+import chatty.util.api.Emoticon;
+import chatty.util.api.CachedImage;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.dnd.DockContent;
@@ -25,6 +26,6 @@ public interface ContextMenuListener {
     public void tabMenuItemClicked(ActionEvent e, DockContent content);
     public void streamsMenuItemClicked(ActionEvent e, Collection<String> streams);
     public void streamInfosMenuItemClicked(ActionEvent e, Collection<StreamInfo> streamInfos);
-    public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emote);
-    public void usericonMenuItemClicked(ActionEvent e, Usericon usericon);
+    public void emoteMenuItemClicked(ActionEvent e, CachedImage<Emoticon> emote);
+    public void usericonMenuItemClicked(ActionEvent e, CachedImage<Usericon> usericonImage);
 }

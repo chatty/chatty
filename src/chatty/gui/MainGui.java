@@ -74,7 +74,6 @@ import chatty.gui.notifications.NotificationManager;
 import chatty.gui.notifications.NotificationManager.NotificationWindowData;
 import chatty.gui.notifications.NotificationWindowManager;
 import chatty.lang.Language;
-import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.pubsub.ModeratorActionData;
@@ -2291,8 +2290,8 @@ public class MainGui extends JFrame implements Runnable {
         }
 
         @Override
-        public void emoteMenuItemClicked(ActionEvent e, EmoticonImage emoteImage) {
-            Emoticon emote = emoteImage.getEmoticon();
+        public void emoteMenuItemClicked(ActionEvent e, CachedImage<Emoticon> emoteImage) {
+            Emoticon emote = emoteImage.getObject();
             String url = null;
             if (e.getActionCommand().equals("code")) {
                 channels.getActiveChannel().insertText(emote.code, true);
@@ -2361,7 +2360,8 @@ public class MainGui extends JFrame implements Runnable {
         }
 
         @Override
-        public void usericonMenuItemClicked(ActionEvent e, Usericon usericon) {
+        public void usericonMenuItemClicked(ActionEvent e, CachedImage<Usericon> usericonImage) {
+            Usericon usericon = usericonImage.getObject();
             if (e.getActionCommand().equals("usericonUrl")) {
                 if (!usericon.metaUrl.isEmpty()) {
                     UrlOpener.openUrlPrompt(MainGui.this, usericon.metaUrl);
@@ -2382,7 +2382,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             else if (e.getActionCommand().equals("badgeImage")) {
-                UrlOpener.openUrlPrompt(getActiveWindow(), usericon.url.toString(), true);
+                UrlOpener.openUrlPrompt(getActiveWindow(), usericonImage.getLoadedFrom(), true);
             }
         }
         

@@ -57,7 +57,7 @@ public class UsericonManager {
     
     public synchronized void addDefaultIcons(List<Usericon> icons) {
         for (Usericon icon : icons) {
-            if (icon != null && icon.image != null) {
+            if (icon != null) {
                 // Remove icon if it already exists, so it can actually be
                 // updated if necessary.
                 if (defaultIcons.contains(icon)) {
@@ -255,14 +255,14 @@ public class UsericonManager {
                 if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user, tags)) {
                     if (icon.removeBadge) {
                         return null;
-                    } else if (icon.image != null) {
+                    } else if (icon.hasRegularImage) {
                         return icon;
                     } else if (icon.fileName.equalsIgnoreCase("$ffz")) {
                         // If fileName is a reference, then check if an icon
                         // for that exists (only really applicable for FFZ Mod
                         // Icon at the moment)
                         Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_FFZ);
-                        if (refIcon != null && refIcon.image != null) {
+                        if (refIcon != null) {
                             return refIcon;
                         }
                     } else if (icon.fileName.equalsIgnoreCase("$twitch")) {
@@ -271,12 +271,12 @@ public class UsericonManager {
                         // it should be replaced only when that happens.
                         
                         Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_TWITCH2);
-                        if (refIcon != null && refIcon.image != null) {
+                        if (refIcon != null) {
                             return refIcon;
                         }
                     } else if (icon.fileName.equalsIgnoreCase("$default")) {
                         Usericon refIcon = getDefaultIcon(type, id, version, user, Usericon.SOURCE_ANY);
-                        if (refIcon != null && refIcon.image != null) {
+                        if (refIcon != null) {
                             return refIcon;
                         }
                     }
@@ -335,7 +335,7 @@ public class UsericonManager {
         if (customUsericonsEnabled()) {
             for (Usericon icon : customIcons) {
                 if (icon.type == Type.ADDON && iconMatchesUser(icon, user, tags)
-                        && icon.image != null) {
+                        && icon.hasRegularImage) {
                     insert(icons, icon);
                     if (icon.stop) {
                         break;

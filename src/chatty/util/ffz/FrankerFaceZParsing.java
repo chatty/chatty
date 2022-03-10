@@ -1,10 +1,8 @@
 
 package chatty.util.ffz;
 
-import chatty.util.api.usericons.Usericon;
 import chatty.util.JSONUtil;
 import chatty.util.api.Emoticon;
-import chatty.util.api.usericons.UsericonFactory;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,16 +30,17 @@ public class FrankerFaceZParsing {
      * @param json
      * @param stream
      * @param type Which key to look up the badge URLs under
+     * @param factor
      * @return The URL to the badge image, or null if none was found
      */
-    public static String parseCustomBadge(String json, String stream, String type) {
+    public static String parseCustomBadge(String json, String stream, String type, String factor) {
         try {
             JSONParser parser = new JSONParser();
             JSONObject o = (JSONObject)parser.parse(json);
             JSONObject room = (JSONObject)o.get("room");
             Object badgeUrls = room.get(type);
             if (badgeUrls instanceof JSONObject) {
-                return JSONUtil.getString((JSONObject) badgeUrls, "1");
+                return JSONUtil.getString((JSONObject) badgeUrls, factor);
             }
         } catch (ParseException | ClassCastException | NullPointerException ex) {
             

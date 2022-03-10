@@ -3,10 +3,14 @@ package chatty.util.api.usericons;
 
 import chatty.Helper;
 import chatty.gui.Highlighter;
+import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.colors.HtmlColors;
 import chatty.util.ImageCache;
+import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
 import chatty.util.StringUtil;
+import chatty.util.api.CachedImage;
+import chatty.util.api.CachedImageManager;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -38,7 +42,9 @@ public class Usericon implements Comparable {
     /**
      * How long to cache the usericon images (in seconds).
      */
-    private static final int CACHE_TIME = 60*60*24*3;
+    public static final int CACHE_TIME = 60*60*24*3;
+    
+    private static final Dimension DEFAULT_ICON_SIZE = new Dimension(18, 18);
     
     private static final Set<String> statusDef = new HashSet<>(Arrays.asList(
             "$mod", "$sub", "$admin", "$staff", "$turbo", "$broadcaster", "$bot",
@@ -150,6 +156,14 @@ public class Usericon implements Comparable {
      * The URL the image is loaded from
      */
     public final URL url;
+    public final URL url2;
+    
+    public final Color color;
+    
+    /**
+     * The unscaled size, if not set the default size is used
+     */
+    public final Dimension baseImageSize;
     
     /**
      * If set, the image will be resized to this size
@@ -193,7 +207,7 @@ public class Usericon implements Comparable {
     /**
      * The image loaded from the given {@literal url}
      */
-    public final ImageIcon image;
+    public final boolean hasRegularImage;
     
     /**
      * The match type is derived from {@literal restriction}, to make it easier
@@ -285,7 +299,10 @@ public class Usericon implements Comparable {
         // Image/Image Location
         //----------------------
         this.url = builder.url;
+        this.url2 = builder.url2;
+        this.color = builder.color;
         this.targetImageSize = builder.targetImageSize;
+        this.baseImageSize = builder.baseImageSize;
         
         // If no url is set, assume that no image is supposed to be used
         if (builder.url == null) {
@@ -294,9 +311,9 @@ public class Usericon implements Comparable {
             removeBadge = false;
         }
         if (fileName != null && fileName.startsWith("$")) {
-            image = null;
+            hasRegularImage = false;
         } else {
-            image = addColor(getIcon(url), builder.color);
+            hasRegularImage = true;
         }
         
         //-------------
@@ -386,32 +403,77 @@ public class Usericon implements Comparable {
         this.position = UsericonPosition.parse(builder.position, first);
     }
     
-    /**
-     * Loads the icon from the given url.
-     * 
-     * @param url The URL to load the icon from
-     * @return The loaded icon or {@literal null} if no URL was specified or the
-     * icon couldn't be loaded
-     */
-    private ImageIcon getIcon(URL url) {
-        if (url == null) {
-            return null;
+    private CachedImageManager<Usericon> images;
+    private int customScaleMode;
+    
+    public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, CachedImage.CachedImageUser user) {
+        this.customScaleMode = customUsericonScaleMode;
+        if (images == null) {
+            images = new CachedImageManager<>(this, new CachedImage.CachedImageRequester() {
+                
+                @Override
+                public String getImageUrl(int scale, CachedImage.ImageType type) {
+                    if (scale == 2) {
+                        return url2 != null ? url2.toString() : null;
+                    }
+                    return url.toString();
+                }
+
+                @Override
+                public Dimension getBaseSize() {
+                    if (source == SOURCE_CUSTOM && customScaleMode == 2) {
+                        // Use field, so the updated value is available (if the setting changes)
+                        return toHeight(baseImageSize, DEFAULT_ICON_SIZE.height);
+                    }
+                    if (baseImageSize != null) {
+                        return baseImageSize;
+                    }
+                    if (targetImageSize != null) {
+                        return targetImageSize;
+                    }
+                    return DEFAULT_ICON_SIZE;
+                }
+                
+                @Override
+                public boolean forceBaseSize() {
+                    return true;
+                }
+                
+                @Override
+                public Image modifyImage(ImageIcon icon) {
+                    icon = addColor(icon, color);
+                    icon = ChannelTextPane.addSpaceToIcon(icon);
+                    return icon.getImage();
+                }
+            }, "usericon");
         }
-        ImageResult result = ImageCache.getImage(new ImageCache.ImageRequest(url), "usericon", CACHE_TIME);
-        if (result != null && result.icon != null) {
-            ImageIcon icon = result.icon;
-            if (targetImageSize != null) {
-                icon.setImage(getScaledImage(icon.getImage(), targetImageSize.width, targetImageSize.height));
+        if (targetImageSize != null) {
+            scale = 1f;
+        }
+        Object customKey = null;
+        if (source == SOURCE_CUSTOM) {
+            if (customUsericonScaleMode == 0) {
+                scale = 1f;
             }
-            return icon;
-        } else {
-            LOGGER.warning("Could not load icon: " + url);
+            if (customUsericonScaleMode == 2) {
+                /**
+                 * A custom key is used to make sure a new image is created when
+                 * settings change. With this setting value the base size is
+                 * modified, which otherwise would not cause an image update in
+                 * the "images" cache.
+                 */
+                customKey = 1;
+            }
         }
-        return null;
+        return images.getIcon(scale, 0, customKey, CachedImage.ImageType.STATIC, user);
     }
     
-    private Image getScaledImage(Image img, int w, int h) {
-        return img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+    private static Dimension toHeight(Dimension d, int targetHeight) {
+        int width = d.width;
+        int height = d.height;
+        width = width / (height / targetHeight);
+        height = targetHeight;
+        return new Dimension(width, height);
     }
     
     /**
@@ -423,7 +485,7 @@ public class Usericon implements Comparable {
      * @return 
      */
     private ImageIcon addColor(ImageIcon icon, Color color) {
-        if (icon == null || color == null) {
+        if (color == null) {
             return icon;
         }
         BufferedImage newImage = new BufferedImage(icon.getIconWidth(),
@@ -448,13 +510,7 @@ public class Usericon implements Comparable {
     public int compareTo(Object o) {
         if (o instanceof Usericon) {
             Usericon icon = (Usericon)o;
-            if (this.image == null && icon.image == null) {
-                return 0;
-            } else if (this.image == null) {
-                return 1;
-            } else if (icon.image == null) {
-                return -1;
-            } else if (icon.source > source) {
+            if (icon.source > source) {
                 return 1;
             } else if (icon.source < source) {
                 return -1;
@@ -480,7 +536,7 @@ public class Usericon implements Comparable {
                 source,
                 channelRestriction,
                 restriction,
-                image != null ? "L" : (removeBadge ? "R" : "E"));
+                hasRegularImage ? "L" : (removeBadge ? "R" : "E"));
     }
     
     public String readableLenientType() {
@@ -558,6 +614,7 @@ public class Usericon implements Comparable {
 
         private String channel;
         private URL url;
+        private URL url2;
         private Color color;
         private String restriction;
         private String fileName;
@@ -568,6 +625,7 @@ public class Usericon implements Comparable {
         private Set<String> usernames;
         private Set<String> userids;
         private String position;
+        private Dimension baseImageSize;
         private Dimension targetImageSize;
 
         public Builder(Usericon.Type type, int source) {
@@ -594,6 +652,11 @@ public class Usericon implements Comparable {
          */
         public Builder setUrl(URL url) {
             this.url = url;
+            return this;
+        }
+        
+        public Builder setUrl2(URL url2) {
+            this.url2 = url2;
             return this;
         }
 
@@ -685,6 +748,11 @@ public class Usericon implements Comparable {
         
         public Builder setPosition(String position) {
             this.position = position;
+            return this;
+        }
+        
+        public Builder setBaseImageSize(int width, int height) {
+            this.baseImageSize = new Dimension(width, height);
             return this;
         }
         

@@ -72,10 +72,11 @@ public class UsericonManagerTest {
     private List<Usericon> setThirdParty(UsericonManager m, Set<String> usernames, Set<String> userids) {
         String url = MainGui.class.getResource("star.png").toString();
         List<Usericon> thirdParty = new ArrayList<>();
-        thirdParty.add(UsericonFactory.createThirdParty("test", "1", url, "Title", null, null, usernames, userids, ""));
-        thirdParty.add(UsericonFactory.createThirdParty("test", "2", url, "Title", null, null, null, userids, ""));
-        thirdParty.add(UsericonFactory.createThirdParty("test", "3", url, "Title", null, null, usernames, null, ""));
-        thirdParty.add(UsericonFactory.createThirdParty("test", "4", url, "Title", null, null, null, null, ""));
+        // Passing same url for both sizes, this may need to be changed if it becomes important for the test
+        thirdParty.add(UsericonFactory.createThirdParty("test", "1", url, url, "Title", null, null, usernames, userids, ""));
+        thirdParty.add(UsericonFactory.createThirdParty("test", "2", url, url, "Title", null, null, null, userids, ""));
+        thirdParty.add(UsericonFactory.createThirdParty("test", "3", url, url, "Title", null, null, usernames, null, ""));
+        thirdParty.add(UsericonFactory.createThirdParty("test", "4", url, url, "Title", null, null, null, null, ""));
         m.setThirdPartyIcons(thirdParty);
         return thirdParty;
     }

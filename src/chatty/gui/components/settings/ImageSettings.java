@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
+import static chatty.gui.components.settings.EmoteSettings.makeScaleValues;
 import chatty.lang.Language;
 import chatty.util.api.usericons.Usericon;
 import java.awt.Component;
@@ -43,14 +44,22 @@ public class ImageSettings extends SettingsPanel {
         //==================
         // General Settings
         //==================
-        gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(0, 0, 2, 1, GridBagConstraints.WEST);
         usericons.add(usericonsEnabled, gbc);
 
-        gbc = d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST);
+        gbc = d.makeGbc(2, 0, 1, 1, GridBagConstraints.WEST);
         usericons.add(botBadgeEnabled, gbc);
         
-        gbc = d.makeGbc(0, 1, 2, 1, GridBagConstraints.CENTER);
+        gbc = d.makeGbc(0, 1, 4, 1, GridBagConstraints.CENTER);
         usericons.add(new JLabel(Language.getString("settings.ffzBadgesInfo")), gbc);
+        
+        ComboLongSetting usericonScale = new ComboLongSetting(makeScaleValues());
+        d.addLongSetting("usericonScale", usericonScale);
+        SettingsUtil.addLabeledComponent(usericons, "usericonScale", 0, 2, 2, GridBagConstraints.WEST, usericonScale);
+        
+        ComboLongSetting customUsericonScaleMode = d.addComboLongSetting("customUsericonScaleMode", 0, 1, 2);
+        d.addLongSetting("customUsericonScaleMode", customUsericonScaleMode);
+        SettingsUtil.addLabeledComponent(usericons, "customUsericonScaleMode", 0, 3, 2, GridBagConstraints.WEST, customUsericonScaleMode);
         
         hiddenBadgesDialog = new HiddenBadgesDialog(d);
         JButton hiddenBadgesButton = new JButton("View Hidden Badges");
@@ -60,7 +69,7 @@ public class ImageSettings extends SettingsPanel {
             hiddenBadgesDialog.setVisible(true);
         });
         usericons.add(hiddenBadgesButton,
-                d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(3, 0, 1, 1, GridBagConstraints.WEST));
         
         //==================
         // Custom Usericons

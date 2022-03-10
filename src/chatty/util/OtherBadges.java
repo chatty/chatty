@@ -85,6 +85,7 @@ public class OtherBadges {
             String id = (String) data.get("id");
             String version = (String) data.get("version");
             String url = (String) data.get("image_url");
+            String url2 = (String) data.get("image_url_2");
             String color = (String) data.get("color");
             String metaUrl = (String) data.get("meta_url");
             String position = (String) data.get("position");
@@ -103,7 +104,7 @@ public class OtherBadges {
 //                userids.add("36194025");
             }
 
-            Usericon icon = UsericonFactory.createThirdParty(id, version, url, title, metaUrl, color, usernames, userids, position);
+            Usericon icon = UsericonFactory.createThirdParty(id, version, url, url2, title, metaUrl, color, usernames, userids, position);
             return icon;
         } catch (Exception ex) {
             LOGGER.warning("Error parsing third-party badge: " + ex);

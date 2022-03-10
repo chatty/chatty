@@ -92,7 +92,8 @@ public class BadgeManager {
             JSONObject versionData = (JSONObject) entry;
 
             String version = JSONUtil.getString(versionData, "id");
-            String url = JSONUtil.getString(versionData, "image_url_1x");;
+            String url = JSONUtil.getString(versionData, "image_url_1x");
+            String url2 = JSONUtil.getString(versionData, "image_url_2x");
             String title = StringUtil.firstToUpperCase(id);
             switch (id) {
                 case "subscriber":
@@ -108,7 +109,7 @@ public class BadgeManager {
 
             if (id != null && version != null && url != null) {
                 Usericon icon = UsericonFactory.createTwitchBadge(id, version, 
-                        url, room, title, "", "");
+                        url, url2, room, title, "", "");
                 if (icon != null) {
                     result.add(icon);
                     Debugging.println("badgetitles", "%s/%s %s", id, version, title);

@@ -3,7 +3,6 @@ package chatty.gui.components.textpane;
 
 import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import chatty.util.Debugging;
-import chatty.util.api.Emoticon.EmoticonImage;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.Shape;

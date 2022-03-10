@@ -260,7 +260,8 @@ public class SettingsManager {
         settings.addString("cheersType", "animated");
 
         settings.addBoolean("usericonsEnabled", true);
-        
+        settings.addLong("usericonScale", 100);
+        settings.addLong("customUsericonScaleMode", 0);
         settings.addList("customUsericons", new ArrayList(), Setting.LIST);
         settings.addBoolean("customUsericonsEnabled", false);
         

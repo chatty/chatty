@@ -22,7 +22,6 @@ import chatty.gui.components.textpane.MyStyleConstants;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
-import chatty.util.api.Emoticon.EmoticonImage;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;

@@ -28,9 +28,11 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
@@ -55,7 +57,7 @@ class UsericonEditor extends TableEditor<Usericon> {
         setModel(new MyTableModel());
         setItemEditor(editor);
         setRendererForColumn(1, new IdRenderer(getForeground()));
-        setRendererForColumn(2, new ImageRenderer());
+        setRendererForColumn(2, new ImageRenderer(this));
         setRendererForColumn(3, new ChannelRenderer(getForeground()));
     }
     
@@ -192,8 +194,11 @@ class UsericonEditor extends TableEditor<Usericon> {
      */
     private static class ImageRenderer extends DefaultTableCellRenderer {
 
-        ImageRenderer() {
+        private final JComponent comp;
+        
+        ImageRenderer(JComponent comp) {
             setHorizontalAlignment(SwingConstants.CENTER);
+            this.comp = comp;
         }
         
         @Override
@@ -217,7 +222,9 @@ class UsericonEditor extends TableEditor<Usericon> {
                 setIcon(null);
                 setText("No image");
             } else {
-                setIcon(icon.image);
+                setIcon(icon.getIcon(1f, 0, (oldImage, newImage, sizeChanged) -> {
+                    comp.repaint();
+                }).getImageIcon());
                 setText(null);
             }
         }
@@ -514,10 +521,12 @@ class UsericonEditor extends TableEditor<Usericon> {
                 preview.setText("No image.");
             } else if (currentIcon.fileName.startsWith("$")) {
                 preview.setText("Ref image.");
-            } else if (currentIcon.image == null) {
-                preview.setText(ERROR_LOADING_IMAGE);
+//            } else if (currentIcon.image == null) {
+//                preview.setText(ERROR_LOADING_IMAGE);
             } else {
-                ImageIcon image = currentIcon.image;
+                ImageIcon image = currentIcon.getIcon(1f, 0, (oldImage, newImage, sizeChanged) -> {
+                    preview.repaint();
+                }).getImageIcon();
                 preview.setIcon(image);
                 preview.setText(image.getIconWidth()+"x"+image.getIconHeight());
             }

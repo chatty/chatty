@@ -3,6 +3,8 @@ package chatty.util.api.usericons;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.util.ImageCache;
+import chatty.util.ImageCache.ImageResult;
 import chatty.util.colors.HtmlColors;
 import static chatty.util.api.usericons.Usericon.SOURCE_CUSTOM;
 import static chatty.util.api.usericons.Usericon.SOURCE_FALLBACK;
@@ -11,6 +13,7 @@ import static chatty.util.api.usericons.Usericon.SOURCE_TWITCH;
 import static chatty.util.api.usericons.Usericon.SOURCE_TWITCH2;
 import static chatty.util.api.usericons.Usericon.getColorFromType;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.InvalidPathException;
@@ -36,9 +39,9 @@ public class UsericonFactory {
      * @param urlString
      * @return 
      */
-    public static Usericon createTwitchIcon(Usericon.Type type, String channel, String urlString, String title) {
+    public static Usericon createTwitchIcon(Usericon.Type type, String channel, String urlString, String urlString2, String title) {
         //return createTwitchLikeIcon(type, channel, urlString, SOURCE_TWITCH);
-        return createIconFromUrl(type, channel, urlString, SOURCE_TWITCH, null, title);
+        return createIconFromUrl(type, channel, urlString, urlString2, SOURCE_TWITCH, null, title);
     }
     
     /**
@@ -54,18 +57,21 @@ public class UsericonFactory {
      * @return 
      */
     public static Usericon createTwitchLikeIcon(Usericon.Type type, String channel,
-            String urlString, int source, String title) {
-        return createIconFromUrl(type, channel, urlString, source,
+            String urlString, String urlString2, int source, String title) {
+        return createIconFromUrl(type, channel, urlString, urlString2, source,
                 getColorFromType(type), title);
     }
     
     public static Usericon createIconFromUrl(Usericon.Type type, String channel,
-            String urlString, int source, Color color, String title) {
+            String urlString, String url2String, int source, Color color,
+            String title) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
+            URL url2 = new URL(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(type, source);
             b.setChannel(channel);
             b.setUrl(url);
+            b.setUrl2(url2);
             b.setColor(color);
             b.setMetaTitle(title);
             return b.build();
@@ -76,14 +82,16 @@ public class UsericonFactory {
     }
     
     public static Usericon createTwitchBadge(String id, String version,
-            String urlString, String channel, String title, String description,
-            String clickUrl) {
+            String urlString, String url2String, String channel, String title,
+            String description, String clickUrl) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
+            URL url2 = new URL(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.TWITCH, SOURCE_TWITCH2);
             b.setChannel(channel);
             b.setBadgeType(id, version);
             b.setUrl(url);
+            b.setUrl2(url2);
             b.setMetaTitle(title);
             b.setMetaDescription(description);
             b.setMetaUrl(clickUrl);
@@ -95,13 +103,15 @@ public class UsericonFactory {
     }
     
     public static Usericon createThirdParty(String id, String version,
-            String urlString, String title, String clickUrl, String color,
+            String urlString, String url2String, String title, String clickUrl, String color,
             Set<String> usernames, Set<String> userids, String position) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
+            URL url2 = new URL(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
             b.setBadgeType(id, version);
             b.setUrl(url);
+            b.setUrl2(url2);
             b.setMetaTitle(title);
             b.setMetaUrl(clickUrl);
             b.setUsernames(usernames);
@@ -163,6 +173,20 @@ public class UsericonFactory {
             b.setFileName(fileName);
             b.setBadgeType(BadgeType.parse(idVersion));
             b.setPosition(position);
+            if (url != null) {
+                Dimension size = getSize(url);
+                if (size == null) {
+                    // If image could not be loaded, invalid icon
+                    return null;
+                }
+                /**
+                 * Set the size since custom icons can have a non-standard size
+                 * and this ensures that the default placeholder image has the
+                 * correctly size already and chat doesn't move around when the
+                 * actual image is loaded.
+                 */
+                b.setBaseImageSize(size.width, size.height);
+            }
             return b.build();
         } catch (MalformedURLException | InvalidPathException ex) {
             LOGGER.warning("Invalid icon file: " + fileName);
@@ -174,8 +198,29 @@ public class UsericonFactory {
         Usericon.Builder b = new Usericon.Builder(type, SOURCE_FALLBACK);
         b.setUrl(url);
         b.setColor(getColorFromType(type));
+        Dimension size = getSize(url);
+        if (size != null) {
+            /**
+             * Set the size so that non-standard icons such as for the first
+             * message in the channel are displayed correctly.
+             */
+            b.setBaseImageSize(size.width, size.height);
+        }
         return b.build();
     }
     
+    /**
+     * Get the size of the image of the given URL.
+     * 
+     * @param url
+     * @return The size, or null if the URL or image is invalid
+     */
+    private static Dimension getSize(URL url) {
+        ImageResult result = ImageCache.getImage(new ImageCache.ImageRequest(url), "usericon", Usericon.CACHE_TIME);
+        if (result != null && result.isValidImage()) {
+            return result.actualBaseSize;
+        }
+        return null;
+    }
     
 }
