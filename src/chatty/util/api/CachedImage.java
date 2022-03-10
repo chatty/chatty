@@ -331,7 +331,8 @@ public class CachedImage<T> {
 
     @Override
     public String toString() {
-        return scaleFactor + "/" + maxHeight + "/" + icon;
+        return String.format("%s/%s/%s/%s|%s",
+                scaleFactor, maxHeight, imageType, customKey, icon);
     }
 
     /**

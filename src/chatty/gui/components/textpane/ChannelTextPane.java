@@ -2795,16 +2795,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             Map<Integer, Integer> ranges,
             Map<Integer, MutableAttributeSet> rangesStyle) {
         if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
-            if (emoticon.getIcon(this) != null) {
-                ranges.put(start, end);
-                MutableAttributeSet attr = styles.emoticon(emoticon);
-                // Add an extra attribute, making this Style unique
-                // (else only one icon will be output if two of the same
-                // follow in a row)
-                attr.addAttribute("start", start);
-                rangesStyle.put(start, attr);
-                return true;
-            }
+            ranges.put(start, end);
+            MutableAttributeSet attr = styles.emoticon(emoticon);
+            // Add an extra attribute, making this Style unique
+            // (else only one icon will be output if two of the same
+            // follow in a row)
+            attr.addAttribute("start", start);
+            rangesStyle.put(start, attr);
+            return true;
         }
         return false;
     }

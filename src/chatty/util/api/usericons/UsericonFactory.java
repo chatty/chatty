@@ -173,10 +173,11 @@ public class UsericonFactory {
             b.setFileName(fileName);
             b.setBadgeType(BadgeType.parse(idVersion));
             b.setPosition(position);
-            if (url != null) {
+            if (url != null && !fileName.startsWith("$")) {
                 Dimension size = getSize(url);
                 if (size == null) {
                     // If image could not be loaded, invalid icon
+                    LOGGER.warning("Invalid icon file (size): " + fileName);
                     return null;
                 }
                 /**

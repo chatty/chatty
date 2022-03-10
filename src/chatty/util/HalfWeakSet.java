@@ -103,6 +103,12 @@ public class HalfWeakSet<T> implements Set<T> {
         weak.clear();
     }
     
+    @Override
+    public String toString() {
+        return String.format("Strong%s Weak%s",
+                strong, weak);
+    }
+    
     private class MyIterator implements Iterator<T> {
 
         private final Iterator<T> strongIt = strong.iterator();
