@@ -3,10 +3,12 @@ package chatty.util.chatlog;
 
 import chatty.Chatty;
 import chatty.Helper;
+import chatty.Room;
 import chatty.User;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
+import chatty.util.Timestamp;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.UserInfo;
@@ -17,7 +19,6 @@ import chatty.util.settings.Settings;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -32,8 +33,8 @@ public class ChatLog {
     
     private static final Logger LOGGER = Logger.getLogger(ChatLog.class.getName());
     
-    private SimpleDateFormat sdf;
-    private CustomCommand messageTemplate;
+    private Timestamp timestamp;
+    private final CustomCommand messageTemplate;
     
     private final Map<String, Compact> compactForChannels;
     
@@ -60,12 +61,12 @@ public class ChatLog {
         }
         compactForChannels = new HashMap<>();
         try {
-            String timestamp = settings.getString("logTimestamp");
-            if (!timestamp.equals("off")) {
-                sdf = new SimpleDateFormat(timestamp);
+            String timestampValue = settings.getString("logTimestamp");
+            if (!timestampValue.equals("off")) {
+                timestamp = new Timestamp(timestampValue, "");
             }
         } catch (IllegalArgumentException ex) {
-            sdf = null;
+            timestamp = null;
         }
         CustomCommand c = CustomCommand.parse(settings.getString("logMessageTemplate"));
         if (c.hasError()) {
@@ -141,7 +142,7 @@ public class ChatLog {
                             message,
                             action,
                             settings,
-                            timestamp(includedChannel, false));
+                            timestamp(user.getRoom(), includedChannel, false));
             String line = messageTemplate.replace(param);
             if (line != null && !line.isEmpty()) {
                 writeLine(channel, line);
@@ -163,7 +164,7 @@ public class ChatLog {
 
     public void info(String channel, String message, String includedChannel) {
         if (isSettingEnabled("logInfo") && isChanEnabled(channel)) {
-            writeLine(channel, timestamp(includedChannel, true)+message);
+            writeLine(channel, timestamp(null, includedChannel, true)+message);
         }
     }
     
@@ -269,20 +270,20 @@ public class ChatLog {
     }
     
     private String timestamp() {
-        return timestamp(null, true);
+        return timestamp(null, null, true);
     }
     
-    private String timestamp(String includedChannel, boolean appendSpace) {
+    private String timestamp(Room room, String includedChannel, boolean appendSpace) {
         String space = appendSpace ? " " : "";
         if (includedChannel != null) {
-            if (sdf != null) {
-                return DateTime.currentTime(sdf)+"["+includedChannel+"]"+space;
+            if (timestamp != null) {
+                return timestamp.make(-1, room)+"["+includedChannel+"]"+space;
             }
             return "["+includedChannel+"]"+space;
         }
         else {
-            if (sdf != null) {
-                return DateTime.currentTime(sdf)+space;
+            if (timestamp != null) {
+                return timestamp.make(-1, room)+space;
             }
             return "";
         }

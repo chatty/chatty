@@ -1,0 +1,31 @@
+If you require other formatting than provided in the presets, you can edit it
+manually ([url:https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html Formatting]).
+The timestamp can be further customized under "Chat Colors" and "Messages".
+<br /><br />
+Append <code>'a:AM/PM'</code> (including quotes) to customize AM/PM.
+
+<h3>Stream Uptime</h3>
+Add <code>'{uptime}'</code> (with the single quotes) to include the Stream Uptime. Optionally a character
+can be added before or after, separated by a comma, which will only be shown if
+the Uptime is displayed (e.g. <code>'{/,uptime}'</code>).
+<br /><br />
+Additional options can be specified, e.g. <code>'{uptime:c}'</code>:
+<ul>
+    <li><code>c</code> - Clock style (1:23)</li>
+    <li><code>0</code> - Leading zero to always get double digits, except first (1h 09m)</li>
+    <li><code>00</code> - Leading zero to always get double digits (01h 09m)</li>
+    <li><code>s</code> - Include seconds (1h 10m 3s)</li>
+    <li><code>H</code> - Always show hours (0h 9m)</li>
+    <li><code>t</code> - Trim spaces in between (1h23m)</li>
+    <li><code>p</code> - With Picnic (uptime doesn't reset when a short stream
+downtime occurs, just like the uptime in the window title, the test uptime in
+this dialog is 30 minutes longer with this option, except for the "Live 8 minutes"
+selection)</li>
+    <li><code>P</code> - Same as <code>p</code>, except that it is only shown
+when the Picnic uptime is different from the regular one</li>
+</ul>
+
+<h3>Modify Timestamp</h3>
+Everything after <code>###</code> is interpreted as a Custom Command that
+gets the formatted timestamp as it's <code>$1-</code> parameter. The result
+of the command is the resulting timestamp.

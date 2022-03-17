@@ -6,6 +6,7 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.util.Timestamp;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
@@ -47,7 +48,7 @@ public class UserInfoManager {
     
     private String buttonsDef;
     private float fontSize;
-    private SimpleDateFormat timestampFormat;
+    private Timestamp timestampFormat;
     
     public UserInfoManager(final MainGui owner, Settings settings,
             final ContextMenuListener contextMenuListener, TwitchApi api) {
@@ -263,7 +264,7 @@ public class UserInfoManager {
         }
     }
 
-    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+    public void setTimestampFormat(Timestamp timestampFormat) {
         this.timestampFormat = timestampFormat;
         for (UserInfoDialog dialog : dialogs) {
             dialog.setTimestampFormat(timestampFormat);

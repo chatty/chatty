@@ -13,6 +13,7 @@ import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.Pronouns;
 import chatty.util.StringUtil;
+import chatty.util.Timestamp;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
@@ -377,7 +378,7 @@ public class UserInfoDialog extends JDialog {
         pastMessages.update(currentUser, currentMsgId != null ? currentMsgId : currentAutoModMsgId);
     }
     
-    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+    public void setTimestampFormat(Timestamp timestampFormat) {
         pastMessages.setTimestampFormat(timestampFormat);
         updateMessages();
     }

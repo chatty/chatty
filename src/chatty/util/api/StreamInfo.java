@@ -9,6 +9,7 @@ import chatty.util.api.StreamTagManager.StreamTag;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -746,6 +747,47 @@ public class StreamInfo {
         synchronized(history) {
             return new LinkedHashMap<>(history);
         }
+    }
+    
+    public void setHistory(LinkedHashMap<Long, StreamInfoHistoryItem> history) {
+        synchronized(history) {
+            this.history.clear();
+            this.history.putAll(history);
+        }
+    }
+    
+    public long getHistoryStreamStart(long time, boolean picnic) {
+        if (time == -1) {
+            if (isValid() && getOnline()) {
+                if (picnic) {
+                    return getTimeStartedWithPicnic();
+                }
+                return getTimeStarted();
+            }
+        }
+        synchronized(history) {
+            StreamInfoHistoryItem found = null;
+            for (StreamInfoHistoryItem item : history.values()) {
+                // First item after target time, so abort
+                if (item.getTime() > time) {
+                    break;
+                }
+                // Only items before or at target time are valid
+                if (item.getTime() <= time) {
+                    found = item;
+                }
+            }
+            if (found != null) {
+                if (found.isOnline()
+                        && time - found.getTime() < expiresAfter*1000*2) {
+                    if (picnic) {
+                        return found.getStreamStartTimeWithPicnic();
+                    }
+                    return found.getStreamStartTime();
+                }
+            }
+        }
+        return -1;
     }
     
     /**

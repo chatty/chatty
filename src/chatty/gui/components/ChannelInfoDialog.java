@@ -438,7 +438,7 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     }
     
     private void updateOnlineTime(StreamInfoHistoryItem item) {
-        updateOnlineTime(item.getStreamDuration(), item.getStreamDurationWithPicnic(), item.getTime());
+        updateOnlineTime(item.getStreamStartTime(), item.getStreamStartTimeWithPicnic(), item.getTime());
     }
     
     private void updateOnlineTime(long started, long withPicnic, long current) {

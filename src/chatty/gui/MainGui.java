@@ -1023,7 +1023,7 @@ public class MainGui extends JFrame implements Runnable {
         emoticons.setCheerState(client.settings.getString("cheersType"));
         emoticons.setCheerBackground(HtmlColors.decode(client.settings.getString("backgroundColor")));
         
-        userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
+        userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp"));
         userInfoDialog.setFontSize(client.settings.getLong("dialogFontSize"));
         UserNotes.init(client.api, client.settings);
         
@@ -5124,7 +5124,7 @@ public class MainGui extends JFrame implements Runnable {
                 } else if (setting.equals("soundDevice")) {
                     Sound.setDeviceName((String)value);
                 } else if (setting.equals("userDialogTimestamp")) {
-                    userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp", null));
+                    userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp"));
                 } else if (setting.equals("streamChatLogos")) {
                     client.updateStreamChatLogos();
                 }

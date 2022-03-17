@@ -199,8 +199,45 @@ public class DateTime {
     }
     
     public static enum Formatting {
-        COMPACT, VERBOSE, LEADING_ZERO_VALUES, NO_ZERO_VALUES, NO_SPACES,
-        LAST_ONE_EXACT
+        /**
+         * Short time names.
+         */
+        COMPACT,
+        /**
+         * Long time names.
+         */
+        VERBOSE,
+        /**
+         * Show zero values at the front, for example "0y 1d" instead of "1d".
+         */
+        LEADING_ZERO_VALUES,
+        /**
+         * Show no zero values at all, for example "1m" instead of "1m 0s".
+         */
+        NO_ZERO_VALUES,
+        /**
+         * No spaces in between outputs, for example "1m10s".
+         */
+        NO_SPACES,
+        /**
+         * The last output is a floating point value, for example "4h 1.5m".
+         */
+        LAST_ONE_EXACT,
+        /**
+         * Pad with 0 to force double-digits, for example "01h 05m".
+         */
+        DOUBLE_DIGITS,
+        /**
+         * Same as {@link DOUBLE_DIGITS}, except not for the first output, for
+         * example "1h 05m".
+         */
+        DOUBLE_DIGITS_EXCEPT_FIRST,
+        /**
+         * Use a colon as separator and omit time names, for example "1:10".
+         * Recommended together with {@link DOUBLE_DIGITS} or
+         * {@link DOUBLE_DIGITS_EXCEPT_FIRST} so it's "1:09" instead of "1:9".
+         */
+        CLOCK_STYLE
     }
     
     private static final String[] TIMENAMES_COMPACT = {"y", "d", "h", "m", "s"};
@@ -235,25 +272,45 @@ public class DateTime {
         return duration(milliseconds, upperLimit, max, lowerLimit, 1, options);
     }
     
-    public static String duration(long seconds, int upperLimit, int max,
+    public static String duration(long milliseconds, int upperLimit, int max,
             int lowerLimit, int min, Formatting... options) {
-        
-        List<Formatting> options2 = Arrays.asList(options);
-        boolean leadingZeroValues = options2.contains(Formatting.LEADING_ZERO_VALUES);
-        boolean noZeroValues = options2.contains(Formatting.NO_ZERO_VALUES);
-        boolean verbose = options2.contains(Formatting.VERBOSE);
-        boolean lastOneExact = options2.contains(Formatting.LAST_ONE_EXACT);
+        return duration(milliseconds, upperLimit, max, lowerLimit, min, Arrays.asList(options));
+    }
+    
+    /**
+     * Create a duration String.
+     * 
+     * @param milliseconds The number of milliseconds
+     * @param upperLimit The highest-order output (inclusive), e.g. if this is H, then two days duration will be output as "48h" (rather than "2d")
+     * @param max The maximum number of outputs, e.g. "2h 10m" is impossible when this is 1
+     * @param lowerLimit The lowest-order output (exclusive), e.g. if this is S, then ten seconds duration will be output as "0m" (rather than "10s")
+     * @param min The minimum number of outputs, e.g. 0 seconds duration may be output as 0h 0m 0s when this is 3 (if applicable within other contraints)
+     * @param options The options in {@link Formatting}
+     * @return 
+     */
+    public static String duration(long milliseconds, int upperLimit, int max,
+            int lowerLimit, int min, List<Formatting> options) {
+        boolean leadingZeroValues = options.contains(Formatting.LEADING_ZERO_VALUES);
+        boolean noZeroValues = options.contains(Formatting.NO_ZERO_VALUES);
+        boolean verbose = options.contains(Formatting.VERBOSE);
+        boolean lastOneExact = options.contains(Formatting.LAST_ONE_EXACT);
+        boolean doubleDigits = options.contains(Formatting.DOUBLE_DIGITS) || options.contains(Formatting.DOUBLE_DIGITS_EXCEPT_FIRST);
+        boolean doubleDigitsExceptFirst = options.contains(Formatting.DOUBLE_DIGITS_EXCEPT_FIRST);
+        boolean clockStyle = options.contains(Formatting.CLOCK_STYLE);
         String sep = " ";
-        if (options2.contains(Formatting.NO_SPACES)) {
+        if (options.contains(Formatting.NO_SPACES)) {
             sep = "";
+        }
+        if (clockStyle) {
+            sep = ":";
         }
         
         boolean negative = false;
-        if (seconds < 0) {
-            seconds = -seconds;
+        if (milliseconds < 0) {
+            milliseconds = -milliseconds;
             negative = true;
         }
-        double[] times = getTimes(seconds, TIME_DEF, upperLimit);
+        double[] times = getTimes(milliseconds, TIME_DEF, upperLimit);
         String[] timeNames = verbose ? TIMENAMES_VERBOSE : TIMENAMES_COMPACT;
 
         StringBuilder b = new StringBuilder();
@@ -294,13 +351,34 @@ public class DateTime {
                 timeName = timeName.substring(0, timeName.length() - 1);
             }
             if (lastOne && lastOneExact) {
-                // Substract for rounding down with one digit precision
+                /**
+                 * Substract for rounding down with one digit precision
+                 * 
+                 * Examples:
+                 * 10.0 -> 9.95 -> String.format %.1f -> 10.0
+                 * 1.55 -> 1.5 -> 1.5 (instead of 1.6)
+                 * 
+                 * For the double digits check, it basicially rounds it to one
+                 * digit precision as well, except without dividing it again.
+                 */
                 double exact = times[i] - 0.05;
+                if (doubleDigits
+                        && Math.round(exact * 10) < 100
+                        && (shown > 1 || !doubleDigitsExceptFirst)) {
+                    b.append("0");
+                }
                 b.append(String.format(Locale.ENGLISH, "%.1f", exact));
             } else {
+                if (doubleDigits
+                        && time < 10
+                        && (shown > 1 || !doubleDigitsExceptFirst)) {
+                    b.append("0");
+                }
                 b.append(time);
             }
-            b.append(timeName);
+            if (!clockStyle) {
+                b.append(timeName);
+            }
             
             if (time > 0) {
                 shownNonzero++;
@@ -435,6 +513,8 @@ public class DateTime {
         System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - YEAR*1*1000, true));
 //        System.out.println(formatAccountAgeCompact(System.currentTimeMillis() - 12500*1000));
 //        System.out.println(formatAccountAgeVerbose(System.currentTimeMillis() - 300*DAY*1000));
+        
+        System.out.println(duration(60*11170*1000, N, 0, N, 0, Formatting.NO_ZERO_VALUES));
     }
     
 }

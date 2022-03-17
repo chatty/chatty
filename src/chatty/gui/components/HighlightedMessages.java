@@ -22,6 +22,7 @@ import chatty.gui.components.textpane.MyStyleConstants;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
+import chatty.util.Timestamp;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
@@ -138,7 +139,7 @@ public class HighlightedMessages extends JDialog {
             }
 
             @Override
-            public SimpleDateFormat getTimestampFormat() {
+            public Timestamp getTimestampFormat() {
                 return styleServer.getTimestampFormat();
             }
 

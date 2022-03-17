@@ -29,6 +29,7 @@ import chatty.util.RepeatMsgHelper;
 import chatty.util.ReplyManager;
 import chatty.util.RingBuffer;
 import chatty.util.StringUtil;
+import chatty.util.Timestamp;
 import chatty.util.api.CheerEmoticon;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticons;
@@ -2958,8 +2959,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * @param style
      */
     protected void printTimestamp(AttributeSet style) {
-        if (styles.timestampFormat() != null) {
-            print(DateTime.currentTime(styles.timestampFormat())+" ", styles.timestamp(style));
+        Timestamp timestamp = styles.timestampFormat();
+        if (timestamp != null) {
+            print(timestamp.make(-1, channel != null ? channel.getRoom() : null)+" ", styles.timestamp(style));
         }
         else {
             // Inserts the linebreak with a style that shouldn't break anything
@@ -3423,7 +3425,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         /**
          * Store the timestamp format
          */
-        private SimpleDateFormat timestampFormat;
+        private Timestamp timestampFormat;
         
         private int bufferSize = -1;
         
@@ -4038,7 +4040,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             return Emoticon.makeImageType(isEnabled(Setting.EMOTICONS_ANIMATED));
         }
         
-        public SimpleDateFormat timestampFormat() {
+        public Timestamp timestampFormat() {
             return timestampFormat;
         }
         

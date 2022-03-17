@@ -6,6 +6,7 @@ import chatty.util.DateTime;
 import chatty.util.MiscUtil;
 import chatty.util.RepeatMsgHelper;
 import chatty.util.StringUtil;
+import chatty.util.Timestamp;
 import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.settings.Settings;
 import java.text.SimpleDateFormat;
@@ -27,7 +28,7 @@ import javax.swing.text.DefaultHighlighter;
  */
 public class PastMessages extends JTextArea {
     
-    private SimpleDateFormat timestampFormat = new SimpleDateFormat("[HH:mm:ss]");
+    private Timestamp timestampFormat = new Timestamp("[HH:mm:ss]", "");
     
     private String currentMessageIdMessage;
     
@@ -124,7 +125,7 @@ public class PastMessages extends JTextArea {
                 else if (currentMsgText != null) {
                     simPercentage = repeatHelper.getPercentage(user, tm.text, currentMsgText);
                 }
-                b.append(DateTime.format(m.getTime(), timestampFormat));
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
                 if (simPercentage > 0) {
                     startHighlight(b.length() + 1, REPEATED_MSG);
                     b.append(" [").append(simPercentage).append("%]");
@@ -140,7 +141,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.BanMessage) {
                 User.BanMessage bm = (User.BanMessage)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), MOD_ACTION);
                 if (bm.duration > 0) {
                     b.append("Timed out (").append(bm.duration).append("s)");
@@ -162,7 +163,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.UnbanMessage) {
                 User.UnbanMessage ubm = (User.UnbanMessage)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), MOD_ACTION);
                 if (ubm.type == User.UnbanMessage.TYPE_UNBAN) {
                     b.append("Unbanned");
@@ -175,7 +176,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.MsgDeleted) {
                 User.MsgDeleted md = (User.MsgDeleted)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), MOD_ACTION);
                 b.append("Message deleted: ").append(md.msg);
                 endHighlight(b.length() - 1, MOD_ACTION);
@@ -186,7 +187,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.SubMessage) {
                 User.SubMessage sm = (User.SubMessage)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append("$ ");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("$ ");
                 b.append(sm.system_msg);
                 if (!sm.attached_message.isEmpty()) {
                     b.append(" [").append(sm.attached_message).append("]");
@@ -195,7 +196,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.InfoMessage) {
                 User.InfoMessage sm = (User.InfoMessage)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append("I ");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("I ");
                 b.append(sm.system_msg);
                 if (!sm.attached_message.isEmpty()) {
                     b.append(" [").append(sm.attached_message).append("]");
@@ -204,7 +205,7 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.ModAction) {
                 User.ModAction ma = (User.ModAction)m;
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 b.append("ModAction: /");
                 b.append(ma.commandAndParameters);
                 b.append("\n");
@@ -215,7 +216,7 @@ public class PastMessages extends JTextArea {
                         && currentMessageId.equals(ma.id)) {
                     b.append(">");
                 }
-                b.append(DateTime.format(m.getTime(), timestampFormat)).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), AUTO_MOD);
                 b.append("Filtered by AutoMod");
                 endHighlight(b.length(), AUTO_MOD);
@@ -233,7 +234,7 @@ public class PastMessages extends JTextArea {
         return b.toString();
     }
 
-    public void setTimestampFormat(SimpleDateFormat timestampFormat) {
+    public void setTimestampFormat(Timestamp timestampFormat) {
         if (timestampFormat != null) {
             this.timestampFormat = timestampFormat;
         }

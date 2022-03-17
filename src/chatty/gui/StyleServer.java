@@ -1,10 +1,10 @@
 
 package chatty.gui;
 
+import chatty.util.Timestamp;
 import chatty.util.colors.ColorCorrector;
 import java.awt.Color;
 import java.awt.Font;
-import java.text.SimpleDateFormat;
 import javax.swing.text.MutableAttributeSet;
 
 /**
@@ -16,6 +16,6 @@ public interface StyleServer {
     public Color getColor(String type);
     public MutableAttributeSet getStyle(String type);
     public Font getFont(String type);
-    public SimpleDateFormat getTimestampFormat();
+    public Timestamp getTimestampFormat();
     public ColorCorrector getColorCorrector();
 }

@@ -48,6 +48,7 @@ import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
 import chatty.util.StringUtil;
+import chatty.util.Timestamp;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.UserRoom;
 import chatty.util.Webserver;
@@ -256,6 +257,7 @@ public class TwitchClient {
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
         bttvEmotes = new BTTVEmotes(new EmoteListener(), api);
         TwitchEmotesApi.api.setTwitchApi(api);
+        Timestamp.setTwitchApi(api);
         
         Language.setLanguage(settings.getString("language"));
         

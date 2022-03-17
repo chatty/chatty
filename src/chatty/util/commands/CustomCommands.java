@@ -95,13 +95,7 @@ public class CustomCommands {
             String stream = Helper.toValidStream(room.getStream());
             StreamInfo streamInfo = api.getStreamInfo(stream, null);
             if (streamInfo.isValid()) {
-                parameters.put("streamstatus", streamInfo.getFullStatus());
-                if (streamInfo.getOnline()) {
-                    parameters.put("streamuptime", DateTime.agoUptimeCompact2(streamInfo.getTimeStartedWithPicnic()));
-                    parameters.put("streamtitle", streamInfo.getTitle());
-                    parameters.put("streamgame", streamInfo.getGame());
-                    parameters.put("streamviewers", String.valueOf(streamInfo.getViewers()));
-                }
+                parameters.putObject("streamInfo", streamInfo);
             }
         }
         parameters.put("chain-test", "| /echo Test || Message");

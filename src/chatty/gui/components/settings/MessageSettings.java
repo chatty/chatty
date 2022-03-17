@@ -2,10 +2,17 @@
 package chatty.gui.components.settings;
 
 import chatty.Helper;
+import chatty.Room;
 import chatty.gui.GuiUtil;
+import chatty.gui.components.LinkLabel;
+import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.Timestamp;
+import chatty.util.api.StreamInfo;
+import chatty.util.api.StreamInfoHistoryItem;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.EAST;
 import java.awt.GridBagLayout;
@@ -19,6 +26,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Box;
@@ -85,7 +93,10 @@ public class MessageSettings extends SettingsPanel {
         // Other Settings (Panel)
         //========================
         // Timestamp
-        otherSettingsPanel.add(createTimestampPanel(d, "timestamp"), d.makeGbc(0, 0, 4, 1, GridBagConstraints.WEST));
+        SettingsUtil.addLabeledComponent(otherSettingsPanel,
+                "settings.otherMessageSettings.timestamp",
+                0, 0, 3, GridBagConstraints.WEST,
+                createTimestampPanel(d, "timestamp"));
         
         // More
         otherSettingsPanel.add(d.addSimpleBooleanSetting(
@@ -134,7 +145,7 @@ public class MessageSettings extends SettingsPanel {
         editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         GuiUtil.matchHeight(editTimestampButton, combo);
         editTimestampButton.addActionListener(e -> {
-            TimestampEditor editor = new TimestampEditor(d);
+            TimestampEditor editor = new TimestampEditor(d, d.getLinkLabelListener());
             String preset = combo.getSettingValue();
             if (preset.equals("off") || preset.isEmpty()) {
                 preset = "[HH:mm:ss]";
@@ -174,6 +185,11 @@ public class MessageSettings extends SettingsPanel {
             "yyyy-MM-dd", "MMM d", "d MMM", "dd.MM.", ""
         });
         
+        // Only for regex matching
+        private static final List<String> UPTIME_FORMATS = Arrays.asList(new String[]{
+            Timestamp.UPTIME_NO_CAPTURE.toString(), ""
+        });
+        
         private static final List<String> BEFORE = Arrays.asList(new String[]{
             "[", " [", " "
         });
@@ -188,13 +204,15 @@ public class MessageSettings extends SettingsPanel {
         private final ComboStringSetting after;
         private final ComboStringSetting time;
         private final ComboStringSetting date;
+        private final ComboStringSetting uptime;
+        private final ComboLongSetting streamStatus;
         private final JButton saveButton = new JButton(Language.getString("dialog.button.save"));
         private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
         
         private boolean fillInProgress;
         private boolean save;
         
-        TimestampEditor(Window owner) {
+        TimestampEditor(Window owner, LinkLabelListener linkLabelListener) {
             super(owner);
             setModal(true);
             setTitle(Language.getString("settings.otherMessageSettings.customizeTimestamp"));
@@ -219,6 +237,16 @@ public class MessageSettings extends SettingsPanel {
             }
             date = new ComboStringSetting(dateFormatOptions);
             
+            // Uptime
+            Map<String, String> uptimeFormatOptions = new LinkedHashMap<>();
+            uptimeFormatOptions.put("", "<none>");
+            uptimeFormatOptions.put("'{|,uptime}'", "With space");
+            uptimeFormatOptions.put("'{|,uptime:t}'", "Without space");
+            uptimeFormatOptions.put("'{|,uptime:p}'", "With space (with Picnic)");
+            uptimeFormatOptions.put("'{|,uptime:tp}'", "Without space (with Picnic)");
+            uptimeFormatOptions.put("'{|,uptime:c}'", "Clock style");
+            uptime = new ComboStringSetting(uptimeFormatOptions);
+            
             // Before
             Map<String, String> beforeOptions = new LinkedHashMap<>();
             beforeOptions.put("", "<none>");
@@ -235,10 +263,23 @@ public class MessageSettings extends SettingsPanel {
             }
             after = new ComboStringSetting(afterOptions);
             
+            // Stream Status
+            Map<Long, String> streamStatusOptions = new LinkedHashMap<>();
+            streamStatusOptions.put(-1L, "Stream Offline");
+            streamStatusOptions.put(TimeUnit.MINUTES.toMillis(8), "Live 8 minutes");
+            streamStatusOptions.put(TimeUnit.MINUTES.toMillis(50), "Live 50 minutes");
+            streamStatusOptions.put(TimeUnit.MINUTES.toMillis(62), "Live 62 minutes");
+            streamStatusOptions.put(TimeUnit.MINUTES.toMillis(70), "Live 70 minutes");
+            streamStatusOptions.put(TimeUnit.HOURS.toMillis(40), "Live 40 hours");
+            streamStatus = new ComboLongSetting(streamStatusOptions);
+            streamStatus.setSettingValue(TimeUnit.MINUTES.toMillis(70));
+            
             date.addActionListener(e -> formChanged());
             time.addActionListener(e -> formChanged());
+            uptime.addActionListener(e -> formChanged());
             before.addActionListener(e -> formChanged());
             after.addActionListener(e -> formChanged());
+            streamStatus.addActionListener(e -> updatePreview());
             saveButton.addActionListener(e -> {
                 save = true;
                 setVisible(false);
@@ -252,13 +293,28 @@ public class MessageSettings extends SettingsPanel {
             setLayout(new GridBagLayout());
             
             GridBagConstraints gbc;
+            JPanel topPanel = new JPanel(new GridBagLayout());
             gbc = GuiUtil.makeGbc(0, 0, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            add(value, gbc);
+            gbc.weightx = 1;
+            value.setFont(Font.decode(Font.MONOSPACED));
+            topPanel.add(value, gbc);
             gbc = GuiUtil.makeGbc(2, 0, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            add(preview, gbc);
+            gbc.weightx = 1;
+            topPanel.add(preview, gbc);
             
+            gbc = GuiUtil.makeGbc(0, 0, 4, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            gbc.insets = new Insets(0, 0, 0, 0);
+            add(topPanel, gbc);
+            
+            gbc = GuiUtil.makeGbc(4, 0, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(streamStatus, gbc);
+            
+            // Labels
             gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.CENTER);
             gbc.insets = new Insets(5,0,0,0);
             add(new JLabel("Prefix"), gbc);
@@ -267,22 +323,43 @@ public class MessageSettings extends SettingsPanel {
             gbc.gridx++;
             add(new JLabel("Time"), gbc);
             gbc.gridx++;
+            add(new JLabel("Stream Uptime"), gbc);
+            gbc.gridx++;
             add(new JLabel("Suffix"), gbc);
-            add(before, GuiUtil.makeGbc(0, 2, 1, 1));
-            add(date, GuiUtil.makeGbc(1, 2, 1, 1));
-            add(time, GuiUtil.makeGbc(2, 2, 1, 1));
+            
+            // Selection
+            gbc = GuiUtil.makeGbc(0, 2, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            add(before, gbc);
+            gbc = GuiUtil.makeGbc(1, 2, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            add(date, gbc);
+            gbc = GuiUtil.makeGbc(2, 2, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            add(time, gbc);
             gbc = GuiUtil.makeGbc(3, 2, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            add(saveButton, gbc);
+            gbc.weightx = 1;
+            add(uptime, gbc);
+            gbc = GuiUtil.makeGbc(4, 2, 1, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
             add(after, gbc);
-            add(new JLabel(SettingConstants.HTML_PREFIX
-                    +Language.getString("settings.otherMessageSettings.customizeTimestamp.info")
-                    +"<br /><br />Append <code>'a:AM/PM'</code> (including quotes) to customize AM/PM."),
-                    GuiUtil.makeGbc(0, 3, 4, 1, GridBagConstraints.CENTER));
-            gbc = GuiUtil.makeGbc(0, 4, 3, 1);
+            
+            // Info
+            add(new LinkLabel(SettingConstants.HTML_PREFIX
+                    +SettingsUtil.getInfo("info-timestamp.html", null),
+                    linkLabelListener),
+                    GuiUtil.makeGbc(0, 3, 5, 1, GridBagConstraints.CENTER));
+            
+            // Buttons
+            gbc = GuiUtil.makeGbc(0, 4, 4, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(saveButton, gbc);
-            gbc = GuiUtil.makeGbc(3, 4, 1, 1);
+            gbc = GuiUtil.makeGbc(4, 4, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(cancelButton, gbc);
             
@@ -321,7 +398,6 @@ public class MessageSettings extends SettingsPanel {
         private void valueChanged() {
             fillFromValue();
             updatePreview();
-            pack();
         }
         
         private void formChanged() {
@@ -332,8 +408,30 @@ public class MessageSettings extends SettingsPanel {
         
         private void updatePreview() {
             try {
-                SimpleDateFormat format = DateTime.createSdfAmPm(value.getText());
-                preview.setText(DateTime.format(System.currentTimeMillis(), format));
+                Timestamp format = new Timestamp(value.getText(), "");
+                
+                // Create test StreamInfo
+                StreamInfo info = new StreamInfo("test", null);
+                long uptimeDuration = streamStatus.getSettingValue();
+                if (uptimeDuration > 0) {
+                    /**
+                     * Using history item so a stream start with Picnic can be
+                     * simulated.
+                     */
+                    long testTime = System.currentTimeMillis() - 1;
+                    long startTime = testTime - uptimeDuration;
+                    long startTimePicnic = startTime - 1000*60*30;
+                    if (uptimeDuration < 10*60*1000) {
+                        startTimePicnic = startTime;
+                    }
+                    StreamInfoHistoryItem item = new StreamInfoHistoryItem(testTime, 0, null, null, StreamInfo.StreamType.LIVE, null, startTime, startTimePicnic);
+                    LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
+                    history.put(testTime, item);
+                    info.setHistory(history);
+//                    info.set("test", StreamCategory.EMPTY, 0, System.currentTimeMillis() - uptimeDuration, StreamInfo.StreamType.LIVE);
+                }
+                
+                preview.setText(format.make2(System.currentTimeMillis(), info));
             } catch (Exception ex) {
                 preview.setText("Invalid format");
             }
@@ -348,11 +446,13 @@ public class MessageSettings extends SettingsPanel {
             
             String foundDate = found.group(2);
             String foundTime = found.group(4);
+            String foundUptime = found.group(5);
             String foundBefore = found.group(1);
-            String foundAfter = found.group(5);
+            String foundAfter = found.group(6);
             
             time.setSettingValue(foundTime);
             date.setSettingValue(foundDate);
+            uptime.setSettingValue(foundUptime);
             before.setSettingValue(foundBefore);
             after.setSettingValue(foundAfter);
             fillInProgress = false;
@@ -367,17 +467,22 @@ public class MessageSettings extends SettingsPanel {
                     +date.getSettingValue()
                     +m
                     +time.getSettingValue()
+                    +uptime.getSettingValue()
                     +after.getSettingValue());
         }
         
         private Matcher find(String haystack) {
             for (String f : sortFormats(DATE_FORMATS)) {
                 for (String f2 : sortFormats(TIME_FORMATS)) {
-                    Matcher m = Pattern.compile(String.format("(.*)(%s)( ?)(%s)(.*)",
-                            Pattern.quote(f),
-                            Pattern.quote(f2))).matcher(haystack);
-                    if (m.matches()) {
-                        return m;
+                    for (String f3 : sortFormats(UPTIME_FORMATS)) {
+                        // f3 is a valid regex pattern
+                        Matcher m = Pattern.compile(String.format("(.*)(%s)( ?)(%s)(%s)(.*)",
+                                Pattern.quote(f),
+                                Pattern.quote(f2),
+                                f3)).matcher(haystack);
+                        if (m.matches()) {
+                            return m;
+                        }
                     }
                 }
             }
@@ -400,7 +505,12 @@ public class MessageSettings extends SettingsPanel {
     }
     
     public static void main(String[] args) {
-        TimestampEditor s = new TimestampEditor(null);
+        TimestampEditor s = new TimestampEditor(null, new LinkLabelListener() {
+            @Override
+            public void linkClicked(String type, String ref) {
+                
+            }
+        });
         s.showDialog("[yyyy-MM-dd HH:mm]");
         System.exit(0);
     }

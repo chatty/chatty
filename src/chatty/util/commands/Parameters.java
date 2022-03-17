@@ -4,6 +4,7 @@ package chatty.util.commands;
 import chatty.Room;
 import chatty.User;
 import chatty.util.StringUtil;
+import chatty.util.api.StreamInfo;
 import chatty.util.api.usericons.Usericon;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,6 +58,9 @@ public class Parameters {
         if (result == null && key.startsWith("my-")) {
             result = getUserParameter(key.substring("my-".length()),
                     (User) getObject("localUser"));
+        }
+        if (result == null) {
+            result = getStreamInfoParameter(key, (StreamInfo)getObject("streamInfo"));
         }
         return result;
     }
@@ -254,6 +258,25 @@ public class Parameters {
                 case "user-channel": return room.getChannel();
                 case "user-stream": return room.getStream();
                 case "user-stream-id": return room.getStreamId();
+            }
+        }
+        return null;
+    }
+    
+    private static String getStreamInfoParameter(String name, StreamInfo streamInfo) {
+        if (streamInfo == null || !streamInfo.isValid() || !name.startsWith("stream")) {
+            return null;
+        }
+        switch (name) {
+            case "streamstatus": return streamInfo.getFullStatus();
+        }
+        if (streamInfo.getOnline()) {
+            switch (name) {
+                case "streamuptime": return chatty.util.DateTime.agoUptimeCompact2(streamInfo.getTimeStartedWithPicnic());
+                case "streamuptime2": return chatty.util.DateTime.agoUptimeCompact2(streamInfo.getTimeStarted());
+                case "streamtitle": return streamInfo.getTitle();
+                case "streamgame": return streamInfo.getGame();
+                case "streamviewers": return String.valueOf(streamInfo.getViewers());
             }
         }
         return null;
