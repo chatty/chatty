@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.util.api.Emoticon;
 import chatty.util.api.Emoticons;
 import chatty.util.api.TwitchApi;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -150,6 +151,8 @@ public class TwitchEmotesApi {
         return emoteset;
     }
     
+    private static final String[] MODIFIERS = new String[]{"_BW", "_HF", "_SG", "_SQ", "_TK"};
+    
     /**
      * Returns true if the emote has a string id that consists of more than a
      * single number.
@@ -158,12 +161,14 @@ public class TwitchEmotesApi {
      * @return 
      */
     public static boolean isModified(Emoticon emote) {
-        try {
-            Integer.parseInt(emote.stringId);
-            return false;
-        } catch (NumberFormatException ex) {
-            return true;
+        if (emote.type == Emoticon.Type.TWITCH && emote.stringId != null) {
+            for (String suffix : MODIFIERS) {
+                if (emote.stringId.endsWith(suffix)) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
     
     /**
@@ -189,7 +194,7 @@ public class TwitchEmotesApi {
             }
             return emote.getEmotesetInfo();
         } else if (info == null) {
-            return "Unknown Emote";
+            return "Unknown Emote"+modified;
         } else if (info.stream_name != null && !info.stream_name.equals("Twitch")) {
             if (includeStream) {
                 return "Subemote (" + info.stream_name + ")"+modified;
