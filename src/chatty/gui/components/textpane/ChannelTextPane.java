@@ -3373,7 +3373,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         
         private void showFixedChatInfo() {
-            if (popup == null) {
+            if (popup == null && isShowing()) {
                 if (fixedChatInfoLabel == null) {
                     createFixedChatInfoLabel();
                 }
