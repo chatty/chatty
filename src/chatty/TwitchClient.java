@@ -778,6 +778,7 @@ public class TwitchClient {
         
         if (name == null || name.isEmpty() || password == null || password.isEmpty()) {
             g.showMessage(Language.getString("connect.error.noLogin"));
+            showConnectDialogIfMissing();
             return false;
         }
         
@@ -791,6 +792,7 @@ public class TwitchClient {
         }
         if (autojoin.length == 0) {
             g.showMessage(Language.getString("connect.error.noChannel"));
+            showConnectDialogIfMissing();
             return false;
         }
         
@@ -809,6 +811,12 @@ public class TwitchClient {
 //        api.getEmotesByStreams(Helper.toStream(autojoin)); // Removed
         c.connect(server, ports, name, password, autojoin);
         return true;
+    }
+    
+    private void showConnectDialogIfMissing() {
+        if (settings.getBoolean("connectDialogIfMissing")) {
+            g.openConnectDialog(null);
+        }
     }
     
     public boolean disconnect() {

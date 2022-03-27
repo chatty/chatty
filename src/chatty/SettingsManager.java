@@ -178,6 +178,7 @@ public class SettingsManager {
         settings.addString("password", "", false);
         settings.addBoolean("connectOnStartup", false, false);
         settings.addLong("onStart", 1);
+        settings.addBoolean("connectDialogIfMissing", false);
         settings.addString("autojoinChannel", "");
         settings.addString("previousChannel", "");
         settings.addString("token","");

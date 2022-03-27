@@ -64,9 +64,13 @@ public class MainSettings extends SettingsPanel {
         GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
         SettingsUtil.addLabeledComponent(startSettingsPanel, "settings.startup.channels", 0, 2, 1, EAST, channels);
         
+        JCheckBox connectDialogIfMissing = d.addSimpleBooleanSetting("connectDialogIfMissing");
+        
         onStart.addActionListener(e -> {
             boolean channelsEnabled = onStart.getSettingValue().equals(Long.valueOf(2));
             channels.setEnabled(channelsEnabled);
+            
+            connectDialogIfMissing.setEnabled(onStart.getSettingValue() > 1);
         });
         
         JCheckBox restoreLayout = d.addSimpleBooleanSetting("restoreLayout");
@@ -78,6 +82,9 @@ public class MainSettings extends SettingsPanel {
         startSettingsPanel.add(restoreLayoutWhisper, gbc);
         
         SettingsUtil.addSubsettings(restoreLayout, restoreLayoutWhisper);
+        
+        gbc = d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST);
+        startSettingsPanel.add(connectDialogIfMissing, gbc);
         
         //==========
         // Language
