@@ -137,6 +137,7 @@ public class MainMenu extends JMenuBar {
         ignored = addItem(view,"dialog.ignoredMessages",IGNORED_LABEL);
         view.addSeparator();
         addItem(view, "dialog.eventLog");
+        addItem(view, "window.toggleUserlist");
         view.addSeparator();
         addItem(view, "dialog.search");
         view.addSeparator();

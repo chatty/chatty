@@ -135,7 +135,7 @@ public class SettingsManager {
         addDefaultHotkey("0.7.3", "dialog.toggleEmotes", "ctrl E");
         addDefaultHotkey("0.7.3", "dialog.search", "ctrl F");
         addDefaultHotkey("0.7.3", "dialog.joinChannel", "ctrl J");
-        addDefaultHotkeyAppWide("0.7.3", "window.toggleUserlist", "shift F10");
+        addDefaultHotkeyAppWide("0.7.3", "window.toggleUserlist", "F9");
         addDefaultHotkeyAppWide("0.7.3", "window.toggleInput", "ctrl F10");
         addDefaultHotkeyAppWide("0.7.3", "window.toggleCompact", "F10");
         addDefaultHotkeyAppWide("0.7.3", "window.toggleCompactMaximized", "F11");
