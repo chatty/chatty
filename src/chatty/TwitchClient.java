@@ -2380,45 +2380,28 @@ public class TwitchClient {
             if (message.data != null) {
                 if (message.data instanceof ModeratorActionData) {
                     ModeratorActionData data = (ModeratorActionData) message.data;
-                    // A regular mod action that doesn't contain a mod action should be ignored
-                    boolean empty = data.type == ModeratorActionData.Type.OTHER && data.moderation_action.isEmpty() && data.args.isEmpty();
-                    if (data.stream != null && !empty) {
-                        String channel = Helper.toChannel(data.stream);
-                        g.printModerationAction(data, data.created_by.equals(c.getUsername()));
-                        chatLog.modAction(data);
-
-                        User modUser = c.getUser(channel, data.created_by);
-                        modUser.addModAction(data);
-                        g.updateUserinfo(modUser);
-
-                        String bannedUsername = ModLogInfo.getBannedUsername(data);
-                        if (bannedUsername != null) {
-                            // If this is actually a ban, add info to banned user
-                            User bannedUser = c.getUser(channel, bannedUsername);
-                            bannedUser.addBanInfo(data);
-                            g.updateUserinfo(bannedUser);
-                        }
-                        String unbannedUsername = ModLogInfo.getUnbannedUsername(data);
-                        if (unbannedUsername != null) {
-                            // Add info to unbanned user
-                            User unbannedUser = c.getUser(channel, unbannedUsername);
-                            int type = User.UnbanMessage.getType(data.moderation_action);
-                            unbannedUser.addUnban(type, data.created_by);
-                            g.updateUserinfo(unbannedUser);
-                        }
+                    /**
+                     * PubSub topics get unlistened to when the channel is
+                     * closed, however there may be edgecases where a message
+                     * still comes in and causes unwanted effects (like
+                     * reopening the channel, although that may only happen for
+                     * other reward and user moderation info messages).
+                     */
+                    if (c.isChannelOpen(Helper.toChannel(data.stream))) {
+                        handleModAction(data);
                     }
                 }
                 else if (message.data instanceof RewardRedeemedMessageData) {
                     RewardRedeemedMessageData data = (RewardRedeemedMessageData) message.data;
-                    User user = c.getUser(Helper.toChannel(data.stream), data.username);
-                    // Uses added source and reward id for merging
-                    g.printPointsNotice(user, data.msg, data.attached_msg,
-                            MsgTags.create("chatty-source", "pubsub",
-                                    "custom-reward-id", data.reward_id));
+                    if (c.isChannelOpen(Helper.toChannel(data.stream))) {
+                        handleReward(data);
+                    }
                 }
                 else if (message.data instanceof UserModerationMessageData) {
                     UserModerationMessageData data = (UserModerationMessageData) message.data;
-                    g.printLine(c.getRoomByChannel(Helper.toChannel(data.stream)), data.info);
+                    if (c.isChannelOpen(Helper.toChannel(data.stream))) {
+                        handleUserModeration(data);
+                    }
                 }
             }
         }
@@ -2426,6 +2409,48 @@ public class TwitchClient {
         @Override
         public void info(String info) {
             g.printDebugPubSub(info);
+        }
+        
+        private void handleModAction(ModeratorActionData data) {
+            // A regular mod action that doesn't contain a mod action should be ignored
+            boolean empty = data.type == ModeratorActionData.Type.OTHER && data.moderation_action.isEmpty() && data.args.isEmpty();
+            if (data.stream != null && !empty) {
+                String channel = Helper.toChannel(data.stream);
+                g.printModerationAction(data, data.created_by.equals(c.getUsername()));
+                chatLog.modAction(data);
+
+                User modUser = c.getUser(channel, data.created_by);
+                modUser.addModAction(data);
+                g.updateUserinfo(modUser);
+
+                String bannedUsername = ModLogInfo.getBannedUsername(data);
+                if (bannedUsername != null) {
+                    // If this is actually a ban, add info to banned user
+                    User bannedUser = c.getUser(channel, bannedUsername);
+                    bannedUser.addBanInfo(data);
+                    g.updateUserinfo(bannedUser);
+                }
+                String unbannedUsername = ModLogInfo.getUnbannedUsername(data);
+                if (unbannedUsername != null) {
+                    // Add info to unbanned user
+                    User unbannedUser = c.getUser(channel, unbannedUsername);
+                    int type = User.UnbanMessage.getType(data.moderation_action);
+                    unbannedUser.addUnban(type, data.created_by);
+                    g.updateUserinfo(unbannedUser);
+                }
+            }
+        }
+        
+        private void handleReward(RewardRedeemedMessageData data) {
+            User user = c.getUser(Helper.toChannel(data.stream), data.username);
+            // Uses added source and reward id for merging
+            g.printPointsNotice(user, data.msg, data.attached_msg,
+                    MsgTags.create("chatty-source", "pubsub",
+                            "custom-reward-id", data.reward_id));
+        }
+        
+        private void handleUserModeration(UserModerationMessageData data) {
+            g.printLine(c.getRoomByChannel(Helper.toChannel(data.stream)), data.info);
         }
         
     }
