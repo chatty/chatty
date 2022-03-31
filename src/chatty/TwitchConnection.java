@@ -1161,6 +1161,10 @@ public class TwitchConnection {
             }
             int giftMonths = tags.getInteger("msg-param-gift-months", -1);
             
+            if (tags.isValue("msg-id", "announcement") && !StringUtil.isNullOrEmpty(login)) {
+                String displayName = tags.get("display-name", login);
+                text = String.format("%s", displayName);
+            }
             if (StringUtil.isNullOrEmpty(login, text)) {
                 return;
             }
@@ -1198,6 +1202,8 @@ public class TwitchConnection {
                         user.getDisplayNick(),
                         tags.getInteger("msg-param-threshold", -1));
                 listener.onUsernotice("Usernotice", user, text, null, tags);
+            } else if (tags.isValueOf("msg-id", "announcement")) {
+                listener.onUsernotice("Announcement", user, text, message, tags);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this
