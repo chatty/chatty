@@ -20,7 +20,7 @@ public class UserNotice extends InfoMessage {
     
     public UserNotice(String type, User user, String infoText, String message,
             MsgTags tags) {
-        super(Type.INFO, makeFullText(type, infoText, message), tags);
+        super(Type.INFO, makeFullText(type, infoText, message, tags), tags);
         this.type = type;
         this.user = user;
         this.attachedMessage = message;
@@ -39,9 +39,12 @@ public class UserNotice extends InfoMessage {
         this(other.type, other.user, other.infoText, other.attachedMessage, tags);
     }
     
-    private static String makeFullText(String type, String text, String message) {
+    private static String makeFullText(String type, String text, String message, MsgTags tags) {
         if (StringUtil.isNullOrEmpty(message)) {
             return String.format("[%s] %s", type, text);
+        }
+        if (tags != null && tags.isValue("msg-id", "announcement")) {
+            return String.format("[%s] %s%s", type, text, message);
         }
         return String.format("[%s] %s [%s]", type, text, message);
     }

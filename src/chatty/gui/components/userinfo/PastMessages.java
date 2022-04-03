@@ -197,10 +197,7 @@ public class PastMessages extends JTextArea {
             else if (m instanceof User.InfoMessage) {
                 User.InfoMessage sm = (User.InfoMessage)m;
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("I ");
-                b.append(sm.system_msg);
-                if (!sm.attached_message.isEmpty()) {
-                    b.append(" [").append(sm.attached_message).append("]");
-                }
+                b.append(sm.full_text);
                 b.append("\n");
             }
             else if (m instanceof User.ModAction) {

@@ -2,6 +2,7 @@
 package chatty.util.api.usericons;
 
 import chatty.Helper;
+import chatty.gui.GuiUtil;
 import chatty.gui.Highlighter;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.util.colors.HtmlColors;
@@ -442,6 +443,7 @@ public class Usericon implements Comparable {
                 @Override
                 public Image modifyImage(ImageIcon icon) {
                     icon = addColor(icon, color);
+                    icon = substituteColor(icon);
                     icon = ChannelTextPane.addSpaceToIcon(icon);
                     return icon.getImage();
                 }
@@ -496,7 +498,25 @@ public class Usericon implements Comparable {
         g.dispose();
         return new ImageIcon(newImage);
     }
-
+    
+    /**
+     * Exchanges black for another color for announcement icons. The color is
+     * the version of this badge.
+     * 
+     * @param icon
+     * @return 
+     */
+    private ImageIcon substituteColor(ImageIcon icon) {
+        if (type == Type.OTHER && badgeType.id.equals("announcement")) {
+            Color search = Color.BLACK;
+            Color target = HtmlColors.decode(badgeType.version);
+            if (!search.equals(target)) {
+                return GuiUtil.substituteColor(icon, search, target);
+            }
+        }
+        return icon;
+    }
+    
     /**
      * Used for sorting the default icons in the {@code TreeSet}, which means no
      * two icons that should both appear in there at the same time can return 0,
@@ -546,6 +566,9 @@ public class Usericon implements Comparable {
         }
         if (type == null) {
             return badgeType.id;
+        }
+        if (type == Type.OTHER) {
+            return "Other/"+badgeType.id;
         }
         return type.label;
     }

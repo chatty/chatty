@@ -3519,7 +3519,7 @@ public class MainGui extends JFrame implements Runnable {
             if (m instanceof SubscriberMessage) {
                 m.user.addSub(message, text);
             } else {
-                m.user.addInfo(message, text);
+                m.user.addInfo(message, m.text);
             }
             updateUserInfoDialog(m.user);
         }

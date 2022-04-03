@@ -57,16 +57,20 @@ public class UsericonManager {
     
     public synchronized void addDefaultIcons(List<Usericon> icons) {
         for (Usericon icon : icons) {
-            if (icon != null) {
-                // Remove icon if it already exists, so it can actually be
-                // updated if necessary.
-                if (defaultIcons.contains(icon)) {
-                    defaultIcons.remove(icon);
-                }
-                defaultIcons.add(icon);
-            }
+            addDefaultIcon(icon);
         }
 //        debug();
+    }
+    
+    public synchronized void addDefaultIcon(Usericon icon) {
+        if (icon != null) {
+            // Remove icon if it already exists, so it can actually be
+            // updated if necessary.
+            if (defaultIcons.contains(icon)) {
+                defaultIcons.remove(icon);
+            }
+            defaultIcons.add(icon);
+        }
     }
     
     public synchronized void setThirdPartyIcons(List<Usericon> icons) {
@@ -254,7 +258,7 @@ public class UsericonManager {
                 //System.out.println("A:"+" "+type+" "+icon.type+" "+iconsMatchesAdvancedType(icon, type, id, version)+" "+icon);
                 if (iconsMatchesAdvancedType(icon, type, id, version) && iconMatchesUser(icon, user, tags)) {
                     if (icon.removeBadge) {
-                        return null;
+                        return icon;
                     } else if (icon.hasRegularImage) {
                         return icon;
                     } else if (icon.fileName.equalsIgnoreCase("$ffz")) {
@@ -285,7 +289,7 @@ public class UsericonManager {
         }
         for (Usericon icon : hiddenBadges) {
             if (iconsMatchesAdvancedType(icon, type, id, version)) {
-                return null;
+                return icon;
             }
         }
         return getDefaultIcon(type, id, version, user, Usericon.SOURCE_ANY);
@@ -601,8 +605,7 @@ public class UsericonManager {
     public synchronized boolean hideBadge(Usericon usericon) {
         boolean alreadyHidden = false;
         for (Usericon icon : hiddenBadges) {
-            if (icon.type == usericon.type
-                    && icon.badgeType.equals(usericon.badgeType)) {
+            if (iconsMatchesAdvancedType(icon, usericon.type, usericon.badgeType.id, usericon.badgeType.version)) {
                 alreadyHidden = true;
             }
         }

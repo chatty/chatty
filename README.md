@@ -157,9 +157,15 @@ Images / Other
 
 * Robot Icon by Yusuke Kamiyamane:
   * File (in various folders): `icon_bot.png`
-  * Source: https://www.iconfinder.com/icons/46205/robot_icon
+  * Source: <https://www.iconfinder.com/icons/46205/robot_icon>
   * License: CC-BY 3.0
-	(http://creativecommons.org/licenses/by/3.0/)
+	(<http://creativecommons.org/licenses/by/3.0/>)
+
+* Announcement Icon Material Design (slightly modified):
+  * Files: `announcement*.png`
+  * Source: <https://materialdesignicons.com/icon/bullhorn>
+  * License: Apache 2.0
+    (<https://www.apache.org/licenses/LICENSE-2.0>)
 
 * Twitter Emoji Images:
   * Files: `gui/emoji/twemoji/*`

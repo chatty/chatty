@@ -51,7 +51,8 @@ public class TwitchCommands {
         "emoteonly", "emoteonlyoff", "r9kbeta", "r9kbetaoff",
         "vip", "unvip", "vips", "mod", "unmod", "mods", "commercial",
         "host", "unhost",
-        "color"
+        "color",
+        "announce"
     }));
     
     /**

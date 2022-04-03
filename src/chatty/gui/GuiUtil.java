@@ -837,6 +837,31 @@ public class GuiUtil {
         return new ImageIcon(img);
     }
     
+    public static ImageIcon substituteColor(ImageIcon icon, Color search, Color target) {
+        BufferedImage img = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.drawImage(icon.getImage(), 0, 0, null);
+        g.dispose();
+        substituteColor(img, search, target);
+        return new ImageIcon(img);
+    }
+    
+    public static void substituteColor(BufferedImage img, Color search, Color target) {
+        int RGB_MASK = 0x00ffffff;
+        int ALPHA_MASK = 0xff000000;
+        
+        int searchRGB = search.getRed() << 16 | search.getGreen() << 8 | search.getBlue();
+        int targetRGB = target.getRed() << 16 | target.getGreen() << 8 | target.getBlue();
+        
+        int[] rgb = img.getRGB(0, 0, img.getWidth(), img.getHeight(), null, 0, img.getWidth());
+        for (int i=0; i<rgb.length; i++) {
+            if ((rgb[i] & RGB_MASK) == searchRGB) {
+                rgb[i] = (rgb[i] & ALPHA_MASK) | targetRGB;
+            }
+        }
+        img.setRGB(0, 0, img.getWidth(), img.getHeight(), rgb, 0, img.getWidth());
+    }
+    
     /**
      * Run in the EDT, either by running it directly if already in the EDT or
      * by using {@link SwingUtilities#invokeAndWait(Runnable)}.

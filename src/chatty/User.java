@@ -209,6 +209,10 @@ public class User implements Comparable<User> {
         return null;
     }
     
+    public UsericonManager getUsericonManager() {
+        return iconManager;
+    }
+    
     public synchronized void setSubMonths(short months) {
         this.subMonths = months;
     }
@@ -376,9 +380,9 @@ public class User implements Comparable<User> {
         addLine(new SubMessage(System.currentTimeMillis(), message, text));
     }
     
-    public synchronized void addInfo(String message, String text) {
+    public synchronized void addInfo(String message, String fullText) {
         setFirstSeen();
-        addLine(new InfoMessage(System.currentTimeMillis(), message, text));
+        addLine(new InfoMessage(System.currentTimeMillis(), message, fullText));
     }
     
     public synchronized void addModAction(ModeratorActionData data) {
@@ -1202,13 +1206,22 @@ public class User implements Comparable<User> {
     
     public static class InfoMessage extends Message {
         
+        /**
+         * The attached message (if any), currently not used.
+         */
         public final String attached_message;
-        public final String system_msg;
         
-        public InfoMessage(long time, String message, String text) {
+        /**
+         * The full text of the info message (including type and attached
+         * message). This full text is formatted by e.g. the UserNotice and may
+         * work better for stuff like announcements.
+         */
+        public final String full_text;
+        
+        public InfoMessage(long time, String message, String full_text) {
             super(time);
             this.attached_message = message;
-            this.system_msg = text;
+            this.full_text = full_text;
         }
     }
     

@@ -56,7 +56,7 @@ public class ChannelCompletion implements AutoCompletionServer {
      */
     private final Set<String> commands = new TreeSet<>(Arrays.asList(new String[]{
         "subscribers", "subscribersOff", "timeout", "ban", "unban", "host", "unhost", "raid", "unraid", "clear", "mods", "commercial",
-        "join", "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteOnly", "emoteOnlyOff",
+        "join", "part", "close", "reconnect", "slow", "slowOff", "r9k", "r9koff", "emoteOnly", "emoteOnlyOff", "announce",
         "connection", "uptime", "appInfo", "releaseInfo",
         "dir", "wdir", "openDir", "openWdir", "showLogDir", "openLogDir",
         "showBackupDir", "openBackupDir", "showDebugDir", "openDebugDir",

@@ -210,6 +210,23 @@ public class UsericonFactory {
         return b.build();
     }
     
+    public static Usericon createSpecialOtherIcon(String id, String version, URL url, URL url2, String metatitle) {
+        Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
+        b.setUrl(url);
+        b.setUrl2(url2);
+        b.setBadgeType(id, version);
+        b.setMetaTitle(metatitle);
+        Dimension size = getSize(url);
+        if (size != null) {
+            /**
+             * Set the size so that non-standard icons such as for the first
+             * message in the channel are displayed correctly.
+             */
+            b.setBaseImageSize(size.width, size.height);
+        }
+        return b.build();
+    }
+    
     /**
      * Get the size of the image of the given URL.
      * 

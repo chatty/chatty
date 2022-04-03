@@ -56,7 +56,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -72,6 +71,8 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 import javax.swing.text.html.HTML;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.api.usericons.UsericonFactory;
+import chatty.util.api.usericons.UsericonManager;
 
 
 /**
@@ -510,13 +511,25 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             lastUsers.add(new MentionCheck(message.user));
         }
         
-        String text = message.infoText;
-        print("["+message.type+"] "+text, userStyle);
+        boolean isAnnouncement = message.tags != null && message.tags.isValue("msg-id", "announcement");
+        if (isAnnouncement) {
+            MutableAttributeSet announcementStyle = styles.announcement(message.user, message.tags);
+            if (announcementStyle != null) {
+                print("*", announcementStyle);
+            }
+        }
+        String text = String.format("[%s] %s", message.type, message.infoText);
+        print(text, userStyle);
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
-            print(" [", style);
+            boolean showBrackets = !isAnnouncement;
+            if (showBrackets) {
+                print(" [", style);
+            }
             // Output with emotes, but don't turn URLs into clickable links
             printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null, message.tags);
-            print("]", style);
+            if (showBrackets) {
+                print("]", style);
+            }
         }
         finishLine();
     }
@@ -4064,6 +4077,55 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             StyleConstants.setIcon(style, addSpaceToIcon(REPLY_ICON));
             style.addAttribute(Attribute.REPLY_PARENT_MSG, parentUserText);
             style.addAttribute(Attribute.REPLY_PARENT_MSG_ID, parentMsgId);
+            return style;
+        }
+        
+        public MutableAttributeSet announcement(User user, MsgTags tags) {
+            // May be null
+            String colorString = tags.get("msg-param-color");
+            /**
+             * Just a simple check, normally the values should be restricted by
+             * Twitch, but who knows.
+             */
+            if (colorString != null && colorString.length() > 20) {
+                return null;
+            }
+            /**
+             * Use info color as fallback (which means it's also used when the
+             * tag is set to PRIMARY color).
+             */
+            Color fallbackColor = StyleConstants.getForeground(info());
+            Color color = HtmlColors.decode(colorString, fallbackColor);
+            
+            String id = "announcement";
+            String version = HtmlColors.getNamedColorString(color);
+            
+            /**
+             * Create the icon if it doesn't already exist. The version of the
+             * badge is the color, so each color is only created once. It's the
+             * actual color used (not directly from the tag) since the default
+             * color may change (if the info color changes).
+             */
+            UsericonManager m = user.getUsericonManager();
+            Usericon icon = m.getIcon(Usericon.Type.OTHER, "announcement", version, user, tags);
+            if (icon == null) {
+                String title = "Announcement";
+                if (colorString != null && !colorString.equals("PRIMARY")) {
+                    title = String.format("Announcement (%s)", colorString);
+                }
+                icon = UsericonFactory.createSpecialOtherIcon(id, version,
+                        MainGui.class.getResource("announcement.png"),
+                        MainGui.class.getResource("announcement@2x.png"),
+                        title);
+                m.addDefaultIcon(icon);
+            }
+            if (icon.removeBadge) {
+                return null;
+            }
+            SimpleAttributeSet style = new SimpleAttributeSet();
+            CachedImage<Usericon> usericonImage = icon.getIcon(usericonScaleFactor(), getInt(Setting.CUSTOM_USERICON_SCALE_MODE), ChannelTextPane.this);
+            StyleConstants.setIcon(style, usericonImage.getImageIcon());
+            style.addAttribute(Attribute.USERICON, usericonImage);
             return style;
         }
     }

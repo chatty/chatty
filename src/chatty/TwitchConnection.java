@@ -1163,7 +1163,7 @@ public class TwitchConnection {
             
             if (tags.isValue("msg-id", "announcement") && !StringUtil.isNullOrEmpty(login)) {
                 String displayName = tags.get("display-name", login);
-                text = String.format("%s", displayName);
+                text = String.format("%s: ", displayName);
             }
             if (StringUtil.isNullOrEmpty(login, text)) {
                 return;
