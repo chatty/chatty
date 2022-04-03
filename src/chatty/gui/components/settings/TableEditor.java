@@ -848,6 +848,8 @@ public class TableEditor<T> extends JPanel {
      * informed about edits to the table. This is one of the main ways to
      * actually change the data that is edited in this table elsewhere.
      * 
+     * Changing the model directly (e.g. data.add()) may not trigger this.
+     * 
      * @param <T> The type of the items to be edited
      */
     public static interface TableEditorListener<T> {

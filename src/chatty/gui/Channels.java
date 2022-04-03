@@ -1372,19 +1372,32 @@ public class Channels {
     }
     
     public void switchToNextTab() {
-        DockContent c = dock.getContentTab(getActiveContent(), 1);
+        DockContent c = dock.getContentTabRelative(getActiveContent(), 1);
         if (c != null) {
             dock.setActiveContent(c);
         }
     }
     
     public void switchToPreviousTab() {
-        DockContent c = dock.getContentTab(getActiveContent(), -1);
+        DockContent c = dock.getContentTabRelative(getActiveContent(), -1);
         if (c != null) {
             dock.setActiveContent(c);
         }
     }
     
+    public void switchToTabId(String id) {
+        DockContent c = dock.getContentById(id);
+        if (c != null) {
+            dock.setActiveContent(c);
+        }
+    }
+    
+    public void switchToTabIndex(int index) {
+        DockContent c = dock.getContentTabAbsolute(getActiveContent(), index);
+        if (c != null) {
+            dock.setActiveContent(c);
+        }
+    }
     
     //==========================
     // Focus

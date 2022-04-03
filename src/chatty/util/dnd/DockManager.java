@@ -284,6 +284,14 @@ public class DockManager {
         return result;
     }
     
+    public List<DockContent> getTabsRelativeTo(DockContent relativeToContent) {
+        List<DockContent> result = new ArrayList<>();
+        result.addAll(getContentsRelativeTo(relativeToContent, -1));
+        result.add(relativeToContent);
+        result.addAll(getContentsRelativeTo(relativeToContent, 1));
+        return result;
+    }
+    
     /**
      * Get the content contained in the tab relative to given content.
      * 
@@ -292,7 +300,7 @@ public class DockManager {
      * the right (wraps around if necessary)
      * @return The next tab, or null if none could be found
      */
-    public DockContent getContentTab(DockContent content, int direction) {
+    public DockContent getContentTabRelative(DockContent content, int direction) {
         List<DockContent> c = getContentsRelativeTo(content, direction);
         if (!c.isEmpty()) {
             return c.get(0);
@@ -300,6 +308,23 @@ public class DockManager {
         c = getContentsRelativeTo(content, -direction);
         if (!c.isEmpty()) {
             return c.get(c.size() - 1);
+        }
+        return null;
+    }
+    
+    public DockContent getContentTabAbsolute(DockContent content, int index) {
+        List<DockContent> c = getTabsRelativeTo(content);
+        if (index >= 0 && index < c.size()) {
+            return c.get(index);
+        }
+        return null;
+    }
+    
+    public DockContent getContentById(String id) {
+        for (DockContent content : getContents()) {
+            if (content.getId().equals(id)) {
+                return content;
+            }
         }
         return null;
     }

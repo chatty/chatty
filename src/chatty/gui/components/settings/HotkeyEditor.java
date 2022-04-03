@@ -42,6 +42,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
 
     private final MyItemEditor itemEditor;
     private final MyTableModel data = new MyTableModel();
+    private final Set<KeyStroke> conflictWarning = new HashSet<>();
     
     public HotkeyEditor(JDialog owner) {
         super(SORTING_MODE_SORTED, false);
@@ -50,6 +51,53 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         setItemEditor(itemEditor);
         
         setFixedColumnWidth(2, 60);
+        
+        setTableEditorListener(new TableEditorListener<Hotkey>() {
+            @Override
+            public void itemAdded(Hotkey item) {
+                updateConflicts();
+            }
+
+            @Override
+            public void itemRemoved(Hotkey item) {
+                updateConflicts();
+            }
+
+            @Override
+            public void itemEdited(Hotkey oldItem, Hotkey newItem) {
+                updateConflicts();
+            }
+
+            @Override
+            public void allItemsChanged(List<Hotkey> newItems) {
+                updateConflicts();
+            }
+
+            @Override
+            public void itemsSet() {
+                updateConflicts();
+            }
+
+            @Override
+            public void refreshData() {
+                
+            }
+        });
+    }
+    
+    /**
+     * Update the set of keys that appear more than once.
+     */
+    public void updateConflicts() {
+        conflictWarning.clear();
+        Set<KeyStroke> usedKeys = new HashSet<>();
+        for (Hotkey hotkey : data.getData()) {
+            if (usedKeys.contains(hotkey.keyStroke)) {
+                conflictWarning.add(hotkey.keyStroke);
+            }
+            usedKeys.add(hotkey.keyStroke);
+        }
+        repaint();
     }
     
     /**
@@ -67,11 +115,15 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         itemEditor.setActions(actions);
         itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
     }
+    
+    public void addHotkey(Hotkey hotkey) {
+        data.add(hotkey);
+    }
 
     /**
      * Data storage for the table.
      */
-    private static class MyTableModel extends ListTableModel<Hotkey> {
+    private class MyTableModel extends ListTableModel<Hotkey> {
         
         private Map<String, String> actions = new HashMap<>();
         
@@ -85,15 +137,20 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
+            Hotkey hotkey = get(rowIndex);
             if (columnIndex == 0) {
-                Hotkey hotkey = get(rowIndex);
                 String action = actions.get(hotkey.actionId);
                 if (hotkey.custom != null && !hotkey.custom.isEmpty()) {
                     action += " ("+hotkey.custom+")";
                 }
                 return action;
             } else if (columnIndex == 1) {
-                return get(rowIndex).getHotkeyText();
+                if (conflictWarning.contains(hotkey.keyStroke)) {
+                    return get(rowIndex).getHotkeyText()+" (duplicate)";
+                }
+                else {
+                    return get(rowIndex).getHotkeyText();
+                }
             } else {
                 return get(rowIndex).type.name;
             }
@@ -383,7 +440,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             String action = actionId.getSettingValue();
             
             // Custom input field
-            boolean customEnabled = action != null && action.startsWith("custom.");
+            boolean customEnabled = action != null && (action.startsWith("custom.") || action.equals("tabs.switch"));
             custom.setEnabled(customEnabled);
             custom.setEditable(customEnabled);
             
