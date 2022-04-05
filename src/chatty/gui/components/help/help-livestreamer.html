@@ -42,6 +42,20 @@
     re-run the last command of that tab (for example when it couldn't find the
     stream, but you want to retry now because you know it's come online).</p>
     
+    <h3>Command</h3>
+    <p>The <code>/livestreamer</code> command can be entered into the inputbox
+        or used in a Custom Command to run Livestreamer/Streamlink as configured
+        in the Streamlink dialog.</p>
+    
+    <dl class="defList">
+        <dt><code>/livestreamer &lt;stream&gt; [quality]</code></dt>
+        <dd>The stream is required, if no quality is given the dialog will open
+            to be able to select it.</dd>
+        <dd>Instead of specifying a stream <code>$active</code> can be used to
+            open the stream of the currently active channel.</dd>
+        <dd>Example: <code>/livestreamer joshimuz best</code></dd>
+    </dl>
+    
     <h2><a name="settings">Settings</a></h2>
     <p>The settings can be changed in the Streamlink dialog.</p>
     <dl class="dl-settings">
