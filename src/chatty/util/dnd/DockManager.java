@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -284,9 +285,18 @@ public class DockManager {
         return result;
     }
     
-    public List<DockContent> getTabsRelativeTo(DockContent relativeToContent) {
+    /**
+     * Get a list of contents from the same tab pane as the given content.
+     * 
+     * @param relativeToContent The content to base this on
+     * @return List of contents, including the given one (never null)
+     */
+    public List<DockContent> getContentsRelativeTo(DockContent relativeToContent) {
         List<DockContent> result = new ArrayList<>();
-        result.addAll(getContentsRelativeTo(relativeToContent, -1));
+        // Returns the closest tab first, so reverse for -1 (left) direction
+        List<DockContent> before = getContentsRelativeTo(relativeToContent, -1);
+        Collections.reverse(before);
+        result.addAll(before);
         result.add(relativeToContent);
         result.addAll(getContentsRelativeTo(relativeToContent, 1));
         return result;
@@ -312,14 +322,29 @@ public class DockManager {
         return null;
     }
     
+    /**
+     * Get the content in the same tab pane as the given content and at the
+     * given index.
+     * 
+     * @param content
+     * @param index
+     * @return The DockContent at the given index, or null if none could be
+     * found
+     */
     public DockContent getContentTabAbsolute(DockContent content, int index) {
-        List<DockContent> c = getTabsRelativeTo(content);
+        List<DockContent> c = getContentsRelativeTo(content);
         if (index >= 0 && index < c.size()) {
             return c.get(index);
         }
         return null;
     }
     
+    /**
+     * Get the content with the given id.
+     * 
+     * @param id
+     * @return The content, or null if none could be found
+     */
     public DockContent getContentById(String id) {
         for (DockContent content : getContents()) {
             if (content.getId().equals(id)) {
