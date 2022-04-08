@@ -1083,7 +1083,7 @@ public class Helper {
                 b.append(String.format("* Backup written to %s\n",
                         r.backupPath));
             }
-            else if (r.writeError != null) {
+            else if (r.backupError != null) {
                 b.append(String.format("* Backup failed: %s\n",
                         getErrorMessageCompact(r.backupError)));
             }
