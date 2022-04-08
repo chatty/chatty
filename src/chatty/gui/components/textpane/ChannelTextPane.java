@@ -526,7 +526,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 print(" [", style);
             }
             // Output with emotes, but don't turn URLs into clickable links
-            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, true, false, null, null, null, message.tags);
+            boolean ignoreLinks = !isAnnouncement;
+            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, ignoreLinks, false, null, null, null, message.tags);
             if (showBrackets) {
                 print("]", style);
             }
