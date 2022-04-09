@@ -67,11 +67,59 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.18">Version 0.18</a> <a name="latest">(This one!)</a> (2022-02-??)
+        <a name="0.18">Version 0.18</a> <a name="latest">(This one!)</a> (2022-04-09)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-Beta, TBD
+### Twitch Features
+- Added new Announcement messages and `/announce` command (Twitch hasn't added
+  commands for the color variants yet)
+- Added badge for first message in channel (shown for mods only)
+- Added workaround for Twitch filtering out Emoji joiner characters
+
+### Highlight / Ignore Matching
+- Added separate `_global_highlightBlacklist` and `_global_ignoreBlacklist`
+  Matching Preset names
+- Added Highlight Matching substitutes / lookalikes
+- Added setting and prefix to allow messages to be highlighted even if they
+  would otherwise have been ignored (Override Ignore if Highlighted)
+- Added `if:` Matching prefix to specify conditions with an "or" relationship
+
+### Custom Commands
+- Added additional Custom Command identifiers related to user/channel
+- Added identifier for User Dialog/Context Menu selected message time
+- Added optional unix time input to `$datetime()` Custom Command function
+- Added `/runin` command to run a command in a specific channel
+
+### Other Settings
+- Added badge scaling settings
+- Emote scaling setting now applies to GIFs as well
+- Added option to add Stream Uptime to timestamps
+- Added search field to Settings Dialog
+- Added sound test button to Sound Settings tab
+- Added setting to show Connect Dialog (when it usually wouldn't) if login or
+  channel is missing
+- Added hotkey action to switch to a specific tab index/channel
+- Added warning to hotkey table when the same key is used more than once
+
+### Other
+- Added a new badge context menu entry to hide badges (you could already add a
+  Custom Badge with no image for that, but this is a bit more straightforward)
+- Added "View" menu entry to toggle the userlist, changed default hotkey
+- Updated help
+
+### Bugfixes
+- Fixed scaling on Emote Details page
+- Fixed Favorite Emotes not working properly for Local Emotes
+- Make GIF animations (of the same image) more likely to stay synchronized
+- Fixed some emotes showing "[modified]" when they weren't actually emotes
+  modified by channel points
+- Added workaround for played sounds sometimes not being cleaned up correctly
+- Fixed focus being stolen from the input box when a second channel is opened
+- Fixed error sometimes occuring when closing window and moving mouse over chat
+- Fixed rare edge case where a PubSub message could reopen a closed channel tab
+- Fixed small issues when adding a hidden badge
+- Fixed error that could occur when saving the "login" file failed
     </pre>
     
     <h2>
