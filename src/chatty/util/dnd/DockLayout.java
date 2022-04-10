@@ -54,6 +54,14 @@ public class DockLayout {
         return result;
     }
     
+    public List<String> getActiveContentIds() {
+        List<String> result = new ArrayList<>();
+        for (DockLayoutElement e : main) {
+            result.addAll(e.getActiveContentIds());
+        }
+        return result;
+    }
+    
     /**
      * Get the path for the given content id, if it saved in this layout.
      * 

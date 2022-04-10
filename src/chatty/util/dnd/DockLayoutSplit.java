@@ -59,4 +59,12 @@ public class DockLayoutSplit implements DockLayoutElement {
         return result;
     }
     
+    @Override
+    public List<String> getActiveContentIds() {
+        List<String> result = new ArrayList<>();
+        result.addAll(left.getActiveContentIds());
+        result.addAll(right.getActiveContentIds());
+        return result;
+    }
+    
 }

@@ -18,6 +18,8 @@ public interface DockLayoutElement {
      */
     public List<String> getContentIds();
     
+    public List<String> getActiveContentIds();
+    
     public static DockLayoutElement fromList(List<Object> list) {
         DockLayoutElement e = DockLayoutSplit.fromList(list);
         if (e != null) {

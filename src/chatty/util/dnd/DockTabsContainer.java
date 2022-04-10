@@ -376,7 +376,8 @@ public class DockTabsContainer extends JPanel implements DockChild {
 
     @Override
     public DockLayoutElement getLayoutElement() {
-        return new DockLayoutTabs(DockUtil.getContentIds(getContents()));
+        DockContent active = getCurrentContent();
+        return new DockLayoutTabs(DockUtil.getContentIds(getContents()), active != null ? active.getId() : null);
     }
 
     @Override

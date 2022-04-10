@@ -72,6 +72,11 @@ public class DockLayoutPopout implements DockLayoutElement {
         return child.getContentIds();
     }
     
+    @Override
+    public List<String> getActiveContentIds() {
+        return child.getActiveContentIds();
+    }
+    
     public boolean canChange(Point location, Dimension size, int state) {
         if (this.location == null || size == null || state == -1) {
             return false;
@@ -84,5 +89,5 @@ public class DockLayoutPopout implements DockLayoutElement {
         }
         return this.state != state;
     }
-    
+
 }

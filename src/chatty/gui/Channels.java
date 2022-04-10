@@ -526,6 +526,7 @@ public class Channels {
         updateKeepEmptySetting();
         loadingLayout = false;
         checkDefaultChannel();
+        setActiveTabs(layout);
         
         Debugging.println("layout", "Finished loading layout. Add: %s Join: %s Closing: %s Channels: %s", d.getAddChannels(), d.getJoinChannels(), closingChannels, channels);
     }
@@ -618,6 +619,7 @@ public class Channels {
             loadingLayout = false;
             updateTabComparator();
             updateKeepEmptySetting();
+            setActiveTabs(layout);
         }
     }
     
@@ -625,6 +627,23 @@ public class Channels {
         lastLoadedLayout = layout;
         openedSinceLayoutLoad.clear();
         dock.loadLayout(layout);
+    }
+    
+    /**
+     * Switches to each content id that was marked as active tab in the layout.
+     * For areas that only contain a single content or tabs that are already
+     * active this probably doesn't do much, but otherwise it switches to the
+     * previously active tab for each tab pane.
+     *
+     * @param layout 
+     */
+    private void setActiveTabs(DockLayout layout) {
+        for (String id : layout.getActiveContentIds()) {
+            DockContent content = dock.getContentById(id);
+            if (content != null) {
+                dock.setActiveContent(content);
+            }
+        }
     }
     
     //==========================
