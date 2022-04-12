@@ -29,4 +29,9 @@ public class RingBuffer<T> {
         return new LinkedList<>(data);
     }
     
+    @Override
+    public synchronized String toString() {
+        return String.format("[%d]%s", capacity, data);
+    }
+    
 }

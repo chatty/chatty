@@ -468,6 +468,7 @@ public class SettingsManager {
         settings.addBoolean("tabsMwheelScrolling", false);
         settings.addBoolean("tabsMwheelScrollingAnywhere", true);
         settings.addBoolean("tabsCloseMMB", true);
+        settings.addBoolean("tabsCloseSwitchToPrev", true);
         settings.addString("tabsPlacement", "top");
         settings.addString("tabsLayout", "wrap");
         settings.addLong("tabsLive", 16);

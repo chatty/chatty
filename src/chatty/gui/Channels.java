@@ -265,6 +265,7 @@ public class Channels {
         dock.setSetting(DockSetting.Type.TAB_SCROLL, gui.getSettings().getBoolean("tabsMwheelScrolling"));
         dock.setSetting(DockSetting.Type.TAB_SCROLL_ANYWHERE, gui.getSettings().getBoolean("tabsMwheelScrollingAnywhere"));
         dock.setSetting(DockSetting.Type.TAB_CLOSE_MMB, gui.getSettings().getBoolean("tabsCloseMMB"));
+        dock.setSetting(DockSetting.Type.TAB_CLOSE_SWITCH_TO_PREV, gui.getSettings().getBoolean("tabsCloseSwitchToPrev"));
         dock.setSetting(DockSetting.Type.TAB_ORDER, DockSetting.TabOrder.INSERTION);
         dock.setSetting(DockSetting.Type.FILL_COLOR, UIManager.getColor("TextField.selectionBackground"));
         dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));

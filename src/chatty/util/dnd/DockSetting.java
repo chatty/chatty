@@ -55,6 +55,13 @@ public class DockSetting {
         TAB_CLOSE_MMB,
         
         /**
+         * When a tab is closed switch to the previously selected tab, if
+         * applicable. Otherwise it does whatever the default behaviour of the
+         * tab pane is.
+         */
+        TAB_CLOSE_SWITCH_TO_PREV,
+        
+        /**
          * The fill {@link Color} of the box that shows where a drag&drop
          * movement accepts a drop.
          */

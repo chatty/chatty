@@ -19,6 +19,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -43,11 +45,19 @@ public class DockTabs extends JTabbedPane implements DockChild {
     private static final Logger LOGGER = Logger.getLogger(DockTabs.class.getName());
 
     private final DockExportHandler transferHandler;
+    
+    /**
+     * The component is what is added to the tab pane, here associated with the
+     * content object it is from. If a title needs to be displayed the component
+     * will be wrapped in a TitledContent object.
+     */
     private final Map<JComponent, DockContent> assoc = new HashMap<>();
     private final DockContent.DockContentPropertyListener dockContentListener;
     
     private DockChild parent;
     private DockBase base;
+    
+    private LinkedList<DockContent> prevActiveContent = new LinkedList<>();
     
     private boolean sorting;
     
@@ -58,6 +68,7 @@ public class DockTabs extends JTabbedPane implements DockChild {
     private boolean mouseWheelScrolling = true;
     private boolean mouseWheelScrollingAnywhere = true;
     private boolean closeTabMMB = true;
+    private boolean closeTabSwitchToPrev = false;
     private DockSetting.TabOrder order = DockSetting.TabOrder.INSERTION;
     private Comparator<DockContent> customComparator;
     
@@ -238,6 +249,16 @@ public class DockTabs extends JTabbedPane implements DockChild {
         if (base != null) {
             base.tabChanged(DockTabs.this, getCurrentContent());
         }
+        DockContent current = getCurrentContent();
+        if (current != null) {
+            // Only save the most recent occurence
+            prevActiveContent.remove(current);
+            prevActiveContent.add(current);
+            // Restrict size just in case
+            if (prevActiveContent.size() > 100) {
+                prevActiveContent.removeFirst();
+            }
+        }
         updateTabComponents();
     }
     
@@ -321,6 +342,26 @@ public class DockTabs extends JTabbedPane implements DockChild {
      */
     @Override
     public void removeContent(DockContent content) {
+        /**
+         * If enabled, when the active tab is closed and thus the active tab
+         * will have to change, already change it to the previously active tab
+         * if available.
+         * 
+         * For this, it searches for the first content not being removed that is
+         * still in the tab pane (and removes everything up to there).
+         */
+        if (closeTabSwitchToPrev && content == getCurrentContent()) {
+            Iterator<DockContent> it = prevActiveContent.descendingIterator();
+            while (it.hasNext()) {
+                DockContent c = it.next();
+                it.remove();
+                if (content != c && containsContent(c)) {
+                    setActiveContent(c);
+                    break;
+                }
+            }
+        }
+        prevActiveContent.remove(content);
         /**
          * Remove listener first, since removing the comp could trigger events
          * (e.g. tab change setting a new long title).
@@ -717,6 +758,9 @@ public class DockTabs extends JTabbedPane implements DockChild {
                 break;
             case TAB_CLOSE_MMB:
                 closeTabMMB = DockSetting.getBoolean(value);
+                break;
+            case TAB_CLOSE_SWITCH_TO_PREV:
+                closeTabSwitchToPrev = DockSetting.getBoolean(value);
                 break;
             case TAB_PLACEMENT:
                 setTabPlacement(DockSetting.getInteger(value));

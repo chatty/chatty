@@ -114,6 +114,9 @@ public class TabSettings extends SettingsPanel {
         mainPanel.add(d.addSimpleBooleanSetting("tabsCloseMMB"),
                 d.makeGbc(0, 2, 2, 1, GridBagConstraints.WEST));
         
+        mainPanel.add(d.addSimpleBooleanSetting("tabsCloseSwitchToPrev"),
+                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
+        
         //--------------------------
         // Tabs Location
         //--------------------------
