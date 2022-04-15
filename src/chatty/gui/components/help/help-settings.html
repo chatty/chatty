@@ -926,15 +926,24 @@
                 When editing a Highlight/Ignore entry you will be warned when a
                 pattern could be problematic.
         </li>
+        <li>You can prefix all of the above with "msg", such as <code>msgtext:</code>
+            in order to only match on user-generated messages. For regular chat
+            messages this makes no difference, however for Subscriptions,
+            Announcements, Point Redemptions or AutoMod messages it will only
+            match the attached message rather than the full info message. If
+            there is no attached message it will not match.<br />
+            Example: <code>config:any msgtext:bad word</code> will match all
+            messages (regular and info messages) that have an attached user
+            message containing "bad word".</li>
     </ul>
     
-    <p>All Text Matching Prefixes can be inverted (matches when it doesn't find
+    <p>All Text Matching Prefixes can be <strong>inverted</strong> (matches when it doesn't find
         the search text) by prepending an exclamation mark, for example: <code>!start:!bet all</code>.
         See the <a href="#Highlight_Prefix-blacklist"><code>blacklist:</code> Prefix description</a>
         for further information on the differences between blacklisting and
         negated matches.</p>
     
-    <p>Additionally, several Text Matching Prefixes can be specified by prepending
+    <p>Additionally, <strong>several Text Matching Prefixes</strong> can be specified by prepending
         a plus sign. In this case the value cannot contain spaces or must be
         quoted. Example: <code>+!start:"!bet all" regi:Regular search text</code></p>
     
@@ -1063,7 +1072,9 @@
                     has to match), prefix value with <code>reg:</code> to use
                     regex matching on the value.</li>
                 <li><code>config:url</code> - Message must contain a URL (same
-                    as what is made clickable)</li>
+                    as what is made clickable), or <code>config:msgurl</code> to
+                    only match in a user message (see <a href="#Highlight_Matching">Text Matching Prefixes</a>
+                    for explanation).</li>
                 <li><code>config:live</code> or <code>config:live|title/game</code> -
                     Stream must be live, title and game are interpreted as regex
                     (like the <code>reg:</code> prefix) and match on the stream's

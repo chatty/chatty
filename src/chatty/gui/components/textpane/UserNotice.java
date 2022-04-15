@@ -18,6 +18,9 @@ public class UserNotice extends InfoMessage {
     public final Emoticons.TagEmotes emotes;
     public final String infoText;
     
+    private int msgStart;
+    private int msgEnd;
+    
     public UserNotice(String type, User user, String infoText, String message,
             MsgTags tags) {
         super(Type.INFO, makeFullText(type, infoText, message, tags), tags);
@@ -26,6 +29,17 @@ public class UserNotice extends InfoMessage {
         this.attachedMessage = message;
         this.emotes = Emoticons.parseEmotesTag(tags.getRawEmotes());
         this.infoText = infoText;
+        
+        if (!StringUtil.isNullOrEmpty(message)) {
+            if (tags.isValue("msg-id", "announcement")) {
+                msgStart = text.length() - message.length();
+                msgEnd = text.length();
+            }
+            else {
+                msgStart = text.length() - 1 - message.length();
+                msgEnd = text.length() - 1;
+            }
+        }
     }
     
     /**
@@ -37,6 +51,16 @@ public class UserNotice extends InfoMessage {
      */
     public UserNotice(UserNotice other, MsgTags tags) {
         this(other.type, other.user, other.infoText, other.attachedMessage, tags);
+    }
+    
+    @Override
+    public int getMsgStart() {
+        return msgStart;
+    }
+    
+    @Override
+    public int getMsgEnd() {
+        return msgEnd;
     }
     
     private static String makeFullText(String type, String text, String message, MsgTags tags) {

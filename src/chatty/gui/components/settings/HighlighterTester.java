@@ -457,7 +457,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         if (blacklistItem != null) {
             // Match ANY type, same as the other matching in this (ignoring
             // non-text prefixes)
-            blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, getTestText(), null,
+            blacklist = new Highlighter.Blacklist(HighlightItem.Type.ANY, getTestText(), -2, -2, null,
                     null, null, null, MsgTags.EMPTY, Arrays.asList(new HighlightItem[]{blacklistItem}));
         }
         if (highlightItem == null) {
@@ -490,7 +490,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
             // Regular item
             if (highlightItem != null) {
-                List<Match> matches = highlightItem.getTextMatches(getTestText(), substitutionResult);
+                List<Match> matches = highlightItem.getTextMatches(getTestText(), -2, -2, substitutionResult);
                 if (matches != null) {
                     for (int i = 0; i < matches.size(); i++) {
                         Match m = matches.get(i);
@@ -505,7 +505,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
             // Blacklist item
             if (blacklistItem != null) {
-                List<Match> blacklistMatches = blacklistItem.getTextMatches(getTestText(), substitutionResult);
+                List<Match> blacklistMatches = blacklistItem.getTextMatches(getTestText(), -2, -2, substitutionResult);
                 if (blacklistMatches != null) {
                     for (int i = 0; i < blacklistMatches.size(); i++) {
                         Match m = blacklistMatches.get(i);

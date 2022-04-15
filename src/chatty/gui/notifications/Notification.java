@@ -311,7 +311,7 @@ public class Notification {
         if (matcherItem == null || text == null) {
             return true;
         }
-        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, null, channel, ab, user, localUser, tags);
+        return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, -1, -1, null, channel, ab, user, localUser, tags);
     }
     
     public boolean hasChannels() {

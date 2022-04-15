@@ -519,15 +519,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             }
         }
         String text = String.format("[%s] %s", message.type, message.infoText);
+        int offset = text.length();
         print(text, userStyle);
         if (!StringUtil.isNullOrEmpty(message.attachedMessage)) {
             boolean showBrackets = !isAnnouncement;
             if (showBrackets) {
                 print(" [", style);
+                offset += 2;
             }
             // Output with emotes, but don't turn URLs into clickable links
             boolean ignoreLinks = !isAnnouncement;
-            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, ignoreLinks, false, null, null, null, message.tags);
+            java.util.List<Match> highlightMatches = Match.shiftMatchList(message.highlightMatches, -offset);
+            printSpecialsNormal(message.attachedMessage, message.user, style, message.emotes, ignoreLinks, false, highlightMatches, null, null, message.tags);
             if (showBrackets) {
                 print("]", style);
             }

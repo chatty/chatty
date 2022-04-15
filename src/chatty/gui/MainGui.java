@@ -3325,7 +3325,7 @@ public class MainGui extends JFrame implements Runnable {
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
-                boolean ignored = checkMsg(ignoreList, "ignore", text, user, localUser, tags, isOwnMessage, false) || ignoredUser;
+                boolean ignored = checkMsg(ignoreList, "ignore", text, -2, -2, user, localUser, tags, isOwnMessage, false) || ignoredUser;
                 
                 boolean highlighted = false;
                 List<Match> highlightMatches = null;
@@ -3337,7 +3337,7 @@ public class MainGui extends JFrame implements Runnable {
                     boolean rejectIgnoredWithoutPrefix = client.settings.getBoolean("highlightOverrideIgnored")
                                               || client.settings.getBoolean("highlightIgnored")
                                               ? false : ignored;
-                    highlighted = checkMsg(highlighter, "highlight", text, user, localUser, tags, isOwnMessage, rejectIgnoredWithoutPrefix);
+                    highlighted = checkMsg(highlighter, "highlight", text, -2, -2, user, localUser, tags, isOwnMessage, rejectIgnoredWithoutPrefix);
                     if (highlighted) {
                         if (client.settings.getBoolean("highlightOverrideIgnored")
                                 || highlighter.getLastMatchItem().overrideIgnored()) {
@@ -3404,7 +3404,7 @@ public class MainGui extends JFrame implements Runnable {
                         printInfo(chan, InfoMessage.createInfo("Own message ignored."));
                     }
                 } else {
-                    boolean hasReplacements = checkMsg(filter, "filter", text, user, localUser, tags, isOwnMessage, false);
+                    boolean hasReplacements = checkMsg(filter, "filter", text, -2, -2, user, localUser, tags, isOwnMessage, false);
 
                     // Print message, but determine how exactly
                     UserMessage message = new UserMessage(user, text, tagEmotes, tags.getId(), bitsForEmotes,
@@ -3423,7 +3423,7 @@ public class MainGui extends JFrame implements Runnable {
                         message.highlightSource = highlighter.getLastMatchItems();
                     }
                     if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
-                        ColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, tags);
+                        ColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, -2, -2, tags);
                         if (!colorItem.isEmpty()) {
                             message.color = colorItem.getForegroundIfEnabled();
                             message.backgroundColor = colorItem.getBackgroundIfEnabled();
@@ -3544,29 +3544,29 @@ public class MainGui extends JFrame implements Runnable {
         return Helper.filterCombiningCharacters(text, "****", mode);
     }
     
-    private boolean checkHighlight(HighlightItem.Type type, String text,
+    private boolean checkHighlight(HighlightItem.Type type, String text, int msgStart, int msgEnd,
             String channel, Addressbook ab, User user, User localUser, MsgTags tags, Highlighter hl,
             String setting, boolean isOwnMessage, boolean ignored) {
         if (client.settings.getBoolean(setting + "Enabled")) {
             if (client.settings.getBoolean(setting + "OwnText") ||
                     !isOwnMessage) {
-                return hl.check(type, text, channel, ab, user, localUser, tags, ignored);
+                return hl.check(type, text, msgStart, msgEnd, channel, ab, user, localUser, tags, ignored);
             }
         }
         return false;
     }
     
-    private boolean checkMsg(Highlighter hl, String setting, String text,
+    private boolean checkMsg(Highlighter hl, String setting, String text, int msgStart, int msgEnd,
             User user, User localUser, MsgTags tags, boolean isOwnMessage,
             boolean ignored) {
-        return checkHighlight(HighlightItem.Type.REGULAR, text, null, null,
+        return checkHighlight(HighlightItem.Type.REGULAR, text, msgStart, msgEnd, null, null,
                 user, localUser, tags, hl, setting, isOwnMessage, ignored);
     }
     
-    private boolean checkInfoMsg(Highlighter hl, String setting, String text,
+    private boolean checkInfoMsg(Highlighter hl, String setting, String text, int msgStart, int msgEnd,
             User user, MsgTags tags, String channel, Addressbook ab,
             boolean ignored) {
-        return checkHighlight(HighlightItem.Type.INFO, text, channel, ab,
+        return checkHighlight(HighlightItem.Type.INFO, text, msgStart, msgEnd, channel, ab,
                 user, client.getLocalUser(channel), tags, hl, setting, false,
                 ignored);
     }
@@ -3724,14 +3724,14 @@ public class MainGui extends JFrame implements Runnable {
             user = ((UserNotice)message).user;
         }
         MsgTags tags = message.tags;
-        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, user, tags, channel.getChannel(), client.addressbook, false);
+        boolean ignored = checkInfoMsg(ignoreList, "ignore", message.text, message.getMsgStart(), message.getMsgEnd(), user, tags, channel.getChannel(), client.addressbook, false);
         boolean highlighted = false;
         boolean ignoreCheck = !ignored
                 || highlighter.hasOverrideIgnored()
                 || client.settings.getBoolean("highlightOverrideIgnored");
         if (ignoreCheck && !message.isHidden()) {
             boolean rejectIgnoredWithoutPrefix = client.settings.getBoolean("highlightOverrideIgnored") ? false : ignored;
-            highlighted = checkInfoMsg(highlighter, "highlight", message.text, user, tags, channel.getChannel(), client.addressbook, rejectIgnoredWithoutPrefix);
+            highlighted = checkInfoMsg(highlighter, "highlight", message.text, message.getMsgStart(), message.getMsgEnd(), user, tags, channel.getChannel(), client.addressbook, rejectIgnoredWithoutPrefix);
             if (highlighted) {
                 if (client.settings.getBoolean("highlightOverrideIgnored")
                         || highlighter.getLastMatchItem().overrideIgnored()) {
@@ -3766,7 +3766,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 if (!highlighted || client.settings.getBoolean("msgColorsPrefer")) {
                     ColorItem colorItem = msgColorManager.getInfoColor(
-                            message.text, channel.getChannel(), client.addressbook, user, localUser, tags);
+                            message.text, message.getMsgStart(), message.getMsgEnd(), channel.getChannel(), client.addressbook, user, localUser, tags);
                     if (!colorItem.isEmpty()) {
                         message.color = colorItem.getForegroundIfEnabled();
                         message.bgColor = colorItem.getBackgroundIfEnabled();

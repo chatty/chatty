@@ -23,9 +23,9 @@ public class MsgColorItem extends ColorItem {
         this.search = new Highlighter.HighlightItem(item, "msgcolor");
     }
     
-    public boolean matches(HighlightItem.Type type, String text, String channel,
+    public boolean matches(HighlightItem.Type type, String text, int msgStart, int msgEnd, String channel,
             Addressbook ab, User user, User localUser, MsgTags tags) {
-        return search.matches(type, text, null, channel, ab, user, localUser, tags);
+        return search.matches(type, text, msgStart, msgEnd, null, channel, ab, user, localUser, tags);
     }
     
 }
