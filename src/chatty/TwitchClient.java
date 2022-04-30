@@ -1265,6 +1265,15 @@ public class TwitchClient {
         commands.add("set2", p -> {
             g.printSystem(settings.setTextual(p.getArgs(), false));
         });
+        commands.add("setSwitch", p -> {
+            g.printSystem(settings.setSwitchTextual(p.getArgs(), true));
+        });
+        commands.add("setSwitch2", p -> {
+            g.printSystem(settings.setSwitchTextual(p.getArgs(), false));
+        });
+        commands.add("setList", p -> {
+            g.printSystem(settings.setListTextual(p.getArgs()));
+        });
         commands.add("get", p -> {
             g.printSystem(settings.getTextual(p.getArgs()));
         });

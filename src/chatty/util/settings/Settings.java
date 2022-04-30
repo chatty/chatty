@@ -765,6 +765,46 @@ public class Settings {
         return settingInvalidMessage(setting);
     }
     
+    public String setSwitchTextual(String text, boolean verbose) {
+        if (text == null || text.isEmpty()) {
+            return "Usage: /setSwitch <setting> <value>,<value2>";
+        }
+        String[] split = text.split(" ", 2);
+        
+        if (split.length < 2) {
+            return "Usage: /setSwitch <setting> <value>,<value2>";
+        }
+        String setting = split[0];
+        String parameter = split[1];
+        
+        String[] values;
+        String currentValue;
+        String key = "";
+        
+        if (isMapSetting(setting)) {
+            String[] mapParameters = parameter.split(" ", 2);
+            values = mapParameters[1].split(",");
+            currentValue = String.valueOf(mapGet(setting, mapParameters[0]));
+            key = " "+mapParameters[0];
+        }
+        else {
+            values = parameter.split(",");
+            currentValue = String.valueOf(get(setting));
+        }
+        
+        String nextValue = null;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(currentValue)) {
+                nextValue = values[(i+1) % values.length];
+                break;
+            }
+        }
+        if (nextValue == null) {
+            nextValue = values[0];
+        }
+        return setTextual(setting+key+" "+nextValue, verbose);
+    }
+    
     public String setTextual(String text, boolean verbose) {
         if (text == null || text.isEmpty()) {
             return "Usage: /set <setting> <value>";
@@ -806,8 +846,12 @@ public class Settings {
             listClear(setting);
             listAdd(setting, parameter);
             setSettingChanged(setting);
-            return String.format("Setting '%s' (List): Set to %s",
-                    setting, getList(setting));
+            String warning = "";
+            if (parameter.contains(",")) {
+                warning = " (Note: Using commas in '/set' only sets a single list item that contains the commas, use '/setList' to set as separate items or '/add' to add a single item)";
+            }
+            return String.format("Setting '%s' (List): Set to %s%s",
+                    setting, getList(setting), warning);
         }
         else if (isMapSetting(setting)
                 && (isOfSubtype(setting, Setting.STRING) || isOfSubtype(setting, Setting.LONG))) {
@@ -832,6 +876,54 @@ public class Settings {
             }
             return String.format("Setting '%s' (Map): Set '%s' to '%s'",
                     setting, mapParameters[0], value);
+        }
+        return settingInvalidMessage(setting);
+    }
+    
+    public String setListTextual(String text) {
+        if (text == null || text.isEmpty()) {
+            return "Usage: /setList <setting> <value>,<value2>";
+        }
+        String[] split = text.split(" ", 2);
+        
+        if (split.length < 2) {
+            return "Usage: /setList <setting> <value>,<value2>";
+        }
+        String setting = split[0];
+        String parameter = split[1];
+        String[] values = parameter.split(",");
+
+        if (isListSetting(setting)) {
+            if (isOfSubtype(setting, Setting.STRING)) {
+                listClear(setting);
+                for (String value : values) {
+                    listAdd(setting, value.trim());
+                }
+                setSettingChanged(setting);
+            } else if (isOfSubtype(setting, Setting.LONG)) {
+                // Convert values, if one is not numeric, return with error
+                List<Long> numericValues = new ArrayList<>();
+                for (String value : values) {
+                    try {
+                        numericValues.add(Long.parseLong(value.trim()));
+                    }
+                    catch (NumberFormatException ex) {
+                        return String.format("Setting '%s' (List): Invalid value (must be numeric), nothing changed.",
+                                setting);
+                    }
+                }
+                
+                // Clear and add if all values are numeric
+                listClear(setting);
+                for (Long value : numericValues) {
+                    listAdd(setting, value);
+                }
+                setSettingChanged(setting);
+            } else {
+                return settingInvalidMessage(setting);
+            }
+            return String.format("Setting '%s' (List): Set to %s",
+                    setting, getList(setting));
         }
         return settingInvalidMessage(setting);
     }

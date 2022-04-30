@@ -23,6 +23,9 @@
                 toggle it and any other value to disable it.</dd>
         <dd>Can be used to set the value of a key of a Map setting (for example
             <code>/set lafCustomTheme selectionBackgroundColor 255 180 0</code>).</dd>
+        <dd>For List settings it clears existing items and only sets a single
+            item, even if the value contains commas. Use <code>/setList</code>
+            to set several items or <code>/add</code> to add a single item.</dd>
         <dd>The <code>/set2</code> command works the same, but in case of Map
             settings omits outputting all values of the Map.</dd>
         
@@ -37,6 +40,13 @@
         <dt><code>/clearsetting &lt;setting&gt;</code></dt>
         <dd>Sets String (text) settings to an empty String. Removes all entries
             from List or Map settings.</dd>
+        
+        <dt><code>/setSwitch &lt;setting&gt; &lt;value&gt;,&lt;value2&gt;</code></dt>
+        <dd>Like <code>/set</code>, but it switches between two or more values.</dd>
+        
+        <dt><code>/setList &lt;setting&gt; &lt;value&gt;,&lt;value2&gt;</code></dt>
+        <dd>For List settings. Clears the setting and sets the given values as
+            separate items.</dd>
         
         <dt><code>/add &lt;setting&gt; &lt;value&gt;</code></dt>
         <dd>Adds an item to a List setting.</dd>
