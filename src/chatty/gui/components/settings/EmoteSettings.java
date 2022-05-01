@@ -27,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import chatty.util.api.CachedImage.CachedImageUser;
+import javax.swing.JTabbedPane;
 
 /**
  *
@@ -88,9 +89,44 @@ public class EmoteSettings extends SettingsPanel {
         main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick"),
                 d.makeGbc(0, 5, 3, 1));
         
-        //----------
-        // Cheering
-        //----------
+        ComboLongSetting animatePauseSetting = d.addComboLongSetting("animationPause", 0, 1, 2);
+        ComboLongSetting animatePauseFrameSetting = d.addComboLongSetting("animationPauseFrame", 0, 1, 2);
+        
+        SettingsUtil.addSubsettings(animatePauseSetting, s -> s != 2, animatePauseFrameSetting);
+        
+        SettingsUtil.addLabeledComponent(main, "animationPause",
+                0, 6, 4, GridBagConstraints.WEST,
+                animatePauseSetting);
+        
+        SettingsUtil.addLabeledComponent(main, "animationPauseFrame",
+                0, 7, 4, GridBagConstraints.WEST,
+                animatePauseFrameSetting);
+        
+        //==========================
+        // Provider specific
+        //==========================
+        JPanel providerSettingsPanel = addTitledPanel("Provider-specific Emote Settings", 1);
+        
+        JTabbedPane providerSettingsTabs = new JTabbedPane();
+        JPanel twitchSettings = new JPanel(new GridBagLayout());
+        JPanel ffzSettings = new JPanel(new GridBagLayout());
+        JPanel bttvSettings = new JPanel(new GridBagLayout());
+        JPanel emojiSettings = new JPanel(new GridBagLayout());
+        providerSettingsTabs.addTab("Twitch", twitchSettings);
+        providerSettingsTabs.addTab("FFZ", ffzSettings);
+        providerSettingsTabs.addTab("BTTV", bttvSettings);
+        providerSettingsTabs.addTab(Language.getString("settings.section.emoji"), emojiSettings);
+        
+        GridBagConstraints gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        providerSettingsPanel.add(providerSettingsTabs, gbc);
+        
+        //--------------------------
+        // Twitch
+        //--------------------------
+        
+        // Cheers
         Map<String, String> cheeringTypeDef = new LinkedHashMap<>();
         cheeringTypeDef.put("none", Language.getString("settings.emoticons.cheers.option.text"));
         cheeringTypeDef.put("static", Language.getString("settings.emoticons.cheers.option.static"));
@@ -99,46 +135,50 @@ public class EmoteSettings extends SettingsPanel {
         
         d.addStringSetting("cheersType", cheersType);
         
-        main.add(new JLabel(Language.getString("settings.emoticons.cheers")),
+        twitchSettings.add(new JLabel(Language.getString("settings.emoticons.cheers")),
                 d.makeGbc(0, 6, 1, 1, GridBagConstraints.CENTER));
-        main.add(cheersType,
+        twitchSettings.add(cheersType,
                 d.makeGbc(1, 6, 2, 1, GridBagConstraints.WEST));
         
-        //--------------------------
         // Animated
-        //--------------------------
-        main.add(d.addSimpleBooleanSetting("animatedEmotes"),
+        twitchSettings.add(d.addSimpleBooleanSetting("animatedEmotes"),
                 d.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST));
         
-        //==========
-        // FFZ/BTTV
-        //==========
+        SettingsUtil.topAlign(twitchSettings, 10);
         
-        JPanel other = addTitledPanel(Language.getString("settings.section.3rdPartyEmotes"), 1);
-        other.add(d.addSimpleBooleanSetting("bttvEmotes"),
-                d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
-        
-        other.add(d.addSimpleBooleanSetting("showAnimatedEmotes"),
-                d.makeGbc(1, 0, 1, 1, GridBagConstraints.WEST));
-
+        //--------------------------
+        // FFZ
+        //--------------------------
         final JCheckBox ffz = d.addSimpleBooleanSetting("ffz");
-        other.add(ffz,
+        ffzSettings.add(ffz,
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
         final JCheckBox ffzMod = d.addSimpleBooleanSetting("ffzModIcon");
-        other.add(ffzMod,
+        ffzSettings.add(ffzMod,
                 d.makeGbcSub(0, 2, 1, 1, GridBagConstraints.WEST));
         
         final JCheckBox ffzEvent = d.addSimpleBooleanSetting("ffzEvent");
-        other.add(ffzEvent,
-                d.makeGbcCloser(1, 2, 1, 1, GridBagConstraints.WEST));
+        ffzSettings.add(ffzEvent,
+                d.makeGbcSub(0, 3, 1, 1, GridBagConstraints.WEST));
         
         SettingsUtil.addSubsettings(ffz, ffzMod, ffzEvent);
+        
+        SettingsUtil.topAlign(ffzSettings, 10);
+        
+        //--------------------------
+        // BTTV
+        //--------------------------
+        bttvSettings.add(d.addSimpleBooleanSetting("bttvEmotes"),
+                d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        bttvSettings.add(d.addSimpleBooleanSetting("showAnimatedEmotes"),
+                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+        
+        SettingsUtil.topAlign(bttvSettings, 10);
 
-        //=======
+        //--------------------------
         // Emoji
-        //=======
-        JPanel emojiSettings = addTitledPanel(Language.getString("settings.section.emoji"), 2);
+        //--------------------------
         
         Map<String, String> emojiSetDef = new LinkedHashMap<>();
         emojiSetDef.put("twemoji", "Twemoji (Twitter)");
@@ -157,6 +197,8 @@ public class EmoteSettings extends SettingsPanel {
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
         SettingsUtil.addLabeledComponent(emojiSettings, "emojiZWJ", 0, 2, 1, GridBagConstraints.WEST, d.addComboLongSetting("emojiZWJ", 0, 1, 2));
+        
+        SettingsUtil.topAlign(emojiSettings, 10);
         
         //==========================
         // Local Emotes

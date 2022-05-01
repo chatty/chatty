@@ -3,6 +3,7 @@ package chatty.util.gif;
 
 import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
+import chatty.util.settings.Settings;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -12,6 +13,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
@@ -44,7 +47,12 @@ public class GifUtil {
 
             try {
                 //System.out.println(hash(imageData)+" "+url);
-                result = fixGifFps(imageData, request);
+                if (settings != null && settings.getBoolean("legacyAnimations")) {
+                    result = fixGifFps(imageData, request);
+                }
+                else {
+                    result = createGif(imageData, request);
+                }
             }
             catch (Exception ex) {
                 /**
@@ -135,6 +143,58 @@ public class GifUtil {
             result.write(buffer, 0, length);
         }
         return result.toByteArray();
+    }
+    
+    /**
+     * The new way of handling animated GIFs, using a ListAnimatedImage.
+     * 
+     * @param data
+     * @param request
+     * @return
+     * @throws Exception 
+     */
+    private static ImageResult createGif(byte[] data, ImageRequest request) throws Exception {
+        String name = request.getRequestedURL().toString();
+        GifDecoderFMS gif = new GifDecoderFMS();
+        gif.read(new ByteArrayInputStream(data));
+        Dimension size = new Dimension();
+        Dimension actualBaseSize = request.getSizeFromImage(gif.getFrame(0));
+        Dimension scaledSize = request.getScaledSizeIfNecessary(actualBaseSize);
+        List<ListAnimatedImageFrame> frames = new ArrayList<>();
+        for (int i = 0; i < gif.getFrameCount(); i++) {
+            BufferedImage image = gif.getFrame(i);
+            if (scaledSize != null) {
+                image = resize(image, scaledSize.width, scaledSize.height);
+            }
+            size = new Dimension(image.getWidth(), image.getHeight());
+            int delay = capDelay(gif.getDelay(i));
+            frames.add(new ListAnimatedImageFrame(image, delay));
+        }
+        ImageIcon icon = new ImageIcon(new ListAnimatedImage(frames, size.width, size.height, name).createImage());
+        icon.setDescription("GIF");
+        return new ImageResult(icon, actualBaseSize, true);
+    }
+    
+    /**
+     * Browsers usually seem to turn a delay of 0/100 or 1/100 into 10/100, so
+     * do the same.
+     *
+     * @see <a href="https://www.deviantart.com/humpy77/journal/Frame-Delay-Times-for-Animated-GIFs-240992090">How browsers handle frame delays (Web)</a>
+     * 
+     * @param delay Time between frames in ms
+     * @return
+     */
+    private static int capDelay(int delay) {
+        if (delay <= 10) {
+            return 100;
+        }
+        return delay;
+    }
+    
+    private static Settings settings;
+    
+    public static void setSettings(Settings settings) {
+        GifUtil.settings = settings;
     }
     
 }

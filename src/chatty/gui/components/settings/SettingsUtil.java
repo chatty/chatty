@@ -43,10 +43,22 @@ public class SettingsUtil {
             }
         }
     }
-    
+
     public static void addSubsettings(ComboStringSetting control, Function<String, Boolean> req, Component... subs) {
         control.addSettingChangeListener(c -> {
             String selected = control.getSettingValue();
+            for (Component sub : subs) {
+                sub.setEnabled(req.apply(selected));
+            }
+        });
+        for (Component sub : subs) {
+            sub.setEnabled(false);
+        }
+    }
+    
+    public static void addSubsettings(ComboLongSetting control, Function<Long, Boolean> req, Component... subs) {
+        control.addSettingChangeListener(c -> {
+            Long selected = control.getSettingValue();
             for (Component sub : subs) {
                 sub.setEnabled(req.apply(selected));
             }
@@ -156,6 +168,13 @@ public class SettingsUtil {
             gbc.gridx++;
         }
         return panel;
+    }
+    
+    public static void topAlign(JPanel panel, int y) {
+        // Fill up remaining space to top-align components
+        GridBagConstraints gbc = SettingsDialog.makeGbc(0, y, 1, 1, GridBagConstraints.WEST);
+        gbc.weighty = 1;
+        panel.add(new JLabel(), gbc);
     }
     
 }

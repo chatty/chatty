@@ -250,6 +250,9 @@ public class SettingsManager {
         settings.addBoolean("bttvEmotes", true);
         settings.addBoolean("showAnimatedEmotes", true);
         settings.addBoolean("animatedEmotes", true);
+        settings.addLong("animationPause", 2);
+        settings.addLong("animationPauseFrame", 2);
+        settings.addBoolean("legacyAnimations", false);
         settings.addList("ignoredEmotes", new ArrayList(), Setting.STRING);
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addLong("smilies", 10);

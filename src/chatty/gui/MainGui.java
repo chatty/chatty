@@ -108,6 +108,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import chatty.util.dnd.DockPopout;
+import chatty.util.gif.FocusUpdates;
+import chatty.util.gif.GifUtil;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -1059,6 +1061,9 @@ public class MainGui extends JFrame implements Runnable {
         dockedDialogs.loadSettings();
         
         updateTokenScopes();
+        
+        FocusUpdates.set(client.settings);
+        GifUtil.setSettings(client.settings);
     }
     
     private static final String[] menuBooleanSettings = new String[]{
