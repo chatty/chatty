@@ -359,6 +359,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     public boolean imageUpdate(Image img, int infoflags,
                                int x, int y, int w, int h) {
         if ((infoflags & FRAMEBITS) != 0 && !Debugging.isEnabled("gif1")) {
+            if (!isShowing()) {
+                return false;
+            }
             // Paint new frame of multi-frame image
             boolean imageToRepaintStillPresent = repaintImage(img);
             
