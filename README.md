@@ -42,7 +42,7 @@ License Information
 Chatty, as a whole, is released under the GPLv3 or later (see included
 `LICENSE` file).
 
-    Copyright (C) 2017-2020  tduva and contributors
+    Copyright (C) 2017-2022  tduva and contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -190,6 +190,11 @@ Images / Other
   * Source: https://github.com/joypixels/emojione/blob/master/emoji.json
   * License: MIT
 	(<https://opensource.org/licenses/MIT>)
+  * Now outdated, seems to be no longer updated
+
+* Emoji Metadata supplemented by:
+  * Source: <https://unicode.org/Public/emoji/14.0/emoji-test.txt>
+  * License: <https://www.unicode.org/license.txt>
 
 * Example Sounds by tduva:
   * Files: `assets/sounds/*`
