@@ -162,6 +162,9 @@ public class ChannelCompletion implements AutoCompletionServer {
             //--------------
             input.setCompleteToCommonPrefix(true);
             items = filterCompletionItems(main.getSettingNames(), search);
+        } else if (prefix.matches("/timer (-[a-z]+ )?:")) {
+            // Prevent Emoji popup when entering timer id
+            items = new ArrayList<>();
         } else if (prefix.equals("/")) {
                 //--------------
             // Command Names

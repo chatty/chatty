@@ -3674,10 +3674,29 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printSystem(final String line) {
+        printSystem(null, line);
+    }
+    
+    public void printSystem(final Room room, final String line) {
         GuiUtil.edt(() -> {
-            Channel panel = channels.getActiveChannel();
-            if (panel != null) {
-                printInfo(panel, InfoMessage.createSystem(line));
+            Channel channel;
+            if (room == null || room == Room.EMPTY) {
+                channel = channels.getActiveChannel();
+            }
+            else {
+                channel = channels.getChannel(room);
+            }
+            if (channel != null) {
+                printInfo(channel, InfoMessage.createSystem(line));
+            }
+        });
+    }
+    
+    public void printSystemMultline(final Room room, final String text) {
+        GuiUtil.edt(() -> {
+            String[] lines = text.split("\n");
+            for (String line : lines) {
+                printSystem(room, line);
             }
         });
     }
@@ -3892,6 +3911,10 @@ public class MainGui extends JFrame implements Runnable {
                 debugWindow.printLinePubSub(line);
             }
         });
+    }
+    
+    public void printTimerLog(String line) {
+        GuiUtil.edt(() -> debugWindow.printTimerLog(line));
     }
     
     public void printModerationAction(final ModeratorActionData data,

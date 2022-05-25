@@ -622,6 +622,126 @@
         </dd>
     </dl>
     
+    <h3><a name="commands-timer">Execute a command on a delay</a></h3>
+    <p>The <code>/timer</code> command allows you to run a delayed command after
+        a duration or at a certain time. The same as similar commands (like
+        <code>/chain</code>) the timed command is run as if it was entered into
+        the same inputbox as the <code>/timer</code> command that started it
+        (might differ if the <code>-a</code> option is used).</p>
+    
+    <p>Certain restrictions apply:</p>
+    <ul>
+        <li>A timed command can't contain another <code>/timer</code> command as well as some other commands.</li>
+        <li>A timed message can only be send to regular channels (not whispers)
+            and only as a moderator of the channel.</li>
+        <li>Parameters from the context of where <code>/timer</code> is called
+            do not carry over into the context when the timed command is executed.
+            Note that in a lot of cases the parameters would already have been
+            replaced anyway. Consider a button "Test" added to the User Dialog:
+            <ul>
+                <li>In case of <code>Test=/timer 1 /echo $(nick)</code>
+                    replacements are performed on <code>/timer 1 /echo $(nick)</code>,
+                    resulting in <code>/timer 1 /echo someusername</code>, resulting in
+                    <code>/echo someusername</code> one second later.</li>
+                <li>On the other hand <code>Test=/timer 1 //echo \$(nick)</code>
+                    replacements are performed on <code>/timer 1 //echo \$(nick)</code>
+                    (note that <code>\$(nick)</code> is escaped, so it is not
+                    replaced yet), resulting in <code>/timer 1 //echo $(nick)</code>,
+                    resulting in <code>//echo $(nick)</code> one second later, which
+                    (because of the double-slash) is parsed as a Custom Command and
+                    replacements are performed, which won't find the "nick" parameter
+                    because it didn't carry over. Normally there is no reason to do it
+                    like this though.</li>
+            </ul>
+    </ul>
+    
+    <dl class="defList">
+        <dt><code>/timer [-options] [:id] &lt;duration|time|'list'|'stop'&gt; &lt;timed command&gt;</code></dt>
+        <dd>Optionally one or several options (<code>-rs</code>) can be specified:
+            <ul>
+                <li><code>-r</code> (Keeps the timer through a restart of Chatty
+                    if it hasn't run yet. The timer is saved in the settings and
+                    restored with the same target time, channel and timed
+                    command. If the target time has already been passed when
+                    Chatty is started it will immediately run the timed command.)</li>
+                <li><code>-o</code> (If a timer of the same id already exists,
+                    overwrite it, otherwise the new timer will not be started.)</li>
+                <li><code>-s</code> (Silent, starting the timer successfully
+                    doesn't output a message.)</li>
+                <li><code>-a</code> (Always run the command, even if the channel
+                    the timer was started in is not open anymore or not valid,
+                    which can make sense if the command being run is not
+                    channel-specific, such as modifying the Addressbook.)</li>
+                <li>Full example: <code>/timer -rs 10m /echo hello</code>
+                    (Outputs "hello" in 10 minutes, keeps it when Chatty is
+                    restarted within that time and doesn't output a timer
+                    started message.)</li>
+            </ul>
+        </dd>
+        <dd>The id is used to identify a timer after it has been started (e.g.
+            to stop it). Can be anything (no spaces), if it ends with <code>*</code>
+            an automatically generated number will be appended to make the id
+            unique if used more than once. If no id is specified an
+            automatically generated number without prefix will be used.
+            <ul>
+                <li><code>:abc</code> (the id is "abc")</li>
+                <li><code>:abc*</code> (the id might be "abc1", "abc2", "abc3", ...)</li>
+                <li><em>Not specified</em> (the id is an automatically generated number)</li>
+                <li>Full example: <code>/timer :abc 10m /echo hello</code>
+                    (outputs "hello" in 10 minutes, with the timer id "abc")</li>
+            </ul>
+        </dd>
+        <dd>The duration is in seconds by default, but you can also append a
+            time unit and several durations that get added up (no spaces):
+            <ul>
+                <li><code>5ms</code> (milliseconds)</li>
+                <li><code>5s</code> (seconds)</li>
+                <li><code>5m</code> (minutes)</li>
+                <li><code>5h</code> (hours)</li>
+                <li><code>5h10m</code> (5 hours 10 minutes)</li>
+                <li><code>5h10</code> (5 hours 10 minutes)</li>
+                <li><code>5h10m30</code> (5 hours 10 minutes 30 seconds)</li>
+                <li>Full example: <code>/timer 5h /echo hello</code> (outputs "hello" in 5 hours)</li>
+            </ul>
+        </dd>
+        <dd>An absolute time is written like a digital clock in 24hr format, a
+            date can be added in front, in which case it has to be enclosed in
+            <code>[ ]</code>. With no date specified the next occurence of the
+            time is used, so e.g. if it's already in the evening a time of 5 in
+            the morning would be on the next day:
+            <ul>
+                <li><code>5:30</code> (5:30 in the morning)</li>
+                <li><code>17:30</code> (5:30 in the afternoon)</li>
+                <li><code>5:30:50</code> (5:30 and 50 seconds in the morning)</li>
+                <li><code>[05:20:00]</code> (the time can also be enclosed in
+                    <code>[ ]</code>)</li>
+                <li><code>[2022-01-10 5:30]</code> (when including the date the
+                    <code>[ ]</code> is required and the date has to always be
+                    the full date in the format YYYY-MM-DD)</li>
+                <li>Full example: <code>/timer 16:30 /echo hello</code> (outputs
+                    the info message "hello" at 4:30 PM)</li>
+            </ul>
+        </dd>
+        <dd>Output info about currently active timers:
+            <ul>
+                <li><code>list</code> (Lists all timers, soonest to run first.)</li>
+                <li><code>-q list</code> (Same as above, but the list is in timer start order.)</li>
+                <li><code>:a* list</code> (Outputs information about timers with ids that begin with "a".)</li>
+                <li><code>list a*</code> (Same as above, but id in place of the timed command.)</li>
+                <li>Full example: <code>/timer list a*</code> (Shows all active timers with ids that begin with "a".)</li>
+            </ul>
+        </dd>
+        <dd>Stop active timers:
+            <ul>
+                <li><code>:abc1 stop</code> (Stops a timer with the id "abc1".)</li>
+                <li><code>stop abc1</code> (Same as above, but id in place of the timed command.)</li>
+                <li><code>:abc* stop</code> (Stops all timers with ids that begin with "abc".)</li>
+                <li><code>:* stop</code> (Stops all active timers.)</li>
+                <li>Full example: <code>/timer stop *</code> (Stops all active timers.)</li>
+            </ul>
+        </dd>
+    </dl>
+    
     <h2>
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>
