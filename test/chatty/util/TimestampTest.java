@@ -41,7 +41,6 @@ public class TimestampTest {
         t("yyyy-MM-dd HH:mm:ss", "GMT-01:00", utcTime, "2022-03-02 17:03:20");
         t("yyyy-MM-dd HH:mm:ss", "GMT+01:30", utcTime, "2022-03-02 19:33:20");
         
-        t("yyyy-MM-dd hh:mm:ss a", "", time, "2022-03-02 06:03:20 PM");
         t("yyyy-MM-dd hh:mm:ss a'a:AM/PM'", "", time, "2022-03-02 06:03:20 PM");
         t("yyyy-MM-dd hh:mm:ss a'a:AM/afternoon'", "", time, "2022-03-02 06:03:20 afternoon");
         
