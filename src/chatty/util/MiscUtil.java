@@ -1,6 +1,7 @@
 
 package chatty.util;
 
+import chatty.Chatty;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Graphics;
@@ -11,14 +12,19 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -308,6 +314,38 @@ public class MiscUtil {
             map.put(mapKey, new HashSet<>());
         }
         return map.get(mapKey);
+    }
+    
+    public static boolean exportText(String fileName, String text, boolean append) {
+        Path file = Paths.get(Chatty.getExportDirectory(), fileName).toAbsolutePath().normalize();
+        if (!file.startsWith(Chatty.getExportDirectory())) {
+            LOGGER.warning("Invalid filename (may contain '..'?): " + fileName);
+            return false;
+        }
+        try {
+            OpenOption[] options = new OpenOption[]{
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING
+            };
+            if (append) {
+                options = new OpenOption[]{
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.APPEND
+                };
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"), options)) {
+                writer.write(text);
+            }
+            LOGGER.info(String.format("Written text to file: %s [%s]",
+                    file, StringUtil.shortenTo(text, 10)));
+            return true;
+        }
+        catch (IOException ex) {
+            LOGGER.warning("Error writing text to file: " + ex);
+            return false;
+        }
     }
     
 }

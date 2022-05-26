@@ -10,6 +10,7 @@ import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
+import chatty.Commands.CommandParsedArgs;
 import chatty.util.api.TwitchApiResultListener;
 import chatty.util.api.Emoticon;
 import chatty.util.api.StreamInfoListener;
@@ -1330,6 +1331,26 @@ public class TwitchClient {
             if (result.message != null) {
                 g.printSystemMultline(null, result.message);
                 g.printTimerLog(result.message);
+            }
+        });
+        commands.add("exportText", p -> {
+            CommandParsedArgs args = p.parsedArgs(2);
+            if (args != null) {
+                boolean success = MiscUtil.exportText(args.get(0),
+                        args.hasOption("n")
+                            ? args.get(1).replace("\\n", "\n")
+                            : args.get(1), args.hasOption("a"));
+                if (success) {
+                    if (!args.hasOption("s")) {
+                        g.printSystem("File written successfully.");
+                    }
+                }
+                else {
+                    g.printSystem("Failed to write file, see debug log.");
+                }
+            }
+            else {
+                g.printSystem("Usage: /exportText <fileName> <text>");
             }
         });
         

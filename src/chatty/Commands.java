@@ -6,6 +6,8 @@ import chatty.util.commands.Parameters;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 
 /**
@@ -123,6 +125,59 @@ public class Commands {
         
         public boolean hasArgs() {
             return !StringUtil.isNullOrEmpty(parameters.getArgs());
+        }
+        
+        /**
+         * Split up the args into {@code numArgs} parts, separated by a space.
+         * The last part contains the remaining args text. If there aren't
+         * enough parts, {@code null} is returned.
+         * <p>
+         * Additionally when the args begin with "-" followed by no to several
+         * letters they are interpreted as options.
+         * 
+         * @param numArgs Into how many parts total to split the args
+         * @return The resulting CommandParsedArgs object, or null
+         */
+        public CommandParsedArgs parsedArgs(int numArgs) {
+            return CommandParsedArgs.parse(getArgs(), numArgs);
+        }
+        
+    }
+    
+    public static class CommandParsedArgs {
+        
+        private static final Pattern FORMAT = Pattern.compile("(?:-(?<options>[a-z]*) )?(?<args>.*)");
+        
+        public final String[] args;
+        public final String options;
+        
+        public CommandParsedArgs(String options, String[] args) {
+            this.args = args;
+            this.options = options;
+        }
+        
+        public String get(int index) {
+            return args[index];
+        }
+        
+        public boolean hasOption(String option) {
+            return options != null && options.contains(option);
+        }
+        
+        public static CommandParsedArgs parse(String input, int numArgs) {
+            if (input == null) {
+                return null;
+            }
+            Matcher m = FORMAT.matcher(input);
+            if (m.matches()) {
+                String options = m.group("options");
+                String args = m.group("args");
+                String[] split = args.split(" ", numArgs);
+                if (split.length == numArgs) {
+                    return new CommandParsedArgs(options, split);
+                }
+            }
+            return null;
         }
         
     }
