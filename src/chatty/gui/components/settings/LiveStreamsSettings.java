@@ -27,7 +27,8 @@ public class LiveStreamsSettings extends SettingsPanel {
     public LiveStreamsSettings(SettingsDialog d) {
         
         JPanel listSettings = addTitledPanel(Language.getString("settings.section.liveStreams"), 0, false);
-        JPanel follows = addTitledPanel("Followed Streams", 1);
+        JPanel gameFavorites = addTitledPanel(Language.getString("settings.section.gameFavorites"), 1, false);
+        JPanel follows = addTitledPanel("Followed Streams", 2);
         
         GridBagConstraints gbc;
         
@@ -69,6 +70,20 @@ public class LiveStreamsSettings extends SettingsPanel {
         listSettings.add(new JLabel(SettingConstants.HTML_PREFIX
             +"More options are available in the Live Streams list context menu."),
             SettingsDialog.makeGbc(0, 4, 2, 1));
+        
+        //--------------------------
+        // Game Favorites
+        //--------------------------
+        gameFavorites.add(d.addListSetting("gameFavorites", Language.getString("settings.section.gameFavorites"), 250, 200, false, true),
+                SettingsDialog.makeGbc(0, 0, 1, 1));
+        
+        gameFavorites.add(new JLabel("<html><body style='width:200px'>"
+                + "The Live Streams list shows an icon for favorited games and "
+                + "optionally allows them to be sorted first.<br /><br />"
+                + "Games can also be added/removed through the Live Streams "
+                + "list context menu, which ensures the correct game name is "
+                + "added."),
+                SettingsDialog.makeGbc(1, 0, 1, 1, GridBagConstraints.NORTHEAST));
         
         //--------------------------
         // Followed Streams
