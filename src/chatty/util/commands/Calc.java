@@ -143,6 +143,9 @@ public class Calc implements Item {
                     else if (eat('/')) {
                         x /= parseFactor(); // division
                     }
+                    else if (eat('%')) {
+                        x %= parseFactor(); // remainder
+                    }
                     else {
                         return x;
                     }

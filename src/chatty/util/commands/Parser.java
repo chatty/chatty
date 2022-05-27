@@ -233,6 +233,9 @@ public class Parser {
         else if (type.equals("calc")) {
             return calc(isRequired);
         }
+        else if (type.equals("round")) {
+            return round(isRequired);
+        }
         else if (type.equals("input")) {
             return input(isRequired);
         }
@@ -472,6 +475,25 @@ public class Parser {
         Item item = param();
         expect(")");
         return new Calc(item, isRequired);
+    }
+    
+    private Item round(boolean isRequired) throws ParseException {
+        expect("(");
+        Item item = param();
+        Item decimals = null;
+        Item roundingMode = null;
+        Item minDecimals = null;
+        if (accept(",")) {
+            decimals = param();
+        }
+        if (accept(",")) {
+            roundingMode = param();
+        }
+        if (accept(",")) {
+            minDecimals = param();
+        }
+        expect(")");
+        return new Round(item, decimals, roundingMode, minDecimals, isRequired);
     }
     
     private Item input(boolean isRequired) throws ParseException {

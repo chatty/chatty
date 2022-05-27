@@ -530,11 +530,26 @@
             between 0 and what is the first parameter.</dd>
         
         <dt><code>$calc(&lt;simple math expression&gt;)</code></dt>
-        <dd>Limited support for performing calculations.</dd>
+        <dd>Limited support for performing calculations, with binary operators
+            (<code>* / % + -</code>) and functions (<code>sqrt() sin() cos() tan()</code>).</dd>
         <dd><em>Example:</em> <code>//echo $calc(2^3) $calc( (3+4\) / 2)</code>
             when entered into the inputbox returns <code>8 3.5</code> (note the
             parentheses in the second, as well as how the closing parenthesis
             needs to be escaped).</dd>
+        <dd><em>Example:</em> <code>//echo $calc($"sqrt(81) * (1 + 4/2)")</code> outputs <code>27</code>
+            (this uses <code>$" "</code> to specify <a href="#escaping">literal text</a>
+            instead of escaping the parenthesis with a backslash).</dd>
+        
+        <dt><code>$round(&lt;number&gt;,[numDecimalPlaces],[roundingMode],[minNumDecimalPlaces])</code></dt>
+        <dd>Round a number to the given amount of decimal places,
+            with a <a href="https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html">rounding mode</a>
+            of empty (half-up), <code>ceil</code>, <code>floor</code>,
+            <code>up</code>, <code>down</code> or <code>half-down</code>, with
+            the given number of minimum decimal places (fills with 0).</dd>
+        <dd><em>Example:</em> <code>//echo $round(1.335)</code> outputs <code>1</code></dd>
+        <dd><em>Example:</em> <code>//echo $round(1.335,2)</code> outputs <code>1.34</code></dd>
+        <dd><em>Example:</em> <code>//echo $round(345.5,3,floor,3)</code> outputs <code>345.500</code> (fills up to 3 decimal places)</dd>
+        <dd><em>Example:</em> <code>//echo $round(2.565,2,,2)</code> outputs <code>2.57</code> (uses default rounding mode)</dd>
         
         <dt><code>$urlencode(&lt;input&gt;)</code></dt>
         <dd>Uses <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLEncoder.html#encode-java.lang.String-java.lang.String-">UrlEncoder.encode()</a>
