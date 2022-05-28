@@ -888,11 +888,9 @@ public class TwitchClient {
         else if (text.startsWith("/")) {
             commandInput(room, text, commandParameters);
         }
-        else {
+        else if (!checkRejectTimedMessage(room, commandParameters)) {
             if (c.onChannel(channel)) {
-                if (!checkRejectTimedMessage(room, commandParameters)) {
-                    sendMessage(channel, text, true);
-                }
+                sendMessage(channel, text, true);
             }
             else if (channel.startsWith("$")) {
                 w.whisperChannel(channel, text);
@@ -1013,12 +1011,13 @@ public class TwitchClient {
     
     private boolean checkRejectTimedMessage(Room room, Parameters parameters) {
         User localUser = getLocalUser(room.getChannel());
-        boolean rejected = localUser == null
+        boolean rejected = !Helper.isRegularChannelStrict(room.getChannel())
+                            || localUser == null
                             || (parameters != null
                                 && parameters.hasKey(TimerCommand.TIMER_PARAMETERS_KEY)
                                 && !localUser.hasModeratorRights());
         if (rejected) {
-            g.printSystem(room, "Could not send timed message (not a moderator)");
+            g.printSystem(room, "Could not send timed message (not a moderator or invalid channel)");
         }
         return rejected;
     }

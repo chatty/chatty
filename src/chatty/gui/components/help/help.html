@@ -275,16 +275,13 @@
                 <code>/color</code>
                 just like in normal Twitch Chat</li>
         <li><code>/join &lt;channel&gt;</code> - Joins the given channels, see <a href="#join">Joining Channels</a> for more information</li>
-        <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
         <li><code>/joinhosted</code> - Join currently hosted channel (if any)</li>
-        <li><code>/favorite [channel]</code> and <code>/unfavorite [channel]</code> - Add/remove a channel to/from the Channel Favorites</li>
+        <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
+        <li><code>/rejoin</code> - Rejoins the channel (without clearing users or chat)</li>
         <li><code>/reconnect</code> - Disconnects and reconnects</li>
         <li><code>/fixMods</code> - Temporarily fixes the list of mods (like
                 <code>/mods</code> but without showing the list of mods in chat)</li>
-        <li><code>/ignore &lt;user&gt;</code>, <code>/unignore &lt;user&gt;</code> - To ignore/unignore user (chat and whisper)</li>
-        <li><code>/ignoreChat</code>, <code>/unignoreChat</code>, <code>/ignoreWhisper</code>, <code>/unignoreWhisper</code>
-                - To ignore/unignore user only from chat/whispering you</li>
-        <li><code>/clearchat</code> - Clears the current chat window of all text</li>
+        <li><code>/clearchat</code> - Clears the current chat window of all text (only locally)</li>
         <li><code>/connection</code> - Show info about the current connection</li>
     </ul>
     
@@ -295,9 +292,15 @@
     <h3><a name="commands-twitch">Other Twitch Commands</a></h3>
     <ul>
         <li><a href="#streamhighlights">Stream Highlights / Markers commands</a> (including <code>/marker</code>)</li>
-        <li><code>/follow [user]</code>, <code>/unfollow [user]</code> - Follow
-            or unfollow the given user, or the current channel if no user is given
-            <em>(Following/unfollowing has been removed from the Twitch API)</em></li>
+    </ul>
+    
+    <h3><a name="special-commands">Special Commands</a></h3>
+    <p>These commands change how other commands are run.</p>
+    <ul>
+        <li><a href="#commands-chain"><code>/chain</code></a> to run several commands at once</li>
+        <li><a href="#commands-foreach"><code>/foreach</code></a> to run a command for each value in a list</li>
+        <li><a href="#commands-runin"><code>/runin</code></a> to run a command in a specific channel context</li>
+        <li><a href="#commands-timer"><code>/timer</code></a> to run a command on a delay</li>
     </ul>
     
     <h3><a name="commands-settings">Settings / Customization commands:</a></h3>
@@ -307,6 +310,15 @@
         for the given name</li>
         <li><a href="#addressbook">Addressbook commands</a></li>
         <li><a href="#streamchat">Stream Chat commands</a></li>
+        <li><code>/favorite [channel]</code>, <code>/unfavorite [channel]</code>
+            - Edit the Channel Favorites list (defaults to current channel if
+            none is given)</li>
+        <li><code>/ignore &lt;user&gt;</code>, <code>/unignore &lt;user&gt;</code>
+            - Add/remove a user from "Settings - Ignore - Ignored Users" (chat
+            and whisper, only takes effect locally in Chatty),
+            <code>/ignoreChat</code>, <code>/unignoreChat</code>,
+            <code>/ignoreWhisper</code>, <code>/unignoreWhisper</code> to do the
+            same, except it only affects one type of message</li>
     </ul>
     
     <h3><a name="commands-gui">GUI commands:</a></h3>
@@ -359,10 +371,7 @@
                 if new emotes have been added (it's basicially like pressing
                 reload in your browser, but only for some select stuff per command).</em></li>
         <li><code>/releaseinfo</code> - Opens the help with the release information</li>
-        <li><code>/myemotes</code> - Show your subscriber emote codes (only works if you
-            have joined any channel before, this is only a quick info, better emote
-            integration maybe to be implemented later)</li>
-        <li><code>/ffz</code>, <code>/ffzGlobal</code> - Shows the FFZ channel emote codes for the current channel/global FFZ emotes</li>
+        <li><code>/ffz</code> - Shows the FFZ channel emote codes for the current channel</li>
     </ul>
     
     <h3><a name="commands-test">Test commands:</a></h3>
@@ -625,10 +634,11 @@
     
     <h3><a name="commands-timer">Execute a command on a delay</a></h3>
     <p>The <code>/timer</code> command allows you to run a delayed command after
-        a duration or at a certain time. The same as similar commands (like
-        <code>/chain</code>) the timed command is run as if it was entered into
-        the same inputbox as the <code>/timer</code> command that started it
-        (might differ if the <code>-a</code> option is used).</p>
+        a duration or at a certain time. The timed command is run as if it was
+        entered into the inputbox of the same channel that the <code>/timer</code>
+        command was entered in (the command is not run at all if the channel is
+        not a regular channel or not open anymore, unless the <code>-a</code>
+        option is used).</p>
     
     <p>Certain restrictions apply:</p>
     <ul>
@@ -664,9 +674,11 @@
                     if it hasn't run yet. The timer is saved in the settings and
                     restored with the same target time, channel and timed
                     command. If the target time has already been passed when
-                    Chatty is started it will immediately run the timed command.)</li>
+                    Chatty is started again it will immediately run the timed
+                    command.)</li>
                 <li><code>-o</code> (If a timer of the same id already exists,
-                    overwrite it, otherwise the new timer will not be started.)</li>
+                    overwrite it, without this option the new timer would not be
+                    started in such a case.)</li>
                 <li><code>-s</code> (Silent, starting the timer successfully
                     doesn't output a message.)</li>
                 <li><code>-a</code> (Always run the command, even if the channel
