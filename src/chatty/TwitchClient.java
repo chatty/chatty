@@ -1633,6 +1633,18 @@ public class TwitchClient {
                 g.printSystem("Invalid channel: " + chan);
             }
         });
+        commands.add("debug", p -> {
+            if (rejectTimedMessage("debug", p.getRoom(), p.getParameters())) {
+                return;
+            }
+            String[] split = p.getArgs().split(" ", 2);
+            String actualCommand = split[0];
+            String actualParamter = null;
+            if (split.length == 2) {
+                actualParamter = split[1];
+            }
+            testCommands(p.getRoom(), actualCommand, actualParamter);
+        });
     }
     
     /**
@@ -1665,23 +1677,6 @@ public class TwitchClient {
         else if (customCommands.containsCommand(command, room)) {
             customCommand(room, command, parameters);
         }
-        
-        else if (command.equals("debug")) {
-            String[] split = parameter.split(" ", 2);
-            String actualCommand = split[0];
-            String actualParamter = null;
-            if (split.length == 2) {
-                actualParamter = split[1];
-            }
-            testCommands(room, actualCommand, actualParamter);
-        }
-        
-        //--------------------
-        // Only for testing
-        else if (Chatty.DEBUG || settings.getBoolean("debugCommands")) {
-            testCommands(room, command, parameter);
-        }
-        //----------------------
         
         else {
             g.printLine(Language.getString("chat.unknownCommand", command));

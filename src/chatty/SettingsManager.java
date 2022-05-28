@@ -111,7 +111,6 @@ public class SettingsManager {
 
         settings.addBoolean("dontSaveSettings", false);
         settings.addLong("autoSaveSettings", 15);
-        settings.addBoolean("debugCommands", false, false);
         settings.addBoolean("debugLogIrc", false);
         settings.addBoolean("debugLogIrcFile", false);
         settings.addBoolean("autoRequestMods", false);
