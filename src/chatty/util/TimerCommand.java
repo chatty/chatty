@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 public class TimerCommand {
     
     public static final String TIMER_PARAMETERS_KEY = "timercommand";
+    public static final String TIMER_PARAMETERS_KEY_CHANGED_CHANNEL = "timercommand-changed-channel";
     
     private static final String SETTING_NAME = "timers";
     

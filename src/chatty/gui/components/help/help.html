@@ -684,7 +684,9 @@
                 <li><code>-a</code> (Always run the command, even if the channel
                     the timer was started in is not open anymore or not valid,
                     which can make sense if the command being run is not
-                    channel-specific, such as modifying the Addressbook.)</li>
+                    channel-specific, such as modifying the Addressbook. If the
+                    channel is not open anymore the currently active channel is
+                    used, in which case sending messages it not allowed.)</li>
                 <li>Full example: <code>/timer -rs 10m /echo hello</code>
                     (Outputs "hello" in 10 minutes, keeps it when Chatty is
                     restarted within that time and doesn't output a timer

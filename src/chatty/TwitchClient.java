@@ -339,6 +339,7 @@ public class TwitchClient {
                     textInput(c.getRoomByChannel(chan), command, parameters);
                 }
                 else if (options.contains(TimerCommand.Option.CHANNEL_LENIENT)) {
+                    parameters.put(TimerCommand.TIMER_PARAMETERS_KEY_CHANGED_CHANNEL, "true");
                     textInput(g.getActiveRoom(), command, parameters);
                 }
                 else {
@@ -1011,11 +1012,15 @@ public class TwitchClient {
     
     private boolean checkRejectTimedMessage(Room room, Parameters parameters) {
         User localUser = getLocalUser(room.getChannel());
-        boolean rejected = !Helper.isRegularChannelStrict(room.getChannel())
-                            || localUser == null
-                            || (parameters != null
-                                && parameters.hasKey(TimerCommand.TIMER_PARAMETERS_KEY)
-                                && !localUser.hasModeratorRights());
+        boolean isTimed = parameters != null
+                            && parameters.hasKey(TimerCommand.TIMER_PARAMETERS_KEY);
+        boolean rejected = isTimed &&
+                            (
+                                !Helper.isRegularChannelStrict(room.getChannel())
+                                || localUser == null
+                                || !localUser.hasModeratorRights()
+                                || parameters.hasKey(TimerCommand.TIMER_PARAMETERS_KEY_CHANGED_CHANNEL)
+                            );
         if (rejected) {
             g.printSystem(room, "Could not send timed message (not a moderator or invalid channel)");
         }
@@ -1649,8 +1654,10 @@ public class TwitchClient {
             // Already done if true
         }
         
-        else if (c.command(channel, command, parameter, null)) {
-            // Already done if true
+        else if (TwitchCommands.isCommand(command)) {
+            if (!checkRejectTimedMessage(room, parameters)) {
+                c.command(channel, command, parameter, null);
+            }
         }
         
         // Has to be tested last, so regular commands with the same name take
@@ -1853,16 +1860,6 @@ public class TwitchClient {
             if (raw != null) {
                 c.simulate(raw);
             }
-        } else if (command.equals("lb")) {
-            String[] split = parameter.split("&");
-            String message = "";
-            for (int i=0;i<split.length;i++) {
-                if (!message.isEmpty()) {
-                    message += "\r";
-                }
-                message += split[i];
-            }
-            sendMessage(channel, message);
         } else if (command.equals("c1")) {
             sendMessage(channel, (char)1+parameter);
         } else if (command.equals("gc")) {
@@ -1923,13 +1920,7 @@ public class TwitchClient {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
             for (int i=0;i<count;i++) {
-                commandInput(room, "/"+split[1]);
-            }
-        } else if (command.equals("chain")) {
-            String[] split = parameter.split("\\|");
-            for (String part : split) {
-                System.out.println("Command: "+part.trim());
-                commandInput(room, "/"+part.trim());
+//                commandInput(room, "/"+split[1]);
             }
         } else if (command.equals("modactiontest3")) {
             List<String> args = new ArrayList<>();
