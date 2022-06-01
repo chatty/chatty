@@ -213,7 +213,7 @@ public abstract class Irc {
         boolean secured = securedPorts.contains(address.getPort());
         onConnectionAttempt(address.getHostString(), address.getPort(), secured);
         connection = new Connection(this,address, id, secured);
-        new Thread(connection).start();
+        new Thread(connection, "IRC").start();
     }
     
     
