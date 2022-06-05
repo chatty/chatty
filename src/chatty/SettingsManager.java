@@ -332,6 +332,7 @@ public class SettingsManager {
         List<String> commandsDefault = new ArrayList<>();
         commandsDefault.add("/slap /me slaps $$1- around a bit with a large trout");
         commandsDefault.add("/permit !permit $$1");
+        commandsDefault.add("/j /join $$1-");
         settings.addList("commands", commandsDefault, Setting.STRING);
         settings.addMap("var", new HashMap(), Setting.STRING);
         settings.addList("timers", new ArrayList<>(), Setting.LIST);
