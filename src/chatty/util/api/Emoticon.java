@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import chatty.util.api.CachedImage.CachedImageUser;
+import java.util.Locale;
 
 /**
  * A single emoticon, that contains a pattern, an URL to the image and
@@ -245,11 +246,11 @@ public class Emoticon {
     public static String getTwitchEmoteUrlById(String id, int factor, ImageType imageType) {
         switch (imageType) {
             case STATIC:
-                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/static/dark/%d.0", id, factor);
+                return String.format(Locale.ROOT, "https://static-cdn.jtvnw.net/emoticons/v2/%s/static/dark/%d.0", id, factor);
             case ANIMATED_DARK:
-                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/default/dark/%d.0", id, factor);
+                return String.format(Locale.ROOT, "https://static-cdn.jtvnw.net/emoticons/v2/%s/default/dark/%d.0", id, factor);
             case ANIMATED_LIGHT:
-                return String.format("https://static-cdn.jtvnw.net/emoticons/v2/%s/default/light/%d.0", id, factor);
+                return String.format(Locale.ROOT, "https://static-cdn.jtvnw.net/emoticons/v2/%s/default/light/%d.0", id, factor);
         }
         return null;
     }

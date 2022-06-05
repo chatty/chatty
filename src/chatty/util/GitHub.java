@@ -3,6 +3,7 @@ package chatty.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -102,7 +103,7 @@ public class GitHub {
         
         @Override
         public String toString() {
-            return String.format("total: %d latest: %s latestBeta: %s",
+            return String.format(Locale.ROOT, "total: %d latest: %s latestBeta: %s",
                     releases.size(), getLatest(), getLatestBeta());
         }
     }

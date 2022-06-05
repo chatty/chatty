@@ -20,6 +20,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -117,7 +118,7 @@ public class ChatLog {
             return;
         }
         if (isSettingEnabled("logBits") && isChanEnabled(channel)) {
-            writeLine(channel, String.format("%sBITS: %s (%d)",
+            writeLine(channel, String.format(Locale.ROOT, "%sBITS: %s (%d)",
                     timestamp(),
                     user.getRegularDisplayNick(),
                     amount));

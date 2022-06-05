@@ -4,6 +4,7 @@ package chatty.util;
 import chatty.util.api.Emoticon;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -67,7 +68,7 @@ public class ChattyMisc {
 //        result.put("TopHat", -16);
 //        result.put("SantaHat", -16);
         ///TEST
-        LOGGER.info(String.format("Found %d combined emotes", result.size()));
+        LOGGER.info(String.format(Locale.ROOT, "Found %d combined emotes", result.size()));
         combinedEmotesInfo = new CombinedEmotesInfo(result);
     }
     

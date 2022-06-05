@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.TimedCounter;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -75,7 +76,7 @@ public class SpamProtection {
     
     @Override
     public String toString() {
-        return String.format("%d lines in %d seconds, %d left",
+        return String.format(Locale.ROOT, "%d lines in %d seconds, %d left",
                 lines, seconds, getAllowance());
     }
     

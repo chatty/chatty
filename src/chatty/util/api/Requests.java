@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.function.Consumer;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -111,7 +112,7 @@ public class Requests {
     //===================
     
     protected void requestFollowedStreams(String token, String cursor) {
-        String url = String.format("https://api.twitch.tv/helix/streams/followed?user_id=%s&first=%d",
+        String url = String.format(Locale.ROOT, "https://api.twitch.tv/helix/streams/followed?user_id=%s&first=%d",
                 api.localUserId,
                 StreamInfoManager.FOLLOWED_STREAMS_LIMIT);
         if (!StringUtil.isNullOrEmpty(cursor)) {
@@ -454,7 +455,7 @@ public class Requests {
     }
     
     public void getBlockedTerms(String streamId, String login, String cursor) {
-        String url = String.format("https://api.twitch.tv/helix/moderation/blocked_terms?broadcaster_id=%s&moderator_id=%s&first=%d",
+        String url = String.format(Locale.ROOT, "https://api.twitch.tv/helix/moderation/blocked_terms?broadcaster_id=%s&moderator_id=%s&first=%d",
                 streamId,
                 api.localUserId,
                 BlockedTermsManager.MAX_RESULTS_PER_REQUEST);

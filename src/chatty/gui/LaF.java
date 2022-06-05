@@ -17,6 +17,7 @@ import com.jtattoo.plaf.noire.NoireLookAndFeel;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -611,12 +612,12 @@ public class LaF {
     }
     
     private static void setColor(Properties p, String property, Color color) {
-        p.put(property, String.format("%d %d %d", color.getRed(), color.getGreen(), color.getBlue()));
+        p.put(property, String.format(Locale.ROOT, "%d %d %d", color.getRed(), color.getGreen(), color.getBlue()));
     }
     
     private static void setColorG(Properties p, String property, Color cl, Color cd) {
-        p.put(property+"Light", String.format("%d %d %d", cl.getRed(), cl.getGreen(), cl.getBlue()));
-        p.put(property+"Dark", String.format("%d %d %d", cd.getRed(), cd.getGreen(), cd.getBlue()));
+        p.put(property+"Light", String.format(Locale.ROOT, "%d %d %d", cl.getRed(), cl.getGreen(), cl.getBlue()));
+        p.put(property+"Dark", String.format(Locale.ROOT, "%d %d %d", cd.getRed(), cd.getGreen(), cd.getBlue()));
     }
     
     /**

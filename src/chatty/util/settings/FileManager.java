@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -226,7 +227,7 @@ public class FileManager {
         long latestTimestamp = backupFiles.getLatestTimestamp(AUTO_BACKUP_PREFIX);
         List<FileInfo> autoFiles = backupFiles.filter(AUTO_BACKUP_PREFIX);
         
-        LOGGER.info(String.format("[Backup] Latest: %s Delay: %s Count: %d Auto: %d Keep: %d",
+        LOGGER.info(String.format(Locale.ROOT, "[Backup] Latest: %s Delay: %s Count: %d Auto: %d Keep: %d",
                 DateTime.formatFullDatetime(latestTimestamp*1000),
                 DateTime.duration(backupDelay*1000, 1, 0),
                 backupFiles.count(),

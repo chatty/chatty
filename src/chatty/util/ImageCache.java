@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
@@ -137,7 +138,7 @@ public class ImageCache {
                 fullPrefix = GLOBAL_PREFIX+prefix+"__";
             }
             int deletedFilesCount = MiscUtil.deleteInDir(dir, fullPrefix, false);
-            LOGGER.info(String.format("ImageCache: Deleted %d files in %s",
+            LOGGER.info(String.format(Locale.ROOT, "ImageCache: Deleted %d files in %s",
                     deletedFilesCount, dir));
             return deletedFilesCount;
         } catch (IOException ex) {
@@ -165,7 +166,7 @@ public class ImageCache {
                 }
             }
             if (deletedCount > 0) {
-                LOGGER.info(String.format("Deleted %d files from old cache",
+                LOGGER.info(String.format(Locale.ROOT, "Deleted %d files from old cache",
                         deletedCount));
             }
         } catch (IOException ex) {
@@ -231,7 +232,7 @@ public class ImageCache {
             fileCount += deleteExpiredFilesInDir(random.getCanonicalFile(), DELETE_FILES_OLDER_THAN);
             dirs.remove(random);
         }
-        LOGGER.info(String.format("ImageCache: Checked %d files in %d subdirs (%s)",
+        LOGGER.info(String.format(Locale.ROOT, "ImageCache: Checked %d files in %d subdirs (%s)",
                 fileCount,
                 dirsArray.length - dirs.size(),
                 dirsArray[0].getParent()));
@@ -268,7 +269,7 @@ public class ImageCache {
                 }
             }
             if (toDelete > 0) {
-                LOGGER.info(String.format("ImageCache: Deleted %d/%d files (checked %d in %s)",
+                LOGGER.info(String.format(Locale.ROOT, "ImageCache: Deleted %d/%d files (checked %d in %s)",
                         deleted, toDelete, files.length, dir));
             }
             return files.length;

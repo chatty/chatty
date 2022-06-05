@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -754,7 +755,7 @@ public class Addressbook {
                 }
             }
         }
-        LOGGER.info(String.format("Read %d addressbook entries from settings",
+        LOGGER.info(String.format(Locale.ROOT, "Read %d addressbook entries from settings",
                 entries.size()));
         scanCategories();
         return true;

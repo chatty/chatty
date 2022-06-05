@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -170,7 +171,7 @@ public class Request implements Runnable {
         //-----------------------
         // Debug output / Output
         //-----------------------
-        LOGGER.info(String.format("GOT (%d/%d, %d%s): %s%s",
+        LOGGER.info(String.format(Locale.ROOT, "GOT (%d/%d, %d%s): %s%s",
                 responseCode,
                 ratelimitRemaining,
                 responseText != null ? responseText.length() : -1,
@@ -283,7 +284,7 @@ public class Request implements Runnable {
         //-----------------------
         // Debug output / Output
         //-----------------------
-        LOGGER.info(String.format("GOT (%d/%d, %d%s): %s%s",
+        LOGGER.info(String.format(Locale.ROOT, "GOT (%d/%d, %d%s): %s%s",
                 responseCode,
                 ratelimitRemaining,
                 responseText != null ? responseText.length() : -1,

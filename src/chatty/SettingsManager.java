@@ -76,7 +76,7 @@ public class SettingsManager {
                     JSONParser parser = new JSONParser();
                     JSONObject root = (JSONObject)parser.parse(content);
                     JSONArray ab = (JSONArray)root.get("abEntries");
-                    return new FileManager.FileContentInfo(true, String.format("%d settings, %d addressbook entries",
+                    return new FileManager.FileContentInfo(true, String.format(Locale.ROOT, "%d settings, %d addressbook entries",
                             root.size(), ab != null ? ab.size() : 0));
                 }
                 catch (Exception ex) {

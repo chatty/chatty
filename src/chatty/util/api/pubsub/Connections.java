@@ -6,6 +6,7 @@ import chatty.util.jws.MessageHandler;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Manage several connections.
@@ -38,7 +39,7 @@ public class Connections {
         if (connections.size() < MAX_CONNECTIONS) {
             int connId = connections.size();
             PubSub c = new PubSub(server, createHandler(connId));
-            c.setDebugPrefix(String.format("[PubSub][%d] ", connId));
+            c.setDebugPrefix(String.format(Locale.ROOT, "[PubSub][%d] ", connId));
             c.init();
             connections.add(c);
             return c.addTopic(topic, token);

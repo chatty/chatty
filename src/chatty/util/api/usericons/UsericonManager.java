@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -74,7 +75,7 @@ public class UsericonManager {
     }
     
     public synchronized void setThirdPartyIcons(List<Usericon> icons) {
-        LOGGER.info(String.format("Added %d third-party badges", icons.size()));
+        LOGGER.info(String.format(Locale.ROOT, "Added %d third-party badges", icons.size()));
         this.thirdParty.clear();
         this.thirdParty.addAll(icons);
     }
@@ -596,9 +597,9 @@ public class UsericonManager {
     }
  
     public synchronized void debug() {
-        LOGGER.info(String.format("Default usericons (%d): %s",
+        LOGGER.info(String.format(Locale.ROOT, "Default usericons (%d): %s",
                 defaultIcons.size(), defaultIcons));
-        LOGGER.info(String.format("Custom usericons (%d): %s",
+        LOGGER.info(String.format(Locale.ROOT, "Custom usericons (%d): %s",
                 customIcons.size(), customIcons));
     }
 

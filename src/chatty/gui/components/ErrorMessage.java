@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.logging.LogRecord;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -232,7 +233,7 @@ public class ErrorMessage extends JDialog {
         errors.add(errorText);
         if (errorCount == 1) {
             setTitle("Error");
-            debugMessage.setText(String.format("Error Report // %s / %s / %s / %s / Chans: %d\n\n",
+            debugMessage.setText(String.format(Locale.ROOT, "Error Report // %s / %s / %s / %s / Chans: %d\n\n",
                     DateTime.fullDateTime(),
                     Chatty.chattyVersion(),
                     Helper.systemInfo(),

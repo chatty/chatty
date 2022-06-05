@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
@@ -240,7 +241,7 @@ public class Sound {
             }
         }
         if (clipsClosed > 0) {
-            LOGGER.warning(String.format("%d clips closed which should already have been closed", clipsClosed));
+            LOGGER.warning(String.format(Locale.ROOT, "%d clips closed which should already have been closed", clipsClosed));
         }
     }
     

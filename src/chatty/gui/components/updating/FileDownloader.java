@@ -9,6 +9,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,7 +87,7 @@ public class FileDownloader implements Runnable {
                     }
                 }
             }
-            LOGGER.info(String.format("Download completed (%d/%d)", totalBytes, contentLength));
+            LOGGER.info(String.format(Locale.ROOT, "Download completed (%d/%d)", totalBytes, contentLength));
             listener.completed(totalBytes, contentLength);
         } catch (IOException ex) {
             LOGGER.warning("Request Error [" + from + "] (" + ex + ")");
