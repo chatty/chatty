@@ -277,7 +277,10 @@ public class AutoCompletionWindow {
             containingWindow.removeComponentListener(componentListener);
         }
         textField.removeFocusListener(focusListener);
-        infoWindow = null;
+        if (infoWindow != null) {
+            infoWindow.dispose();
+            infoWindow = null;
+        }
     }
     
     /**
