@@ -102,7 +102,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
             "logPath", "logTimestamp", "logSplit", "logSubdirectories",
             "logLockFiles", "logMessageTemplate",
-            "laf", "lafTheme", "lafFontScale", "language", "timezone",
+            "laf", "lafTheme", "lafFontScale", "language", "timezone", "locale",
             "userDialogMessageLimit"
     ));
     

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 import javax.swing.JButton;
@@ -104,13 +105,16 @@ public class MainSettings extends SettingsPanel {
                 d.getLinkLabelListener()),
                 d.makeGbc(0, 1, 2, 1));
         
+        ComboStringSetting localeSetting = d.addComboStringSetting("locale", 0, false, getLocaleOptions());
+        SettingsUtil.addLabeledComponent(languagePanel, "locale", 0, 2, 1, GridBagConstraints.EAST, localeSetting);
+        
         JLabel timezoneLabel = SettingsUtil.createLabel("timezone");
         languagePanel.add(timezoneLabel,
-                d.makeGbc(0, 2, 1, 1));
+                d.makeGbc(0, 3, 1, 1));
         TimezoneSetting timezoneSetting = new TimezoneSetting(d);
         timezoneLabel.setLabelFor(timezoneSetting);
         d.addStringSetting("timezone", timezoneSetting);
-        gbc = d.makeGbc(1, 2, 1, 1);
+        gbc = d.makeGbc(1, 3, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
         languagePanel.add(timezoneSetting,
@@ -198,6 +202,24 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("es", "Spanish / Español");
         languageOptions.put("tr", "Turkish / Türk");
         return languageOptions;
+    }
+    
+    public static Map<String, String> getLocaleOptions() {
+        Map<String, String> result = new LinkedHashMap<>();
+        result.put("", "Default");
+        List<Locale> locales = new ArrayList<>();
+        for (Locale locale : Locale.getAvailableLocales()) {
+            locales.add(locale);
+        }
+        Collections.sort(locales, (o1, o2) -> {
+            return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+        });
+        for (Locale locale : locales) {
+            if (!locale.getDisplayName().trim().isEmpty()) {
+                result.put(locale.toLanguageTag(), locale.getDisplayName());
+            }
+        }
+        return result;
     }
     
     /**

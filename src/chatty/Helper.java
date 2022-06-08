@@ -1044,6 +1044,15 @@ public class Helper {
         }
     }
     
+    public static void setDefaultLocale(String input) {
+        if (!StringUtil.isNullOrEmpty(input)) {
+            Locale locale = Locale.forLanguageTag(input);
+            Locale.setDefault(locale);
+            LOGGER.info(String.format("[Locale] Set to %s [%s]",
+                    locale.getDisplayName(), locale.toLanguageTag()));
+        }
+    }
+    
     public static String getErrorMessageWithCause(Throwable ex) {
         Throwable cause = ex.getCause();
         if (cause != null) {

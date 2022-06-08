@@ -233,8 +233,16 @@ public class TwitchClient {
         settingsManager.backupFiles();
         settingsManager.startAutoSave(this);
         
-        launchCommand = args.get("cc");
+        Language.setLanguage(settings.getString("language"));
+        /**
+         * Not sure how much there is that doesn't get affected by a locale
+         * change at this point, but it's pretty much as early as it can be when
+         * loaded from the settings.
+         */
+        Helper.setDefaultLocale(settings.getString("locale"));
         Helper.setDefaultTimezone(settings.getString("timezone"));
+        
+        launchCommand = args.get("cc");
         
         addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
             Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
@@ -262,8 +270,6 @@ public class TwitchClient {
         bttvEmotes = new BTTVEmotes(new EmoteListener(), api);
         TwitchEmotesApi.api.setTwitchApi(api);
         Timestamp.setTwitchApi(api);
-        
-        Language.setLanguage(settings.getString("language"));
         
         pubsub = new chatty.util.api.pubsub.Manager(
                 settings.getString("pubsub"), pubsubListener, api);
