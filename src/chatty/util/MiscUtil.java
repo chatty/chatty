@@ -347,5 +347,12 @@ public class MiscUtil {
             return false;
         }
     }
+
+    public static String intern(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.intern();
+    }
     
 }

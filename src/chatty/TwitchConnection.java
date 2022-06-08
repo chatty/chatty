@@ -10,6 +10,7 @@ import chatty.util.BotNameManager;
 import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticons;
+import chatty.util.irc.IrcBadges;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -927,12 +928,12 @@ public class TwitchConnection {
             // Whether anything in the user changed to warrant an update
             boolean changed = false;
             
-            Map<String, String> badges = Helper.parseBadges(tags.get("badges"));
+            IrcBadges badges = IrcBadges.parse(tags.get("badges"));
             if (user.setTwitchBadges(badges)) {
                 changed = true;
             }
             
-            Map<String, String> badgeInfo = Helper.parseBadges(tags.get("badge-info"));
+            IrcBadges badgeInfo = IrcBadges.parse(tags.get("badge-info"));
             String subMonths = badgeInfo.get("subscriber");
             if (subMonths == null) {
                 subMonths = badgeInfo.get("founder");
@@ -954,24 +955,24 @@ public class TwitchConnection {
             }
             
             // Update user status
-            boolean turbo = tags.isTrue("turbo") || badges.containsKey("turbo") || badges.containsKey("premium");
+            boolean turbo = tags.isTrue("turbo") || badges.hasId("turbo") || badges.hasId("premium");
             if (user.setTurbo(turbo)) {
                 changed = true;
             }
-            boolean subscriber = badges.containsKey("subscriber") || badges.containsKey("founder");
+            boolean subscriber = badges.hasId("subscriber") || badges.hasId("founder");
             if (user.setSubscriber(subscriber)) {
                 changed = true;
             }
-            if (user.setVip(badges.containsKey("vip"))) {
+            if (user.setVip(badges.hasId("vip"))) {
                 changed = true;
             }
-            if (user.setModerator(badges.containsKey("moderator"))) {
+            if (user.setModerator(badges.hasId("moderator"))) {
                 changed = true;
             }
-            if (user.setAdmin(badges.containsKey("admin"))) {
+            if (user.setAdmin(badges.hasId("admin"))) {
                 changed = true;
             }
-            if (user.setStaff(badges.containsKey("staff"))) {
+            if (user.setStaff(badges.hasId("staff"))) {
                 changed = true;
             }
             

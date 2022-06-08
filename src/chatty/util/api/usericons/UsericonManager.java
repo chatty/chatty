@@ -7,6 +7,7 @@ import chatty.gui.GuiUtil;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
 import chatty.util.StringUtil;
+import chatty.util.irc.IrcBadges;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.net.URL;
@@ -189,7 +190,7 @@ public class UsericonManager {
         return result;
     }
     
-    public synchronized List<Usericon> getBadges(Map<String, String> badgesDef,
+    public synchronized List<Usericon> getBadges(IrcBadges badgesDef,
             User user, User localUser, boolean botBadgeEnabled, MsgTags tags, boolean channelLogo) {
         List<Usericon> icons = getTwitchBadges(badgesDef, user, tags);
         if (user.isBot() && botBadgeEnabled) {
@@ -219,13 +220,14 @@ public class UsericonManager {
         return icons;
     }
 
-    private List<Usericon> getTwitchBadges(Map<String, String> badgesDef, User user, MsgTags tags) {
+    private List<Usericon> getTwitchBadges(IrcBadges badgesDef, User user, MsgTags tags) {
         if (badgesDef == null || badgesDef.isEmpty()) {
             return new ArrayList<>();
         }
         List<Usericon> result = new ArrayList<>();
-        for (String id : badgesDef.keySet()) {
-            String value = badgesDef.get(id);
+        for (int i=0; i<badgesDef.size(); i++) {
+            String id = badgesDef.getId(i);
+            String value = badgesDef.getVersion(i);
             Usericon icon = getIcon(Type.TWITCH, id, value, user, tags);
             if (icon != null) {
                 result.add(icon);
@@ -408,13 +410,13 @@ public class UsericonManager {
      */
     private boolean iconMatchesUser(Usericon icon, User user, MsgTags tags) {
         if (icon.badgeTypeRestriction.id != null) {
-            Map<String, String> badges = user.getTwitchBadges();
+            IrcBadges badges = user.getTwitchBadges();
             String id = icon.badgeTypeRestriction.id;
             String version = icon.badgeTypeRestriction.version;
             if (badges == null) {
                 return false;
             }
-            if (!badges.containsKey(id)) {
+            if (!badges.hasId(id)) {
                 return false;
             }
             if (version != null && !badges.get(id).equals(version)) {

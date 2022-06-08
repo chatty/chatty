@@ -2724,9 +2724,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                          * Add emote from message alone
                          */
                         String code = text.substring(start, end+1);
-                        String url = Emoticon.getTwitchEmoteUrlById(id, 1, styles.emoticonImageType());
                         Emoticon.Builder b = new Emoticon.Builder(
-                                Emoticon.Type.TWITCH, code, url);
+                                Emoticon.Type.TWITCH, code, null);
                         b.setStringId(id);
                         b.setEmoteset(Emoticon.SET_UNKNOWN);
                         emoticon = b.build();

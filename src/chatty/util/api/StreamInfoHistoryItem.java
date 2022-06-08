@@ -1,6 +1,7 @@
 
 package chatty.util.api;
 
+import chatty.util.MiscUtil;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo.StreamType;
 import java.util.List;
@@ -44,14 +45,14 @@ public class StreamInfoHistoryItem {
             long startedTimeWithPicnic) {
         this.viewers = viewers;
         this.status = status;
-        this.game = game;
+        this.game = MiscUtil.intern(game);
         this.online = true;
-        this.statusAndGame = status+game;
+        this.statusAndGame = MiscUtil.intern(status+game);
         this.time = time;
         if (status == null) {
             title = "No stream title set";
         } else {
-            title = status;
+            title = MiscUtil.intern(status);
         }
         this.streamType = streamType;
         this.community = community;

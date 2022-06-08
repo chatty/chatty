@@ -193,13 +193,15 @@ public class InfoPanel extends JPanel {
             });
             if (user.getTwitchBadges() != null) {
                 String info = "";
-                for (Map.Entry<String, String> badge : user.getTwitchBadges().entrySet()) {
-                    switch (badge.getKey()) {
+                for (int i=0;i<user.getTwitchBadges().size();i++) {
+                    String id = user.getTwitchBadges().getId(i);
+                    String version = user.getTwitchBadges().getVersion(i);
+                    switch (id) {
                         case "founder":
                             info = "Founder";
                             break;
                         case "subscriber":
-                            info = BadgeManager.makeSubscriberTitle(badge.getValue());
+                            info = BadgeManager.makeSubscriberTitle(version);
                             break;
                     }
                 }

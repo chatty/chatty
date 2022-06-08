@@ -12,6 +12,7 @@ import chatty.util.ImageCache.ImageResult;
 import chatty.util.StringUtil;
 import chatty.util.api.CachedImage;
 import chatty.util.api.CachedImageManager;
+import chatty.util.irc.IrcBadges;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -607,21 +608,20 @@ public class Usericon implements Comparable {
         return null;
     }
     
-    public static String makeBadgeInfo(Map<String, String> badgesDef) {
+    public static String makeBadgeInfo(IrcBadges badgesDef) {
         StringBuilder b = new StringBuilder();
-        for (String id : badgesDef.keySet()) {
-            String value = badgesDef.get(id);
+        badgesDef.forEach((id, version) -> {
             Type type = typeFromBadgeId(id);
             if (type != null) {
                 if (b.length() > 0) {
                     b.append("|");
                 }
                 b.append(type.shortLabel);
-                if (value != null && !value.equals("1")) {
-                    b.append("/").append(value);
+                if (version != null && !version.equals("1")) {
+                    b.append("/").append(version);
                 }
             }
-        }
+        });
         if (b.length() > 0) {
             b.insert(0, "[");
             b.append("]");

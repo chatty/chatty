@@ -10,12 +10,12 @@ import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.irc.IrcBadges;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -92,7 +92,7 @@ public class User implements Comparable<User> {
     /**
      * Current badges id/version. Map gets replaced, not modified.
      */
-    private Map<String, String> twitchBadges;
+    private IrcBadges twitchBadges;
     private short subMonths;
     private volatile UsericonManager iconManager;
     
@@ -123,7 +123,7 @@ public class User implements Comparable<User> {
     //==========
     // Messages
     //==========
-    private final List<Message> lines = new ArrayList<>();
+    private List<Message> lines;
 
     private int numberOfMessages;
     private int numberOfLines;
@@ -167,7 +167,7 @@ public class User implements Comparable<User> {
      * @return true if the User was changed, false if the badges are the same as
      * before
      */
-    public synchronized boolean setTwitchBadges(Map<String, String> badges) {
+    public synchronized boolean setTwitchBadges(IrcBadges badges) {
         if (!Objects.equals(badges, this.twitchBadges)) {
             this.twitchBadges = badges;
             updateFullNick();
@@ -182,7 +182,7 @@ public class User implements Comparable<User> {
      * 
      * @return 
      */
-    public synchronized Map<String, String> getTwitchBadges() {
+    public synchronized IrcBadges getTwitchBadges() {
         return twitchBadges;
     }
     
@@ -194,15 +194,15 @@ public class User implements Comparable<User> {
      * otherwise
      */
     public synchronized boolean hasTwitchBadge(String id) {
-        return twitchBadges != null && twitchBadges.containsKey(id);
+        return twitchBadges != null && twitchBadges.hasId(id);
     }
     
     public synchronized boolean hasTwitchBadge(String id, String version) {
-        return twitchBadges != null && twitchBadges.containsKey(id) && twitchBadges.get(id).equals(version);
+        return twitchBadges != null && twitchBadges.hasIdVersion(id, version);
     }
     
     public List<Usericon> getBadges(boolean botBadgeEnabled, MsgTags tags, User localUser, boolean channelLogo) {
-        Map<String, String> badges = getTwitchBadges();
+        IrcBadges badges = getTwitchBadges();
         if (iconManager != null) {
             return iconManager.getBadges(badges, this, localUser, botBadgeEnabled, tags, channelLogo);
         }
@@ -327,7 +327,8 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized boolean linesCleared() {
-        return lines.size() < maxLines && lines.size() < numberOfLines;
+        int numLines = lines != null ? lines.size() : 0;
+        return numLines < maxLines && numLines < numberOfLines;
     }
     
     /**
@@ -338,7 +339,8 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized boolean maxLinesExceeded() {
-        return lines.size() == maxLines && lines.size() < numberOfLines;
+        int numLines = lines != null ? lines.size() : 0;
+        return numLines == maxLines && numLines < numberOfLines;
     }
     
     /**
@@ -434,6 +436,9 @@ public class User implements Comparable<User> {
     }
     
     private synchronized boolean addBanInfoNow(ModeratorActionData data) {
+        if (lines == null) {
+            return false;
+        }
         String command = ModLogInfo.makeCommand(data);
         for (int i=lines.size() - 1; i>=0; i--) {
             Message m = lines.get(i);
@@ -475,6 +480,9 @@ public class User implements Comparable<User> {
      * @param line The Message object containig the data for this line.
      */
     private void addLine(Message line) {
+        if (lines == null) {
+            lines = new ArrayList<>();
+        }
         lines.add(line);
         if (lines.size() > maxLines) {
             lines.remove(0);
@@ -489,10 +497,16 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized List<Message> getMessages() {
+        if (lines == null) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(lines);
     }
     
     public synchronized int getNumberOfSimilarChatMessages(String compareMsg, int method, long timeframe, float minSimilarity, int minLen, char[] ignoredChars) {
+        if (lines == null) {
+            return 0;
+        }
         compareMsg = StringUtil.prepareForSimilarityComparison(compareMsg, ignoredChars);
         int result = 0;
         long checkUntilTime = System.currentTimeMillis() - timeframe * 1000;
@@ -518,6 +532,9 @@ public class User implements Comparable<User> {
         if (msgId == null) {
             return null;
         }
+        if (lines == null) {
+            return null;
+        }
         for (Message msg : lines) {
             if (msg instanceof TextMessage) {
                 TextMessage textMsg = (TextMessage)msg;
@@ -538,6 +555,9 @@ public class User implements Comparable<User> {
         if (msgId == null) {
             return null;
         }
+        if (lines == null) {
+            return null;
+        }
         for (Message msg : lines) {
             if (msg instanceof AutoModMessage) {
                 AutoModMessage autoModMsg = (AutoModMessage) msg;
@@ -555,17 +575,18 @@ public class User implements Comparable<User> {
     }
     
     public synchronized int clearMessagesIfInactive(long duration) {
-        if (!lines.isEmpty()
+        if (lines != null
+                && !lines.isEmpty()
                 && System.currentTimeMillis() - getLastLineTime() >= duration) {
             int size = lines.size();
-            lines.clear();
+            lines = null;
             return size;
         }
         return 0;
     }
     
     public synchronized void clearMessages() {
-        lines.clear();
+        lines = null;
         numberOfMessages = 0;
         numberOfLines = 0;
     }
@@ -611,8 +632,8 @@ public class User implements Comparable<User> {
     /**
      * Whether this user has a display nick set that only differs from the
      * username by case.
-     * 
-     * @return 
+     *
+     * @return
      */
     public synchronized boolean hasRegularDisplayNick() {
         return hasRegularDisplayNick;
@@ -762,7 +783,7 @@ public class User implements Comparable<User> {
     /**
      * This merely means that the color has gone through color correction, it
      * may not be different from the original color.
-     * 
+     *
      * @return 
      */
     public synchronized boolean hasCorrectedColor() {
@@ -891,7 +912,7 @@ public class User implements Comparable<User> {
     /**
      * Returns true if this user has channel moderator rights, which includes
      * either being a Moderator or the Broadcaster.
-     * 
+     *
      * @return true if this user is a moderator or the broadcaster, false
      * otherwise
      */
@@ -902,7 +923,7 @@ public class User implements Comparable<User> {
     /**
      * Returns true if this user has any kind of moderator rights, this includes
      * Moderator, Broadcaster, Global Mod, Admin and Staff.
-     * 
+     *
      * @return true if this user has moderator powers, false otherwise
      */
     public synchronized boolean hasModeratorRights() {

@@ -4,6 +4,7 @@ package chatty.util.api.usericons;
 import chatty.Room;
 import chatty.User;
 import chatty.gui.MainGui;
+import chatty.util.irc.IrcBadges;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class UsericonManagerTest {
     
     private void testThirdParty(UsericonManager m, Set<String> usernames, Set<String> userids, User user, boolean... results) {
         List<Usericon> thirdParty = setThirdParty(m, usernames, userids);
-        List<Usericon> badges = m.getBadges(new HashMap<>(), user, null, false, null, false);
+        List<Usericon> badges = m.getBadges(IrcBadges.parse(null), user, null, false, null, false);
         for (int i=0;i<results.length;i++) {
             if (results[i]) {
                 assertTrue("Badge "+i, badges.contains(thirdParty.get(i)));

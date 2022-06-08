@@ -613,12 +613,12 @@ public class TwitchClient {
         //testUser.setAdmin(true);
         //testUser.setStaff(true);
         //testUser.setBroadcaster(true);
-        LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
+//        LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
 //        badgesTest.put("global_mod", "1");
 //        badgesTest.put("moderator", "1");
 //        badgesTest.put("premium", "1");
 //        badgesTest.put("bits", "1000000");
-        testUser.setTwitchBadges(badgesTest);
+//        testUser.setTwitchBadges(badgesTest);
     }
     
     /**

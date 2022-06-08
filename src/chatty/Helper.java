@@ -827,31 +827,6 @@ public class Helper {
         return null;
     }
     
-    private static final Map<String, String> EMPTY_BADGES = Collections.unmodifiableMap(new LinkedHashMap<String, String>());
-    
-    /**
-     * Parses the badges tag. The resulting map is unmodifiable.
-     * 
-     * @param data
-     * @return 
-     */
-    public static Map<String, String> parseBadges(String data) {
-        if (data == null || data.isEmpty()) {
-            return EMPTY_BADGES;
-        }
-        LinkedHashMap<String, String> result = new LinkedHashMap<>();
-        String[] badges = data.split(",");
-        for (String badge : badges) {
-            String[] split = badge.split("/");
-            if (split.length == 2) {
-                String id = split[0];
-                String version = split[1];
-                result.put(id, version);
-            }
-        }
-        return Collections.unmodifiableMap(result);
-    }
-    
     public static short parseShort(String input, short defaultValue) {
         try {
             return Short.parseShort(input);

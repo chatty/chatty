@@ -11,6 +11,7 @@ import chatty.lang.Language;
 import chatty.util.StringUtil;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
+import chatty.util.irc.IrcBadges;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -124,9 +125,7 @@ public class LogSettings extends SettingsPanel {
                     User user = new User("testuser", "テストユーザー", Room.createRegular("#testchannel"));
                     user.setId("123456");
                     user.setSubscriber(true);
-                    Map<String, String> badges = new LinkedHashMap<>();
-                    badges.put("subscriber", "12");
-                    user.setTwitchBadges(badges);
+                    user.setTwitchBadges(IrcBadges.parse("subscriber/12"));
                     String normalResult = command.replace(ChatLog.messageParam(
                             user,
                             "Hello, good day! :)",
@@ -143,13 +142,9 @@ public class LogSettings extends SettingsPanel {
                             "[12:34:56]"));
                     
                     // More badges
-                    badges.clear();
-                    badges.put("vip", "1");
-                    badges.put("founder", "0");
-                    badges.put("premium", "1");
                     user = new User("TestName", Room.createRegular("#testchannel"));
                     user.setId("123457");
-                    user.setTwitchBadges(badges);
+                    user.setTwitchBadges(IrcBadges.parse("vip/1,founder/0,premium/1"));
                     user.setVip(true);
                     user.setSubscriber(true);
                     user.setTurbo(true);

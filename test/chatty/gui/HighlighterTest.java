@@ -8,6 +8,7 @@ import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.HighlightItem.Type;
 import chatty.gui.Highlighter.Match;
 import chatty.util.Replacer2;
+import chatty.util.irc.IrcBadges;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.awt.Color;
@@ -49,13 +50,8 @@ public class HighlighterTest {
         ab.add("testUser", "testCat,testCat2");
         ab.add("testUser3", "testCat2");
         ab.add("testUser2", "testCat3");
-        Map<String, String> badges = new HashMap<>();
-        badges.put("vip", "1");
-        badges.put("subscriber", "24");
-        user.setTwitchBadges(badges);
-        Map<String, String> badges2 = new HashMap<>();
-        badges2.put("subscriber", "12");
-        user2.setTwitchBadges(badges2);
+        user.setTwitchBadges(IrcBadges.parse("vip/1,subscriber/24"));
+        user2.setTwitchBadges(IrcBadges.parse("subscriber/12"));
     }
     
     private void update(String... items) {
