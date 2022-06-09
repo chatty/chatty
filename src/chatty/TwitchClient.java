@@ -386,7 +386,7 @@ public class TwitchClient {
             for (int i=0;i<80;i++) {
                 kb.addMessage("abc", false, null);
             }
-            kb.clearMessagesIfInactive(0);
+            kb.clearLinesIfInactive(0);
             kb.addMessage("abc", false, null);
             kb.setDisplayNick("reallyLongDisplayNickAndStuffBlahNeedsToBeLonger");
             kb.setBot(true);
@@ -395,7 +395,7 @@ public class TwitchClient {
             for (int i=0;i<120;i++) {
                 l.addMessage("abc", false, null);
             }
-            l.clearMessagesIfInactive(0);
+            l.clearLinesIfInactive(0);
             for (int i=0;i<100;i++) {
                 l.addMessage("abc", false, null);
             }
@@ -1363,6 +1363,20 @@ public class TwitchClient {
                 g.printSystem("Usage: /exportText <fileName> <text>");
             }
         });
+        commands.add("clearUserMessages", p -> {
+            CommandParsedArgs a = p.parsedArgs(0);
+            String chan = p.getChannel();
+            boolean numOnly = false;
+            if (a != null) {
+                chan = a.hasOption("a") ? null : p.getChannel();
+                numOnly = a.hasOption("n");
+            }
+            int result = c.clearLines(chan, numOnly);
+            g.printSystem(p.getRoom(), String.format("%s of %d users in %s",
+                    numOnly ? "Reset number of messages" : "Cleared message history",
+                    result,
+                    chan != null ? chan : "all channels"));
+        });
         
         //-----------------------
         // Settings/Customization
@@ -1985,6 +1999,11 @@ public class TwitchClient {
             }
         } else if (command.equals("threadinfo")) {
             LogUtil.logThreadInfo();
+        } else if (command.equals("addusers")) {
+            int amount = Integer.parseInt(parameter);
+            for (int i=0;i<amount;i++) {
+                c.getUser(channel, "user"+i);
+            }
         }
     }
     

@@ -574,7 +574,7 @@ public class User implements Comparable<User> {
         return msg != null ? msg.message : null;
     }
     
-    public synchronized int clearMessagesIfInactive(long duration) {
+    public synchronized int clearLinesIfInactive(long duration) {
         if (lines != null
                 && !lines.isEmpty()
                 && System.currentTimeMillis() - getLastLineTime() >= duration) {
@@ -585,10 +585,14 @@ public class User implements Comparable<User> {
         return 0;
     }
     
-    public synchronized void clearMessages() {
+    public synchronized void clearLines() {
         lines = null;
         numberOfMessages = 0;
         numberOfLines = 0;
+    }
+    
+    public synchronized void clearNumberOfMessages() {
+        numberOfMessages = 0;
     }
     
     private long getLastLineTime() {

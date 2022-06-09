@@ -31,7 +31,7 @@ public class UserTest {
         // cleared
         User linesCleared = new User("", Room.EMPTY);
         linesCleared.addMessage(null, false, null);
-        linesCleared.clearMessagesIfInactive(0);
+        linesCleared.clearLinesIfInactive(0);
         assertTrue(linesCleared.linesCleared());
         assertFalse(linesCleared.maxLinesExceeded());
         
@@ -40,7 +40,7 @@ public class UserTest {
         for (int i=0;i<120;i++) {
             linesClearedAfterExcceeded.addMessage(null, false, null);
         }
-        linesClearedAfterExcceeded.clearMessagesIfInactive(0);
+        linesClearedAfterExcceeded.clearLinesIfInactive(0);
         assertTrue(linesClearedAfterExcceeded.linesCleared());
         assertFalse(linesClearedAfterExcceeded.maxLinesExceeded());
         
@@ -49,7 +49,7 @@ public class UserTest {
         for (int i=0;i<120;i++) {
             linesExceededAfterCleared.addMessage(null, false, null);
         }
-        linesExceededAfterCleared.clearMessagesIfInactive(0);
+        linesExceededAfterCleared.clearLinesIfInactive(0);
         for (int i=0;i<120;i++) {
             linesExceededAfterCleared.addMessage(null, false, null);
         }
@@ -61,7 +61,7 @@ public class UserTest {
         for (int i=0;i<40;i++) {
             linesMaxAfterCleared.addMessage(null, false, null);
         }
-        linesMaxAfterCleared.clearMessagesIfInactive(0);
+        linesMaxAfterCleared.clearLinesIfInactive(0);
         for (int i=0;i<100;i++) {
             linesMaxAfterCleared.addMessage(null, false, null);
         }
@@ -78,7 +78,7 @@ public class UserTest {
         otherTypes.addInfo(null, null);
         assertFalse(otherTypes.linesCleared());
         assertTrue(otherTypes.maxLinesExceeded());
-        otherTypes.clearMessagesIfInactive(0);
+        otherTypes.clearLinesIfInactive(0);
         assertTrue(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());
         for (int i=0;i<99;i++) {

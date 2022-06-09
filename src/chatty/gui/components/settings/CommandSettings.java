@@ -114,7 +114,7 @@ public class CommandSettings extends SettingsPanel {
              * @return 
              */
             private void updateErrors(String value) {
-                user.clearMessages();
+                user.clearLines();
                 List<CommandMenuItem> items = CommandMenuItems.parse(value);
                 for (CommandMenuItem item : items) {
                     if (item.getCommand() != null && item.getCommand().hasError()) {

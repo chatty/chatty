@@ -54,7 +54,7 @@ public class UserManager {
 
             @Override
             public void run() {
-                clearMessagesOfInactiveUsers();
+                clearLinesOfInactiveUsers();
             }
         }, CLEAR_MESSAGES_TIMER, CLEAR_MESSAGES_TIMER);
     }
@@ -305,7 +305,7 @@ public class UserManager {
         getUsersByChannel(channel).clear();
     }
     
-    public synchronized void clearMessagesOfInactiveUsers() {
+    public synchronized void clearLinesOfInactiveUsers() {
         if (settings == null) {
             return;
         }
@@ -314,10 +314,47 @@ public class UserManager {
             int numRemoved = 0;
             for (Map<String, User> chan : users.values()) {
                 for (User user : chan.values()) {
-                    numRemoved += user.clearMessagesIfInactive(clearUserMessages*60*60*1000);
+                    numRemoved += user.clearLinesIfInactive(clearUserMessages*60*60*1000);
                 }
             }
             LOGGER.info("Cleared "+numRemoved+" user messages");
+        }
+    }
+    
+    /**
+     * Clear all lines of a user, or only the number of messages.
+     * 
+     * @param channel The channel to clear the lines on, or {@code null} for all
+     * channels
+     * @param messageNumberOnly Only reset the number of messages
+     * @return The number of users affected (whether something actually changed
+     * or not)
+     */
+    public synchronized int clearLines(String channel, boolean messageNumberOnly) {
+        if (channel == null) {
+            int result = 0;
+            for (String chan : users.keySet()) {
+                if (chan != null) {
+                    result += clearLines(chan, messageNumberOnly);
+                }
+            }
+            return result;
+        }
+        else {
+            int result = 0;
+            Map<String, User> usersOfChannel = users.get(channel);
+            if (usersOfChannel != null) {
+                result += usersOfChannel.size();
+                for (User user : usersOfChannel.values()) {
+                    if (messageNumberOnly) {
+                        user.clearNumberOfMessages();
+                    }
+                    else {
+                        user.clearLines();
+                    }
+                }
+            }
+            return result;
         }
     }
     

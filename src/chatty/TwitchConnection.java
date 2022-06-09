@@ -189,6 +189,10 @@ public class TwitchConnection {
         return users.getUserIfExists(channel, name);
     }
     
+    public int clearLines(String channel, boolean numberOfMessagesOnly) {
+        return users.clearLines(channel, numberOfMessagesOnly);
+    }
+    
     /**
      * The username used for the last connection.
      * 

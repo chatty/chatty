@@ -146,8 +146,6 @@ public class Commands {
     
     public static class CommandParsedArgs {
         
-        private static final Pattern FORMAT = Pattern.compile("(?:-(?<options>[a-z]*) )?(?<args>.*)");
-        
         public final String[] args;
         public final String options;
         
@@ -168,16 +166,34 @@ public class Commands {
             if (input == null) {
                 return null;
             }
-            Matcher m = FORMAT.matcher(input);
-            if (m.matches()) {
-                String options = m.group("options");
-                String args = m.group("args");
+            String options = null;
+            int optionsTo = 0;
+            if (input.startsWith("-")) {
+                optionsTo = input.indexOf(" ");
+                if (optionsTo == -1) {
+                    optionsTo = input.length();
+                }
+                options = input.substring(1, optionsTo);
+                if (options.isEmpty()) {
+                    options = null;
+                }
+                optionsTo++;
+            }
+            if (optionsTo >= input.length()) {
+                if (numArgs == 0) {
+                    return new CommandParsedArgs(options, null);
+                }
+                return null;
+            }
+            String args = input.substring(optionsTo);
+            if (numArgs > 0) {
                 String[] split = args.split(" ", numArgs);
                 if (split.length == numArgs) {
                     return new CommandParsedArgs(options, split);
                 }
+                return null;
             }
-            return null;
+            return new CommandParsedArgs(options, new String[]{args});
         }
         
     }
