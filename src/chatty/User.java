@@ -133,14 +133,25 @@ public class User implements Comparable<User> {
     
     
     public User(String nick, Room room) {
-        this(nick, null, room);
+        this(nick, null, null, room);
     }
     
     public User(String nick, String displayNick, Room room) {
+        this(nick, null, displayNick, room);
+    }
+    
+    public User(String nick, String capitalizedNick, String displayNick, Room room) {
+        // This should return the same string if no lowercasing is necessary
         this.nick = StringUtil.toLowerCase(nick);
-        this.displayNick = displayNick == null ? nick : displayNick;
+        
+        // Display Nick
+        this.displayNick = displayNick;
+        if (this.displayNick == null) {
+            this.displayNick = capitalizedNick != null ? capitalizedNick : nick;
+        }
         this.hasDisplayNickSet = displayNick != null;
         checkForRegularDisplayNick();
+        
         this.room = room;
         setDefaultColor();
         updateFullNick();
@@ -481,7 +492,7 @@ public class User implements Comparable<User> {
      */
     private void addLine(Message line) {
         if (lines == null) {
-            lines = new ArrayList<>();
+            lines = new ArrayList<>(1);
         }
         lines.add(line);
         if (lines.size() > maxLines) {
@@ -1060,7 +1071,11 @@ public class User implements Comparable<User> {
     }
     
     private void updateFullNick() {
-        fullNick = getModeSymbol()+getCustomNick();
+        fullNick = getModeSymbol() + getCustomNick();
+        // Reuse existing String if possible
+        if (fullNick.equals(displayNick)) {
+            fullNick = displayNick;
+        }
     }
     
     public synchronized String getModeSymbol() {

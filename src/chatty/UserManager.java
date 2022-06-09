@@ -218,7 +218,12 @@ public class UserManager {
             if (capitalizedNames) {
                 capitalizedName = name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
             }
-            user = new User(capitalizedName, room);
+            /**
+             * Use this constructor to provide the name already used for the map
+             * key, so that there aren't duplicate Strings (before it would
+             * lowercase the capitalized name in the User constructor).
+             */
+            user = new User(name, capitalizedName, null, room);
             user.setUsercolorManager(usercolorManager);
             user.setAddressbook(addressbook);
             user.setUsericonManager(usericonManager);
