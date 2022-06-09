@@ -46,7 +46,7 @@ public class User implements Comparable<User> {
     
     public static volatile int MSG_ID;
     
-    private int maxLines = 100;
+    private UserSettings userSettings = UserSettings.EMPTY;
     
     //========
     // Basics
@@ -84,8 +84,6 @@ public class User implements Comparable<User> {
      */
     private boolean hasRegularDisplayNick;
     
-    private volatile Addressbook addressbook;
-    
     //===========
     // Usericons
     //===========
@@ -94,12 +92,10 @@ public class User implements Comparable<User> {
      */
     private IrcBadges twitchBadges;
     private short subMonths;
-    private volatile UsericonManager iconManager;
     
     //===========
     // Usercolor
     //===========
-    private UsercolorManager colorManager;
     private Color color = HtmlColors.decode("");
     private Color correctedColor = HtmlColors.decode("");
     private boolean hasDefaultColor = true;
@@ -157,16 +153,9 @@ public class User implements Comparable<User> {
         updateFullNick();
     }
     
-    public synchronized void setUsercolorManager(UsercolorManager manager) {
-        if (manager != null) {
-            this.colorManager = manager;
-        }
-    }
-    
-    public void setUsericonManager(UsericonManager manager) {
-        if (manager != null) {
-            // Only if non-null, for easier synchronization
-            this.iconManager = manager;
+    public synchronized void setUserSettings(UserSettings settings) {
+        if (settings != null) {
+            this.userSettings = settings;
         }
     }
     
@@ -214,14 +203,14 @@ public class User implements Comparable<User> {
     
     public List<Usericon> getBadges(boolean botBadgeEnabled, MsgTags tags, User localUser, boolean channelLogo) {
         IrcBadges badges = getTwitchBadges();
-        if (iconManager != null) {
-            return iconManager.getBadges(badges, this, localUser, botBadgeEnabled, tags, channelLogo);
+        if (userSettings.iconManager != null) {
+            return userSettings.iconManager.getBadges(badges, this, localUser, botBadgeEnabled, tags, channelLogo);
         }
         return null;
     }
     
     public UsericonManager getUsericonManager() {
-        return iconManager;
+        return userSettings.iconManager;
     }
     
     public synchronized void setSubMonths(short months) {
@@ -233,24 +222,14 @@ public class User implements Comparable<User> {
     }
     
     /**
-     * Should probably not be set back to null, which might not be safe in
-     * regards to synchronization.
-     * 
-     * @param addressbook 
-     */
-    public void setAddressbook(Addressbook addressbook) {
-        this.addressbook = addressbook;
-    }
-    
-    /**
      * Gets the categories from the addressbook for this user.
      * 
      * @return The categories or <tt>null</tt> if this user could not be found or if no
      * addressbook was specified.
      */
     public Set<String> getCategories() {
-        if (addressbook != null) {
-            AddressbookEntry entry = addressbook.get(nick);
+        if (userSettings.addressbook != null) {
+            AddressbookEntry entry = userSettings.addressbook.get(nick);
             if (entry != null) {
                 return entry.getCategories();
             }
@@ -259,8 +238,8 @@ public class User implements Comparable<User> {
     }
     
     public List<String> getPresetCategories() {
-        if (addressbook != null) {
-            return addressbook.getCategories();
+        if (userSettings.addressbook != null) {
+            return userSettings.addressbook.getCategories();
         }
         return null;
     }
@@ -270,8 +249,8 @@ public class User implements Comparable<User> {
     }
     
     public boolean hasCategory(String category, String name) {
-        if (addressbook != null) {
-            AddressbookEntry entry = addressbook.get(name);
+        if (userSettings.addressbook != null) {
+            AddressbookEntry entry = userSettings.addressbook.get(name);
             if (entry != null) {
                 return entry.hasCategory(category);
             }
@@ -280,7 +259,7 @@ public class User implements Comparable<User> {
     }
     
     public Addressbook getAddressbook() {
-        return addressbook;
+        return userSettings.addressbook;
     }
     
     public synchronized String getChannel() {
@@ -324,11 +303,7 @@ public class User implements Comparable<User> {
     }
     
     public synchronized int getMaxNumberOfLines() {
-        return maxLines;
-    }
-    
-    public synchronized void setMaxNumberOfLines(int num) {
-        this.maxLines = num;
+        return userSettings.maxLines;
     }
     
     /**
@@ -339,7 +314,7 @@ public class User implements Comparable<User> {
      */
     public synchronized boolean linesCleared() {
         int numLines = lines != null ? lines.size() : 0;
-        return numLines < maxLines && numLines < numberOfLines;
+        return numLines < userSettings.maxLines && numLines < numberOfLines;
     }
     
     /**
@@ -351,7 +326,7 @@ public class User implements Comparable<User> {
      */
     public synchronized boolean maxLinesExceeded() {
         int numLines = lines != null ? lines.size() : 0;
-        return numLines == maxLines && numLines < numberOfLines;
+        return numLines == userSettings.maxLines && numLines < numberOfLines;
     }
     
     /**
@@ -495,7 +470,7 @@ public class User implements Comparable<User> {
             lines = new ArrayList<>(1);
         }
         lines.add(line);
-        if (lines.size() > maxLines) {
+        if (lines.size() > userSettings.maxLines) {
             lines.remove(0);
         }
         numberOfLines++;
@@ -714,12 +689,12 @@ public class User implements Comparable<User> {
      * @return 
      */
     public synchronized Color getColor() {
-        if (colorManager != null) {
+        if (userSettings.colorManager != null) {
             /**
              * Should be fine to call within synchronized, if only called
              * through here.
              */
-            Color result = colorManager.getColor(this);
+            Color result = userSettings.colorManager.getColor(this);
             if (result != null) {
                 hasCustomColor = true;
                 return result;
@@ -1305,5 +1280,35 @@ public class User implements Comparable<User> {
 //            Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 //    }
+    
+    /**
+     * Packs all the references to managers and settings a User needs access to
+     * into one class, of which one instance can be used for most users, which
+     * reduces memory usage.
+     * 
+     * An alternative might be to make all of this static values on the User
+     * class, but that seems a bit messy, especially for testing.
+     */
+    public static class UserSettings {
+        
+        public static final UserSettings EMPTY = new UserSettings(100, null, null, null);
+        
+        private final int maxLines;
+        private final UsercolorManager colorManager;
+        private final Addressbook addressbook;
+        private final UsericonManager iconManager;
+        
+        public UserSettings(int maxLines, UsercolorManager colorManager,
+                            Addressbook addressbook, UsericonManager iconManager) {
+            if (maxLines < 0) {
+                maxLines = 100;
+            }
+            this.maxLines = maxLines;
+            this.colorManager = colorManager;
+            this.addressbook = addressbook;
+            this.iconManager = iconManager;
+        }
+        
+    }
     
 }

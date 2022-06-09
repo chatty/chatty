@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.User.UserSettings;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.util.BotNameManager;
@@ -37,16 +38,11 @@ public class UserManager {
     private boolean capitalizedNames = false;
     
     private final User errorUser = new User("[Error]", Room.createRegular("#[error]"));
-    
-    // Stupid hack to get Usericons in ChannelTextPane without a user (twitchnotify messages)
-    public final User dummyUser = new User("", Room.createRegular("#[error]"));
 
     private CustomNames customNamesManager;
-    private UsericonManager usericonManager;
-    private UsercolorManager usercolorManager;
-    private Addressbook addressbook;
     private BotNameManager botNameManager;
     private Settings settings;
+    private UserSettings userSettings;
     
     public UserManager() {
         Timer clearMessageTimer = new Timer("Clear User Messages", true);
@@ -112,21 +108,12 @@ public class UserManager {
         this.settings = settings;
     }
     
+    public void setUserSettings(UserSettings settings) {
+        this.userSettings = settings;
+    }
+    
     public void setCapitalizedNames(boolean capitalized) {
         capitalizedNames = capitalized;
-    }
-    
-    public void setUsericonManager(UsericonManager manager) {
-        usericonManager = manager;
-        dummyUser.setUsericonManager(manager);
-    }
-    
-    public void setUsercolorManager(UsercolorManager manager) {
-        usercolorManager = manager;
-    }
-    
-    public void setAddressbook(Addressbook addressbook) {
-        this.addressbook = addressbook;
     }
     
     public void setCustomNamesManager(CustomNames m) {
@@ -224,9 +211,7 @@ public class UserManager {
              * lowercase the capitalized name in the User constructor).
              */
             user = new User(name, capitalizedName, null, room);
-            user.setUsercolorManager(usercolorManager);
-            user.setAddressbook(addressbook);
-            user.setUsericonManager(usericonManager);
+            user.setUserSettings(userSettings);
             if (customNamesManager != null) {
                 user.setCustomNick(customNamesManager.getCustomName(name));
             }
@@ -258,12 +243,6 @@ public class UserManager {
             }
             // Put User into the map for the channel
             getUsersByChannel(room.getChannel()).put(name, user);
-            
-            // Set history length
-            int userDialogMessageLimit = settings.getInt("userDialogMessageLimit");
-            if (userDialogMessageLimit >= 0) {
-                user.setMaxNumberOfLines(userDialogMessageLimit);
-            }
         }
         return user;
     }

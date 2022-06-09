@@ -294,9 +294,7 @@ public class TwitchClient {
         chatLog = new ChatLog(settings);
         chatLog.start();
         
-        testUser.setUsericonManager(usericonManager);
-        testUser.setUsercolorManager(usercolorManager);
-        testUser.setAddressbook(addressbook);
+        testUser.setUserSettings(new User.UserSettings(100, usercolorManager, addressbook, usericonManager));
         
         speedrunsLive = new SpeedrunsLive();
         speedruncom = new Speedruncom(api);
@@ -311,10 +309,10 @@ public class TwitchClient {
         channelFavorites = new ChannelFavorites(settings, roomManager);
         
         c = new TwitchConnection(new Messages(), settings, "main", roomManager);
-        c.setAddressbook(addressbook);
+        c.setUserSettings(new User.UserSettings(
+                settings.getInt("userDialogMessageLimit"),
+                usercolorManager, addressbook, usericonManager));
         c.setCustomNamesManager(customNames);
-        c.setUsercolorManager(usercolorManager);
-        c.setUsericonManager(usericonManager);
         c.setBotNameManager(botNameManager);
         c.addChannelStateListener(new ChannelStateUpdater());
         c.setMaxReconnectionAttempts(settings.getLong("maxReconnectionAttempts"));

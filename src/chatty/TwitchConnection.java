@@ -5,6 +5,7 @@ import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
+import chatty.User.UserSettings;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.BotNameManager;
 import chatty.util.irc.MsgTags;
@@ -144,18 +145,10 @@ public class TwitchConnection {
         return channelStates.getState(channel);
     }
     
-    public void setUsercolorManager(UsercolorManager m) {
-        users.setUsercolorManager(m);
+    public void setUserSettings(UserSettings settings) {
+        users.setUserSettings(settings);
     }
-    
-    public void setAddressbook(Addressbook addressbook) {
-        users.setAddressbook(addressbook);
-    }
-    
-    public void setUsericonManager(UsericonManager usericonManager) {
-        users.setUsericonManager(usericonManager);
-    }
-    
+
     public void setBotNameManager(BotNameManager m) {
         users.setBotNameManager(m);
     }
