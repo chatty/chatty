@@ -23,8 +23,8 @@ public class LogWriter implements Runnable {
 
     private static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ZZ");
 
-    private static final int STATS_INTERVAL = 500;
-    private static final int STATS_TIME_INTERVAL = 5 * 60 * 1000;
+    private static final int STATS_INTERVAL = 25000;
+    private static final int STATS_TIME_INTERVAL = 15 * 60 * 1000;
 
     private final Map<String, LogFile> files = new HashMap<>();
     private final Set<String> errors = new HashSet<>();
