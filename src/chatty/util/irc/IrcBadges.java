@@ -95,7 +95,7 @@ public class IrcBadges {
             String[] result = new String[badges.length * 2];
             int counter = 0;
             for (String badge : badges) {
-                String[] split = badge.split("/");
+                String[] split = badge.split("/", 2);
                 if (split.length == 2) {
                     String id = MiscUtil.intern(split[0]);
                     String version = MiscUtil.intern(split[1]);
@@ -104,7 +104,7 @@ public class IrcBadges {
                 }
             }
             if (counter < result.length) {
-                String[] newResult = new String[counter / 2];
+                String[] newResult = new String[counter];
                 System.arraycopy(result, 0, newResult, 0, newResult.length);
                 return new IrcBadges(newResult);
             }
