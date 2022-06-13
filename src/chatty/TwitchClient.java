@@ -1998,9 +1998,14 @@ public class TwitchClient {
         } else if (command.equals("threadinfo")) {
             LogUtil.logThreadInfo();
         } else if (command.equals("addusers")) {
-            int amount = Integer.parseInt(parameter);
+            String[] split = parameter.split(" ", 2);
+            int amount = Integer.parseInt(split[0]);
+            int messageAmount = Integer.parseInt(split[1]);
             for (int i=0;i<amount;i++) {
-                c.getUser(channel, "user"+i);
+                User user = c.getUser(channel, "user"+i);
+                for (int m=0;m<messageAmount;m++) {
+                    user.addMessage("abc"+i+" "+m, false, "abc id"+i+" "+m);
+                }
             }
         }
     }
