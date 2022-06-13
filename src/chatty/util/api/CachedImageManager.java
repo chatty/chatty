@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.HalfWeakSet;
+import chatty.util.HalfWeakSet2;
 import chatty.util.api.CachedImage.CachedImageRequester;
 import chatty.util.api.CachedImage.ImageType;
 import java.util.HashSet;
@@ -17,7 +18,7 @@ import chatty.util.api.CachedImage.CachedImageUser;
  */
 public class CachedImageManager<T> {
 
-    private HalfWeakSet<CachedImage<T>> images;
+    private HalfWeakSet2<CachedImage<T>> images;
     private final T object;
     private final CachedImageRequester requester;
     private final String prefix;
@@ -46,11 +47,12 @@ public class CachedImageManager<T> {
      */
     public CachedImage<T> getIcon(float scaleFactor, int maxHeight, Object customKey, ImageType imageType, CachedImageUser user) {
         if (images == null) {
-            images = new HalfWeakSet<>();
+            images = new HalfWeakSet2<>();
         }
         CachedImage<T> resultImage = null;
         for (CachedImage<T> image : images) {
-            if (image.scaleFactor == scaleFactor
+            if (image != null
+                    && image.scaleFactor == scaleFactor
                     && image.maxHeight == maxHeight
                     && Objects.equals(image.customKey, customKey)
                     && image.imageType == imageType) {
@@ -89,6 +91,7 @@ public class CachedImageManager<T> {
      */
     public int clearOldImages() {
         if (images != null) {
+            images.cleanUp();
             Set<CachedImage<T>> toRemove = new HashSet<>();
             Iterator<CachedImage<T>> it = images.strongIterator();
             while (it.hasNext()) {
