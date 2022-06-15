@@ -566,7 +566,7 @@ public class Emoticon {
                 public boolean loadImage() {
                     return type != Type.NOT_FOUND_FAVORITE;
                 }
-            }, "emote_" + type);
+            }, ("emote_" + type).intern());
         }
         return images.getIcon(scaleFactor, maxHeight, null, imageType, user);
     }
