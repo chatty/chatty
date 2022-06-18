@@ -16,14 +16,14 @@ import java.util.Objects;
 public class DockPath {
     
     private final LinkedList<DockPathEntry> list = new LinkedList<>();
-    private final DockContent content;
+    private final String contentId;
     
     public DockPath(DockContent content) {
-        this.content = content;
+        this.contentId = content.getId();
     }
     
     public DockPath() {
-        this.content = null;
+        this.contentId = null;
     }
     
     public void addParent(DockPathEntry parent) {
@@ -51,8 +51,8 @@ public class DockPath {
         return list.get(path.list.size());
     }
     
-    public DockContent getContent() {
-        return content;
+    public String getContentId() {
+        return contentId;
     }
     
     public boolean isEmpty() {
@@ -61,7 +61,7 @@ public class DockPath {
     
     @Override
     public String toString() {
-        return String.format("%s (%s)", list, content);
+        return String.format("%s (%s)", list, contentId);
     }
 
     @Override

@@ -526,6 +526,15 @@ public class DockTabs extends JTabbedPane implements DockChild {
         return -1;
     }
     
+    public int getIndexByContentId(String id) {
+        for (int i=0;i<getTabCount();i++) {
+            if (getContent(i).getId().equals(id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     public DockContent getCurrentContent() {
         if (getSelectedIndex() == -1) {
             return null;

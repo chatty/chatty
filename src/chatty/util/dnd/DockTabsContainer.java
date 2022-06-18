@@ -362,13 +362,13 @@ public class DockTabsContainer extends JPanel implements DockChild {
 
     @Override
     public DockPath buildPath(DockPath path, DockChild child) {
-        DockContent content = path.getContent();
-        if (content != null) {
-            if (singleContent == content) {
+        String contentId = path.getContentId();
+        if (contentId != null) {
+            if (singleContent != null && singleContent.getId().equals(contentId)) {
                 path.addParent(DockPathEntry.createTab(0));
             }
             else {
-                path.addParent(DockPathEntry.createTab(tabs.getIndexByContent(content)));
+                path.addParent(DockPathEntry.createTab(tabs.getIndexByContentId(contentId)));
             }
         }
         return parent.buildPath(path, this);
