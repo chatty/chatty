@@ -81,22 +81,21 @@ public class CachedImageManager<T> {
         }
     }
     
-    private static final int IMAGE_EXPIRE_MINUTES = 4*60;
-    
     /**
      * Set unused image objects to be garbage collected. Should only be called
      * from the EDT.
      *
+     * @param imageExpireMinutes
      * @return
      */
-    public int clearOldImages() {
+    public int clearOldImages(int imageExpireMinutes) {
         if (images != null) {
             images.cleanUp();
             Set<CachedImage<T>> toRemove = new HashSet<>();
             Iterator<CachedImage<T>> it = images.strongIterator();
             while (it.hasNext()) {
                 CachedImage<T> image = it.next();
-                if (image.getLastUsedAge() > IMAGE_EXPIRE_MINUTES*60*1000) {
+                if (image.getLastUsedAge() > imageExpireMinutes*60*1000) {
                     toRemove.add(image);
                 }
             }

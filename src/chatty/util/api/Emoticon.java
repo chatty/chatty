@@ -585,11 +585,12 @@ public class Emoticon {
      * Set unused image objects to be garbage collected. Should only be called
      * from the EDT.
      *
-     * @return 
+     * @param imageExpireMinutes
+     * @return
      */
-    public int clearOldImages() {
+    public int clearOldImages(int imageExpireMinutes) {
         if (images != null) {
-            return images.clearOldImages();
+            return images.clearOldImages(imageExpireMinutes);
         }
         return 0;
     }

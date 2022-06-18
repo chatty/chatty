@@ -26,11 +26,18 @@ public class LogUtil {
     
     public static String getMemoryUsage() {
         Runtime runtime = Runtime.getRuntime();
-        return String.format("[Memory] max: %2$,d / %1$,d free: %3$,d [Uptime] %4$s",
+        return String.format("[Memory] max: %2$,d / %1$,d free: %3$,d (%5$,d%% full) [Uptime] %4$s",
                 runtime.maxMemory() / 1024,
                 runtime.totalMemory() / 1024,
                 runtime.freeMemory() / 1024,
-                Chatty.uptime());
+                Chatty.uptime(),
+                getMemoryPercentageOfMax());
+    }
+    
+    public static int getMemoryPercentageOfMax() {
+        Runtime runtime = Runtime.getRuntime();
+        long used = runtime.totalMemory() - runtime.freeMemory();
+        return (int)(used*100 / runtime.maxMemory());
     }
     
     public static String getAppInfo() {
