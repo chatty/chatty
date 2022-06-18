@@ -712,6 +712,9 @@ public class LinkController extends MouseAdapter {
                     // Top
                     if (bounds.y - 20 > r.y) {
                         r.y += labelSize.height + r.height + 4;
+                        if (bounds.y > r.y) {
+                            return null;
+                        }
                     }
                     // Bottom
                     if (bounds.y + viewPort.getHeight() < r.y + labelSize.height) {
