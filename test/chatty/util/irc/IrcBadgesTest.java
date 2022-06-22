@@ -66,6 +66,10 @@ public class IrcBadgesTest {
         assertEquals("1", b3.get("subscriber"));
         assertEquals("A/B", b3.get("predictions"));
         assertEquals(2, b3.size());
+        
+        IrcBadges b4 = IrcBadges.parse("123/ABC,,,");
+        assertEquals("ABC", b4.get("123"));
+        assertEquals(1, b4.size());
     }
     
 }
