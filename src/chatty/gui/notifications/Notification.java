@@ -39,7 +39,8 @@ public class Notification {
         PART("User Left"),
         NEW_FOLLOWERS("New Followers"),
         SUBSCRIBER("Subscriber Notification"),
-        AUTOMOD("AutoMod Message");
+        AUTOMOD("AutoMod Message"),
+        COMMAND("Triggered by command");
         
         public final String label;
         public final List<TypeOption> options;

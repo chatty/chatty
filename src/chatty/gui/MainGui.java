@@ -3198,6 +3198,12 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void triggerCommandNotification(String channel, String title, String text, boolean noNotify, boolean noSound) {
+        GuiUtil.edt(() -> {
+            notificationManager.commandNotification(channel, title, text, noNotify, noSound);
+        });
+    }
+    
     public void showNotification(String title, String message, Color foreground, Color background, NotificationWindowData data) {
         long setting = client.settings.getLong("nType");
         if (setting == NotificationSettings.NOTIFICATION_TYPE_CUSTOM) {

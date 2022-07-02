@@ -1555,6 +1555,25 @@ public class TwitchClient {
         commands.add("openStreamHighlights", p -> {
             commandOpenStreamHighlights(p.getRoom());
         });
+        commands.add("triggerNotification", p -> {
+            CommandParsedArgs args = p.parsedArgs(1);
+            if (args != null) {
+                String title = null;
+                String text = args.get(0);
+                if (args.hasOption("t")) {
+                    List<String> split = StringUtil.split(text, ' ', '"', '"', 2, 1);
+                    if (split.size() == 2) {
+                        title = split.get(0);
+                        text = split.get(1);
+                    }
+                }
+                g.triggerCommandNotification(p.getChannel(), title, text,
+                        args.hasOption("h"), args.hasOption("m"));
+            }
+            else {
+                g.printSystem("Usage: /notification [-hmt] <text>");
+            }
+        });
         commands.add("testNotification", p -> {
             String args = p.getArgs();
             if (args == null) {

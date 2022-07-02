@@ -62,7 +62,7 @@ public class ChannelCompletion implements AutoCompletionServer {
         "showBackupDir", "openBackupDir", "showDebugDir", "openDebugDir",
         "showTempDir", "openTempDir", "showJavaDir", "openJavaDir",
         "showFallbackFontDir", "openFallbackFontDir", "customCompletion",
-        "clearChat", "refresh", "changeToken", "testNotification", "server",
+        "clearChat", "refresh", "changeToken", "testNotification", "triggerNotification", "server",
         "clearStreamChat", "getStreamChatSize", "setStreamChatSize", "streamChatTest", "openStreamChat",
         "customEmotes", "reloadCustomEmotes", "addStreamHighlight", "openStreamHighlights",
         "ignore", "unignore", "ignoreWhisper", "unignoreWhisper", "ignoreChat", "unignoreChat",

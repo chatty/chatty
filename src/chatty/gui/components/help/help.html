@@ -342,6 +342,12 @@
         <li><code>/openFile &lt;path&gt;</code> - Opens the given path in the default application</li>
         <li><code>/openFilePrompt &lt;path&gt;</code> - Opens the given path in the default application (with prompt asking for confirmation)</li>
         <li><code>/setSize &lt;width&gt; &lt;height&gt;</code> - Sets the main window size</li>
+        <li><code>/triggerNotification [-hmt] &lt;text&gt;</code> - Triggers a
+            command notification event that was added in the Notification Settings
+            (if none is added, this won't do anything), <code>-h</code> to hide
+            notification popup, <code>-m</code> to don't play sound, <code>-t</code>
+            to specify the title of the notification popup (e.g.
+            <code>/triggerNotification -mt "This is the title" This is the text</code>)</li>
         <li><a href="#layouts-save-load">Save and load layouts</a></li>
     </ul>
     

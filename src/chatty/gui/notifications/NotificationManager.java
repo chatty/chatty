@@ -281,6 +281,15 @@ public class NotificationManager {
         });
     }
     
+    public void commandNotification(String channel, String title, String text, boolean noNotify, boolean noSound) {
+        check(Type.COMMAND, channel, null, null, text, null, noNotify, noSound, (n) -> {
+            if (title != null) {
+                return new NotificationData(String.format(title, channel), text);
+            }
+            return new NotificationData(String.format("[Command] %s", channel), text);
+        });
+    }
+    
     private static interface NotificationChecker {
         public NotificationData check(Notification n);
     }
