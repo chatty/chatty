@@ -72,7 +72,38 @@
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-Beta, TBD
+### Commands
+- Added `/timer` for delaying commands
+- Added `/exportText` to write text to a file in the "exported" folder
+- Added `/clearUserMessages` to clear User Dialog messages (or just the count
+  for `config:firstmsg`) for all users
+- Added `/triggerNotification` to trigger a special "Triggered by command"
+  notification (has to be added as an event in the Notification Settings)
+- Added Custom Command function `$round()`, added `%` operator to `$calc()`
+- Added `/j` as default Custom Command
+
+### Settings
+- Added `msg` variant to all text matching prefixes
+- Added setting to return to previously active tab when closing tab
+- Added settings for pausing animated emotes
+- Added Live Streams favorite games to Settings Dialog
+- Added setting to change locale
+- Added commands `/setSwitch` and `/setList`
+
+### Other
+- Restore active tabs when loading layout
+- Improved showing Highlight matches for some message types
+- Changed formatting of user name for announcements
+- Updated Twemoji image set to v14
+- Some memory usage improvements
+- Improved debug output
+- Updated help
+
+### Bugfixes
+- Fixed bug where animated emotes with transparency aren't displayed correctly
+  when the first frame doesn't have transparency
+- Fixed Tab Completion popup being stuck when closing tab via hotkey
+- Fixed some locale dependent issues
     </pre>
     
     <h2>

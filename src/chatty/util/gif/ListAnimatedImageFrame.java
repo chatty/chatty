@@ -69,7 +69,7 @@ public class ListAnimatedImageFrame {
     }
     
     /**
-     * Encode the individual color conponents into an integer for the default
+     * Encode the individual color components into an integer for the default
      * color model (0xAARRGGBB).
      */
     private static int makeInt(byte a, byte r, byte g, byte b) {

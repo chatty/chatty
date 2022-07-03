@@ -1571,7 +1571,7 @@ public class TwitchClient {
                         args.hasOption("h"), args.hasOption("m"));
             }
             else {
-                g.printSystem("Usage: /notification [-hmt] <text>");
+                g.printSystem("Usage: /triggerNotification [-hmt] <text>");
             }
         });
         commands.add("testNotification", p -> {
