@@ -129,6 +129,12 @@ public class Chatty {
             }
         }
         
+        // Check if the legacy settings directory exists and move it to follow XDG specifications
+        File legacySettingsDir = new File(System.getProperty("user.home") + File.separator + ".chatty");
+        if (legacySettingsDir.exists()) {
+            legacySettingsDir.renameTo(new File(getUserDataDirectory()));
+        }
+
         if (parsedArgs.containsKey("appwdir") && !parsedArgs.containsKey("regularwdir")) {
             Path path = Stuff.determineJarPath();
             if (path != null) {
@@ -162,7 +168,7 @@ public class Chatty {
                 invalidSettingsDir = path.toString();
             }
         }
-        
+
         final TwitchClient client = new TwitchClient(parsedArgs);
         
         // Adding listener just in case, will do nothing if not used
@@ -235,10 +241,21 @@ public class Chatty {
         if (settingsDir != null) {
             return settingsDir + File.separator;
         }
-        String dir = System.getProperty("user.home")
-                + File.separator 
-                + ".chatty" 
-                + File.separator;
+        String dir;
+        if (System.getenv("XDG_CONFIG_DIR") != null) {
+            dir = System.getenv("XDG_CONFIG_DIR")
+                  + File.separator
+                  + "chatty"
+                  + File.separator;
+        }
+        else {
+            dir = System.getProperty("user.home")
+                  + File.separator
+                  + ".config"
+                  + File.separator
+                  + "chatty"
+                  + File.separator;
+        }
         new File(dir).mkdirs();
         return dir;
     }
