@@ -4,7 +4,6 @@ package chatty.util.gif;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -16,14 +15,12 @@ import java.util.List;
 public class ListAnimatedImage implements AnimatedImage {
 
     private final List<ListAnimatedImageFrame> frames;
-    private final ByteBuffer buffer;
     private final Dimension size;
     private final String name;
     private final int preferredPauseFrame;
     
     public ListAnimatedImage(List<ListAnimatedImageFrame> frames, int width, int height, String name) {
         this.frames = frames;
-        this.buffer = ByteBuffer.allocate(width * height * 4);
         this.size = new Dimension(width, height);
         this.name = name;
         
@@ -37,7 +34,8 @@ public class ListAnimatedImage implements AnimatedImage {
                 highestVisiblePixelCount = visiblePixelCount;
             }
         }
-        if ((frames.get(0).getVisiblePixelCount() * 10) / highestVisiblePixelCount > 7) {
+        if (highestVisiblePixelCount == 0
+                || (frames.get(0).getVisiblePixelCount() * 10) / highestVisiblePixelCount > 7) {
             // Prefer first frame if it's visibility isn't much lower
             this.preferredPauseFrame = 0;
         }
@@ -55,7 +53,7 @@ public class ListAnimatedImage implements AnimatedImage {
      */
     @Override
     public void getFrame(int frame, int[] pixels) throws Exception {
-        frames.get(frame).getImage(pixels, buffer);
+        frames.get(frame).getImage(pixels);
     }
 
     @Override

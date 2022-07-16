@@ -107,7 +107,7 @@ public class AnimatedImageSource implements ImageProducer {
                                 break;
                         }
                         
-                        if (pauseFrame != currentFrame) {
+                        if (pauseFrame != currentFrame || !hasPixels()) {
                             currentFrame = pauseFrame - 1;
                             nextFrame();
                         }
@@ -136,7 +136,11 @@ public class AnimatedImageSource implements ImageProducer {
     }
     
     private synchronized boolean isActive() {
-        return ANIMATION_PAUSE == -1 || pixels == null;
+        return ANIMATION_PAUSE == -1;
+    }
+    
+    private synchronized boolean hasPixels() {
+        return pixels != null;
     }
     
     /**
@@ -161,6 +165,7 @@ public class AnimatedImageSource implements ImageProducer {
     
     private synchronized void threadStopped() {
         thread = null;
+        pixels = null;
     }
     
     /**
@@ -232,7 +237,18 @@ public class AnimatedImageSource implements ImageProducer {
             ic.setColorModel(colorModel);
         }
         if (isConsumer(ic)) {
-            ic.setHints(ImageConsumer.TOPDOWNLEFTRIGHT | ImageConsumer.COMPLETESCANLINES);
+            if (image.getFrameCount() == 1) {
+                ic.setHints(
+                          ImageConsumer.TOPDOWNLEFTRIGHT
+                        | ImageConsumer.COMPLETESCANLINES
+                        | ImageConsumer.SINGLEPASS
+                        | ImageConsumer.SINGLEFRAME);
+            }
+            else {
+                ic.setHints(
+                          ImageConsumer.TOPDOWNLEFTRIGHT
+                        | ImageConsumer.COMPLETESCANLINES);
+            }
         }
     }
     

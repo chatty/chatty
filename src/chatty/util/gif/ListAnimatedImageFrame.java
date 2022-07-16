@@ -6,7 +6,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * A single frame of a ListAnimatedImage. The pixel data is compressed in the
@@ -47,36 +46,14 @@ public class ListAnimatedImageFrame {
     }
     
     /**
-     * Fill the given pixels array with the decoded pixels. The provided buffer
-     * is used by the decoder (a single buffer is used per AnimatedImage2).
+     * Fill the given pixels array with the decoded pixels.
      * 
      * @param pixels
-     * @param buffer
      * @throws IOException 
      */
-    public void getImage(int[] pixels, ByteBuffer buffer) throws IOException {
-        buffer.position(0);
+    public void getImage(int[] pixels) throws IOException {
         PNGDecoder decoder = new PNGDecoder(new ByteArrayInputStream(compressed));
-        decoder.decode(buffer, width * 4, PNGDecoder.Format.RGBA);
-        int length = width * height;
-        for (int i = 0; i < length; i++) {
-            byte r = buffer.get(i * 4 + 0);
-            byte g = buffer.get(i * 4 + 1);
-            byte b = buffer.get(i * 4 + 2);
-            byte a = buffer.get(i * 4 + 3);
-            pixels[i] = makeInt(a, r, g, b);
-        }
-    }
-    
-    /**
-     * Encode the individual color components into an integer for the default
-     * color model (0xAARRGGBB).
-     */
-    private static int makeInt(byte a, byte r, byte g, byte b) {
-        return (((a       ) << 24) |
-                ((r & 0xff) << 16) |
-                ((g & 0xff) <<  8) |
-                ((b & 0xff)      ));
+        decoder.decode(new ARGBBuffer(pixels), width * 4, PNGDecoder.Format.RGBA);
     }
     
     public int getDelay() {

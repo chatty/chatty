@@ -47,6 +47,13 @@ import java.util.zip.Inflater;
  * A PNGDecoder. The slick PNG decoder is based on this class :)
  * 
  * @author Matthias Mann
+ * -------------------------
+ * Changed by tduva:
+ * Write pixels directly to an ARGBBuffer instead of a ByteBuffer, so that no
+ * additional conversion to an int[] for later use is required. This removes the
+ * support for some color formats (since I couldn't be bothered to change more
+ * functions), but for this special purpose they should not be required, since
+ * this only decodes frames previously encoded for the AnimatedImage stuff.
  */
 public class PNGDecoder {
 
@@ -257,15 +264,14 @@ public class PNGDecoder {
      * the current position. After decode the buffer position is at the end of
      * the last line.
      *
-     * @param buffer the buffer
+     * @param pixels where the decoded pixels are written to
      * @param stride the stride in bytes from start of a line to start of the next line, can be negative.
      * @param fmt the target format into which the image should be decoded.
      * @throws IOException if a read or data error occurred
      * @throws IllegalArgumentException if the start position of a line falls outside the buffer
      * @throws UnsupportedOperationException if the image can't be decoded into the desired format
      */
-    public void decode(ByteBuffer buffer, int stride, Format fmt) throws IOException {
-        final int offset = buffer.position();
+    public void decode(ARGBBuffer pixels, int stride, Format fmt) throws IOException {
         final int lineSize = ((width * bitdepth + 7) / 8) * bytesPerPixel;
         byte[] curLine = new byte[lineSize+1];
         byte[] prevLine = new byte[lineSize+1];
@@ -277,37 +283,16 @@ public class PNGDecoder {
                 readChunkUnzip(inflater, curLine, 0, curLine.length);
                 unfilter(curLine, prevLine);
 
-                buffer.position(offset + y*stride);
-
                 switch (colorType) {
                 case COLOR_TRUECOLOR:
                     switch (fmt) {
-                    case ABGR: copyRGBtoABGR(buffer, curLine); break;
-                    case RGBA: copyRGBtoRGBA(buffer, curLine); break;
-                    case BGRA: copyRGBtoBGRA(buffer, curLine); break;
-                    case RGB: copy(buffer, curLine); break;
+                    case RGBA: copyRGBtoRGBA(pixels, curLine); break;
                     default: throw new UnsupportedOperationException("Unsupported format for this image");
                     }
                     break;
                 case COLOR_TRUEALPHA:
                     switch (fmt) {
-                    case ABGR: copyRGBAtoABGR(buffer, curLine); break;
-                    case RGBA: copy(buffer, curLine); break;
-                    case BGRA: copyRGBAtoBGRA(buffer, curLine); break;
-                    case RGB: copyRGBAtoRGB(buffer, curLine); break;
-                    default: throw new UnsupportedOperationException("Unsupported format for this image");
-                    }
-                    break;
-                case COLOR_GREYSCALE:
-                    switch (fmt) {
-                    case LUMINANCE:
-                    case ALPHA: copy(buffer, curLine); break;
-                    default: throw new UnsupportedOperationException("Unsupported format for this image");
-                    }
-                    break;
-                case COLOR_GREYALPHA:
-                    switch (fmt) {
-                    case LUMINANCE_ALPHA: copy(buffer, curLine); break;
+                    case RGBA: copyRGBA(pixels, curLine); break;
                     default: throw new UnsupportedOperationException("Unsupported format for this image");
                     }
                     break;
@@ -320,9 +305,7 @@ public class PNGDecoder {
                         default: throw new UnsupportedOperationException("Unsupported bitdepth for this image");
                     }
                     switch (fmt) {
-                    case ABGR: copyPALtoABGR(buffer, palLine); break;
-                    case RGBA: copyPALtoRGBA(buffer, palLine); break;
-                    case BGRA: copyPALtoBGRA(buffer, palLine); break;
+                    case RGBA: copyPALtoRGBA(pixels, palLine); break;
                     default: throw new UnsupportedOperationException("Unsupported format for this image");
                     }
                     break;
@@ -337,29 +320,6 @@ public class PNGDecoder {
         } finally {
             inflater.end();
         }
-    }
-
-    /**
-     * Decodes the image into the specified buffer. The last line is placed at
-     * the current position. After decode the buffer position is at the end of
-     * the first line.
-     *
-     * @param buffer the buffer
-     * @param stride the stride in bytes from start of a line to start of the next line, must be positive.
-     * @param fmt the target format into which the image should be decoded.
-     * @throws IOException if a read or data error occurred
-     * @throws IllegalArgumentException if the start position of a line falls outside the buffer
-     * @throws UnsupportedOperationException if the image can't be decoded into the desired format
-     */
-    public void decodeFlipped(ByteBuffer buffer, int stride, Format fmt) throws IOException {
-        if(stride <= 0) {
-            throw new IllegalArgumentException("stride");
-        }
-        int pos = buffer.position();
-        int posDelta = (height-1) * stride;
-        buffer.position(pos + posDelta);
-        decode(buffer, -stride, fmt);
-        buffer.position(buffer.position() + posDelta);
     }
     
     private void copy(ByteBuffer buffer, byte[] curLine) {
@@ -388,7 +348,7 @@ public class PNGDecoder {
         }
     }
 
-    private void copyRGBtoRGBA(ByteBuffer buffer, byte[] curLine) {
+    private void copyRGBtoRGBA(ARGBBuffer pixels, byte[] curLine) {
         if(transPixel != null) {
             byte tr = transPixel[1];
             byte tg = transPixel[3];
@@ -401,11 +361,11 @@ public class PNGDecoder {
                 if(r==tr && g==tg && b==tb) {
                     a = 0;
                 }
-                buffer.put(r).put(g).put(b).put(a);
+                pixels.addRGBA(r, g, b, a);
             }
         } else {
             for(int i=1,n=curLine.length ; i<n ; i+=3) {
-                buffer.put(curLine[i]).put(curLine[i+1]).put(curLine[i+2]).put((byte)0xFF);
+                pixels.addRGBA(curLine[i], curLine[i+1], curLine[i+2], (byte)0xFF);
             }
         }
     }
@@ -432,9 +392,9 @@ public class PNGDecoder {
         }
     }
 
-    private void copyRGBAtoABGR(ByteBuffer buffer, byte[] curLine) {
+    private void copyRGBA(ARGBBuffer pixels, byte[] curLine) {
         for(int i=1,n=curLine.length ; i<n ; i+=4) {
-            buffer.put(curLine[i+3]).put(curLine[i+2]).put(curLine[i+1]).put(curLine[i]);
+            pixels.addRGBA(curLine[i], curLine[i+1], curLine[i+2], curLine[i+3]);
         }
     }
 
@@ -472,7 +432,7 @@ public class PNGDecoder {
         }
     }
 
-    private void copyPALtoRGBA(ByteBuffer buffer, byte[] curLine) {
+    private void copyPALtoRGBA(ARGBBuffer pixels, byte[] curLine) {
         if(paletteA != null) {
             for(int i=1,n=curLine.length ; i<n ; i+=1) {
                 int idx = curLine[i] & 255;
@@ -480,7 +440,7 @@ public class PNGDecoder {
                 byte g = palette[idx*3 + 1];
                 byte b = palette[idx*3 + 2];
                 byte a = paletteA[idx];
-                buffer.put(r).put(g).put(b).put(a);
+                pixels.addRGBA(r, g, b, a);
             }
         } else {
             for(int i=1,n=curLine.length ; i<n ; i+=1) {
@@ -489,7 +449,7 @@ public class PNGDecoder {
                 byte g = palette[idx*3 + 1];
                 byte b = palette[idx*3 + 2];
                 byte a = (byte)0xFF;
-                buffer.put(r).put(g).put(b).put(a);
+                pixels.addRGBA(r, g, b, a);
             }
         }
     }
