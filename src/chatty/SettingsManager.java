@@ -204,7 +204,7 @@ public class SettingsManager {
         settings.addLong("lafVariant", 0);
         settings.addString("lafStyle", "regular");
         settings.addString("lafScroll", "default");
-        settings.addBoolean("lafNativeWindow", false);
+        settings.addBoolean("lafNativeWindow", true);
         settings.addString("language", "");
         settings.addString("locale", "");
         settings.addString("timezone", "");
@@ -584,7 +584,7 @@ public class SettingsManager {
         settings.addBoolean("showModActions", true);
         settings.addBoolean("showModActionsRestrict", true);
         settings.addBoolean("showActionBy", true);
-        settings.addBoolean("showAutoMod", false);
+        settings.addBoolean("showAutoMod", true);
 
         // Timeouts/Bans
         settings.addBoolean("showBanMessages", false);
