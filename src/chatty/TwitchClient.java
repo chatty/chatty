@@ -2104,17 +2104,7 @@ public class TwitchClient {
                 g.printLine("Custom command '" + command + "': No action specified");
             }
             else {
-                // Check what command is called in the result of this command
-                String[] resultSplit = result.split(" ", 2);
-                String resultCommand = resultSplit[0];
-                if (resultCommand.startsWith("/")
-                        && customCommands.containsCommand(resultCommand.substring(1), room)) {
-                    g.printLine("Custom command '" + command + "': Calling another custom "
-                            + "command ('" + resultCommand.substring(1) + "') is not allowed");
-                }
-                else {
-                    textInput(room, result, parameters);
-                }
+                textInput(room, result, parameters);
             }
         });
     }
