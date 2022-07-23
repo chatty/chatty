@@ -185,6 +185,14 @@ public class RawMessageTest {
         if (type.equals("announcement3")) {
             return "@badge-info=;badges=broadcaster/1;color=#033700;display-name=ModName;emotes=;flags=;id=1234;login=modname;mod=0;msg-id=announcement;room-id=1234;subscriber=0;system-msg=;tmi-sent-ts=1648758023469;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :"+options;
         }
+        if (type.equals("custom")) {
+            String[] parts = options.split("&");
+            String badges = parts[0];
+            String name = parts[1];
+            String username = name.toLowerCase();
+            String msg = parts[2];
+            return "@badges="+badges+";color=#008000;display-name="+name+";emote-only=0;emotes=;id=fwaef;mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :"+name+"!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+msg;
+        }
         return null;
     }
     
