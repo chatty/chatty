@@ -552,7 +552,7 @@ public class AutoCompletionWindow {
         }
         
         private static String enc(String input) {
-            return Helper.htmlspecialchars_encode(input);
+            return Helper.htmlspecialchars_encode(input).replace(" ", "&nbsp;");
         }
         
         public void setFont(Font font) {

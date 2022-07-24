@@ -1218,7 +1218,7 @@ public class TwitchClient {
             }
             w.whisperCommand(p.getArgs(), false);
         });
-        commands.add("changetoken", p -> {
+        commands.add("changeToken", p -> {
             g.changeToken(p.getArgs());
         });
         //------------

@@ -4,6 +4,7 @@ package chatty.gui.components.completion;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.ImageIcon;
 
 /**
@@ -82,10 +83,17 @@ public interface AutoCompletionServer {
             this.prefixToRemove = prefixToRemove;
         }
         
-        public static CompletionItems createFromStrings(List<String> items, String prefixToRemove) {
+        public static CompletionItems createFromStrings(List<String> items,
+                                                        String prefixToRemove) {
+            return createFromStrings(items, prefixToRemove, null);
+        }
+        
+        public static CompletionItems createFromStrings(List<String> items,
+                                                        String prefixToRemove,
+                                                        Map<String, String> info) {
             List<CompletionItem> result = new ArrayList<>();
             for (String item : items) {
-                result.add(new CompletionItem(item, null));
+                result.add(new CompletionItem(item, info != null ? info.get(item) : null));
             }
             return new CompletionItems(result, prefixToRemove);
         }

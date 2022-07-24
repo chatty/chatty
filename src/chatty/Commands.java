@@ -3,7 +3,10 @@ package chatty;
 
 import chatty.util.StringUtil;
 import chatty.util.commands.Parameters;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
@@ -36,6 +39,16 @@ public class Commands {
     public boolean isCommand(String name) {
         synchronized(commands) {
             return commands.containsKey(StringUtil.toLowerCase(name));
+        }
+    }
+    
+    public Collection<String> getCommandNames() {
+        synchronized(commands) {
+            List<String> result = new ArrayList<>();
+            for (Command c : commands.values()) {
+                result.add(c.name);
+            }
+            return result;
         }
     }
     

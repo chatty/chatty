@@ -5310,6 +5310,10 @@ public class MainGui extends JFrame implements Runnable {
         return client.customCommands.getCommandNames();
     }
     
+    public Collection<String> getCommandNames() {
+        return client.commands.getCommandNames();
+    }
+    
     public void updateEmoteNames(Set<String> emotesets, Set<String> allEmotesets) {
         SwingUtilities.invokeLater(new Runnable() {
 
