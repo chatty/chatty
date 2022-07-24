@@ -520,6 +520,29 @@ public class Requests {
         });
     }
     
+    public void sendAnnouncement(String streamId, String message, String color) {
+        String url = String.format("https://api.twitch.tv/helix/chat/announcements?broadcaster_id=%s&moderator_id=%s",
+                streamId, api.localUserId);
+        if (StringUtil.isNullOrEmpty(color)) {
+            color = "primary";
+        }
+        String json = JSONUtil.listMapToJSON(
+                "message", message,
+                "color", StringUtil.toLowerCase(color)
+        );
+        newApi.add(url, "POST", json, api.defaultToken, (result, responseCode) -> {
+            if (responseCode == 204) {
+                // All fine
+            }
+            else if (responseCode == 400) {
+                listener.errorMessage("Invalid announcement message or color");
+            }
+            else if (responseCode == 401) {
+                listener.errorMessage("Announcement access denied (check 'Main - Account' for access)");
+            }
+        });
+    }
+    
     //=================
     // Chat / Emoticons
     //=================

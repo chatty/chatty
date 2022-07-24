@@ -30,7 +30,8 @@ public class TokenInfo {
         AUTOMOD("moderator:manage:automod", "automod"),
         BLOCKED_READ("moderator:read:blocked_terms", "blockedRead"),
         BLOCKED_MANAGE("moderator:manage:blocked_terms", "blockedManage"),
-        POINTS("channel:read:redemptions", "points");
+        POINTS("channel:read:redemptions", "points"),
+        ANNOUNCEMENTS("moderator:manage:announcements", "announcements");
         
         public String scope;
         public String label;

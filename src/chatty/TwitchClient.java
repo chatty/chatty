@@ -1549,6 +1549,16 @@ public class TwitchClient {
         commands.add("marker", p -> {
             commandAddStreamMarker(p.getRoom(), p.getArgs());
         });
+        for (String color : TwitchApi.ANNOUNCEMENT_COLORS) {
+            commands.add("announce"+color, p -> {
+                if (!p.hasArgs() || p.getArgs().trim().isEmpty()) {
+                    g.printSystem("Usage: /announce"+color+" <message>");
+                }
+                else {
+                    api.sendAnnouncement(p.getRoom().getStream(), p.getArgs(), color);
+                }
+            });
+        }
         commands.add("addStreamHighlight", p -> {
             commandAddStreamHighlight(p.getRoom(), p.getArgs());
         });
@@ -2756,7 +2766,11 @@ public class TwitchClient {
             }
             g.setCheerEmotes(emoticons);
         }
-        
+
+        @Override
+        public void errorMessage(String error) {
+            g.printLine(error);
+        }
         
     }
 

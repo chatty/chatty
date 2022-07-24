@@ -634,6 +634,20 @@ public class TwitchApi {
             }
         }, stream);
     }
+        
+    public static String[] ANNOUNCEMENT_COLORS = new String[]{
+        "primary", "blue", "green", "orange", "purple"
+    };
+    
+    public void sendAnnouncement(String stream, String message, String color) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                resultListener.errorMessage("Failed to resolve channel id");
+            } else {
+                requests.sendAnnouncement(r.getId(stream), message, color);
+            }
+        }, stream);
+    }
     
     public void subscribe(ResultManager.Type type, Object listener) {
         resultManager.subscribe(type, listener);

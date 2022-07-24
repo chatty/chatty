@@ -45,4 +45,11 @@ public interface TwitchApiResultListener {
     void followResult(String message);
     
     void autoModResult(TwitchApi.AutoModAction action, String msgId, TwitchApi.AutoModActionResult result);
+    
+    /**
+     * Generic human-readable message intended for output.
+     * 
+     * @param error 
+     */
+    void errorMessage(String error);
 }
