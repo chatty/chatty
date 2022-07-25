@@ -907,6 +907,25 @@ public class MainGui extends JFrame implements Runnable {
                 //newsDialog.autoRequestNews(true);
                 
                 client.init();
+                
+                /**
+                 * Do it here as well as with invokeLater to minimize possible
+                 * issues, for example with positioning windows that depend on
+                 * the main window showing (like connect dialog, but probably
+                 * others as well).
+                 */
+                switch ((int) client.settings.getLong("minimizeOnStart")) {
+                    case 1:
+                        SwingUtilities.invokeLater(() -> {
+                            minimize();
+                        });
+                        break;
+                    case 2:
+                        SwingUtilities.invokeLater(() -> {
+                            minimizeToTray();
+                        });
+                        break;
+                }
             }
         });
     }
@@ -5404,6 +5423,10 @@ public class MainGui extends JFrame implements Runnable {
             // if tray icon is actually added
             setVisible(false);
         }
+    }
+    
+    private void minimize() {
+        setExtendedState(getExtendedState() | ICONIFIED);
     }
     
     /**

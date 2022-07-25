@@ -87,6 +87,9 @@ public class MainSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST);
         startSettingsPanel.add(connectDialogIfMissing, gbc);
         
+        SettingsUtil.addLabeledComponent(startSettingsPanel, "minimizeOnStart", 0, 6, 2, GridBagConstraints.EAST,
+                d.addComboLongSetting("minimizeOnStart", 0, 1, 2));
+        
         //==========
         // Language
         //==========

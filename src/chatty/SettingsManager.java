@@ -178,6 +178,7 @@ public class SettingsManager {
         settings.addBoolean("connectOnStartup", false, false);
         settings.addLong("onStart", 1);
         settings.addBoolean("connectDialogIfMissing", false);
+        settings.addLong("minimizeOnStart", 0);
         settings.addString("autojoinChannel", "");
         settings.addString("previousChannel", "");
         settings.addString("token","");
