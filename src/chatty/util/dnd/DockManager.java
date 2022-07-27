@@ -6,6 +6,7 @@ import chatty.util.dnd.DockSetting.PopoutType;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
+import static java.awt.Frame.ICONIFIED;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
@@ -632,8 +633,13 @@ public class DockManager {
         else {
             window.setLocationByPlatform(true);
         }
-        if (state != -1 && window instanceof Frame) {
-            ((Frame) window).setExtendedState(state);
+        if (window instanceof Frame) {
+            Frame frame = (Frame) window;
+            if (state == -1) {
+                // When a popout opens, actually show it, but preserve maximized
+                state = frame.getExtendedState() & ~ICONIFIED;
+            }
+            frame.setExtendedState(state);
         }
         if (popoutParent != null) {
             window.setAlwaysOnTop(popoutParent.isAlwaysOnTop());
@@ -800,6 +806,35 @@ public class DockManager {
     public void sortContent(DockContent content) {
         main.sortContent(content);
         popouts.forEach(w -> w.getBase().sortContent(content));
+    }
+    
+    public void minimizeWindows() {
+        for (DockPopout p : popouts) {
+            if (p.getWindow() instanceof Frame) {
+                Frame frame = (Frame) p.getWindow();
+                frame.setExtendedState(frame.getExtendedState() | ICONIFIED);
+            }
+        }
+    }
+    
+    public void hideWindows() {
+        for (DockPopout p : popouts) {
+            if (p.getWindow() instanceof Frame) {
+                Frame frame = (Frame) p.getWindow();
+                frame.setVisible(false);
+            }
+        }
+    }
+    
+    public void showHiddenWindows() {
+        for (DockPopout p : popouts) {
+            if (p.getWindow() instanceof Frame && !p.getWindow().isVisible()) {
+                Frame frame = (Frame) p.getWindow();
+                frame.setVisible(true);
+                frame.setExtendedState(frame.getExtendedState() & ~ICONIFIED);
+                frame.toFront();
+            }
+        }
     }
     
 }

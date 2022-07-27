@@ -917,12 +917,12 @@ public class MainGui extends JFrame implements Runnable {
                 switch ((int) client.settings.getLong("minimizeOnStart")) {
                     case 1:
                         SwingUtilities.invokeLater(() -> {
-                            minimize();
+                            minimize(true);
                         });
                         break;
                     case 2:
                         SwingUtilities.invokeLater(() -> {
-                            minimizeToTray();
+                            minimizeToTray(true);
                         });
                         break;
                 }
@@ -972,6 +972,7 @@ public class MainGui extends JFrame implements Runnable {
         // Set visible was required to show it again after being minimized to tray
         setVisible(true);
         setState(NORMAL);
+        channels.getDock().showHiddenWindows();
         toFront();
         //cleanupAfterRestoredFromTray();
         //setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -5408,10 +5409,14 @@ public class MainGui extends JFrame implements Runnable {
         return (getExtendedState() & ICONIFIED) == ICONIFIED;
     }
     
+    private void minimizeToTray() {
+        minimizeToTray(client.settings.getBoolean("hidePopoutsIfTray"));
+    }
+    
     /**
      * Minimize window to tray.
      */
-    private void minimizeToTray() {
+    private void minimizeToTray(boolean includePopouts) {
         //trayIcon.displayInfo("Minimized to tray", "Double-click icon to show again..");
         
         trayIcon.setIconVisible(true);
@@ -5422,11 +5427,23 @@ public class MainGui extends JFrame implements Runnable {
             // Set visible to false, so it is removed from the taskbar, but only
             // if tray icon is actually added
             setVisible(false);
+            if (includePopouts) {
+                channels.getDock().minimizeWindows();
+                channels.getDock().hideWindows();
+            }
+        }
+        else {
+            if (includePopouts) {
+                channels.getDock().minimizeWindows();
+            }
         }
     }
     
-    private void minimize() {
+    private void minimize(boolean includePopouts) {
         setExtendedState(getExtendedState() | ICONIFIED);
+        if (includePopouts) {
+            channels.getDock().minimizeWindows();
+        }
     }
     
     /**

@@ -54,11 +54,14 @@ public class WindowSettings extends SettingsPanel {
         minimizing.add(d.addSimpleBooleanSetting("trayIconAlways"),
                 d.makeGbc(2, 1, 1, 1, GridBagConstraints.WEST));
         
+        minimizing.add(d.addSimpleBooleanSetting("hidePopoutsIfTray"),
+                d.makeGbcSub(0, 2, 3, 1, GridBagConstraints.WEST));
+        
         minimizing.add(d.addSimpleBooleanSetting("singleClickTrayOpen"),
-                d.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST));
+                d.makeGbcSub(0, 3, 3, 1, GridBagConstraints.WEST));
         
         minimizing.add(d.addSimpleBooleanSetting("hideStreamsOnMinimize"),
-                d.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 4, 3, 1, GridBagConstraints.WEST));
         
         //-------
         // Other

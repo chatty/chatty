@@ -433,6 +433,7 @@ public class SettingsManager {
         // Tray
         settings.addBoolean("closeToTray", false);
         settings.addBoolean("minimizeToTray", false);
+        settings.addBoolean("hidePopoutsIfTray", true);
         settings.addBoolean("trayIconAlways", false);
         settings.addBoolean("singleClickTrayOpen", true);
         
