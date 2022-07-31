@@ -309,6 +309,10 @@ public class DefaultsPanel extends JPanel {
         }
         helper.setBoolean("lafNativeWindow", true);
         //--------------------------
+        // Userlist
+        //--------------------------
+        helper.setBoolean("userlistEnabled", userlist.isSelected());
+        //--------------------------
         // Chat colors
         //--------------------------
         for (int i = 0; i < ColorSettings.PRESET_SETTINGS.length; i++) {
