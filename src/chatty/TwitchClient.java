@@ -29,6 +29,7 @@ import chatty.gui.components.eventlog.EventLog;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.gui.components.updating.Stuff;
+import chatty.gui.defaults.DefaultsDialog;
 import chatty.splash.Splash;
 import chatty.util.BTTVEmotes;
 import chatty.util.BotNameManager;
@@ -255,6 +256,11 @@ public class TwitchClient {
         }
         
         initDxSettings();
+        
+        // After graphic settings (what is changed here shouldn't affect stuff before this
+        if (!settingsManager.wasMainFileLoaded()) {
+            DefaultsDialog.showAndWait(settings);
+        }
         
         IconManager.setCustomIcons(settings.getList("icons"));
         if (settings.getBoolean("splash")) {
@@ -571,7 +577,7 @@ public class TwitchClient {
             settings.setString("currentVersion", Chatty.VERSION);
             // Changed version, so should check for update properly again
             settings.setString("updateAvailable", "");
-            if (settingsManager.getLoadSuccess()) {
+            if (settingsManager.wasMainFileLoaded()) {
                 // Don't bother user if settings were probably corrupted
                 g.openReleaseInfo();
             }

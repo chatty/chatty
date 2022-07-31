@@ -23,6 +23,102 @@ import javax.swing.JPanel;
  */
 public class ColorSettings extends SettingsPanel {
     
+    public static final String[] PRESET_SETTINGS = new String[]{
+        "backgroundColor",
+        "foregroundColor",
+        "infoColor",
+        "compactColor",
+        "highlightColor",
+        "inputBackgroundColor",
+        "inputForegroundColor",
+        "searchResultColor",
+        "searchResultColor2",
+        "backgroundColor2",
+        "highlightBackgroundColor",
+        "separatorColor",
+        "timestampColor",
+        "timestampColorInherit"
+    };
+    
+    public static final String[] PRESET_SETTINGS_BOOLEAN = new String[]{
+        "alternateBackground",
+        "messageSeparator",
+        "highlightBackground",
+        "timestampColorEnabled"
+    };
+    
+    public static final String[] DARK = new String[]{
+        "#111111", // backgroundColor
+        "LightGrey", // foregroundColor
+        "DeepSkyBlue", // infoColor
+        "#A0A0A0", // compactColor
+        "#DDDDDD", // highlightColor
+        "#222222", // inputBackgroundColor
+        "White", // inputForegroundColor
+        "DarkSlateBlue", // searchResultColor
+        "SlateBlue", // searchResultColor2
+        "#2D2D2D", // backgroundColor2
+        "#7A0000", // highlightBackgroundColor
+        "#383838", // separatorColor
+        "LightGrey", // timestampColor
+        "off", // timestampColorInherit
+    };
+    
+    public static final Boolean[] DARK_BOOLEAN = new Boolean[]{
+        false, // alternateBackground
+        false, // messageSeparator
+        true, // highlightBackground
+        false, // timestampColorEnabled
+    };
+    
+    public static final String[] DARK_SMOOTH = new String[]{
+        "#323232", // backgroundColor
+        "LightGrey", // foregroundColor
+        "Aquamarine", // infoColor
+        "#A0A0A0", // compactColor
+        "#FFFFFF", // highlightColor
+        "#222222", // inputBackgroundColor
+        "#FFFFFF", // inputForegroundColor
+        "DarkSlateBlue", // searchResultColor
+        "SlateBlue", // searchResultColor2
+        "#3B3B3B", // backgroundColor2
+        "#5C0000", // highlightBackgroundColor
+        "#DFDFDF", // separatorColor
+        "#C5C5C5", // timestampColor
+        "40", // timestampColorInherit
+    };
+    
+    public static final Boolean[] DARK_SMOOTH_BOOLEAN = new Boolean[]{
+        true, // alternateBackground
+        false, // messageSeparator
+        true, // highlightBackground
+        true, // timestampColorEnabled
+    };
+    
+    public static final String[] LIGHT_FAST = new String[]{
+        "#FAFAFA", // backgroundColor
+        "#111111", // foregroundColor
+        "#001480", // infoColor
+        "#A0A0A0", // compactColor
+        "#D10000", // highlightColor
+        "White", // inputBackgroundColor
+        "Black", // inputForegroundColor
+        "LightYellow", // searchResultColor
+        "#FFFF80", // searchResultColor2
+        "#EAEAEA", // backgroundColor2
+        "#FFFFEA", // highlightBackgroundColor
+        "#DFDFDF", // separatorColor
+        "#6E6779", // timestampColor
+        "30", // timestampColorInherit
+    };
+    
+    public static final Boolean[] LIGHT_FAST_BOOLEAN = new Boolean[]{
+        false, // alternateBackground
+        false, // messageSeparator
+        true, // highlightBackground
+        true, // timestampColorEnabled
+    };
+    
     private final SettingsDialog d;
     private final Map<String, ColorSetting> colorSettings = new HashMap<>();
     private final ColorChooser colorChooser;
@@ -167,53 +263,22 @@ public class ColorSettings extends SettingsPanel {
         //-------------------
         // Hardcoded Presets
         //-------------------
+        String[] defaultValues = new String[PRESET_SETTINGS.length];
+        for (int i = 0; i < PRESET_SETTINGS.length; i++) {
+            defaultValues[i] = settings.getStringDefault(PRESET_SETTINGS[i]);
+        }
+        Boolean[] defaultValuesBoolean = new Boolean[PRESET_SETTINGS_BOOLEAN.length];
+        for (int i = 0; i < PRESET_SETTINGS_BOOLEAN.length; i++) {
+            defaultValuesBoolean[i] = settings.getBooleanDefault(PRESET_SETTINGS_BOOLEAN[i]);
+        }
         presets.addPreset(Language.getString("settings.colorPresets.option.default"),
-                new String[]{
-                    settings.getStringDefault("backgroundColor"),
-                    settings.getStringDefault("foregroundColor"),
-                    settings.getStringDefault("infoColor"),
-                    settings.getStringDefault("compactColor"),
-                    settings.getStringDefault("highlightColor"),
-                    settings.getStringDefault("inputBackgroundColor"),
-                    settings.getStringDefault("inputForegroundColor"),
-                    settings.getStringDefault("searchResultColor"),
-                    settings.getStringDefault("searchResultColor2"),
-                    settings.getStringDefault("backgroundColor2"),
-                    settings.getStringDefault("highlightBackgroundColor"),
-                    settings.getStringDefault("separatorColor"),
-                    settings.getStringDefault("timestampColor"),
-                    settings.getStringDefault("timestampColorInherit")
-                },
-                new Boolean[]{
-                    settings.getBooleanDefault("alternateBackground"),
-                    settings.getBooleanDefault("messageSeparator"),
-                    settings.getBooleanDefault("highlightBackground"),
-                    settings.getBooleanDefault("timestampColorEnabled")
-                });
+                defaultValues,
+                defaultValuesBoolean);
             
         presets.addPreset(Language.getString("settings.colorPresets.option.dark"),
-                new String[]{
-                    "#111111",          // backgroundColor
-                    "LightGrey",        // foregroundColor
-                    "DeepSkyBlue",      // infoColor
-                    "#A0A0A0",          // compactColor
-                    "#DDDDDD",          // highlightColor
-                    "#222222",          // inputBackgroundColor
-                    "White",            // inputForegroundColor
-                    "DarkSlateBlue",    // searchResultColor
-                    "SlateBlue",        // searchResultColor2
-                    "#2D2D2D",          // backgroundColor2
-                    "#7A0000",          // highlightBackgroundColor
-                    "#383838",          // separatorColor
-                    "LightGrey",        // timestampColor
-                    "off",          // timestampColorInherit
-                },
-                new Boolean[]{
-                    false, // alternateBackground
-                    false, // messageSeparator
-                    true,  // highlightBackground
-                    false, // timestampColorEnabled
-                });
+                DARK,
+                DARK_BOOLEAN
+        );
         
         presets.addPreset(Language.getString("settings.colorPresets.option.dark2"),
                 new String[]{
@@ -312,28 +377,9 @@ public class ColorSettings extends SettingsPanel {
                 });
         
         presets.addPreset("Dark Smooth",
-                new String[]{
-                    "#323232", // backgroundColor
-                    "LightGrey", // foregroundColor
-                    "Aquamarine", // infoColor
-                    "#A0A0A0", // compactColor
-                    "#FFFFFF", // highlightColor
-                    "#222222", // inputBackgroundColor
-                    "#FFFFFF", // inputForegroundColor
-                    "DarkSlateBlue", // searchResultColor
-                    "SlateBlue", // searchResultColor2
-                    "#3B3B3B", // backgroundColor2
-                    "#5C0000", // highlightBackgroundColor
-                    "#DFDFDF", // separatorColor
-                    "#C5C5C5",  // timestampColor
-                    "40", // timestampColorInherit
-                },
-                new Boolean[]{
-                    true,  // alternateBackground
-                    false, // messageSeparator
-                    true,  // highlightBackground
-                    true,  // timestampColorEnabled
-                });
+                DARK_SMOOTH,
+                DARK_SMOOTH_BOOLEAN
+        );
         
         presets.init();
         

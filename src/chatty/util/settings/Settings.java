@@ -36,6 +36,7 @@ public class Settings {
     private final String defaultFile;
     private final FileManager fileManager;
     private final Set<String> files = new HashSet<>();
+    private final Set<String> fileLoaded = new HashSet<>();
     
     private static final Logger LOGGER = Logger.getLogger(Settings.class.getName());
     
@@ -1186,12 +1187,18 @@ public class Settings {
         }
         catch (FileNotFoundException | NoSuchFileException ex) {
             LOGGER.warning("File not found: "+ex);
+            return true;
         }
         catch (IOException ex) {
             LOGGER.warning("Error loading settings from file: "+ex);
             return false;
         }
+        fileLoaded.add(fileId);
         return true;
+    }
+    
+    public boolean wasFileLoaded(String fileName) {
+        return fileLoaded.contains(fileName);
     }
     
     private static void logParseError(String fileId, String input, ParseException ex) {

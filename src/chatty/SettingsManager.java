@@ -781,6 +781,10 @@ public class SettingsManager {
         return loadSuccess;
     }
     
+    public boolean wasMainFileLoaded() {
+        return settings.wasFileLoaded("settings");
+    }
+    
     /**
      * Perform backup, specifying the minimum delay the backup should be
      * performed in (seconds). The backup manager will decide whether to

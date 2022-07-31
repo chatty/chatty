@@ -13,7 +13,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.SplashScreen;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -76,14 +79,18 @@ public class Splash {
         };
     }
     
-    private final static String thing = getThing();
+    private final static String thing = getThing(0, 123456);
     
-    private static String getThing() {
+    public static String getThing(int minLength, int maxLength) {
         if (Calendar.getInstance().get(Calendar.DAY_OF_YEAR) == 1) {
             return "Happy new year!";
         }
-        String[] things = getThings();
-        return things[ThreadLocalRandom.current().nextInt(things.length)];
+        List<String> things = new ArrayList<>(Arrays.asList(getThings()));
+        things.removeIf(s -> s.length() > maxLength || s.length() < minLength);
+        if (things.isEmpty()) {
+            return "";
+        }
+        return things.get(ThreadLocalRandom.current().nextInt(things.size()));
     }
 
     public static void initSplashScreen(final Point location) {
