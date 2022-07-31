@@ -216,7 +216,7 @@ public class SettingsManager {
         settings.addString("font","Dialog");
         settings.addLong("fontSize",14);
         settings.addBoolean("timestampFontEnabled", false);
-        settings.addString("timestampFont", "Dialog 14");
+        settings.addString("timestampFont", "Dialog 12");
         settings.addString("inputFont", "Dialog 14");
         settings.addString("userlistFont", "Dialog Bold 12");
         settings.addLong("lineSpacing", 2);

@@ -578,7 +578,7 @@ public class TwitchClient {
             // Changed version, so should check for update properly again
             settings.setString("updateAvailable", "");
             if (settingsManager.wasMainFileLoaded()) {
-                // Don't bother user if settings were probably corrupted
+                // Don't bother user if settings were corrupted or new install
                 g.openReleaseInfo();
             }
         }
