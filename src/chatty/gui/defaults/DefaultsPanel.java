@@ -356,8 +356,8 @@ public class DefaultsPanel extends JPanel {
         // Notifications
         //--------------------------
         helper.setLong("nType", notifications.isSelected()
-                                  ? NotificationSettings.NOTIFICATION_TYPE_CUSTOM
-                                  : NotificationSettings.NOTIFICATION_TYPE_OFF);
+                                    ? NotificationSettings.NOTIFICATION_TYPE_CUSTOM
+                                    : NotificationSettings.NOTIFICATION_TYPE_OFF);
     }
     
     public static ImageIcon getImage(String name) {
