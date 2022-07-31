@@ -20,7 +20,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 
 /**
@@ -59,7 +59,7 @@ public class DefaultsPanel extends JPanel {
     private final JToggleButton style3Button;
     private final JToggleButton style4Button;
     private final JCheckBox userlist;
-    private final JTextArea fontPreview;
+    private final JTextPane fontPreview;
     private final JToggleButton font1Button;
     private final JToggleButton font2Button;
     private final JToggleButton fontSkipButton;
@@ -149,12 +149,7 @@ public class DefaultsPanel extends JPanel {
         JPanel fontPanel = new JPanel(new GridBagLayout());
         fontPanel.setBorder(BorderFactory.createTitledBorder(Language.getString("defaults.font")));
         
-        fontPreview = new JTextArea(fontPreviewText);
-        fontPreview.setEditable(false);
-        fontPreview.setRows(1);
-        fontPreview.setLineWrap(true);
-        fontPreview.setMargin(new Insets(5, 5, 5, 5));
-        fontPreview.setWrapStyleWord(true);
+        fontPreview = new JTextPane();
         gbc = GuiUtil.makeGbc(0, 5, 2, 1, GridBagConstraints.CENTER);
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;

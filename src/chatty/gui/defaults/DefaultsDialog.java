@@ -10,7 +10,8 @@ import java.awt.event.WindowEvent;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -18,7 +19,7 @@ import javax.swing.SwingUtilities;
  * 
  * @author tduva
  */
-public class DefaultsDialog extends JDialog {
+public class DefaultsDialog extends JFrame {
 
     public static void showAndWait(Settings settings) {
         try {
@@ -81,7 +82,7 @@ public class DefaultsDialog extends JDialog {
                 dispose();
             }
         });
-        add(panel, BorderLayout.CENTER);
+        add(new JScrollPane(panel), BorderLayout.CENTER);
         
         addWindowListener(new WindowAdapter() {
 
@@ -92,10 +93,15 @@ public class DefaultsDialog extends JDialog {
 
         });
         
-        pack();
-        setMaximumSize(getPreferredSize());
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        /**
+         * With the JTextPane used as font preview it would add scrollbars when
+         * not calling in invokeLater().
+         */
+        SwingUtilities.invokeLater(() -> {
+            pack();
+            setLocationRelativeTo(null);
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        });
     }
 
     public static void main(String[] args) {
