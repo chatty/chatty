@@ -540,6 +540,9 @@ public class Requests {
             else if (responseCode == 401) {
                 listener.errorMessage("Announcement access denied (check 'Main - Account' for access)");
             }
+            else {
+                listener.errorMessage(String.format("Sending announcement failed (%d)", responseCode));
+            }
         });
     }
     
