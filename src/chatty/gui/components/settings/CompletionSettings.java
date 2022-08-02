@@ -93,8 +93,7 @@ public class CompletionSettings extends SettingsPanel {
         JButton editCustomCompletion = new JButton("Edit Custom Completion Items");
         editCustomCompletion.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         editCustomCompletion.addActionListener(e -> {
-            customCompletionDialog.setLocationRelativeTo(d);
-            customCompletionDialog.setVisible(true);
+            customCompletionDialog.show(d);
         });
         entries.add(editCustomCompletion,
                 d.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST));
@@ -171,37 +170,52 @@ public class CompletionSettings extends SettingsPanel {
                 d.makeGbcCloser(0, 4, 4, 1, GridBagConstraints.WEST));
     }
     
-    private class CustomCompletionEntries extends JDialog {
+    private class CustomCompletionEntries extends LazyDialog {
 
-        public CustomCompletionEntries(Dialog owner) {
-            super(owner);
-            
-            setTitle("Custom Completion Items");
-            setDefaultCloseOperation(HIDE_ON_CLOSE);
-            
-            add(new JLabel("<html><body style='width:300px;padding:7px 7px 10px 7px;'>"
-                    + "Use <kbd>TAB</kbd> to complete '.Key' (prefixed "
-                    + "with a dot) to 'Value'.<br />"
-                    + "<br />"
-                    + "Example: Add <code>chatty</code> as Key and <code>http://chatty.github.io</code>"
-                    + " as Value, then <code>.chatty</code> completes to <code>http://chatty.github.io</code>. "
-                    + "<br /><br />You have to enter the key exactly, so for example just <code>chat</code> won't find <code>chatty</code>.<br />"
-                    + "<br />"
-                    + "If you have selected 'Custom Completion' for the "
-                    + "<kbd>TAB</kbd> or <kbd>Shift-Tab</kbd> setting then you "
-                    + "can also use that to perform the completion without the "
-                    + "dot in front."
-            ), BorderLayout.NORTH);
-            
-            SimpleTableEditor editor = d.addStringMapSetting("customCompletion", 270, 180);
-            editor.setKeyFilter("[^\\w]");
-            add(editor, BorderLayout.CENTER);
-            
-            JButton close = new JButton("Close");
-            close.addActionListener(e -> setVisible(false));
-            add(close, BorderLayout.SOUTH);
-            
-            pack();
+        private final JDialog owner;
+        private final SimpleTableEditor<String> editor;
+        
+        public CustomCompletionEntries(JDialog owner) {
+            this.owner = owner;
+            this.editor = d.addStringMapSetting("customCompletion", 270, 180);
+            this.editor.setKeyFilter("[^\\w]");
+        }
+        
+        @Override
+        public JDialog createDialog() {
+            return new Dialog();
+        }
+        
+        private class Dialog extends JDialog {
+
+            private Dialog() {
+                super(owner);
+
+                setTitle("Custom Completion Items");
+                setDefaultCloseOperation(HIDE_ON_CLOSE);
+
+                add(new JLabel("<html><body style='width:300px;padding:7px 7px 10px 7px;'>"
+                        + "Use <kbd>TAB</kbd> to complete '.Key' (prefixed "
+                        + "with a dot) to 'Value'.<br />"
+                        + "<br />"
+                        + "Example: Add <code>chatty</code> as Key and <code>http://chatty.github.io</code>"
+                        + " as Value, then <code>.chatty</code> completes to <code>http://chatty.github.io</code>. "
+                        + "<br /><br />You have to enter the key exactly, so for example just <code>chat</code> won't find <code>chatty</code>.<br />"
+                        + "<br />"
+                        + "If you have selected 'Custom Completion' for the "
+                        + "<kbd>TAB</kbd> or <kbd>Shift-Tab</kbd> setting then you "
+                        + "can also use that to perform the completion without the "
+                        + "dot in front."
+                ), BorderLayout.NORTH);
+                
+                add(editor, BorderLayout.CENTER);
+
+                JButton close = new JButton("Close");
+                close.addActionListener(e -> setVisible(false));
+                add(close, BorderLayout.SOUTH);
+
+                pack();
+            }
         }
         
     }

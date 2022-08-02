@@ -35,7 +35,7 @@ public class AddressbookEditor extends TableEditor<AddressbookEntry> {
         super(SORTING_MODE_SORTED, true);
         setModel(data);
         setTableEditorListener(listener);
-        setItemEditor(new MyEditor(parent));
+        setItemEditor(() -> new MyEditor(parent));
         //this.setItemEditor(null);
     }
     

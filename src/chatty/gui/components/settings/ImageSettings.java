@@ -65,8 +65,7 @@ public class ImageSettings extends SettingsPanel {
         JButton hiddenBadgesButton = new JButton("View Hidden Badges");
         hiddenBadgesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         hiddenBadgesButton.addActionListener(e -> {
-            hiddenBadgesDialog.setLocationRelativeTo(d);
-            hiddenBadgesDialog.setVisible(true);
+            hiddenBadgesDialog.show(d);
         });
         usericons.add(hiddenBadgesButton,
                 d.makeGbc(3, 0, 1, 1, GridBagConstraints.WEST));
@@ -116,45 +115,58 @@ public class ImageSettings extends SettingsPanel {
         usericonsData.addUsericonOfBadgeType(type, idVersion);
     }
     
-    private static class HiddenBadgesDialog extends JDialog {
+    private static class HiddenBadgesDialog extends LazyDialog {
         
+        private final SettingsDialog d;
         private final TableEditor<Usericon> editor;
         
         private HiddenBadgesDialog(SettingsDialog d) {
-            super(d);
-            setTitle("Hidden Badges");
-            setModal(true);
-            setLayout(new GridBagLayout());
-            
+            this.d = d;
             editor = new TableEditor<>(TableEditor.SORTING_MODE_SORTED, false);
-            editor.setItemEditor(new TableEditor.ItemEditor() {
+            editor.setItemEditor(() -> new TableEditor.ItemEditor<Usericon>() {
+                
                 @Override
-                public Object showEditor(Object preset, Component c, boolean edit, int column) {
+                public Usericon showEditor(Usericon preset, Component c, boolean edit, int column) {
                     JOptionPane.showMessageDialog(c, "Badge types can be added through the Badge Context Menu (right-click on a Badge in chat).");
                     return null;
                 }
             });
             editor.setModel(new ListTableModel<Usericon>(new String[]{"Badge Type"}) {
-                
+
                 @Override
                 public Object getValueAt(int rowIndex, int columnIndex) {
                     return get(rowIndex).readableLenientType();
                 }
             });
-            
-            GridBagConstraints gbc;
-            gbc = SettingsDialog.makeGbc(0, 1, 1, 1);
-            add(new JLabel(SettingConstants.HTML_PREFIX+"All types of badges on this list won't show up in chat. Custom Badges always take precedence though, so if e.g. you have configured a custom Partner badge, then it may show up even if it is hidden here.<br /><br />"
-                    + "It is also possible to add a Custom Badge with no image to hide a badge, which allows for more control over which badge should be hidden under what conditions."), gbc);
-            
-            gbc = SettingsDialog.makeGbc(0, 2, 1, 1);
-            gbc.weightx = 1;
-            gbc.weighty = 1;
-            gbc.fill = GridBagConstraints.BOTH;
-            add(editor, gbc);
-            
-            pack();
-            GuiUtil.installEscapeCloseOperation(this);
+        }
+        
+        @Override
+        public JDialog createDialog() {
+            return new Dialog();
+        }
+        
+        private class Dialog extends JDialog {
+
+            private Dialog() {
+                super(d);
+                setTitle("Hidden Badges");
+                setModal(true);
+                setLayout(new GridBagLayout());
+
+                GridBagConstraints gbc;
+                gbc = SettingsDialog.makeGbc(0, 1, 1, 1);
+                add(new JLabel(SettingConstants.HTML_PREFIX + "All types of badges on this list won't show up in chat. Custom Badges always take precedence though, so if e.g. you have configured a custom Partner badge, then it may show up even if it is hidden here.<br /><br />"
+                        + "It is also possible to add a Custom Badge with no image to hide a badge, which allows for more control over which badge should be hidden under what conditions."), gbc);
+
+                gbc = SettingsDialog.makeGbc(0, 2, 1, 1);
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                gbc.fill = GridBagConstraints.BOTH;
+                add(editor, gbc);
+
+                pack();
+                GuiUtil.installEscapeCloseOperation(this);
+            }
         }
         
         public void setData(Collection<Usericon> data) {

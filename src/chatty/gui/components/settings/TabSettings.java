@@ -84,8 +84,7 @@ public class TabSettings extends SettingsPanel {
         JButton tabsPosButton = new JButton("Advanced Tabs Order");
         tabsPosButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         tabsPosButton.addActionListener(e -> {
-            tabsPos.setLocationRelativeTo(TabSettings.this);
-            tabsPos.setVisible(true);
+            tabsPos.show(TabSettings.this);
         });
         
         tabsPos.setChangeListener(data -> {
@@ -244,7 +243,7 @@ public class TabSettings extends SettingsPanel {
                     SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
             add(makeOption(Channels.DockChannelContainer.CUSTOM_COLOR, "customColor"),
                     SettingsDialog.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
-            customColor = new ColorSetting(ColorSetting.FOREGROUND, null, "Custom Color", " ", new ColorChooser(settings));
+            customColor = new ColorSetting(ColorSetting.FOREGROUND, null, "Custom Color", " ", () -> new ColorChooser(settings));
             customColor.setUseBaseColor(false);
             add(customColor,
                     SettingsDialog.makeGbc(2, 3, 1, 1, GridBagConstraints.WEST));
@@ -360,88 +359,101 @@ public class TabSettings extends SettingsPanel {
         
     }
     
-    private static class TabsPos extends JDialog {
+    private static class TabsPos extends LazyDialog {
         
         private static final String INFO = SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-tabs_order.html", null);
         
+        private final SettingsDialog d;
         private final SimpleTableEditor<Long> editor;
-        private Consumer<Map<String, Long>> listener;
+        private Consumer<Map<String, Long>> changeListener;
         
         private TabsPos(SettingsDialog d) {
-            super(d);
-            setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-            setLayout(new GridBagLayout());
-            setTitle("Advanced Tabs Order");
-            
-            GridBagConstraints gbc;
-            
-            gbc = d.makeGbc(0, 0, 1, 1);
-            add(new JLabel(INFO), gbc);
-            
-            gbc = d.makeGbc(0, 1, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 1;
-            gbc.weighty = 1;
-            editor = d.addLongMapSetting("tabsPos", 300, 200);
-            editor.setRendererForColumn(0, new TabsPosRenderer());
-            editor.setRendererForColumn(1, new TabsPosRenderer());
-            editor.getSorter().setSortKeys(Arrays.asList(new SortKey[]{
-                new SortKey(1, SortOrder.ASCENDING),
-                new SortKey(0, SortOrder.ASCENDING)}));
-            editor.setValueFilter("[^0-9-]");
-            editor.setTableEditorListener(new TableEditor.TableEditorListener<SimpleTableEditor.MapItem<Long>>() {
-                @Override
-                public void itemAdded(SimpleTableEditor.MapItem<Long> item) {
-                    informListener(editor.getSettingValue());
-                }
-
-                @Override
-                public void itemRemoved(SimpleTableEditor.MapItem<Long> item) {
-                    informListener(editor.getSettingValue());
-                }
-
-                @Override
-                public void itemEdited(SimpleTableEditor.MapItem<Long> oldItem, SimpleTableEditor.MapItem<Long> newItem) {
-                    informListener(editor.getSettingValue());
-                }
-
-                @Override
-                public void allItemsChanged(List<SimpleTableEditor.MapItem<Long>> newItems) {
-                    informListener(editor.getSettingValue());
-                }
-
-                @Override
-                public void refreshData() {
-                }
-
-                @Override
-                public void itemsSet() {
-                    informListener(editor.getSettingValue());
-                }
-            });
-            add(editor, gbc);
-            
-            gbc = d.makeGbc(0, 2, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 1;
-            JButton closeButton = new JButton("Close");
-            add(closeButton, gbc);
-            closeButton.addActionListener(e -> {
-                setVisible(false);
-            });
-            
-            pack();
-            setMinimumSize(getPreferredSize());
+            this.d = d;
+            this.editor = d.addLongMapSetting("tabsPos", 300, 200);
         }
         
-        private void informListener(Map<String, Long> items) {
-            if (listener != null) {
-                listener.accept(items);
+        @Override
+        public JDialog createDialog() {
+            return new Dialog();
+        }
+        
+        private class Dialog extends JDialog {
+
+            private Dialog() {
+                super(d);
+                setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+                setLayout(new GridBagLayout());
+                setTitle("Advanced Tabs Order");
+
+                GridBagConstraints gbc;
+
+                gbc = d.makeGbc(0, 0, 1, 1);
+                add(new JLabel(INFO), gbc);
+
+                gbc = d.makeGbc(0, 1, 1, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                editor.setRendererForColumn(0, new TabsPosRenderer());
+                editor.setRendererForColumn(1, new TabsPosRenderer());
+                editor.getSorter().setSortKeys(Arrays.asList(new SortKey[]{
+                    new SortKey(1, SortOrder.ASCENDING),
+                    new SortKey(0, SortOrder.ASCENDING)}));
+                editor.setValueFilter("[^0-9-]");
+                editor.setTableEditorListener(new TableEditor.TableEditorListener<SimpleTableEditor.MapItem<Long>>() {
+                    @Override
+                    public void itemAdded(SimpleTableEditor.MapItem<Long> item) {
+                        informChangeListener(editor.getSettingValue());
+                    }
+
+                    @Override
+                    public void itemRemoved(SimpleTableEditor.MapItem<Long> item) {
+                        informChangeListener(editor.getSettingValue());
+                    }
+
+                    @Override
+                    public void itemEdited(SimpleTableEditor.MapItem<Long> oldItem, SimpleTableEditor.MapItem<Long> newItem) {
+                        informChangeListener(editor.getSettingValue());
+                    }
+
+                    @Override
+                    public void allItemsChanged(List<SimpleTableEditor.MapItem<Long>> newItems) {
+                        informChangeListener(editor.getSettingValue());
+                    }
+
+                    @Override
+                    public void refreshData() {
+                    }
+
+                    @Override
+                    public void itemsSet() {
+                        informChangeListener(editor.getSettingValue());
+                    }
+                });
+                add(editor, gbc);
+
+                gbc = d.makeGbc(0, 2, 1, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 1;
+                JButton closeButton = new JButton("Close");
+                add(closeButton, gbc);
+                closeButton.addActionListener(e -> {
+                    setVisible(false);
+                });
+
+                pack();
+                setMinimumSize(getPreferredSize());
+            }
+        }
+        
+        private void informChangeListener(Map<String, Long> items) {
+            if (changeListener != null) {
+                changeListener.accept(items);
             }
         }
         
         public void setChangeListener(Consumer<Map<String, Long>> listener) {
-            this.listener = listener;
+            this.changeListener = listener;
         }
 
         private MapSetting<String, Long> getSetting() {

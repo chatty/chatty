@@ -19,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
@@ -67,6 +68,7 @@ public class TableEditor<T> extends JPanel {
     private final JTable table;
     private ListTableModel<T> data;
     private ItemEditor<T> editor;
+    private Supplier<ItemEditor<T>> editorCreator;
     private TableRowSorter<ListTableModel<T>> sorter;
     private int sortingMode;
     private boolean currentlyFiltering;
@@ -338,8 +340,15 @@ public class TableEditor<T> extends JPanel {
      * 
      * @param editor 
      */
-    public void setItemEditor(ItemEditor<T> editor) {
-        this.editor = editor;
+    public void setItemEditor(Supplier<ItemEditor<T>> editorCreator) {
+        this.editorCreator = editorCreator;
+    }
+    
+    private ItemEditor<T> getEditor() {
+        if (editor == null) {
+            editor = editorCreator.get();
+        }
+        return editor;
     }
     
     /**
@@ -555,7 +564,7 @@ public class TableEditor<T> extends JPanel {
      * @param preset The entry used to fill out some data in the edit dialog
      */
     protected void addItem(T preset) {
-        T result = editor.showEditor(preset, this, false, -1);
+        T result = getEditor().showEditor(preset, this, false, -1);
         // If the user didn't cancel the dialog, work with the result.
         if (result != null) {
             // Check if the resulting entry is already in the table.
@@ -624,7 +633,7 @@ public class TableEditor<T> extends JPanel {
         if (preset == null) {
             preset = data.get(modelIndex);
         }
-        T result = editor.showEditor(preset, this, true, table.getSelectedColumn());
+        T result = getEditor().showEditor(preset, this, true, table.getSelectedColumn());
         
         // Done editing in the dialog, work with the result if the user didn't
         // cancel the dialog.

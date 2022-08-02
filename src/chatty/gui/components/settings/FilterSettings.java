@@ -30,10 +30,12 @@ public class FilterSettings extends SettingsPanel {
         gbc.insets = new Insets(5,10,5,5);
         ListSelector items = d.addListSetting("filter", "Filter", 220, 250, true, true);
         items.setInfo(HighlightSettings.getMatchingHelp("filter"));
-        HighlighterTester tester = new HighlighterTester(d, false, "filter");
-        tester.setLinkLabelListener(d.getLinkLabelListener());
         items.setInfoLinkLabelListener(d.getLinkLabelListener());
-        items.setEditor(tester);
+        items.setEditor(() -> {
+            HighlighterTester tester = new HighlighterTester(d, false, "filter");
+            tester.setLinkLabelListener(d.getLinkLabelListener());
+            return tester;
+        });
         items.setDataFormatter(input -> input.trim());
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;

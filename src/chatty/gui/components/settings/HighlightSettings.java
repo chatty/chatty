@@ -7,6 +7,7 @@ import chatty.lang.Language;
 import chatty.util.Replacer2;
 import chatty.util.Replacer2.Part;
 import chatty.util.StringUtil;
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -121,13 +122,15 @@ public class HighlightSettings extends SettingsPanel {
         gbc.insets = new Insets(5,10,5,5);
         items = d.addListSetting("highlight", "Highlight", 220, 250, true, true);
         items.setInfo(getMatchingHelp("highlight"));
-        HighlighterTester tester = new HighlighterTester(d, true, "highlight");
-        tester.setAddToBlacklistListener(e -> {
-            highlightBlacklist.addItem(e.getActionCommand());
-        });
-        tester.setLinkLabelListener(d.getLinkLabelListener());
         items.setInfoLinkLabelListener(d.getLinkLabelListener());
-        items.setEditor(tester);
+        items.setEditor(() -> {
+            HighlighterTester tester = new HighlighterTester(d, true, "highlight");
+            tester.setAddToBlacklistListener(e -> {
+                highlightBlacklist.addItem(e.getActionCommand());
+            });
+            tester.setLinkLabelListener(d.getLinkLabelListener());
+            return tester;
+        });
         items.setDataFormatter(input -> input.trim());
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
@@ -137,8 +140,7 @@ public class HighlightSettings extends SettingsPanel {
         JButton noHighlightUsersButton = new JButton("Users to never highlight");
         noHighlightUsersButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         noHighlightUsersButton.addActionListener(e -> {
-            noHighlightUsers.setLocationRelativeTo(HighlightSettings.this);
-            noHighlightUsers.setVisible(true);
+            noHighlightUsers.show(HighlightSettings.this);
         });
         gbc = d.makeGbc(0, 7, 1, 1);
         gbc.insets = new Insets(1,10,5,5);
@@ -148,8 +150,7 @@ public class HighlightSettings extends SettingsPanel {
         JButton highlightBlacklistButton = new JButton("Highlight Blacklist");
         highlightBlacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         highlightBlacklistButton.addActionListener(e -> {
-            highlightBlacklist.setLocationRelativeTo(HighlightSettings.this);
-            highlightBlacklist.setVisible(true);
+            highlightBlacklist.show(HighlightSettings.this);
         });
         gbc = d.makeGbc(1, 7, 1, 1);
         gbc.insets = new Insets(1,5,5,30);
@@ -169,8 +170,7 @@ public class HighlightSettings extends SettingsPanel {
         JButton substitutesButton = new JButton("Substitutes / Lookalikes");
         substitutesButton.setMargin(GuiUtil.SMALLER_BUTTON_INSETS);
         substitutesButton.addActionListener(e -> {
-            substitutes.setLocationRelativeTo(HighlightSettings.this);
-            substitutes.setVisible(true);
+            substitutes.show(HighlightSettings.this);
         });
         gbc = d.makeGbc(1, 8, 1, 1);
         gbc.insets = new Insets(1,5,5,30);
@@ -194,7 +194,7 @@ public class HighlightSettings extends SettingsPanel {
         items.setSelected(selectItems);
     }
     
-    private static class NoHighlightUsers extends JDialog {
+    private static class NoHighlightUsers extends LazyDialog {
 
         private static final DataFormatter<String> FORMATTER = new DataFormatter<String>() {
 
@@ -204,114 +204,141 @@ public class HighlightSettings extends SettingsPanel {
             }
         };
         
+        private final SettingsDialog d;
+        private final ListSelector noHighlightUsers;
+        
         public NoHighlightUsers(SettingsDialog d) {
-            super(d);
-            
-            setDefaultCloseOperation(HIDE_ON_CLOSE);
-            setTitle("Users to never highlight");
-            setLayout(new GridBagLayout());
-            
-            GridBagConstraints gbc;
+            this.d = d;
+            this.noHighlightUsers = d.addListSetting("noHighlightUsers", "No Highlight User", 180, 250, false, true);
+        }
+        
+        @Override
+        public JDialog createDialog() {
+            return new Dialog();
+        }
+        
+        private class Dialog extends JDialog {
 
-            gbc = d.makeGbc(0, 0, 1, 1);
-            add(new JLabel("<html><body style='width:260px;padding:4px;'>Users on this list "
-                    + "will never trigger a Highlight. This can be useful e.g. "
-                    + "for bots in your channel that repeatedly post messages "
-                    + "containing your name."), gbc);
-            
-            gbc = d.makeGbc(0, 1, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 0.5;
-            gbc.weighty = 1;
-            ListSelector noHighlightUsers = d.addListSetting("noHighlightUsers", "No Highlight User", 180, 250, false, true);
-            noHighlightUsers.setDataFormatter(FORMATTER);
-            add(noHighlightUsers, gbc);
+            Dialog() {
+                super(d);
 
-            JButton closeButton = new JButton(Language.getString("dialog.button.close"));
-            closeButton.addActionListener(new ActionListener() {
+                setDefaultCloseOperation(HIDE_ON_CLOSE);
+                setTitle("Users to never highlight");
+                setLayout(new GridBagLayout());
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                }
-            });
-            gbc = d.makeGbc(0, 2, 1, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1;
-            gbc.insets = new Insets(5, 5, 5, 5);
-            add(closeButton, gbc);
-            
-            pack();
-            setMinimumSize(getPreferredSize());
+                GridBagConstraints gbc;
+
+                gbc = d.makeGbc(0, 0, 1, 1);
+                add(new JLabel("<html><body style='width:260px;padding:4px;'>Users on this list "
+                        + "will never trigger a Highlight. This can be useful e.g. "
+                        + "for bots in your channel that repeatedly post messages "
+                        + "containing your name."), gbc);
+
+                gbc = d.makeGbc(0, 1, 1, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 0.5;
+                gbc.weighty = 1;
+                noHighlightUsers.setDataFormatter(FORMATTER);
+                add(noHighlightUsers, gbc);
+
+                JButton closeButton = new JButton(Language.getString("dialog.button.close"));
+                closeButton.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        setVisible(false);
+                    }
+                });
+                gbc = d.makeGbc(0, 2, 1, 1);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1;
+                gbc.insets = new Insets(5, 5, 5, 5);
+                add(closeButton, gbc);
+
+                pack();
+                setMinimumSize(getPreferredSize());
+            }
         }
         
     }
     
-    private static class Substitutes extends JDialog {
+    private static class Substitutes extends LazyDialog {
         
-        JCheckBox substitutesEnabled;
-        ListSelector substitutes;
+        private final SettingsDialog d;
+        private final JCheckBox substitutesEnabled;
+        private final ListSelector substitutes;
         
         public Substitutes(SettingsDialog d) {
-            super(d);
-            
-            setDefaultCloseOperation(HIDE_ON_CLOSE);
-            setTitle("Substitutes / Lookalikes");
-            setLayout(new GridBagLayout());
-            
-            GridBagConstraints gbc;
-
-            gbc = d.makeGbc(0, 0, 2, 1);
-            add(new JLabel("<html><body style='width:340px;padding:4px;'>"+SettingsUtil.getInfo("info-substitutes.html", null)), gbc);
-            
-            gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+            this.d = d;
             substitutesEnabled = d.addSimpleBooleanSetting("matchingSubstitutesEnabled");
-            substitutesEnabled.addItemListener(e -> updateTestSubstitutes());
-            add(substitutesEnabled, gbc);
-            
-            gbc = d.makeGbc(0, 2, 2, 1);
-            add(new JLabel("<html><body style='width:340px;padding:4px;padding-top:0'>Independent of this setting the <code>config:s</code> prefix can enable and <code>config:!s</code> disable this feature on a per Highlight-item basis."), gbc);
-            
-            JButton addDefaults = new JButton("Add default entries");
-            addDefaults.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-            addDefaults.addActionListener(e -> {
-                int result = JOptionPane.showConfirmDialog(rootPane, "This will add 26 (a-z) lookalikes entries. Existing entries will remain.", "Add entries?", JOptionPane.YES_NO_OPTION);
-                if (result == 0) {
-                    List<String> data = substitutes.getData();
-                    data.addAll(Replacer2.LOOKALIKES);
-                    substitutes.setData(data);
-                }
-            });
-            gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.EAST);
-            add(addDefaults, gbc);
-            
-            gbc = d.makeGbc(0, 3, 2, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 1;
-            gbc.weighty = 1;
             substitutes = d.addListSetting("matchingSubstitutes", "Substitutes", 180, 250, true, true);
-            substitutes.setEditor(new SubstitutesEditor(this));
-            substitutes.setChangeListener(value -> {
-                updateTestSubstitutes();
-            });
-            add(substitutes, gbc);
+        }
+        
+        public JDialog createDialog() {
+            return new Dialog();
+        }
+        
+        private class Dialog extends JDialog {
 
-            JButton closeButton = new JButton(Language.getString("dialog.button.close"));
-            closeButton.addActionListener(new ActionListener() {
+            private Dialog() {
+                super(d);
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                }
-            });
-            gbc = d.makeGbc(0, 4, 2, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1;
-            gbc.insets = new Insets(5, 5, 5, 5);
-            add(closeButton, gbc);
-            
-            pack();
-            setMinimumSize(getPreferredSize());
+                setDefaultCloseOperation(HIDE_ON_CLOSE);
+                setTitle("Substitutes / Lookalikes");
+                setLayout(new GridBagLayout());
+
+                GridBagConstraints gbc;
+
+                gbc = d.makeGbc(0, 0, 2, 1);
+                add(new JLabel("<html><body style='width:340px;padding:4px;'>" + SettingsUtil.getInfo("info-substitutes.html", null)), gbc);
+
+                gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+                substitutesEnabled.addItemListener(e -> updateTestSubstitutes());
+                add(substitutesEnabled, gbc);
+
+                gbc = d.makeGbc(0, 2, 2, 1);
+                add(new JLabel("<html><body style='width:340px;padding:4px;padding-top:0'>Independent of this setting the <code>config:s</code> prefix can enable and <code>config:!s</code> disable this feature on a per Highlight-item basis."), gbc);
+
+                JButton addDefaults = new JButton("Add default entries");
+                addDefaults.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+                addDefaults.addActionListener(e -> {
+                    int result = JOptionPane.showConfirmDialog(rootPane, "This will add 26 (a-z) lookalikes entries. Existing entries will remain.", "Add entries?", JOptionPane.YES_NO_OPTION);
+                    if (result == 0) {
+                        List<String> data = substitutes.getData();
+                        data.addAll(Replacer2.LOOKALIKES);
+                        substitutes.setData(data);
+                    }
+                });
+                gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.EAST);
+                add(addDefaults, gbc);
+
+                gbc = d.makeGbc(0, 3, 2, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 1;
+                gbc.weighty = 1;
+                substitutes.setEditor(() -> new SubstitutesEditor(this));
+                substitutes.setChangeListener(value -> {
+                    updateTestSubstitutes();
+                });
+                add(substitutes, gbc);
+
+                JButton closeButton = new JButton(Language.getString("dialog.button.close"));
+                closeButton.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        setVisible(false);
+                    }
+                });
+                gbc = d.makeGbc(0, 4, 2, 1);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1;
+                gbc.insets = new Insets(5, 5, 5, 5);
+                add(closeButton, gbc);
+
+                pack();
+                setMinimumSize(getPreferredSize());
+            }
         }
         
         private void updateTestSubstitutes() {

@@ -79,17 +79,16 @@ public class LookSettings extends SettingsPanel {
         //==========================
         // LaF Settings
         //==========================
-        ColorChooser colorChooser = new ColorChooser(d);
         ColorSetting foregroundColor = new ColorSetting(ColorSetting.FOREGROUND,
                 "lafBackground",
                 Language.getString("settings.general.foreground"),
                 Language.getString("settings.general.foreground"),
-                colorChooser);
+                () -> new ColorChooser(d));
         ColorSetting backgroundColor = new ColorSetting(ColorSetting.BACKGROUND,
                 "lafForeground",
                 Language.getString("settings.general.background"),
                 Language.getString("settings.general.background"),
-                colorChooser);
+                () -> new ColorChooser(d));
         ColorSettingListener colorChangeListener = new ColorSettingListener() {
 
             @Override

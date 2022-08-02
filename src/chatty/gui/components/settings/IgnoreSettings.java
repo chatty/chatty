@@ -103,13 +103,15 @@ public class IgnoreSettings extends SettingsPanel {
         gbc.weightx = 1;
         items = d.addListSetting("ignore", "Ignore", 390, 160, true, true);
         items.setInfo(HighlightSettings.getMatchingHelp("ignore"));
-        HighlighterTester tester = new HighlighterTester(d, false, "ignore");
-        tester.setLinkLabelListener(d.getLinkLabelListener());
-        tester.setAddToBlacklistListener(e -> {
-            blacklist.addItem(e.getActionCommand());
-        });
         items.setInfoLinkLabelListener(d.getLinkLabelListener());
-        items.setEditor(tester);
+        items.setEditor(() -> {
+            HighlighterTester tester = new HighlighterTester(d, false, "ignore");
+            tester.setLinkLabelListener(d.getLinkLabelListener());
+            tester.setAddToBlacklistListener(e -> {
+                blacklist.addItem(e.getActionCommand());
+            });
+            return tester;
+        });
         items.setDataFormatter(input -> input.trim());
         base.add(items, gbc);
         
@@ -125,8 +127,7 @@ public class IgnoreSettings extends SettingsPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                ignoredUsers.setLocationRelativeTo(IgnoreSettings.this);
-                ignoredUsers.setVisible(true);
+                ignoredUsers.show(IgnoreSettings.this);
             }
         });
         gbc = SettingsDialog.makeGbc(0, 4, 2, 1);
@@ -138,8 +139,7 @@ public class IgnoreSettings extends SettingsPanel {
         JButton blacklistButton = new JButton("Ignore Blacklist");
         blacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
         blacklistButton.addActionListener(e -> {
-            blacklist.setLocationRelativeTo(this);
-            blacklist.setVisible(true);
+            blacklist.show(this);
         });
         gbc = SettingsDialog.makeGbc(2, 4, 2, 1);
         gbc.insets = new Insets(1,5,5,30);
@@ -155,7 +155,26 @@ public class IgnoreSettings extends SettingsPanel {
         items.setSelected(selectItems);
     }
     
-    private static class IgnoredUsers extends JDialog {
+    private static class IgnoredUsers extends LazyDialog {
+
+        private final SettingsDialog d;
+        private final ListSelector ignoredChat;
+        private final ListSelector ignoredWhispers;
+        private final JCheckBox hideIgnoredUsers;
+
+        public IgnoredUsers(SettingsDialog d) {
+            this.d = d;
+            ignoredChat = d.addListSetting("ignoredUsers", "Ignored User", 180, 250, false, true);
+            ignoredWhispers = d.addListSetting("ignoredUsersWhisper", "Ignored User (Whisper)", 180, 250, false, true);
+            hideIgnoredUsers = d.addSimpleBooleanSetting("ignoredUsersHideInGUI",
+                    "Hide 'Ignored in chat' users from the userlist/joins/parts",
+                    "This only applies to users that are not already on the userlist when you ignore them");
+        }
+
+        @Override
+        public JDialog createDialog() {
+            return new Dialog();
+        }
 
         private static final DataFormatter<String> FORMATTER = new DataFormatter<String>() {
 
@@ -164,67 +183,65 @@ public class IgnoreSettings extends SettingsPanel {
                 return StringUtil.toLowerCase(input.replaceAll("\\s", ""));
             }
         };
-        
-        public IgnoredUsers(SettingsDialog d) {
-            super(d);
-            
-            setDefaultCloseOperation(HIDE_ON_CLOSE);
-            setTitle("Ignored Users");
-            setLayout(new GridBagLayout());
-            
-            GridBagConstraints gbc;
-            
-            gbc = d.makeGbc(0, 0, 1, 1);
-            add(new JLabel("Ignored in chat"), gbc);
-            
-            gbc = d.makeGbc(1, 0, 1, 1);
-            add(new JLabel("Ignored for whispers"), gbc);
-            
-            gbc = d.makeGbc(0, 1, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 0.5;
-            gbc.weighty = 1;
-            ListSelector ignoredChat = d.addListSetting("ignoredUsers", "Ignored User", 180, 250, false, true);
-            ignoredChat.setDataFormatter(FORMATTER);
-            add(ignoredChat, gbc);
-            
-            gbc = d.makeGbc(1, 1, 1, 1);
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weightx = 0.5;
-            gbc.weighty = 1;
-            ListSelector ignoredWhispers = d.addListSetting("ignoredUsersWhisper", "Ignored User (Whisper)", 180, 250, false, true);
-            ignoredWhispers.setDataFormatter(FORMATTER);
-            add(ignoredWhispers, gbc);
-            
-            gbc = d.makeGbc(0, 2, 2, 1);
-            add(new JLabel("<html><body style='width:260px;'>These lists are "
-                    + "independant from the main ignore list, so the users are "
-                    + "ignored even if the Ignore system is disabled."), gbc);
-            
-            gbc = d.makeGbc(0, 3, 2, 1);
-            add(d.addSimpleBooleanSetting("ignoredUsersHideInGUI",
-                    "Hide 'Ignored in chat' users from the userlist/joins/parts",
-                    "This only applies to users that are not already on the userlist when you ignore them"),
-                    gbc);
-            
-            JButton closeButton = new JButton("Close");
-            closeButton.addActionListener(new ActionListener() {
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                }
-            });
-            gbc = d.makeGbc(0, 5, 2, 1);
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1;
-            gbc.insets = new Insets(5, 5, 5, 5);
-            add(closeButton, gbc);
-            
-            pack();
-            setMinimumSize(getPreferredSize());
+        private class Dialog extends JDialog {
+
+            private Dialog() {
+                super(d);
+
+                setDefaultCloseOperation(HIDE_ON_CLOSE);
+                setTitle("Ignored Users");
+                setLayout(new GridBagLayout());
+
+                GridBagConstraints gbc;
+
+                gbc = d.makeGbc(0, 0, 1, 1);
+                add(new JLabel("Ignored in chat"), gbc);
+
+                gbc = d.makeGbc(1, 0, 1, 1);
+                add(new JLabel("Ignored for whispers"), gbc);
+
+                gbc = d.makeGbc(0, 1, 1, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 0.5;
+                gbc.weighty = 1;
+                ignoredChat.setDataFormatter(FORMATTER);
+                add(ignoredChat, gbc);
+
+                gbc = d.makeGbc(1, 1, 1, 1);
+                gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 0.5;
+                gbc.weighty = 1;
+                ignoredWhispers.setDataFormatter(FORMATTER);
+                add(ignoredWhispers, gbc);
+
+                gbc = d.makeGbc(0, 2, 2, 1);
+                add(new JLabel("<html><body style='width:260px;'>These lists are "
+                        + "independant from the main ignore list, so the users are "
+                        + "ignored even if the Ignore system is disabled."), gbc);
+
+                gbc = d.makeGbc(0, 3, 2, 1);
+                add(hideIgnoredUsers, gbc);
+
+                JButton closeButton = new JButton("Close");
+                closeButton.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        setVisible(false);
+                    }
+                });
+                gbc = d.makeGbc(0, 5, 2, 1);
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx = 1;
+                gbc.insets = new Insets(5, 5, 5, 5);
+                add(closeButton, gbc);
+
+                pack();
+                setMinimumSize(getPreferredSize());
+            }
+
         }
-        
     }
-    
+
 }

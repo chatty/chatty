@@ -79,7 +79,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 SwingUtilities.invokeLater(() -> {
                     g.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     g.getGlassPane().setVisible(true);
+                    long start = System.currentTimeMillis();
                     INSTANCE = new SettingsDialog(g, g.getSettings());
+                    System.out.println("Settings init: "+(System.currentTimeMillis() - start));
                     g.getGlassPane().setCursor(Cursor.getDefaultCursor());
                     g.getGlassPane().setVisible(false);
                     action.accept(INSTANCE);
@@ -725,8 +727,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected void showMatchingPresets() {
-        matchingPresets.setLocationRelativeTo(this);
-        matchingPresets.setVisible(true);
+        matchingPresets.show(this);
     }
     
     protected static GridBagConstraints makeGbc(int x, int y, int w, int h) {
@@ -1000,7 +1001,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return result;
     }
     
-    protected SimpleTableEditor addStringMapSetting(String name, int width, int height) {
+    protected SimpleTableEditor<String> addStringMapSetting(String name, int width, int height) {
         SimpleTableEditor<String> table = new SimpleTableEditor<String>(this, String.class) {
 
             @Override
@@ -1013,7 +1014,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return table;
     }
     
-    protected SimpleTableEditor addLongMapSetting(String name, int width, int height) {
+    protected SimpleTableEditor<Long> addLongMapSetting(String name, int width, int height) {
         SimpleTableEditor<Long> table = new SimpleTableEditor<Long>(this, Long.class) {
 
             @Override

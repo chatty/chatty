@@ -8,12 +8,10 @@ import chatty.lang.Language;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,14 +35,23 @@ import javax.swing.text.DocumentFilter;
 public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> implements MapSetting<String, T> {
 
     private final MyTableModel<T> data;
-    private final MyItemEditor editor;
+    
+    private MyItemEditor editor;
+    private DocumentFilter keyFilter;
+    private DocumentFilter valueFilter;
     
     public SimpleTableEditor(JDialog owner, Class<T> valueClass) {
         super(SORTING_MODE_SORTED, false);
         data = new MyTableModel<>(valueClass);
         setModel(data);
-        editor = new MyItemEditor(owner);
-        setItemEditor(editor);
+        setItemEditor(() -> {
+            if (editor == null) {
+                editor = new MyItemEditor(owner);
+                editor.setKeyFilter(keyFilter);
+                editor.setValueFilter(valueFilter);
+            }
+            return editor;
+        });
     }
     
     public void edit(String item) {
@@ -60,15 +67,24 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
     protected abstract T valueFromString(String input);
     
     public void setKeyFilter(String p) {
-        editor.setKeyFilter(new RegexDocumentFilter(p));
+        keyFilter = new RegexDocumentFilter(p);
+        if (editor != null) {
+            editor.setKeyFilter(keyFilter);
+        }
     }
     
     public void setValueFilter(String p) {
-        editor.setValueFilter(new RegexDocumentFilter(p));
+        valueFilter = new RegexDocumentFilter(p);
+        if (editor != null) {
+            editor.setValueFilter(valueFilter);
+        }
     }
     
     public void setValueDocumentFilter(DocumentFilter filter) {
-        editor.setValueFilter(filter);
+        valueFilter = filter;
+        if (editor != null) {
+            editor.setValueFilter(filter);
+        }
     }
 
     @Override

@@ -48,14 +48,20 @@ class UsericonEditor extends TableEditor<Usericon> {
     
     private static final Map<Usericon.Type, String> typeNames;
     
-    private final MyItemEditor editor;
+    private MyItemEditor editor;
+    private Set<String> types;
     
     public UsericonEditor(JDialog owner, LinkLabelListener linkLabelListener) {
         super(SORTING_MODE_MANUAL, false);
         
-        editor = new MyItemEditor(owner, linkLabelListener);
         setModel(new MyTableModel());
-        setItemEditor(editor);
+        setItemEditor(() -> {
+            if (editor == null) {
+                editor = new MyItemEditor(owner, linkLabelListener);
+                editor.setTwitchBadgeTypes(types);
+            }
+            return editor;
+        });
         setRendererForColumn(1, new IdRenderer(getForeground()));
         setRendererForColumn(2, new ImageRenderer(this));
         setRendererForColumn(3, new ChannelRenderer(getForeground()));
@@ -86,7 +92,12 @@ class UsericonEditor extends TableEditor<Usericon> {
     }
     
     public void setTwitchBadgeTypes(Set<String> types) {
-        editor.setTwitchBadgeTypes(types);
+        if (editor != null) {
+            editor.setTwitchBadgeTypes(types);
+        }
+        else {
+            this.types = types;
+        }
     }
     
     public void addUsericonOfBadgeType(Usericon.Type type, String idVersion) {

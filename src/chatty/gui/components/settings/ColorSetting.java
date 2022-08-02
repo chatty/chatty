@@ -15,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -68,7 +69,7 @@ public class ColorSetting extends JPanel implements StringSetting {
     
     private final Set<ColorSettingListener> listeners = new HashSet<>();
     
-    private final ColorChooser colorChooser;
+    private ColorChooser colorChooser;
     private final JButton chooseColor = new JButton();
     
     /**
@@ -78,15 +79,14 @@ public class ColorSetting extends JPanel implements StringSetting {
      * @param baseColorSetting The name of the color setting for the background.
      * @param name The name of the color.
      * @param text A description or example of the text for this color.
-     * @param chooser ColorChooser to use to select a new color.
+     * @param chooserCreator
      */
     public ColorSetting(final int type, String baseColorSetting,
-            final String name, final String text, ColorChooser chooser) {
+            final String name, final String text, Supplier<ColorChooser> chooserCreator) {
         setLayout(new GridBagLayout());
         
         this.type = type;
         this.baseColorSetting = baseColorSetting;
-        this.colorChooser = chooser;
         this.previewText = text;
         
         // Set text and size of preview
@@ -102,6 +102,9 @@ public class ColorSetting extends JPanel implements StringSetting {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (colorChooser == null) {
+                    colorChooser = chooserCreator.get();
+                }
                 String result = colorChooser.chooseColorString(type, currentColor, secondaryColor, name, previewText);
                 setSettingValue(result);
             }

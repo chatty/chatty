@@ -31,17 +31,25 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
     private final MyTableModel data;
     private final ItemCreator<T> itemCreator;
     private final ColorRenderer colorRenderer = new ColorRenderer();
-    private final MyItemEditor<T> editor;
+    private MyItemEditor<T> editor;
+    private Color defaultForeground;
+    private Color defaultBackground;
     
     public ItemColorEditor(JDialog owner,
             ItemCreator<T> itemCreator, boolean editBackground, Component info) {
         super(SORTING_MODE_MANUAL, false);
         this.itemCreator = itemCreator;
         this.data = new MyTableModel(editBackground);
-        this.editor = new MyItemEditor<>(owner, itemCreator, editBackground, info);
         
         setModel(data);
-        setItemEditor(editor);
+        setItemEditor(() -> {
+            if (editor == null) {
+                editor = new MyItemEditor<>(owner, itemCreator, editBackground, info);
+                editor.setDefaultForeground(defaultForeground);
+                editor.setDefaultBackground(defaultBackground);
+            }
+            return editor;
+        });
         setRendererForColumn(1, colorRenderer);
         if (editBackground) {
             setRendererForColumn(2, colorRenderer);
@@ -70,12 +78,22 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
     
     public void setDefaultForeground(Color color) {
         colorRenderer.setDefaultForeground(color);
-        editor.setDefaultForeground(color);
+        if (editor != null) {
+            editor.setDefaultForeground(color);
+        }
+        else {
+            defaultForeground = color;
+        }
     }
    
     public void setDefaultBackground(Color color) {
         colorRenderer.setBackgroundColor(color);
-        editor.setDefaultBackground(color);
+        if (editor != null) {
+            editor.setDefaultBackground(color);
+        }
+        else {
+            defaultBackground = color;
+        }
     }
     
     private static class MyTableModel<T extends ColorItem> extends ListTableModel<T> {
@@ -183,7 +201,6 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
         private final ItemCreator<T> itemCreator;
         private final boolean editBackground;
         
-        private final ColorChooser colorChooser;
         private final JDialog dialog;
         private final JTextField id = new JTextField(10);
         private final JButton changeColor = new JButton("Select Color");
@@ -202,7 +219,6 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
                 boolean editBackground, Component info) {
             this.itemCreator = itemCreator;
             this.editBackground = editBackground;
-            this.colorChooser = new ColorChooser(owner);
             dialog = new JDialog(owner);
             dialog.setTitle("Edit Item");
             dialog.setModal(true);
@@ -251,8 +267,8 @@ public class ItemColorEditor<T extends ColorItem> extends TableEditor<T> {
             gbc.weightx = 1;
             dialog.add(id, gbc);
             
-            foreground = new ColorSetting(ColorSetting.FOREGROUND, null, "Foreground", "Foreground Color", colorChooser);
-            background = new ColorSetting(ColorSetting.BACKGROUND, null, "Background", "Background Color", colorChooser);
+            foreground = new ColorSetting(ColorSetting.FOREGROUND, null, "Foreground", "Foreground Color", () -> new ColorChooser(owner));
+            background = new ColorSetting(ColorSetting.BACKGROUND, null, "Background", "Background Color", () -> new ColorChooser(owner));
             foregroundEnabled = new JCheckBox("Enabled");
             backgroundEnabled = new JCheckBox("Enabled");
             

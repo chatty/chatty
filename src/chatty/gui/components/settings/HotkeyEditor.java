@@ -40,15 +40,24 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
     private static final Set<String> RECOMMENDED_APPLICATION_ACTIONS =
             new HashSet<>(Arrays.asList(new String[]{"about"}));
 
-    private final MyItemEditor itemEditor;
+    private MyItemEditor itemEditor;
     private final MyTableModel data = new MyTableModel();
     private final Set<KeyStroke> conflictWarning = new HashSet<>();
+    
+    private Map<String, String> actions;
+    private boolean globalHotkeysAvailable;
     
     public HotkeyEditor(JDialog owner) {
         super(SORTING_MODE_SORTED, false);
         setModel(data);
-        itemEditor = new MyItemEditor(owner, data);
-        setItemEditor(itemEditor);
+        setItemEditor(() -> {
+            if (itemEditor == null) {
+                itemEditor = new MyItemEditor(owner, data);
+                itemEditor.setActions(actions);
+                itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
+            }
+            return itemEditor;
+        });
         
         setFixedColumnWidth(2, 60);
         
@@ -112,8 +121,14 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         // Set actions first, so it's correctly sorted in the table
         data.setActions(actions);
         setData(hotkeys);
-        itemEditor.setActions(actions);
-        itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
+        if (itemEditor != null) {
+            itemEditor.setActions(actions);
+            itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
+        }
+        else {
+            this.actions = actions;
+            this.globalHotkeysAvailable = globalHotkeysAvailable;
+        }
     }
     
     public void addHotkey(Hotkey hotkey) {

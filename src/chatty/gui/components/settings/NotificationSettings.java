@@ -222,20 +222,22 @@ public class NotificationSettings extends SettingsPanel {
         //---------------
         JPanel devicePanel = new JPanel();
         devicePanel.add(new JLabel("Output Device: "));
-        
-        Map<String, String> devicePresets = new HashMap<>();
-        devicePresets.put("", "<default>");
-        for (String dev : Sound.getDeviceNames()) {
-            devicePresets.put(dev, dev);
-        }
-        final ComboStringSetting device = new ComboStringSetting(devicePresets);
-        device.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Sound.setDeviceName(device.getSettingValue());
-            }
-        });
+        DialogComboSetting device = new DialogComboSetting(d,
+                () -> {
+                    Map<String, String> devicePresets = new HashMap<>();
+                    devicePresets.put("", "<default>");
+                    for (String dev : Sound.getDeviceNames()) {
+                        devicePresets.put(dev, dev);
+                    }
+                    return devicePresets;
+                },
+                value -> {
+                    if (value.isEmpty()) {
+                        return "<default>";
+                    }
+                    return value;
+                });
+        device.addSettingChangeListener(s -> Sound.setDeviceName(s.getSettingValue()));
         d.addStringSetting("soundDevice", device);
         devicePanel.add(device);
         gbc = d.makeGbc(0, 4, 2, 1);

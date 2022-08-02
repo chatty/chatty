@@ -9,6 +9,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -21,9 +22,11 @@ import javax.swing.event.ChangeListener;
  */
 public class EditorStringSetting extends JPanel implements StringSetting {
 
-    private final StringEditor editor;
+    private StringEditor editor;
     private final JTextField preview;
     private final JButton editButton;
+    private LinkLabelListener linkLabelListener;
+    private boolean showInfoByDefault;
     
     private String value;
     private String info;
@@ -37,7 +40,7 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     public EditorStringSetting(Window parent, final String title, int size,
             boolean allowEmpty, boolean allowLinebreaks, String defaultInfo,
             Editor.Tester tester) {
-        this(parent, title, size, createEditor(parent, allowEmpty, allowLinebreaks, tester));
+        this(parent, title, size, () -> createEditor(parent, allowEmpty, allowLinebreaks, tester));
         this.info = defaultInfo;
     }
     
@@ -51,9 +54,7 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     }
     
     public EditorStringSetting(Window parent, final String title, int size,
-                               StringEditor editor) {
-        this.editor = editor;
-        
+                               Supplier<StringEditor> editorCreator) {
         setLayout(new BorderLayout(2, 0));
         
         editButton = new JButton(Language.getString("dialog.button.edit"));
@@ -63,6 +64,11 @@ public class EditorStringSetting extends JPanel implements StringSetting {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (editor == null) {
+                    editor = editorCreator.get();
+                    setLinkLabelListener(linkLabelListener);
+                    setShowInfoByDefault(showInfoByDefault);
+                }
                 String result = editor.showDialog(title, value, info);
                 if (result != null) {
                     setSettingValue(result);
@@ -91,7 +97,12 @@ public class EditorStringSetting extends JPanel implements StringSetting {
      * @param listener 
      */
     public void setLinkLabelListener(LinkLabelListener listener) {
-        editor.setLinkLabelListener(listener);
+        if (editor != null) {
+            editor.setLinkLabelListener(listener);
+        }
+        else {
+            linkLabelListener = listener;
+        }
     }
     
     @Override
@@ -117,8 +128,13 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     }
     
     public void setShowInfoByDefault(boolean show) {
-        if (editor instanceof Editor) {
-            ((Editor) editor).setShowInfoByDefault(show);
+        if (editor != null) {
+            if (editor instanceof Editor) {
+                ((Editor) editor).setShowInfoByDefault(show);
+            }
+        }
+        else {
+            showInfoByDefault = show;
         }
     }
     

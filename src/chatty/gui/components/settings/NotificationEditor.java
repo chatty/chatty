@@ -56,26 +56,45 @@ class NotificationEditor extends TableEditor<Notification> {
     private static final Map<Notification.Type, String> typeNames;
     private static final Map<Notification.State, String> status;
     
-    private final MyItemEditor editor;
+    private MyItemEditor editor;
+    private LinkLabelListener linkLabelListener;
+    private Path soundPath;
+    private String[] soundFiles;
     
     public NotificationEditor(JDialog owner, Settings settings) {
         super(SORTING_MODE_MANUAL, false);
         
-        editor = new MyItemEditor(owner, settings);
-        
         setModel(new MyTableModel());
-        setItemEditor(editor);
+        setItemEditor(() -> {
+            if (editor == null) {
+                editor = new MyItemEditor(owner, settings);
+                setLinkLabelListener(linkLabelListener);
+                setSoundFiles(soundPath, soundFiles);
+            }
+            return editor;
+        });
         setRendererForColumn(0, new MyRenderer());
         setRendererForColumn(1, new MyRenderer());
         setRendererForColumn(2, new MyRenderer());
     }
     
     public void setSoundFiles(Path path, String[] fileNames) {
-        editor.setSoundFiles(path, fileNames);
+        if (editor != null) {
+            editor.setSoundFiles(path, fileNames);
+        }
+        else {
+            soundPath = path;
+            soundFiles = fileNames;
+        }
     }
     
     public void setLinkLabelListener(LinkLabelListener listener) {
-        editor.setLinkLabelListener(listener);
+        if (editor != null) {
+            editor.setLinkLabelListener(listener);
+        }
+        else {
+            linkLabelListener = listener;
+        }
     }
     
     /**
@@ -229,7 +248,6 @@ class NotificationEditor extends TableEditor<Notification> {
         private final ColorSetting foregroundColor;
         private final ColorSetting backgroundColor;
         private final JButton testColors;
-        private final ColorChooser colorChooser;
         private final DurationSetting soundCooldown;
         private final DurationSetting soundInactiveCooldown;
         private final ComboStringSetting soundFile;
@@ -296,26 +314,27 @@ class NotificationEditor extends TableEditor<Notification> {
             optionsAssoc = new HashMap<>();
             
             channels = new SimpleStringSetting(20, true, DataFormatter.TRIM);
-            HighlighterTester matcherEditor = new HighlighterTester(dialog, false, "notification");
-            matcherEditor.setAllowEmpty(true);
-            matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, matcherEditor);
+            matcher = new EditorStringSetting(dialog, "Match Notification Text", 20, () -> {
+                HighlighterTester matcherEditor = new HighlighterTester(dialog, false, "notification");
+                matcherEditor.setAllowEmpty(true);
+                return matcherEditor;
+            });
             
             SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.channel", 0, 2, 1, EAST, channels);
             SettingsUtil.addLabeledComponent(optionsPanel, "settings.notifications.textMatch", 0, 3, 1, EAST, matcher);
             
             optionsPanel.add(options, GuiUtil.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
             
-            colorChooser = new ColorChooser(dialog);
             foregroundColor = new ColorSetting(ColorSetting.FOREGROUND,
                     null,
                     Language.getString("settings.general.foreground"),
                     Language.getString("settings.general.foreground"),
-                    colorChooser);
+                    () -> new ColorChooser(dialog));
             backgroundColor = new ColorSetting(ColorSetting.BACKGROUND,
                     null,
                     Language.getString("settings.general.background"),
                     Language.getString("settings.general.background"),
-                    colorChooser);
+                    () -> new ColorChooser(dialog));
             ColorSettingListener colorChangeListener = new ColorSettingListener() {
 
                 @Override

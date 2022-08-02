@@ -121,14 +121,13 @@ public class ColorSettings extends SettingsPanel {
     
     private final SettingsDialog d;
     private final Map<String, ColorSetting> colorSettings = new HashMap<>();
-    private final ColorChooser colorChooser;
+    private ColorChooser colorChooser;
     private final JPanel mainPanel;
     private final JPanel colorsPanel;
     private final ColorTemplates presets;
     
     public ColorSettings(SettingsDialog d, Settings settings) {
         this.d = d;
-        colorChooser = new ColorChooser(d);
 
         mainPanel = addTitledPanel(Language.getString("settings.section.colors"), 0);
         colorsPanel = new JPanel(new GridBagLayout());
@@ -485,7 +484,13 @@ public class ColorSettings extends SettingsPanel {
                 ? Language.getString("settings.colors.general.foregroundColor")
                 : Language.getString("settings.colors.general.backgroundColor");
         String extendedName = colorDescription+" ["+colorType+"]";
-        ColorSetting colorSetting = new ColorSetting(type, baseSetting, extendedName, colorDescription, colorChooser);
+        ColorSetting colorSetting = new ColorSetting(type, baseSetting, extendedName, colorDescription,
+                () -> {
+                    if (colorChooser == null) {
+                        colorChooser = new ColorChooser(d);
+                    }
+                    return colorChooser;
+                });
         colorSetting.addListener(new MyColorSettingListener(setting));
         d.addStringSetting(setting, colorSetting);
         colorSettings.put(setting, colorSetting);

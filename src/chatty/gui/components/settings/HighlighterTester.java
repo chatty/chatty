@@ -333,7 +333,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         setModal(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        pack();
         setMinimumSize(getPreferredSize());
     }
     
