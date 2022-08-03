@@ -249,6 +249,7 @@ public class SettingsManager {
         settings.addBoolean("ffzEvent", true);
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
+        settings.addBoolean("seventv", true);
         settings.addBoolean("showAnimatedEmotes", true);
         settings.addBoolean("animatedEmotes", true);
         settings.addLong("animationPause", 2);

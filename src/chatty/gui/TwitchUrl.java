@@ -62,6 +62,7 @@ public class TwitchUrl {
             case FFZ: return "https://www.frankerfacez.com/emoticons/"+id;
             case TWITCH: return "https://twitchemotes.com/emote/"+id;
             case BTTV: return "https://betterttv.com/emotes/"+id;
+            case SEVENTV: return "https://7tv.app/emotes/"+id;
         }
         return null;
     }

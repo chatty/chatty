@@ -110,10 +110,12 @@ public class EmoteSettings extends SettingsPanel {
         JPanel twitchSettings = new JPanel(new GridBagLayout());
         JPanel ffzSettings = new JPanel(new GridBagLayout());
         JPanel bttvSettings = new JPanel(new GridBagLayout());
+        JPanel seventvSettings = new JPanel(new GridBagLayout());
         JPanel emojiSettings = new JPanel(new GridBagLayout());
         providerSettingsTabs.addTab("Twitch", twitchSettings);
         providerSettingsTabs.addTab("FFZ", ffzSettings);
         providerSettingsTabs.addTab("BTTV", bttvSettings);
+        providerSettingsTabs.addTab("7TV", seventvSettings);
         providerSettingsTabs.addTab(Language.getString("settings.section.emoji"), emojiSettings);
         
         GridBagConstraints gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
@@ -174,6 +176,14 @@ public class EmoteSettings extends SettingsPanel {
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         SettingsUtil.topAlign(bttvSettings, 10);
+        
+        //--------------------------
+        // SevenTV
+        //--------------------------
+        seventvSettings.add(d.addSimpleBooleanSetting("seventv"),
+                SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        SettingsUtil.topAlign(seventvSettings, 10);
 
         //--------------------------
         // Emoji

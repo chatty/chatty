@@ -83,6 +83,7 @@ import chatty.util.irc.MsgTags;
 import chatty.util.settings.FileManager;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
+import chatty.util.seventv.SevenTV;
 import chatty.util.srl.SpeedrunsLive;
 import java.awt.Color;
 import java.io.File;
@@ -144,6 +145,8 @@ public class TwitchClient {
     public final BTTVEmotes bttvEmotes;
     
     public final FrankerFaceZ frankerFaceZ;
+    
+    public final SevenTV sevenTV;
     
     public final ChannelFavorites channelFavorites;
     
@@ -256,6 +259,12 @@ public class TwitchClient {
         }
         
         initDxSettings();
+        /**
+         * Set a proper user agent. The default Java user agent may be rejected
+         * by some servers.
+         */
+        System.setProperty("http.agent", "Chatty "+Chatty.VERSION);
+        System.setProperty("jna.debug_load", "true");
         
         // After graphic settings (what is changed here shouldn't affect stuff before this
         if (!settingsManager.wasMainFileLoaded()) {
@@ -281,6 +290,7 @@ public class TwitchClient {
                 settings.getString("pubsub"), pubsubListener, api);
         
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings, api);
+        sevenTV = new SevenTV(new EmoteListener());
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
@@ -2407,6 +2417,10 @@ public class TwitchClient {
             refreshRequests.add("bttvemotes");
             bttvEmotes.requestEmotes(BTTVEmotes.GLOBAL, true);
             bttvEmotes.requestEmotes(channel, true);
+        } else if (parameter.equals("7tv")) {
+            g.printSystem("Refreshing 7TV emotes..");
+            refreshRequests.add("seventv");
+            sevenTV.requestEmotes(channel, true);
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
         }
@@ -3098,6 +3112,9 @@ public class TwitchClient {
         if (settings.getBoolean("bttvEmotes")) {
             bttvEmotes.requestEmotes(channel, false);
         }
+        if (settings.getBoolean("seventv")) {
+            sevenTV.requestEmotes(channel, false);
+        }
 //        api.getEmotesByStreams(Helper.toStream(channel)); // Removed
     }
     
@@ -3109,6 +3126,10 @@ public class TwitchClient {
             if (refreshRequests.contains("bttvemotes")) {
                 g.printLine("BTTV emotes updated.");
                 refreshRequests.remove("bttvemotes");
+            }
+            else if (refreshRequests.contains("seventv")) {
+                g.printLine("7TV emotes updated.");
+                refreshRequests.remove("seventv");
             }
         }
 

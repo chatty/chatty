@@ -47,14 +47,26 @@ public class Emoticon {
     public static final String SET_UNKNOWN = "";
     
     public static enum Type {
-        TWITCH("Twitch"), FFZ("FFZ"), BTTV("BTTV"), CUSTOM("Custom"),
-        EMOJI("Emoji"), NOT_FOUND_FAVORITE("NotFoundFavorite"), CUSTOM2("Custom2");
+        TWITCH("Twitch", TypeCategory.OFFICIAL),
+        FFZ("FFZ", TypeCategory.THIRD_PARTY),
+        BTTV("BTTV", TypeCategory.THIRD_PARTY),
+        SEVENTV("7TV", TypeCategory.THIRD_PARTY),
+        CUSTOM("Custom", TypeCategory.OTHER),
+        EMOJI("Emoji", TypeCategory.OTHER),
+        NOT_FOUND_FAVORITE("NotFoundFavorite", TypeCategory.OTHER),
+        CUSTOM2("Custom2", TypeCategory.OTHER);
         
         public String label;
+        public TypeCategory category;
         
-        Type(String label) {
+        Type(String label, TypeCategory category) {
             this.label = label;
+            this.category = category;
         }
+    }
+    
+    public static enum TypeCategory {
+        OFFICIAL, THIRD_PARTY, OTHER
     }
     
     public static enum SubType {
@@ -233,6 +245,8 @@ public class Emoticon {
             }
         } else if (type == Type.BTTV && stringId != null) {
             return getBttvEmoteUrl(stringId, factor);
+        } else if (type == Type.SEVENTV) {
+            return getSevenTVEmoteUrl(stringId, factor);
         } else if (type == Type.FFZ) {
             return getFFZUrl(factor);
         } else if (factor == 1) {
@@ -272,6 +286,13 @@ public class Emoticon {
             return urlX2;
         }
         return url;
+    }
+    
+    public String getSevenTVEmoteUrl(String id, int factor) {
+        if (StringUtil.isNullOrEmpty(id) || factor > 4) {
+            return null;
+        }
+        return String.format("https://cdn.7tv.app/emote/%s/%dx", id, factor);
     }
 
     /**

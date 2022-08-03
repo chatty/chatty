@@ -73,6 +73,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.api.Emoticon.TypeCategory;
 
 /**
  * Dialog showing emoticons that can be clicked on to insert them in the last
@@ -1017,7 +1018,10 @@ public class EmotesDialog extends JDialog {
 
             String prevEmoteset = null;
             String prevEmotesetInfo = null;
+            String prevType = null;
+            boolean allSameType = isAllSameType(emotes);
             for (Emoticon emote : emotes) {
+                boolean separatorAdded = false;
                 if (!Objects.equals(prevEmoteset, emote.emoteset)
                         && prevEmoteset != null
                         && (
@@ -1027,12 +1031,23 @@ public class EmotesDialog extends JDialog {
                     // Separator between different emotesets (and thus tiers)
                     panel.add(makeSeparator());
                     addSeparatorEmotesetInfo(panel, emote);
+                    separatorAdded = true;
                 }
                 else if (prevEmoteset == null) {
                     addSeparatorEmotesetInfo(panel, emote);
                 }
+                // Separator between types (only third-party)
+                if (!allSameType
+                        && emote.type.category == TypeCategory.THIRD_PARTY
+                        && !Objects.equals(prevType, emote.type.label)) {
+                    if (prevType != null && !separatorAdded) {
+                        panel.add(makeSeparator());
+                    }
+                    panel.add(new JLabel(emote.type.label));
+                }
                 prevEmoteset = emote.emoteset;
                 prevEmotesetInfo = emote.getEmotesetInfo();
+                prevType = emote.type.label;
                 panel.add(createEmoteLabel(emote, scale));
             }
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -1043,6 +1058,17 @@ public class EmotesDialog extends JDialog {
             add(panel, gbc);
             gbc.gridx = 0;
             gbc.gridy++;
+        }
+        
+        private boolean isAllSameType(Collection<Emoticon> emotes) {
+            Emoticon.Type prevType = null;
+            for (Emoticon emote : emotes) {
+                if (prevType != null && !Objects.equals(prevType, emote.type)) {
+                    return false;
+                }
+                prevType = emote.type;
+            }
+            return true;
         }
         
         /**
@@ -1516,10 +1542,12 @@ public class EmotesDialog extends JDialog {
                 }
             }
             Set<Emoticon> bttv = Emoticons.filterByType(emoteManager.getOtherGlobalEmotes(), Emoticon.Type.BTTV);
+            Set<Emoticon> seventv = Emoticons.filterByType(emoteManager.getOtherGlobalEmotes(), Emoticon.Type.SEVENTV);
 
             addEmotes(ffzRegular, Language.getString("emotesDialog.globalFFZ"));
             addEmotes(ffzFeatured, Language.getString("emotesDialog.globalFFZ")+" [Featured]");
             addEmotes(bttv, Language.getString("emotesDialog.globalBTTV"));
+            addEmotes(seventv, Language.getString("emotesDialog.globalSevenTV"));
             
             relayout();
         }

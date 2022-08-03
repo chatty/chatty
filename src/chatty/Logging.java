@@ -120,19 +120,15 @@ public class Logging {
 
         @Override
         public String format(LogRecord record) {
-            return formatRecord(record);
-        }
-        
-    }
-    
-    public static String formatRecord(LogRecord record) {
-        return String.format("[%1$tF %1$tT/%1$tL %5$s] %2$s%6$s [%3$s/%4$s]\n",
+            return String.format("[%1$tF %1$tT/%1$tL %5$s] %2$s%6$s [%3$s/%4$s]\n",
                 new Date(record.getMillis()),
-                record.getMessage(),
+                formatMessage(record),
                 record.getSourceClassName(),
                 record.getSourceMethodName(),
                 record.getLevel().getName(),
                 getStacktraceForLogging(record.getThrown()));
+        }
+        
     }
     
     public static String formatRecordCompact(LogRecord record) {

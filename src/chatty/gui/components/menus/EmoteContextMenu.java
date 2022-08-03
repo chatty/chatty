@@ -45,24 +45,37 @@ public class EmoteContextMenu extends ContextMenu {
             }
         }
         addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
-        if (emote.type == Emoticon.Type.TWITCH || emote.type == Emoticon.Type.FFZ
-                || emote.type == Emoticon.Type.BTTV) {
-            addItem("emoteId", "ID: "+StringUtil.shortenTo(emote.stringId, 14), ICON_WEB);
+        switch (emote.type) {
+            case TWITCH:
+            case FFZ:
+            case BTTV:
+            case SEVENTV:
+                addItem("emoteId", "ID: "+StringUtil.shortenTo(emote.stringId, 14), ICON_WEB);
+                break;
         }
         
         // Non-Twitch Emote Information
         if (emote.type != Emoticon.Type.TWITCH) {
             addSeparator();
-            if (emote.type == Emoticon.Type.FFZ) {
-                addItem("ffzlink", "FrankerFaceZ Emote", ICON_WEB);
-            } else if (emote.type == Emoticon.Type.BTTV) {
-                addItem("bttvlink", "BetterTTV Emote", ICON_WEB);
-            } else if (emote.type == Emoticon.Type.CUSTOM) {
-                addItem("", "Custom Emote");
-            } else if (emote.type == Emoticon.Type.CUSTOM2) {
-                addItem("", "Local Emote");
-            } else if (emote.type == Emoticon.Type.EMOJI) {
-                addItem("", "Emoji");
+            switch (emote.type) {
+                case FFZ:
+                    addItem("ffzlink", "FrankerFaceZ Emote", ICON_WEB);
+                    break;
+                case BTTV:
+                    addItem("bttvlink", "BetterTTV Emote", ICON_WEB);
+                    break;
+                case SEVENTV:
+                    addItem("seventvlink", "7TV Emote", ICON_WEB);
+                    break;
+                case CUSTOM:
+                    addItem("", "Custom Emote");
+                    break;
+                case CUSTOM2:
+                    addItem("", "Local Emote");
+                    break;
+                case EMOJI:
+                    addItem("", "Emoji");
+                    break;
             }
             if (emote.creator != null) {
                 addItem("emoteCreator", Language.getString("emoteCm.emoteBy", emote.creator));

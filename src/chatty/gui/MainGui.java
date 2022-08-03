@@ -2355,6 +2355,8 @@ public class MainGui extends JFrame implements Runnable {
                 url = TwitchUrl.makeTwitchTurboUrl();
             } else if (e.getActionCommand().equals("bttvlink")) {
                 url = TwitchUrl.makeBttvUrl();
+            } else if (e.getActionCommand().equals("seventvlink")) {
+                url = "https://7tv.app/";
             } else if (e.getActionCommand().equals("emoteDetails")) {
                 openEmotesDialogEmoteDetails(emote);
             }

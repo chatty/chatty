@@ -4,6 +4,7 @@ package chatty.util.gif;
 import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
 import chatty.util.settings.Settings;
+import chatty.util.seventv.WebPUtil;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
@@ -44,46 +46,60 @@ public class GifUtil {
         try (InputStream input = c.getInputStream()) {
             // Use readAllBytes() because GifDecoder doesn't handle streams well
             byte[] imageData = readAllBytes(input);
-
-            try {
-                //System.out.println(hash(imageData)+" "+url);
-                if (settings != null && settings.getBoolean("legacyAnimations")) {
-                    result = fixGifFps(imageData, request);
-                }
-                else {
-                    result = createGif(imageData, request);
-                }
+            // Attempt decoding various formats
+            result = loadAsGif(imageData, request);
+            if (result == null) {
+                result = loadDefault(imageData, request);
             }
-            catch (Exception ex) {
-                /**
-                 * If not a GIF, or another error occured, just create the image
-                 * normally.
-                 */
-                ImageIcon icon = new ImageIcon(imageData);
-                if (icon.getIconWidth() == -1) {
-                    // new ImageIcon() breaks with some images (rare)
-                    // Checking for MediaTracker.ERRORED seems to sometimes
-                    // not work.
-                    LOGGER.info("Using ImageIO for " + request.getRequestedURL()+" / "+request.getLoadFromURL());
-                    Image loadedImage = ImageIO.read(new ByteArrayInputStream(imageData));
-                    if (loadedImage != null) {
-                        icon.setImage(loadedImage);
-                        icon.setDescription("ImageIO");
-                    }
-                }
-                boolean iconValid = icon.getImageLoadStatus() != MediaTracker.ERRORED
-                        && icon.getIconWidth() != -1;
-                if (iconValid) {
-                    result = request.finishIcon(icon, false);
-                }
+            if (result == null) {
+                result = WebPUtil.decode(imageData, request);
             }
-            
+            // Done with decode attempts
             if (result != null && !result.isValidImage()) {
                 result.icon.getImage().flush();
                 return null;
             }
         }
         return result;
+    }
+    
+    private static ImageResult loadAsGif(byte[] imageData, ImageRequest request) {
+        try {
+            if (settings != null && settings.getBoolean("legacyAnimations")) {
+                return fixGifFps(imageData, request);
+            }
+            else {
+                return createGif(imageData, request);
+            }
+        }
+        catch (Exception ex) {
+            return null;
+        }
+    }
+    
+    private static ImageResult loadDefault(byte[] imageData, ImageRequest request) throws IOException {
+        /**
+         * If not a GIF, or another error occured, just create the image
+         * normally.
+         */
+        ImageIcon icon = new ImageIcon(imageData);
+        if (icon.getIconWidth() == -1) {
+            // new ImageIcon() breaks with some images (rare)
+            // Checking for MediaTracker.ERRORED seems to sometimes
+            // not work.
+//            LOGGER.info("Using ImageIO for " + request.getRequestedURL() + " / " + request.getLoadFromURL());
+            Image loadedImage = ImageIO.read(new ByteArrayInputStream(imageData));
+            if (loadedImage != null) {
+                icon.setImage(loadedImage);
+                icon.setDescription("ImageIO");
+            }
+        }
+        boolean iconValid = icon.getImageLoadStatus() != MediaTracker.ERRORED
+                && icon.getIconWidth() != -1;
+        if (iconValid) {
+            return request.finishIcon(icon, false);
+        }
+        return null;
     }
 
     /**
@@ -120,9 +136,9 @@ public class GifUtil {
         return new ImageResult(icon, actualBaseSize, true);
     }
     
-    private static BufferedImage resize(BufferedImage image, int width, int height) {
+    public static BufferedImage resize(BufferedImage image, int width, int height) {
         Image scaledImage = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-        BufferedImage result = new BufferedImage(width, height, image.getType());
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         result.getGraphics().drawImage(scaledImage, 0, 0, null);
         result.getGraphics().dispose();
         return result;
