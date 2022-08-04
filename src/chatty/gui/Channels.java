@@ -1043,6 +1043,7 @@ public class Channels {
          */
         Point location = null;
         Dimension size = null;
+        clearOpenPopoutsAttributes();
         if (!dialogsAttributes.isEmpty()) {
             LocationAndSize attr = dialogsAttributes.remove(0);
             if (GuiUtil.isPointOnScreen(attr.location, 5, 5)) {
@@ -1069,9 +1070,9 @@ public class Channels {
     
     private void dockPopoutClosed(DockPopout popout, List<DockContent> contents) {
         if (savePopoutAttributes) {
-            Window window = popout.getWindow();
-            dialogsAttributes.add(0, new LocationAndSize(
-                    window.getLocation(), window.getSize()));
+            LocationAndSize attr = new LocationAndSize(popout.getWindow());
+            dialogsAttributes.remove(attr);
+            dialogsAttributes.add(0, attr);
         }
 //        if (!contents.isEmpty() && defaultChannel != null
 //                && !contents.contains(defaultChannel.getDockContent())
@@ -1088,26 +1089,36 @@ public class Channels {
     // Saving/loading attributes
     //--------------------------
     
+    private static final int POPOUT_ATTRIBUTES_LIMIT = 30;
+    
     /**
-     * Returns a list of Strings that contain the location/size of open dialogs
-     * and of closed dialogs that weren't reused.
+     * Returns a list of unique Strings that contain the location/size of open
+     * dialogs and of closed dialogs that weren't reused.
      * 
      * Format: "x,y;width,height"
      * 
      * @return 
      */
     public List getPopoutAttributes() {
-        List<String> attributes = new ArrayList<>();
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        /**
+         * Not sure if makes sense to save attributes of open popouts, since
+         * they may be reopened already anyway next time and the opening order
+         * doesn't necessarily seem to be retained.
+         */
         for (DockPopout popout : dock.getPopouts()) {
             Window w = popout.getWindow();
-            attributes.add(w.getX()+","+w.getY()
+            result.add(w.getX()+","+w.getY()
                     +";"+w.getWidth()+","+w.getHeight());
         }
         for (LocationAndSize attr : dialogsAttributes) {
-            attributes.add(attr.location.x + "," + attr.location.y
+            result.add(attr.location.x + "," + attr.location.y
                     + ";" + attr.size.width + "," + attr.size.height);
+            if (result.size() >= POPOUT_ATTRIBUTES_LIMIT) {
+                break;
+            }
         }
-        return attributes;
+        return new ArrayList<>(result);
     }
     
     /**
@@ -1134,6 +1145,17 @@ public class Channels {
                                 new Point(location.a, location.b),
                                 new Dimension(size.a, size.b)));
             }
+        }
+    }
+    
+    /**
+     * Removes all entries with the same location/size as currently open
+     * popouts.
+     */
+    private void clearOpenPopoutsAttributes() {
+        for (DockPopout popout : dock.getPopouts()) {
+            LocationAndSize attr = new LocationAndSize(popout.getWindow());
+            dialogsAttributes.removeIf(entry -> attr.equals(entry));
         }
     }
     
@@ -1588,11 +1610,43 @@ public class Channels {
     private static class LocationAndSize {
         public final Point location;
         public final Dimension size;
+
+        public LocationAndSize(Window window) {
+            this.location = window.getLocation();
+            this.size = window.getSize();
+        }
         
         LocationAndSize(Point location, Dimension size) {
             this.location = location;
             this.size = size;
         }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LocationAndSize other = (LocationAndSize) obj;
+            if (!Objects.equals(this.location, other.location)) {
+                return false;
+            }
+            return Objects.equals(this.size, other.size);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 79 * hash + Objects.hashCode(this.location);
+            hash = 79 * hash + Objects.hashCode(this.size);
+            return hash;
+        }
+        
     }
     
     public void sortContent(String id) {
