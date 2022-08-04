@@ -101,7 +101,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "userlistWidth", "userlistMinWidth", "userlistEnabled",
             "capitalizedNames", "correctlyCapitalizedNames", "ircv3CapitalizedNames",
             "inputFont",
-            "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent",
+            "bttvEmotes", "botNamesBTTV", "botNamesFFZ", "ffzEvent", "seventv",
             "logPath", "logTimestamp", "logSplit", "logSubdirectories",
             "logLockFiles", "logMessageTemplate",
             "laf", "lafTheme", "lafFontScale", "language", "timezone", "locale",

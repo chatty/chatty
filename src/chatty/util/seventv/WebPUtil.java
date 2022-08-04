@@ -1,8 +1,10 @@
 
 package chatty.util.seventv;
 
+import chatty.Helper;
 import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
+import chatty.util.MiscUtil;
 import chatty.util.gif.GifUtil;
 import chatty.util.gif.ListAnimatedImage;
 import chatty.util.gif.ListAnimatedImageFrame;
@@ -36,6 +38,9 @@ public class WebPUtil {
     private static boolean available;
     
     public static void runIfWebPAvailable(Runnable runnable) {
+        if (!MiscUtil.OS_WINDOWS && !MiscUtil.OS_LINUX) {
+            return;
+        }
         if (isAvailable()) {
             runnable.run();
             return;
