@@ -53,7 +53,7 @@ public class QueuedApi {
         queue = new PriorityBlockingQueue<>();
         
         Thread thread = new Thread(new Runnable() {
-
+            
             @Override
             public void run() {
                 while (true) {
@@ -90,7 +90,7 @@ public class QueuedApi {
                     }
                 }
             }
-        });
+        }, "QueuedApi");
         thread.start();
     }
     

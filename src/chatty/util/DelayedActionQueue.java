@@ -74,6 +74,10 @@ public class DelayedActionQueue<E> {
      */
     private class Reader extends Thread {
         
+        private Reader() {
+            super("DelayedActionQueue");
+        }
+        
         @Override
         public void run() {
             while (true) {

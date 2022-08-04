@@ -33,7 +33,7 @@ public class LogManager {
             LOGGER.warning("Log: Failed to create path: "+path);
         }
         this.queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
-        this.writerThread = new Thread(new LogWriter(queue, path, splitLogs, useSubdirectories, lockFiles));
+        this.writerThread = new Thread(new LogWriter(queue, path, splitLogs, useSubdirectories, lockFiles), "LogWriter");
     }
     
     public void start() {
