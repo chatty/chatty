@@ -121,6 +121,7 @@ public class WebPUtil {
             Dimension scaledSize = request.getScaledSizeIfNecessary(actualBaseSize);
             if (img.frameCount == 1) {
                 ImageIcon icon = new ImageIcon(img.frames.get(0).img);
+                icon.setDescription("WebP");
                 return request.finishIcon(icon, false);
             }
             else {
@@ -141,7 +142,7 @@ public class WebPUtil {
                                 request.getRequestedURL().toString()
                         ).createImage()
                 );
-                icon.setDescription("WebP");
+                icon.setDescription("WebP (animated)");
                 return new ImageResult(icon, actualBaseSize, false);
             }
         }

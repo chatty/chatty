@@ -123,6 +123,13 @@ External Libraries
     (for the license text see the APACHE_LICENSE file
 	or <http://www.apache.org/licenses/LICENSE-2.0>).
 
+* WebPDecoderJN:
+  * Files under `assets/lib/`: `WebPDecoderJN-*.jar`
+  * Website: <https://github.com/tduva/WebPDecoderJN>
+  * License: "3-Clause BSD"
+    (see <https://github.com/tduva/WebPDecoderJN/blob/main/COPYING>)
+  * Requires JNA
+
 * Additional external/modified libraries integrated under `src/chatty/` have license/source
   information in the file header
 
