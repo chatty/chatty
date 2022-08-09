@@ -27,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.seventv.WebPUtil;
 import javax.swing.JTabbedPane;
 
 /**
@@ -182,6 +183,20 @@ public class EmoteSettings extends SettingsPanel {
         //--------------------------
         seventvSettings.add(d.addSimpleBooleanSetting("seventv"),
                 SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
+        
+        JLabel webpTest = new JLabel();
+        seventvSettings.add(webpTest,
+                SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+        providerSettingsTabs.addChangeListener(e -> {
+            if (providerSettingsTabs.getSelectedComponent().equals(seventvSettings)) {
+                if (webpTest.getText().isEmpty()) {
+                    webpTest.setText("Required WebP decoding not available.");
+                    WebPUtil.runIfWebPAvailable(() -> {
+                        webpTest.setText("Required WebP decoding available.");
+                    });
+                }
+            }
+        });
         
         SettingsUtil.topAlign(seventvSettings, 10);
 

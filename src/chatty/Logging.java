@@ -82,7 +82,7 @@ public class Logging {
             @Override
             public void publish(LogRecord record) {
                 if (record.getLevel() != USERINFO) {
-                    client.debug(record.getMessage());
+                    client.debug(simpleFormatMessage(record));
                     // WebsocketClient/WebsocketManager
                     if (record.getMessage().startsWith("[FFZ-WS]")) {
                         client.debugFFZ(record.getMessage());

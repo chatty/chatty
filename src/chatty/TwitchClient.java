@@ -2421,6 +2421,7 @@ public class TwitchClient {
             g.printSystem("Refreshing 7TV emotes..");
             refreshRequests.add("seventv");
             sevenTV.requestEmotes(channel, true);
+            sevenTV.requestEmotes(null, true);
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
         }
@@ -3114,6 +3115,7 @@ public class TwitchClient {
         }
         if (settings.getBoolean("seventv")) {
             sevenTV.requestEmotes(channel, false);
+            sevenTV.requestEmotes(null, false);
         }
 //        api.getEmotesByStreams(Helper.toStream(channel)); // Removed
     }

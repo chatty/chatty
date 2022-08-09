@@ -4532,6 +4532,9 @@ public class MainGui extends JFrame implements Runnable {
             if (client.settings.getBoolean("bttvEmotes")) {
                 client.bttvEmotes.requestEmotes(stream, true);
             }
+            if (client.settings.getBoolean("seventv")) {
+                client.sevenTV.requestEmotes(stream, true);
+            }
         }
         else if (type.equals("globaltwitch")) {
             client.api.refreshSets(new HashSet<>(Arrays.asList(new String[]{"0"})));
@@ -4542,6 +4545,9 @@ public class MainGui extends JFrame implements Runnable {
             }
             if (client.settings.getBoolean("bttvEmotes")) {
                 client.bttvEmotes.requestEmotes(BTTVEmotes.GLOBAL, true);
+            }
+            if (client.settings.getBoolean("seventv")) {
+                client.sevenTV.requestEmotes(null, true);
             }
         }
     }

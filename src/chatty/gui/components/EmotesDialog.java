@@ -1043,7 +1043,7 @@ public class EmotesDialog extends JDialog {
                     if (prevType != null && !separatorAdded) {
                         panel.add(makeSeparator());
                     }
-                    panel.add(new JLabel(emote.type.label));
+                    panel.add(createLabel(emote.type.label));
                 }
                 prevEmoteset = emote.emoteset;
                 prevEmotesetInfo = emote.getEmotesetInfo();
@@ -1082,8 +1082,14 @@ public class EmotesDialog extends JDialog {
                 return;
             }
             if (Arrays.asList(new String[]{"Tier 2", "Tier 3", "Bits", "Follower"}).contains(emote.getEmotesetInfo())) {
-                panel.add(new JLabel(emote.getEmotesetInfo()));
+                panel.add(createLabel(emote.getEmotesetInfo()));
             }
+        }
+        
+        private JLabel createLabel(String text) {
+            JLabel label = new JLabel(text);
+            label.setForeground(emotesForeground);
+            return label;
         }
         
         private JSeparator makeSeparator() {

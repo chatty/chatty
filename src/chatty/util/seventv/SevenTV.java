@@ -36,16 +36,30 @@ public class SevenTV {
         this.listener = listener;
     }
     
+    /**
+     * Request emotes. Each URL is only requested once, unless
+     * {@code forcedUpdate} is set, or the request failed, in which case it may
+     * be attempted again.
+     *
+     * @param channel The channel, or {@code null} for global emotes
+     * @param forcedUpdate Request emotes again, even if they already have been
+     * successfully requested
+     */
     public synchronized void requestEmotes(String channel, boolean forcedUpdate) {
         channel = Helper.toStream(channel);
         if (StringUtil.isNullOrEmpty(channel)) {
-            return;
+            // Global
+            WebPUtil.runIfWebPAvailable(() -> {
+                requestEmotes(Type.GLOBAL, null, forcedUpdate);
+            });
         }
-        String stream = channel;
-        WebPUtil.runIfWebPAvailable(() -> {
-            requestEmotes(Type.CHANNEL, stream, forcedUpdate);
-            requestEmotes(Type.GLOBAL, null, forcedUpdate);
-        });
+        else {
+            // Channel
+            String stream = channel;
+            WebPUtil.runIfWebPAvailable(() -> {
+                requestEmotes(Type.CHANNEL, stream, forcedUpdate);
+            });
+        }
     }
     
     private void requestEmotes(Type type, String stream, boolean forcedUpdate) {
@@ -93,7 +107,7 @@ public class SevenTV {
             return;
         }
         Set<Emoticon> emotes = parseEmoteList(stream, json);
-        LOGGER.info(String.format("[SevenTV] (%s): %d emotes received.",
+        LOGGER.info(String.format("|[SevenTV] (%s): %d emotes received.",
                 stream, emotes.size()));
         
         EmoticonUpdate.Builder updateBuilder = new EmoticonUpdate.Builder(emotes);
