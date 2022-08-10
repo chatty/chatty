@@ -7,6 +7,7 @@ import chatty.Helper;
 import chatty.SettingsManager;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.UserListener;
+import chatty.util.api.pubsub.LowTrustUserMessageData;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.LinkListener;
 import chatty.gui.StyleServer;
@@ -56,6 +57,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -64,7 +66,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
-import static javax.swing.JComponent.WHEN_FOCUSED;
 import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -144,7 +145,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, GENERAL_LINK,
-        REPEAT_MESSAGE_COUNT,
+        REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_FOREGROUND, CUSTOM_COLOR_SOURCE,
@@ -199,6 +200,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     private final Type type;
     
+    private final Map<User, LowTrustUserMessageData> pendingLowTrustInfoCache = new HashMap<>();
+
     public ChannelTextPane(MainGui main, StyleServer styleServer) {
         this(main, styleServer, Type.REGULAR, true);
     }
@@ -625,6 +628,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             });
         }
         
+        LowTrustUserMessageData pendingLowTrust = pendingLowTrustInfoCache.remove(user);
+        if (pendingLowTrust != null) {
+            printLowTrustUpdate(user, pendingLowTrust);
+        }
+
         lastUsers.add(new MentionCheck(user));
     }
     
@@ -985,6 +993,36 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             if (actionBy != null) {
                 text = StringUtil.append(text, " ", "(@"+StringUtil.join(actionBy, ", ")+")");
             }
+
+            LowTrustUserMessageData lowTrustData = (LowTrustUserMessageData) attributes.getAttribute(Attribute.LOW_TRUST_INFO);
+            if (lowTrustData != null) {
+                List<String> elements = new ArrayList<>();
+
+                for (LowTrustUserMessageData.Type userType : lowTrustData.userTypes) {
+                    String str = userType.description;
+
+                    if (userType.equals(LowTrustUserMessageData.Type.BANNED_IN_SHARED_CHANNEL) &&
+                        !lowTrustData.bannedInChannels.isEmpty()) {
+                        if (lowTrustData.bannedInChannelsNames.isEmpty()) {
+                            str += "[...]";
+                        } else {
+                            str += "[" + String.join("/", lowTrustData.bannedInChannelsNames) + "]";
+                        }
+                    }
+
+                    elements.add(str);
+                }
+
+                if (lowTrustData.evaluation != null) {
+                    elements.add(lowTrustData.evaluation.description);
+                }
+
+                if (lowTrustData.treatment != null) {
+                    elements.add(lowTrustData.treatment.description);
+                }
+
+                text = StringUtil.append(text, " ", "(low trust: " + String.join("/", elements) + ")");
+            }
             
             //--------------------------
             // Insert new appended info
@@ -1031,6 +1069,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             LOGGER.warning("Bad location");
         }
         return "";
+    }
+
+    public void printLowTrustUpdate(User user, LowTrustUserMessageData data) {        
+        for (Userline userLine : getUserLines(user)) {
+            if (getIdFromElement(userLine.userElement).equals(data.aboutMessageId)) {
+                changeInfo(userLine.line, attributes -> attributes.addAttribute(Attribute.LOW_TRUST_INFO, data));
+                return;
+            }
+        }
+
+        // message has not been printed yet, let printUserMessage call back
+        pendingLowTrustInfoCache.put(user, data);
     }
     
     /**

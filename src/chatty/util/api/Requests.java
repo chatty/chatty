@@ -39,6 +39,8 @@ import chatty.util.api.ResultManager.CategoryResult;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -201,6 +203,26 @@ public class Requests {
     
     public void requestUserIDs(Set<String> usernames) {
         requestUserInfo(usernames);
+    }
+
+    public void requestUserInfoById(Set<Long> requestedIds) {
+        String url = "https://api.twitch.tv/helix/users?" + makeNewApiParameters("id", requestedIds.stream().map(Object::toString).collect(Collectors.toList()));
+        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
+            Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(result);
+            Map<String, String> ids = null;
+            Set<String> usernames = null;
+            if (parsedResult != null) {
+                ids = new HashMap<>();
+                for (UserInfo info : parsedResult) {
+                    ids.put(info.login, info.id);
+                }
+                
+                usernames = ids.keySet();
+            }
+            // Error or missing values are handled in these methods as well
+            api.userInfoManager.idResultReceived(requestedIds, parsedResult);
+            api.userIDs.handleRequestResult(usernames, ids);
+        });
     }
 
     //================

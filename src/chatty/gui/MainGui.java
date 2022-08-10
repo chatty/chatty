@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.util.api.pubsub.LowTrustUserMessageData;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.gui.components.textpane.UserMessage;
@@ -3996,12 +3997,32 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
     }
-    
+
+    public void printLowTrustUserInfo(User user, final LowTrustUserMessageData data) {
+        String channel = Helper.toValidChannel(data.stream);
+        if (channels.isChannel(channel)) {
+            data.fetchUserInfoForBannedChannels(client.api, o -> SwingUtilities.invokeLater(() -> {
+                Channel chan = channels.getExistingChannel(channel);
+                if (data.treatment == LowTrustUserMessageData.Treatment.RESTRICTED &&
+                    client.settings.getBoolean("showRestrictedMessagesInChat")) {
+                    // message is not being posted to actual chat, display it here anyway
+                    HashMap<String, String> map = new HashMap<>();
+                    map.put("id", data.aboutMessageId);
+                    MsgTags tags = new MsgTags(map);
+
+                    printMessage(user, data.text, false, tags);
+                }
+                
+                chan.printLowTrustUpdate(user, data);
+            }));
+        }
+    }
+
     /**
      * If not matching message was found for the ModAction to append the @mod,
      * then output anyway.
-     * 
-     * @param info 
+     *
+     * @param info
      */
     public void printAbandonedModLogInfo(ModLogInfo info) {
         boolean showActions = client.settings.getBoolean("showModActions");

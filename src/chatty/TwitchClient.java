@@ -6,6 +6,7 @@ import chatty.ChannelFavorites.Favorite;
 import chatty.lang.Language;
 import chatty.gui.colors.UsercolorManager;
 import chatty.gui.components.admin.StatusHistory;
+import chatty.util.api.pubsub.*;
 import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
@@ -71,11 +72,6 @@ import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.UserInfo;
-import chatty.util.api.pubsub.RewardRedeemedMessageData;
-import chatty.util.api.pubsub.Message;
-import chatty.util.api.pubsub.ModeratorActionData;
-import chatty.util.api.pubsub.PubSubListener;
-import chatty.util.api.pubsub.UserModerationMessageData;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -2572,6 +2568,12 @@ public class TwitchClient {
                         handleUserModeration(data);
                     }
                 }
+                else if (message.data instanceof LowTrustUserMessageData) {
+                    LowTrustUserMessageData data = (LowTrustUserMessageData) message.data;
+                    if (c.isChannelOpen(Helper.toChannel(data.stream))) {
+                        handleLowTrustUser(data);
+                    }
+                }
             }
         }
 
@@ -2620,6 +2622,12 @@ public class TwitchClient {
         
         private void handleUserModeration(UserModerationMessageData data) {
             g.printLine(c.getRoomByChannel(Helper.toChannel(data.stream)), data.info);
+        }
+
+        private void handleLowTrustUser(LowTrustUserMessageData data) {
+            String channel = Helper.toChannel(data.stream);
+            
+            g.printLowTrustUserInfo(c.getUser(channel, data.username), data);
         }
         
     }
