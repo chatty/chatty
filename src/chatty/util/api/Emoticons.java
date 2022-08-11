@@ -257,7 +257,8 @@ public class Emoticons {
         }
         int removedCount = 0;
         if (update.typeToRemove == Emoticon.Type.FFZ
-                || update.typeToRemove == Emoticon.Type.BTTV) {
+                || update.typeToRemove == Emoticon.Type.BTTV
+                || update.typeToRemove == Emoticon.Type.SEVENTV) {
             Iterator<Emoticon> it;
             if (update.roomToRemove == null) {
                 // Global Non-Twitch
@@ -370,10 +371,12 @@ public class Emoticons {
                 twitchEmotesById.put(emote.stringId, emote);
             }
         }
-        LOGGER.info("Added "+newEmoticons.size()+" emotes."
-                + " Now "+emoticonsByEmoteset.size()+" emotesets and "
-                +streamEmoticons.size()+" channels with exclusive emotes ("
-                +getGlobalTwitchEmotes().size()+" global emotes).");
+        LOGGER.info(String.format("Added %d emotes. Now %d emotesets, %d channels, %d Twitch Global, %d Other Global.",
+                newEmoticons.size(),
+                emoticonsByEmoteset.size(),
+                streamEmoticons.size(),
+                globalTwitchEmotes.size(),
+                otherGlobalEmotes.size()));
         findFavorites();
     }
     

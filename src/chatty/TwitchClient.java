@@ -2420,7 +2420,9 @@ public class TwitchClient {
         } else if (parameter.equals("7tv")) {
             g.printSystem("Refreshing 7TV emotes..");
             refreshRequests.add("seventv");
-            sevenTV.requestEmotes(channel, true);
+            if (!StringUtil.isNullOrEmpty(channel)) {
+                sevenTV.requestEmotes(channel, true);
+            }
             sevenTV.requestEmotes(null, true);
         } else {
             g.printLine("Usage: /refresh <type> (invalid type, see help)");
