@@ -69,11 +69,39 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.20">Version 0.20</a> <a name="latest">(This one!)</a> (2022-??-??)
+        <a name="0.20">Version 0.20</a> <a name="latest">(This one!)</a> (2022-08-11)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-BETA, TBD
+### New Features
+- Added experimental 7TV emotes support (currently only Windows and Linux x64),
+  zero-width emotes not supported right now (show up like normal emotes)
+- Added `/announce` command color variants (e.g. `/announceblue`) since Twitch
+  added an API for it
+- Added some additional info to TAB Completion for emotes and commands
+
+### Settings
+- Added dialog on first start (when no settings are found) to set some basic
+  defaults (look, userlist, font, notifications), the same options can also be
+  found in the Settings Dialog under "Simple Presets"
+- Changed some defaults (only has an effect when starting from fresh settings):
+  - Show AutoMod messages
+  - Use native window for all Look&Feel (to allow for native window management)
+  - Rejoin channels on start
+  - Changed timestamp and chat font
+- Added setting for minimizing Chatty on start
+- Added setting for also minimizing popouts to tray when manually minimizing
+  main window to tray
+- Added setting for desktop notifications staying open on mouse hover
+- Improved Settings Dialog initial open speed
+
+### Other
+- A Custom Command calling another Custom Command is now possible
+- Slightly improved memory usage
+- Updated help
+
+### Bugfixes
+- Fixed many duplicate "popoutAttributes" being saved
     </pre>
     
     <h2>
