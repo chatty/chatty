@@ -68,6 +68,8 @@ public class NotificationWindow {
     private int fallbackTimeout = 30*60*1000;
     private int activityTime = 60*1000;
     
+    private boolean keepOpenOnHover;
+    
     private long visibleSince = 0;
     private final long createdAt;
     
@@ -236,6 +238,10 @@ public class NotificationWindow {
     
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+    
+    public void setKeepOpenOnHover(boolean enabled) {
+        this.keepOpenOnHover = enabled;
     }
     
     public void setLocation(Point location) {
@@ -411,8 +417,10 @@ public class NotificationWindow {
 
     
     private void mouseEntered() {
-        setOpacity(DEFAULT_OPACITY);
-        stopTimers();
+        if (keepOpenOnHover) {
+            setOpacity(DEFAULT_OPACITY);
+            stopTimers();
+        }
     }
     
     private void mouseExited() {

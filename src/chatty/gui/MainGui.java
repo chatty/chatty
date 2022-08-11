@@ -1210,6 +1210,7 @@ public class MainGui extends JFrame implements Runnable {
     private void updateNotificationSettings() {
         notificationWindowManager.setDisplayTime((int)client.settings.getLong("nDisplayTime"));
         notificationWindowManager.setMaxDisplayTime((int)client.settings.getLong("nMaxDisplayTime"));
+        notificationWindowManager.keepOpenOnHover(client.settings.getBoolean("nKeepOpenOnHover"));
         notificationWindowManager.setMaxDisplayItems((int)client.settings.getLong("nMaxDisplayed"));
         notificationWindowManager.setMaxQueueSize((int)client.settings.getLong("nMaxQueueSize"));
         int activityTime = client.settings.getBoolean("nActivity")
@@ -5250,7 +5251,8 @@ public class MainGui extends JFrame implements Runnable {
             }
             Set<String> notificationSettings = new HashSet<>(Arrays.asList(
                 "nScreen", "nPosition", "nDisplayTime", "nMaxDisplayTime",
-                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime"));
+                "nMaxDisplayed", "nMaxQueueSize", "nActivity", "nActivityTime",
+                "nKeepOpenOnHover"));
             if (notificationSettings.contains(setting)) {
                 updateNotificationSettings();
             }

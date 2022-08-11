@@ -549,6 +549,7 @@ public class SettingsManager {
         settings.addLong("nPosition", 3);
         settings.addLong("nDisplayTime", 10);
         settings.addLong("nMaxDisplayTime", 60*30);
+        settings.addBoolean("nKeepOpenOnHover", true);
         settings.addLong("nMaxDisplayed", 4);
         settings.addLong("nMaxQueueSize", 4);
         settings.addBoolean("nActivity", false);

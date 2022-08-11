@@ -141,6 +141,9 @@ public class NotificationSettings extends SettingsPanel {
         d.addLongSetting("nMaxDisplayTime", nMaxDisplayTime);
         notificationSettings.add(nMaxDisplayTime,
                 d.makeGbc(3, 2, 1, 1, GridBagConstraints.WEST));
+        
+        notificationSettings.add(d.addSimpleBooleanSetting("nKeepOpenOnHover"),
+                SettingsDialog.makeGbc(2, 3, 2, 1, GridBagConstraints.WEST));
 
         notificationSettings.add(new JLabel("Command:"), d.makeGbc(0, 4, 1, 1, GridBagConstraints.EAST));
 

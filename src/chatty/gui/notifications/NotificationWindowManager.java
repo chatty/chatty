@@ -57,6 +57,8 @@ public class NotificationWindowManager<T> {
     // Shorter max display time, in case the queue is full
     private int shortMaxDisplayTime = 2*SECOND;
     
+    private boolean keepOpenOnHover;
+    
     private int activityTime = -1;
     
     // Maximum number of items to display at once
@@ -196,6 +198,10 @@ public class NotificationWindowManager<T> {
         this.shortMaxDisplayTime = shortDisplayTime;
     }
     
+    public final void keepOpenOnHover(boolean enabled) {
+        this.keepOpenOnHover = enabled;
+    }
+    
     public final void setMaxQueueSize(int size) {
         this.maxQueueSize = size;
     }
@@ -310,6 +316,7 @@ public class NotificationWindowManager<T> {
                 n.getSize(), getCurrentOffset());
         n.setLocation(location);
         n.setTimeout(displayTime + (displayTime/4 * displayed.size()));
+        n.setKeepOpenOnHover(keepOpenOnHover);
         if (queue.size() > maxQueueSize && displayed.size() == 0) {
             n.setFallbackTimeout(shortMaxDisplayTime);
         }
