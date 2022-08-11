@@ -28,7 +28,8 @@ public class LowTrustUserMessageData extends MessageData {
         NOT_EVALUATED("not evaluated"),
         UNLIKELY_EVADER("not a ban evader"),
         POSSIBLE_EVADER("possible ban evader"),
-        LIKELY_EVADER("ban evader");
+        LIKELY_EVADER("ban evader"),
+        UNKNOWN_EVADER(null);
 
         public final String description;
 
@@ -119,7 +120,7 @@ public class LowTrustUserMessageData extends MessageData {
             try {
                 treatment = Treatment.valueOf(treatmentString);
             } catch (IllegalArgumentException e) {
-                LOGGER.warning(String.format("FIXME: Unhandled low trust user treatment %s", evaluationString));
+                LOGGER.warning(String.format("FIXME: Unhandled low trust user treatment %s", treatmentString));
             }
 
             Set<Long> bannedInChannels = new HashSet<>();

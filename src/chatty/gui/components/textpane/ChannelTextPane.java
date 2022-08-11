@@ -65,6 +65,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
@@ -1021,7 +1022,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                     elements.add(lowTrustData.treatment.description);
                 }
 
-                text = StringUtil.append(text, " ", "(low trust: " + String.join("/", elements) + ")");
+                text = StringUtil.append(text, " ", "(low trust: " + elements.stream().filter(Objects::nonNull).collect(Collectors.joining("/")) + ")");
             }
             
             //--------------------------
