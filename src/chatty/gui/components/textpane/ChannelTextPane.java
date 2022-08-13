@@ -1074,7 +1074,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
 
     public void printLowTrustUpdate(User user, LowTrustUserMessageData data) {        
         for (Userline userLine : getUserLines(user)) {
-            if (getIdFromElement(userLine.userElement).equals(data.aboutMessageId)) {
+            String elementId = getIdFromElement(userLine.userElement);
+            if (elementId != null && elementId.equals(data.aboutMessageId)) {
                 changeInfo(userLine.line, attributes -> attributes.addAttribute(Attribute.LOW_TRUST_INFO, data));
                 return;
             }
