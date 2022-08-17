@@ -259,8 +259,8 @@ public class ChannelCompletion implements AutoCompletionServer {
     }
 
     private AutoCompletionServer.CompletionItems getCompletionItemsEmotes(String search, String prefix) {
-        Collection<Emoticon> allEmotes = new LinkedList<>(main.getUsableGlobalEmotes());
-        allEmotes.addAll(main.getUsableEmotesPerStream(channel.getStreamName()));
+        Collection<Emoticon> allEmotes = new LinkedList<>(main.getUsableEmotesPerStream(channel.getStreamName()));
+        allEmotes.addAll(main.getUsableGlobalEmotes());
         List<Emoticon> result = filterCompletionItems(allEmotes, search, SORT_EMOTES_BY_NAME, item -> {
             if (main.isEmoteIgnored(item, IgnoredEmotes.TAB_COMPLETION)) {
                 return null;

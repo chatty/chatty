@@ -2593,6 +2593,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
         }
         
+        // Channel based (may also have a emoteset restriction)
+        HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
+        findEmoticons(user, channelEmotes, text, ranges, rangesStyle, main.emoticons.getAllLocalEmotesets());
+        
         // All-channels emotes
         if (user.isLocalUser()) {
             findEmoticons(main.emoticons.getSmilies(), text, ranges, rangesStyle);
@@ -2606,10 +2610,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             Set<Emoticon> emoticons = main.emoticons.getOtherGlobalEmotes();
             findEmoticons(emoticons, text, ranges, rangesStyle);
         }
-
-        // Channel based (may also have a emoteset restriction)
-        HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
-        findEmoticons(user, channelEmotes, text, ranges, rangesStyle, main.emoticons.getAllLocalEmotesets());
         
         // Special Combined Emotes
         CombinedEmotesInfo cei = ChattyMisc.getCombinedEmotesInfo();
