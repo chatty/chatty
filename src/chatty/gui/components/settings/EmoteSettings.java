@@ -4,16 +4,14 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,12 +21,19 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.api.IgnoredEmotes;
 import chatty.util.seventv.WebPUtil;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Window;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.UIManager;
 
 /**
  *
@@ -283,7 +288,7 @@ public class EmoteSettings extends SettingsPanel {
         
         private IgnoredEmotesDialog(SettingsDialog d) {
             this.d = d;
-            this.setting = d.addListSetting("ignoredEmotes", "Ignored Emote", 180, 220, false, true);
+            this.setting = d.addListSetting("ignoredEmotes", "Ignored Emote", 280, 280, false, true);
         }
 
         @Override
@@ -309,8 +314,14 @@ public class EmoteSettings extends SettingsPanel {
 
                 gbc = d.makeGbc(1, 0, 1, 1);
                 gbc.anchor = GridBagConstraints.NORTH;
-                add(new JLabel("<html><body style='width:160px;'>"
-                        + "<p style='padding:5px;'>" + Language.getString("settings.ignoredEmotes.info1") + "</p>"
+                add(new JLabel("<html><body style='width:240px;'>"
+                        + "<p style='padding:5px;'>"+Language.getString("settings.ignoredEmotes.info1")+"</p>"
+                                                + "<p style='padding:5px;'>In addition to the name you can provide the following restrictions:</p>"
+                        + "<ul style='padding:5px;padding-left:0'>"
+                        + "<li><code>for:t</code> - Only hide from TAB Completion (<code>c</code> - Chat, <code>d</code> - Emote Dialog, <code>t</code> - TAB Completion)</li>"
+                        + "<li><code>type:ffz</code> - Must be an FFZ emote (<code>twitch</code>, <code>bttv</code>, <code>7tv</code>)</li>"
+                        + "<li><code>id:123</code> - Emote must have the given id</li>"
+                        + "</ul>"
                         + "<p style='padding:5px;'>" + Language.getString("settings.ignoredEmotes.info2") + "</p>"), gbc);
 
                 JButton closeButton = new JButton(Language.getString("dialog.button.close"));
@@ -328,6 +339,216 @@ public class EmoteSettings extends SettingsPanel {
 
         }
 
+    }
+    
+    private static EditIgnoredEmote editIgnoredEmoteDialog;
+    
+    public static IgnoredEmotes.Item showIgnoredEmoteEditDialog(Window owner, Component comp, Emoticon emote, Collection<IgnoredEmotes.Item> currentMatches) {
+        if (editIgnoredEmoteDialog == null) {
+            editIgnoredEmoteDialog = new EditIgnoredEmote(owner);
+        }
+        return editIgnoredEmoteDialog.showDialog(comp, emote, currentMatches);
+    }
+    
+    public static class EditIgnoredEmote extends JDialog {
+        
+        private final JPanel beforePanel;
+        private final JCheckBox chatB = new JCheckBox(Language.getString("settings.ignoredEmotes.for.chat"));
+        private final JCheckBox dialogB = new JCheckBox(Language.getString("settings.ignoredEmotes.for.emoteDialog"));
+        private final JCheckBox completionB = new JCheckBox(Language.getString("settings.ignoredEmotes.for.completion"));
+        
+        private final JCheckBox chat = new JCheckBox(Language.getString("settings.ignoredEmotes.for.chat"));
+        private final JCheckBox dialog = new JCheckBox(Language.getString("settings.ignoredEmotes.for.emoteDialog"));
+        private final JCheckBox completion = new JCheckBox(Language.getString("settings.ignoredEmotes.for.completion"));
+        
+        private final JTextArea before = new JTextArea();
+        private final JTextField after = new JTextField();
+        
+        private final JLabel info = new JLabel();
+        
+        private final JToggleButton ignoredButton;
+        private final JToggleButton unignoredButton;
+        
+        private Emoticon emote;
+        private boolean save;
+        private IgnoredEmotes.Item result;
+        
+        public EditIgnoredEmote(Window owner) {
+            super(owner);
+            setModal(true);
+            setTitle(Language.getString("settings.ignoredEmotes.title"));
+            
+            setLayout(new GridBagLayout());
+            
+            GridBagConstraints gbc;
+            
+            beforePanel = new JPanel(new GridBagLayout());
+            
+            before.setColumns(20);
+            before.setEditable(false);
+            before.setBackground(UIManager.getColor("TextField.inactiveBackground"));
+            before.setBorder(after.getBorder());
+            
+            after.setEditable(false);
+            after.setColumns(20);
+            
+            before.setFont(Font.decode(Font.MONOSPACED));
+            after.setFont(Font.decode(Font.MONOSPACED));
+            
+            gbc = SettingsDialog.makeGbc(0, 0, 2, 1);
+            add(info, gbc);
+            
+            gbc = SettingsDialog.makeGbc(0, 0, 2, 1, GridBagConstraints.CENTER);
+            JLabel beforeLabel = new JLabel(Language.getString("settings.ignoredEmotes.before"));
+            beforePanel.add(beforeLabel, gbc);
+            
+            chatB.setEnabled(false);
+            dialogB.setEnabled(false);
+            completionB.setEnabled(false);
+            
+            gbc = SettingsDialog.makeGbc(0, 1, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            beforePanel.add(before, gbc);
+            
+            gbc = SettingsDialog.makeGbcCloser(0, 2, 2, 1, GridBagConstraints.WEST);
+            beforePanel.add(chatB, gbc);
+            gbc = SettingsDialog.makeGbcCloser(0, 3, 2, 1, GridBagConstraints.WEST);
+            beforePanel.add(dialogB, gbc);
+            gbc = SettingsDialog.makeGbcCloser(0, 4, 2, 1, GridBagConstraints.WEST);
+            beforePanel.add(completionB, gbc);
+            
+            gbc = SettingsDialog.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.insets = new Insets(5, 0, 5, 0);
+            add(beforePanel, gbc);
+            
+            gbc = SettingsDialog.makeGbc(0, 2, 2, 1);
+            add(new JLabel(Language.getString("settings.ignoredEmotes.after")), gbc);
+            
+            gbc = SettingsDialog.makeGbc(0, 3, 2, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(after, gbc);
+            
+            JPanel buttonPanel = new JPanel();
+            ignoredButton = new JToggleButton(Language.getString("settings.ignoredEmotes.button.allIgnored"));
+            ignoredButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            unignoredButton = new JToggleButton(Language.getString("settings.ignoredEmotes.button.notIgnored"));
+            unignoredButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            
+            buttonPanel.add(ignoredButton);
+            buttonPanel.add(unignoredButton);
+            gbc = SettingsDialog.makeGbcCloser(0, 4, 2, 1, GridBagConstraints.WEST);
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(buttonPanel, gbc);
+            
+            ignoredButton.addActionListener(e -> {
+                boolean selected = ignoredButton.isSelected();
+                chat.setSelected(selected);
+                dialog.setSelected(selected);
+                completion.setSelected(selected);
+            });
+            unignoredButton.addActionListener(e -> {
+                boolean selected = unignoredButton.isSelected();
+                chat.setSelected(!selected);
+                dialog.setSelected(!selected);
+                completion.setSelected(!selected);
+            });
+            
+            gbc = SettingsDialog.makeGbcCloser(0, 5, 2, 1, GridBagConstraints.WEST);
+            add(chat, gbc);
+            gbc = SettingsDialog.makeGbcCloser(0, 6, 2, 1, GridBagConstraints.WEST);
+            add(dialog, gbc);
+            gbc = SettingsDialog.makeGbcCloser(0, 7, 2, 1, GridBagConstraints.WEST);
+            add(completion, gbc);
+            
+            JButton okButton = new JButton(Language.getString("dialog.button.ok"));
+            okButton.addActionListener(e -> {
+                save = true;
+                dispose();
+            });
+            gbc = SettingsDialog.makeGbc(0, 8, 1, 1, GridBagConstraints.WEST);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            add(okButton, gbc);
+            
+            JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
+            cancelButton.addActionListener(e -> {
+                dispose();
+            });
+            gbc = SettingsDialog.makeGbc(1, 8, 1, 1, GridBagConstraints.WEST);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.3;
+            add(cancelButton, gbc);
+            
+            chat.setSelected(true);
+            dialog.setSelected(true);
+            completion.setSelected(true);
+            
+            chat.addItemListener(e -> updateResult());
+            dialog.addItemListener(e -> updateResult());
+            completion.addItemListener(e -> updateResult());
+        }
+        
+        private void updateResult() {
+            int in = 0;
+            in += chat.isSelected() ? IgnoredEmotes.CHAT : 0;
+            in += dialog.isSelected() ? IgnoredEmotes.EMOTE_DIALOG : 0;
+            in += completion.isSelected() ? IgnoredEmotes.TAB_COMPLETION : 0;
+            ignoredButton.setSelected(in == IgnoredEmotes.ALL);
+            unignoredButton.setSelected(in == 0);
+            IgnoredEmotes.Item item = IgnoredEmotes.Item.create(emote, in);
+            if (in == 0) {
+                after.setText("<not ignored>");
+            }
+            else {
+                after.setText(item.toString());
+                after.setCaretPosition(0);
+            }
+            result = item;
+        }
+        
+        public IgnoredEmotes.Item showDialog(Component parent, Emoticon emote, Collection<IgnoredEmotes.Item> beforeData) {
+            this.emote = emote;
+            beforePanel.setVisible(!beforeData.isEmpty());
+            info.setText("<html><body style='width:300px'>"
+                    + Language.getString("settings.ignoredEmotes.editInfo", emote) + "<br><br>"
+                    + Language.getString("settings.ignoredEmotes.editInfo2"));
+            if (!beforeData.isEmpty()) {
+                before.setText(StringUtil.join(beforeData, "\n"));
+                before.setCaretPosition(0);
+                int combinedIn = 0;
+                for (IgnoredEmotes.Item item : beforeData) {
+                    combinedIn |= item.context;
+                }
+                chatB.setSelected((combinedIn & IgnoredEmotes.CHAT) != 0);
+                dialogB.setSelected((combinedIn & IgnoredEmotes.EMOTE_DIALOG) != 0);
+                completionB.setSelected((combinedIn & IgnoredEmotes.TAB_COMPLETION) != 0);
+            }
+            result = null;
+            updateResult();
+            pack();
+            setLocationRelativeTo(parent);
+            save = false;
+            setVisible(true);
+            if (save) {
+                return result;
+            }
+            return null;
+        }
+        
+    }
+    
+    public static void main(String[] args) {
+        List<IgnoredEmotes.Item> matches = new ArrayList<>();
+        matches.add(IgnoredEmotes.Item.parse("Kappa for:c"));
+        matches.add(IgnoredEmotes.Item.parse("Kappa for:t"));
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "Kappa", null);
+//        b.setStringId("123abc");
+        System.out.println(new EditIgnoredEmote(null).showDialog(null, b.build(), matches));
+        System.exit(0);
     }
     
     private static class LocalEmotesDialog extends LazyDialog {

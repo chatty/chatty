@@ -58,6 +58,7 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.EmoteContextMenu;
 import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.menus.TextSelectionMenu;
+import chatty.gui.components.settings.EmoteSettings;
 import chatty.gui.components.settings.NotificationSettings;
 import chatty.gui.components.settings.SettingsDialog;
 import chatty.gui.components.textpane.AutoModMessage;
@@ -2362,20 +2363,11 @@ public class MainGui extends JFrame implements Runnable {
                 openEmotesDialogEmoteDetails(emote);
             }
             else if (e.getActionCommand().equals("ignoreEmote")) {
-                String code = emote.code;
-                if (emote instanceof CheerEmoticon) {
-                    code = ((CheerEmoticon)emote).getSimpleCode();
-                }
-                int result = JOptionPane.showConfirmDialog(getActiveWindow(),
-                          "<html><body style='width:200px'>Ignoring an emote "
-                        + "means showing just the code instead of turning "
-                        + "it into an image. The list of ignored emotes can be edited in "
-                        + "the Settings under 'Emoticons'.\n\nDo you want to "
-                        + "ignore '"+code+"' from now on?",
-                        "Ignore Emote", JOptionPane.OK_CANCEL_OPTION);
-                if (result == JOptionPane.OK_OPTION) {
-                    emoticons.addIgnoredEmote(code);
-                    client.settings.setAdd("ignoredEmotes", code);
+                IgnoredEmotes.Item item = EmoteSettings.showIgnoredEmoteEditDialog(
+                        MainGui.this, getActiveWindow(), emote, emoticons.getIgnoredEmoteMatches(emote));
+                if (item != null) {
+                    emoticons.setEmoteIgnored(emote, item.context, client.settings);
+                    emotesDialog.update();
                 }
             }
             else if (e.getActionCommand().equals("favoriteEmote")) {
@@ -2814,12 +2806,20 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void insert(final String text, final boolean spaces) {
+        insert(text, spaces, false);
+    }
+    
+    public void insert(final String text, final boolean spaces, boolean focus) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 if (text != null) {
                     channels.getLastActiveChannel().insertText(text, spaces);
+                    if (focus) {
+                        channels.getLastActiveChannel().requestFocus();
+                        channels.getLastActiveChannel().getInput().requestFocusInWindow();
+                    }
                 }
             }
         });
@@ -5289,6 +5289,7 @@ public class MainGui extends JFrame implements Runnable {
                 @SuppressWarnings("unchecked") // Setting
                 List<String> data = client.settings.getList("ignoredEmotes");
                 emoticons.setIgnoredEmotes(data);
+                emotesDialog.update();
             }
             else if (LaF.shouldUpdate(setting)) {
                 updateLaF();
@@ -5334,6 +5335,10 @@ public class MainGui extends JFrame implements Runnable {
     
     public String getCustomCompletionItem(String key) {
         return (String)client.settings.mapGet("customCompletion", key);
+    }
+    
+    public boolean isEmoteIgnored(Emoticon emote, int in) {
+        return emoticons.isEmoteIgnored(emote, in);
     }
     
     public Collection<String> getCustomCommandNames() {

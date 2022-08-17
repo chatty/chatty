@@ -101,19 +101,19 @@ public class EmoteContextMenu extends ContextMenu {
         
         if (!emote.hasGlobalEmoteset()) {
             addSeparator();
-            EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, null, emote);
-            addItem("", TwitchEmotesApi.getEmoteType(emote, info, false));
-            if (info !=  null && info.stream_name != null && !info.stream_name.equals("Twitch")) {
-                emote.setStream(info.stream_name);
-                addStreamSubmenu(emote);
-            }
+            addItem("", TwitchEmotesApi.getEmoteType(emote));
         }
 
         addSeparator();
         addItem("emoteDetails", Language.getString("emoteCm.showDetails"));
         
         addSeparator();
-        addItem("ignoreEmote", Language.getString("emoteCm.ignore"));
+        if (!emoteManager.isEmoteIgnored(emote, 0)) {
+            addItem("ignoreEmote", Language.getString("emoteCm.ignore"));
+        }
+        else {
+            addItem("ignoreEmote", Language.getString("emoteCm.changeIgnore"));
+        }
         if (emote.subType != Emoticon.SubType.CHEER
                 && ((emote.emoteset != null && !emote.emoteset.isEmpty())
                 || emote.type != Emoticon.Type.TWITCH)) {

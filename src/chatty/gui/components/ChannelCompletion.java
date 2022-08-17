@@ -31,6 +31,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.api.IgnoredEmotes;
 
 /**
  *
@@ -261,6 +262,9 @@ public class ChannelCompletion implements AutoCompletionServer {
         Collection<Emoticon> allEmotes = new LinkedList<>(main.getUsableGlobalEmotes());
         allEmotes.addAll(main.getUsableEmotesPerStream(channel.getStreamName()));
         List<Emoticon> result = filterCompletionItems(allEmotes, search, SORT_EMOTES_BY_NAME, item -> {
+            if (main.isEmoteIgnored(item, IgnoredEmotes.TAB_COMPLETION)) {
+                return null;
+            }
             return item.code;
         });
         List<CompletionItem> items = new ArrayList<>();
@@ -347,10 +351,13 @@ public class ChannelCompletion implements AutoCompletionServer {
         // Find Emoji items
         List<Emoticon> searchResult = new LinkedList<>();
         for (Emoticon emote : main.emoticons.getEmoji()) {
-            if (emote.stringId != null && matcher.apply(emote.stringId)) {
-                searchResult.add(emote);
-            } else if (emote.stringIdAlias != null && matcher.apply(emote.stringIdAlias)) {
-                searchResult.add(emote);
+            if (!main.isEmoteIgnored(emote, IgnoredEmotes.TAB_COMPLETION)) {
+                if (emote.stringId != null && matcher.apply(emote.stringId)) {
+                    searchResult.add(emote);
+                }
+                else if (emote.stringIdAlias != null && matcher.apply(emote.stringIdAlias)) {
+                    searchResult.add(emote);
+                }
             }
         }
         Collections.sort(searchResult, EMOJI_SORTER);
@@ -394,6 +401,9 @@ public class ChannelCompletion implements AutoCompletionServer {
         Set<String> added = new HashSet<>();
         for (T item : data) {
             String itemString = getString.apply(item);
+            if (StringUtil.isNullOrEmpty(itemString)) {
+                continue;
+            }
             if (added.contains(itemString)) {
                 continue;
             }

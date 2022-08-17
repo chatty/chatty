@@ -184,7 +184,7 @@ public class Emoticons {
     
     private static final HashSet<Emoticon> EMPTY_SET = new HashSet<>();
     
-    private final Set<String> ignoredEmotes = new HashSet<>();
+    private final IgnoredEmotes ignoredEmotes = new IgnoredEmotes();
     
     private final EmoticonFavorites favorites = new EmoticonFavorites();
     
@@ -730,31 +730,41 @@ public class Emoticons {
      * @param ignoredEmotes A Collection of emote codes to ignore
      */
     public void setIgnoredEmotes(Collection<String> ignoredEmotes) {
-        this.ignoredEmotes.clear();
-        this.ignoredEmotes.addAll(ignoredEmotes);
+        this.ignoredEmotes.setData(ignoredEmotes);
     }
     
     /**
      * Adds the given emote code to the list of ignored emotes.
      * 
-     * @param emoteCode The emote code to add
+     * @param emote The emote to edit the ignore state for
+     * @param context In what context to ignore the emote, can be 0 to unignore
+     * @param settings A reference to the settings
      */
-    public void addIgnoredEmote(String emoteCode) {
-        ignoredEmotes.add(emoteCode);
+    public void setEmoteIgnored(Emoticon emote, int context, Settings settings) {
+        ignoredEmotes.add(emote, context);
+        settings.putList("ignoredEmotes", ignoredEmotes.getData());
+    }
+    
+    /**
+     * Get all ignore items that match the given emote.
+     * 
+     * @param emote The emote to find items for
+     * @return A list of matches, may be empty, never null
+     */
+    public Collection<IgnoredEmotes.Item> getIgnoredEmoteMatches(Emoticon emote) {
+        return ignoredEmotes.getMatches(emote);
     }
     
     /**
      * Check if the given emote is on the list of ignored emotes. Compares the
      * emote code to the codes on the list.
-     * 
+     *
      * @param emote The Emoticon to check
+     * @param context In what context the emote has to be ignored, 0 for any
      * @return true if the emote is ignored, false otherwise
      */
-    public boolean isEmoteIgnored(Emoticon emote) {
-        if (emote instanceof CheerEmoticon) {
-            return ignoredEmotes.contains(((CheerEmoticon)emote).getSimpleCode());
-        }
-        return ignoredEmotes.contains(emote.code);
+    public boolean isEmoteIgnored(Emoticon emote, int context) {
+        return ignoredEmotes.isIgnored(emote, context);
     }
     
     /**

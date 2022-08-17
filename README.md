@@ -145,7 +145,7 @@ Images / Other
 
 * Misc Icons from the Tango Icon Theme:
   * Files (in various folders): `list-add.png, list-remove.png, view-refresh.png,
-		help-browser.png, preferences-system.png,
+		help-browser.png, preferences-system.png, search.png,
 		dialog-warning.png, go-down.png, go-up.png, go-next.png,
 		go-previous.png, go-home.png, go-web.png,
 		image-icon.png, commandline.png, edit-copy.png, sort.png,

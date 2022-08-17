@@ -315,6 +315,22 @@ public class StringUtil {
         return a+sep+b;
     }
     
+    public static String append(String a, String sep, String bCond, String b) {
+        if (a == null || a.isEmpty()) {
+            if (!isNullOrEmpty(b)) {
+                return bCond+b;
+            }
+            return b;
+        }
+        if (b == null || b.isEmpty()) {
+            return a;
+        }
+        if (!isNullOrEmpty(b)) {
+            return a+sep+bCond+b;
+        }
+        return a+sep+b;
+    }
+    
     /**
      * Checks if any of the String arguments is null or empty.
      * 

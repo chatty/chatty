@@ -790,20 +790,10 @@ public class LinkController extends MouseAdapter {
     
     private static void makeEmoticonPopupText(CachedImage<Emoticon> emoticonImage, boolean showImage, MyPopup popup, Element element) {
         Debugging.println("emoteinfo", "makePopupText %s", emoticonImage.getObject());
-        Emoticon emote = emoticonImage.getObject();
-        EmotesetInfo info = TwitchEmotesApi.api.getInfoByEmote(unique, result -> {
-            SwingUtilities.invokeLater(() -> {
-                Debugging.println("emoteinfo", "Request result: %s", result);
-                // The popup may be for a different element by now
-                if (popup.isCurrentElement(element)) {
-                    popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, result, popup));
-                }
-            });
-        }, emote);
-        popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, info, popup));
+        popup.setText(makeEmoticonPopupText2(emoticonImage, showImage, popup));
     }
     
-    private static String makeEmoticonPopupText2(CachedImage<Emoticon> emoticonImage, boolean showImage, EmotesetInfo emoteInfo, MyPopup popup) {
+    private static String makeEmoticonPopupText2(CachedImage<Emoticon> emoticonImage, boolean showImage, MyPopup popup) {
         Emoticon emote = emoticonImage.getObject();
         String result = "";
         if (emote.type == Emoticon.Type.TWITCH) {
@@ -815,7 +805,7 @@ public class LinkController extends MouseAdapter {
                     result += " Global";
                 }
             } else {
-                result = TwitchEmotesApi.getEmoteType(emote, emoteInfo, true);
+                result = TwitchEmotesApi.getEmoteType(emote);
             }
         } else if (emote.type == Emoticon.Type.CUSTOM2) {
             result = "Local Emote";
