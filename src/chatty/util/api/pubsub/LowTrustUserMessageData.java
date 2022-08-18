@@ -53,7 +53,8 @@ public class LowTrustUserMessageData extends MessageData {
     public enum Type {
         //FIXME find out what the other values here are
         BANNED_IN_SHARED_CHANNEL("banned in shared mod channels"),
-        MANUALLY_ADDED("added manually");
+        MANUALLY_ADDED("added manually"),
+        DETECTED_BAN_EVADER("detected as a ban evader");
 
         public final String description;
 
