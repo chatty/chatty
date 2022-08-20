@@ -46,15 +46,18 @@ public class Emoticon {
      */
     public static final String SET_UNKNOWN = "";
     
+    /**
+     * Note that the declaration order is relevant for sorting by Type.
+     */
     public static enum Type {
         TWITCH("twitch", "Twitch", TypeCategory.OFFICIAL),
+        CUSTOM2("chattylocal", "Custom2", TypeCategory.OTHER),
         FFZ("ffz", "FFZ", TypeCategory.THIRD_PARTY),
         BTTV("bttv", "BTTV", TypeCategory.THIRD_PARTY),
         SEVENTV("7tv", "7TV", TypeCategory.THIRD_PARTY),
         CUSTOM("custom", "Custom", TypeCategory.OTHER),
         EMOJI("emoji", "Emoji", TypeCategory.OTHER),
-        NOT_FOUND_FAVORITE("fav", "NotFoundFavorite", TypeCategory.OTHER),
-        CUSTOM2("chattylocal", "Custom2", TypeCategory.OTHER);
+        NOT_FOUND_FAVORITE("fav", "NotFoundFavorite", TypeCategory.OTHER);
         
         // Must not be changed
         public String id;

@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.emoji.EmojiUtil;
 import chatty.util.CombinedEmoticon;
+import chatty.util.CombinedIterator;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
@@ -153,7 +154,7 @@ public class Emoticons {
     /**
      * Global emotes the local user has access to.
      */
-    private final Set<Emoticon> usableGlobalEmotes = new HashSet<>();
+    private final GlobalEmotes usableGlobalEmotes = new GlobalEmotes();
     
     /**
      * Channel-specific emotes the local user has access to. Needs to be in a
@@ -407,8 +408,8 @@ public class Emoticons {
         else {
             if (emote.hasGlobalEmoteset() || allLocalEmotesets.contains(emote.emoteset)) {
                 for (String stream : emote.getStreamRestrictions()) {
-                    MiscUtil.getSetFromMap(usableStreamEmotes, stream).remove(emote);
-                    MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
+                    getUsableStreamEmotesSet(stream).remove(emote);
+                    getUsableStreamEmotesSet(stream).add(emote);
                 }
             }
         }
@@ -579,8 +580,12 @@ public class Emoticons {
         return emote;
     }
     
-    public Set<Emoticon> getUsableGlobalEmotes() {
-        return usableGlobalEmotes;
+    public Set<Emoticon> getUsableGlobalTwitchEmotes() {
+        return usableGlobalEmotes.getTwitch();
+    }
+    
+    public Set<Emoticon> getUsableGlobalOtherEmotes() {
+        return usableGlobalEmotes.getOther();
     }
     
     public Collection<Emoticon> getUsableEmotesByStream(String stream) {
@@ -647,10 +652,32 @@ public class Emoticons {
                 // Add all accessible
                 for (Emoticon emote : entry.getValue()) {
                     if (emote.hasGlobalEmoteset() || allLocalEmotesets.contains(emote.emoteset)) {
-                        MiscUtil.getSetFromMap(usableStreamEmotes, stream).add(emote);
+                        getUsableStreamEmotesSet(stream).add(emote);
                     }
                 }
             }
+        }
+    }
+    
+    private Set<Emoticon> getUsableStreamEmotesSet(String stream) {
+        if (!usableStreamEmotes.containsKey(stream)) {
+            /**
+             * Sort Twitch emotes first so that Follower emotes are preferred.
+             */
+            usableStreamEmotes.put(stream, new TreeSet<>(new SortEmotesByTypeAndCode()));
+        }
+        return usableStreamEmotes.get(stream);
+    }
+    
+    private static class SortEmotesByTypeAndCode implements Comparator<Emoticon> {
+        
+        @Override
+        public int compare(Emoticon o1, Emoticon o2) {
+            int compareType = o1.type.compareTo(o2.type);
+            if (compareType != 0) {
+                return compareType;
+            }
+            return o1.code.compareTo(o2.code);
         }
     }
     
@@ -1273,4 +1300,43 @@ public class Emoticons {
     public void setCheerBackground(Color color) {
         cheers.setBackgroundColor(color);
     }
+    
+    /**
+     * Split up so global Twitch emotes can take precedence over
+     * channel-specific emotes, while other global emotes do not.
+     */
+    private static class GlobalEmotes {
+        
+        private final Set<Emoticon> twitch = new HashSet<>();
+        private final Set<Emoticon> other = new HashSet<>();
+        
+        public void add(Emoticon emote) {
+            if (emote.type == Emoticon.Type.TWITCH
+                    || emote.type == Emoticon.Type.CUSTOM2) {
+                twitch.add(emote);
+            }
+            else {
+                other.add(emote);
+            }
+        }
+        
+        public void remove(Emoticon emote) {
+            twitch.remove(emote);
+            other.remove(emote);
+        }
+        
+        public Set<Emoticon> getTwitch() {
+            return twitch;
+        }
+        
+        public Set<Emoticon> getOther() {
+            return other;
+        }
+        
+        public Iterator<Emoticon> iterator() {
+            return new CombinedIterator<>(twitch, other);
+        }
+        
+    }
+    
 }

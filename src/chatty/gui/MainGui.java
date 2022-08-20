@@ -5325,14 +5325,6 @@ public class MainGui extends JFrame implements Runnable {
         return client.settings.getSettingNames();
     }
     
-    public Collection<Emoticon> getUsableGlobalEmotes() {
-        return emoticons.getUsableGlobalEmotes();
-    }
-    
-    public Collection<Emoticon> getUsableEmotesPerStream(String stream) {
-        return emoticons.getUsableEmotesByStream(stream);
-    }
-    
     public String getCustomCompletionItem(String key) {
         return (String)client.settings.mapGet("customCompletion", key);
     }
