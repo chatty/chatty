@@ -946,12 +946,20 @@ public class Emoticons {
         favorites.removeFavorite(emote);
     }
     
+    public void removeFavorites(Collection<EmoticonFavorites.Favorite> toRemove) {
+        favorites.removeFavorites(toRemove);
+    }
+    
     public boolean isFavorite(Emoticon emote) {
         return favorites.isFavorite(emote);
     }
     
     public Set<Emoticon> getFavorites() {
         return favorites.getFavorites();
+    }
+    
+    public Collection<EmoticonFavorites.Favorite> getNotFoundFavorites() {
+        return favorites.getNotFound();
     }
     
     public void loadFavoritesFromSettings(Settings settings) {

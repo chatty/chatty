@@ -1,9 +1,12 @@
 
 package chatty.util.api;
 
+import chatty.util.SpecialMap;
+import chatty.util.api.Emoticon.Type;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +16,11 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- *
+ * Load favorites from settings, find global emote favorites in loaded emotes.
+ * Channel-specific emotes don't have their Emoticon object stored here, since
+ * it would change when the channel changes, so it's being looked for on the fly
+ * in the Emote Dialog.
+ * 
  * @author tduva
  */
 public class EmoticonFavorites {
@@ -21,29 +28,26 @@ public class EmoticonFavorites {
     private static final Logger LOGGER = Logger.getLogger(EmoticonFavorites.class.getName());
     
     /**
-     * Contains all favorites that still need to be found.
+     * Favorites that have not been matched with loaded emotes yet (or
+     * channel-specific emotes). By emote code.
      */
-    private final Map<String, Favorite> favoritesNotFound = new HashMap<>();
+    private final Map<String, Favorite> notFoundByName = new HashMap<>();
     
     /**
-     * Contains all favorites with the associated Emoticon object. Favorites
-     * that haven't been found yet (either because their metadata hasn't been
-     * loaded yet or they don't exist on Twitch anymore) will have a dummy
-     * Emoticon object.
+     * Favorites that have not been matched with loaded emotes yet (or
+     * channel-specific emotes). By emote type/id.
      */
-    private final HashMap<Favorite, Emoticon> favorites = new HashMap<>();
+    private final SpecialMap<Type, Map<String, Favorite>> notFoundByTypeId = new SpecialMap<>(new HashMap<>(), () -> new HashMap<>());
     
+    /**
+     * Favorites of global emotes that have been matches with loaded emotes.
+     */
+    private final Map<Favorite, Emoticon> favorites = new HashMap<>();
+    
+    /**
+     * Track if settings have been loaded.
+     */
     private boolean loadedFavoritesFromSettings;
-    
-    
-    /**
-     * Adds the given Emoticon to the favorites.
-     * 
-     * @param emote The Emoticon to add
-     */
-    public void addFavorite(Emoticon emote) {
-        favorites.put(createFavorite(emote), emote);
-    }
     
     /**
      * Creates a Favorite object for the given Emoticon.
@@ -52,7 +56,7 @@ public class EmoticonFavorites {
      * @return The created Favorite object
      */
     private Favorite createFavorite(Emoticon emote) {
-        return new Favorite(emote.code, emote.emoteset);
+        return new Favorite(emote.code, emote.emoteset, emote.type, emote.stringId);
     }
     
     /**
@@ -61,21 +65,29 @@ public class EmoticonFavorites {
      * @param settings The Settings object
      */
     public void loadFavoritesFromSettings(Settings settings) {
-        List<List> entriesToLoad = settings.getList("favoriteEmotes");
-        favoritesNotFound.clear();
+        @SuppressWarnings("unchecked")
+        List<List<Object>> entriesToLoad = settings.getList("favoriteEmotes");
         favorites.clear();
-        for (List item : entriesToLoad) {
+        notFoundByName.clear();
+        notFoundByTypeId.clear();
+        for (List<Object> item : entriesToLoad) {
             Favorite f = listToFavorite(item);
             if (f != null) {
-                favoritesNotFound.put(f.code, f);
+                // By type/id
+                if (f.type != null && f.id != null) {
+                    notFoundByTypeId.getPut(f.type).put(f.id, f);
+                }
+                // By code
+                else if (f.code != null) {
+                    notFoundByName.put(f.code, f);
+                }
             }
         }
         loadedFavoritesFromSettings = true;
     }
 
     /**
-     * Saves the favorites to the settings, discarding any favorites that
-     * haven't been found several times already.
+     * Saves the favorites to the settings.
      * 
      * @param settings The Settings object
      */
@@ -84,8 +96,13 @@ public class EmoticonFavorites {
             LOGGER.warning("Not saving favorite emotes, because they don't seem to have been loaded in the first place.");
             return;
         }
-        List<List> entriesToSave = new ArrayList<>();
+        // Found favorites (global emotes)
+        List<List<Object>> entriesToSave = new ArrayList<>();
         for (Favorite f : favorites.keySet()) {
+            entriesToSave.add(favoriteToList(f));
+        }
+        // Not found favorites (or channel-specific emotes)
+        for (Favorite f : getNotFound()) {
             entriesToSave.add(favoriteToList(f));
         }
         settings.putList("favoriteEmotes", entriesToSave);
@@ -110,7 +127,7 @@ public class EmoticonFavorites {
      * @return The created Favorite, or null if an error occured
      * @see favoriteToList(Favorite, boolean)
      */
-    private Favorite listToFavorite(List item) {
+    private Favorite listToFavorite(List<Object> item) {
         try {
             String code = (String) item.get(0);
             String emoteset;
@@ -127,7 +144,15 @@ public class EmoticonFavorites {
                     emoteset = null;
                 }
             }
-            return new Favorite(code, emoteset);
+            Emoticon.Type type = null;
+            if (item.size() > 3) {
+                type = Emoticon.Type.fromId((String) item.get(3));
+            }
+            String id = null;
+            if (item.size() > 4) {
+                id = (String) item.get(4);
+            }
+            return new Favorite(code, emoteset, type, id);
         } catch (ClassCastException | ArrayIndexOutOfBoundsException ex) {
             return null;
         }
@@ -141,6 +166,8 @@ public class EmoticonFavorites {
      * <li>0: code (String),</li>
      * <li>1: emoteset (Number),</li>
      * <li>2: notFoundCount (Number)</li> (removed, may be in old settings)
+     * <li>3: type (String)</li> (added later)
+     * <li>4: id (String)</li> (added later)
      * </ul>
      * 
      * The notFoundCount is increased if the emote was not found during this
@@ -154,7 +181,9 @@ public class EmoticonFavorites {
         List<Object> list = new ArrayList<>();
         list.add(f.code);
         list.add(f.emoteset);
-        list.add(0); // In case loaded in older version where this is expeceted
+        list.add(0); // In case loaded in older version where this is expected
+        list.add(f.type != null ? f.type.id : null);
+        list.add(f.id);
         return list;
     }
     
@@ -169,37 +198,26 @@ public class EmoticonFavorites {
     @SafeVarargs
     public final void find(Map<String, Emoticon> twitchEmotesById,
             Set<Emoticon>... more) {
-        if (favoritesNotFound.isEmpty()) {
+        if (getNotFoundCount() == 0) {
             return;
         }
-        int count = favoritesNotFound.size();
+        int countBefore = notFoundByName.size() + notFoundByTypeId.subSize();
         findFavorites(twitchEmotesById.values());
         for (Set<Emoticon> emotes : more) {
             findFavorites(emotes);
         }
-        if (favoritesNotFound.isEmpty()) {
-            LOGGER.info("Emoticons: Found all remaining " + count + " favorites");
+        if (getNotFoundCount() == 0) {
+            LOGGER.info("Emoticons: Found all remaining " + countBefore + " favorites");
         } else {
-            createNotFound();
-            LOGGER.info("Emoticons: "+favoritesNotFound.size()+" favorites still not found");
-        }
-    }
-    
-    /**
-     * Create "dummy" Emoticon objects for not found favorites.
-     */
-    private void createNotFound() {
-        for (Favorite f : favoritesNotFound.values()) {
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.NOT_FOUND_FAVORITE, f.code, null);
-            b.setEmoteset(f.emoteset);
-            favorites.put(f, b.build());
+            LOGGER.info(String.format("Emoticons: %d favorites still not found",
+                    getNotFoundCount()));
         }
     }
     
     private boolean findFavorites(Collection<Emoticon> emotes) {
         for (Emoticon emote : emotes) {
             checkFavorite(emote);
-            if (favoritesNotFound.isEmpty()) {
+            if (getNotFoundCount() == 0) {
                 return true;
             }
         }
@@ -207,17 +225,47 @@ public class EmoticonFavorites {
     }
     
     private void checkFavorite(Emoticon emote) {
-        Favorite f = favoritesNotFound.get(emote.code);
+        Favorite f = getNotFoundByEmote(emote);
+        if (f != null) {
+            favorites.put(f, emote);
+            notFoundByName.values().remove(f);
+            notFoundByTypeId.subRemoveValue(f);
+        }
+    }
+    
+    /**
+     * Get the Favorite that matches the given emote, either by code and set or
+     * by type and id.
+     * 
+     * @param emote
+     * @return 
+     */
+    private Favorite getNotFoundByEmote(Emoticon emote) {
+        Favorite byName = notFoundByName.get(emote.code);
         /**
          * Allow local emotes (CUSTOM2) to match even without the emoteset check
          * (since the emoteset is not saved with them, but they may replace
          * emotes that were previously available through the API and could have
          * been added as favorites then).
          */
-        if (f != null && (Objects.equals(f.emoteset, emote.emoteset)
+        if (byName != null && (Objects.equals(byName.emoteset, emote.emoteset)
                             || emote.type == Emoticon.Type.CUSTOM2)) {
-            favorites.put(f, emote);
-            favoritesNotFound.remove(emote.code);
+            return byName;
+        }
+        return notFoundByTypeId.getOptional(emote.type).get(emote.stringId);
+    }
+    
+    /**
+     * Adds the given Emoticon to the favorites.
+     *
+     * @param emote The Emoticon to add
+     */
+    public void addFavorite(Emoticon emote) {
+        if (emote.hasStreamRestrictions()) {
+            notFoundByTypeId.getPut(emote.type).put(emote.stringId, createFavorite(emote));
+        }
+        else {
+            favorites.put(createFavorite(emote), emote);
         }
     }
     
@@ -228,11 +276,18 @@ public class EmoticonFavorites {
      */
     public void removeFavorite(Emoticon emote) {
         favorites.remove(createFavorite(emote));
-        favoritesNotFound.remove(emote.code);
+        notFoundByName.remove(emote.code);
+        notFoundByTypeId.getOptional(emote.type).remove(emote.stringId);
+    }
+    
+    public void removeFavorites(Collection<Favorite> toRemove) {
+        toRemove.forEach(fav -> favorites.remove(fav));
+        notFoundByName.values().removeAll(toRemove);
+        notFoundByTypeId.values().forEach(m -> m.values().removeAll(toRemove));
     }
     
     /**
-     * Returns a copy of the favorites.
+     * Returns a copy of the found global emotes.
      * 
      * @return 
      */
@@ -241,41 +296,55 @@ public class EmoticonFavorites {
     }
     
     /**
-     * Gets the number of favorites that couldn't be found.
-     * 
-     * @return 
-     */
-    public int getNumNotFoundFavorites() {
-        return favoritesNotFound.size();
-    }
-    
-    /**
-     * Checks whether the given Emoticon is a favorite.
-     * 
+     * Checks whether the given Emoticon is a favorite, by comparing with both
+     * found favorites' emotes and by trying to match it with not found
+     * favorites.
+     *
      * @param emote
      * @return 
      */
     public boolean isFavorite(Emoticon emote) {
-        return favoritesNotFound.containsKey(emote.code) || favorites.containsValue(emote);
+        return favorites.containsValue(emote) || getNotFoundByEmote(emote) != null;
+    }
+    
+    private int getNotFoundCount() {
+        return notFoundByName.size() + notFoundByTypeId.subSize();
+    }
+    
+    /**
+     * Returns a copy of all not found (or channel-specific) favorites.
+     * 
+     * @return 
+     */
+    public Collection<Favorite> getNotFound() {
+        List<Favorite> result = new ArrayList<>();
+        result.addAll(notFoundByName.values());
+        notFoundByTypeId.values().forEach(m -> result.addAll(m.values()));
+        Collections.sort(result, (o1, o2) -> {
+            return o1.code.compareToIgnoreCase(o2.code);
+        });
+        return result;
     }
 
-    /**
-     * A favorite specifying the emote code, the emoteset and how often it
-     * hasn't been found. The emote code and emoteset are required to find the
-     * actual Emoticon object that corresponds to it.
-     */
-    private static class Favorite {
+    public static class Favorite {
         
         public final String code;
         public final String emoteset;
+        public final Emoticon.Type type;
+        public final String id;
         
-        Favorite(String code, String emoteset) {
+        Favorite(String code, String emoteset, Emoticon.Type type, String id) {
             this.code = code;
             this.emoteset = emoteset;
+            this.type = type;
+            this.id = id;
         }
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             if (obj == null) {
                 return false;
             }
@@ -289,20 +358,28 @@ public class EmoticonFavorites {
             if (!Objects.equals(this.emoteset, other.emoteset)) {
                 return false;
             }
-            return true;
+            if (!Objects.equals(this.id, other.id)) {
+                return false;
+            }
+            return this.type == other.type;
         }
 
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 89 * hash + Objects.hashCode(this.code);
-            hash = 89 * hash + Objects.hashCode(this.emoteset);
+            hash = 97 * hash + Objects.hashCode(this.code);
+            hash = 97 * hash + Objects.hashCode(this.emoteset);
+            hash = 97 * hash + Objects.hashCode(this.type);
+            hash = 97 * hash + Objects.hashCode(this.id);
             return hash;
         }
         
         @Override
         public String toString() {
-            return code+"["+emoteset+"]";
+            if (id != null) {
+                return String.format("%s (%s) [set:%s, id:%s]", code, type, emoteset, id);
+            }
+            return String.format("%s [set: %s]", code, emoteset);
         }
         
     }

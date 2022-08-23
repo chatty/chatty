@@ -95,10 +95,6 @@ public class EmoteContextMenu extends ContextMenu {
             addStreamSubmenu(emote);
         }
         
-        if (emote.type == Emoticon.Type.NOT_FOUND_FAVORITE) {
-            addItem("", "Not found favorite");
-        }
-        
         if (!emote.hasGlobalEmoteset()) {
             addSeparator();
             addItem("", TwitchEmotesApi.getEmoteType(emote));
@@ -117,12 +113,11 @@ public class EmoteContextMenu extends ContextMenu {
         if (emote.subType != Emoticon.SubType.CHEER
                 && ((emote.emoteset != null && !emote.emoteset.isEmpty())
                 || emote.type != Emoticon.Type.TWITCH)) {
-            if (!emote.hasStreamRestrictions()) {
-                if (emoteManager.isFavorite(emote)) {
-                    addItem("unfavoriteEmote", Language.getString("emoteCm.unfavorite"));
-                } else {
-                    addItem("favoriteEmote", Language.getString("emoteCm.favorite"));
-                }
+            if (emoteManager.isFavorite(emote)) {
+                addItem("unfavoriteEmote", Language.getString("emoteCm.unfavorite"));
+            }
+            else {
+                addItem("favoriteEmote", Language.getString("emoteCm.favorite"));
             }
         }
         

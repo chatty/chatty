@@ -220,14 +220,17 @@ public class ChannelCompletion implements AutoCompletionServer {
                         items = getCompletionItemsEmoji(search);
                         items.append(getCompletionItemsEmotes(search, ":"));
                         sortMixed(items, search);
+                        sortFavoritesFirst(items);
                         return items;
                     case 1:
                         items = getCompletionItemsEmoji(search);
                         items.append(getCompletionItemsEmotes(search, ":"));
+                        sortFavoritesFirst(items);
                         return items;
                     case 2:
                         items = getCompletionItemsEmotes(search, ":");
                         items.append(getCompletionItemsEmoji(search));
+                        sortFavoritesFirst(items);
                         return items;
                 }
             }
@@ -274,30 +277,48 @@ public class ChannelCompletion implements AutoCompletionServer {
             String code = Emoticons.toWriteable(emote.code);
             String info = emote.type.label;
             if (info.equals("Custom2")) {
-                info = "Chatty Local Emote";
+                info = "Chatty Local";
             }
             if (emote.hasStreamRestrictions()) {
                 info += ", Channel";
+            }
+            if (main.emoticons.isFavorite(emote)) {
+                info += ", Fav";
             }
             items.add(createEmoteItem(code, info, emote));
         }
         return new CompletionItems(items, prefix);
     }
     
-    private CompletionItem createEmoteItem(String code, String info, Emoticon emote) {
-        return new CompletionItem(code, info) {
-            public ImageIcon getImage(Component c) {
-                float scale = (float)(currentEmoteScaling / 100.0);
-                ImageIcon icon = emote.getIcon(scale, 0, currentEmoteImageType, new CachedImageUser() {
+    private class EmoteCompletionItem extends CompletionItem {
 
-                    @Override
-                    public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
-                        c.repaint();
-                    }
-                }).getImageIcon();
-                return new ImageIcon(icon.getImage());
-            }
-        };
+        private final Emoticon emote;
+        
+        private EmoteCompletionItem(String code, String info, Emoticon emote) {
+            super(code, info);
+            this.emote = emote;
+        }
+        
+        public ImageIcon getImage(Component c) {
+            float scale = (float) (currentEmoteScaling / 100.0);
+            ImageIcon icon = emote.getIcon(scale, 0, currentEmoteImageType, new CachedImageUser() {
+
+                @Override
+                public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
+                    c.repaint();
+                }
+            }).getImageIcon();
+            return new ImageIcon(icon.getImage());
+        }
+
+        public Emoticon getEmoticon() {
+            return emote;
+        }
+
+    }
+    
+    private CompletionItem createEmoteItem(String code, String info, Emoticon emote) {
+        return new EmoteCompletionItem(code, info, emote);
     }
     
     private static final Comparator<Emoticon> SORT_EMOTES_BY_NAME = new Comparator<Emoticon>() {
@@ -307,6 +328,28 @@ public class ChannelCompletion implements AutoCompletionServer {
             return o1.code.compareToIgnoreCase(o2.code);
         }
     };
+    
+    private final Comparator<CompletionItem> SORT_FAV_EMOTES_FIRST = new Comparator<CompletionItem>() {
+
+        @Override
+        public int compare(CompletionItem o1, CompletionItem o2) {
+            boolean o1Fav = main.emoticons.isFavorite(((EmoteCompletionItem)o1).emote);
+            boolean o2Fav = main.emoticons.isFavorite(((EmoteCompletionItem)o2).emote);
+            if (o1Fav && !o2Fav) {
+                return -1;
+            }
+            if (!o1Fav && o2Fav) {
+                return 1;
+            }
+            return 0;
+        }
+    };
+    
+    private void sortFavoritesFirst(CompletionItems items) {
+        if (settings().getBoolean("completionFavEmotesFirst")) {
+            Collections.sort(items.items, SORT_FAV_EMOTES_FIRST);
+        }
+    }
 
     private List<String> getCustomCompletionItems(String search) {
         String result = main.getCustomCompletionItem(search);
@@ -333,9 +376,17 @@ public class ChannelCompletion implements AutoCompletionServer {
                 if (!emote.stringId.contains(search) && emote.stringIdAlias.contains(search)) {
                     alias = emote.stringIdAlias;
                 }
-                result.add(createEmoteItem(emote.stringId, alias, emote));
+                String info = alias;
+                if (main.emoticons.isFavorite(emote)) {
+                    info = StringUtil.append(info, ", ", "Fav");
+                }
+                result.add(createEmoteItem(emote.stringId, info, emote));
             } else {
-                result.add(createEmoteItem(emote.code, null, emote));
+                String info = null;
+                if (main.emoticons.isFavorite(emote)) {
+                    info = "Fav";
+                }
+                result.add(createEmoteItem(emote.code, info, emote));
             }
         }
         return new AutoCompletionServer.CompletionItems(result, ":");

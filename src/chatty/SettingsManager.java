@@ -703,6 +703,7 @@ public class SettingsManager {
         settings.addString("completionEmotePrefix", ":");
         settings.addLong("completionMixed", 0);
         settings.addBoolean("completionSpace", false);
+        settings.addBoolean("completionFavEmotesFirst", true);
         
         // Replying
         settings.addBoolean("mentionReplyRestricted", false);

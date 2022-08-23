@@ -71,7 +71,10 @@ import javax.swing.Timer;
 import javax.swing.border.Border;
 import chatty.util.api.CachedImage.CachedImageUser;
 import chatty.util.api.Emoticon.TypeCategory;
+import chatty.util.api.EmoticonFavorites.Favorite;
 import chatty.util.api.IgnoredEmotes;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JTextField;
 
 /**
@@ -1229,41 +1232,94 @@ public class EmotesDialog extends JDialog {
         @Override
         protected void updateEmotes() {
             reset();
-            Set<Emoticon> emotes = emoteManager.getFavorites();
-            if (emotes.isEmpty()) {
+            
+            List<Emoticon> favs = new ArrayList<>(emoteManager.getFavorites());
+            Collections.sort(favs, new SortEmotes());
+            
+            List<Emoticon> chanSpecificFavs = new ArrayList<>(emoteManager.getUsableEmotesByStream(currentStream));
+            chanSpecificFavs.removeIf(emote -> !emoteManager.isFavorite(emote));
+            
+            if (favs.isEmpty()) {
                 addTitle(Language.getString("emotesDialog.noFavorites"));
                 addSubtitle(Language.getString("emotesDialog.noFavorites.hint"), false);
             }
 
-            // Sort emotes by emoteset
-            List<Emoticon> sorted = new ArrayList<>(emotes);
-            Collections.sort(sorted, new SortEmotes());
-
             // Sort out emotes that the user probably doesn't have access to
             List<Emoticon> subEmotesNotSubbedTo = new ArrayList<>();
-            List<Emoticon> notFoundFavorites = new ArrayList<>();
-            for (Emoticon emote : sorted) {
-                if (emote.type == Emoticon.Type.NOT_FOUND_FAVORITE) {
-                    notFoundFavorites.add(emote);
-                }
-                else if (!emote.hasGlobalEmoteset() && !localUserEmotesets.contains(emote.emoteset)) {
+            for (Emoticon emote : favs) {
+                if (!emote.hasGlobalEmoteset() && !localUserEmotesets.contains(emote.emoteset)) {
                     subEmotesNotSubbedTo.add(emote);
                 }
             }
-            sorted.removeAll(subEmotesNotSubbedTo);
-            sorted.removeAll(notFoundFavorites);
+            favs.removeAll(subEmotesNotSubbedTo);
             
             // Add emotes
-            addEmotesSection(sorted, Language.getString("emotesDialog.tab.favorites"), "$fav$");
-            if (!subEmotesNotSubbedTo.isEmpty()) {
-                addEmotesSection(subEmotesNotSubbedTo, Language.getString("emotesDialog.subscriptionRequired"), "$favsNoAccess$");
-            }
-            if (!notFoundFavorites.isEmpty()) {
-                addEmotesSection(notFoundFavorites, Language.getString("emotesDialog.notFoundFavorites"), "$favsNotFound$");
-                addSubtitle(Language.getString("emotesDialog.favoriteCmInfo"), true);
-            }
+            addEmotesSection(favs, Language.getString("emotesDialog.tab.favorites"), "$fav$");
+            addEmotesSection(subEmotesNotSubbedTo, Language.getString("emotesDialog.subscriptionRequired"), "$favsNoAccess$");
+            addEmotesSection(chanSpecificFavs, Language.getString("emotesDialog.channelSpecificFavorites", Helper.toChannel(currentStream)), "$favsChan$");
+            addNotFoundList(chanSpecificFavs);
+            
             addIgnoredEmotes();
             relayout();
+        }
+        
+        private void addNotFoundList(Collection<Emoticon> chanSpecificFavs) {
+            Collection<Favorite> notFoundFavorites = getFilteredNotFound(chanSpecificFavs);
+            if (!notFoundFavorites.isEmpty()) {
+                addTitle(Language.getString("emotesDialog.notFoundFavorites") + " (" + notFoundFavorites.size() + ")", null, Arrays.asList("$favsNotFound$"));
+                if (isHidden("$favsNotFound$")) {
+                    // List
+                    JList<Favorite> list = new JList<>();
+                    // Make sure it's not too wide, but it will grow to full width
+                    list.setFixedCellWidth(10);
+                    
+                    DefaultListModel<Favorite> data = new DefaultListModel<>();
+                    list.setModel(data);
+                    notFoundFavorites.forEach(fav -> data.addElement(fav));
+                    
+                    // Remove Button
+                    JButton removeButton = new JButton(Language.getString("emotesDialog.button.unfavoriteSelected"));
+                    removeButton.addActionListener(e -> {
+                        int selected = list.getSelectedIndex();
+                        // Remove selected entries
+                        Collection<Favorite> toRemove = list.getSelectedValuesList();
+                        emoteManager.removeFavorites(toRemove);
+                        toRemove.forEach(fav -> data.removeElement(fav));
+                        // Select an entry again
+                        selected = Math.min(data.size() - 1, selected);
+                        if (data.size() > selected) {
+                            list.setSelectedIndex(selected);
+                        }
+                    });
+                    
+                    // Layout
+                    JPanel panel = new JPanel(new BorderLayout());
+                    panel.add(new JScrollPane(list), BorderLayout.CENTER);
+                    panel.add(removeButton, BorderLayout.SOUTH);
+                    panel.setOpaque(false);
+                    gbc.fill = GridBagConstraints.HORIZONTAL;
+                    gbc.insets = TITLE_INSETS;
+                    gbc.anchor = GridBagConstraints.CENTER;
+                    gbc.weightx = 1;
+                    gbc.gridwidth = GridBagConstraints.REMAINDER;
+                    add(panel, gbc);
+                    gbc.gridx = 0;
+                    gbc.gridy++;
+                }
+            }
+        }
+        
+        private Collection<Favorite> getFilteredNotFound(Collection<Emoticon> remove) {
+            Collection<Favorite> result = emoteManager.getNotFoundFavorites();
+            result.removeIf(fav -> {
+                for (Emoticon emote : remove) {
+                    if (emote.type == fav.type && fav.id != null && fav.id.equals(emote.stringId)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+            return result;
         }
 
     }

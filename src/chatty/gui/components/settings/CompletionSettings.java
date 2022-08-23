@@ -168,6 +168,9 @@ public class CompletionSettings extends SettingsPanel {
         
         appearance.add(d.addSimpleBooleanSetting("completionSpace"),
                 d.makeGbcCloser(0, 4, 4, 1, GridBagConstraints.WEST));
+        
+        appearance.add(d.addSimpleBooleanSetting("completionFavEmotesFirst"),
+                d.makeGbc(0, 5, 2, 1, GridBagConstraints.WEST));
     }
     
     private class CustomCompletionEntries extends LazyDialog {

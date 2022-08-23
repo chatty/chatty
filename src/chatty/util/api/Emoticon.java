@@ -70,6 +70,16 @@ public class Emoticon {
             this.label = label;
             this.category = category;
         }
+        
+        public static Type fromId(String id) {
+            for (Type type : values()) {
+                if (type.id.equals(id)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+        
     }
     
     public static enum TypeCategory {
@@ -592,7 +602,7 @@ public class Emoticon {
 
                 @Override
                 public boolean loadImage() {
-                    return type != Type.NOT_FOUND_FAVORITE;
+                    return true;
                 }
             }, ("emote_" + type).intern());
         }
