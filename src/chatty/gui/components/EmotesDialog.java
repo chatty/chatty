@@ -1064,7 +1064,7 @@ public class EmotesDialog extends JDialog {
                 }
                 // Separator between types (only third-party)
                 if (!allSameType
-                        && emote.type.category == TypeCategory.THIRD_PARTY
+                        && emote.type.category != TypeCategory.OFFICIAL
                         && !Objects.equals(prevType, emote.type.label)) {
                     if (prevType != null && !separatorAdded) {
                         panel.add(makeSeparator());

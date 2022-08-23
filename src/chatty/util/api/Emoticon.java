@@ -51,7 +51,7 @@ public class Emoticon {
      */
     public static enum Type {
         TWITCH("twitch", "Twitch", TypeCategory.OFFICIAL),
-        CUSTOM2("chattylocal", "Custom2", TypeCategory.OTHER),
+        CUSTOM2("chattylocal", "Custom2", TypeCategory.OFFICIAL),
         FFZ("ffz", "FFZ", TypeCategory.THIRD_PARTY),
         BTTV("bttv", "BTTV", TypeCategory.THIRD_PARTY),
         SEVENTV("7tv", "7TV", TypeCategory.THIRD_PARTY),
