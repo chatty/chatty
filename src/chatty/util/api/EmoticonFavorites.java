@@ -56,6 +56,9 @@ public class EmoticonFavorites {
      * @return The created Favorite object
      */
     private Favorite createFavorite(Emoticon emote) {
+        if (emote.type == Emoticon.Type.EMOJI) {
+            return new Favorite(emote.code, null, null, null);
+        }
         return new Favorite(emote.code, emote.emoteset, emote.type, emote.stringId);
     }
     
@@ -182,8 +185,10 @@ public class EmoticonFavorites {
         list.add(f.code);
         list.add(f.emoteset);
         list.add(0); // In case loaded in older version where this is expected
-        list.add(f.type != null ? f.type.id : null);
-        list.add(f.id);
+        if (f.type != null && f.id != null) {
+            list.add(f.type != null ? f.type.id : null);
+            list.add(f.id);
+        }
         return list;
     }
     
@@ -275,7 +280,12 @@ public class EmoticonFavorites {
      * @param emote 
      */
     public void removeFavorite(Emoticon emote) {
-        favorites.remove(createFavorite(emote));
+        favorites.keySet().removeIf(fav -> {
+            if (fav.type != null && fav.id != null) {
+                return fav.type == emote.type && fav.id.equals(emote.stringId);
+            }
+            return Objects.equals(fav.code, emote.code) && Objects.equals(fav.emoteset, emote.emoteset);
+        });
         notFoundByName.remove(emote.code);
         notFoundByTypeId.getOptional(emote.type).remove(emote.stringId);
     }
