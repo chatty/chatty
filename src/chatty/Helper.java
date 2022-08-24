@@ -135,9 +135,38 @@ public class Helper {
     public static String getChannelFromUrl(String url) {
         Matcher m = CHANNEL_URL_PATTERN.matcher(url);
         if (m.matches()) {
-            return m.group(1);
+            String channel = m.group(1);
+            if (channel.equals("popout")) {
+                TwitchPopoutUrlInfo popoutInfo = getPopoutUrlInfo(url);
+                if (popoutInfo != null) {
+                    return popoutInfo.channel;
+                }
+            }
+            return channel;
         }
         return url;
+    }
+    
+    public static TwitchPopoutUrlInfo getPopoutUrlInfo(String url) {
+        Matcher m = POPOUT_URL_PATTERN.matcher(url);
+        if (m.matches()) {
+            return new TwitchPopoutUrlInfo(m.group(1), m.group(2), m.group(3));
+        }
+        return null;
+    }
+    
+    public static class TwitchPopoutUrlInfo {
+        
+        public final String channel;
+        public final String type;
+        public final String username;
+        
+        private TwitchPopoutUrlInfo(String channel, String type, String username) {
+            this.channel = channel;
+            this.type = type;
+            this.username = username;
+        }
+        
     }
     
     public static String[] parseChannels(String channels, boolean prepend) {
@@ -170,7 +199,10 @@ public class Helper {
     public static final Pattern CHATROOM_PATTERN = Pattern.compile("(?i)^#?chatrooms:[0-9a-z-:]+$");
     public static final Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
     public static final Pattern WHISPER_PATTERN = Pattern.compile("(?i)^\\$"+USERNAME_REGEX+"$");
-    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile("(?:https?://)?(?:www\\.)?twitch\\.tv/("+USERNAME_REGEX+")[/a-z]*");
+    private static final String TWITCH_URL_PREFIX = "(?:https?://)?(?:www\\.)?twitch\\.tv";
+    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile(TWITCH_URL_PREFIX+"/("+USERNAME_REGEX+")[/a-z]*");
+    private static final Pattern POPOUT_URL_PATTERN = Pattern.compile(String.format("%s/popout/(%s)/([a-z]+)(?:/(%s)[/a-z]*)?",
+            TWITCH_URL_PREFIX, USERNAME_REGEX, USERNAME_REGEX));
     
     /**
      * Kind of relaxed valiadation if a channel, which can have a leading # or

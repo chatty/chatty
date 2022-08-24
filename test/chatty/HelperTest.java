@@ -337,6 +337,26 @@ public class HelperTest {
         assertEquals("channel", Helper.getChannelFromUrl("www.twitch.tv/channel"));
         assertEquals("https:///twitch.tv/channel", Helper.getChannelFromUrl("https:///twitch.tv/channel"));
         assertEquals("https://wwww.twitch.tv/channel", Helper.getChannelFromUrl("https://wwww.twitch.tv/channel"));
+        
+        assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/chat"));
+        assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/viewercard/username"));
+    }
+    
+    @Test
+    public void testGetPopoutUrlInfo() {
+        testPopoutUrlInfo("https://www.twitch.tv/popout/channel/chat", "channel", "chat", null);
+        testPopoutUrlInfo("https://www.twitch.tv/popout/channel/viewercard/username", "channel", "viewercard", "username");
+        testPopoutUrlInfo("https://www.twitch.tv/popout/channel/viewercard/username/", "channel", "viewercard", "username");
+        testPopoutUrlInfo("https://www.twitch.tv/popout/channel/viewercard/username/abc", "channel", "viewercard", "username");
+        testPopoutUrlInfo("www.twitch.tv/popout/channel/viewercard/username/", "channel", "viewercard", "username");
+        testPopoutUrlInfo("twitch.tv/popout/channel/viewercard/username/", "channel", "viewercard", "username");
+    }
+    
+    private static void testPopoutUrlInfo(String url, String channel, String type, String username) {
+        Helper.TwitchPopoutUrlInfo info = Helper.getPopoutUrlInfo(url);
+        assertEquals(channel, info.channel);
+        assertEquals(type, info.type);
+        assertEquals(username, info.username);
     }
     
     @Test

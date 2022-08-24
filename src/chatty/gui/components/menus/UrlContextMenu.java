@@ -1,6 +1,9 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import java.awt.event.ActionEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,9 +18,7 @@ public class UrlContextMenu extends ContextMenu {
     private final ContextMenuListener listener;
     private final String url;
     private String channel;
-    
-    private final static Pattern channelFromUrl =
-            Pattern.compile("(?i)(?:https?://)?(?:[a-z]+.)?twitch.tv/([a-z_0-9]+)(?:/.*)?");
+    private User dummyUser;
     
     /**
      * Contructs a new Context Menu.
@@ -37,11 +38,17 @@ public class UrlContextMenu extends ContextMenu {
         addItem("open", "Open link");
         addItem("copy", "Copy to clipboard");
         
-        Matcher m = channelFromUrl.matcher(url);
-        if (m.matches()) {
-            channel = m.group(1);
+        channel = Helper.getChannelFromUrl(url);
+        if (channel != null) {
             addSeparator();
             addItem("join", "Join #"+channel);
+            Helper.TwitchPopoutUrlInfo popoutInfo = Helper.getPopoutUrlInfo(url);
+            if (popoutInfo != null && popoutInfo.username != null) {
+                addSeparator();
+                dummyUser = new User(popoutInfo.username, Room.EMPTY);
+                addItem("userinfo.#"+channel, String.format("User: %s in #%s",
+                        popoutInfo.username, channel));
+            }
         }
     }
 
@@ -50,6 +57,9 @@ public class UrlContextMenu extends ContextMenu {
         if (listener != null) {
             if (e.getActionCommand().equals("join")) {
                 listener.urlMenuItemClicked(e, channel);
+            }
+            else if (e.getActionCommand().startsWith("userinfo.")) {
+                listener.userMenuItemClicked(e, dummyUser, null, null);
             }
             else {
                 listener.urlMenuItemClicked(e, url);
