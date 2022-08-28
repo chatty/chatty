@@ -305,8 +305,16 @@ public class StreamInfo {
                     LOGGER.info("Ignored setting offline " + stream);
                 }
             }
-            // If switching from online to offline
-            else if (online && recheckOffline == -1) {
+            /**
+             * If switching from online to offline. Without recent updates (for
+             * example a followed stream went offline while not in the channel
+             * and isValidEnough() is false, then joining the offline channel)
+             * should not check this, since otherwise the previous online state
+             * will still appear (in the title etc.) until the recheck. Also,
+             * checking this if the stream hasn't been seen as online for hours
+             * doesn't make much sense anyway.
+             */
+            else if (online && recheckOffline == -1 && isValidEnough()) {
                 LOGGER.info("Waiting to recheck offline status for " + stream);
                 recheckOffline = System.currentTimeMillis();
             } else {
