@@ -38,9 +38,6 @@ public class WebPUtil {
     private static boolean available;
     
     public static void runIfWebPAvailable(Runnable runnable) {
-        if (!MiscUtil.OS_WINDOWS && !MiscUtil.OS_LINUX) {
-            return;
-        }
         if (isAvailable()) {
             runnable.run();
             return;
