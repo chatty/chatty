@@ -1478,4 +1478,44 @@ public class HighlighterTest {
         assertFalse(highlighter.check(Type.ANY, "𝒜pple c𝒜rt!", 0, 6, "", ab, user, null, MsgTags.EMPTY, false));
     }
     
+    @Test
+    public void testIf() {
+        updateBlacklist("");
+        
+        update("if:abc");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertFalse(highlighter.check(user, "Test"));
+        
+        update("if:abc,test");
+        assertTrue(highlighter.check(user, "Test Abc"));
+        assertTrue(highlighter.check(user, "Test"));
+        assertFalse(highlighter.check(user, "T"));
+        
+        update("!if:abc");
+        assertFalse(highlighter.check(user, "Test Abc"));
+        assertTrue(highlighter.check(user, "Test"));
+        assertTrue(highlighter.check(user, "T"));
+        
+        update("!if:abc,test");
+        assertFalse(highlighter.check(user, "Test Abc"));
+        assertFalse(highlighter.check(user, "Test"));
+        assertTrue(highlighter.check(user, "T"));
+        
+        update("if:start:123,abc test");
+        assertFalse(highlighter.check(user, "123"));
+        assertFalse(highlighter.check(user, "abc"));
+        assertTrue(highlighter.check(user, "123 test"));
+        assertTrue(highlighter.check(user, "abc test"));
+        assertFalse(highlighter.check(user, "test 123"));
+        assertTrue(highlighter.check(user, "test abc"));
+        
+        update("if:");
+        assertTrue(highlighter.check(user, ""));
+        assertTrue(highlighter.check(user, "abc"));
+        
+        update("!if:");
+        assertTrue(highlighter.check(user, ""));
+        assertTrue(highlighter.check(user, "abc"));
+    }
+    
 }

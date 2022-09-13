@@ -1003,19 +1003,26 @@ public class Highlighter {
                         }
                     }
                 }
-                else if (item.startsWith("if:")) {
-                    List<String> list = parseStringListPrefix(item, "if:", s -> s);
+                else if (item.startsWith("if:") || item.startsWith("!if:")) {
+                    boolean successValue = item.startsWith("if:");
+                    List<String> list;
+                    if (successValue) {
+                        list = parseStringListPrefix(item, "if:", s -> s);
+                    }
+                    else {
+                        list = parseStringListPrefix(item, "!if:", s -> s);
+                    }
                     List<HighlightItem> items = createHighlightItems(list);
                     if (!items.isEmpty()) {
-                        matchItems.add(new Item("If one matches", "\n====\n"+StringUtil.join(items, "----\n", s -> ((HighlightItem) s).getMatchInfo())+"====", true) {
+                        matchItems.add(new Item(successValue ? "If one matches" : "If none matches", "\n====\n"+StringUtil.join(items, "----\n", s -> ((HighlightItem) s).getMatchInfo())+"====", true) {
                             @Override
                             public boolean matches(Type type, String text, int msgStart, int msgEnd, Blacklist blacklist, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
                                 for (HighlightItem item : items) {
                                     if (item.matches(type, text, msgStart, msgEnd, blacklist, channel, ab, user, localUser, tags)) {
-                                        return true;
+                                        return successValue;
                                     }
                                 }
-                                return false;
+                                return !successValue;
                             }
                         });
                     }
