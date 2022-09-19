@@ -179,7 +179,7 @@ public class PastMessages extends JTextArea {
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), MOD_ACTION);
                 b.append("Message deleted: ").append(md.msg);
-                endHighlight(b.length() - 1, MOD_ACTION);
+                endHighlight(b.length(), MOD_ACTION);
                 if (md.by != null) {
                     b.append(" (@").append(md.by).append(")");
                 }
