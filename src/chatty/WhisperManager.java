@@ -28,12 +28,14 @@ public class WhisperManager {
     private final WhisperListener listener;
     private final Settings settings;
     private final TwitchConnection c;
+    private final TwitchClient client;
     
     public WhisperManager(WhisperListener listener, Settings settings,
-            TwitchConnection c) {
+            TwitchConnection c, TwitchClient client) {
         this.listener = listener;
         this.settings = settings;
         this.c = c;
+        this.client = client;
     }
     
     public boolean isAvailable() {
@@ -111,15 +113,19 @@ public class WhisperManager {
             return;
         }
         if (isAvailable()) {
-            if (!rawWhisper(nick, message)) {
-                listener.info("# Whisper not sent (spam protection): " + message);
-            } else {
-                User user = c.getUser(WHISPER_CHANNEL, nick);
-                listener.whisperSent(user, message);
-                if (isUserIgnored(user)) {
-                    listener.info("You haven't allowed to receive whispers from " + user);
+            client.api.whisper(nick, message, r -> {
+                if (r.error != null) {
+                    listener.info("# Whisper not sent: " + r.error);
                 }
-            }
+                else {
+                    User user = c.getUser(WHISPER_CHANNEL, nick);
+                    listener.whisperSent(user, message);
+                    if (isUserIgnored(user)) {
+                        listener.info("You haven't allowed to receive whispers from " + user);
+                    }
+                }
+            });
+            
         } else {
             listener.info("Can't send whisper: not connected");
         }

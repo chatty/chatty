@@ -4,6 +4,7 @@ package chatty;
 import chatty.util.StringUtil;
 import chatty.util.commands.Parameters;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -19,19 +20,37 @@ public class Commands {
     
     private final Map<String, Command> commands = new HashMap<>();
     
-    public void add(String name, Consumer<CommandParameters> action, String... aliases) {
-        add(name, action, false, aliases);
+    public void add(String name, Consumer<CommandParameters> action,
+                                 String... aliases) {
+        add(name, "", action, false, aliases);
     }
     
-    public void addEdt(String name, Consumer<CommandParameters> action, String... aliases) {
-        add(name, action, true, aliases);
+    public void add(String name, String description,
+                                 Consumer<CommandParameters> action,
+                                 String... aliases) {
+        add(name, description, action, false, aliases);
     }
     
-    public void add(String name, Consumer<CommandParameters> action, boolean edt, String... aliases) {
+    public void addEdt(String name, Consumer<CommandParameters> action,
+                                    String... aliases) {
+        add(name, "", action, true, aliases);
+    }
+    
+    public void addEdt(String name, String description,
+                                    Consumer<CommandParameters> action,
+                                    String... aliases) {
+        add(name, description, action, true, aliases);
+    }
+    
+    public void add(String name, String description,
+                                 Consumer<CommandParameters> action,
+                                 boolean edt,
+                                 String... aliases) {
         synchronized(commands) {
-            commands.put(StringUtil.toLowerCase(name), new Command(name, "", action, edt));
+            Command c = new Command(name, new ArrayList<>(Arrays.asList(aliases)), description, action, edt);
+            commands.put(StringUtil.toLowerCase(name), c);
             for (String alias : aliases) {
-                commands.put(StringUtil.toLowerCase(alias), new Command(alias, "", action, edt));
+                commands.put(StringUtil.toLowerCase(alias), c);
             }
         }
     }
@@ -74,14 +93,22 @@ public class Commands {
         private final String description;
         private final Consumer<CommandParameters> action;
         private final boolean edt;
+        private final List<String> aliases;
         
-        public Command(String name, String description, Consumer<CommandParameters> action, boolean edt) {
+        public Command(String name, List<String> aliases, String description, Consumer<CommandParameters> action, boolean edt) {
             this.name = name;
+            this.aliases = aliases;
             this.description = description;
             this.action = action;
             this.edt = edt;
         }
         
+        /**
+         * The name of the command. Note that if an alias of the command was
+         * entered this will be the main name of the command, not the alias.
+         * 
+         * @return 
+         */
         public String getName() {
             return name;
         }
@@ -90,14 +117,24 @@ public class Commands {
             return description;
         }
         
+        public String getUsage() {
+            if (StringUtil.isNullOrEmpty(description)) {
+                return null;
+            }
+            return String.format("Usage: /%s %s%s",
+                name,
+                description,
+                StringUtil.aEmptyb(StringUtil.join(aliases, ", ", o -> "/"+o), "", " (Alias: %s)"));
+        }
+        
         public void performAction(Room room, Parameters parameters) {
             if (edt && !SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(() -> {
-                    action.accept(new CommandParameters(room, parameters));
+                    action.accept(new CommandParameters(room, parameters, this));
                 });
             }
             else {
-                action.accept(new CommandParameters(room, parameters));
+                action.accept(new CommandParameters(room, parameters, this));
             }
         }
         
@@ -107,10 +144,16 @@ public class Commands {
         
         private final Room room;
         private final Parameters parameters;
+        private final Command command;
         
-        public CommandParameters(Room room, Parameters parameters) {
+        public CommandParameters(Room room, Parameters parameters, Command command) {
             this.room = room;
             this.parameters = parameters;
+            this.command = command;
+        }
+        
+        public Command getCommand() {
+            return command;
         }
         
         public Room getRoom() {
@@ -153,6 +196,10 @@ public class Commands {
             return CommandParsedArgs.parse(getArgs(), numArgs);
         }
         
+        public CommandParsedArgs parsedArgs(int numArgs, int numRequiredArgs) {
+            return CommandParsedArgs.parse(getArgs(), numArgs, numRequiredArgs);
+        }
+        
     }
     
     public static class CommandParsedArgs {
@@ -169,12 +216,42 @@ public class Commands {
             return args[index];
         }
         
+        public boolean has(int index) {
+            return args.length > index;
+        }
+        
+        public String get(int index, String def) {
+            if (has(index)) {
+                return args[index];
+            }
+            return def;
+        }
+        
+        public int getInt(int index, int def) {
+            if (has(index)) {
+                try {
+                    return Integer.parseInt(args[index]);
+                }
+                catch (NumberFormatException ex) {
+                    // Do nothing
+                }
+            }
+            return def;
+        }
+        
         public boolean hasOption(String option) {
             return options != null && options.contains(option);
         }
         
         public static CommandParsedArgs parse(String input, int numArgs) {
+            return parse(input, numArgs, numArgs);
+        }
+        
+        public static CommandParsedArgs parse(String input, int numArgs, int numRequiredArgs) {
             if (input == null) {
+                if (numRequiredArgs == 0) {
+                    return new CommandParsedArgs(null, "".split(""));
+                }
                 return null;
             }
             String options = null;
@@ -199,7 +276,7 @@ public class Commands {
             String args = input.substring(optionsTo);
             if (numArgs > 0) {
                 String[] split = args.split(" ", numArgs);
-                if (split.length == numArgs) {
+                if (split.length >= numRequiredArgs) {
                     return new CommandParsedArgs(options, split);
                 }
                 return null;

@@ -74,6 +74,7 @@ import chatty.util.api.CachedImage.CachedImageUser;
 import chatty.util.api.IgnoredEmotes;
 import chatty.util.api.usericons.UsericonFactory;
 import chatty.util.api.usericons.UsericonManager;
+import java.util.function.Function;
 
 
 /**
@@ -153,7 +154,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
         ACTION_REASON,
         
-        REPLY_PARENT_MSG, REPLY_PARENT_MSG_ID
+        REPLY_PARENT_MSG, REPLY_PARENT_MSG_ID,
+        
+        OBJECT_ID
     }
     
     /**
@@ -630,6 +633,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     public void printInfoMessage(InfoMessage message) {
+        if (message.msgType == InfoMessage.Type.APPEND) {
+            appendToMessage(message);
+            return;
+        }
         //-------
         // Style
         //-------
@@ -671,6 +678,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             if (command != null) {
                 setLineCommand(doc.getLength(), command);
             }
+            if (message.objectId != null) {
+                setObjectId(doc.getLength(), message.objectId);
+            }
             
             replayModLogInfo();
         }
@@ -700,6 +710,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             print(link.key, styles.generalLink(style, link.value));
         }
         finishLine();
+    }
+    
+    private void appendToMessage(InfoMessage message) {
+        if (message.objectId == null) {
+            return;
+        }
+        Element line = findLineBy(element -> element.getAttributes().containsAttribute(Attribute.OBJECT_ID, message.objectId));
+        if (line != null) {
+            changeInfo(line, attributes -> {
+                attributes.addAttribute(Attribute.INFO_TEXT, message.text);
+            });
+        }
     }
     
     private final java.util.List<ModLogInfo> cachedModLogInfo = new ArrayList<>();
@@ -1220,6 +1242,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         return result;
     }
     
+    private Element findLineBy(Function<Element, Boolean> test) {
+        Element root = doc.getDefaultRootElement();
+        for (int i=root.getElementCount()-1;i>=0;i--) {
+            Element line = root.getElement(i);
+            if (test.apply(line)) {
+                return line;
+            }
+        }
+        return null;
+    }
+    
     private boolean isMessageLine(Element line) {
         return getUserFromLine(line) != null;
     }
@@ -1384,6 +1417,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void setLineCommand(int offset, String command) {
         SimpleAttributeSet attr = new SimpleAttributeSet();
         attr.addAttribute(Attribute.COMMAND, command);
+        doc.setParagraphAttributes(offset, 1, attr, false);
+    }
+    
+    private void setObjectId(int offset, Object id) {
+        SimpleAttributeSet attr = new SimpleAttributeSet();
+        attr.addAttribute(Attribute.OBJECT_ID, id);
         doc.setParagraphAttributes(offset, 1, attr, false);
     }
     

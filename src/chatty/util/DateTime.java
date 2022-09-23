@@ -481,6 +481,74 @@ public class DateTime {
                 m == 1 ? "month" : "months");
     }
     
+    //--------------------------
+    // Parse Duration
+    //--------------------------
+    private static final Pattern DURATION_PARSER = Pattern.compile("(?<num>[0-9]+)(?<unit>ms|s|m|h|d)?");
+    
+    public static long parseDurationSeconds(String text) {
+        if (text == null) {
+            return -1;
+        }
+        return parseDuration(text) / 1000;
+    }
+    
+    public static long parseDuration(String text) {
+        if (text == null) {
+            return -1;
+        }
+        Matcher m = DURATION_PARSER.matcher(text);
+        long ms = 0;
+        TimeUnit unit = TimeUnit.SECONDS;
+        while (m.find()) {
+            long num = Long.parseLong(m.group("num"));
+            String unitText = m.group("unit");
+            if (unitText != null) {
+                unit = getTimeUnitFromString(unitText);
+            }
+            ms += unit.toMillis(num);
+            unit = nextTimeUnit(unit);
+        }
+        return ms;
+    }
+    
+    /**
+     * Supported time units ordered from long to short since something like
+     * "10h30" should default the "30" to the next shorter unit ("30m").
+     */
+    private static final TimeUnit[] TIME_UNITS = new TimeUnit[]{
+        TimeUnit.DAYS,
+        TimeUnit.HOURS,
+        TimeUnit.MINUTES,
+        TimeUnit.SECONDS,
+        TimeUnit.MILLISECONDS
+    };
+    
+    private static TimeUnit nextTimeUnit(TimeUnit unit) {
+        for (int i = 0; i < TIME_UNITS.length - 1; i++) {
+            if (TIME_UNITS[i] == unit) {
+                return TIME_UNITS[i + 1];
+            }
+        }
+        return unit;
+    }
+    
+    private static TimeUnit getTimeUnitFromString(String unit) {
+        if (unit != null) {
+            switch (unit) {
+                case "ms":
+                    return TimeUnit.MILLISECONDS;
+                case "m":
+                    return TimeUnit.MINUTES;
+                case "h":
+                    return TimeUnit.HOURS;
+                case "d":
+                    return TimeUnit.DAYS;
+            }
+        }
+        return TimeUnit.SECONDS;
+    }
+    
     public static final void main(String[] args) {
 //        System.out.println("'"+dur(HOUR*2+1, Formatting.COMPACT, 0, -2, 2, 2, 2)+"'");
 //        System.out.println("'"+duration(1000*MINUTE*1+1000, Formatting.COMPACT, N, 0, 0, 0, 2)+"'");

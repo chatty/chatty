@@ -112,4 +112,14 @@ public class DateTimeTest {
         assertEquals(DateTime.parseDatetime("2014-01-10T17:44:50.027732Z"), 1389375890027L);
     }
     
+    @Test
+    public void testParseDuration() {
+        assertEquals(60*1000, DateTime.parseDuration("1m"));
+        assertEquals(60*1000+1, DateTime.parseDuration("1m 1ms"));
+        assertEquals(60, DateTime.parseDurationSeconds("1m 1ms"));
+        assertEquals(60*60, DateTime.parseDurationSeconds("1h"));
+        assertEquals(65*60, DateTime.parseDurationSeconds("1h 5m"));
+        assertEquals(24*60*60*5 + 60*60, DateTime.parseDurationSeconds("5d 1"));
+    }
+    
 }

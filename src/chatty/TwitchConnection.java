@@ -451,6 +451,10 @@ public class TwitchConnection {
         return twitchCommands.command(channel, msgId, command, parameters);
     }
     
+    public void addNewCommands(Commands commands, TwitchClient client) {
+        twitchCommands.addNewCommands(commands, client);
+    }
+    
     public void sendCommandMessage(String channel, String message, String echo) {
         sendCommandMessage(channel, message, echo, MsgTags.EMPTY);
     }
@@ -747,7 +751,6 @@ public class TwitchConnection {
             
             if (this == irc) {
                 channelStates.reset();
-                twitchCommands.clearModsAlreadyRequested(null);
                 listener.onGlobalInfo(Language.getString("chat.disconnected",
                         Helper.makeDisconnectReason(reason, reasonMessage)));
 
@@ -857,7 +860,6 @@ public class TwitchConnection {
                         rejoin = true;
                     }
                     else {
-                        twitchCommands.clearModsAlreadyRequested(channel);
                         // Remove users for this channel, clearing the userlist in the
                         // GUI shouldn't be necessary if this channel is closed since
                         // the GUI userlist is removed as well.

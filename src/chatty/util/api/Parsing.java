@@ -5,8 +5,10 @@ import chatty.Room;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -102,6 +104,31 @@ public class Parsing {
             return new TokenInfo(username, id, client_id, scopes, expiresIn);
         }
         catch (Exception e) {
+            return null;
+        }
+    }
+    
+    public static String parseModerators(String json, String type) {
+        try {
+            List<String> moderators = new ArrayList<>();
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(json);
+            JSONArray data = (JSONArray) root.get("data");
+            for (Object o : data) {
+                JSONObject entry = (JSONObject) o;
+                moderators.add(JSONUtil.getString(entry, "user_login"));
+            }
+            if (moderators.isEmpty()) {
+                return "There are no "+type+" for this channel.";
+            }
+            return String.format("There are %d %s for this channel%s: %s",
+                    moderators.size(),
+                    type,
+                    moderators.size() == 100 ? " (limit reached, there may be more)" : "",
+                    StringUtil.join(moderators, ", "));
+        }
+        catch (ParseException ex) {
+            LOGGER.warning("Error parsing "+type+": "+ex);
             return null;
         }
     }

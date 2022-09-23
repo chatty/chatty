@@ -28,34 +28,6 @@ public class ChannelInfoManager {
     }
     
     /**
-     * Handle the ChannelInfo request result, which can also be from changing
-     * the channel info.
-     * 
-     * @param result The JSON received
-     * @param responseCode The HTTP response code of the request
-     */
-    protected void handleChannelInfoResult(boolean put, String result,
-            int responseCode, String stream) {
-        // Handle requested ChannelInfo but also the result of changing
-        // channel info, since that returns ChannelInfo as well.
-        if (result == null || responseCode != 200) {
-            handleChannelInfoResultError(stream, put, responseCode);
-            return;
-        }
-        // Request should have gone through fine
-        ChannelInfo info = parseChannelInfo(result);
-        if (info == null) {
-            LOGGER.warning("Error parsing channel info: " + result);
-            handleChannelInfoResultError(stream, put, responseCode);
-            return;
-        }
-        if (put) {
-            listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS);
-        }
-        listener.receivedChannelInfo(stream, info, TwitchApi.RequestResultCode.SUCCESS);
-    }
-    
-    /**
      * Handle the error of a ChannelInfo request result, this can be from
      * changing the channel info as well. Handle by logging the error as well
      * as informing the client who can inform the user on the GUI.

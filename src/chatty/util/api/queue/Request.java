@@ -126,6 +126,7 @@ public class Request implements Runnable {
         int ratelimitRemaining = -1;
         String responseEncoding = null;
         String requestError = null;
+        String errorText = null;
         
         LOGGER.info(String.format("%s*%s: %s",
                 requestMethod,
@@ -161,6 +162,10 @@ public class Request implements Runnable {
                 if (responseEntity != null) {
                     responseText = EntityUtils.toString(responseEntity, Charset.forName("UTF-8"));
                     EntityUtils.consume(responseEntity);
+                    if (!String.valueOf(responseCode).startsWith("2")) {
+                        errorText = responseText;
+                        responseText = null;
+                    }
                 }
             }
         }
@@ -180,7 +185,7 @@ public class Request implements Runnable {
                 requestError != null ? " ["+requestError+"]" : ""));
         
         
-        listener.requestResult(responseText, responseCode, ratelimitRemaining);
+        listener.requestResult(responseText, responseCode, errorText, ratelimitRemaining);
     }
     
     private static int getIntHeader(Header header, int defaultValue) {
@@ -207,6 +212,7 @@ public class Request implements Runnable {
             return;
         }
         String responseText = null;
+        String errorText = null;
         int responseCode = -1;
         int ratelimitRemaining = -1;
         String responseEncoding = null;
@@ -247,25 +253,12 @@ public class Request implements Runnable {
             //------------------
             responseEncoding = connection.getContentEncoding();
             ratelimitRemaining = connection.getHeaderFieldInt("Ratelimit-Remaining", -1);
-            
+
             //--------------------
             // Read response text
             //--------------------
-            InputStream input = connection.getInputStream();
-            if ("gzip".equals(connection.getContentEncoding())) {
-                input = new GZIPInputStream(input);
-            }
-
-            StringBuilder response;
-            try (BufferedReader reader
-                    = new BufferedReader(new InputStreamReader(input, CHARSET))) {
-                String line;
-                response = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-            }
-            responseText = response.toString();
+            InputStream input = checkGZIP(connection.getInputStream(), connection);
+            responseText = readText(input);
         } catch (SocketTimeoutException ex) {
             requestError = ex.toString();
         } catch (IOException ex) {
@@ -273,6 +266,10 @@ public class Request implements Runnable {
         } finally {
             if (connection != null) {
                 try {
+                    InputStream errorInput = checkGZIP(connection.getErrorStream(), connection);
+                    if (errorInput != null) {
+                        errorText = readText(errorInput);
+                    }
                     responseCode = connection.getResponseCode();
                 } catch (IOException ex) {
                     // Do nothing, responseCode will simply be -1
@@ -292,9 +289,29 @@ public class Request implements Runnable {
                 url,
                 requestError != null ? " ["+requestError+"]" : ""));
         
-        listener.requestResult(responseText, responseCode, ratelimitRemaining);
+        listener.requestResult(responseText, responseCode, errorText, ratelimitRemaining);
     }
-
+    
+    private static InputStream checkGZIP(InputStream input, HttpURLConnection connection) throws IOException {
+        if (input != null && "gzip".equals(connection.getContentEncoding())) {
+            return new GZIPInputStream(input);
+        }
+        return input;
+    }
+    
+    private static String readText(InputStream input) throws IOException {
+        StringBuilder response;
+        try ( BufferedReader reader
+                = new BufferedReader(new InputStreamReader(input, CHARSET))) {
+            String line;
+            response = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
+        return response.toString();
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

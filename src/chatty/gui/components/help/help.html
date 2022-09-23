@@ -279,8 +279,6 @@
         <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
         <li><code>/rejoin</code> - Rejoins the channel (without clearing users or chat)</li>
         <li><code>/reconnect</code> - Disconnects and reconnects</li>
-        <li><code>/fixMods</code> - Temporarily fixes the list of mods (like
-                <code>/mods</code> but without showing the list of mods in chat)</li>
         <li><code>/clearchat</code> - Clears the current chat window of all text (only locally)</li>
         <li><code>/connection</code> - Show info about the current connection</li>
     </ul>
@@ -772,60 +770,20 @@
         <a name="login">Twitch Login</a>
         <a href="#top" class="top">[back to menu]</a>
     </h2>
-    <p>The login data consists of a <em>username</em> (or account name) and most
+    <p>The login data consists of a <em>username</em> (your account name) and most
         importantly an <em>access token</em>, which is sort of a revokable
         password that can also have different types of access (scopes) associated with
         it. You can see the full list of associated scopes under "Main - Account"
         (hover over each entry for more information if available).</p>
     
-    <p>Some more information on some scopes:</p>
-    <dl>
-        <dt><code>Chat access</code></dt>
-        <dd>Required to connect to chat. Some newer APIs need the "Read chat"
-            and "Send chat" scopes, although for connecting to chat either should
-            work.</dd>
-        
-        <dt><code>Editor access</code></dt>
-        <dd>Allows you to change the stream title/game on your channel, for
-            editors this only works with the old API
-            (<a href="help-admin.html">Admin Dialog</a>).</dd>
-        
-        <dt><code>Edit broadcast</code></dt>
-        <dd>Allows you to create Stream Markers/set Stream Tags on your channel
-            and channels that you are an editor for.</dd>
-        
-        <dt><code>Run commercials</code></dt>
-        <dd>Allows you to run comercials on your stream 
-        via the <a href="help-admin.html">Admin Dialog</a> (if you are partnered).</dd>
-        
-        <dt><code>Show subscribers</code></dt>
-        <dd>Required to view the list of your subscribers 
-            via the <a href="#followers">Subscribers Dialog</a> (if you have a sub button).</dd>
-        
-        <dt><code>Your Subscriptions</code></dt>
-        <dd>Enables more accurate display of your emotes (for "Extra - Emotes
-            Dialog", TAB Completion and when sending a message).</dd>
-        
-        <dt><code>Moderate Channel</code></dt>
-        <dd>Required to receive moderator actions in channels you are a moderator,
-            which show under "Extra - Moderation Log", show which mod performed
-            an action in chat and shows messages caught by AutoMod (depending
-            on settings under "Main - Settings - Moderation").</dd>
-        
-        <dt><code>Points Redemptions</code></dt>
-        <dd>Enables more accurate display of Channel Points Redemptions in your
-            channel.</dd>
-    </dl>
-    
     <p>If getting login data fails, read <a href="help-guide2.html">this guide</a>.
         If your login was determined invalid, read <a href="#login-invalid">down below</a>.</p>
     
-    <h3><a name="access">Allow more/less access</a></h3>
-    <p>To change what Chatty is allowed to do (e.g. if you haven't selected
-        editor access before, but you want it now), you need to request a new
-        access token. Just go to <code>&lt;Main - Account&gt;</code>,
+    <h3><a name="access">Add or remove access</a></h3>
+    <p>To change what Chatty is allowed to do, you need to request a new
+        access token. Go to <code>&lt;Main - Account&gt;</code>,
         delete the login and request it again with the access scopes that you
-        want selected.</p>
+        want.</p>
     
     <h3><a name="login-security">Security</a></h3>
     <p>The access token is saved in the <code>login</code> file in the settings

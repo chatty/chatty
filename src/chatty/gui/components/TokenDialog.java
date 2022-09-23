@@ -54,10 +54,10 @@ public class TokenDialog extends JDialog {
         
         accessLabel = new LinkLabel("Access: [help:login (help)]", owner.getLinkLabelListener());
         //tokenInfo = new JLabel();
-        foreignTokenInfo = new LinkLabel("<html><body style='width:170px'>"
+        foreignTokenInfo = new LinkLabel("<html><body>"
                     + "Login data set externally with -token parameter.", owner.getLinkLabelListener());
         foreignTokenInfo.setVisible(false);
-        otherInfo = new LinkLabel("<html><body style='width:170px'>To add or "
+        otherInfo = new LinkLabel("<html><body>To add or "
                 + "reduce access remove login and request again.", owner.getLinkLabelListener());
         
         GridBagConstraints gbc;
@@ -71,12 +71,25 @@ public class TokenDialog extends JDialog {
         access.setLayout(new GridBagLayout());
         GridBagConstraints gbc2 = new GridBagConstraints();
         gbc2.anchor = GridBagConstraints.WEST;
-        for (TokenInfo.Scope scope : TokenInfo.Scope.values()) {
-            JLabel label = new JLabel(scope.label);
-            label.setToolTipText(scope.description);
-            accessScopes.put(scope.scope, label);
-            gbc2.gridy++;
+        gbc2.gridx = 0;
+        gbc2.gridy = 0;
+        Insets categoryInsets = new Insets(0, 5, 5, 5);
+        Insets scopeInsets = new Insets(0, 5, 0, 5);
+        for (TokenInfo.ScopeCategory scopeCat : TokenInfo.ScopeCategory.values()) {
+            JLabel label = new JLabel(scopeCat.label);
+            gbc2.insets = categoryInsets;
             access.add(label, gbc2);
+            gbc2.gridy++;
+            for (TokenInfo.Scope scope : scopeCat.scopes) {
+                label = new JLabel(scope.label);
+                label.setToolTipText(scope.description);
+                accessScopes.put(scope.scope, label);
+                gbc2.gridy++;
+                gbc2.insets = scopeInsets;
+                access.add(label, gbc2);
+            }
+            gbc2.gridy = 0;
+            gbc2.gridx++;
         }
         gbc = makeGridBagConstraints(0,3,2,1,GridBagConstraints.CENTER,new Insets(0,5,5,5));
         add(access, gbc);

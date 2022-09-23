@@ -1,10 +1,14 @@
 
 package chatty;
 
+import chatty.Commands.Command;
+import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.TwitchApi;
+import chatty.util.api.TwitchApi.SimpleRequestResultListener;
 import chatty.util.irc.MsgTags;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,8 +16,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -26,35 +31,16 @@ public class TwitchCommands {
     private static final Logger LOGGER = Logger.getLogger(TwitchCommands.class.getName());
     
     /**
-     * The delay between /mods requests. This is the delay in between each
-     * request, not how often it is requested for one channel (it is currently
-     * only requested once for each channel).
-     */
-    private static final int REQUEST_MODS_DELAY = 30*1000;
-    
-    /**
      * Channels which currently wait for a /mods response that should be silent
      * (no message output).
      */
     private final Set<String> silentModsRequestChannel
             = Collections.synchronizedSet(new HashSet<String>());
 
-    /**
-     * Channels for which the /mods list has already been requested.
-     */
-    private final Set<String> modsAlreadyRequested
-            = Collections.synchronizedSet(new HashSet<String>());
-    
     private static final Set<String> SIMPLE_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "unban", "untimeout", "delete", "clear",
-        "followers", "followersoff", "subscribers", "subscribersoff", "slow", "slowoff",
-        "emoteonly", "emoteonlyoff", "r9kbeta", "r9kbetaoff",
-        "vip", "unvip", "vips", "mod", "unmod", "mods", "commercial",
-        "host", "unhost",
-        "color",
-        "announce"
+        "host", "unhost"
     }));
-    
+
     /**
      * Commands that don't have a parameter, and probably never will have, so
      * don't include one. This can be necessary when triggering the command e.g.
@@ -62,16 +48,14 @@ public class TwitchCommands {
      * automatically adds a parameter.
      */
     private static final Set<String> NO_PARAMETER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "followersoff", "subscribers", "subscribersoff", "slowoff", "emoteonly",
-        "emoteonlyoff", "r9kbeta", "r9kbetaoff"
+        
     }));
     
     /**
      * Other commands, only used for isCommand().
      */
     private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "ban", "timeout", "fixmods", "host2", "raid", "unraid", "requests",
-        "to", "r9k", "r9koff", "host"
+        "host2", "host"
     }));
     
     private TwitchConnection c;
@@ -85,9 +69,6 @@ public class TwitchCommands {
         if (SIMPLE_COMMANDS.contains(command)) {
             return true;
         }
-        if (NO_PARAMETER_COMMANDS.contains(command)) {
-            return true;
-        }
         if (OTHER_COMMANDS.contains(command)) {
             return true;
         }
@@ -95,15 +76,6 @@ public class TwitchCommands {
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {
-        if (command.equals("to")) {
-            command = "timeout";
-        }
-        if (command.equals("r9k")) {
-            command = "r9kbeta";
-        }
-        if (command.equals("r9koff")) {
-            command = "r9kbetaoff";
-        }
         if (command.equals("host") && parameter == null) {
             commandHostmode2(Helper.toChannel(c.getUsername()), Helper.toStream(channel));
         }
@@ -127,36 +99,429 @@ public class TwitchCommands {
                 }
             }
         }
-        else if (command.equals("ban")) {
-            commandBan(channel, parameter);
-        }
-        else if (command.equals("timeout")) {
-            commandTimeout(channel, msgId, parameter);
-        }
-        else if (command.equals("fixmods")) {
-            modsSilent(channel);
-        }
         else if (command.equals("host2")) {
             commandHostmode2(Helper.toChannel(c.getUsername()), parameter);
-        }
-        else if (command.equals("raid")) {
-            commandRaid(channel, parameter);
-        }
-        else if (command.equals("unraid")) {
-            commandUnraid(channel);
-        }
-        else if (command.equals("requests")) {
-            if (Helper.isRegularChannelStrict(channel)) {
-                UrlOpener.openUrl("https://www.twitch.tv/popout/"+Helper.toStream(channel)+"/reward-queue");
-            }
-            else {
-                printLine(channel, "Invalid channel to open reward queue for");
-            }
         }
         else {
             return false;
         }
        return true;
+    }
+    
+    public void addNewCommands(Commands commands, TwitchClient client) {
+        MainGui g = client.g;
+        TwitchApi api = client.api;
+        
+        //--------------------------
+        // Moderation
+        //--------------------------
+        for (String color : TwitchApi.ANNOUNCEMENT_COLORS) {
+            commands.add("announce"+color, p -> {
+                if (!p.hasArgs() || p.getArgs().trim().isEmpty()) {
+                    g.printSystem("Usage: /announce"+color+" <message>");
+                }
+                else {
+                    api.sendAnnouncement(p.getRoom().getStream(), p.getArgs(), color);
+                }
+            });
+        }
+//        commands.add("ban", p -> {
+//            Commands.CommandParsedArgs args = p.parsedArgs(2, 1);
+//            if (args != null) {
+//                User user = client.getUser(p.getChannel(), args.get(0));
+//                String reason = args.get(1, "");
+//                Object objectId = g.printLine(p.getRoom(), "Trying to ban '"+user+"'..");
+//                api.ban(user, 0, reason, r -> {
+//                    if (r.error == null) {
+//                        g.addToLine(p.getRoom(), objectId, "OK");
+//                    }
+//                    else {
+//                        g.addToLine(p.getRoom(), objectId, r.error);
+//                    }
+//                });
+//            }
+//            else {
+//                g.printSystem("Usage: /ban <user> [reason]");
+//            }
+//        });
+        commands.add("timeout", "<user> [duration] [reason]", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(3, 1);
+            int seconds;
+            String reason;
+            if (args != null) {
+                seconds = getTimeoutSeconds(args);
+                reason = args.get(2, "");
+            }
+            else {
+                seconds = -1;
+                reason = "";
+            }
+            String info = StringUtil.append(formatDuration(seconds), ", ", reason);
+            userCommand(client, p, args, (user, resultListener) -> {
+                api.ban(user, seconds, reason, resultListener);
+            }, StringUtil.aEmptyb(info, "", " (%s)"));
+        }, "to");
+        commands.add("ban", "<user> [reason]", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(2, 1);
+            String reason = args != null ? args.get(1, "") : "";
+            userCommand(client, p, args, (user, resultListener) -> {
+                api.ban(user, 0, reason, resultListener);
+            }, StringUtil.aEmptyb(reason, "", " (%s)"));
+        });
+//        commands.add("unban", p -> {
+//            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
+//            if (args != null) {
+//                User user = client.getUser(p.getChannel(), args.get(0));
+//                Object objectId = g.printLine(p.getRoom(), "Trying to ban '"+user+"'..");
+//                api.unban(user, r -> {
+//                    if (r.error == null) {
+//                        g.addToLine(p.getRoom(), objectId, "OK");
+//                    }
+//                    else {
+//                        g.addToLine(p.getRoom(), objectId, r.error);
+//                    }
+//                });
+//            }
+//        });
+        commands.add("unban", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.unban(user, resultListener);
+            }, "");
+        }, "untimeout");
+        commands.add("delete", "<messageId>", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
+            simpleCommand(client, p, args, listener -> {
+                api.deleteMsg(p.getRoom(), args.get(0), listener);
+            });
+        });
+        commands.add("clear", p -> {
+            simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                api.deleteMsg(p.getRoom(), null, listener);
+            });
+        });
+        //--------------------------
+        // Broadcaster
+        //--------------------------
+        commands.add("mod", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.setModerator(user, true, resultListener);
+            }, "");
+        });
+        commands.add("unmod", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.setModerator(user, true, resultListener);
+            }, "");
+        });
+        commands.add("vip", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.setVip(user, true, resultListener);
+            }, "");
+        });
+        commands.add("unvip", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.setVip(user, true, resultListener);
+            }, "");
+        });
+        commands.add("mods", p -> {
+            if (localUserIsBroadcaster(p.getRoom(), client)) {
+                simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                    api.requestModerators(p.getRoom(), listener);
+                });
+            }
+            else {
+                sendMessage(p.getChannel(), "/mods", Language.getString("chat.twitchcommands.mods")+" (will only work for broadcaster after February 18, 2023)");
+            }
+        });
+        commands.add("vips", p -> {
+            if (localUserIsBroadcaster(p.getRoom(), client)) {
+                simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                    api.requestVips(p.getRoom(), listener);
+                });
+            }
+            else {
+                sendMessage(p.getChannel(), "/vips", Language.getString("chat.twitchcommands.vips")+" (will only work for broadcaster after February 18, 2023)");
+            }
+        });
+        commands.add("raid", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
+            simpleCommand(client, p, args, listener -> {
+                api.startRaid(p.getRoom(), args.get(0), listener);
+            }, args.get(0));
+        });
+        commands.add("unraid", p -> {
+            simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                api.cancelRaid(p.getRoom(), listener);
+            });
+        });
+        //--------------------------
+        // Chat Settings
+        //--------------------------
+        commands.add("uniquechat", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_UNIQUE, true);
+        }, "r9kbeta", "r9k");
+        commands.add("uniquechatoff", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_UNIQUE, false);
+        }, "r9kbetaoff", "r9koff");
+        commands.add("followers", p -> {
+            int minutes = (int) DateTime.parseDurationSeconds(p.getArgs()) / 60;
+            if (minutes == -1) {
+                updateChatSettings(client, p, "",
+                        TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true);
+            }
+            else {
+                updateChatSettings(client, p, " ("+formatDuration(minutes / 60)+")",
+                        TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true,
+                        TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE_DURATION, minutes);
+            }
+        });
+        commands.add("followersoff", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, false);
+        });
+        commands.add("slow", p -> {
+            int seconds = (int) DateTime.parseDurationSeconds(p.getArgs());
+            if (seconds == -1) {
+                updateChatSettings(client, p, "",
+                        TwitchApi.CHAT_SETTINGS_SLOWMODE, true);
+            }
+            else {
+                updateChatSettings(client, p, " ("+formatDuration(seconds)+")",
+                        TwitchApi.CHAT_SETTINGS_SLOWMODE, true,
+                        TwitchApi.CHAT_SETTINGS_SLOWMODE_TIME, seconds);
+            }
+        });
+        commands.add("slowoff", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_SLOWMODE, false);
+        });
+        commands.add("subscribers", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_SUBONLY, true);
+        });
+        commands.add("subscribersoff", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_SUBONLY, false);
+        });
+        commands.add("emoteonly", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_EMOTEONLY, true);
+        });
+        commands.add("emoteonlyoff", p -> {
+            updateChatSettings(client, p, "",
+                    TwitchApi.CHAT_SETTINGS_EMOTEONLY, false);
+        });
+        //--------------------------
+        // User Settings
+        //--------------------------
+        commands.add("color", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
+            simpleCommand(client, p, args, listener -> {
+                api.setColor(args.get(0), listener);
+            }, args.get(0));
+        });
+        //--------------------------
+        // Other
+        //--------------------------
+        commands.add("requests", p -> {
+            String channel = p.getChannel();
+            if (Helper.isRegularChannelStrict(channel)) {
+                UrlOpener.openUrl("https://www.twitch.tv/popout/" + Helper.toStream(channel) + "/reward-queue");
+            }
+            else {
+                printLine(channel, "Invalid channel to open reward queue for");
+            }
+        });
+        
+//        for (String command : CHAT_SETTING_COMMANDS) {
+//            commands.add(command, p -> {
+//                Object[] data = null;
+//                if (data == null) {
+//                    g.printLine("Invalid command");
+//                }
+//                Object objectId = g.printLine(p.getRoom(), Language.getStringNull("chat.twitchcommands.followers") + (duration > 0 ? " (" + duration + ")" : ""));
+//                api.updateChatSettings(p.getRoom(), r -> {
+//                    if (r.error == null) {
+//                        g.addToLine(p.getRoom(), objectId, "OK");
+//                    }
+//                    else {
+//                        g.addToLine(p.getRoom(), objectId, r.error);
+//                    }
+//                }, data);
+//            });
+//        }
+//        commands.add("followers", p -> {
+//            int duration = -1;
+//            Object[] data;
+//            try {
+//                duration = Integer.parseInt(p.getArgs());
+//                data = new Object[]{TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true, TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE_DURATION, duration};
+//            }
+//            catch (NumberFormatException ex) {
+//                data = new Object[]{TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true};
+//            }
+//            Object objectId = g.printLine(p.getRoom(), Language.getStringNull("chat.twitchcommands.followers")+(duration > 0 ? " ("+duration+")" : ""));
+//            api.updateChatSettings(p.getRoom(), r -> {
+//                if (r.error == null) {
+//                    g.addToLine(p.getRoom(), objectId, "OK");
+//                }
+//                else {
+//                        g.addToLine(p.getRoom(), objectId, r.error);
+//                    }
+//            }, data);
+//        });
+    }
+    
+    private static int getTimeoutSeconds(Commands.CommandParsedArgs args) {
+        int seconds = (int) DateTime.parseDurationSeconds(args.get(1, null));
+        if (seconds < 1) {
+            seconds = 600; // Default timeout length
+        }
+        return seconds;
+    }
+    
+    /**
+     * Run the request to update chat settings. This one calls a specific
+     * endpoint, as opposed to the other similar methods that are more generic.
+     *
+     * @param client
+     * @param p
+     * @param append
+     * @param data The data to submit with the request
+     */
+    private void updateChatSettings(TwitchClient client,
+                                    Commands.CommandParameters p,
+                                    Object append,
+                                    Object... data) {
+        if (data == null) {
+            client.g.printLine("Invalid command");
+            return;
+        }
+        String msg = makeMsg(p.getCommand(), append);
+        Object objectId = client.g.printLine(p.getRoom(), msg);
+        client.api.updateChatSettings(p.getRoom(), r -> {
+            if (r.error == null) {
+                // Success
+                client.g.addToLine(p.getRoom(), objectId, "OK");
+            }
+            else {
+                // Failed
+                client.g.addToLine(p.getRoom(), objectId, r.error);
+            }
+        }, data);
+    }
+    
+    /**
+     * Run a request for a command involving a user.
+     * 
+     * @param client
+     * @param p
+     * @param args If this is null, an error is output and nothing else is run
+     * @param doRequest Implement this to perform the actual request, the User
+     * is provided for your convenient, takes from the first command parameter,
+     * the provided listener needs to be called to handle the result
+     * @param append 
+     */
+    private void userCommand(TwitchClient client,
+                             Commands.CommandParameters p,
+                             Commands.CommandParsedArgs args,
+                             BiConsumer<User, SimpleRequestResultListener> doRequest,
+                             String append) {
+        if (args == null) {
+            client.g.printSystem(p.getRoom(), getInvalidParametersMessage(p));
+            return;
+        }
+        User user = client.getUser(p.getChannel(), args.get(0));
+        String msg = String.format("Trying to %s %s%s..",
+                p.getCommand().getName(),
+                user.getName(),
+                append);
+        Object objectId = client.g.printLine(p.getRoom(), msg);
+        doRequest.accept(user, r -> {
+            if (r.error == null) {
+                // Success
+                client.g.addToLine(p.getRoom(), objectId, "OK");
+            }
+            else {
+                // Failed
+                client.g.addToLine(p.getRoom(), objectId, r.error);
+            }
+        });
+    }
+    
+    private void simpleCommand(TwitchClient client,
+                               Commands.CommandParameters p,
+                               Commands.CommandParsedArgs args,
+                               Consumer<SimpleRequestResultListener> doRequest) {
+        simpleCommand(client, p, args, doRequest, (String) null);
+    }
+    
+    /**
+     * Outputs an info message based on the command name and handles the request
+     * result, either indicating a success or outputting an error message.
+     * 
+     * @param client
+     * @param p Info from entering the command
+     * @param args If this is null only an error message will be output, without
+     * trying to run the request (indicating invalid parameters)
+     * @param doRequest This must be implemented for performing the actual
+     * request, the listener it provides must be called so the result can be
+     * handled
+     * @param outputArgs 
+     */
+    private void simpleCommand(TwitchClient client,
+                               Commands.CommandParameters p,
+                               Commands.CommandParsedArgs args,
+                               Consumer<SimpleRequestResultListener> doRequest,
+                               String... outputArgs) {
+        if (args != null) {
+            String msg = makeMsg(p.getCommand(), (Object[]) outputArgs);
+            Object objectId = client.g.printLine(p.getRoom(), msg);
+            doRequest.accept(r -> {
+                if (r.error == null) {
+                    // Success
+                    if (r.result == null) {
+                        client.g.addToLine(p.getRoom(), objectId, "OK");
+                    }
+                    else {
+                        client.g.printLine(p.getRoom(), r.result);
+                    }
+                }
+                else {
+                    // Failed
+                    client.g.addToLine(p.getRoom(), objectId, r.error);
+                }
+            });
+        }
+        else {
+            // Invalid parameters
+            client.g.printSystem(p.getRoom(), getInvalidParametersMessage(p));
+        }
+    }
+    
+    private static String getInvalidParametersMessage(Commands.CommandParameters p) {
+        String usage = p.getCommand().getUsage();
+        return !StringUtil.isNullOrEmpty(usage) ? usage : "Invalid parameters";
+    }
+    
+    private static String makeMsg(Command command, Object... args) {
+        String message = Language.getStringNull("chat.twitchcommands."+command.getName(), args);
+        if (message == null) {
+            message = "Trying to "+command.getName()+"..";
+        }
+        return message;
+    }
+    
+    private static String formatDuration(int seconds) {
+        if (seconds > 0) {
+            return DateTime.duration(TimeUnit.SECONDS.toMillis(seconds), DateTime.Formatting.NO_ZERO_VALUES);
+        }
+        return "";
+    }
+    
+    private boolean localUserIsBroadcaster(Room room, TwitchClient client) {
+        return room.getStream() != null && room.getStream().equals(client.getUsername());
     }
     
     //==================
@@ -193,104 +558,6 @@ public class TwitchCommands {
     //===========================
     // Special Command Functions
     //===========================
-    
-    private void commandBan(String channel, String parameter) {
-        if (StringUtil.isNullOrEmpty(parameter)) {
-            sendMessage(channel, "/ban", "Trying to ban..");
-            return;
-        }
-        String[] parts = parameter.split(" ", 2);
-        String nick = parts[0];
-        String reason = null;
-        if (parts.length == 2) {
-            reason = parts[1].trim();
-        }
-        ban(channel, nick, reason);
-    }
-    
-    public void ban(String channel, String name, String reason) {
-        if (onChannel(channel, true)) {
-            if (reason == null || reason.isEmpty()) {
-                sendMessage(channel,".ban "+name, "Trying to ban "+name+"..");
-            } else {
-                sendMessage(channel,".ban "+name+" "+reason, "Trying to ban "+name+".. ("+reason+")");
-            }
-        }
-    }
-    
-    protected void commandTimeout(String channel, String msgId, String parameter) {
-        if (parameter == null) {
-            sendMessage(channel, "/timeout", "Trying to timeout..");
-            return;
-        }
-        String[] parts = parameter.split(" ", 3);
-        String nick = parts[0];
-        String time = null;
-        String timeLabel = null;
-        String reason = null;
-        if (parts.length > 1) {
-            time = parts[1];
-            try {
-                long seconds = Long.parseLong(parts[1]);
-                String formatted = DateTime.duration(seconds*1000, 0, 2, 0);
-                String onlySeconds = seconds+"s";
-                timeLabel = formatted.equals(onlySeconds)
-                        ? onlySeconds : onlySeconds+"/"+formatted;
-            } catch (NumberFormatException ex) {
-                timeLabel = parts[1];
-            }
-        }
-        if (parts.length > 2) {
-            reason = parts[2];
-        }
-        timeout(channel, msgId, nick, time, timeLabel, reason);
-    }
-
-    /**
-     * Sends a timeout command to the server.
-     * 
-     * @param channel
-     * @param msgId
-     * @param name
-     * @param time The raw timeout time, can be null
-     * @param timeLabel For outputting the timeout time (formatted), can be null
-     * if time is null
-     * @param reason The timeout reason, can be null
-     */
-    public void timeout(String channel, String msgId, String name, String time, String timeLabel, String reason) {
-        if (onChannel(channel, true)) {
-            MsgTags tags = createTags(msgId);
-            if (time == null) {
-                sendMessage(channel,".timeout "+name, "Trying to timeout "+name+"..", tags);
-            }
-            else {
-                if (reason == null || reason.isEmpty()) {
-                    sendMessage(channel,".timeout "+name+" "+time,
-                        "Trying to timeout "+name+" ("+timeLabel+")", tags);
-                } else {
-                    sendMessage(channel,".timeout "+name+" "+time+" "+reason,
-                        "Trying to timeout "+name+" ("+timeLabel+", "+reason+")", tags);
-                }
-            }
-            
-        }
-    }
-    
-    protected void commandRaid(String channel, String parameter) {
-        if (parameter == null) {
-            printLine("Usage: /raid <stream>");
-        } else {
-            if (onChannel(channel, true)) {
-                sendMessage(channel, ".raid "+parameter, "Trying to raid "+parameter+"..");
-            }
-        }
-    }
-    
-    protected void commandUnraid(String channel) {
-        if (onChannel(channel, true)) {
-            sendMessage(channel, ".unraid", "Trying to stop raid..");
-        }
-    }
     
     protected void commandHostmode2(String channel, String parameter) {
         if (parameter == null) {
@@ -357,55 +624,6 @@ public class TwitchCommands {
             }
         }
         return modsList;
-    }
-    
-    /**
-     * Starts the timer which requests the /mods list for joined channels.
-     */
-    public void startAutoRequestMods() {
-        Timer timer = new Timer(true);
-        timer.schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                autoRequestMods();
-            }
-        }, 1000, REQUEST_MODS_DELAY);
-    }
-    
-    /**
-     * If enabled in the settings, requests /mods for one currently joined
-     * channel (and only one), ignoring the ones it was already requested for.
-     */
-    private void autoRequestMods() {
-        if (!c.autoRequestModsEnabled()) {
-            return;
-        }
-        Set<String> joinedChannels = c.getJoinedChannels();
-        for (String channel : joinedChannels) {
-            if (!modsAlreadyRequested.contains(channel)) {
-                LOGGER.info("Auto-requesting mods for "+channel);
-                modsAlreadyRequested.add(channel);
-                requestModsSilent(channel);
-                return;
-            }
-        }
-    }
-    
-    /**
-     * Removes one or all entries from the list of channels the /mods list was
-     * already requested for. This can be used on part/disconnect, since users
-     * are removed then.
-     * 
-     * @param channel The name of the channel to remove, or null to remove all
-     * entries
-     */
-    public void clearModsAlreadyRequested(String channel) {
-        if (channel == null) {
-            modsAlreadyRequested.clear();
-        } else {
-            modsAlreadyRequested.remove(channel);
-        }
     }
 
 }

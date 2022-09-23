@@ -36,6 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
+import chatty.util.api.TwitchApi.SimpleRequestResult;
+import chatty.util.api.TwitchApi.SimpleRequestResultListener;
+import chatty.util.api.queue.ResultListener;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -70,24 +73,24 @@ public class Requests {
     protected void requestFollowers(String streamId, String stream) {
         String url = String.format("https://api.twitch.tv/helix/users/follows?to_id=%s&first=100",
                 streamId);
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.followerManager.received(responseCode, stream, result);
+        newApi.add(url, "GET", api.defaultToken, (r) -> {
+            api.followerManager.received(r.responseCode, stream, r.text);
         });
     }
     
     protected void requestSubscribers(String streamId, String stream) {
         String url = String.format("https://api.twitch.tv/helix/subscriptions?broadcaster_id=%s&first=100",
                 streamId);
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.subscriberManager.received(responseCode, stream, result);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.subscriberManager.received(r.responseCode, stream, r.text);
         });
     }
     
     public void getChannelStatus(String streamId, String stream) {
         String url = "https://api.twitch.tv/helix/channels?broadcaster_id="+streamId;
-        newApi.add(url, "GET", api.defaultToken, (result, statusCode) -> {
-            if (statusCode == 200) {
-                List<ChannelStatus> parsed = ChannelStatus.parseJson(result);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            if (r.responseCode == 200) {
+                List<ChannelStatus> parsed = ChannelStatus.parseJson(r.text);
                 if (parsed != null && parsed.size() > 0) {
                     ChannelStatus status = parsed.get(0);
                     listener.receivedChannelStatus(status, RequestResultCode.SUCCESS);
@@ -118,8 +121,8 @@ public class Requests {
         if (!StringUtil.isNullOrEmpty(cursor)) {
             url += "&after="+cursor;
         }
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.streamInfoManager.requestResultFollows(result, responseCode);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.streamInfoManager.requestResultFollows(r.text, r.responseCode);
         });
     }
     
@@ -130,15 +133,15 @@ public class Requests {
      */
     protected void requestStreamInfo(String stream) {
         String url = "https://api.twitch.tv/helix/streams?first=100&user_login="+stream;
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.streamInfoManager.requestResult(result, responseCode, stream);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.streamInfoManager.requestResult(r.text, r.responseCode, stream);
         });
     }
     
     protected void requestStreamsInfo(Set<String> streams, Set<StreamInfo> expected) {
         String url = "https://api.twitch.tv/helix/streams?first=100&"+makeNewApiParameters("user_login", streams);
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.streamInfoManager.requestResultStreams(result, responseCode, expected);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.streamInfoManager.requestResultStreams(r.text, r.responseCode, expected);
         });
     }
 
@@ -184,8 +187,8 @@ public class Requests {
     
     public void requestUserInfo(Set<String> usernames) {
         String url = "https://api.twitch.tv/helix/users?"+makeNewApiParameters("login", usernames);
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(result);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(r.text);
             Map<String, String> ids = null;
             if (parsedResult != null) {
                 ids = new HashMap<>();
@@ -215,8 +218,8 @@ public class Requests {
                 "https://api.twitch.tv/helix/users/follows?from_id=%s&to_id=%s",
                 userID,
                 streamID);
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.followerManager.receivedSingle(responseCode, stream, result, user);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.followerManager.receivedSingle(r.responseCode, stream, r.text, user);
         });
     }
     
@@ -224,41 +227,23 @@ public class Requests {
     // Admin/Moderation
     //=================
     
-    /**
-     * 
-     * @param userId
-     * @param info
-     * @param token 
-     */
-    public void putChannelInfo(String userId, ChannelStatus info, String token) {
-        if (info == null || info.channelLogin == null) {
-            return;
-        }
-        String url = "https://api.twitch.tv/kraken/channels/" + userId;
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(token);
-            request.setData(api.channelInfoManager.makeChannelInfoJson(info), "PUT");
-            execute(request, r -> {
-                api.channelInfoManager.handleChannelInfoResult(true, r.text, r.responseCode, info.channelLogin);
-            });
-        }
-    }
-    
     public void putChannelInfoNew(String userId, ChannelStatus info, String token) {
         if (info == null || info.channelLogin == null) {
             return;
         }
         String url = "https://api.twitch.tv/helix/channels?broadcaster_id=" + userId;
-        newApi.add(url, "PATCH", info.makePutJson(), token, (result, statusCode) -> {
-            if (statusCode == 204) {
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS);
-            }
-            else if (statusCode == 401 || statusCode == 403) {
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED);
-            }
-            else {
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+        newApi.add(url, "PATCH", info.makePutJson(), token, r -> {
+            switch (r.responseCode) {
+                case 204:
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS);
+                    break;
+                case 401:
+                case 403:
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED);
+                    break;
+                default:
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+                    break;
             }
         });
     }
@@ -281,9 +266,9 @@ public class Requests {
         if (allTagsRequestCount > 10) {
             return;
         }
-        newApi.add(url, "GET", token, (result, responseCode) -> {
-            if (responseCode == 200) {
-                StreamTagsResult data = StreamTagManager.parseAllTags(result);
+        newApi.add(url, "GET", token, r -> {
+            if (r.responseCode == 200) {
+                StreamTagsResult data = StreamTagManager.parseAllTags(r.text);
                 if (data != null) {
                     listener.received(data.tags, null);
                     if (!StringUtil.isNullOrEmpty(data.cursor)) {
@@ -296,7 +281,7 @@ public class Requests {
                     listener.received(null, "Parse error");
                 }
             } else {
-                listener.received(null, "Error "+responseCode);
+                listener.received(null, "Error "+r.responseCode);
             }
         });
     }
@@ -304,9 +289,9 @@ public class Requests {
     public void getTagsByIds(Set<String> ids, StreamTagsListener listener) {
         String parameters = "?tag_id="+StringUtil.join(ids, "&tag_id=");
         String url = "https://api.twitch.tv/helix/tags/streams"+parameters;
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            if (responseCode == 200) {
-                StreamTagsResult data = StreamTagManager.parseAllTags(result);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            if (r.responseCode == 200) {
+                StreamTagsResult data = StreamTagManager.parseAllTags(r.text);
                 if (data != null) {
                     data.tags.forEach(t -> { api.communitiesManager.addTag(t); });
                     listener.received(data.tags, null);
@@ -325,39 +310,52 @@ public class Requests {
         tags.forEach(t -> tagIds.add(t.getId()));
         String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
         String json = JSONUtil.listMapToJSON("tag_ids", tagIds);
-        newApi.add(url, "PUT", json, api.defaultToken, (text, responseCode) -> {
-            if (responseCode == 204) {
-                listener.result(null);
-            } else if (responseCode == 400 || responseCode == 403) {
-                api.getInvalidStreamTags(tags, (t, e) -> {
-                    if (e != null || t == null || t.isEmpty()) {
-                        listener.result("Error "+responseCode);
-                    } else {
-                        listener.result("Invalid: "+t);
-                    }
-                });
-            } else if (responseCode == 401) {
-                listener.result("Access denied");
-            } else {
-                listener.result("Error "+responseCode);
+        newApi.add(url, "PUT", json, api.defaultToken, r -> {
+            switch (r.responseCode) {
+                case 204:
+                    listener.result(null);
+                    break;
+                case 400:
+                case 403:
+                    api.getInvalidStreamTags(tags, (t, e) -> {
+                        if (e != null || t == null || t.isEmpty()) {
+                            listener.result("Error " + r.responseCode);
+                        }
+                        else {
+                            listener.result("Invalid: " + t);
+                        }
+                    });
+                    break;
+                case 401:
+                    listener.result("Access denied");
+                    break;
+                default:
+                    listener.result("Error "+r.responseCode);
+                    break;
             }
         });
     }
     
     public void getTagsByStream(String userId, StreamTagsListener listener) {
         String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
-        newApi.add(url, "GET", api.defaultToken, (data, responseCode) -> {
-            if (responseCode == 204 || responseCode == 404) {
-                listener.received(null, null);
-            } else if (responseCode == 200) {
-                StreamTagsResult result = StreamTagManager.parseAllTags(data);
-                if (result == null) {
-                    listener.received(null, "Parse error");
-                } else {
-                    listener.received(result.tags, url);
-                }
-            } else {
-                listener.received(null, "Error "+responseCode);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            switch (r.responseCode) {
+                case 204:
+                case 404:
+                    listener.received(null, null);
+                    break;
+                case 200:
+                    StreamTagsResult result = StreamTagManager.parseAllTags(r.text);
+                    if (result == null) {
+                        listener.received(null, "Parse error");
+                    }
+                    else {
+                        listener.received(result.tags, url);
+                    }
+                    break;
+                default:
+                    listener.received(null, "Error "+r.responseCode);
+                    break;
             }
         });
     }
@@ -373,9 +371,9 @@ public class Requests {
             Logger.getLogger(TwitchApi.class.getName()).log(Level.SEVERE, null, ex);
         }
         final String url = "https://api.twitch.tv/helix/search/categories?query="+encodedGame;
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            if (result != null) {
-                Set<StreamCategory> categories = Parsing.parseCategorySearch(result);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            if (r.text != null) {
+                Set<StreamCategory> categories = Parsing.parseCategorySearch(r.text);
                 if (categories != null) {
                     listener.result(categories);
                     api.resultManager.inform(ResultManager.Type.CATEGORY_RESULT, (CategoryResult l) -> {
@@ -386,46 +384,16 @@ public class Requests {
         });
     }
     
-    public void runCommercial(String userId, String stream, String token, int length) {
-        String url = "https://api.twitch.tv/kraken/channels/"+userId+"/commercial";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            String json = JSONUtil.listMapToJSON("duration", length);
-            request.setToken(token);
-            request.setData(json, "POST");
-            request.setContentType("application/json");
-            execute(request, r -> {
-                String resultText = "Unknown response: " + r.responseCode;
-                RequestResultCode resultCode = RequestResultCode.UNKNOWN;
-                if (r.responseCode == 204 || r.responseCode == 200) { // Not sure from the docs, and hard to test without being partner
-                    resultText = "Running commercial..";
-                    resultCode = RequestResultCode.RUNNING_COMMERCIAL;
-                } else if (r.responseCode == 422) {
-                    resultText = "Commercial length not allowed or trying to run too early.";
-                    resultCode = RequestResultCode.FAILED;
-                } else if (r.responseCode == 401 || r.responseCode == 403) {
-                    resultText = "Can't run commercial: Access denied";
-                    resultCode = RequestResultCode.ACCESS_DENIED;
-                    api.accessDenied();
-                } else if (r.responseCode == 404) {
-                    resultText = "Can't run commercial: Channel '" + stream + "' not found";
-                    resultCode = RequestResultCode.INVALID_CHANNEL;
-                }
-                listener.runCommercialResult(stream, resultText, resultCode);
-            });
-        }
-    }
-    
     public void runCommercial(String userId, String stream, int length) {
         String url = "https://api.twitch.tv/helix/channels/commercial";
         String json = JSONUtil.listMapToJSON(
                 "broadcaster_id", userId,
                 "length", length
         );
-        newApi.add(url, "POST", json, api.defaultToken, (result, responseCode) -> {
-            String resultText = "Failed to start commercial (error " + responseCode + ")";
+        newApi.add(url, "POST", json, api.defaultToken, r -> {
+            String resultText = "Failed to start commercial (error " + r.responseCode + ")";
             RequestResultCode resultCode = RequestResultCode.UNKNOWN;
-            if (responseCode == 204 || responseCode == 200) {
+            if (r.responseCode == 204 || r.responseCode == 200) {
                 resultText = "Running commercial..";
                 resultCode = RequestResultCode.RUNNING_COMMERCIAL;
             }
@@ -440,10 +408,10 @@ public class Requests {
                 "msg_id", msgId,
                 "action", action == AutoModAction.ALLOW ? "ALLOW" : "DENY");
         
-        newApi.add(url, "POST", json, token, (text, responseCode) -> {
+        newApi.add(url, "POST", json, token, r -> {
             boolean handled = false;
             for (AutoModActionResult result : AutoModActionResult.values()) {
-                if (responseCode == result.responseCode) {
+                if (r.responseCode == result.responseCode) {
                     listener.autoModResult(action, msgId, result);
                     handled = true;
                 }
@@ -462,8 +430,8 @@ public class Requests {
         if (!StringUtil.isNullOrEmpty(cursor)) {
             url += "&after="+cursor;
         }
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.blockedTermsManager.resultReceived(streamId, login, result, responseCode);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.blockedTermsManager.resultReceived(streamId, login, r.text, r.responseCode);
         });
     }
     
@@ -473,8 +441,8 @@ public class Requests {
                 api.localUserId);
         Map<String, String> data = new HashMap<>();
         data.put("text", text);
-        newApi.add(url, "POST", data, api.defaultToken, (result, responseCode) -> {
-            BlockedTerms parsed = BlockedTerms.parse(result, streamId, streamName);
+        newApi.add(url, "POST", data, api.defaultToken, r -> {
+            BlockedTerms parsed = BlockedTerms.parse(r.text, streamId, streamName);
             if (parsed != null && !parsed.hasError() && parsed.data.size() == 1) {
                 listener.accept(parsed.data.get(0));
             }
@@ -489,8 +457,8 @@ public class Requests {
                 term.streamId,
                 api.localUserId,
                 term.id);
-        newApi.add(url, "DELETE", api.defaultToken, (result, responseCode) -> {
-            if (responseCode == 204) {
+        newApi.add(url, "DELETE", api.defaultToken, r -> {
+            if (r.responseCode == 204) {
                 listener.accept(term);
             }
             else {
@@ -505,17 +473,23 @@ public class Requests {
         if (description != null && !description.isEmpty()) {
             data.put("description", description);
         }
-        newApi.add("https://api.twitch.tv/helix/streams/markers", "POST", data, token, (result, responseCode) -> {
-            if (responseCode == 200) {
-                listener.streamMarkerResult(null);
-            } else if (responseCode == 401) {
-                listener.streamMarkerResult("Required access not available (please check <Main - Login..> for 'Edit broadcast')");
-            } else if (responseCode == 404) {
-                listener.streamMarkerResult("No stream");
-            } else if (responseCode == 403) {
-                listener.streamMarkerResult("Access denied");
-            } else {
-                listener.streamMarkerResult("Unknown error ("+responseCode+")");
+        newApi.add("https://api.twitch.tv/helix/streams/markers", "POST", data, token, r -> {
+            switch (r.responseCode) {
+                case 200:
+                    listener.streamMarkerResult(null);
+                    break;
+                case 401:
+                    listener.streamMarkerResult("Required access not available (please check <Main - Login..> for 'Edit broadcast')");
+                    break;
+                case 404:
+                    listener.streamMarkerResult("No stream");
+                    break;
+                case 403:
+                    listener.streamMarkerResult("Access denied");
+                    break;
+                default:
+                    listener.streamMarkerResult("Unknown error ("+r.responseCode+")");
+                    break;
             }
         });
     }
@@ -530,20 +504,182 @@ public class Requests {
                 "message", message,
                 "color", StringUtil.toLowerCase(color)
         );
-        newApi.add(url, "POST", json, api.defaultToken, (result, responseCode) -> {
-            if (responseCode == 204) {
+        newApi.add(url, "POST", json, api.defaultToken, r -> {
+            if (r.responseCode == 204) {
                 // All fine
             }
-            else if (responseCode == 400) {
+            else if (r.responseCode == 400) {
                 listener.errorMessage("Invalid announcement message or color");
             }
-            else if (responseCode == 401) {
+            else if (r.responseCode == 401) {
                 listener.errorMessage("Announcement access denied (check 'Main - Account' for access)");
             }
             else {
-                listener.errorMessage(String.format("Sending announcement failed (%d)", responseCode));
+                listener.errorMessage(String.format("Sending announcement failed (%d)", r.responseCode));
             }
         });
+    }
+    
+    public void ban(String streamId, String targetId, int length, String reason, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/bans",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        
+        JSONObject data = new JSONObject();
+        data.put("user_id", targetId);
+        data.put("reason", reason);
+        if (length > 0) {
+            data.put("duration", length);
+        }
+        JSONObject json = new JSONObject();
+        json.put("data", data);
+        newApi.add(url, "POST", json.toJSONString(), api.defaultToken, r -> {
+            System.out.println(r.text+" "+r.responseCode+" "+getErrorMessage(r.errorText));
+            handleResult(r, listener);
+        });
+    }
+    
+    public void unban(String streamId, String targetId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/bans",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId,
+                "user_id", targetId);
+        newApi.add(url, "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void deleteMsg(String streamId, String msgId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/chat",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        if (!StringUtil.isNullOrEmpty(msgId)) {
+            url += "&message_id="+msgId;
+        }
+        newApi.add(url, "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void setVip(String streamId, String targetId, boolean add, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/channels/vips",
+                "broadcaster_id", streamId,
+                "user_id", targetId);
+        newApi.add(url, add ? "POST" : "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void setModerator(String streamId, String targetId, boolean add, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/moderators",
+                "broadcaster_id", streamId,
+                "user_id", targetId);
+        newApi.add(url, add ? "POST" : "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void getModerators(String streamId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/moderators",
+                "broadcaster_id", streamId,
+                "first", "100");
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            handleModerators(r, listener, "moderators");
+        });
+    }
+    
+    public void getVips(String streamId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/channels/vips",
+                "broadcaster_id", streamId,
+                "first", "100");
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            handleModerators(r, listener, "VIPs");
+        });
+    }
+    
+    private static void handleModerators(ResultListener.Result r, SimpleRequestResultListener listener, String type) {
+        if (r.text != null) {
+            String result = Parsing.parseModerators(r.text, type);
+            if (result == null) {
+                listener.accept(SimpleRequestResult.error("Error parsing list"));
+            }
+            else {
+                listener.accept(SimpleRequestResult.result(result));
+            }
+        }
+        else {
+            handleResult(r, listener);
+        }
+    }
+    
+    public void startRaid(String streamId, String targetId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/raids",
+                "from_broadcaster_id", streamId,
+                "to_broadcaster_id", targetId);
+        newApi.add(url, "POST", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void cancelRaid(String streamId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/raids",
+                "broadcaster_id", streamId);
+        newApi.add(url, "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void whisper(String targetId, String msg, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/whispers",
+                "from_user_id", api.localUserId,
+                "to_user_id", targetId);
+        String json = JSONUtil.listMapToJSON("message", msg);
+        newApi.add(url, "POST", json, api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    public void updateChatSettings(String streamId, Object[] data, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/settings",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        String json = JSONUtil.listMapToJSON(data);
+        newApi.add(url, "PATCH", json, api.defaultToken, r -> {
+            System.out.println("Response: "+r.text);
+            handleResult(r, listener);
+        });
+    }
+    
+    public void setColor(String color, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/color",
+                "user_id", api.localUserId,
+                "color", color);
+        newApi.add(url, "PUT", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
+    private static void handleResult(ResultListener.Result r, SimpleRequestResultListener listener) {
+        if (String.valueOf(r.responseCode).startsWith("2")) {
+            listener.accept(SimpleRequestResult.ok());
+        }
+        else if (!StringUtil.isNullOrEmpty(getErrorMessage(r.errorText))) {
+            String msg = getErrorMessage(r.errorText);
+            Map<String, String> replace = new HashMap<>();
+            replace.put("The ID in broadcaster_id must match the user ID found in the request's OAuth token.", "Access only for broadcaster.");
+            replace.put("already banned", "Already banned.");
+            replace.put("not banned", "Not banned.");
+            for (Map.Entry<String, String> entry : replace.entrySet()) {
+                if (msg.contains(entry.getKey())) {
+                    msg = entry.getValue();
+                    break;
+                }
+            }
+            listener.accept(SimpleRequestResult.error(msg));
+        }
+        else {
+            listener.accept(SimpleRequestResult.error(String.format("Error (%d)", r.responseCode)));
+        }
     }
     
     //=================
@@ -552,21 +688,21 @@ public class Requests {
     
     protected void requestGlobalBadges() {
         String url = "https://api.twitch.tv/helix/chat/badges/global";
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            listener.receivedUsericons(api.badgeManager.handleGlobalBadgesResult(result));
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            listener.receivedUsericons(api.badgeManager.handleGlobalBadgesResult(r.text));
         });
     }
     
     protected void requestRoomBadges(String roomId, String stream) {
         String url = "https://api.twitch.tv/helix/chat/badges?broadcaster_id="+roomId;
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            listener.receivedUsericons(api.badgeManager.handleRoomBadgesResult(result, stream));
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            listener.receivedUsericons(api.badgeManager.handleRoomBadgesResult(r.text, stream));
         });
     }
     
     public void requestEmotesByChannelId(String stream, String id, String requestId) {
-        newApi.add("https://api.twitch.tv/helix/chat/emotes?broadcaster_id="+id, "GET", api.defaultToken, (result, responseCode) -> {
-            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(result, EmoticonUpdate.Source.HELIX_CHANNEL, stream, id);
+        newApi.add("https://api.twitch.tv/helix/chat/emotes?broadcaster_id="+id, "GET", api.defaultToken, r -> {
+            EmoticonUpdate parsed = EmoticonParsing.parseEmoteList(r.text, EmoticonUpdate.Source.HELIX_CHANNEL, stream, id);
             if (parsed != null) {
                 listener.receivedEmoticons(parsed);
                 api.setReceived(requestId);
@@ -574,7 +710,7 @@ public class Requests {
                     api.emoticonManager2.addRequested(parsed.setsAdded);
                 }
             }
-            else if (responseCode == 404) {
+            else if (r.responseCode == 404) {
                 api.setNotFound(requestId);
             }
             else {
@@ -587,8 +723,8 @@ public class Requests {
         if (emotesets != null && !emotesets.isEmpty()) {
             String emotesetsParam = StringUtil.join(emotesets, "&emote_set_id=");
             String url = "https://api.twitch.tv/helix/chat/emotes/set?emote_set_id="+emotesetsParam;
-            newApi.add(url, "GET", api.defaultToken, (text, responseCode) -> {
-                EmoticonUpdate result = EmoticonParsing.parseEmoteList(text, EmoticonUpdate.Source.HELIX_SETS, null, null);
+            newApi.add(url, "GET", api.defaultToken, r -> {
+                EmoticonUpdate result = EmoticonParsing.parseEmoteList(r.text, EmoticonUpdate.Source.HELIX_SETS, null, null);
                 if (result != null) {
                     listener.receivedEmoticons(result);
                 }
@@ -599,38 +735,10 @@ public class Requests {
         }
     }
     
-    public void requestUserEmotes(String userId) {
-        String url = "https://api.twitch.tv/kraken/users/"+userId+"/emotes";
-        if (attemptRequest(url)) {
-            TwitchApiRequest request = new TwitchApiRequest(url, "v5");
-            request.setToken(api.defaultToken);
-            execute(request, r -> {
-                EmoticonUpdate result = EmoticonParsing.parseEmoticonSets(r.text, EmoticonUpdate.Source.USER_EMOTES);
-                if (result != null) {
-                    listener.receivedEmoticons(result);
-                    api.setReceived("userEmotes");
-                    if (result.setsAdded != null) {
-                        /**
-                         * New API may return more emotes (emotes with new id?)
-                         * for same emotesets, so don't prevent those requests.
-                         */
-                        //api.emoticonManager2.addRequested(result.setsAdded);
-                    }
-                }
-                else if (String.valueOf(r.responseCode).startsWith("4")) {
-                    api.setNotFound("userEmotes");
-                }
-                else {
-                    api.setError("userEmotes");
-                }
-            });
-        }
-    }
-    
     public void requestCheerEmoticons(String channelId, String stream) {
         String url = "https://api.twitch.tv/helix/bits/cheermotes?broadcaster_id="+channelId;
-        newApi.add(url, "GET", api.defaultToken, (result, responseCode) -> {
-            api.cheersManager2.dataReceived(result, stream, channelId);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.cheersManager2.dataReceived(r.text, stream, channelId);
         });
     }
     
@@ -729,6 +837,25 @@ public class Requests {
         return key+"="+StringUtil.join(values, "&"+key+"=");
     }
     
+    public static String makeUrl(String base, String... args) {
+        String result = base;
+        for (int i=0; i<args.length; i+=2) {
+            if (i == 0) {
+                result += "?";
+            }
+            else {
+                result += "&";
+            }
+            try {
+                result += args[i]+"="+URLEncoder.encode(args[i+1], "UTF-8");
+            }
+            catch (UnsupportedEncodingException ex) {
+                return null;
+            }
+        }
+        return result;
+    }
+    
     public static String getCursor(String json) {
         try {
             JSONParser parser = new JSONParser();
@@ -743,6 +870,20 @@ public class Requests {
             LOGGER.warning("Error getting cursor: "+ex);
         }
         return null;
+    }
+    
+    public static String getErrorMessage(String json) {
+        if (json == null) {
+            return null;
+        }
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject o = (JSONObject) parser.parse(json);
+            return (String) o.get("message");
+        }
+        catch (ParseException ex) {
+            return null;
+        }
     }
     
 }

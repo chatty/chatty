@@ -66,7 +66,7 @@ public class QueuedApi {
                         //System.out.println("Waiting for entry.. Permits: "+activeRequests.availablePermits());
                         Entry entry = queue.take();
                         //System.out.println("Entry taken: "+entry.request+" Permits: "+activeRequests.availablePermits());
-                        entry.request.setResultListener((result, responseCode, ratelimitRemaining) -> {
+                        entry.request.setResultListener((result, responseCode, errorResult, ratelimitRemaining) -> {
                             /**
                              * Executed in an executor thread.
                              */
@@ -77,7 +77,7 @@ public class QueuedApi {
                                 LOGGER.info(result);
                             }
                             // This may run a while (e.g. loading images etc.)
-                            entry.listener.result(result, responseCode);
+                            entry.listener.result(new ResultListener.Result(result, responseCode, errorResult));
                             removePending(entry);
                             //System.out.println("Entry done: "+entry.request+" Permits: "+activeRequests.availablePermits());
                         });
@@ -169,8 +169,8 @@ public class QueuedApi {
         ResultListener listener = new ResultListener() {
 
             @Override
-            public void result(String result, int responseCode) {
-                System.out.println("Result: "+responseCode+" "+result);
+            public void result(Result r) {
+                System.out.println("Result: "+r.responseCode+" "+r.text);
             }
         };
 //        api.add("https://api.twitch.tv/helix/streams", null, null, listener);

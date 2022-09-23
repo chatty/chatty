@@ -81,31 +81,12 @@ public class EmotesetManager {
             ircEmotesets.get(channel).addAll(newSets);
         }
         if (changed) {
-            requestUserEmotes();
+            // Formerly requesting user emotes from API
         }
         // Filter out emotesets in the new format for now
         newSets.removeIf(s -> s.contains("-"));
         api.getEmotesBySets(newSets);
         updateEmotesets();
-    }
-    
-    /**
-     * Request user emotes, if possible.
-     * 
-     * @return true if the formal requirements for the request have been met,
-     * the request may still have failed
-     */
-    public boolean requestUserEmotes() {
-        String userId = settings.getString("userid");
-        if (StringUtil.isNullOrEmpty(userId)) {
-            return false;
-        }
-        if (!settings.listContains("scopes", "user_subscriptions")) {
-            EventLog.addSystemEvent("access.myemotes");
-            return false;
-        }
-        api.getUserEmotes(userId);
-        return true;
     }
     
     public void setUserEmotesets(Set<String> newEmotesets) {

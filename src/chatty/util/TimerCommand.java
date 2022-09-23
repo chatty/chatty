@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,7 +143,7 @@ public class TimerCommand {
                         targetTime = parseDatetime(simpleTarget);
                     }
                     else {
-                        targetTime = parseDuration(simpleTarget);
+                        targetTime = System.currentTimeMillis() + DateTime.parseDuration(simpleTarget);
                     }
                 }
                 else {
@@ -458,65 +457,6 @@ public class TimerCommand {
     //==========================
     // Parsing
     //==========================
-    
-    //--------------------------
-    // Duration
-    //--------------------------
-    
-    private static final Pattern DURATION_PARSER = Pattern.compile("(?<num>[0-9]+)(?<unit>ms|s|m|h|d)?");
-    
-    private static long parseDuration(String text) {
-        Matcher m = DURATION_PARSER.matcher(text);
-        long ms = 0;
-        TimeUnit unit = TimeUnit.SECONDS;
-        while (m.find()) {
-            long num = Long.parseLong(m.group("num"));
-            String unitText = m.group("unit");
-            if (unitText != null) {
-                unit = getTimeUnitFromString(unitText);
-            }
-            ms += unit.toMillis(num);
-            unit = nextTimeUnit(unit);
-        }
-        return System.currentTimeMillis() + ms;
-    }
-    
-    /**
-     * Supported time units ordered from long to short since something like
-     * "10h30" should default the "30" to the next shorter unit ("30m").
-     */
-    private static final TimeUnit[] TIME_UNITS = new TimeUnit[]{
-        TimeUnit.DAYS,
-        TimeUnit.HOURS,
-        TimeUnit.MINUTES,
-        TimeUnit.SECONDS,
-        TimeUnit.MILLISECONDS
-    };
-    
-    private static TimeUnit nextTimeUnit(TimeUnit unit) {
-        for (int i = 0; i < TIME_UNITS.length - 1; i++) {
-            if (TIME_UNITS[i] == unit) {
-                return TIME_UNITS[i + 1];
-            }
-        }
-        return unit;
-    }
-    
-    private static TimeUnit getTimeUnitFromString(String unit) {
-        if (unit != null) {
-            switch (unit) {
-                case "ms":
-                    return TimeUnit.MILLISECONDS;
-                case "m":
-                    return TimeUnit.MINUTES;
-                case "h":
-                    return TimeUnit.HOURS;
-                case "d":
-                    return TimeUnit.DAYS;
-            }
-        }
-        return TimeUnit.SECONDS;
-    }
     
     //--------------------------
     // Time

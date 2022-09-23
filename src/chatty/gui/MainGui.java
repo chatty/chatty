@@ -3702,6 +3702,12 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void addToLine(final Room room, Object objectId, String text) {
+        GuiUtil.edt(() -> {
+            channels.getChannel(room).printInfoMessage(InfoMessage.createAppend(objectId, text));
+        });
+    }
+    
     public void printSystem(final String line) {
         printSystem(null, line);
     }
@@ -3730,18 +3736,22 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
 
-    public void printLine(final Room room, final String line) {
-        printInfo(room, line, null);
+    public Object printLine(final Room room, final String line) {
+        return printInfo(room, line, null);
     }
     
-    public void printInfo(final Room room, final String line, MsgTags tags) {
+    public Object printInfo(final Room room, final String line, MsgTags tags) {
+        Object objectId = new Object();
         GuiUtil.edt(() -> {
             if (room == null || room == Room.EMPTY) {
                 printLine(line);
             } else {
-                printInfo(channels.getChannel(room), InfoMessage.createInfo(line, tags));
+                InfoMessage m = InfoMessage.createInfo(line, tags);
+                m.objectId = objectId;
+                printInfo(channels.getChannel(room), m);
             }
         });
+        return objectId;
     }
     
     public void printLineAll(final String line) {
@@ -4522,7 +4532,6 @@ public class MainGui extends JFrame implements Runnable {
     
     public void refreshEmotes(String type, String stream) {
         if (type.equals("user")) {
-            client.emotesetManager.requestUserEmotes();
             client.api.refreshEmotes();
         }
         else if (type.equals("channel") && !StringUtil.isNullOrEmpty(stream)) {
@@ -4878,7 +4887,6 @@ public class MainGui extends JFrame implements Runnable {
                 scopes.contains(TokenInfo.Scope.COMMERICALS.scope),
                 scopes.contains(TokenInfo.Scope.BLOCKED_READ.scope)
                         && scopes.contains(TokenInfo.Scope.BLOCKED_MANAGE.scope));
-        emotesDialog.setUserEmotes(scopes.contains(TokenInfo.Scope.SUBSCRIPTIONS.scope));
     }
     
     public void showTokenWarning() {
@@ -4932,20 +4940,8 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    /**
-     * New API doesn't allow editors to set channel status, so use old API until
-     * it doesn't work anymore.
-     */
-    private static final Instant SWITCH_TO_NEW_API = ZonedDateTime.of(2022, 2, 7, 10, 0, 0, 0, ZoneId.of("-07:00")).toInstant();
-    
     public void putChannelInfo(ChannelStatus info) {
-        if (!getSettings().getString("username").equals(info.channelLogin)
-                && Instant.now().isBefore(SWITCH_TO_NEW_API)) {
-            client.api.putChannelInfo(info);
-        }
-        else {
-            client.api.putChannelInfoNew(info);
-        }
+        client.api.putChannelInfoNew(info);
     }
 
     public String getActiveStream() {

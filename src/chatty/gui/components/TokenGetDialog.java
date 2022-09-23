@@ -9,6 +9,7 @@ import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.api.TokenInfo;
 import chatty.util.api.TokenInfo.Scope;
+import chatty.util.api.TokenInfo.ScopeCategory;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -62,21 +63,31 @@ public class TokenGetDialog extends JDialog implements ItemListener, ActionListe
         JPanel permissions = new JPanel(new GridBagLayout());
         permissions.setBorder(BorderFactory.createTitledBorder(Language.getString("login.tokenPermissions")));
         
+        int x = 0;
         int y = 0;
-        for (Scope scope : TokenInfo.Scope.values()) {
-            JCheckBox checkbox = new JCheckBox(scope.label);
-            checkbox.setToolTipText(scope.description);
-            checkbox.setSelected(true);
-            checkbox.addItemListener(e -> updateUrl());
-            if (scope == Scope.CHAT || scope == Scope.CHAT_EDIT || scope == Scope.CHAT_READ) {
-                checkbox.setEnabled(false);
-            }
-            gbc = makeGridBagConstraints(0, y, 2, 1, GridBagConstraints.WEST);
-            gbc.insets = new Insets(0,5,0,5);
-            checkboxes.put(scope, checkbox);
-            permissions.add(checkbox, gbc);
+        for (ScopeCategory cat : TokenInfo.ScopeCategory.values()) {
+            JLabel categoryLabel = new JLabel(cat.label);
+            gbc = makeGridBagConstraints(x, y, 1, 1, GridBagConstraints.WEST);
+            permissions.add(categoryLabel, gbc);
             y++;
+            for (Scope scope : cat.scopes) {
+                JCheckBox checkbox = new JCheckBox(scope.label);
+                checkbox.setToolTipText(scope.description);
+                checkbox.setSelected(true);
+                checkbox.addItemListener(e -> updateUrl());
+                if (scope == Scope.CHAT_EDIT || scope == Scope.CHAT_READ) {
+                    checkbox.setEnabled(false);
+                }
+                gbc = makeGridBagConstraints(x, y, 1, 1, GridBagConstraints.WEST);
+                gbc.insets = new Insets(0, 5, 0, 5);
+                checkboxes.put(scope, checkbox);
+                permissions.add(checkbox, gbc);
+                y++;
+            }
+            x++;
+            y = 0;
         }
+        y = 10;
         
         gbc = makeGridBagConstraints(0, 1, 2, 1, GridBagConstraints.WEST);
         gbc.fill = GridBagConstraints.HORIZONTAL;

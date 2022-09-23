@@ -37,7 +37,7 @@ public class InfoMessage {
     }
     
     public enum Type {
-        INFO, SYSTEM
+        INFO, SYSTEM, APPEND
     }
     
     public final long createdTime = System.currentTimeMillis();
@@ -53,6 +53,7 @@ public class InfoMessage {
     public List<Match> highlightMatches;
     public Object colorSource;
     public Object highlightSource;
+    public Object objectId;
     
     public InfoMessage(Type msgType, String text) {
         this(msgType, text, MsgTags.EMPTY);
@@ -74,6 +75,12 @@ public class InfoMessage {
     
     public static InfoMessage createSystem(String text) {
         return new InfoMessage(Type.SYSTEM, text);
+    }
+    
+    public static InfoMessage createAppend(Object objectId, String text) {
+        InfoMessage m = new InfoMessage(Type.APPEND, text);
+        m.objectId = objectId;
+        return m;
     }
     
     public boolean isSystemMsg() {

@@ -1,9 +1,9 @@
 
 package chatty.util.api;
 
-import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import chatty.util.CachedBulkManager;
-import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import chatty.util.api.BlockedTermsManager.BlockedTerm;
 import chatty.util.api.BlockedTermsManager.BlockedTerms;
@@ -15,9 +15,7 @@ import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -197,24 +195,6 @@ public class TwitchApi {
     
     public void getEmotesBySets(Set<String> emotesets) {
         emoticonManager2.addEmotesets(emotesets);
-    }
-    
-    private static final Object USER_EMOTES_UNIQUE = new Object();
-    
-    // After full shutdown, some temporary shutdowns before, but might as well
-    // still try to request it
-    private static final Instant OLD_API_SHUTDOWN = ZonedDateTime.of(2022, 3, 2, 0, 0, 0, 0, ZoneId.systemDefault()).toInstant();
-    
-    public void getUserEmotes(String userId) {
-        if (Debugging.isEnabled("!useremotes") || Instant.now().isAfter(OLD_API_SHUTDOWN)) {
-            return;
-        }
-        m.query(USER_EMOTES_UNIQUE,
-                null,
-                CachedBulkManager.ASAP | CachedBulkManager.WAIT | CachedBulkManager.REFRESH,
-                new Req("userEmotes", () -> {
-                    requests.requestUserEmotes(userId);
-                }));
     }
     
     public void refreshEmotes() {
@@ -421,17 +401,6 @@ public class TwitchApi {
     // Admin / Moderation
     //===================
     
-    public void putChannelInfo(ChannelStatus info) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
-            }
-            else {
-                requests.putChannelInfo(r.getId(info.channelLogin), info, defaultToken);
-            }
-        }, info.channelLogin);
-    }
-    
     public void putChannelInfoNew(ChannelStatus info) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
@@ -636,7 +605,7 @@ public class TwitchApi {
     }
         
     public static String[] ANNOUNCEMENT_COLORS = new String[]{
-        "primary", "blue", "green", "orange", "purple"
+        "", "primary", "blue", "green", "orange", "purple"
     };
     
     public void sendAnnouncement(String stream, String message, String color) {
@@ -655,6 +624,161 @@ public class TwitchApi {
     
     public interface StreamMarkerResult {
         public void streamMarkerResult(String error);
+    }
+    
+    public void ban(User targetUser, int length, String reason, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.ban(streamId, targetId, length, reason, listener);
+        });
+    }
+    
+    public void unban(User targetUser, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.unban(streamId, targetId, listener);
+        });
+    }
+    
+    public void deleteMsg(Room room, String msgId, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.deleteMsg(streamId, msgId, listener);
+        });
+    }
+    
+    public void setVip(User targetUser, boolean add, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.setVip(streamId, targetId, add, listener);
+        });
+    }
+    
+    public void setModerator(User targetUser, boolean add, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.setModerator(streamId, targetId, add, listener);
+        });
+    }
+    
+    public void requestModerators(Room room, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.getModerators(streamId, listener);
+        });
+    }
+    
+    public void requestVips(Room room, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.getVips(streamId, listener);
+        });
+    }
+    
+    public void startRaid(Room room, String targetUsername, SimpleRequestResultListener listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept(SimpleRequestResult.error("Invalid username"));
+            }
+            else {
+                requests.startRaid(r.getId(room.getStream()), r.getId(targetUsername), listener);
+            }
+        }, room.getStream(), targetUsername);
+    }
+    
+    public void cancelRaid(Room room, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.cancelRaid(streamId, listener);
+        });
+    }
+    
+    public void whisper(String targetUsername, String msg, SimpleRequestResultListener listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept(SimpleRequestResult.error("Invalid username"));
+            }
+            else {
+                requests.whisper(r.getId(targetUsername), msg, listener);
+            }
+        }, targetUsername);
+    }
+    
+    public void setColor(String color, SimpleRequestResultListener listener) {
+        requests.setColor(color, listener);
+    }
+    
+    public static final String CHAT_SETTINGS_EMOTEONLY = "emote_mode";
+    public static final String CHAT_SETTINGS_FOLLOWER_MODE = "follower_mode";
+    public static final String CHAT_SETTINGS_FOLLOWER_MODE_DURATION = "follower_mode_duration";
+    public static final String CHAT_SETTINGS_SLOWMODE = "slow_mode";
+    public static final String CHAT_SETTINGS_SLOWMODE_TIME = "slow_mode_wait_time";
+    public static final String CHAT_SETTINGS_SUBONLY = "subscriber_mode";
+    public static final String CHAT_SETTINGS_UNIQUE = "unique_chat_mode";
+    
+    public void updateChatSettings(Room room, SimpleRequestResultListener listener, Object... data) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.updateChatSettings(streamId, data, listener);
+        });
+    }
+    
+    private void runWithUserIds(User targetUser, SimpleRequestResultListener listener, BiConsumer<String, String> run) {
+        String roomId = targetUser.getRoom().getStreamId();
+        String targetId = targetUser.getId();
+        if (roomId == null || targetId == null) {
+            userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    listener.accept(SimpleRequestResult.error("Invalid username"));
+                }
+                else {
+                    run.accept(
+                            r.getId(targetUser.getRoom().getStream()),
+                            r.getId(targetUser.getName()));
+                }
+            }, targetUser.getRoom().getStream(), targetUser.getName());
+        }
+        else {
+            run.accept(roomId, targetId);
+        }
+    }
+    
+    private void runWithStreamId(Room room, SimpleRequestResultListener listener, Consumer<String> run) {
+        String streamId = room.getStreamId();
+        if (streamId == null) {
+            userIDs.getUserIDsAsap(r -> {
+                if (r.hasError()) {
+                    listener.accept(SimpleRequestResult.error("Invalid username"));
+                }
+                else {
+                    run.accept(r.getId(room.getStream()));
+                }
+            }, room.getStream());
+        }
+        else {
+            run.accept(streamId);
+        }
+    }
+    
+    public interface SimpleRequestResultListener {
+        
+        public void accept(SimpleRequestResult r);
+        
+    }
+    
+    public static class SimpleRequestResult {
+        
+        public final String error;
+        public final String result;
+        
+        private SimpleRequestResult(String result, String error) {
+            this.result = result;
+            this.error = error;
+        }
+        
+        public static SimpleRequestResult error(String errorMessage) {
+            return new SimpleRequestResult(null, errorMessage);
+        }
+        
+        public static SimpleRequestResult ok() {
+            return new SimpleRequestResult(null, null);
+        }
+        
+        public static SimpleRequestResult result(String result) {
+            return new SimpleRequestResult(result, null);
+        }
+        
     }
     
 }
