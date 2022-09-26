@@ -56,9 +56,7 @@ public class ChannelCompletion implements AutoCompletionServer {
      * Can contain case, will be completed to that.
      */
     private final Set<String> commands = new TreeSet<>(Arrays.asList(new String[]{
-        "subscribers", "subscribersOff", "timeout", "ban", "unban", "host", "unhost", "raid", "unraid", "clear", "mods", "commercial",
-        "slow", "slowOff", "r9k", "r9koff", "emoteOnly", "emoteOnlyOff", "announce",
-        "followers", "followersoff", "untimeout",
+        "host", "unhost"
     }));
     
     private final Set<String> settingCommands = new TreeSet<>(Arrays.asList(new String[]{

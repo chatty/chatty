@@ -534,7 +534,6 @@ public class Requests {
         JSONObject json = new JSONObject();
         json.put("data", data);
         newApi.add(url, "POST", json.toJSONString(), api.defaultToken, r -> {
-            System.out.println(r.text+" "+r.responseCode+" "+getErrorMessage(r.errorText));
             handleResult(r, listener);
         });
     }
@@ -645,7 +644,6 @@ public class Requests {
                 "moderator_id", api.localUserId);
         String json = JSONUtil.listMapToJSON(data);
         newApi.add(url, "PATCH", json, api.defaultToken, r -> {
-            System.out.println("Response: "+r.text);
             handleResult(r, listener);
         });
     }
@@ -665,15 +663,26 @@ public class Requests {
         }
         else if (!StringUtil.isNullOrEmpty(getErrorMessage(r.errorText))) {
             String msg = getErrorMessage(r.errorText);
+            /**
+             * Each response code can have different reasons, so the error msg
+             * needs to be used. The error msg returned by the API seems more
+             * aimed at users of the API rather than for output to the user, so
+             * this changes some common errors to a more concise version.
+             */
             Map<String, String> replace = new HashMap<>();
             replace.put("The ID in broadcaster_id must match the user ID found in the request's OAuth token.", "Access only for broadcaster.");
-            replace.put("already banned", "Already banned.");
-            replace.put("not banned", "Not banned.");
+            replace.put("is already banned", "Already banned.");
+            replace.put("is not banned", "Not banned.");
+            replace.put("may not be banned", "Can't be banned.");
             for (Map.Entry<String, String> entry : replace.entrySet()) {
                 if (msg.contains(entry.getKey())) {
                     msg = entry.getValue();
                     break;
                 }
+            }
+            if (Debugging.isEnabled("errormsg")) {
+                LOGGER.info(String.format("Code: %s Error: %s Output: %s",
+                        r.responseCode, r.errorText, msg));
             }
             listener.accept(SimpleRequestResult.error(msg));
         }

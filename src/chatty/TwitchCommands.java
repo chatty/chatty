@@ -125,25 +125,6 @@ public class TwitchCommands {
                 }
             });
         }
-//        commands.add("ban", p -> {
-//            Commands.CommandParsedArgs args = p.parsedArgs(2, 1);
-//            if (args != null) {
-//                User user = client.getUser(p.getChannel(), args.get(0));
-//                String reason = args.get(1, "");
-//                Object objectId = g.printLine(p.getRoom(), "Trying to ban '"+user+"'..");
-//                api.ban(user, 0, reason, r -> {
-//                    if (r.error == null) {
-//                        g.addToLine(p.getRoom(), objectId, "OK");
-//                    }
-//                    else {
-//                        g.addToLine(p.getRoom(), objectId, r.error);
-//                    }
-//                });
-//            }
-//            else {
-//                g.printSystem("Usage: /ban <user> [reason]");
-//            }
-//        });
         commands.add("timeout", "<user> [duration] [reason]", p -> {
             Commands.CommandParsedArgs args = p.parsedArgs(3, 1);
             int seconds;
@@ -168,21 +149,6 @@ public class TwitchCommands {
                 api.ban(user, 0, reason, resultListener);
             }, StringUtil.aEmptyb(reason, "", " (%s)"));
         });
-//        commands.add("unban", p -> {
-//            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
-//            if (args != null) {
-//                User user = client.getUser(p.getChannel(), args.get(0));
-//                Object objectId = g.printLine(p.getRoom(), "Trying to ban '"+user+"'..");
-//                api.unban(user, r -> {
-//                    if (r.error == null) {
-//                        g.addToLine(p.getRoom(), objectId, "OK");
-//                    }
-//                    else {
-//                        g.addToLine(p.getRoom(), objectId, r.error);
-//                    }
-//                });
-//            }
-//        });
         commands.add("unban", "<user>", p -> {
             userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
                 api.unban(user, resultListener);
@@ -253,6 +219,11 @@ public class TwitchCommands {
                 api.cancelRaid(p.getRoom(), listener);
             });
         });
+        // Add here so it keeps working (API) after chat command is removed
+        commands.add("commercial", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 0);
+            client.runCommercial(p.getRoom().getStream(), args.getInt(0, 30));
+        });
         //--------------------------
         // Chat Settings
         //--------------------------
@@ -260,10 +231,10 @@ public class TwitchCommands {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_UNIQUE, true);
         }, "r9kbeta", "r9k");
-        commands.add("uniquechatoff", p -> {
+        commands.add("uniquechatOff", p -> {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_UNIQUE, false);
-        }, "r9kbetaoff", "r9koff");
+        }, "r9kbetaOff", "r9kOff");
         commands.add("followers", p -> {
             int minutes = (int) DateTime.parseDurationSeconds(p.getArgs()) / 60;
             if (minutes == -1) {
@@ -276,7 +247,7 @@ public class TwitchCommands {
                         TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE_DURATION, minutes);
             }
         });
-        commands.add("followersoff", p -> {
+        commands.add("followersOff", p -> {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, false);
         });
@@ -292,7 +263,7 @@ public class TwitchCommands {
                         TwitchApi.CHAT_SETTINGS_SLOWMODE_TIME, seconds);
             }
         });
-        commands.add("slowoff", p -> {
+        commands.add("slowOff", p -> {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_SLOWMODE, false);
         });
@@ -300,7 +271,7 @@ public class TwitchCommands {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_SUBONLY, true);
         });
-        commands.add("subscribersoff", p -> {
+        commands.add("subscribersOff", p -> {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_SUBONLY, false);
         });
@@ -308,7 +279,7 @@ public class TwitchCommands {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_EMOTEONLY, true);
         });
-        commands.add("emoteonlyoff", p -> {
+        commands.add("emoteonlyOff", p -> {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_EMOTEONLY, false);
         });
@@ -333,44 +304,6 @@ public class TwitchCommands {
                 printLine(channel, "Invalid channel to open reward queue for");
             }
         });
-        
-//        for (String command : CHAT_SETTING_COMMANDS) {
-//            commands.add(command, p -> {
-//                Object[] data = null;
-//                if (data == null) {
-//                    g.printLine("Invalid command");
-//                }
-//                Object objectId = g.printLine(p.getRoom(), Language.getStringNull("chat.twitchcommands.followers") + (duration > 0 ? " (" + duration + ")" : ""));
-//                api.updateChatSettings(p.getRoom(), r -> {
-//                    if (r.error == null) {
-//                        g.addToLine(p.getRoom(), objectId, "OK");
-//                    }
-//                    else {
-//                        g.addToLine(p.getRoom(), objectId, r.error);
-//                    }
-//                }, data);
-//            });
-//        }
-//        commands.add("followers", p -> {
-//            int duration = -1;
-//            Object[] data;
-//            try {
-//                duration = Integer.parseInt(p.getArgs());
-//                data = new Object[]{TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true, TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE_DURATION, duration};
-//            }
-//            catch (NumberFormatException ex) {
-//                data = new Object[]{TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true};
-//            }
-//            Object objectId = g.printLine(p.getRoom(), Language.getStringNull("chat.twitchcommands.followers")+(duration > 0 ? " ("+duration+")" : ""));
-//            api.updateChatSettings(p.getRoom(), r -> {
-//                if (r.error == null) {
-//                    g.addToLine(p.getRoom(), objectId, "OK");
-//                }
-//                else {
-//                        g.addToLine(p.getRoom(), objectId, r.error);
-//                    }
-//            }, data);
-//        });
     }
     
     private static int getTimeoutSeconds(Commands.CommandParsedArgs args) {
@@ -394,8 +327,12 @@ public class TwitchCommands {
                                     Commands.CommandParameters p,
                                     Object append,
                                     Object... data) {
+        if (!Helper.isValidChannelStrict(p.getChannel())) {
+            client.g.printSystem(p.getRoom(), "Invalid channel.");
+            return;
+        }
         if (data == null) {
-            client.g.printLine("Invalid command");
+            client.g.printSystem(p.getRoom(), "Invalid command");
             return;
         }
         String msg = makeMsg(p.getCommand(), append);
@@ -428,6 +365,10 @@ public class TwitchCommands {
                              Commands.CommandParsedArgs args,
                              BiConsumer<User, SimpleRequestResultListener> doRequest,
                              String append) {
+        if (!Helper.isValidChannelStrict(p.getChannel())) {
+            client.g.printSystem(p.getRoom(), "Invalid channel.");
+            return;
+        }
         if (args == null) {
             client.g.printSystem(p.getRoom(), getInvalidParametersMessage(p));
             return;

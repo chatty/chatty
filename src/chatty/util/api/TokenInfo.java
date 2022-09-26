@@ -80,7 +80,7 @@ public class TokenInfo {
         WHISPER_EDIT("whispers:edit", "whisperWrite"),
         WHISPER_MANAGE("user:manage:whispers", "whisperManage"),
         EDITOR("channel_editor", "editor"), // ?
-        EDIT_BROADCAST("user:edit:broadcast", "broadcast"),
+        EDIT_BROADCAST("channel:manage:broadcast", "broadcast"),
         COMMERICALS("channel_commercial", "commercials"),
         FOLLOWS("user:read:follows", "follows"), // Followed streams
         SUBSCRIBERS("channel:read:subscriptions", "subscribers"),

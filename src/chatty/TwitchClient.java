@@ -3016,6 +3016,7 @@ public class TwitchClient {
         else {
             // Editor must use command
             if (isChannelOpen(channel)) {
+                // Call this directly instead so the command added to "commands" is not called
                 c.command(channel, "commercial", String.valueOf(length), null);
             }
             else {
