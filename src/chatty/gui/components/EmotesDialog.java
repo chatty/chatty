@@ -151,7 +151,6 @@ public class EmotesDialog extends JDialog {
     private float scale;
     private ImageType imageType = ImageType.ANIMATED_DARK;
     private boolean closeOnDoubleClick = true;
-    private boolean userEmotesAccess;
     private final Set<String> hiddenEmotesets = new HashSet<>();
     private boolean hasEndangeredEmotes;
     private final JCheckBox hlEndangeredCheckbox = new JCheckBox("Highlight endangered emotes");
@@ -577,13 +576,6 @@ public class EmotesDialog extends JDialog {
     public Collection<String> getHiddenEmotesets() {
         return hiddenEmotesets;
     }
-    
-    public void setUserEmotes(boolean access) {
-        userEmotesAccess = access;
-        // Not ideal, but better than nothing
-        setUpdated(UPDATE_EMOTESET_CHANGED);
-        updateRefreshButton();
-    }
 
     /**
      * Sets the title according to the current stream.
@@ -611,9 +603,9 @@ public class EmotesDialog extends JDialog {
         if (currentPanel == null) {
             return;
         }
-        boolean enabled = (currentPanel.label.equals(MY_EMOTES) && userEmotesAccess)
+        boolean enabled = currentPanel.label.equals(MY_EMOTES)
                 || currentPanel.label.equals(CHANNEL_EMOTES)
-                || (currentPanel.label.equals(TWITCH_EMOTES) && userEmotesAccess)
+                || currentPanel.label.equals(TWITCH_EMOTES)
                 || currentPanel.label.equals(OTHER_EMOTES);
         refreshButton.setEnabled(enabled);
         if (enabled) {
@@ -1338,10 +1330,6 @@ public class EmotesDialog extends JDialog {
         private void updateEmotes2() {
             hasEndangeredEmotes = false;
             reset();
-            if (!userEmotesAccess) {
-                int width = (int)(EmotesDialog.this.getPreferredSize().width * 0.8);
-                addSubtitle("<html><body style='width:"+width+";text-align:center;'>"+Language.getString("emotesDialog.subEmotesAccess"), false);
-            }
             if (localUserEmotesets.isEmpty() || (localUserEmotesets.size() == 1 
                     && localUserEmotesets.iterator().next().equals(Emoticon.SET_GLOBAL))) {
                 addTitle(Language.getString("emotesDialog.noSubemotes"));
