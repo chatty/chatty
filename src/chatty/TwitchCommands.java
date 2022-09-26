@@ -38,7 +38,7 @@ public class TwitchCommands {
             = Collections.synchronizedSet(new HashSet<String>());
 
     private static final Set<String> SIMPLE_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "host", "unhost"
+        "host", "unhost", "commercial"
     }));
 
     /**
@@ -55,7 +55,7 @@ public class TwitchCommands {
      * Other commands, only used for isCommand().
      */
     private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "host2", "host"
+        "host2"
     }));
     
     private TwitchConnection c;
