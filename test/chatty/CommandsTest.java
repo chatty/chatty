@@ -1,6 +1,8 @@
 
 package chatty;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -58,6 +60,28 @@ public class CommandsTest {
         Commands.CommandParsedArgs parsed = Commands.CommandParsedArgs.parse(input, num, numRequired);
         assertArrayEquals(args, parsed.args);
         assertEquals(options, parsed.options);
+    }
+    
+    @Test
+    public void test() {
+        Commands c = new Commands();
+        assertFalse(c.isCommand("abc"));
+        c.add("Abc", p -> {});
+        assertTrue(c.isCommand("Abc"));
+        assertTrue(c.isCommand("abc"));
+        assertTrue(c.isCommand("ABC"));
+        
+        c.add("command", p -> {}, "commandAlias", "commandAlias2");
+        assertTrue(c.isCommand("Abc"));
+        assertTrue(c.isCommand("abc"));
+        assertTrue(c.isCommand("ABC"));
+        assertTrue(c.isCommand("command"));
+        assertTrue(c.isCommand("commandAlias"));
+        assertTrue(c.isCommand("COMMANDALIAS2"));
+        
+        // Order doesn't matter
+        assertEquals(new HashSet<>(Arrays.asList("Abc", "command", "commandAlias", "commandAlias2")), c.getCommandNames());
+        assertNotEquals(new HashSet<>(Arrays.asList("abc", "command", "commandAlias", "commandAlias2")), c.getCommandNames());
     }
     
 }

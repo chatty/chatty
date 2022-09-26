@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -63,9 +64,10 @@ public class Commands {
     
     public Collection<String> getCommandNames() {
         synchronized(commands) {
-            List<String> result = new ArrayList<>();
+            Collection<String> result = new HashSet<>();
             for (Command c : commands.values()) {
                 result.add(c.name);
+                c.aliases.forEach(name -> result.add(name));
             }
             return result;
         }
