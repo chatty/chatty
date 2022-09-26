@@ -221,6 +221,7 @@ public class MainSettings extends SettingsPanel {
         languageOptions.put("ru", "Russian / Русский");
         languageOptions.put("es", "Spanish / Español");
         languageOptions.put("tr", "Turkish / Türk");
+        languageOptions.put("uk", "Ukrainian / українська");
         return languageOptions;
     }
     
