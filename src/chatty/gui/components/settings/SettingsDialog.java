@@ -151,7 +151,6 @@ public class SettingsDialog extends JDialog implements ActionListener {
         HISTORY("History", Language.getString("settings.page.history")),
         NOTIFICATIONS("Notifications", Language.getString("settings.page.notifications")),
         LIVE_STREAMS("Live Streams", Language.getString("settings.page.liveStreams")),
-        SOUNDS("Sounds", Language.getString("settings.page.sound")),
         USERCOLORS("Usercolors", Language.getString("settings.page.usercolors")),
         LOGGING("Log to file", Language.getString("settings.page.logging")),
         WINDOW("Window", Language.getString("settings.page.window")),
@@ -214,8 +213,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         MENU.put(Page.WINDOW, Arrays.asList(new Page[]{
             Page.TABS,
             Page.NOTIFICATIONS,
-            Page.LIVE_STREAMS,
-            Page.SOUNDS,
+            Page.LIVE_STREAMS
         }));
         MENU.put(Page.OTHER, Arrays.asList(new Page[]{
             Page.COMMANDS,
@@ -304,7 +302,6 @@ public class SettingsDialog extends JDialog implements ActionListener {
         panels.put(Page.FILTER, new FilterSettings(this));
         panels.put(Page.MSGCOLORS, new MsgColorSettings(this));
         panels.put(Page.HISTORY, new HistorySettings(this));
-        panels.put(Page.SOUNDS, new SoundSettings(this));
         panels.put(Page.NOTIFICATIONS, new NotificationSettings(this, settings));
         panels.put(Page.LIVE_STREAMS, new LiveStreamsSettings(this));
         panels.put(Page.USERCOLORS, new UsercolorSettings(this));
