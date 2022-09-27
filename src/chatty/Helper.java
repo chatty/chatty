@@ -200,7 +200,7 @@ public class Helper {
     public static final Pattern STREAM_PATTERN = Pattern.compile("(?i)^"+USERNAME_REGEX+"$");
     public static final Pattern WHISPER_PATTERN = Pattern.compile("(?i)^\\$"+USERNAME_REGEX+"$");
     private static final String TWITCH_URL_PREFIX = "(?:https?://)?(?:www\\.)?twitch\\.tv";
-    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile(TWITCH_URL_PREFIX+"/("+USERNAME_REGEX+")[/a-z0-9]*");
+    private static final Pattern CHANNEL_URL_PATTERN = Pattern.compile(TWITCH_URL_PREFIX+"/("+USERNAME_REGEX+")[/a-zA-Z0-9_]*");
     private static final Pattern POPOUT_URL_PATTERN = Pattern.compile(String.format("%s/popout/(%s)/([a-z]+)(?:/(%s)[/a-z]*)?",
             TWITCH_URL_PREFIX, USERNAME_REGEX, USERNAME_REGEX));
     

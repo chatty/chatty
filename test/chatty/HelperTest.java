@@ -340,7 +340,9 @@ public class HelperTest {
         
         assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/chat"));
         assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/viewercard/username"));
-        assertEquals("channel123", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel123/viewercard/username"));
+        assertEquals("Channel123", Helper.getChannelFromUrl("https://www.twitch.tv/popout/Channel123/viewercard/username"));
+        assertEquals("channel123_", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel123_/viewercard/username"));
+        assertEquals("channel_123", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel_123/viewercard/username"));
     }
     
     @Test
@@ -351,6 +353,7 @@ public class HelperTest {
         testPopoutUrlInfo("https://www.twitch.tv/popout/channel/viewercard/username/abc", "channel", "viewercard", "username");
         testPopoutUrlInfo("www.twitch.tv/popout/channel/viewercard/username/", "channel", "viewercard", "username");
         testPopoutUrlInfo("twitch.tv/popout/channel/viewercard/username/", "channel", "viewercard", "username");
+        testPopoutUrlInfo("twitch.tv/popout/channel123/viewercard/user_name/", "channel123", "viewercard", "user_name");
     }
     
     private static void testPopoutUrlInfo(String url, String channel, String type, String username) {
