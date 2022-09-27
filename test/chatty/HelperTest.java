@@ -340,6 +340,7 @@ public class HelperTest {
         
         assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/chat"));
         assertEquals("channel", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel/viewercard/username"));
+        assertEquals("channel123", Helper.getChannelFromUrl("https://www.twitch.tv/popout/channel123/viewercard/username"));
     }
     
     @Test
