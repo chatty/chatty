@@ -781,4 +781,8 @@ public class TwitchApi {
         
     }
     
+    public void test() {
+        requests.test();
+    }
+    
 }

@@ -2043,6 +2043,8 @@ public class TwitchClient {
                     user.addMessage("abc"+i+" "+m, false, "abc id"+i+" "+m);
                 }
             }
+        } else if (command.equals("testr")) {
+            api.test();
         }
     }
     

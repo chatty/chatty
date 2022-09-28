@@ -751,6 +751,13 @@ public class Requests {
         });
     }
     
+    public void test() {
+        String url = "https://api.twitch.tv/helix/...";
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            System.out.println(r.text);
+        });
+    }
+    
     //===================
     // Management Methods
     //===================
