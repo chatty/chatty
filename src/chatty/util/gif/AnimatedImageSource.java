@@ -107,6 +107,11 @@ public class AnimatedImageSource implements ImageProducer {
                                 break;
                         }
                         
+                        // If it hadn't played yet could be -1 from currentFrame
+                        if (pauseFrame < 0) {
+                            pauseFrame = 0;
+                        }
+                        
                         if (pauseFrame != currentFrame || !hasPixels()) {
                             currentFrame = pauseFrame - 1;
                             nextFrame();
