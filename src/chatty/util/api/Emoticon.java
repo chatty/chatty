@@ -306,10 +306,10 @@ public class Emoticon {
     }
     
     public String getSevenTVEmoteUrl(String id, int factor) {
-        if (StringUtil.isNullOrEmpty(id) || factor > 4) {
+        if (StringUtil.isNullOrEmpty(id) || StringUtil.isNullOrEmpty(url) || factor > 4) {
             return null;
         }
-        return String.format("https://cdn.7tv.app/emote/%s/%dx", id, factor);
+        return url.replace("{size}", factor+"x");
     }
 
     /**

@@ -290,7 +290,7 @@ public class TwitchClient {
                 settings.getString("pubsub"), pubsubListener, api);
         
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings, api);
-        sevenTV = new SevenTV(new EmoteListener());
+        sevenTV = new SevenTV(new EmoteListener(), api);
         
         ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));

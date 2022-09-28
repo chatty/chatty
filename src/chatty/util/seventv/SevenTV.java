@@ -2,6 +2,7 @@
 package chatty.util.seventv;
 
 import chatty.Helper;
+import chatty.util.Debugging;
 import chatty.util.EmoticonListener;
 import chatty.util.JSONUtil;
 import chatty.util.RetryManager;
@@ -9,9 +10,9 @@ import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
+import chatty.util.api.TwitchApi;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -31,9 +32,11 @@ public class SevenTV {
     }
     
     private final EmoticonListener listener;
+    private final TwitchApi api;
 
-    public SevenTV(EmoticonListener listener) {
+    public SevenTV(EmoticonListener listener, TwitchApi api) {
         this.listener = listener;
+        this.api = api;
     }
     
     /**
@@ -50,20 +53,24 @@ public class SevenTV {
         if (StringUtil.isNullOrEmpty(channel)) {
             // Global
             WebPUtil.runIfWebPAvailable(() -> {
-                requestEmotes(Type.GLOBAL, null, forcedUpdate);
+                requestEmotes(Type.GLOBAL, null, null, forcedUpdate);
             });
         }
         else {
             // Channel
             String stream = channel;
             WebPUtil.runIfWebPAvailable(() -> {
-                requestEmotes(Type.CHANNEL, stream, forcedUpdate);
+                api.getUserId(r -> {
+                    if (!r.hasError()) {
+                        requestEmotes(Type.CHANNEL, stream, r.getId(stream), forcedUpdate);
+                    }
+                }, stream);
             });
         }
     }
     
-    private void requestEmotes(Type type, String stream, boolean forcedUpdate) {
-        String url = getUrl(type, stream);
+    private void requestEmotes(Type type, String stream, String streamId, boolean forcedUpdate) {
+        String url = getUrl(type, streamId);
         if (forcedUpdate) {
             requestNow(type, stream, url);
         }
@@ -72,13 +79,13 @@ public class SevenTV {
         }
     }
     
-    private static String getUrl(Type type, String stream) {
+    private static String getUrl(Type type, String streamId) {
         switch (type) {
             case GLOBAL:
-                return "https://api.7tv.app/v2/emotes/global";
+                return "https://7tv.io/v3/emote-sets/global";
             case CHANNEL:
-                return String.format("https://api.7tv.app/v2/users/%s/emotes",
-                        stream);
+                return String.format("https://7tv.io/v3/users/twitch/%s",
+                        streamId);
         }
         return null;
     }
@@ -106,7 +113,7 @@ public class SevenTV {
         if (json == null) {
             return;
         }
-        Set<Emoticon> emotes = parseEmoteList(stream, json);
+        Set<Emoticon> emotes = parseEmoteList(type, stream, json);
         LOGGER.info(String.format("|[SevenTV] (%s): %d emotes received.",
                 stream, emotes.size()));
         
@@ -118,12 +125,17 @@ public class SevenTV {
         listener.receivedEmoticons(updateBuilder.build());
     }
     
-    private Set<Emoticon> parseEmoteList(String stream, String json) {
+    private Set<Emoticon> parseEmoteList(Type type, String stream, String json) {
         Set<Emoticon> result = new HashSet<>();
         try {
             JSONParser parser = new JSONParser();
-            JSONArray list = (JSONArray) parser.parse(json);
-            for (Object o : list) {
+            JSONObject root = (JSONObject) parser.parse(json);
+            JSONObject set = root;
+            if (type == Type.CHANNEL) {
+                set = (JSONObject) root.get("emote_set");
+            }
+            JSONArray emotes = (JSONArray) set.get("emotes");
+            for (Object o : emotes) {
                 if (o instanceof JSONObject) {
                     Emoticon emote = parseEmote(stream, (JSONObject) o);
                     if (emote != null) {
@@ -133,31 +145,76 @@ public class SevenTV {
             }
         }
         catch (ParseException ex) {
-            Logger.getLogger(SevenTV.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.warning("Error parsing SevenTV emote list: "+ex);
         }
         return result;
     }
     
-    private Emoticon parseEmote(String stream, JSONObject data) {
+    private Emoticon parseEmote(String stream, JSONObject emoteObject) {
         try {
-            String id = JSONUtil.getString(data, "id");
-            String code = JSONUtil.getString(data, "name");
-
-            int width = ((Number) ((JSONArray) data.get("width")).get(0)).intValue();
-            int height = ((Number) ((JSONArray) data.get("height")).get(0)).intValue();
+            String id = JSONUtil.getString(emoteObject, "id");
+            String code = JSONUtil.getString(emoteObject, "name");
+            boolean animated = JSONUtil.getBoolean(emoteObject, "animated", false);
             
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.SEVENTV, code, null);
+            JSONObject data = (JSONObject) emoteObject.get("data");
+            JSONObject host = (JSONObject) data.get("host");
+
+            File file = getFile(host);
+            if (file == null) {
+                LOGGER.warning("SevenTV emote: No file found");
+                return null;
+            }
+            int width = file.width;
+            int height = file.height;
+            
+            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.SEVENTV, code, file.url);
             b.setSize(width, height);
             b.setStringId(id);
+//            b.setAnimated(animated); // Have to check first what this affects
+            
             if (stream != null) {
                 b.addStreamRestriction(stream);
             }
             return b.build();
         }
         catch (Exception ex) {
-            LOGGER.warning("Error parsing SevenTV emote: " + ex);
+            LOGGER.warning("Error parsing SevenTV emote: " + Debugging.getStacktrace(ex));
             return null;
         }
+    }
+    
+    private File getFile(JSONObject host) {
+        String baseUrl = JSONUtil.getString(host, "url");
+        if (baseUrl == null) {
+            return null;
+        }
+        JSONArray files = (JSONArray) host.get("files");
+        for (Object o : files) {
+            JSONObject file = (JSONObject) o;
+            if (file.get("format").equals("WEBP")) {
+                String name = (String) file.get("name");
+                int width = JSONUtil.getInteger(file, "width", -1);
+                int height = JSONUtil.getInteger(file, "height", -1);
+                if (name.contains("1x") && width != -1 && height != -1) {
+                    return new File(baseUrl+"/"+name.replace("1x", "{size}"), width, height);
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static class File {
+        
+        public final String url;
+        public final int width;
+        public final int height;
+        
+        private File(String url, int width, int height) {
+            this.url = url;
+            this.width = width;
+            this.height = height;
+        }
+        
     }
     
 }
