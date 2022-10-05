@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.Room;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.JSONUtil;
@@ -36,12 +37,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
+import chatty.util.api.TokenInfo.Scope;
 import chatty.util.api.TwitchApi.SimpleRequestResult;
 import chatty.util.api.TwitchApi.SimpleRequestResultListener;
 import chatty.util.api.queue.ResultListener;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -663,6 +667,11 @@ public class Requests {
         }
         else if (!StringUtil.isNullOrEmpty(getErrorMessage(r.errorText))) {
             String msg = getErrorMessage(r.errorText);
+            String scopeMissingMsg = checkForMissingScope(msg);
+            if (scopeMissingMsg != null) {
+                msg = scopeMissingMsg;
+            }
+            
             /**
              * Each response code can have different reasons, so the error msg
              * needs to be used. The error msg returned by the API seems more
@@ -689,6 +698,19 @@ public class Requests {
         else {
             listener.accept(SimpleRequestResult.error(String.format("Error (%d)", r.responseCode)));
         }
+    }
+    
+    private static String checkForMissingScope(String msg) {
+        Pattern p = Pattern.compile("Missing scope: ([a-z:_]+)");
+        Matcher m = p.matcher(msg);
+        if (m.matches()) {
+            String scopeString = m.group(1);
+            Scope scope = Scope.fromScopeString(scopeString);
+            if (scope != null) {
+                return Language.getString("login.accessMissing", scope.label);
+            }
+        }
+        return null;
     }
     
     //=================

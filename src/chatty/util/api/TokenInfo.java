@@ -108,6 +108,15 @@ public class TokenInfo {
             this.description = Language.getString("login.access."+langKey+".tip", false);
         }
         
+        public static Scope fromScopeString(String scopeString) {
+            for (Scope scope : values()) {
+                if (scope.scope.equals(scopeString)) {
+                    return scope;
+                }
+            }
+            return null;
+        }
+        
     }
     
     public final String name;
