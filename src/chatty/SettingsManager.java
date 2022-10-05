@@ -997,6 +997,9 @@ public class SettingsManager {
                 settings.setString(setting, settings.getString(setting).replace("Y", "y"));
             }
         }
+        if (switchedFromVersionBefore("0.21-b3")) {
+            settings.setBoolean("ffzEvent", false);
+        }
         
         overrideHotkeySettings();
     }
