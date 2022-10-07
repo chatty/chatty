@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.DelayedActionQueue;
 import chatty.util.DelayedActionQueue.DelayedActionListener;
 import chatty.util.irc.MsgParameters;
@@ -30,16 +31,18 @@ public abstract class Irc {
     private final DelayedActionQueue<String> joinQueue
             = DelayedActionQueue.create(new DelayedJoinAction(), JOIN_DELAY);
     
-    private String nick;
-    private String pass;
+    private final Object lock = new Object();
     
-    private Connection connection;
+    private volatile String nick;
+    private volatile String pass;
+    
+    private volatile Connection connection;
     
     private String quitmessage = "Quit";
     
-    private String connectedIp = "";
-    private int connectedPort;
-    private long connectedSince = -1;
+    private volatile String connectedIp = "";
+    private volatile int connectedPort;
+    private volatile long connectedSince = -1;
     
     private volatile int state = STATE_OFFLINE;
     
@@ -97,7 +100,13 @@ public abstract class Irc {
     /**
      * Indicates that the user wanted the connection to be closed.
      */
-    private boolean requestedDisconnect = false;
+    private volatile boolean requestedDisconnect = false;
+    
+    /**
+     * The user requested the connection attempt to be canceled. If possible the
+     * connection attempt should be canceled.
+     */
+    private volatile boolean cancelConnecting = false;
     
     private final String id;
     private final String idPrefix;
@@ -141,6 +150,15 @@ public abstract class Irc {
         return state == STATE_OFFLINE;
     }
     
+    /**
+     * The connection attempt should be canceled if possible.
+     * 
+     * @return 
+     */
+    public boolean shouldCancelConnecting() {
+        return cancelConnecting;
+    }
+    
     public String getIp() {
         return connectedIp;
     }
@@ -176,14 +194,34 @@ public abstract class Irc {
      */
     public final void connect(final String server, final String port,
             final String nick, final String pass, Collection<Integer> securedPorts) {
-
-        if (state >= STATE_CONNECTED) {
-            warning("Already connected.");
+        String error = null;
+        synchronized (lock) {
+            if (state >= STATE_CONNECTING) {
+                error = "Already trying to connect.";
+            }
+            if (state >= STATE_CONNECTED) {
+                error = "Already connected.";
+            }
+            
+            if (error == null) {
+                state = STATE_CONNECTING;
+                cancelConnecting = false;
+            }
+        }
+        if (error != null) {
+            warning(error);
             return;
         }
-        if (state >= STATE_CONNECTING) {
-            warning("Already trying to connect.");
-            return;
+        
+        info("Resolving "+server+" "+port);
+        onConnectionPrepare(server);
+        
+        if (Debugging.isEnabled("resolvedelay")) {
+            try {
+                Thread.sleep(3000);
+            }
+            catch (InterruptedException ex) {
+            }
         }
         
         InetSocketAddress address = null;
@@ -198,10 +236,14 @@ public abstract class Irc {
         if (address == null) {
             onConnectionAttempt(null, -1, false);
             warning("Invalid address: "+server+":"+port);
+            setState(STATE_OFFLINE);
             return;
         }
-
-        state = STATE_CONNECTING;
+        if (cancelConnecting) {
+            cancelConnecting = false;
+            disconnected(REQUESTED_DISCONNECT);
+            return;
+        }
         
         // Save for further use
         this.pass = pass;
@@ -226,6 +268,10 @@ public abstract class Irc {
             quit();
             connection.close();
             return true;
+        }
+        else {
+            onConnectionAttemptCancel();
+            cancelConnecting = true;
         }
         return false;
     }
@@ -617,7 +663,11 @@ public abstract class Irc {
     
     void onWhoResponse(String channel, String nick) {}
     
+    void onConnectionPrepare(String server) { }
+    
     void onConnectionAttempt(String server, int port, boolean secured) { }
+    
+    void onConnectionAttemptCancel() { }
     
     void onConnect() { }
     

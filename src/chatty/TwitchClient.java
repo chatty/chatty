@@ -2288,6 +2288,21 @@ public class TwitchClient {
         }
     }
     
+    public void updateLogin() {
+        String username = settings.getString("username");
+        String token = settings.getString("token");
+        c.setLogin(username, "oauth:"+token);
+        
+        /**
+         * Not sure if this makes sense, since topics may not be sent in the
+         * first place when the required scopes weren't there.
+         * 
+         * Reconnecting IRC, which should now be automatic when changing token,
+         * may sent those topics though.
+         */
+//        pubsub.updateToken(token);
+    }
+    
     private void commandCustomCompletion(String parameter) {
         String usage = "Usage: /customCompletion <add/set/remove> <item> <value>";
         if (parameter == null) {
@@ -3441,6 +3456,31 @@ public class TwitchClient {
                 g.msgDeleted(user, targetMsgId, msg);
             }
             chatLog.msgDeleted(user, msg);
+        }
+        
+        private Object connectAttemptMsgId;
+        
+        @Override
+        public void onConnectionPrepare(String server) {
+            g.updateState(true);
+            connectAttemptMsgId = g.printLineAll(Language.getString("chat.connecting2"));
+            g.printLineAllAppend(server + "..", connectAttemptMsgId);
+        }
+        
+        @Override
+        public void onConnectAttempt(String server, int port, boolean secured) {
+            if (server != null) {
+                if (connectAttemptMsgId != null) {
+                    String text = String.format("%s:%d..%s",
+                            server,
+                            port,
+                            secured ? " (" + Language.getString("chat.secured") + ")" : "");
+                    g.printLineAllAppend(text, connectAttemptMsgId);
+                    connectAttemptMsgId = null;
+                }
+            } else {
+                g.printLineAll("Failed to connect (server or port invalid)");
+            }
         }
         
         @Override

@@ -3754,12 +3754,24 @@ public class MainGui extends JFrame implements Runnable {
         return objectId;
     }
     
-    public void printLineAll(final String line) {
+    public Object printLineAll(final String line) {
+        Object objectId = new Object();
         SwingUtilities.invokeLater(() -> {
             for (Channel channel : channels.allChannels()) {
                 // Separate for each channel, since it could be modified based
                 // on channel
-                printInfo(channel, InfoMessage.createInfo(line));
+                InfoMessage m = InfoMessage.createInfo(line);
+                m.objectId = objectId;
+                printInfo(channel, m);
+            }
+        });
+        return objectId;
+    }
+    
+    public void printLineAllAppend(String text, Object objectId) {
+        GuiUtil.edt(() -> {
+            for (Channel channel : channels.allChannels()) {
+                channel.printInfoMessage(InfoMessage.createAppend(objectId, text));
             }
         });
     }
@@ -4286,17 +4298,8 @@ public class MainGui extends JFrame implements Runnable {
          * @param state
          */
         private void updateMenuState(int state) {
-            if (state > Irc.STATE_OFFLINE || state == Irc.STATE_RECONNECTING) {
-                menu.getMenuItem("connect").setEnabled(false);
-            } else {
-                menu.getMenuItem("connect").setEnabled(true);
-            }
-
-            if (state > Irc.STATE_CONNECTING || state == Irc.STATE_RECONNECTING) {
-                menu.getMenuItem("disconnect").setEnabled(true);
-            } else {
-                menu.getMenuItem("disconnect").setEnabled(false);
-            }
+            menu.getMenuItem("connect").setEnabled(!(state > Irc.STATE_OFFLINE || state == Irc.STATE_RECONNECTING));
+            menu.getMenuItem("disconnect").setEnabled(state > Irc.STATE_OFFLINE || state == Irc.STATE_RECONNECTING);
         }
         
         /**
@@ -4846,6 +4849,7 @@ public class MainGui extends JFrame implements Runnable {
             if (!Chatty.CLIENT_ID.equals(tokenInfo.clientId)) {
                 result += " ClientID does not match, please generate token through Chatty.";
             }
+            client.updateLogin();
         }
         if (changedTokenResponse) {
             printLine(result);

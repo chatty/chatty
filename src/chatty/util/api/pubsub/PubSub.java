@@ -87,6 +87,11 @@ public class PubSub extends JWSClient {
         return unlisten;
     }
     
+    public void updateToken(String token) {
+        this.token = token;
+        reconnect();
+    }
+    
     public boolean hasTopic(String topic) {
         synchronized(topics) {
             return topics.contains(topic);

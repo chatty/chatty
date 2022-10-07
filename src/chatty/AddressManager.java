@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +29,7 @@ public class AddressManager {
      * attempts are in here. It is only used to determine the next hopefully
      * best address to connect to.
      */
-    private final Set<InetSocketAddress> errors = new HashSet<>();
+    private final Set<InetSocketAddress> errors = Collections.synchronizedSet(new HashSet<>());
     
     /**
      * Gets an {@code InetSocketAddress} based on the given host (a single host)

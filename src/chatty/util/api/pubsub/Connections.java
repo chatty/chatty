@@ -61,6 +61,12 @@ public class Connections {
         return false;
     }
     
+    public synchronized void updateToken(String token) {
+        for (PubSub c : connections) {
+            c.updateToken(token);
+        }
+    }
+    
     public synchronized boolean hasTopic(String topic) {
         for (PubSub c : connections) {
             if (c.hasTopic(topic)) {

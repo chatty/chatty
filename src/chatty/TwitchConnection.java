@@ -364,6 +364,20 @@ public class TwitchConnection {
         connect();
     }
     
+    public void setLogin(String username, String password) {
+        if (username.equals(this.username) && password.equals(this.password)) {
+            // Nothing changed
+            return;
+        }
+        this.username = username;
+        this.password = password;
+        users.setLocalUsername(username);
+        if (irc.getState() != Irc.STATE_OFFLINE) {
+            disconnect();
+            reconnect();
+        }
+    }
+    
     /**
      * Connect to the main connection based on the current login data. Will only
      * connect it not already connected/connecting.
@@ -371,7 +385,12 @@ public class TwitchConnection {
     private void connect() {
         if (irc.getState() <= Irc.STATE_OFFLINE) {
             cancelReconnectionTimer();
-            irc.connect(server,serverPorts,username,password, getSecuredPorts());
+            new Thread("IRC connect") {
+                @Override
+                public void run() {
+                    irc.connect(server, serverPorts, username, password, getSecuredPorts());
+                }
+            }.start();
         } else {
             listener.onConnectError("Already connected or connecting.");
         }
@@ -690,21 +709,24 @@ public class TwitchConnection {
         }
 
         @Override
+        void onConnectionPrepare(String server) {
+            listener.onConnectionPrepare(server);
+        }
+        
+        @Override
         void onConnectionAttempt(String server, int port, boolean secured) {
             connectionAttempts++;
             if (this != irc) {
                 return;
             }
-            
-            if (server != null) {
-                listener.onGlobalInfo(Language.getString("chat.connecting",
-                        server+":"+port)
-                        +(secured ? " ("+Language.getString("chat.secured")+")" : ""));
-            } else {
-                listener.onGlobalInfo("Failed to connect (server or port invalid)");
-            }
+            listener.onConnectAttempt(server, port, secured);
         }
-
+        
+        @Override
+        void onConnectionAttemptCancel() {
+            listener.onGlobalInfo(Language.getString("chat.cancelConnect"));
+        }
+        
         @Override
         void onConnect() {
             if (this == irc) {
@@ -751,11 +773,17 @@ public class TwitchConnection {
             
             if (this == irc) {
                 channelStates.reset();
-                listener.onGlobalInfo(Language.getString("chat.disconnected",
-                        Helper.makeDisconnectReason(reason, reasonMessage)));
+                listener.onGlobalInfo(Language.getString("chat.disconnected")
+                        +Helper.makeDisconnectReason(reason, reasonMessage));
 
                 if (reason != Irc.REQUESTED_DISCONNECT) {
-                    startReconnectTimer(reason);
+                    if (irc.shouldCancelConnecting()) {
+                        listener.onGlobalInfo("Canceled reconnecting");
+                        connectionAttempts = 0;
+                    }
+                    else {
+                        startReconnectTimer(reason);
+                    }
                 } else {
                     connectionAttempts = 0;
                 }
@@ -1611,6 +1639,10 @@ public class TwitchConnection {
         void onUnmod(User user);
 
         void onConnectionStateChanged(int state);
+        
+        void onConnectionPrepare(String server);
+        
+        void onConnectAttempt(String server, int port, boolean secured);
         
         void onEmotesets(String channel, Set<String> emotesets);
 

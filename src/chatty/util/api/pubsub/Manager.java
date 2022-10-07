@@ -134,6 +134,16 @@ public class Manager {
     }
     
     /**
+     * Only changes token. Updating username may be problematic since the user
+     * id may be in the topics.
+     * 
+     * @param token 
+     */
+    public void updateToken(String token) {
+        c.updateToken(token);
+    }
+    
+    /**
      * Start receiving the modlog for the given channel (username). The token is
      * requires to authenticate.
      * 
