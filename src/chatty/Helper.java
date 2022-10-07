@@ -22,6 +22,9 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -1182,6 +1185,12 @@ public class Helper {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+    
+    private static final Instant CHAT_COMMAND_SHUTOFF = ZonedDateTime.of(2023, 2, 10, 0, 0, 0, 0, ZoneId.of("-07:00")).toInstant();
+    
+    public static boolean isBeforeChatCommandsShutoff() {
+        return Instant.now().isBefore(CHAT_COMMAND_SHUTOFF);
     }
     
 }

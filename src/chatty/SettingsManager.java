@@ -724,6 +724,7 @@ public class SettingsManager {
         settings.addString("groupChatPort", "");
         settings.addBoolean("whisperAutoRespond", false);
         settings.addString("whisperAutoRespondCustom", "");
+        settings.addBoolean("whisperApi", false);
         
         // Copy Messages
         settings.addBoolean("cmEnabled", false);
