@@ -101,7 +101,7 @@ public class WebPUtil {
             LOGGER.info("WebP Decoding available: "+success);
             return success;
         }
-        catch (IOException ex) {
+        catch (IOException | UnsatisfiedLinkError ex) {
             LOGGER.warning("Error checking WebP: "+ex);
         }
         return false;

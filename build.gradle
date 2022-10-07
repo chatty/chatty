@@ -55,8 +55,8 @@ version = extractVersion()
 
 dependencies {
     implementation fileTree(dir: 'assets/lib', include: ['*.jar'])
-    implementation 'net.java.dev.jna:jna:5.5.0'
-    implementation 'net.java.dev.jna:jna-platform:5.5.0'
+    implementation 'net.java.dev.jna:jna:5.12.1'
+    implementation 'net.java.dev.jna:jna-platform:5.12.1'
 
     testImplementation 'junit:junit:4.12'
 }
