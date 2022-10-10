@@ -134,17 +134,19 @@ public class SevenTV {
             if (type == Type.CHANNEL) {
                 set = (JSONObject) root.get("emote_set");
             }
-            JSONArray emotes = (JSONArray) set.get("emotes");
-            for (Object o : emotes) {
-                if (o instanceof JSONObject) {
-                    Emoticon emote = parseEmote(stream, (JSONObject) o);
-                    if (emote != null) {
-                        result.add(emote);
+            if (set != null) {
+                JSONArray emotes = (JSONArray) set.get("emotes");
+                for (Object o : emotes) {
+                    if (o instanceof JSONObject) {
+                        Emoticon emote = parseEmote(stream, (JSONObject) o);
+                        if (emote != null) {
+                            result.add(emote);
+                        }
                     }
                 }
             }
         }
-        catch (ParseException ex) {
+        catch (Exception ex) {
             LOGGER.warning("Error parsing SevenTV emote list: "+ex);
         }
         return result;
