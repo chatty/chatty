@@ -17,8 +17,10 @@ import chatty.util.settings.Settings;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -703,6 +705,21 @@ public class Helper {
             url = "https:"+url;
         }
         return url;
+    }
+    
+    /**
+     * Return the created URL or null if the given URL is invalid.
+     * 
+     * @param url
+     * @return 
+     */
+    public static URL createUrlNoError(String url) {
+        try {
+            return new URL(url);
+        }
+        catch (MalformedURLException ex) {
+            return null;
+        }
     }
     
     public static String systemInfo() {

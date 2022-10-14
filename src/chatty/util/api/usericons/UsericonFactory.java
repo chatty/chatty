@@ -67,7 +67,7 @@ public class UsericonFactory {
             String title) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
-            URL url2 = new URL(Helper.checkHttpUrl(url2String));
+            URL url2 = Helper.createUrlNoError(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(type, source);
             b.setChannel(channel);
             b.setUrl(url);
@@ -86,7 +86,7 @@ public class UsericonFactory {
             String description, String clickUrl) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
-            URL url2 = new URL(Helper.checkHttpUrl(url2String));
+            URL url2 = Helper.createUrlNoError(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.TWITCH, SOURCE_TWITCH2);
             b.setChannel(channel);
             b.setBadgeType(id, version);
@@ -107,7 +107,7 @@ public class UsericonFactory {
             Set<String> usernames, Set<String> userids, String position) {
         try {
             URL url = new URL(Helper.checkHttpUrl(urlString));
-            URL url2 = new URL(Helper.checkHttpUrl(url2String));
+            URL url2 = Helper.createUrlNoError(Helper.checkHttpUrl(url2String));
             Usericon.Builder b = new Usericon.Builder(Usericon.Type.OTHER, SOURCE_OTHER);
             b.setBadgeType(id, version);
             b.setUrl(url);
