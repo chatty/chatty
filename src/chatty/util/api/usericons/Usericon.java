@@ -508,6 +508,10 @@ public class Usericon implements Comparable {
      * @return 
      */
     private ImageIcon substituteColor(ImageIcon icon) {
+        if (type == Type.OTHER && badgeType.id == null) {
+            LOGGER.warning("Badge of type OTHER has no id set: "+this);
+            return icon;
+        }
         if (type == Type.OTHER && badgeType.id.equals("announcement")) {
             Color search = Color.BLACK;
             Color target = HtmlColors.decode(badgeType.version);
