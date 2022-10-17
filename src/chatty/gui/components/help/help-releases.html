@@ -70,11 +70,57 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.21">Version 0.21</a> <a name="latest">(This one!)</a> (2022-??-??)
+        <a name="0.21">Version 0.21</a> <a name="latest">(This one!)</a> (2022-10-17)
         <a href="#top" class="top">[back to top]</a>
     </h2>
+    <p>Twitch has announced that Twich chat comands will be removed from IRC in
+        February 2023, so they need to be migrated to the API. You will need to
+        update your login with additional access scopes to be able to use most
+        commands in this update.</p>
+    
     <pre>
-        Beta, TBD
+### Twitch Features
+- Switched most Twitch Chat commands to the Twitch API
+  - The commands `/vips`, `/mods` and `/commercial` will continue to function
+    through IRC for non-broadcasters until Twitch removes them
+  - Sending whispers will function through IRC until Twitch removes it, since
+    the API has additional restrictions for whispering
+  - For commands that work through the Twitch API the command result will now be
+    appended to the original message, for example `Trying to ban &lt;name&gt;.. OK`
+- Updated Account dialog to accomodate large number of access scopes better
+
+### Emotes
+- Emote Dialog improvements
+  - Added search field to filter displayed emotes
+  - Made more sections hideable (click on the section header)
+  - Improved Emote sorting and sections
+- Favorite Emotes improvements
+  - Sort first in TAB Completion (can be disabled)
+  - Channel-specific emotes can now also be favorited
+  - Note: Right-click emote for options to favorite/unfavorite
+- Ignored emotes are now also hidden from the Emote Dialog and TAB Completion,
+  while optionally being able to only hide from specific places
+- Prefer per-channel emotes over global emotes (e.g. when a third-party emote
+  provider has an emote with the same name as a global Twitch emote)
+
+### Other
+- Added URL Context Menu entry to open User Dialog for some Twitch URLs
+- Added WebP MacOS support, so 7TV emotes should work on Mac now as well
+- Switched to 7TV v3 API for emotes
+- Added `!if:` prefix (negated `if:`), which allows you to negate restrictions
+  that would otherwise not be possible
+- Automatically reconnect IRC when a new valid token is set
+- Improved connecting to chat responsiveness and info messages
+- Removed deprecated Sounds setting page
+- Updated translations
+- Updated help
+
+### Bugfixes
+- Fixed error related to emote pausing
+- Fixed popout URL parsing
+- Fixed offline streams sometimes appearing as live when joining channel
+- Updated JNA to fix some issues
+- Fixed FFZ custom mod badge that was broken in some channels
     </pre>
     
     <h2>
