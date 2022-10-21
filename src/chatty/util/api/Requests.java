@@ -655,10 +655,35 @@ public class Requests {
     public void setColor(String color, SimpleRequestResultListener listener) {
         String url = makeUrl("https://api.twitch.tv/helix/chat/color",
                 "user_id", api.localUserId,
-                "color", color);
+                "color", makeColor(color));
         newApi.add(url, "PUT", api.defaultToken, r -> {
             handleResult(r, listener);
         });
+    }
+    
+    private static String makeColor(String color) {
+        color = StringUtil.toLowerCase(color);
+        switch (color) {
+            case "dodgerblue":
+                return "dodger_blue";
+            case "springgreen":
+                return "spring_green";
+            case "yellowgreen":
+                return "yellow_green";
+            case "orangered":
+                return "orange_red";
+            case "goldenrod":
+                return "golden_rod";
+            case "hotpink":
+                return "hot_pink";
+            case "cadetblue":
+                return "cadet_blue";
+            case "seagreen":
+                return "sea_green";
+            case "blueviolet":
+                return "blue_violet";
+        }
+        return color;
     }
     
     private static void handleResult(ResultListener.Result r, SimpleRequestResultListener listener) {

@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
@@ -156,12 +157,12 @@ public class TwitchCommands {
         }, "untimeout");
         commands.add("delete", "<messageId>", p -> {
             Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
-            simpleCommand(client, p, args, listener -> {
+            channelCommand(client, p, args, listener -> {
                 api.deleteMsg(p.getRoom(), args.get(0), listener);
             });
         });
         commands.add("clear", p -> {
-            simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+            channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
                 api.deleteMsg(p.getRoom(), null, listener);
             });
         });
@@ -190,7 +191,7 @@ public class TwitchCommands {
         });
         commands.add("mods", p -> {
             if (localUserIsBroadcaster(p.getRoom(), client)) {
-                simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
                     api.requestModerators(p.getRoom(), listener);
                 });
             }
@@ -200,7 +201,7 @@ public class TwitchCommands {
         });
         commands.add("vips", p -> {
             if (localUserIsBroadcaster(p.getRoom(), client)) {
-                simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
                     api.requestVips(p.getRoom(), listener);
                 });
             }
@@ -210,12 +211,12 @@ public class TwitchCommands {
         });
         commands.add("raid", p -> {
             Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
-            simpleCommand(client, p, args, listener -> {
+            channelCommand(client, p, args, listener -> {
                 api.startRaid(p.getRoom(), args.get(0), listener);
-            }, args.get(0));
+            }, () -> args.get(0));
         });
         commands.add("unraid", p -> {
-            simpleCommand(client, p, p.parsedArgs(1, 0), listener -> {
+            channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
                 api.cancelRaid(p.getRoom(), listener);
             });
         });
@@ -290,7 +291,7 @@ public class TwitchCommands {
             Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
             simpleCommand(client, p, args, listener -> {
                 api.setColor(args.get(0), listener);
-            }, args.get(0));
+            }, () -> args.get(0));
         });
         //--------------------------
         // Other
@@ -391,11 +392,23 @@ public class TwitchCommands {
         });
     }
     
-    private void simpleCommand(TwitchClient client,
+    private void channelCommand(TwitchClient client,
                                Commands.CommandParameters p,
                                Commands.CommandParsedArgs args,
                                Consumer<SimpleRequestResultListener> doRequest) {
-        simpleCommand(client, p, args, doRequest, (String) null);
+        channelCommand(client, p, args, doRequest, () -> null);
+    }
+    
+    private void channelCommand(TwitchClient client,
+                               Commands.CommandParameters p,
+                               Commands.CommandParsedArgs args,
+                               Consumer<SimpleRequestResultListener> doRequest,
+                               Supplier<String> outputArg) {
+        if (!Helper.isValidChannelStrict(p.getChannel())) {
+            client.g.printSystem(p.getRoom(), "Invalid channel.");
+            return;
+        }
+        simpleCommand(client, p, args, doRequest, outputArg);
     }
     
     /**
@@ -415,9 +428,9 @@ public class TwitchCommands {
                                Commands.CommandParameters p,
                                Commands.CommandParsedArgs args,
                                Consumer<SimpleRequestResultListener> doRequest,
-                               String... outputArgs) {
+                               Supplier<String> outputArg) {
         if (args != null) {
-            String msg = makeMsg(p.getCommand(), (Object[]) outputArgs);
+            String msg = makeMsg(p.getCommand(), outputArg.get());
             Object objectId = client.g.printLine(p.getRoom(), msg);
             doRequest.accept(r -> {
                 if (r.error == null) {
