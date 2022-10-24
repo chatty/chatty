@@ -176,7 +176,7 @@ public class TwitchCommands {
         });
         commands.add("unmod", "<user>", p -> {
             userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
-                api.setModerator(user, true, resultListener);
+                api.setModerator(user, false, resultListener);
             }, "");
         });
         commands.add("vip", "<user>", p -> {
@@ -186,7 +186,7 @@ public class TwitchCommands {
         });
         commands.add("unvip", "<user>", p -> {
             userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
-                api.setVip(user, true, resultListener);
+                api.setVip(user, false, resultListener);
             }, "");
         });
         commands.add("mods", p -> {
