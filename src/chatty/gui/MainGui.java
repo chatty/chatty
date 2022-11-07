@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.gui.transparency.TransparencyManager;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.gui.components.textpane.UserMessage;
@@ -49,6 +50,7 @@ import chatty.gui.components.ModerationLog;
 import chatty.gui.components.srl.SRL;
 import chatty.gui.components.SearchDialog;
 import chatty.gui.components.StreamChat;
+import chatty.gui.transparency.TransparencyDialog;
 import chatty.gui.components.admin.SelectGameDialog;
 import chatty.gui.components.updating.UpdateDialog;
 import chatty.gui.components.menus.CommandActionEvent;
@@ -111,9 +113,6 @@ import javax.swing.event.MenuListener;
 import chatty.util.dnd.DockPopout;
 import chatty.util.gif.FocusUpdates;
 import chatty.util.gif.GifUtil;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.function.Consumer;
 import org.json.simple.JSONValue;
 
@@ -365,6 +364,8 @@ public class MainGui extends JFrame implements Runnable {
         
         ToolTipManager.sharedInstance().setInitialDelay(555);
         ToolTipManager.sharedInstance().setDismissDelay(20*1000);
+        
+        TransparencyManager.init(channels);
         
         guiCreated = true;
     }
@@ -840,6 +841,14 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 openStreamChat();
+            }
+        });
+        
+        hotkeyManager.registerAction("dialog.toggleTransparency", "Window: Toggle Transparency", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TransparencyManager.toggleTransparent();
             }
         });
         
@@ -1805,6 +1814,11 @@ public class MainGui extends JFrame implements Runnable {
             } else if (cmd.startsWith("layouts.remove.")) {
                 String layoutName = cmd.substring("layouts.remove.".length());
                 removeLayout(layoutName, true);
+            } else if (cmd.equals("transparency")) {
+                TransparencyDialog dialog = TransparencyDialog.instance(MainGui.this);
+                dialog.setLocationRelativeTo(MainGui.this);
+                dialog.setVisible(true);
+                dialog.refresh();
             }
         }
 

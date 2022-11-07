@@ -75,6 +75,7 @@ import chatty.util.api.IgnoredEmotes;
 import chatty.util.api.usericons.UsericonFactory;
 import chatty.util.api.usericons.UsericonManager;
 import java.util.function.Function;
+import chatty.gui.transparency.TransparencyComponent;
 
 
 /**
@@ -96,7 +97,7 @@ import java.util.function.Function;
  * 
  * @author tduva
  */
-public class ChannelTextPane extends JTextPane implements LinkListener, CachedImageUser {
+public class ChannelTextPane extends JTextPane implements LinkListener, CachedImageUser, TransparencyComponent {
     
     private static final Logger LOGGER = Logger.getLogger(ChannelTextPane.class.getName());
     
@@ -137,6 +138,37 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private final RingBuffer<MentionCheck> lastUsers = new RingBuffer<>(300);
     
     protected static User hoveredUser;
+    
+    private int transparency;
+
+    @Override
+    public void setTransparent(int transparency) {
+//        if (this.transparency == transparency) {
+//            return;
+//        }
+//        this.transparency = transparency;
+////        setBackground(new Color(0,0,0,0));
+//        
+//        refreshStyles();
+//        setOpaque(true);
+//        repaint();
+        if (channel != null) {
+            if (transparency == 0) {
+                channel.restoreInput();
+            }
+            else {
+                channel.hideInput();
+            }
+        }
+    }
+    
+    private Color transparency(Color input) {
+        return input;
+//        if (transparency == 0) {
+//            return input;
+//        }
+//        return new Color(input.getRed(), input.getGreen(), input.getBlue(), (int)(255 * (1 - transparency / 100.0)));
+    }
     
     public enum Attribute {
         BASE_STYLE, ORIGINAL_BASE_STYLE, TIMESTAMP_COLOR_INHERIT,
@@ -3639,7 +3671,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             StyleConstants.setItalic(clearSearchResult, false);
             styles.put("clearSearchResult", clearSearchResult);
             
-            setBackground(styleServer.getColor("background"));
+            setBackground(transparency(styleServer.getColor("background")));
             
             colorCorrector = styleServer.getColorCorrector();
 

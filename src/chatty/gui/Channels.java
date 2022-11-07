@@ -8,6 +8,7 @@ import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.TabContextMenu;
 import chatty.gui.components.settings.TabSettings;
+import chatty.gui.transparency.TransparencyManager;
 import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.IconManager;
@@ -154,6 +155,7 @@ public class Channels {
                 if ((!channels.isEmpty() || defaultChannel != null) && !dock.isMainEmpty()) {
                     channelChanged();
                 }
+                TransparencyManager.check();
                 Debugging.println("dnda", "Path: %s", content.getPath());
             }
             
@@ -210,6 +212,7 @@ public class Channels {
             @Override
             public void contentRemoved(DockContent content) {
                 checkDefaultChannel();
+                TransparencyManager.check();
             }
 
         });

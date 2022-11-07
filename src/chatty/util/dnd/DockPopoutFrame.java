@@ -16,6 +16,8 @@ public class DockPopoutFrame extends JFrame implements DockPopout {
     
     private final DockBase base;
     private String id;
+    
+    private boolean fixedAlwaysOnTop;
 
     public DockPopoutFrame(DockManager m) {
         id = "f"+(counter++);
@@ -42,6 +44,14 @@ public class DockPopoutFrame extends JFrame implements DockPopout {
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+    
+    protected void setFixedAlwaysOnTop(boolean fixed) {
+        this.fixedAlwaysOnTop = fixed;
+    }
+    
+    protected boolean isFixedAlwaysOnTop() {
+        return fixedAlwaysOnTop;
     }
 
 }

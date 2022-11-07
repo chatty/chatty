@@ -394,6 +394,19 @@ public final class Channel extends JPanel {
         revalidate();
     }
     
+    private boolean inputPreviouslyShown = true;
+    
+    public final void hideInput() {
+        inputPreviouslyShown = input.isVisible();
+        input.setVisible(false);
+        revalidate();
+    }
+    
+    public final void restoreInput() {
+        input.setVisible(inputPreviouslyShown);
+        revalidate();
+    }
+    
     /**
      * Enable or disable the userlist. As with setting the initial size, this
      * requires some hacky stuff to get the size back correctly.
