@@ -142,6 +142,7 @@ public class About extends JFrame implements ActionListener {
         webButton.addActionListener(buttonAction);
         
         currentLocation = new JTextField(20);
+        currentLocation.setEditable(false);
         JPanel currentLocationPanel = new JPanel(new BorderLayout());
         currentLocationPanel.setBorder(BorderFactory.createEmptyBorder(4, 5, 5, 5));
         currentLocationPanel.setOpaque(false);

@@ -2,7 +2,7 @@
 package chatty.gui.components.updating;
 
 import chatty.util.colors.HtmlColors;
-import chatty.gui.LaF;
+import chatty.gui.laf.LaF;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;
 import chatty.util.DateTime;

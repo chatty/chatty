@@ -70,7 +70,7 @@ public class SearchDialog extends JDialog {
         
         add(searchText, gbc);
         gbc.gridx = 1;
-        searchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(searchButton);
         searchButton.setFocusable(false);
         add(searchButton, gbc);
 

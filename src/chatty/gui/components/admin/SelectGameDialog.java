@@ -113,7 +113,7 @@ public class SelectGameDialog extends JDialog {
         gbc.weightx = 0.5;
         add(gameInput, gbc);
         
-        searchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(searchButton);
         gbc = makeGbc(2,1,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(searchButton, gbc);
@@ -124,7 +124,7 @@ public class SelectGameDialog extends JDialog {
         add(searchResultInfo, gbc);
         
         gbc = makeGbc(2,2,1,1);
-        clearSearchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(clearSearchButton);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(2,4,4,4);
         add(clearSearchButton, gbc);
@@ -135,13 +135,13 @@ public class SelectGameDialog extends JDialog {
         gbc.weighty = 1;
         add(new JScrollPane(list), gbc);
  
-        addToFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(addToFavoritesButton);
         gbc = makeGbc(0,4,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         add(addToFavoritesButton, gbc);
         
-        removeFromFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(removeFromFavoritesButton);
         gbc = makeGbc(1,4,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;

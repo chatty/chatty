@@ -56,7 +56,7 @@ public class EmoteSettings extends SettingsPanel {
         
         IgnoredEmotesDialog ignoredEmotesDialog = new IgnoredEmotesDialog(d);
         JButton ignoredEmotesButton = new JButton(Language.getString("settings.emoticons.button.editIgnored"));
-        ignoredEmotesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(ignoredEmotesButton);
         ignoredEmotesButton.addActionListener(e -> {
             ignoredEmotesDialog.show(d);
         });
@@ -253,7 +253,7 @@ public class EmoteSettings extends SettingsPanel {
         
         localEmotesDialog = new LocalEmotesDialog(d);
         JButton localEmotesButton = new JButton("View Local Emotes");
-        localEmotesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(localEmotesButton);
         localEmotesButton.addActionListener(e -> {
             localEmotesDialog.show(d);
         });
@@ -433,9 +433,9 @@ public class EmoteSettings extends SettingsPanel {
             
             JPanel buttonPanel = new JPanel();
             ignoredButton = new JToggleButton(Language.getString("settings.ignoredEmotes.button.allIgnored"));
-            ignoredButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(ignoredButton);
             unignoredButton = new JToggleButton(Language.getString("settings.ignoredEmotes.button.notIgnored"));
-            unignoredButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(unignoredButton);
             
             buttonPanel.add(ignoredButton);
             buttonPanel.add(unignoredButton);

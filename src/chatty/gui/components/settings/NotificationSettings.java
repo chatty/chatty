@@ -3,7 +3,6 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import chatty.gui.GuiUtil;
-import static chatty.gui.GuiUtil.SMALL_BUTTON_INSETS;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.notifications.Notification;
 import chatty.lang.Language;
@@ -209,7 +208,7 @@ public class NotificationSettings extends SettingsPanel {
         
         gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.EAST);
         JButton rescanButton = new JButton("Rescan folder");
-        rescanButton.setMargin(SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(rescanButton);
         rescanButton.addActionListener(e -> {
             scanFiles(true);
         });

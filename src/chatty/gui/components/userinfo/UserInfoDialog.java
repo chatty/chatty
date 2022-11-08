@@ -151,7 +151,7 @@ public class UserInfoDialog extends JDialog {
         gbc = makeGbc(2, 1, 1, 1);
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        notesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(notesButton);
         notesButton.addActionListener(e -> {
             UserNotes.instance().showDialog(currentUser, this, user -> {
                 if (user == currentUser) {

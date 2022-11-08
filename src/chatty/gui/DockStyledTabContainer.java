@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.gui.laf.LaF;
 import chatty.util.dnd.DockContentContainer;
 import chatty.util.dnd.DockManager;
 import chatty.util.dnd.DockTabComponent;

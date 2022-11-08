@@ -419,11 +419,11 @@ class UsericonEditor extends TableEditor<Usericon> {
             gbc.weightx = 1;
             panel.add(scanResult, gbc);
             
-            scanDir.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(scanDir);
             gbc = GuiUtil.makeGbc(1, 2, 1, 1);
             panel.add(scanDir, gbc);
             
-            openDir.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(openDir);
             gbc = GuiUtil.makeGbc(2, 2, 1, 1);
             panel.add(openDir, gbc);
 
@@ -488,7 +488,7 @@ class UsericonEditor extends TableEditor<Usericon> {
                     updateSize();
                 }
             });
-            sourceInfoButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(sourceInfoButton);
             gbc = GuiUtil.makeGbc(2, 7, 1, 1);
             panel.add(sourceInfoButton, gbc);
 

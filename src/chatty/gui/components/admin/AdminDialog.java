@@ -8,6 +8,7 @@ import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
+import chatty.gui.laf.LaF;
 import chatty.lang.Language;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.ChannelStatus;
@@ -46,7 +47,7 @@ public class AdminDialog extends JDialog {
     private static final Color LABEL_VISIBLE = new Color(120, 150, 150);
     
     // Insets for smaller kind of buttons
-    public static final Insets SMALL_BUTTON_INSETS = new Insets(-1,15,-1,15);
+    public static final Insets SMALL_BUTTON_INSETS = LaF.defaultButtonInsets() ? null : new Insets(-1,15,-1,15);
     // How often to call update() which updates times and runs commercials.
     private static final int UPDATE_DELAY = 4000;
 

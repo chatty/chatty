@@ -206,6 +206,10 @@ public class SettingsManager {
         settings.addString("lafStyle", "regular");
         settings.addString("lafScroll", "default");
         settings.addBoolean("lafNativeWindow", true);
+        settings.addBoolean("lafFlatStyledWindow", true);
+        settings.addBoolean("lafFlatEmbeddedMenu", false);
+        settings.addString("lafFlatProperties", "");
+        settings.addLong("lafFlatTabs", 3);
         settings.addString("language", "");
         settings.addString("locale", "");
         settings.addString("timezone", "");

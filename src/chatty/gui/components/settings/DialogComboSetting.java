@@ -42,7 +42,7 @@ public class DialogComboSetting extends JPanel implements StringSetting {
         this.valueFormatter = valueFormatter;
 
         JButton changeButton = new JButton(Language.getString("dialog.button.change"));
-        changeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(changeButton);
         changeButton.addActionListener(e -> {
             change(parent);
         });

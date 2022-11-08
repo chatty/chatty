@@ -91,7 +91,7 @@ public class CompletionSettings extends SettingsPanel {
         CustomCompletionEntries customCompletionDialog = new CustomCompletionEntries(d);
         
         JButton editCustomCompletion = new JButton("Edit Custom Completion Items");
-        editCustomCompletion.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(editCustomCompletion);
         editCustomCompletion.addActionListener(e -> {
             customCompletionDialog.show(d);
         });

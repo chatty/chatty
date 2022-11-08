@@ -1,10 +1,14 @@
 body {
     max-width: 700px;
     font-size: 1em;
+    color: black;
     background-color: #FDFDFD;
     font-family: Arial, sans-serif;
     padding: 10px;
     margin: 0;
+}
+a {
+    color: blue;
 }
 h1 {
     margin: 4px 0 5px 0;

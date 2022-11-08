@@ -47,7 +47,7 @@ public class ChatSettings extends SettingsPanel {
         
         BufferSizes bufferSizes = new BufferSizes(d);
         JButton bufferSizesButton = new JButton("Per tab buffer sizes");
-        bufferSizesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(bufferSizesButton);
         bufferSizesButton.addActionListener(e -> {
             bufferSizes.setLocationRelativeTo(ChatSettings.this);
             bufferSizes.setVisible(true);

@@ -3,7 +3,7 @@ package chatty.gui.components;
 
 import chatty.Chatty;
 import chatty.Helper;
-import chatty.gui.LaF;
+import chatty.gui.laf.LaF;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;

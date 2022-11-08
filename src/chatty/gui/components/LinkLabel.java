@@ -2,7 +2,7 @@
 package chatty.gui.components;
 
 import chatty.util.colors.HtmlColors;
-import chatty.gui.LaF;
+import chatty.gui.laf.LaF;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.FocusAdapter;

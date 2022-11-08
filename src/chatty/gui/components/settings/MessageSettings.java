@@ -142,7 +142,7 @@ public class MessageSettings extends SettingsPanel {
         d.addStringSetting(setting, combo);
         
         JButton editTimestampButton = new JButton(Language.getString("dialog.button.customize"));
-        editTimestampButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(editTimestampButton);
         GuiUtil.matchHeight(editTimestampButton, combo);
         editTimestampButton.addActionListener(e -> {
             TimestampEditor editor = new TimestampEditor(d, d.getLinkLabelListener());

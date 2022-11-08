@@ -161,7 +161,7 @@ public class MainSettings extends SettingsPanel {
         dirPanel.add(dir, gbc);
         
         JButton openDirButton = new JButton(Language.getString("settings.chooseFolder.button.open"));
-        openDirButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(openDirButton);
         openDirButton.addActionListener(e -> {
             MiscUtil.openFolder(new File(Chatty.getUserDataDirectory()), this);
         });

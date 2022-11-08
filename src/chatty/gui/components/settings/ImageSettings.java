@@ -63,7 +63,7 @@ public class ImageSettings extends SettingsPanel {
         
         hiddenBadgesDialog = new HiddenBadgesDialog(d);
         JButton hiddenBadgesButton = new JButton("View Hidden Badges");
-        hiddenBadgesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(hiddenBadgesButton);
         hiddenBadgesButton.addActionListener(e -> {
             hiddenBadgesDialog.show(d);
         });

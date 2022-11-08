@@ -19,7 +19,7 @@ import javax.swing.JComboBox;
  */
 public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
 
-    private final Set<Consumer<GenericComboSetting>> listeners = new HashSet<>();
+    private final Set<Consumer<GenericComboSetting<E>>> listeners = new HashSet<>();
     
     public GenericComboSetting() {
         // Empty list
@@ -154,7 +154,7 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
         }
     }
     
-    public void addSettingChangeListener(Consumer<GenericComboSetting> listener) {
+    public void addSettingChangeListener(Consumer<GenericComboSetting<E>> listener) {
         if (listener != null) {
             if (listeners.isEmpty()) {
                 addItemListener(e -> {
@@ -166,7 +166,7 @@ public class GenericComboSetting<E> extends JComboBox<Entry<E>> {
     }
 
     public void informSettingChangeListeners() {
-        for (Consumer<GenericComboSetting> listener : listeners) {
+        for (Consumer<GenericComboSetting<E>> listener : listeners) {
             listener.accept(this);
         }
     }

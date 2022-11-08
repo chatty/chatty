@@ -3,8 +3,8 @@ package chatty.gui.components.settings;
 
 import chatty.gui.GuiUtil;
 import chatty.util.colors.HtmlColors;
-import chatty.gui.LaF;
-import chatty.gui.LaF.LaFSettings;
+import chatty.gui.laf.LaF;
+import chatty.gui.laf.LaF.LaFSettings;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
@@ -369,7 +369,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         searchLabel.setLabelFor(searchField);
         
         JButton resetSearchButton = new JButton(Language.getString("settings.resetSearch"));
-        resetSearchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(resetSearchButton);
         resetSearchButton.addActionListener(e -> {
             searchField.setText("");
         });
@@ -394,7 +394,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.insets = new Insets(4,3,8,8);
         gbc.ipadx = 16;
         gbc.ipady = 4;
-        ok.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(ok);
         add(ok,gbc);
         cancel.setMnemonic(KeyEvent.VK_C);
         gbc = makeGbc(3,2,1,1);
@@ -402,13 +402,13 @@ public class SettingsDialog extends JDialog implements ActionListener {
         gbc.insets = new Insets(4,3,8,8);
         gbc.ipadx = 16;
         gbc.ipady = 4;
-        cancel.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(cancel);
         add(cancel,gbc);
         
         // Button Listeners
         ok.addActionListener(this);
         cancel.addActionListener(this);
-
+        
         pack();
     }
     

@@ -55,9 +55,9 @@ public class TabSettings extends SettingsPanel {
         JPanel layoutPanel = new JPanel(new GridBagLayout());
         JPanel orderPanel = new JPanel(new GridBagLayout());
         
-        mainTabs.addTab(Language.getString("settings.tabs.tab.behavior"), mainPanel);
-        mainTabs.addTab(Language.getString("settings.tabs.tab.layout"), layoutPanel);
-        mainTabs.addTab(Language.getString("settings.tabs.tab.order"), orderPanel);
+        mainTabs.addTab(Language.getString("settings.tabs.tab.behavior"), SettingsUtil.topAlign(mainPanel, 20));
+        mainTabs.addTab(Language.getString("settings.tabs.tab.layout"), SettingsUtil.topAlign(layoutPanel, 20));
+        mainTabs.addTab(Language.getString("settings.tabs.tab.order"), SettingsUtil.topAlign(orderPanel, 20));
         
         //--------------------------
         // Tabs Order
@@ -82,7 +82,7 @@ public class TabSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(orderPanel, "settings.tabsOrder.dialogs", 0, 3, 3, GridBagConstraints.WEST, dialogsPrefix);
         
         JButton tabsPosButton = new JButton("Advanced Tabs Order");
-        tabsPosButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(tabsPosButton);
         tabsPosButton.addActionListener(e -> {
             tabsPos.show(TabSettings.this);
         });
@@ -148,11 +148,6 @@ public class TabSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(layoutPanel, "tabsMaxWidth", 0, 5, 3, GridBagConstraints.WEST,
                 d.addSimpleLongSetting("tabsMaxWidth", 3, true));
         
-        // Fill up remaining space to top-align components
-        gbc = SettingsDialog.makeGbc(0, 6, 4, 1, GridBagConstraints.WEST);
-        gbc.weighty = 1;
-        layoutPanel.add(new JLabel(), gbc);
-        
         //--------------------------
         // Close Empty Tab Panes
         //--------------------------
@@ -167,8 +162,6 @@ public class TabSettings extends SettingsPanel {
         mainPanel.add(scroll,
                 d.makeGbc(0, 7, 4, 1, GridBagConstraints.WEST));
         gbc = d.makeGbcSub(0, 8, 4, 1, GridBagConstraints.NORTHWEST);
-        // Fill up remaining space
-        gbc.weighty = 1;
         mainPanel.add(scroll2,
                 gbc);
 
@@ -321,9 +314,9 @@ public class TabSettings extends SettingsPanel {
                     Channels.DockChannelContainer.CUSTOM_COLOR_START_BIT);
             customColor.setSettingValue(HtmlColors.getNamedColorString(color));
         }
-        
+
     }
-    
+        
     private static class TabsPrefixPos extends JPanel {
         
         private final SettingsDialog d;

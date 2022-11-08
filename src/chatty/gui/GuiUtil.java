@@ -3,6 +3,7 @@ package chatty.gui;
 
 import chatty.Helper;
 import chatty.gui.components.textpane.ChannelTextPane;
+import chatty.gui.laf.LaF;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
@@ -48,6 +49,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -89,7 +91,6 @@ public class GuiUtil {
     private static final Logger LOGGER = Logger.getLogger(GuiUtil.class.getName());
     
     public final static Insets NORMAL_BUTTON_INSETS = new Insets(2, 14, 2, 14);
-    public final static Insets SMALL_BUTTON_INSETS = new Insets(-1, 10, -1, 10);
     public final static Insets SMALLER_BUTTON_INSETS = new Insets(0, 4, 0, 4);
     public final static Insets SPECIAL_BUTTON_INSETS = new Insets(2, 12, 2, 6);
     public final static Insets SPECIAL_SMALL_BUTTON_INSETS = new Insets(-1, 12, -1, 6);
@@ -97,6 +98,9 @@ public class GuiUtil {
     private static final String CLOSE_DIALOG_ACTION_MAP_KEY = "CLOSE_DIALOG_ACTION_MAP_KEY";
     private static final KeyStroke ESCAPE_STROKE = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
     
+    public static void smallButtonInsets(AbstractButton button) {
+        button.setMargin(LaF.defaultButtonInsets() ? null : new Insets(-1, 10, -1, 10));
+    }
     
     public static void installEscapeCloseOperation(final JDialog dialog) {
         Action closingAction = new AbstractAction() {

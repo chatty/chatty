@@ -80,7 +80,7 @@ public class Editor implements StringEditor {
         dialog.add(label, gbc);
         
         gbc = GuiUtil.makeGbc(2, 0, 1, 1, GridBagConstraints.EAST);
-        testButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(testButton);
         dialog.add(testButton, gbc);
         testButton.setVisible(false);
 

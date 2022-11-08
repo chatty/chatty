@@ -121,7 +121,7 @@ public class Buttons {
             boolean secondaryButton = false;
             if (item.getParent() != null && !item.getParent().startsWith("a")) {
                 secondaryButton = true;
-                button.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+                GuiUtil.smallButtonInsets(button);
             }
             
             getRow(item.getParent()).add(button);

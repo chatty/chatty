@@ -41,7 +41,7 @@ public class HotkeySettings extends SettingsPanel {
                 Hotkey.keyStrokeToText(KeyStroke.getKeyStroke("ctrl 1")),
                 Hotkey.keyStrokeToText(KeyStroke.getKeyStroke("ctrl 9"))));
         addTabSwitchKeys.setToolTipText("Add hotkeys to directly switch to a tab index in the active tab pane");
-        addTabSwitchKeys.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(addTabSwitchKeys);
         gbc = d.makeGbc(1, 1, 1, 1);
         gbc.insets = new Insets(5, 5, 5, 30);
         gbc.anchor = GridBagConstraints.EAST;

@@ -1,7 +1,7 @@
 
 package chatty.gui.components;
 
-import chatty.gui.LaF;
+import chatty.gui.laf.LaF;
 import chatty.gui.components.completion.AutoCompletion;
 import chatty.gui.components.completion.AutoCompletionServer;
 import chatty.util.colors.ColorCorrectionNew;

@@ -52,7 +52,7 @@ public class SRLRaces extends JDialog {
         add(info, gbc);
         
         gbc = GuiUtil.makeGbc(1, 0, 1, 1);
-        reloadButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(reloadButton);
         reloadButton.setIcon(new ImageIcon(SRLRaces.class.getResource("view-refresh.png")));
         add(reloadButton, gbc);
         

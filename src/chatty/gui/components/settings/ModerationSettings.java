@@ -150,7 +150,7 @@ public class ModerationSettings extends SettingsPanel {
         SettingsUtil.addSubsettings(repeatMsg, repeatMsgPanel.getComponents());
         
         JButton testSim = new JButton("Test Similarity");
-        testSim.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(testSim);
         testSim.addActionListener(e -> {
             new TestSimilarity(d, ignoredChars.getText()).setVisible(true);
         });
@@ -252,8 +252,8 @@ public class ModerationSettings extends SettingsPanel {
             JButton ignoredCharsClear = new JButton("Clear");
             ignoredCharsClear.addActionListener(e -> ignoredChars.setText(null));
             
-            ignoredCharsLoad.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-            ignoredCharsClear.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(ignoredCharsLoad);
+            GuiUtil.smallButtonInsets(ignoredCharsClear);
             
             ignorePanel.add(ignoredCharsLoad);
             ignorePanel.add(ignoredCharsClear);
@@ -360,9 +360,9 @@ public class ModerationSettings extends SettingsPanel {
                 entry.getValue().setSelected((setting & entry.getKey()) != 0);
             }
         }
-        
+
     }
-    
+        
     public static void main(String[] args) {
         new TestSimilarity(null, "?").setVisible(true);
     }

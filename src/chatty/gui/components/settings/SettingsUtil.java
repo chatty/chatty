@@ -10,11 +10,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.function.Function;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 /**
  *
@@ -154,6 +156,28 @@ public class SettingsUtil {
         panel.add(component, gbc);
     }
     
+    public static void addStandardSetting(JPanel panel, String name, int y, JComponent component) {
+        addStandardSetting(panel, name, y, component, false);
+    }
+    
+    public static void addStandardSubSetting(JPanel panel, String name, int y, JComponent component) {
+        addStandardSetting(panel, name, y, component, true);
+    }
+    
+    public static void addStandardSetting(JPanel panel, String name, int y, JComponent component, boolean sub) {
+        if (component instanceof JCheckBox) {
+            if (sub) {
+                panel.add(component, SettingsDialog.makeGbcSub(0, y, 2, 1, GridBagConstraints.WEST));
+            }
+            else {
+                panel.add(component, SettingsDialog.makeGbc(0, y, 2, 1, GridBagConstraints.WEST));
+            }
+        }
+        else {
+            addLabeledComponent(panel, name, 0, y, 1, GridBagConstraints.EAST, component);
+        }
+    }
+    
     public static JPanel createPanel(String settingName, JComponent... settingComponent) {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = makeGbc(0, 0, 1, 1);
@@ -170,11 +194,15 @@ public class SettingsUtil {
         return panel;
     }
     
-    public static void topAlign(JPanel panel, int y) {
+    private static final Border PADDING = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+    
+    public static JPanel topAlign(JPanel panel, int y) {
         // Fill up remaining space to top-align components
         GridBagConstraints gbc = SettingsDialog.makeGbc(0, y, 1, 1, GridBagConstraints.WEST);
         gbc.weighty = 1;
         panel.add(new JLabel(), gbc);
+        panel.setBorder(PADDING);
+        return panel;
     }
     
 }

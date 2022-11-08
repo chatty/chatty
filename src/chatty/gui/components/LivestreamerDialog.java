@@ -156,7 +156,7 @@ public class LivestreamerDialog extends JDialog {
         infoPanel.add(streamInput, gbc);
         
         gbc = GuiUtil.makeGbc(1, 10, 1, 1);
-        openStreamButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(openStreamButton);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         infoPanel.add(openStreamButton, gbc);
         
@@ -337,11 +337,11 @@ public class LivestreamerDialog extends JDialog {
             add(info, gbc);
             
             gbc = GuiUtil.makeGbc(1, 0, 1, 1);
-            retryButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(retryButton);
             add(retryButton, gbc);
             
             gbc = GuiUtil.makeGbc(2, 0, 1, 1);
-            closeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(closeButton);
             add(closeButton, gbc);
             
             gbc = GuiUtil.makeGbc(0, 1, 3, 1);

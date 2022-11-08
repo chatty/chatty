@@ -49,9 +49,9 @@ public class PathSetting extends JPanel implements StringSetting {
         this.parentComponent = parentComponent;
         
         display.setEditable(false);
-        changeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-        resetButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
-        openButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(changeButton);
+        GuiUtil.smallButtonInsets(resetButton);
+        GuiUtil.smallButtonInsets(openButton);
         
         setLayout(new GridBagLayout());
         

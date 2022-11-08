@@ -183,7 +183,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             
             gbc = GuiUtil.makeGbc(0, 13, 2, 1);
             gbc.insets = new Insets(0, 5, 4, 5);
-            addToBlacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(addToBlacklistButton);
             main.add(addToBlacklistButton, gbc);
             addToBlacklistButton.setVisible(false);
             addToBlacklistButton.addActionListener(e -> {

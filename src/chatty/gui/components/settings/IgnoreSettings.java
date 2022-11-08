@@ -122,7 +122,7 @@ public class IgnoreSettings extends SettingsPanel {
         //-------
         
         JButton ignoredUsersButton = new JButton("Ignored Users");
-        ignoredUsersButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(ignoredUsersButton);
         ignoredUsersButton.addActionListener(new ActionListener() {
 
             @Override
@@ -137,7 +137,7 @@ public class IgnoreSettings extends SettingsPanel {
         base.add(ignoredUsersButton, gbc);
         
         JButton blacklistButton = new JButton("Ignore Blacklist");
-        blacklistButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(blacklistButton);
         blacklistButton.addActionListener(e -> {
             blacklist.show(this);
         });

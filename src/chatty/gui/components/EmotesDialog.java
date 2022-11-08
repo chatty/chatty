@@ -240,7 +240,7 @@ public class EmotesDialog extends JDialog {
             JToggleButton button = new JToggleButton(p.label);
             buttons.put(button, p);
             buttonGroup.add(button);
-            button.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+            GuiUtil.smallButtonInsets(button);
             buttonPanel.add(button);
             button.addActionListener(buttonAction);
         }
@@ -393,7 +393,7 @@ public class EmotesDialog extends JDialog {
         label.setLabelFor(searchField);
         
         JButton closeButton = new JButton(Language.getString("dialog.button.close"));
-        closeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(closeButton);
         
         GuiUtil.addChangeListener(searchField.getDocument(), e -> {
             search = StringUtil.toLowerCase(searchField.getText());

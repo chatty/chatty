@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.gui.transparency.TransparencyManager;
+import chatty.gui.laf.LaF;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.gui.components.textpane.UserMessage;
@@ -34,7 +35,7 @@ import chatty.util.api.usericons.Usericon;
 import chatty.WhisperManager;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.Highlighter.Match;
-import chatty.gui.LaF.LaFSettings;
+import chatty.gui.laf.LaF.LaFSettings;
 import chatty.gui.colors.ColorItem;
 import chatty.gui.colors.MsgColorItem;
 import chatty.gui.colors.MsgColorManager;

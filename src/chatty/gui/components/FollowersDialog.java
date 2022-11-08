@@ -7,7 +7,7 @@ import chatty.User;
 import chatty.gui.DockedDialogHelper;
 import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
-import chatty.gui.LaF;
+import chatty.gui.laf.LaF;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;

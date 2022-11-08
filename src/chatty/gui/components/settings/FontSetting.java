@@ -63,7 +63,7 @@ public class FontSetting extends JPanel {
         fontSizeField = new JTextField(3);
         fontSizeField.setEditable(false);
         editButton = new JButton(Language.getString("dialog.button.change"));
-        editButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(editButton);
         
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

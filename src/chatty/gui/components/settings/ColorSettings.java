@@ -436,7 +436,7 @@ public class ColorSettings extends SettingsPanel {
         //--------------------------
         gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
         JButton switchButton = new JButton(Language.getString("settings.colors.button.switchBackgrounds"));
-        switchButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(switchButton);
         switchButton.addActionListener(e -> {
             String bg = backgroundColor.getSettingValue();
             backgroundColor.setSettingValue(backgroundColor2.getSettingValue());

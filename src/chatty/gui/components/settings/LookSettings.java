@@ -1,17 +1,21 @@
 
 package chatty.gui.components.settings;
 
-import chatty.gui.LaF;
-import chatty.gui.LaF.LaFSettings;
+import chatty.gui.laf.LaF;
+import chatty.gui.laf.LaF.LaFSettings;
 import chatty.gui.components.LinkLabel;
+import chatty.gui.laf.FlatLafUtil;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
+import java.awt.GridBagLayout;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 
 /**
  *
@@ -22,7 +26,7 @@ public class LookSettings extends SettingsPanel {
     protected LookSettings(SettingsDialog d) {
 
         JPanel lafSettingsPanel = addTitledPanel(Language.getString("settings.section.lookandfeel"), 1);
-        JPanel fontScalePanel = addTitledPanel("Font Scale (experimental)", 2);
+        JPanel optionsPanel = addTitledPanel("Additional Options", 2);
         JPanel previewPanel = addTitledPanel(Language.getString("settings.section.preview"), 3);
         
         GridBagConstraints gbc;
@@ -34,6 +38,8 @@ public class LookSettings extends SettingsPanel {
         Map<String, String> lafDef = new LinkedHashMap<>();
         lafDef.put("default", "Default");
         lafDef.put("system", "System");
+        lafDef.put("flatdark", "Flat Dark");
+        lafDef.put("flatlight", "Flat Light");
         lafDef.put("hifiCustom", "HiFi Custom (Dark)");
         lafDef.put("hifi2", "HiFi Soft (Dark)");
         lafDef.put("hifi", "HiFi (Dark)");
@@ -59,14 +65,6 @@ public class LookSettings extends SettingsPanel {
         themeDef.put("Giant-Font", Language.getString("settings.laf.option.giantFont"));
         ComboStringSetting theme = new ComboStringSetting(themeDef);
         d.addStringSetting("lafTheme", theme);
-        
-        SettingsUtil.addSubsettings(laf, s -> !s.equals("default") && !s.equals("system"), theme);
-        
-        
-        laf.addActionListener(e -> {
-            String selected = laf.getSettingValue();
-            theme.setEnabled(!selected.equals("default") && !selected.equals("system"));
-        });
         
         JButton lafPreviewButton = new JButton("Preview");
         lafPreviewButton.addActionListener(e -> {
@@ -142,73 +140,81 @@ public class LookSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 2, 4, 1);
         lafSettingsPanel.add(lafInfo, gbc);
         
-        // Font Theme
-        gbc = d.makeGbc(2, 1, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.font")), gbc);
+        JPanel generalOptions = new JPanel(new GridBagLayout());
+        JPanel flatOptions = new JPanel(new GridBagLayout());
+        JPanel hifiCustomOptions = new JPanel(new GridBagLayout());
         
-        gbc = d.makeGbc(3, 1, 1, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(theme, gbc);
+        //--------------------------
+        // General Options
+        //--------------------------
+        // Font Theme
+        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
+        generalOptions.add(new JLabel(Language.getString("settings.laf.font")), gbc);
+        
+        gbc = d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST);
+        generalOptions.add(theme, gbc);
+        
+        // Font Scale
+        SettingsUtil.addLabeledComponent(generalOptions, "lafFontScale", 0, 1, 1, GridBagConstraints.WEST, fontScale);
+        
+        // Native window
+        gbc = d.makeGbc(0, 8, 2, 1, GridBagConstraints.WEST);
+        generalOptions.add(lafNativeWindow, gbc);
         
         // Scrollbar
-        gbc = d.makeGbc(0, 3, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(SettingsUtil.createLabel("lafScroll"), gbc);
+        SettingsUtil.addLabeledComponent(generalOptions, "lafScroll", 0, 0, 1, GridBagConstraints.WEST, lafScroll);
         
-        gbc = d.makeGbc(1, 3, 3, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(lafScroll, gbc);
+        SettingsUtil.addSubsettings(laf, s -> !s.equals("default") && !s.equals("system") && !s.startsWith("flat"), theme, lafNativeWindow);
         
-        // Style
-        gbc = d.makeGbc(0, 8, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(SettingsUtil.createLabel("lafStyle"), gbc);
+        //--------------------------
+        // Flat Options
+        //--------------------------
+        JCheckBox styledWindow = d.addSimpleBooleanSetting("lafFlatStyledWindow");
+        SettingsUtil.addStandardSetting(flatOptions, "lafFlatStyledWindow", 0, styledWindow);
+        JCheckBox embeddedMenu = d.addSimpleBooleanSetting("lafFlatEmbeddedMenu");
+        SettingsUtil.addStandardSubSetting(flatOptions, "lafFlatEmbeddedMenu", 1, embeddedMenu);
+        EditorStringSetting flatProperties = d.addEditorStringSetting("lafFlatProperties", 10, true, "Abc", true,
+                SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-flatProperties.html", null));
+        flatProperties.setLinkLabelListener(d.getLinkLabelListener());
+        SettingsUtil.addStandardSetting(flatOptions, "lafFlatProperties", 3, flatProperties);
+        FlatTabOptions selectedTabOptions = new FlatTabOptions("lafFlatTabs", d);
+        flatOptions.add(selectedTabOptions, d.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST));
         
-        gbc = d.makeGbc(1, 8, 1, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(lafStyle, gbc);
+        SettingsUtil.addSubsettings(styledWindow, embeddedMenu);
+        SettingsUtil.addSubsettings(laf, s -> s.startsWith("flat"), styledWindow);
         
-        gbc = d.makeGbc(2, 8, 2, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(lafNativeWindow, gbc);
+        //--------------------------
+        // HiFi Custom Options
+        //--------------------------
+        SettingsUtil.addStandardSetting(hifiCustomOptions, "lafStyle", 0, lafStyle);
+        SettingsUtil.addStandardSetting(hifiCustomOptions, "lafVariant", 1, lafVariant);
+        SettingsUtil.addStandardSetting(hifiCustomOptions, "lafGradient", 2, lafGradient);
         
         // Colors
         gbc = d.makeGbc(0, 10, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(new JLabel(Language.getString("settings.laf.colors")), gbc);
+        hifiCustomOptions.add(new JLabel(Language.getString("settings.laf.colors")), gbc);
         
         gbc = d.makeGbc(1, 10, 3, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        lafSettingsPanel.add(foregroundColor, gbc);
+        hifiCustomOptions.add(foregroundColor, gbc);
         
         gbc = d.makeGbc(1, 11, 3, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        lafSettingsPanel.add(backgroundColor, gbc);
+        hifiCustomOptions.add(backgroundColor, gbc);
         
-        // Variant
-        gbc = d.makeGbc(0, 9, 1, 1, GridBagConstraints.EAST);
-        lafSettingsPanel.add(SettingsUtil.createLabel("lafVariant"), gbc);
-        
-        gbc = d.makeGbc(1, 9, 1, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(lafVariant, gbc);
-        
-        // Gradient
-        gbc = d.makeGbc(2, 9, 1, 1);
-        lafSettingsPanel.add(SettingsUtil.createLabel("lafGradient"), gbc);
-        
-        gbc = d.makeGbc(3, 9, 1, 1, GridBagConstraints.WEST);
-        lafSettingsPanel.add(lafGradient, gbc);
-
-        SettingsUtil.addSubsettings(laf, s -> s.equals("hifiCustom"), foregroundColor, backgroundColor, lafGradient, lafStyle);
-        SettingsUtil.addSubsettings(laf, s -> !s.equals("default") && !s.equals("system"), lafNativeWindow);
+        SettingsUtil.addSubsettings(laf, s -> s.equals("hifiCustom"), foregroundColor, backgroundColor, lafGradient, lafStyle, lafVariant);
         
         //--------------------------
-        // Font Scale
+        // Add tabs
         //--------------------------
-        gbc = d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
-        fontScalePanel.add(new JLabel("Font Scale:"), gbc);
-        
-        gbc = d.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
-        fontScalePanel.add(fontScale, gbc);
-        
-        gbc = d.makeGbc(0, 2, 2, 1, GridBagConstraints.CENTER);
-        fontScalePanel.add(new JLabel(SettingConstants.HTML_PREFIX
-                + "Some things may not look correct. Restart of Chatty required "
-                + "after changing setting."),
-                gbc);
+        JTabbedPane optionsTabs = new JTabbedPane();
+        optionsTabs.addTab("General", SettingsUtil.topAlign(generalOptions, 20));
+        optionsTabs.addTab("Flat", SettingsUtil.topAlign(flatOptions, 20));
+        optionsTabs.addTab("HiFi Custom", SettingsUtil.topAlign(hifiCustomOptions, 20));
+        gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        optionsPanel.add(optionsTabs, gbc);
         
         //==========================
         // Preview
@@ -229,6 +235,9 @@ public class LookSettings extends SettingsPanel {
         else if (selected.equals("system")) {
             text += "This Look&Feel differs depending what OS you are using.";
         }
+        else if (selected.startsWith("flat")) {
+            text += "Modern-looking and simple. Customize further below.";
+        }
         else {
             text += "No window snapping (unless you enable using the native window, see [help-laf:native-window help]). ";
             if (selected.equals("hifiCustom")) {
@@ -237,6 +246,60 @@ public class LookSettings extends SettingsPanel {
             text += "More properties [help-laf:custom can be set] manually.";
         }
         label.setText(text);
+    }
+    
+    private static class FlatTabOptions extends JPanel implements LongSetting {
+        
+        private final Map<Integer, JCheckBox> options = new HashMap<>();
+        
+        FlatTabOptions(String settingName, SettingsDialog settings) {
+            settings.addLongSetting(settingName, this);
+            setLayout(new GridBagLayout());
+            add(makeOption(FlatLafUtil.TAB_SELECTED_BACKGROUND, "selectedBackground"),
+                    SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(FlatLafUtil.TAB_SEP, "separators"),
+                    SettingsDialog.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(FlatLafUtil.TAB_SEP_FULL, "separatorsFull"),
+                    SettingsDialog.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+            update();
+        }
+        
+        private JCheckBox makeOption(int option, String labelKey) {
+            String text = Language.getString("settings.tabs.flat."+labelKey);
+            String tip = Language.getString("settings.tabs.flat."+labelKey + ".tip", false);
+            JCheckBox check = new JCheckBox(text);
+            check.setToolTipText(SettingsUtil.addTooltipLinebreaks(tip));
+            check.addItemListener(e -> update());
+            options.put(option, check);
+            return check;
+        }
+        
+        private void update() {
+        }
+
+        @Override
+        public Long getSettingValue() {
+            long result = 0;
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                if (entry.getValue().isSelected()) {
+                    result = result | entry.getKey();
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Long getSettingValue(Long def) {
+            return getSettingValue();
+        }
+
+        @Override
+        public void setSettingValue(Long setting) {
+            for (Map.Entry<Integer, JCheckBox> entry : options.entrySet()) {
+                entry.getValue().setSelected((setting & entry.getKey()) != 0);
+            }
+        }
+
     }
     
 }

@@ -157,7 +157,7 @@ public class SelectTagsDialog extends JDialog {
         add(input, gbc);
         
         gbc = makeGbc(2,1,1,1);
-        clearFilterButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(clearFilterButton);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(clearFilterButton, gbc);
         
@@ -199,13 +199,13 @@ public class SelectTagsDialog extends JDialog {
         add(currentPanel, gbc);
  
         gbc = makeGbc(0,6,1,1);
-        addToFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(addToFavoritesButton);
         addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 0.5;
         add(addToFavoritesButton, gbc);
         
-        removeFromFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(removeFromFavoritesButton);
         addToFavoritesButton.setMnemonic(KeyEvent.VK_F);
         gbc = makeGbc(1,6,1,1);
         gbc.fill = GridBagConstraints.HORIZONTAL;

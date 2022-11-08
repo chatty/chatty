@@ -1,5 +1,5 @@
 
-package chatty.gui;
+package chatty.gui.laf;
 
 import java.awt.Color;
 import java.awt.Window;

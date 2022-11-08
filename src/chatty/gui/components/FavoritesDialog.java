@@ -121,7 +121,7 @@ public class FavoritesDialog extends JDialog {
         add(input, gbc);
         
         gbc = makeGbc(2,0,1,1);
-        addToFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(addToFavoritesButton);
         add(addToFavoritesButton, gbc);
         
         gbc = makeGbc(0,2,3,1);
@@ -131,12 +131,12 @@ public class FavoritesDialog extends JDialog {
         
         gbc = makeGbc(0,3,1,1);
         gbc.insets = new Insets(2, 5, 5, 5);
-        removeFromFavoritesButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(removeFromFavoritesButton);
         add(removeFromFavoritesButton, gbc);
         
         gbc = makeGbc(1,3,1,1);
         gbc.insets = new Insets(2, 5, 5, 5);
-        removeButton.setMargin(GuiUtil.SMALL_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(removeButton);
         add(removeButton, gbc);
 
         doneButton.setMnemonic(KeyEvent.VK_J);

@@ -229,7 +229,7 @@ public class MiscUtil {
     public static boolean biton(int value, int i) {
         return (value & (1 << i)) != 0;
     }
-
+    
     public static Image rotateImage(Image image) {
         BufferedImage bi;
         if (image instanceof BufferedImage) {
@@ -295,6 +295,10 @@ public class MiscUtil {
     }
     
     public static boolean isBitEnabled(int value, int bit) {
+        return (value & bit) != 0;
+    }
+    
+    public static boolean isBitEnabled(long value, long bit) {
         return (value & bit) != 0;
     }
     
