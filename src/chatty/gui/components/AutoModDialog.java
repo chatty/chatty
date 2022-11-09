@@ -4,6 +4,8 @@ package chatty.gui.components;
 import chatty.Helper;
 import chatty.TwitchClient;
 import chatty.User;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.DockedDialogManager;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.AutoModContextMenu;
 import chatty.util.DateTime;
@@ -12,9 +14,11 @@ import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.AutoModAction;
 import chatty.util.api.TwitchApi.AutoModActionResult;
 import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.dnd.DockContent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -53,6 +57,8 @@ public class AutoModDialog extends JDialog {
     private final TwitchApi api;
     private final TwitchClient client;
     
+    private final DockedDialogHelper helper;
+    
     private final JList<Item> list;
     private final DefaultListModel<Item> data;
     private final Map<String, List<Item>> cache = new HashMap<>();
@@ -60,7 +66,8 @@ public class AutoModDialog extends JDialog {
     private String currentRoom = "";
     private String currentRoomLoaded = "";
     
-    public AutoModDialog(MainGui main, TwitchApi api, TwitchClient client) {
+    public AutoModDialog(MainGui main, TwitchApi api, TwitchClient client,
+                         DockedDialogManager dockedDialogs) {
         super(main);
         setTitle("AutoMod");
         
@@ -90,6 +97,44 @@ public class AutoModDialog extends JDialog {
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scroll.getVerticalScrollBar().setUnitIncrement(20);
         add(scroll);
+        
+        DockContent content = dockedDialogs.createStyledContent(scroll, "AutoMod", "-automod-");
+        helper = dockedDialogs.createHelper(new DockedDialogHelper.DockedDialog() {
+            @Override
+            public void setVisible(boolean visible) {
+                AutoModDialog.super.setVisible(visible);
+            }
+
+            @Override
+            public boolean isVisible() {
+                return AutoModDialog.super.isVisible();
+            }
+
+            @Override
+            public void addComponent(Component comp) {
+                add(comp);
+            }
+
+            @Override
+            public void removeComponent(Component comp) {
+                remove(comp);
+            }
+
+            @Override
+            public Window getWindow() {
+                return AutoModDialog.this;
+            }
+
+            @Override
+            public DockContent getContent() {
+                return content;
+            }
+        });
+        helper.setChannelChangeListener(channel -> {
+            if (isVisible()) {
+                setStream(Helper.toStream(channel));
+            }
+        });
         
         list.addMouseListener(new MouseAdapter() {
 
@@ -205,6 +250,27 @@ public class AutoModDialog extends JDialog {
         setSize(new Dimension(400, 200));
     }
     
+    @Override
+    public void setVisible(boolean visible) {
+        helper.setVisible(visible, true);
+    }
+
+    @Override
+    public boolean isVisible() {
+        if (helper != null) {
+            return helper.isVisible();
+        }
+        return super.isVisible();
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+        if (helper != null) {
+            helper.getContent().setLongTitle(title);
+        }
+    }
+    
     public void showDialog() {
         switchDataToCurrent();
         setVisible(true);
@@ -212,9 +278,9 @@ public class AutoModDialog extends JDialog {
         scrollDown();
     }
     
-    public void setChannel(String channel) {
-        if (channel != null && !channel.equals(currentRoom)) {
-            currentRoom = channel;
+    public void setStream(String stream) {
+        if (stream != null && !stream.equals(currentRoom)) {
+            currentRoom = stream;
             if (isVisible()) {
                 switchDataToCurrent();
             }
@@ -332,6 +398,7 @@ public class AutoModDialog extends JDialog {
         if (room.equals(currentRoom)) {
             data.addElement(item);
             scrollDownIfApplicable();
+            helper.setNewMessage();
         }
     }
 
@@ -435,10 +502,7 @@ public class AutoModDialog extends JDialog {
         if (e.isPopupTrigger()) {
             selectClicked(e);
             Item selectedItem = list.getSelectedValue();
-            if (selectedItem == null) {
-                return;
-            }
-            AutoModContextMenu m = new AutoModContextMenu(selectedItem, new AutoModContextMenu.AutoModContextMenuListener() {
+            AutoModContextMenu m = new AutoModContextMenu(selectedItem, helper, new AutoModContextMenu.AutoModContextMenuListener() {
 
                 @Override
                 public void itemClicked(Item item, ActionEvent e) {
@@ -460,6 +524,7 @@ public class AutoModDialog extends JDialog {
                     else if (e.getActionCommand().equals("close")) {
                         setVisible(false);
                     }
+                    helper.menuAction(e);
                 }
             });
             m.show(list, e.getX(), e.getY());

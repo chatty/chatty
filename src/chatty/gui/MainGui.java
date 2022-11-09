@@ -306,7 +306,7 @@ public class MainGui extends JFrame implements Runnable {
         StreamChatContextMenu.client = client;
         
         moderationLog = new ModerationLog(this, dockedDialogs);
-        autoModDialog = new AutoModDialog(this, client.api, client);
+        autoModDialog = new AutoModDialog(this, client.api, client, dockedDialogs);
         eventLog = new EventLog(this);
         EventLog.setMain(eventLog);
         
@@ -2471,13 +2471,13 @@ public class MainGui extends JFrame implements Runnable {
             updateChannelInfoDialog(null);
             emotesDialog.updateStream(channels.getLastActiveChannel().getStreamName());
             moderationLog.setChannel(channels.getLastActiveChannel().getStreamName());
-            autoModDialog.setChannel(channels.getLastActiveChannel().getStreamName());
             if (!openedFirstChannel
                     && channels.getLastActiveChannel().getType() == Channel.Type.CHANNEL) {
                 openedFirstChannel = true;
                 if (adminDialog.isVisible()) {
                     openChannelAdminDialog();
                 }
+                autoModDialog.setStream(channels.getActiveChannel().getStreamName());
                 if (followerDialog.isVisible()) {
                     openFollowerDialog();
                 }
