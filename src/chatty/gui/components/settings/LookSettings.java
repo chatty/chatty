@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -173,7 +174,7 @@ public class LookSettings extends SettingsPanel {
         SettingsUtil.addStandardSetting(flatOptions, "lafFlatStyledWindow", 0, styledWindow);
         JCheckBox embeddedMenu = d.addSimpleBooleanSetting("lafFlatEmbeddedMenu");
         SettingsUtil.addStandardSubSetting(flatOptions, "lafFlatEmbeddedMenu", 1, embeddedMenu);
-        EditorStringSetting flatProperties = d.addEditorStringSetting("lafFlatProperties", 10, true, "Abc", true,
+        EditorStringSetting flatProperties = d.addEditorStringSetting("lafFlatProperties", 10, true, "Custom Flat Look&Feel properties:", true,
                 SettingConstants.HTML_PREFIX+SettingsUtil.getInfo("info-flatProperties.html", null));
         flatProperties.setLinkLabelListener(d.getLinkLabelListener());
         SettingsUtil.addStandardSetting(flatOptions, "lafFlatProperties", 3, flatProperties);
@@ -236,7 +237,7 @@ public class LookSettings extends SettingsPanel {
             text += "This Look&Feel differs depending what OS you are using.";
         }
         else if (selected.startsWith("flat")) {
-            text += "Modern-looking and simple. Customize further below.";
+            text += "Minimalistic. Customize further below.";
         }
         else {
             text += "No window snapping (unless you enable using the native window, see [help-laf:native-window help]). ";
@@ -260,7 +261,7 @@ public class LookSettings extends SettingsPanel {
             add(makeOption(FlatLafUtil.TAB_SEP, "separators"),
                     SettingsDialog.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST));
             add(makeOption(FlatLafUtil.TAB_SEP_FULL, "separatorsFull"),
-                    SettingsDialog.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+                    SettingsDialog.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
             update();
         }
         

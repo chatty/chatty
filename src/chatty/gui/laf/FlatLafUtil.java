@@ -32,7 +32,7 @@ public class FlatLafUtil {
             p.load(FlatLafUtil.class.getResourceAsStream("FlatLaf.properties"));
         }
         if (MiscUtil.isBitEnabled(settings.flatTabs, TAB_SELECTED_BACKGROUND)) {
-            p.put("TabbedPane.selectedBackground", "@optionalSelectedTabBackground");
+            p.put("TabbedPane.selectedBackground", "if(@optionalSelectedTabBackground, @optionalSelectedTabBackground, mix(@selectionBackground,$TabbedPane.background,15%))");
         }
         p.put("TabbedPane.showTabSeparators", String.valueOf(MiscUtil.isBitEnabled(settings.flatTabs, TAB_SEP)));
         p.put("TabbedPane.tabSeparatorsFullHeight", String.valueOf(MiscUtil.isBitEnabled(settings.flatTabs, TAB_SEP_FULL)));

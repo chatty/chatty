@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.logging.*;
 
 /**
@@ -93,7 +94,8 @@ public class Logging {
                 }
                 if (record.getLevel() == Level.SEVERE) {
                     if (client.g != null) {
-                        client.g.error(record, lastMessages.getItems());
+                        boolean compact = record.getMessage().startsWith("FlatLaf: Failed to parse:");
+                        client.g.error(record, compact ? new LinkedList<>() : lastMessages.getItems());
                     }
                 } else if (record.getLevel() == USERINFO) {
                     client.warning(record.getMessage());

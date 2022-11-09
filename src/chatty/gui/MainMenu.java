@@ -218,7 +218,7 @@ public class MainMenu extends JMenuBar {
         add(main);
         add(view);
         add(channels);
-        add(srl);
+//        add(srl);
         add(extra);
         add(help);
     }
