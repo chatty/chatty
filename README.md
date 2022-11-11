@@ -102,6 +102,11 @@ External Libraries
   * License: GPLv2 or later (see <https://www.gnu.org/licenses/gpl-2.0.txt>)
   * Based on v1.6.12 with some modifications by tduva
 
+* FlatLaf by FormDev:
+  * Website: https://www.formdev.com/flatlaf/
+  * License: "Apache License 2.0"
+    (see <https://github.com/JFormDesigner/FlatLaf/blob/main/LICENSE>)
+
 * Java-Websocket:
   * Files under `assets/lib/`: `JavaWebsocket-*.jar`
   * Website: <https://github.com/TooTallNate/Java-WebSocket>
