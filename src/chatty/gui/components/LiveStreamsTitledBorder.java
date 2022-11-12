@@ -731,14 +731,20 @@ public class LiveStreamsTitledBorder extends AbstractBorder
         return new Font(Font.DIALOG, Font.PLAIN, 12);
     }
 
+    /**
+     * Changed to prefer the component color. To make sure that the selected
+     * list entry color is used (otherwise it could e.g. be dark on dark with
+     * some Look&Feel).
+     * 
+     * @param c
+     * @return 
+     */
     private Color getColor(Component c) {
-        Color color = getTitleColor();
+        Color color = c != null ? c.getForeground() : null;
         if (color != null) {
             return color;
         }
-        return (c != null)
-                ? c.getForeground()
-                : null;
+        return getTitleColor();
     }
 
     private JLabel getLabel(Component c) {
