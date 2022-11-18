@@ -15,6 +15,7 @@ import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
+import chatty.util.api.eventsub.EventSubAddResult;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -783,6 +784,14 @@ public class TwitchApi {
     
     public void test() {
         requests.test();
+    }
+    
+    public void addEventSub(String body, Consumer<EventSubAddResult> listener) {
+        requests.addEventSub(body, listener);
+    }
+    
+    public void removeEventSub(String id, Consumer<Integer> listener) {
+        requests.removeEventSub(id, listener);
     }
     
 }

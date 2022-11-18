@@ -44,8 +44,8 @@ public class PubSub extends JWSClient {
     }
 
     @Override
-    public void handleDisconnect() {
-        handler.handleDisconnect();
+    public void handleDisconnect(int code) {
+        handler.handleDisconnect(code);
     }
 
     @Override

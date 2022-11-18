@@ -40,6 +40,7 @@ import chatty.util.api.ResultManager.CategoryResult;
 import chatty.util.api.TokenInfo.Scope;
 import chatty.util.api.TwitchApi.SimpleRequestResult;
 import chatty.util.api.TwitchApi.SimpleRequestResultListener;
+import chatty.util.api.eventsub.EventSubAddResult;
 import chatty.util.api.queue.ResultListener;
 import java.util.Arrays;
 import java.util.Locale;
@@ -802,6 +803,18 @@ public class Requests {
         String url = "https://api.twitch.tv/helix/...";
         newApi.add(url, "GET", api.defaultToken, r -> {
             System.out.println(r.text);
+        });
+    }
+    
+    public void addEventSub(String body, Consumer<EventSubAddResult> listener) {
+        newApi.add("https://api.twitch.tv/helix/eventsub/subscriptions", "POST", body, api.defaultToken, r -> {
+            listener.accept(EventSubAddResult.decode(r));
+        });
+    }
+    
+    public void removeEventSub(String id, Consumer<Integer> listener) {
+        newApi.add("https://api.twitch.tv/helix/eventsub/subscriptions?id="+id, "DELETE", api.defaultToken, r -> {
+            listener.accept(r.responseCode);
         });
     }
     

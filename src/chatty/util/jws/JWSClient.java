@@ -78,12 +78,12 @@ public class JWSClient implements MessageHandler {
                         handshakedata.getHttpStatusMessage(),
                         getSocket().getRemoteSocketAddress(),
                         getDraft()));
-                received.add(new Received(Received.Type.OPEN, null));
+                received.add(new Received(Received.Type.OPEN, null, -1));
             }
             
             @Override
             public void onMessage(String message) {
-                received.add(new Received(Received.Type.MESSAGE, message));
+                received.add(new Received(Received.Type.MESSAGE, message, -1));
                 lastReceivedMessage.setSync();
                 lastActivity.setSync();
             }
@@ -107,7 +107,7 @@ public class JWSClient implements MessageHandler {
                         code,
                         reason,
                         remote ? " by remote host" : ""));
-                received.add(new Received(Received.Type.CLOSE, reason));
+                received.add(new Received(Received.Type.CLOSE, reason, code));
                 if (!requestedClose) {
                     reconnectTimer();
                 }
@@ -176,7 +176,7 @@ public class JWSClient implements MessageHandler {
                                 handler.handleConnect(this);
                                 break;
                             case CLOSE:
-                                handler.handleDisconnect();
+                                handler.handleDisconnect(r.code);
                                 break;
                         }
                     }
@@ -325,7 +325,7 @@ public class JWSClient implements MessageHandler {
     }
 
     @Override
-    public void handleDisconnect() {
+    public void handleDisconnect(int code) {
     }
     
     public static class Received {
@@ -336,10 +336,12 @@ public class JWSClient implements MessageHandler {
         
         public final Type type;
         public final String message;
+        public final int code;
         
-        public Received(Type type, String message) {
+        public Received(Type type, String message, int code) {
             this.type = type;
             this.message = message;
+            this.code = code;
         }
         
     }

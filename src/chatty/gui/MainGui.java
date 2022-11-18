@@ -3979,6 +3979,10 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
+    public void printDebugEventSub(String line) {
+        SwingUtilities.invokeLater(() -> debugWindow.printLineEventSub(line));
+    }
+    
     public void printTimerLog(String line) {
         GuiUtil.edt(() -> debugWindow.printTimerLog(line));
     }

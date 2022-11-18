@@ -57,7 +57,7 @@ public class FFZWS extends JWSClient {
     }
 
     @Override
-    public void handleDisconnect() {
+    public void handleDisconnect(int code) {
     }
     
     private void reset() {

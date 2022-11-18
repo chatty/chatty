@@ -91,6 +91,10 @@ public class Logging {
                     if (record.getMessage().startsWith("[PubSub]")) {
                         client.debugPubSub(record.getMessage());
                     }
+                    if (record.getMessage().startsWith("[EventSub]")
+                            || record.getMessage().contains("https://api.twitch.tv/helix/eventsub/subscriptions")) {
+                        client.debugEventSub(record.getMessage());
+                    }
                 }
                 if (record.getLevel() == Level.SEVERE) {
                     if (client.g != null) {

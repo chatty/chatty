@@ -128,10 +128,10 @@ public class Request implements Runnable {
         String requestError = null;
         String errorText = null;
         
-        LOGGER.info(String.format("%s*%s: %s",
+        LOGGER.info(String.format("%s*: %s%s",
                 requestMethod,
-                token != null ? " (auth) " : "",
-                url));
+                url,
+                data != null ? " ("+data+")" : ""));
         
         RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout(Timeout.ofMilliseconds(CONNECT_TIMEOUT))
@@ -152,7 +152,6 @@ public class Request implements Runnable {
                     stringEntity = new StringEntity(data, CHARSET);
                 }
                 request.setEntity(stringEntity);
-                LOGGER.info("Sending data: "+data);
             }
             try (CloseableHttpResponse response = httpclient.execute(request)) {
                 responseCode = response.getCode();
@@ -218,10 +217,10 @@ public class Request implements Runnable {
         String responseEncoding = null;
         String requestError = null;
 
-        LOGGER.info(String.format("%s%s: %s",
+        LOGGER.info(String.format("%s: %s%s",
                 requestMethod,
-                token != null ? " (auth) " : "",
-                url));
+                url,
+                data != null ? " ("+data+")" : ""));
         
         HttpURLConnection connection = null;
         try {
@@ -245,7 +244,6 @@ public class Request implements Runnable {
                 try (OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream(), CHARSET)) {
                     out.write(data);
                 }
-                LOGGER.info("Sending data: "+data);
             }
 
             //------------------

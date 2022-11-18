@@ -157,7 +157,7 @@ public class Connections {
             }
 
             @Override
-            public void handleDisconnect() {
+            public void handleDisconnect(int code) {
                 handler.handleDisconnect(id);
             }
         };

@@ -13,5 +13,5 @@ public interface MessageHandler {
 
     public void handleConnect(JWSClient c);
 
-    public void handleDisconnect();
+    public void handleDisconnect(int code);
 }
