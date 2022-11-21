@@ -1,10 +1,15 @@
 
 package chatty.util;
 
+import chatty.Chatty;
 import chatty.Helper;
+import chatty.util.api.CachedManager;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -38,6 +43,11 @@ public class Pronouns {
     
     private static final String NOT_FOUND = "__EMPTY_RESULT__";
     
+    private static final String CACHE_FILE1 = Chatty.getCacheDirectory()+"pronouns1";
+    public static final int CACHE_EXPIRES_AFTER = 60*60*24;
+    
+    private static final Path CACHE_FILE2 = Paths.get(Chatty.getCacheDirectory()+"pronouns2");
+    
     public Pronouns() {
         data = new CachedBulkManager<>(new CachedBulkManager.Requester<String, String>() {
             @Override
@@ -65,8 +75,23 @@ public class Pronouns {
                     }
                 });
             }
-        }, CachedBulkManager.DAEMON | CachedBulkManager.UNIQUE);
+        }, "[Pronouns] ", CachedBulkManager.DAEMON | CachedBulkManager.UNIQUE);
+        
+        data.setCacheTimes(1, 14, TimeUnit.DAYS);
+        data.loadCacheFromFile(CACHE_FILE2, input -> {
+            String[] split = input.split(",", 2);
+            if (split.length == 2) {
+                return new Pair<>(split[0], split[1]);
+            }
+            return null;
+        });
         requestPronouns();
+    }
+    
+    public void saveCache() {
+        data.saveCacheToFile(CACHE_FILE2, (key, item) -> {
+            return key+","+item;
+        });
     }
     
     private final Object UNIQUE = new Object();
@@ -119,15 +144,24 @@ public class Pronouns {
     }
     
     private void requestPronouns() {
-        UrlRequest request = new UrlRequest("https://pronouns.alejo.io/api/pronouns");
-        request.async((result, responseCode) -> {
-            if (result != null) {
-                Map<String, String> parsed = parsePronouns(result);
+        CachedManager cache = new CachedManager(CACHE_FILE1, CACHE_EXPIRES_AFTER, "Pronouns1") {
+            @Override
+            public boolean handleData(String data) {
+                Map<String, String> parsed = parsePronouns(data);
                 if (!parsed.isEmpty()) {
                     pronouns = parsed;
+                    return true;
                 }
+                return false;
             }
-        });
+        };
+        
+        if (!cache.load()) {
+            UrlRequest request = new UrlRequest("https://pronouns.alejo.io/api/pronouns");
+            request.async((result, responseCode) -> {
+                cache.dataReceived(result, false);
+            });
+        }
     }
     
     private Map<String, String> parsePronouns(String json) {

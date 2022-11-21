@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
@@ -641,15 +642,15 @@ public class CacheBulkManagerTest {
             String[] requested = items[3];
             assertEquals("Wrong asap request amount", asap.size(), asapTest.length);
             for (String key : asapTest) {
-                asap.contains(key);
+                assertTrue("Missing asap key: "+key, asap.contains(key));
             }
             assertEquals("Wrong normal request amount", normal.size(), normalTest.length);
             for (String key : normalTest) {
-                normal.contains(key);
+                assertTrue("Missing normal key: "+key, normal.contains(key));
             }
             assertEquals("Wrong backlog request amount", backlog.size(), backlogTest.length);
             for (String key : backlogTest) {
-                backlog.contains(key);
+                assertTrue("Missing backlog key: "+key, backlog.contains(key));
             }
             manager.setRequested(requested);
             request++;
@@ -748,6 +749,419 @@ public class CacheBulkManagerTest {
         m.query(null, ASAP, "test2");
         m.setError("abc");
         m.query(null, ASAP, "test2");
+    }
+    
+    @Test
+    public void testCache() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            {
+                {"b"}, {}, {}, {}
+            },
+            {
+                {"c"}, {}, {}, {}
+            },
+            {
+                {"c"}, {}, {}, {}
+            },
+            {
+                {"d"}, {}, {}, {}
+            },
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"b", "r.b"},
+            },
+            {
+                {"b", "r.b"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", "r.c"},
+            },
+            {
+                {"c", null},
+            },
+            {
+                {"d", "r.d"},
+            },
+            {
+                {"d", "r.d"},
+            },
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        
+        m.setCurrentTimestamp(10);
+        
+        // Regular request
+        assertNull(m.get("a"));
+        m.query(listener, ASAP, "a");
+        requester.requestCount(1);
+        listener.calledCount(0);
+        
+        // Set value
+        m.setResult("a", "r.a");
+        listener.calledCount(1);
+        
+        m.setCurrentTimestamp(500);
+        // Still there without cache times
+        assertEquals("r.a", m.get("a"));
+        // Set cache times
+        m.setCacheTimes(100, 300, TimeUnit.MILLISECONDS);
+        assertNull(m.get("a"));
+        
+        m.setResult("b", "r.b");
+        m.setCurrentTimestamp(510);
+        requester.requestCount(1);
+        // No request yet after +10
+        m.query(listener, ASAP, "b");
+        listener.calledCount(2);
+        requester.requestCount(1);
+        
+        m.setCurrentTimestamp(610);
+        requester.requestCount(1);
+        // Request after +110
+        m.query(listener, ASAP, "b");
+        requester.requestCount(2);
+        
+        // Still there after +210
+        m.setCurrentTimestamp(710);
+        assertEquals("r.b", m.get("b"));
+        
+        // Still there after +299
+        m.setCurrentTimestamp(799);
+        assertEquals("r.b", m.get("b"));
+        
+        // Item removed after +800
+        m.setCurrentTimestamp(800);
+        assertNull(m.get("b"));
+        
+        m.setResult("b", "r.b");
+        listener.calledCount(3);
+        
+        // 0 cache times, then set times
+        m.setCurrentTimestamp(0);
+        m.setCacheTimes(0, 0, TimeUnit.MILLISECONDS);
+        m.setResult("c", "r.c");
+        listener.calledCount(3);
+        assertEquals("r.c", m.get("c"));
+        // No request
+        requester.requestCount(2);
+        m.query(listener, ASAP, "c");
+        listener.calledCount(4);
+        requester.requestCount(2);
+        m.setCurrentTimestamp(800);
+        assertEquals("r.c", m.get("c"));
+        // No request
+        requester.requestCount(2);
+        m.query(listener, ASAP, "c");
+        listener.calledCount(5);
+        requester.requestCount(2);
+        m.setCacheTimes(0, 500, TimeUnit.MILLISECONDS);
+        assertNull(m.get("c"));
+        // Request, because it has been removed
+        requester.requestCount(2);
+        m.query(listener, ASAP, "c");
+        listener.calledCount(5);
+        requester.requestCount(3);
+        assertEquals(1, m.pendingRequests());
+        
+        // 0 cache times, then set times, but only first number
+        m.setCurrentTimestamp(0);
+        m.setCacheTimes(0, 0, TimeUnit.MILLISECONDS);
+        m.setResult("c", "r.c");
+        listener.calledCount(6);
+        assertEquals("r.c", m.get("c"));
+        // +800
+        m.setCurrentTimestamp(800);
+        assertEquals("r.c", m.get("c"));
+        // No request
+        requester.requestCount(3);
+        m.query(listener, ASAP, "c");
+        listener.calledCount(7);
+        requester.requestCount(3);
+        // Set cache times
+        m.setCacheTimes(500, 0, TimeUnit.MILLISECONDS);
+        // Still there
+        assertEquals("r.c", m.get("c"));
+        // Request, even though value is not removed yet
+        requester.requestCount(3);
+        assertEquals(0, m.pendingRequests());
+        m.query(listener, ASAP, "c");
+        listener.calledCount(7);
+        requester.requestCount(4);
+        assertEquals(1, m.pendingRequests());
+        m.setError("c");
+        
+        m.setCurrentTimestamp(0);
+        m.setResult("c", "r.c");
+        listener.calledCount(8);
+        m.setCacheTimes(0, 500, TimeUnit.MILLISECONDS);
+        requester.requestCount(4);
+        m.query(listener, ASAP, "c");
+        listener.calledCount(9);
+        requester.requestCount(4);
+        m.setCurrentTimestamp(800);
+        requester.requestCount(4);
+        // Due to the setError earlier, this won't make a request again yet, but
+        // instead return null
+        m.query(listener, ASAP, "c");
+        assertEquals(0, m.pendingRequests());
+        listener.calledCount(10);
+        requester.requestCount(4);
+        
+        m.setCurrentTimestamp(0);
+        m.setCacheTimes(200, 500, TimeUnit.MILLISECONDS);
+        m.setResult("d", "r.d");
+        m.setCurrentTimestamp(210);
+        m.query(listener, ASAP, "d");
+        requester.requestCount(5);
+        listener.calledCount(10);
+        m.setError("d");
+        listener.calledCount(11);
+        m.query(listener, ASAP, "d");
+    }
+    
+    @Test
+    public void testCacheWithError() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.setCurrentTimestamp(0);
+        m.setResult("a", "r.a");
+        m.setCacheTimes(300, 1000, TimeUnit.MILLISECONDS);
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(1);
+        
+        m.setCurrentTimestamp(500);
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(1);
+        requester.requestCount(1);
+        
+        m.setError("a");
+        listener.calledCount(2);
+        requester.requestCount(1);
+    }
+    
+    @Test
+    public void testCacheWithNotFound() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", null},
+            },
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.setCurrentTimestamp(0); // 0
+        m.setResult("a", "r.a");
+        m.setCacheTimes(300, 1000, TimeUnit.MILLISECONDS);
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(1);
+        
+        m.setCurrentTimestamp(500); // +500
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(1);
+        requester.requestCount(1);
+        
+        m.setNotFound("a");
+        listener.calledCount(2);
+        requester.requestCount(1);
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(3);
+        requester.requestCount(1);
+        
+        m.query(listener, ASAP, "a");
+        listener.calledCount(4);
+        requester.requestCount(1);
+        
+        m.setCurrentTimestamp(1500); // +1500
+        
+        // Still no request, because of previous error and it's using other time
+        // source for waiting for re-request, so can't simulate like this
+        m.query(listener, ASAP, "a");
+        listener.calledCount(5);
+        requester.requestCount(1);
+    }
+    
+    @Test
+    public void testCacheGetOrQuery() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.setCacheTimes(300, 1000, TimeUnit.MILLISECONDS);
+        
+        m.setCurrentTimestamp(0); // 0
+        m.setResult("a", "r.a");
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        assertEquals("r.a", m.getOrQuery(null, listener, ASAP, "a").get("a"));
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        m.setCurrentTimestamp(500); // +500
+        
+        assertEquals(null, m.getOrQuery(null, listener, ASAP, "a"));
+        listener.calledCount(0);
+        requester.requestCount(1);
+        
+        m.setError("a");
+        listener.calledCount(1);
+        requester.requestCount(1);
+    }
+    
+    @Test
+    public void testCacheGetOrQuerySingle() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+            },
+            {
+                {"a", "r.a"},
+            },
+            
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.setCacheTimes(300, 1000, TimeUnit.MILLISECONDS);
+        
+        m.setCurrentTimestamp(0); // 0
+        m.setResult("a", "r.a");
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        assertEquals("r.a", m.getOrQuerySingle(null, listener, ASAP, "a"));
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        m.setCurrentTimestamp(500); // +500
+        
+        assertEquals("r.a", m.getOrQuerySingle(null, listener, ASAP, "a"));
+        listener.calledCount(0);
+        requester.requestCount(1);
+        
+        m.setError("a");
+        listener.calledCount(1);
+        requester.requestCount(1);
+    }
+    
+    @Test
+    public void testCacheSeveralKeys() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"},
+                {"b", null},
+            },
+            {
+                {"a", "r.a"},
+                {"b", null},
+            },
+            
+        });
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        m.setCacheTimes(300, 1000, TimeUnit.MILLISECONDS);
+        
+        m.setCurrentTimestamp(0); // 0
+        m.setResult("a", "r.a");
+        m.setError("b");
+        listener.calledCount(0);
+        requester.requestCount(0);
+        
+        m.query(listener, ASAP, "a", "b");
+        listener.calledCount(1);
+        requester.requestCount(0);
+        
+        m.setCurrentTimestamp(500); // +500
+        
+        m.query(listener, ASAP, "a", "b");
+        listener.calledCount(1);
+        requester.requestCount(1);
+        
+        m.setError("a");
+        listener.calledCount(2);
+        requester.requestCount(1);
     }
     
 }

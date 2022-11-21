@@ -1,6 +1,12 @@
 
 package chatty.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,7 +21,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * A class that provides help for common tasks of requesting data that can be
@@ -121,6 +133,9 @@ public class CachedBulkManager<Key,Item> {
     // Global options
     private final Options options;
     private final String debugPrefix;
+    private long cacheRefresh;
+    private long cacheRemove;
+    private long testTimestamp = -1;
 
     // Queries
     private final Map<Object, Query<Key, Item>> queries = new HashMap<>();
@@ -130,7 +145,7 @@ public class CachedBulkManager<Key,Item> {
     private final Map<Key, Long> requestPending = new HashMap<>();
     
     // Data
-    private final Map<Key, Item> cache = new HashMap<>();
+    private final Map<Key, CacheItem<Item>> cache = new HashMap<>();
     
     // Errors
     private final Map<Key, Long> lastError = new HashMap<>();
@@ -154,6 +169,112 @@ public class CachedBulkManager<Key,Item> {
                 doRequests();
             }
         }, timerDelay, timerDelay);
+    }
+    
+    /**
+     * Set caching times.
+     * 
+     * @param refresh When this has passed, the item is requested again. The
+     * cached item is no longer returned as a result until a request has been
+     * attemped (even a failed one).
+     * @param remove When this has passed, the item is deleted from the cache
+     * (not necessarily as soon as the time passed, but guaranteed when it is
+     * in a query/get).
+     * @param unit The unit for both values
+     */
+    public void setCacheTimes(int refresh, int remove, TimeUnit unit) {
+        synchronized (LOCK) {
+            this.cacheRefresh = unit.toMillis(refresh);
+            this.cacheRemove = unit.toMillis(remove);
+        }
+    }
+    
+    private boolean shouldRemove(CacheItem<Item> item) {
+        return item == null
+                || (cacheRemove > 0 && item.millisecondsPassed(cacheRemove));
+    }
+    
+    private boolean shouldRefresh(CacheItem<Item> item) {
+        return item == null
+                || shouldRemove(item)
+                || (cacheRefresh > 0 && item.millisecondsPassed(cacheRefresh));
+    }
+    
+    private void checkRemoveCache(Key key) {
+        if (shouldRemove(cache.get(key))) {
+            cache.remove(key);
+        }
+    }
+    
+    @SuppressWarnings("unchecked") // JSONArray / JSONObject
+    public void saveCacheToFile(Path file, BiFunction<Key, Item, String> itemToString) {
+        synchronized (LOCK) {
+            JSONObject data = new JSONObject();
+            JSONArray items = new JSONArray();
+            for (Map.Entry<Key, CacheItem<Item>> entry : cache.entrySet()) {
+                if (!shouldRemove(entry.getValue())) {
+                    JSONArray item = new JSONArray();
+                    item.add(entry.getValue().valueTimestamp);
+                    item.add(itemToString.apply(entry.getKey(), entry.getValue().value));
+                    items.add(item);
+                }
+            }
+            data.put("items", items);
+            
+            try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
+                writer.write(data.toJSONString());
+                LOGGER.info(debugPrefix + "Saved.");
+            }
+            catch (IOException ex) {
+                LOGGER.warning(String.format("%sError saving cache to file: %s",
+                        debugPrefix, ex));
+            }
+        }
+    }
+    
+    public void loadCacheFromFile(Path file, Function<String, Pair<Key, Item>> stringToItem) {
+        synchronized (LOCK) {
+            try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+                JSONParser parser = new JSONParser();
+                JSONObject root = (JSONObject) parser.parse(reader);
+                JSONArray items = (JSONArray) root.get("items");
+                for (Object o : items) {
+                    JSONArray item = (JSONArray) o;
+                    long timestamp = (long) item.get(0);
+                    String value = (String) item.get(1);
+                    
+                    Pair<Key, Item> parsedItem = stringToItem.apply(value);
+                    if (parsedItem != null) {
+                        CacheItem<Item> cacheItem = new CacheItem<>(parsedItem.value, timestamp);
+                        if (!shouldRemove(cacheItem)) {
+                            cache.put(parsedItem.key, cacheItem);
+                        }
+                    }
+                }
+                LOGGER.info(String.format("%sLoaded from file (now %d cached items)",
+                        debugPrefix, cache.size()));
+            }
+            catch (Exception ex) {
+                LOGGER.warning(String.format("%sError loading cache from file: %s",
+                        debugPrefix, ex));
+            }
+        }
+    }
+    
+    private long currentTimestamp() {
+        if (testTimestamp != -1) {
+            return testTimestamp;
+        }
+        return System.currentTimeMillis();
+    }
+    
+    /**
+     * Manually set timestamp for testing.
+     * 
+     * @param timestamp Set to -1 to use real time
+     */
+    public void setCurrentTimestamp(long timestamp) {
+        this.testTimestamp = timestamp;
     }
     
     //=============
@@ -248,21 +369,50 @@ public class CachedBulkManager<Key,Item> {
     // Get cached data
     //=================
     
+    /**
+     * Get the value from cache, if it exists and is still valid. Doesn't make
+     * any request attempts.
+     * 
+     * @param key
+     * @return 
+     */
     public Item get(Key key) {
         synchronized(LOCK) {
-            return cache.get(key);
+            checkRemoveCache(key);
+            CacheItem<Item> cached = cache.get(key);
+            if (cached != null) {
+                return cached.value;
+            }
+            return null;
         }
     }
     
+    /**
+     * Get the key from the cache or add a query if it isn't in the cache. When
+     * the cache is ready to be refreshed due to the time set in
+     * {@link setCacheTimes(int, int, TimeUnit)} then this will return a value
+     * as well as add a query.
+     *
+     * @param unique
+     * @param listener
+     * @param settings
+     * @param key
+     * @return 
+     */
     public Item getOrQuerySingle(Object unique, ResultListener<Key, Item> listener, int settings, Key key) {
+        Item result = null;
         synchronized(LOCK) {
-            Item cached = cache.get(key);
+            checkRemoveCache(key);
+            CacheItem<Item> cached = cache.get(key);
             if (cached != null) {
-                return cached;
+                result = cached.value;
+            }
+            if (!shouldRefresh(cached)) {
+                return result;
             }
         }
         query(unique, listener, settings, key);
-        return null;
+        return result;
     }
     
     public Item getOrQuerySingle(ResultListener<Key, Item> listener, int settings, Key key) {
@@ -274,6 +424,18 @@ public class CachedBulkManager<Key,Item> {
         return getOrQuery(unique, listener, settings, Arrays.asList(keys));
     }
     
+    /**
+     * Get the keys from the cache or add a query if it isn't in the cache. When
+     * the cache is ready to be refreshed due to the time set in
+     * {@link #setCacheTimes(int, int, TimeUnit)} then this may return null or
+     * an uncomplete result as well as add a query.
+     *
+     * @param unique
+     * @param listener
+     * @param settings
+     * @param keys
+     * @return A result or {@code null}
+     */
     public Result<Key, Item> getOrQuery(Object unique, ResultListener<Key, Item> listener, int settings, Collection<Key> keys) {
         Query<Key, Item> request = new Query<>(listener, settings, keys);
         Result<Key, Item> result = getResult(request);
@@ -321,16 +483,24 @@ public class CachedBulkManager<Key,Item> {
     }
     
     public void setResult(Key key, Item item) {
+        setResult(key, item, currentTimestamp());
+    }
+    
+    public void setResult(Key key, Item item, long timestamp) {
         synchronized(LOCK) {
-            setResultInternal(key, item);
+            setResultInternal(key, item, timestamp);
         }
         checkDoneQueries();
     }
     
     public void setResult(Map<Key, Item> results) {
+        setResult(results, currentTimestamp());
+    }
+    
+    public void setResult(Map<Key, Item> results, long timestamp) {
         synchronized(LOCK) {
             for (Map.Entry<Key, Item> entry : results.entrySet()) {
-                setResultInternal(entry.getKey(), entry.getValue());
+                setResultInternal(entry.getKey(), entry.getValue(), timestamp);
             }
         }
         checkDoneQueries();
@@ -343,8 +513,8 @@ public class CachedBulkManager<Key,Item> {
      * @param key
      * @param item 
      */
-    private void setResultInternal(Key key, Item item) {
-        cache.put(key, item);
+    private void setResultInternal(Key key, Item item, long timestamp) {
+        cache.put(key, new CacheItem<>(item, timestamp));
         errorCount.remove(key);
         notFound.remove(key);
         setResponseReceived(key);
@@ -563,9 +733,16 @@ public class CachedBulkManager<Key,Item> {
                 if (option(q, REFRESH) && !q.isResponseReceived(k)) {
                     continue;
                 }
-
-                if (cache.containsKey(k)) {
-                    results.put(k, cache.get(k));
+                
+                checkRemoveCache(k);
+                CacheItem<Item> cached = cache.get(k);
+                /**
+                 * The cached should not be included if a request should still
+                 * take place, because otherwise it may not be requested.
+                 */
+                if (!shouldRefresh(cached)
+                        || (cached != null && q.isResponseReceived(k))) {
+                    results.put(k, cached.value);
                 }
                 else if (notFound.contains(k)) {
                     results.put(k, null);
@@ -577,6 +754,18 @@ public class CachedBulkManager<Key,Item> {
                     else {
                         results.put(k, null);
                     }
+                }
+                
+                /**
+                 * If the key has been set anyway, better use the cached instead
+                 * of null. This can happen when enough time has passed that the
+                 * cache should be refreshed, but one request attempt has failed
+                 * already before this query.
+                 */
+                if (results.containsKey(k)
+                        && results.get(k) == null
+                        && cached != null) {
+                    results.put(k, cached.value);
                 }
             }
             q.accepted.addAll(results.keySet());
@@ -861,6 +1050,31 @@ public class CachedBulkManager<Key,Item> {
         
     }
     
+    private class CacheItem<Item> {
+        
+        public final Item value;
+        public final long valueTimestamp;
+        
+        public CacheItem(Item value, long timestamp) {
+            this.value = value;
+            this.valueTimestamp = timestamp;
+        }
+        
+        public boolean millisecondsPassed(long milliseconds) {
+            return getMillisecondsPassed() >= milliseconds;
+        }
+        
+        public long getMillisecondsPassed() {
+            return currentTimestamp() - valueTimestamp;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("(%d)%s", getMillisecondsPassed() / 1000, value);
+        }
+        
+    }
+    
     // add(settings, keys) -> Request{settings, keys} -> pending[]
     
     
@@ -878,5 +1092,49 @@ v4/channels/<stream_id> -> set[]
 
     
     */
+    
+    static int test = 0;
+    
+    public static void main(String[] args) throws Exception {
+        CachedBulkManager<String, String> m = new CachedBulkManager<>((manager, asap, normal, backlog) -> {
+            System.out.println("request");
+            manager.setRequested(asap);
+            SwingUtilities.invokeLater(() -> {
+                for (String key : asap) {
+                    if (test < 1) {
+                        manager.setResult(key, key + "result" + System.currentTimeMillis());
+                    }
+                    else {
+                        System.out.println("setError");
+                        manager.setError(asap);
+                    }
+                    test++;
+                }
+            });
+        }, DAEMON);
+        m.setCacheTimes(100, 200, TimeUnit.MILLISECONDS);
+        
+        Collection<String> keys = new ArrayList<>();
+        keys.add("a");
+        m.query(null, (result) -> {
+            System.out.println(result);
+        }, ASAP, keys);
+        Thread.sleep(150);
+        System.out.println("----");
+//        System.out.println("Get:"+m.get("a"));
+//        System.out.println("Get:"+m.getOrQuerySingle((result) -> {
+//            System.out.println(result);
+//        }, ASAP, "a"));
+
+        m.query(null, r -> {
+            System.out.println(r);
+        }, ASAP, "a");
+        
+        m.query(null, r -> {
+            System.out.println(r);
+        }, ASAP, "a");
+        
+        System.out.println(m.debugVerbose());
+    }
     
 }

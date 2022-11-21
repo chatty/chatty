@@ -44,6 +44,7 @@ import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.OtherBadges;
 import chatty.util.ProcessManager;
+import chatty.util.Pronouns;
 import chatty.util.RawMessageTest;
 import chatty.util.ReplyManager;
 import chatty.util.Speedruncom;
@@ -3218,6 +3219,7 @@ public class TwitchClient {
         shuttingDown = true;
         saveSettings(true, false);
         logAllViewerstats();
+        Pronouns.instance().saveCache();
         c.disconnect();
         frankerFaceZ.disconnectWs();
         pubsub.disconnect();
