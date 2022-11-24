@@ -4,6 +4,7 @@ package chatty.util.dnd;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Window;
+import java.util.Collection;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
@@ -13,20 +14,17 @@ import javax.swing.WindowConstants;
  */
 public class DockPoputDialog extends JDialog implements DockPopout {
 
-    private static int counter = 0;
-    
     private final DockBase base;
     private String id;
     
     public DockPoputDialog(DockManager m, Frame parent) {
         super(parent);
-        id = "d"+(counter++);
         setLayout(new BorderLayout());
         base = new DockBase(m);
         add(base, BorderLayout.CENTER);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }
-
+    
     @Override
     public DockBase getBase() {
         return base;
@@ -45,6 +43,11 @@ public class DockPoputDialog extends JDialog implements DockPopout {
     @Override
     public void setId(String id) {
         this.id = id;
+    }
+    
+    @Override
+    public void setId(Collection<DockPopout> inUse) {
+        id = DockPopout.makeId("d", inUse);
     }
     
 }

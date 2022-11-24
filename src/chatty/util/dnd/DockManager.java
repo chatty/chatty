@@ -671,6 +671,16 @@ public class DockManager {
                 }
             });
         }
+        /**
+         * Set currently unique id.
+         *
+         * If this is called when loading a layout, the id may be changed
+         * afterwards, but in that case the id of all currently open popouts
+         * will be set correctly (assuming the loaded layout is not invalid).
+         * Any popouts opened afterwards will then avoid any ids from the layout
+         * by setting a currently unique id here.
+         */
+        popout.setId(popouts);
         return popout;
     }
     
