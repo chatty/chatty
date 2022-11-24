@@ -515,6 +515,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
                     getPanel(MsgColorSettings.class).selectItem((String) parameter);
                 } else if (action.equals("show")) {
                     showPage((String) parameter);
+                } else if (action.equals("editHotkey")) {
+                    showPanel(Page.HOTKEYS);
+                    getPanel(HotkeySettings.class).edit((String) parameter);
                 }
             }
         });

@@ -379,8 +379,10 @@ public class MainGui extends JFrame implements Runnable {
         hotkeyManager.registerPopout(popout);
     }
     
-    private void getSettingsDialog(Consumer<SettingsDialog> action) {
-        SettingsDialog.get(this, action);
+    public void getSettingsDialog(Consumer<SettingsDialog> action) {
+        GuiUtil.edt(() -> {
+            SettingsDialog.get(this, action);
+        });
     }
     
     /**
@@ -1095,6 +1097,7 @@ public class MainGui extends JFrame implements Runnable {
         
         FocusUpdates.set(client.settings);
         GifUtil.setSettings(client.settings);
+        TransparencyManager.loadSettings(client.settings);
     }
     
     private static final String[] menuBooleanSettings = new String[]{
@@ -1245,6 +1248,7 @@ public class MainGui extends JFrame implements Runnable {
         windowStateManager.saveWindowStates();
         client.settings.putList("popoutAttributes", channels.getPopoutAttributes());
         channels.saveLayout();
+        TransparencyManager.saveSettings(client.settings);
     }
     
     public void setWindowPosition(Window window) {

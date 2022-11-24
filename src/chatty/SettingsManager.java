@@ -320,6 +320,11 @@ public class SettingsManager {
         // Usercolors
         settings.addBoolean("customUsercolors", false);
         settings.addList("usercolors", new LinkedList(), Setting.STRING);
+        
+        // Transparency
+        settings.addLong("transparencyBackground", 50);
+        settings.addBoolean("transparencyClickThrough", true);
+        settings.addString("transparencyCurrentId", "");
 
         //====================
         // Other Customization

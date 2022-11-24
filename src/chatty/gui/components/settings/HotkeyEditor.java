@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -39,6 +40,9 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
     
     private static final Set<String> RECOMMENDED_APPLICATION_ACTIONS =
             new HashSet<>(Arrays.asList(new String[]{"about"}));
+    
+    private static final Set<String> RECOMMENDED_GLOBAL_ACTIONS =
+            new HashSet<>(Arrays.asList(new String[]{"dialog.toggleTransparency"}));
 
     private MyItemEditor itemEditor;
     private final MyTableModel data = new MyTableModel();
@@ -47,7 +51,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
     private Map<String, String> actions;
     private boolean globalHotkeysAvailable;
     
-    public HotkeyEditor(JDialog owner) {
+    public HotkeyEditor(JDialog owner, Consumer<Hotkey> globalHotkeyCheck) {
         super(SORTING_MODE_SORTED, false);
         setModel(data);
         setItemEditor(() -> {
@@ -65,6 +69,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             @Override
             public void itemAdded(Hotkey item) {
                 updateConflicts();
+                globalHotkeyCheck.accept(item);
             }
 
             @Override
@@ -75,6 +80,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             @Override
             public void itemEdited(Hotkey oldItem, Hotkey newItem) {
                 updateConflicts();
+                globalHotkeyCheck.accept(newItem);
             }
 
             @Override
@@ -133,6 +139,17 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
     
     public void addHotkey(Hotkey hotkey) {
         data.add(hotkey);
+    }
+    
+    public void edit(String id) {
+        for (int i = 0; i < data.getRowCount(); i++) {
+            Hotkey hotkey = data.get(i);
+            if (hotkey.actionId.equals(id)) {
+                editItem(i);
+                return;
+            }
+        }
+        addItem(new Hotkey(id, null, Hotkey.Type.GLOBAL, null, 0));
     }
 
     /**
@@ -460,11 +477,17 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             custom.setEditable(customEnabled);
             
             // Scope tip
-            if (action != null && !applicationWide.isSelected()
+            if (action != null
+                    && RECOMMENDED_GLOBAL_ACTIONS.contains(action)) {
+                scopeTip.setVisible(true);
+                scopeTip.setText("Global scope recommended for this action");
+            }
+            else if (action != null
                     && (action.startsWith("dialog.") || RECOMMENDED_APPLICATION_ACTIONS.contains(action))) {
                 scopeTip.setVisible(true);
                 scopeTip.setText("Application scope recommended for this action");
-            } else {
+            }
+            else {
                 scopeTip.setVisible(false);
             }
             dialog.pack();

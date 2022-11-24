@@ -5,6 +5,7 @@ import chatty.gui.Channels;
 import chatty.util.dnd.DockContent;
 import chatty.util.dnd.DockPopout;
 import chatty.util.MiscUtil;
+import chatty.util.settings.Settings;
 import com.sun.jna.Native;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
@@ -28,6 +29,7 @@ public class TransparencyManager {
     private static Channels channels;
     
     private static DockContent current;
+    private static String currentId;
     private static Set<JComponent> currentNotOpaque;
     private static JFrame currentFrame;
     
@@ -45,13 +47,17 @@ public class TransparencyManager {
         }
     }
     
+    public static boolean getClickThrough() {
+        return clickThrough;
+    }
+    
     public static void setColorTransparency(int transparency) {
         if (colorTransparency == transparency) {
             return;
         }
         colorTransparency = transparency;
         if (current != null && currentFrame != null) {
-//            findTransparentable(current.getComponent()).setTransparent(transparency);
+            findTransparencyComponent(current.getComponent()).setTransparent(transparency);
             if (!currentFrame.isUndecorated()) {
                 return;
             }
@@ -59,8 +65,24 @@ public class TransparencyManager {
         }
     }
     
+    public static int getColorTransparency() {
+        return colorTransparency;
+    }
+    
     public static void init(Channels channels) {
         TransparencyManager.channels = channels;
+    }
+    
+    public static void loadSettings(Settings settings) {
+        setColorTransparency(settings.getInt("transparencyBackground"));
+        setClickThrough(settings.getBoolean("transparencyClickThrough"));
+        currentId = settings.getString("transparencyCurrentId");
+    }
+    
+    public static void saveSettings(Settings settings) {
+        settings.setLong("transparencyBackground", colorTransparency);
+        settings.setBoolean("transparencyClickThrough", clickThrough);
+        settings.setString("transparencyCurrentId", currentId);
     }
     
     public static void setTransparent(DockContent content) {
@@ -76,6 +98,7 @@ public class TransparencyManager {
         TransparencyComponent t = findTransparencyComponent(content.getComponent());
         if (t != null) {
             current = content;
+            currentId = content.getId();
             currentNotOpaque = setNotOpaque((Container) t);
             currentFrame = getPopoutFrame(content);
             setWindowTransparent(currentFrame, true);
@@ -91,7 +114,7 @@ public class TransparencyManager {
         }
         // The DockContent is not in the expected popout anymore, so undo
         if (currentFrame != channels.getDock().getPopoutFromContent(current)) {
-            undoTransparent(current);
+            removeTransparent(current);
         }
     }
     
@@ -99,7 +122,7 @@ public class TransparencyManager {
         return current;
     }
     
-    public void removeTransparent(DockContent content) {
+    public static void removeTransparent(DockContent content) {
         undoTransparent(content);
         current = null;
     }
@@ -134,20 +157,47 @@ public class TransparencyManager {
     }
     
     public static void toggleTransparent() {
-        if (current == null) {
+        DockContent content = TransparencyDialog.selectedContent();
+        if (content == null) {
+            content = current;
+        }
+        if (content == null) {
+            content = getEligibleById(currentId);
+        }
+        if (content == null) {
             return;
         }
-        if (currentNotOpaque == null) {
-            setTransparent(current);
+        if (content != current || currentNotOpaque == null) {
+            setTransparent(content);
         }
         else {
-            undoTransparent(current);
+            undoTransparent(content);
         }
+    }
+    
+    private static DockContent getEligibleById(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (DockContent content : getEligible()) {
+            if (content.getId().equals(id)) {
+                return content;
+            }
+        }
+        return null;
+    }
+    
+    public static DockContent getCurrentById() {
+        return getEligibleById(currentId);
+    }
+    
+    public static String getCurrentId() {
+        return currentId;
     }
     
     private static void setNotOpaque(Component container, Set<JComponent> notOpaque) {
         Container parent = container.getParent();
-        System.out.println(container.isOpaque() + " " + container + " -> " + parent);
+//        System.out.println(container.isOpaque() + " " + container + " -> " + parent);
         if (container instanceof JComponent) {
             JComponent comp = ((JComponent) container);
             if (parent != null && comp.isOpaque()) {

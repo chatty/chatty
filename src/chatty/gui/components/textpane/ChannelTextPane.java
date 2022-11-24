@@ -76,6 +76,7 @@ import chatty.util.api.usericons.UsericonFactory;
 import chatty.util.api.usericons.UsericonManager;
 import java.util.function.Function;
 import chatty.gui.transparency.TransparencyComponent;
+import java.util.function.Consumer;
 
 
 /**
@@ -139,37 +140,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     protected static User hoveredUser;
     
-    private int transparency;
-
-    @Override
-    public void setTransparent(int transparency) {
-//        if (this.transparency == transparency) {
-//            return;
-//        }
-//        this.transparency = transparency;
-////        setBackground(new Color(0,0,0,0));
-//        
-//        refreshStyles();
-//        setOpaque(true);
-//        repaint();
-        if (channel != null) {
-            if (transparency == 0) {
-                channel.restoreInput();
-            }
-            else {
-                channel.hideInput();
-            }
-        }
-    }
-    
-    private Color transparency(Color input) {
-        return input;
-//        if (transparency == 0) {
-//            return input;
-//        }
-//        return new Color(input.getRed(), input.getGreen(), input.getBlue(), (int)(255 * (1 - transparency / 100.0)));
-    }
-    
     public enum Attribute {
         BASE_STYLE, ORIGINAL_BASE_STYLE, TIMESTAMP_COLOR_INHERIT,
         TIME_CREATED,
@@ -181,7 +151,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         REPEAT_MESSAGE_COUNT,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
-        CUSTOM_BACKGROUND, CUSTOM_FOREGROUND, CUSTOM_COLOR_SOURCE,
+        CUSTOM_BACKGROUND, CUSTOM_BACKGROUND_ORIG, CUSTOM_FOREGROUND,
+        CUSTOM_COLOR_SOURCE,
         
         IS_REPLACEMENT, REPLACEMENT_FOR, REPLACED_WITH, COMMAND, ACTION_BY,
         ACTION_REASON,
@@ -348,6 +319,47 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             hoveredUser = user;
             repaint();
         }
+    }
+    
+    private int transparency;
+
+    @Override
+    public void setTransparent(int transparency) {
+        if (this.transparency == transparency) {
+            return;
+        }
+        this.transparency = transparency;
+        
+        /**
+         * Setting this component to opaque and transparent background leads to
+         * drawing issues. So instead the window background itself does the
+         * background color transparency (ofc the ChannelTextPane still has
+         * some transparent parts, but it's not set as opaque when transparency
+         * is enabled).
+         */
+//        setBackground(new Color(0,0,0,0));
+//        setOpaque(true);
+
+        // Update for stuff like alternating backgrounds transparency
+        refreshStyles();
+        updateCustomColorTransparency();
+
+        if (channel != null) {
+            if (transparency == 0) {
+                channel.restoreInput();
+            }
+            else {
+                channel.hideInput();
+            }
+        }
+    }
+    
+    private Color transparency(Color input) {
+        if (transparency <= 0) {
+            return input;
+        }
+        int alpha = (int)(255 * (1 - transparency / 100.0));
+        return new Color(input.getRed(), input.getGreen(), input.getBlue(), alpha);
     }
     
     /**
@@ -1285,6 +1297,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         return null;
     }
     
+    private void applyToLines(Consumer<Element> worker) {
+        Element root = doc.getDefaultRootElement();
+        for (int i=root.getElementCount()-1;i>=0;i--) {
+            worker.accept(root.getElement(i));
+        }
+    }
+    
     private boolean isMessageLine(Element line) {
         return getUserFromLine(line) != null;
     }
@@ -1481,9 +1500,21 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         SimpleAttributeSet attr = new SimpleAttributeSet();
         if (backgroundColor != null) {
             attr.addAttribute(Attribute.CUSTOM_BACKGROUND, backgroundColor);
+            attr.addAttribute(Attribute.CUSTOM_BACKGROUND_ORIG, backgroundColor);
         }
         attr.addAttribute(Attribute.CUSTOM_COLOR_SOURCE, source);
         doc.setParagraphAttributes(offset, 1, attr, false);
+    }
+    
+    private void updateCustomColorTransparency() {
+        applyToLines(line -> {
+            Color origColor = (Color) line.getAttributes().getAttribute(Attribute.CUSTOM_BACKGROUND_ORIG);
+            if (origColor != null) {
+                SimpleAttributeSet attr = new SimpleAttributeSet();
+                attr.addAttribute(Attribute.CUSTOM_BACKGROUND, transparency(origColor));
+                doc.setParagraphAttributes(line.getStartOffset(), 1, attr, false);
+            }
+        });
     }
     
     public void selectPreviousUser() {
@@ -3765,7 +3796,17 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
          * @return true if the style has changed, false otherwise
          */
         private boolean loadStyle(String name) {
-            MutableAttributeSet newStyle = styleServer.getStyle(name);
+            MutableAttributeSet newStyle = new SimpleAttributeSet(styleServer.getStyle(name));
+            
+            Color background2 = MyStyleConstants.getBackground2(newStyle);
+            if (background2 != null) {
+                MyStyleConstants.setBackground2(newStyle, transparency(background2));
+            }
+            Color highlightBackground = MyStyleConstants.getHighlightBackground(newStyle);
+            if (highlightBackground != null) {
+                MyStyleConstants.setHighlightBackground(newStyle, transparency(highlightBackground));
+            }
+            
             AttributeSet oldStyle = rawStyles.get(name);
             if (oldStyle != null && oldStyle.isEqual(newStyle)) {
                 // Nothing in the style has changed, so nothing further to do

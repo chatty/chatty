@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
@@ -47,7 +48,12 @@ public class HotkeySettings extends SettingsPanel {
         gbc.anchor = GridBagConstraints.EAST;
         main.add(addTabSwitchKeys, gbc);
         
-        data = new HotkeyEditor(d);
+        data = new HotkeyEditor(d, item -> {
+            if (item.type == Hotkey.Type.GLOBAL
+                    && !d.getBooleanSettingValue("globalHotkeysEnabled")) {
+                JOptionPane.showMessageDialog(d, "You have added a global hotkey, but global hotkeys are currently disabled (see setting at bottom).");
+            }
+        });
         data.setPreferredSize(new Dimension(1,270));
         gbc = d.makeGbc(0, 0, 2, 1);
         gbc.fill = GridBagConstraints.BOTH;
@@ -80,6 +86,10 @@ public class HotkeySettings extends SettingsPanel {
     
     public List<Hotkey> getData() {
         return data.getData();
+    }
+    
+    public void edit(String id) {
+        data.edit(id);
     }
     
 }

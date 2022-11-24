@@ -1,15 +1,19 @@
-This feature is experimental and may not work properly. Select a channel and
-    click the button to make transparent. The transparency only works in a
-    popout window (and the channel needs to be alone in the popout).
+Select a channel and click the button to make transparent. The transparency only
+works in a popout window (and the channel needs to be alone in the popout).
 <ul>
     <li>The transparent window can't be fully controlled with the mouse (no
         titlebar, clicks may not register on transparent parts or at all), so
         you need to toggle transparency to e.g. move it.</li>
-    <li>You add a new hotkey with the "Toggle Transparency" action in the
-        Hotkeys settings (must have made transparent once here before).</li>
-    <li>Special message background colors are not transparent. Is is recommended
-        to use white text on dark background (no alternating backgrounds). The
-        window background color is always black when partially transparent.</li>
-    <li>Settings in this dialog are not saved in this version.</li>
+    <li>You can set a hotkey with the "Toggle Transparency" action in the
+        Hotkeys settings.</li>
+    <li>When transparency is enabled the main background color is always black,
+        with transparency applied based on the Window Background Transparency
+        setting. Message background colors (e.g. the second color of alternating
+        backgrounds or Custom Msg. Colors) are made transparent based on that
+        setting as well.</li>
+    <li>The last channel that was made transparent is saved, so if you restart
+        Chatty and rejoin the same channel you can just use the hotkey to make
+        it transparent again, without having to select it in the Transparency
+        dialog first.</li>
 </ul>
 

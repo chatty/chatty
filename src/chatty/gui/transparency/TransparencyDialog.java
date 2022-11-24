@@ -33,6 +33,13 @@ public class TransparencyDialog extends JDialog {
         }
         return instance;
     }
+    
+    public static DockContent selectedContent() {
+        if (instance != null) {
+            return (DockContent) instance.selection.getSelectedItem();
+        }
+        return null;
+    }
 
     private final JComboBox<DockContent> selection = new JComboBox<>();
     private final JButton toggleButton = new JButton("Toggle Transparency");
@@ -41,6 +48,7 @@ public class TransparencyDialog extends JDialog {
     private final JButton refreshButton = new JButton(new ImageIcon(AdminDialog.class.getResource("view-refresh.png")));
     private final JToggleButton toggleHelpButton = new JToggleButton("Help");
     private final JLabel help = new JLabel("<html><body style='width:320px;'>"+SettingsUtil.getInfo("info-transparency.html", null));
+    private final JButton setHotkeyButton = new JButton("Set hotkey");
     
     private TransparencyDialog(MainGui main) {
         super(main);
@@ -62,7 +70,8 @@ public class TransparencyDialog extends JDialog {
         add(selection, gbc);
         add(refreshButton, GuiUtil.makeGbc(1, 0, 1, 1));
         add(toggleButton, GuiUtil.makeGbc(2, 0, 1, 1));
-        add(clickThroughNative, GuiUtil.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
+        add(clickThroughNative, GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.EAST));
+        add(setHotkeyButton, GuiUtil.makeGbc(2, 1, 1, 1, GridBagConstraints.EAST));
         add(new JLabel("Window Background Transparency (%):"), GuiUtil.makeGbc(0, 2, 2, 1, GridBagConstraints.EAST));
         add(colorTransparency, GuiUtil.makeGbc(2, 2, 1, 1, GridBagConstraints.WEST));
         add(toggleHelpButton, GuiUtil.makeGbc(0, 10, 1, 1, GridBagConstraints.WEST));
@@ -100,8 +109,12 @@ public class TransparencyDialog extends JDialog {
             pack();
         });
         
-        clickThroughNative.setSelected(true);
-        colorTransparency.setSelectedItem(50);
+        setHotkeyButton.addActionListener(e -> {
+            main.getSettingsDialog(s -> s.showSettings("editHotkey", "dialog.toggleTransparency"));
+        });
+        
+        clickThroughNative.setSelected(TransparencyManager.getClickThrough());
+        colorTransparency.setSelectedItem(TransparencyManager.getColorTransparency());
     }
     
     public void refresh() {
@@ -126,7 +139,12 @@ public class TransparencyDialog extends JDialog {
         for (DockContent content : TransparencyManager.getEligible()) {
             selection.addItem(content);
         }
-        selection.setSelectedItem(TransparencyManager.getCurrent());
+        if (TransparencyManager.getCurrent() == null) {
+            selection.setSelectedItem(TransparencyManager.getCurrentById());
+        }
+        else {
+            selection.setSelectedItem(TransparencyManager.getCurrent());
+        }
         pack();
     }
     
