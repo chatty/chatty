@@ -28,6 +28,7 @@ public class Connections {
     private static final Logger LOGGER = Logger.getLogger(Connections.class.getName());
     
     private static final int MAX_CONNECTIONS = 3;
+    private static final int MAX_RETRY_TOPIC_COUNT = 5;
     
     private final Map<Integer, Connection> connections;
     private final URI server;
@@ -92,15 +93,21 @@ public class Connections {
         return c;
     }
     
+    /**
+     * No longer listen to a topic.
+     * 
+     * @param topic
+     * @return 
+     */
     public synchronized boolean removeTopic(Topic topic) {
         return removeTopic(topic, true);
     }
     
-    public synchronized boolean removeTopic(Topic topic, boolean unregister) {
+    public synchronized boolean removeTopic(Topic topic, boolean externalRemove) {
         for (Connection c : connections.values()) {
             Topic removedTopic;
             if ((removedTopic = c.removeTopic(topic)) != null) {
-                if (unregister) {
+                if (externalRemove) {
                     unregisterTopic(removedTopic);
                 }
                 if (c.numTopics() == 0) {
@@ -108,6 +115,11 @@ public class Connections {
                 }
                 return true;
             }
+        }
+        if (externalRemove) {
+            errorLimitReachedTopics.remove(topic);
+            errorTopics.remove(topic);
+            removedAuthTopics.remove(topic);
         }
         return false;
     }
@@ -119,13 +131,13 @@ public class Connections {
         Iterator<Topic> it = errorLimitReachedTopics.iterator();
         Topic topic = it.next();
         it.remove();
-        System.out.println("Retry "+topic+" "+totalCost);
-        addTopic(topic);
+        LOGGER.info("[EventSub] Retrying: " + topic + " "+totalCost);
+        addTopicInternal(topic);
     }
     
     /**
      * Time between retries increases for each topic as error count increases.
-     * This it no cleared, so with a bad connection this might never work, but
+     * This it not cleared, so with a bad connection this might never work, but
      * one-off errors should be fine. Needs better handling of different types
      * of errors.
      */
@@ -136,12 +148,15 @@ public class Connections {
                 if (topic.shouldRequest()) {
                     retry.add(topic);
                 }
+                if (retry.size() >= MAX_RETRY_TOPIC_COUNT) {
+                    break;
+                }
             }
             errorTopics.removeAll(retry);
             if (!retry.isEmpty()) {
                 LOGGER.info("[EventSub] Retrying: " + retry);
                 for (Topic topic : retry) {
-                    addTopic(topic);
+                    addTopicInternal(topic);
                 }
             }
         }
@@ -339,6 +354,9 @@ public class Connections {
             SubscriptionPayload subscription = (SubscriptionPayload) msg.data;
             Topic topic = removeTopicById(subscription.id);
             if (topic != null) {
+                // Topic is no longer registered, so reset associated stuff
+                topic.setId(null);
+                topic.setCost(0);
                 if ("authorization_revoked".equals(subscription.status)) {
                     removedAuthTopics.add(topic);
                 }
@@ -379,14 +397,19 @@ public class Connections {
     
     
     private void registerTopic(Connection c, Topic topic) {
-        api.addEventSub(topic.make(c.getSessionId()), r -> {
+        String sessionId = c.getSessionId();
+        api.addEventSub(topic.make(sessionId), r -> {
             if (!r.hasError) {
                 synchronized (Connections.this) {
-                    totalCost = r.totalCost;
-                    maxTotalCost = r.maxTotalCost;
-                    topic.setCost(r.cost);
-                    topic.setId(r.id);
+                    // Check if connection has reconnected in the meantime
+                    if (sessionId.equals(c.getSessionId())) {
+                        totalCost = r.totalCost;
+                        maxTotalCost = r.maxTotalCost;
+                        topic.setCost(r.cost);
+                        topic.setId(r.id);
+                    }
                 }
+                log("+"+topic);
             }
             else {
                 synchronized (Connections.this) {
@@ -400,10 +423,10 @@ public class Connections {
                         topic.increaseErrorCount();
                         errorTopics.add(topic);
                     }
-                    removeTopic(topic);
+                    removeTopic(topic, false);
                 }
+                log("Error: "+topic);
             }
-            log("+"+topic);
         });
     }
     
@@ -414,7 +437,7 @@ public class Connections {
         api.removeEventSub(topic.getId(), r -> {
             if (r == 204 || r == 404) {
                 synchronized (Connections.this) {
-                    if (topic.getCost() > 0) {
+                    if (topic.getCost() > 0 && r == 204) {
                         totalCost -= topic.getCost();
                         retryFailedTopic();
                     }
@@ -425,8 +448,12 @@ public class Connections {
     }
     
     private void log(String event) {
-        LOGGER.info(String.format("[EventSub] %s / Cost: %d/%d",
-                event, totalCost, maxTotalCost));
+        LOGGER.info("[EventSub] "+event+" / "+getDebugText());
+    }
+    
+    private synchronized String getDebugText() {
+        return String.format("Cost: %d/%d %s%s%s",
+                totalCost, maxTotalCost, errorLimitReachedTopics, errorTopics, removedAuthTopics);
     }
     
     public synchronized void tokenUpdated() {

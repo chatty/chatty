@@ -60,7 +60,7 @@ public class EventSubAddResult {
         catch (Exception ex) {
             LOGGER.warning("Failed parsing EventSubAdd result: "+ex);
         }
-        return null;
+        return new EventSubAddResult(null, null, null, -1, -1, -1, -1, r.responseCode, r.errorText);
     }
     
     @Override
