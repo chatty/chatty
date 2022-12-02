@@ -4,9 +4,9 @@ package chatty.util.api.pubsub;
 import chatty.util.jws.JWSClient;
 import chatty.util.jws.MessageHandler;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Manage several connections.
@@ -17,12 +17,13 @@ public class Connections {
     
     private static final int MAX_CONNECTIONS = 6;
     
-    private final List<PubSub> connections;
+    private final Map<Integer, PubSub> connections;
     private final URI server;
     private final ConnectionsMessageHandler handler;
+    private int connIdCounter;
     
     public Connections(URI server, ConnectionsMessageHandler handler) {
-        this.connections = new ArrayList<>();
+        this.connections = new HashMap<>();
         this.server = server;
         this.handler = handler;
     }
@@ -31,29 +32,30 @@ public class Connections {
         if (hasTopic(topic)) {
             return true;
         }
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             if (c.addTopic(topic, token)) {
                 return true;
             }
         }
         if (connections.size() < MAX_CONNECTIONS) {
-            int connId = connections.size();
+            int connId = connIdCounter++;
             PubSub c = new PubSub(server, createHandler(connId));
             c.setDebugPrefix(String.format(Locale.ROOT, "[PubSub][%d] ", connId));
             c.init();
-            connections.add(c);
+            connections.put(connId, c);
             return c.addTopic(topic, token);
         }
         return false;
     }
     
     public synchronized boolean removeTopic(String topic, String token) {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             if (c.removeTopic(topic, token)) {
                 if (c.numTopics() == 0) {
                     c.disconnect();
                     c.cleanup();
-                    connections.remove(c);
+                    // Should be fine, since the iteration stops after this
+                    connections.values().remove(c);
                 }
                 return true;
             }
@@ -62,13 +64,13 @@ public class Connections {
     }
     
     public synchronized void updateToken(String token) {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             c.updateToken(token);
         }
     }
     
     public synchronized boolean hasTopic(String topic) {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             if (c.hasTopic(topic)) {
                 return true;
             }
@@ -81,7 +83,7 @@ public class Connections {
     }
     
     public synchronized int getNumTopics(int id) {
-        if (connections.size() > id) {
+        if (connections.containsKey(id)) {
             return connections.get(id).numTopics();
         }
         return -1;
@@ -89,7 +91,7 @@ public class Connections {
     
     public synchronized int getNumTopics() {
         int total = 0;
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             total += c.numTopics();
         }
         return total;
@@ -103,7 +105,7 @@ public class Connections {
         if (connections.isEmpty()) {
             return false;
         }
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             if (!c.isOpen()) {
                 return false;
             }
@@ -112,19 +114,19 @@ public class Connections {
     }
     
     public synchronized void disconnect() {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             c.disconnect();
         }
     }
     
     public synchronized void reconnect() {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             c.reconnect();
         }
     }
     
     public synchronized void sendPing() {
-        for (PubSub c : connections) {
+        for (PubSub c : connections.values()) {
             c.sendPing();
         }
     }
@@ -135,7 +137,7 @@ public class Connections {
      * @param text 
      */
     public synchronized void simulate(String text) {
-        connections.get(0).handleReceived(text);
+        connections.values().iterator().next().handleReceived(text);
     }
     
     private MessageHandler createHandler(int id) {
