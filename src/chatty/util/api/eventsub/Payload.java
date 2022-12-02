@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.SubscriptionPayload;
 import chatty.util.api.eventsub.payloads.SessionPayload;
@@ -33,6 +34,9 @@ public class Payload {
             switch (subType) {
                 case "channel.raid":
                     return RaidPayload.decode(payload);
+                case "channel.poll.begin":
+                case "channel.poll.end":
+                    return PollPayload.decode(payload);
             }
         }
         

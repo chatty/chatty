@@ -258,7 +258,7 @@ public class Connections {
      * @param text 
      */
     public synchronized void simulate(String text) {
-        connections.get(0).handleReceived(text);
+        connections.values().iterator().next().handleReceived(text);
     }
     
     public synchronized Topic removeTopicById(String id) {

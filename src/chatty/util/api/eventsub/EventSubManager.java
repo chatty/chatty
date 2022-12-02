@@ -128,6 +128,16 @@ public class EventSubManager {
         removeTopic(new Raid(username));
     }
     
+    public void listenPoll(String username) {
+        addTopic(new PollStart(username));
+        addTopic(new PollEnd(username));
+    }
+    
+    public void unlistenPoll(String username) {
+        removeTopic(new PollStart(username));
+        removeTopic(new PollEnd(username));
+    }
+    
     /**
      * Adds the given topic to be requested. If the topic is already being
      * listened to, it will still be added, processed and tried to listen to
@@ -353,6 +363,64 @@ public class EventSubManager {
         @Override
         public Topic copy() {
             return new Raid(stream);
+        }
+
+    }
+    
+    private class PollStart extends StreamTopic {
+
+        PollStart(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                return Helper.makeAddEventSubBody("channel.poll.begin", condition, sessionId);
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new PollStart(stream);
+        }
+
+    }
+    
+    private class PollEnd extends StreamTopic {
+
+        PollEnd(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                return Helper.makeAddEventSubBody("channel.poll.end", condition, sessionId);
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new PollEnd(stream);
         }
 
     }

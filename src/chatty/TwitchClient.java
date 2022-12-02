@@ -74,6 +74,7 @@ import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.UserInfo;
 import chatty.util.api.eventsub.EventSubListener;
 import chatty.util.api.eventsub.EventSubManager;
+import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.pubsub.RewardRedeemedMessageData;
 import chatty.util.api.pubsub.Message;
@@ -686,6 +687,7 @@ public class TwitchClient {
             pubsub.unlistenUserModeration(room.getStream());
             pubsub.unlistenPoints(room.getStream());
             eventSub.unlistenRaid(room.getStream());
+            eventSub.unlistenPoll(room.getStream());
         }
     }
     
@@ -1976,6 +1978,8 @@ public class TwitchClient {
             g.printModerationAction(data, false);
         } else if (command.equals("simulatepubsub")) {
             pubsub.simulate(parameter);
+        } else if (command.equals("simulateeventsub")) {
+            eventSub.simulate(parameter);
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
@@ -2667,6 +2671,11 @@ public class TwitchClient {
                 MsgTags tags = MsgTags.create("chatty-hosted", Helper.toChannel(raid.toLogin));
                 g.printInfo(c.getRoomByChannel(channel), text, tags);
             }
+            String pollMessage = PollPayload.getPollMessage(message);
+            if (pollMessage != null) {
+                PollPayload poll = (PollPayload) message.data;
+                g.printInfo(c.getRoomByChannel(Helper.toChannel(poll.stream)), pollMessage, MsgTags.EMPTY);
+            }
         }
 
         @Override
@@ -3316,6 +3325,14 @@ public class TwitchClient {
             }
         }
         
+        private void checkPollListen(User user) {
+            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_POLLS.scope)
+                    && user.getName().equals(c.getUsername())
+                    && user.isBroadcaster()) {
+                eventSub.listenPoll(user.getStream());
+            }
+        }
+        
         @Override
         public void onChannelJoined(User user) {
             channelFavorites.addJoined(user.getRoom());
@@ -3338,6 +3355,7 @@ public class TwitchClient {
                 checkModLogListen(user);
                 checkPointsListen(user);
                 eventSub.listenRaid(user.getStream());
+                checkPollListen(user);
                 updateStreamInfoChannelOpen(user.getChannel());
             }
         }
