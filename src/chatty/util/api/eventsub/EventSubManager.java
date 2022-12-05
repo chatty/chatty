@@ -138,6 +138,16 @@ public class EventSubManager {
         removeTopic(new PollEnd(username));
     }
     
+    public void listenShield(String username) {
+        addTopic(new ShieldBegin(username));
+        addTopic(new ShieldEnd(username));
+    }
+    
+    public void unlistenShield(String username) {
+        removeTopic(new ShieldBegin(username));
+        removeTopic(new ShieldEnd(username));
+    }
+    
     /**
      * Adds the given topic to be requested. If the topic is already being
      * listened to, it will still be added, processed and tried to listen to
@@ -350,7 +360,7 @@ public class EventSubManager {
             if (userId != null) {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("from_broadcaster_user_id", userId);
-                return Helper.makeAddEventSubBody("channel.raid", condition, sessionId);
+                return Helper.makeAddEventSubBody("channel.raid", condition, sessionId, "1");
             }
             return null;
         }
@@ -379,7 +389,7 @@ public class EventSubManager {
             if (userId != null) {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("broadcaster_user_id", userId);
-                return Helper.makeAddEventSubBody("channel.poll.begin", condition, sessionId);
+                return Helper.makeAddEventSubBody("channel.poll.begin", condition, sessionId, "1");
             }
             return null;
         }
@@ -408,7 +418,7 @@ public class EventSubManager {
             if (userId != null) {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("broadcaster_user_id", userId);
-                return Helper.makeAddEventSubBody("channel.poll.end", condition, sessionId);
+                return Helper.makeAddEventSubBody("channel.poll.end", condition, sessionId, "1");
             }
             return null;
         }
@@ -421,6 +431,66 @@ public class EventSubManager {
         @Override
         public Topic copy() {
             return new PollEnd(stream);
+        }
+
+    }
+    
+    private class ShieldBegin extends StreamTopic {
+
+        ShieldBegin(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.shield_mode.begin", condition, sessionId, "beta");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ShieldBegin(stream);
+        }
+
+    }
+    
+    private class ShieldEnd extends StreamTopic {
+
+        ShieldEnd(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.shield_mode.end", condition, sessionId, "beta");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ShieldEnd(stream);
         }
 
     }

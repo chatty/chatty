@@ -5,6 +5,7 @@ import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.SubscriptionPayload;
 import chatty.util.api.eventsub.payloads.SessionPayload;
+import chatty.util.api.eventsub.payloads.ShieldModePayload;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -37,6 +38,9 @@ public class Payload {
                 case "channel.poll.begin":
                 case "channel.poll.end":
                     return PollPayload.decode(payload);
+                case "channel.shield_mode.begin":
+                case "channel.shield_mode.end":
+                    return ShieldModePayload.decode(payload);
             }
         }
         

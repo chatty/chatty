@@ -360,6 +360,9 @@ public class Connections {
                 if ("authorization_revoked".equals(subscription.status)) {
                     removedAuthTopics.add(topic);
                 }
+                else if ("moderator_removed".equals(subscription.status)) {
+                    // Just remove topic
+                }
                 else {
                     errorTopics.add(topic);
                 }

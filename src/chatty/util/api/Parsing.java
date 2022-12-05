@@ -132,5 +132,35 @@ public class Parsing {
             return null;
         }
     }
-
+    
+    public static class ShieldModeStatus {
+        
+        public final String stream;
+        public final boolean enabled;
+        
+        public ShieldModeStatus(String stream, boolean enabled) {
+            this.stream = stream;
+            this.enabled = enabled;
+        }
+        
+        public static ShieldModeStatus decode(String json, String stream) {
+            if (json == null) {
+                return null;
+            }
+            try {
+                JSONParser parser = new JSONParser();
+                JSONObject root = (JSONObject) parser.parse(json);
+                JSONObject data = (JSONObject) ((JSONArray) root.get("data")).get(0);
+                if (data.containsKey("is_active")) {
+                    return new ShieldModeStatus(stream, JSONUtil.getBoolean(data, "is_active", false));
+                }
+            }
+            catch (Exception ex) {
+                LOGGER.warning("Error parsing shield mode status: " + ex);
+            }
+            return null;
+        }
+        
+    }
+    
 }

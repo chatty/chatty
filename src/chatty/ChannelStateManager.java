@@ -93,6 +93,12 @@ public class ChannelStateManager {
         }
     }
     
+    public void setShieldMode(String channel, boolean enabled) {
+        if (getState(channel).setShieldMode(enabled)) {
+            updated(channel);
+        }
+    }
+    
     public void setSubmode(String channel, boolean enabled) {
         if (getState(channel).setSubMode(enabled)) {
             updated(channel);

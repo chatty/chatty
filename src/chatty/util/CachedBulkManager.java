@@ -387,6 +387,12 @@ public class CachedBulkManager<Key,Item> {
         }
     }
     
+    public void removeCachedValue(Key key) {
+        synchronized (LOCK) {
+            cache.remove(key);
+        }
+    }
+    
     /**
      * Get the key from the cache or add a query if it isn't in the cache. When
      * the cache is ready to be refreshed due to the time set in

@@ -134,16 +134,16 @@ public class TwitchApi {
         
     }
     
-    protected void setReceived(String key) {
-        m.setResult(new Req(key, null), Boolean.TRUE);
+    protected void setReceived(String requestId) {
+        m.setResult(new Req(requestId, null), Boolean.TRUE);
     }
     
-    protected void setError(String key) {
-        m.setError(new Req(key, null));
+    protected void setError(String requestId) {
+        m.setError(new Req(requestId, null));
     }
     
-    protected void setNotFound(String key) {
-        m.setNotFound(new Req(key, null));
+    protected void setNotFound(String requestId) {
+        m.setNotFound(new Req(requestId, null));
     }
     
     //=================
@@ -686,6 +686,34 @@ public class TwitchApi {
         });
     }
     
+    public void setShieldMode(Room room, boolean enabled, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.setShieldMode(room.getStream(), streamId, enabled, listener);
+        });
+    }
+    
+    public void getShieldMode(Room room, boolean oncePerStream) {
+        String requestId = "getShieldMode:" + room.getStream();
+        if (oncePerStream) {
+            int options = CachedBulkManager.ASAP | CachedBulkManager.UNIQUE;
+            m.query(null, options, new Req(requestId, () -> {
+                runWithStreamId(room, null, streamId -> {
+                    requests.getShieldMode(room.getStream(), streamId, requestId);
+                });
+            }));
+        }
+        else {
+            runWithStreamId(room, null, streamId -> {
+                requests.getShieldMode(room.getStream(), streamId, requestId);
+            });
+        }
+    }
+    
+    public void removeShieldModeCache(Room room) {
+        String requestId = "getShieldMode:" + room.getStream();
+        m.removeCachedValue(new Req(requestId, null));
+    }
+    
     public void whisper(String targetUsername, String msg, SimpleRequestResultListener listener) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
@@ -739,7 +767,7 @@ public class TwitchApi {
         String streamId = room.getStreamId();
         if (streamId == null) {
             userIDs.getUserIDsAsap(r -> {
-                if (r.hasError()) {
+                if (r.hasError() && listener != null) {
                     listener.accept(SimpleRequestResult.error("Invalid username"));
                 }
                 else {

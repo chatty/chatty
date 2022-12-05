@@ -284,6 +284,16 @@ public class TwitchCommands {
             updateChatSettings(client, p, "",
                     TwitchApi.CHAT_SETTINGS_EMOTEONLY, false);
         });
+        commands.add("shieldMode", p -> {
+            channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                api.setShieldMode(p.getRoom(), true, listener);
+            });
+        });
+        commands.add("shieldModeOff", p -> {
+            channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
+                api.setShieldMode(p.getRoom(), false, listener);
+            });
+        });
         //--------------------------
         // User Settings
         //--------------------------

@@ -41,6 +41,8 @@ public class ChannelState {
     // Should be -1, since 0 means on as well
     private int followersOnly = -1;
     
+    private boolean shieldMode;
+    
     /**
      * Cached info text based on the current state.
      */
@@ -77,6 +79,9 @@ public class ChannelState {
             changed = true;
         }
         if (setFollowersOnly(-1)) {
+            changed = true;
+        }
+        if (setShieldMode(false)) {
             changed = true;
         }
         return changed;
@@ -160,6 +165,19 @@ public class ChannelState {
         return emoteOnly;
     }
     
+    public synchronized boolean setShieldMode(boolean enabled) {
+        if (shieldMode != enabled) {
+            shieldMode = enabled;
+            updateInfo();
+            return true;
+        }
+        return false;
+    }
+    
+    public synchronized boolean shieldMode() {
+        return shieldMode;
+    }
+    
     /**
      * Set the channel that is being hosted.
      * 
@@ -220,12 +238,15 @@ public class ChannelState {
     private void updateInfo() {
         String result = "";
         String sep = "|";
+        if (shieldMode) {
+            result = StringUtil.append(result, sep, "Shield");
+        }
         if (slowMode == SLOWMODE_ON_INVALID || slowMode > 86400) {
-            result += "Slow: >day";
+            result = StringUtil.append(result, sep, "Slow: >day");
         } else if (slowMode > 999) {
-            result += "Slow: "+DateTime.duration(slowMode*1000, 1, 0);
+            result = StringUtil.append(result, sep, "Slow: "+DateTime.duration(slowMode*1000, 1, 0));
         } else if (slowMode > 0) {
-            result += "Slow: "+slowMode;
+            result  = StringUtil.append(result, sep, "Slow: "+slowMode);
         }
         if (subMode) {
             result = StringUtil.append(result, sep, "Sub");

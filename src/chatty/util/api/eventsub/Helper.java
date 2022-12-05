@@ -11,10 +11,10 @@ import org.json.simple.JSONObject;
  */
 public class Helper {
 
-    public static String makeAddEventSubBody(String type, Map<String, String> condition, String sessionId) {
+    public static String makeAddEventSubBody(String type, Map<String, String> condition, String sessionId, String version) {
         Map<String, Object> root = new HashMap<>();
         root.put("type", type);
-        root.put("version", "1");
+        root.put("version", version);
         root.put("condition", condition);
         
         Map<String, String> transport = new HashMap<>();

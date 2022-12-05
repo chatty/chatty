@@ -23,7 +23,8 @@ public class ResultManager {
     private final Map<Type, Set<Object>> listeners = new HashMap<>();
     
     public enum Type {
-        CATEGORY_RESULT(CategoryResult.class);
+        CATEGORY_RESULT(CategoryResult.class),
+        SHIELD_MODE_RESULT(ShieldModeResult.class);
         
         private final Class c;
         
@@ -56,6 +57,10 @@ public class ResultManager {
     
     public interface CategoryResult {
         public void result(Collection<StreamCategory> categories);
+    }
+    
+    public interface ShieldModeResult {
+        public void result(String stream, boolean enabled);
     }
     
     public static void main(String[] args) {

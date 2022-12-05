@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
+import chatty.util.api.ResultManager.ShieldModeResult;
 import chatty.util.api.TokenInfo.Scope;
 import chatty.util.api.TwitchApi.SimpleRequestResult;
 import chatty.util.api.TwitchApi.SimpleRequestResultListener;
@@ -685,6 +686,51 @@ public class Requests {
                 return "blue_violet";
         }
         return color;
+    }
+    
+    @SuppressWarnings("unchecked") // JSONObject
+    public void setShieldMode(String stream, String streamId, boolean enabled, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/shield_mode",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        JSONObject data = new JSONObject();
+        data.put("is_active", enabled);
+//        JSONObject json = new JSONObject();
+//        json.put("data", data);
+        newApi.add(url, "PUT", data.toJSONString(), api.defaultToken, r -> {
+            handleResult(r, listener);
+            Parsing.ShieldModeStatus status = Parsing.ShieldModeStatus.decode(r.text, stream);
+            if (status != null) {
+                api.resultManager.inform(ResultManager.Type.SHIELD_MODE_RESULT, (ShieldModeResult l) -> {
+                    l.result(status.stream, status.enabled);
+                });
+            }
+        });
+    }
+    
+    public void getShieldMode(String stream, String streamId, String requestId) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/shield_mode",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            Parsing.ShieldModeStatus status = Parsing.ShieldModeStatus.decode(r.text, stream);
+            if (status != null) {
+                api.resultManager.inform(ResultManager.Type.SHIELD_MODE_RESULT, (ShieldModeResult l) -> {
+                    l.result(status.stream, status.enabled);
+                });
+            }
+            switch (r.responseCode) {
+                case 200:
+                    api.setReceived(requestId);
+                    break;
+                case 404:
+                    api.setNotFound(requestId);
+                    break;
+                default:
+                    api.setError(requestId);
+                    break;
+            }
+        });
     }
     
     private static void handleResult(ResultListener.Result r, SimpleRequestResultListener listener) {
