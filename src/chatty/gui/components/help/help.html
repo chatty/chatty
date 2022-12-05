@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
-    <h1><a name="top">Chatty (Version: 0.22-b1)</a></h1>
+    <h1><a name="top">Chatty (Version: 0.22-b2)</a></h1>
     <table>
         <tr>
             <td valign="top">
@@ -117,11 +117,11 @@
     
     <p>In addition, the titlebar will also show additional information, if enabled:</p>
     <ul>
-        <li>The name of the channel that is being hosted</li>
         <li><code>Sub</code> for Subscriber-Only Mode</li>
         <li><code>Slow: &lt;time&gt;</code> for Slowmode</li>
         <li><code>R9k</code> for R9Kbeta Mode</li>
         <li><code>EmoteOnly</code> for Emote-Only Mode</li>
+        <li><code>Shield</code> if Shield Mode is enabled (moderators only)</li>
         <li>A language code if Broadcaster Language Mode is enabled</li>
         <li><code>[FM]</code> indicates a websocket connection (<code>F</code>
             for FrankerFaceZ, <code>M</code> for PubSub/Modlogs)</li>
@@ -269,6 +269,7 @@
         <li><code>/timeout</code>, <code>/ban</code>, <code>/unban</code>,
                 <code>/slow</code>, <code>/slowoff</code>,
                 <code>/subscribers</code>, <code>/subscribersoff</code>,
+                <code>/shieldMode</code>, <code>/shieldModeOff</code>,
                 <code>/clear</code>, <code>/mods</code>, <code>/host</code>,
                 <code>/unhost</code>, <code>/raid</code>, <code>/unraid</code>,
                 <code>/color</code>

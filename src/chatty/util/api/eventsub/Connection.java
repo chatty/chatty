@@ -98,7 +98,6 @@ public class Connection extends JWSClient {
             }
             topics.put(topic, topic);
         }
-        System.out.println("Add topic"+topic+" "+topics);
         return true;
     }
     
