@@ -767,10 +767,6 @@ public class SettingsManager {
         // Stream Status Writer
         settings.addBoolean("enableStatusWriter", false);
         settings.addString("statusWriter", "");
-
-        // Auto-Unhost
-        settings.addBoolean("autoUnhost", false);
-        settings.addList("autoUnhostStreams", new ArrayList(), Setting.STRING);
         
         settings.addMap("rewards", new HashMap(), Setting.STRING);
         

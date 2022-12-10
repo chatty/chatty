@@ -270,12 +270,11 @@
                 <code>/slow</code>, <code>/slowoff</code>,
                 <code>/subscribers</code>, <code>/subscribersoff</code>,
                 <code>/shieldMode</code>, <code>/shieldModeOff</code>,
-                <code>/clear</code>, <code>/mods</code>, <code>/host</code>,
-                <code>/unhost</code>, <code>/raid</code>, <code>/unraid</code>,
+                <code>/clear</code>, <code>/mods</code>,
+                <code>/raid</code>, <code>/unraid</code>,
                 <code>/color</code>
                 just like in normal Twitch Chat</li>
         <li><code>/join &lt;channel&gt;</code> - Joins the given channels, see <a href="#join">Joining Channels</a> for more information</li>
-        <li><code>/joinhosted</code> - Join currently hosted channel (if any)</li>
         <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
         <li><code>/rejoin</code> - Rejoins the channel (without clearing users or chat)</li>
         <li><code>/reconnect</code> - Disconnects and reconnects</li>
@@ -388,8 +387,7 @@
         <li><code>/testNotification [channel]</code> - Display a test notification (optionally with channel,
             which means right-clicking on the notification will join that channel)</li>
         <li><code>/debug simulate &lt;type&gt;</code> - Simulates a chat message
-            for testing. Some possible types: <code>sub</code>, <code>resub</code>,
-            <code>bits</code>, <code>authost</code>.
+            for testing. See the Chatty source code for possible values.
         </li>
         <li><code>/debug</code> allows for a number of debug commands to be run,
             but those may produce errors and strange behaviour, so you usually

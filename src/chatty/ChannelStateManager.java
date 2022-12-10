@@ -117,12 +117,6 @@ public class ChannelStateManager {
         }
     }
     
-    public void setHosting(String channel, String target) {
-        if (getState(channel).setHosting(target)) {
-            updated(channel);
-        }
-    }
-    
     public void setLang(String channel, String lang) {
         if (getState(channel).setLang(lang)) {
             updated(channel);

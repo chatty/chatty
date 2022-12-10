@@ -39,7 +39,7 @@ public class TwitchCommands {
             = Collections.synchronizedSet(new HashSet<String>());
 
     private static final Set<String> SIMPLE_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "host", "unhost", "commercial"
+        "commercial"
     }));
 
     /**
@@ -56,7 +56,6 @@ public class TwitchCommands {
      * Other commands, only used for isCommand().
      */
     private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
-        "host2"
     }));
     
     private TwitchConnection c;
@@ -77,10 +76,7 @@ public class TwitchCommands {
     }
     
     public boolean command(String channel, String msgId, String command, String parameter) {
-        if (command.equals("host") && parameter == null) {
-            commandHostmode2(Helper.toChannel(c.getUsername()), Helper.toStream(channel));
-        }
-        else if (SIMPLE_COMMANDS.contains(command)) {
+        if (SIMPLE_COMMANDS.contains(command)) {
             // Simple commands that don't require any special handling for
             // decent output
             if (onChannel(channel, true)) {
@@ -99,9 +95,6 @@ public class TwitchCommands {
                     sendMessage(channel, "/"+command+" "+parameter, output);
                 }
             }
-        }
-        else if (command.equals("host2")) {
-            commandHostmode2(Helper.toChannel(c.getUsername()), parameter);
         }
         else {
             return false;
@@ -508,38 +501,6 @@ public class TwitchCommands {
         c.info(channel, message, null);
     }
     
-    private void printLine(String message) {
-        c.info(message);
-    }
-    
-    private MsgTags createTags(String msgId) {
-        if (msgId != null) {
-            return MsgTags.create("target-msg-id", msgId);
-        }
-        return MsgTags.EMPTY;
-    }
-    
-    //===========================
-    // Special Command Functions
-    //===========================
-    
-    protected void commandHostmode2(String channel, String parameter) {
-        if (parameter == null) {
-            printLine("Usage: /host2 <stream>");
-        } else {
-            hostmode2(channel, parameter);
-        }
-    }
-    
-    public void hostmode2(String channel, String target) {
-        if (c.isRegistered()) {
-            c.sendSpamProtectedMessage(channel, ".host "+target, false);
-            printLine(String.format("Trying to host %s from %s", target, channel));
-        } else {
-            printLine("Must be connected to chat to start hosting.");
-        }
-    }
-
     //==================
     // Silent Mods List
     //==================

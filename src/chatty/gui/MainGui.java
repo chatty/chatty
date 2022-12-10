@@ -2076,9 +2076,6 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.equals("closeChannel")) {
                 client.closeChannel(channel.getChannel());
             }
-            else if (cmd.equals("joinHostedChannel")) {
-                client.command(channel.getRoom(), "joinhosted");
-            }
             else if (cmd.equals("srcOpen")) {
                 client.speedruncom.openCurrentGame(channel);
             }
@@ -2180,7 +2177,7 @@ public class MainGui extends JFrame implements Runnable {
          * stream parameter.
          */
         private final Set<String> streamCmds = new HashSet<>(
-                Arrays.asList("profile", "join", "hostchannel"));
+                Arrays.asList("profile", "join", "raidchannel"));
         
         /**
          * Any commands starting with these Strings is supposed to have a stream
@@ -2327,11 +2324,20 @@ public class MainGui extends JFrame implements Runnable {
                     // Request immediately in this case
                     client.api.requestEmotesNow();
                 }
-            } else if (cmd.equals("hostchannel")) {
+            } else if (cmd.equals("raidchannel")) {
                 if (firstStream != null && streams.size() == 1) {
-                    client.command(Room.EMPTY, "host2", StringUtil.toLowerCase(firstStream));
+                    String ownChannel = "#"+client.getUsername();
+                    Channel chan = channels.getExistingChannel(ownChannel);
+                    if (chan == null) {
+                        printSystem("Must have your own channel open to raid.");
+                    }
+                    else {
+                        client.command(chan.getRoom(), "raid", StringUtil.toLowerCase(firstStream));
+                        printSystem(String.format("Trying to raid %s from %s..",
+                                firstStream, ownChannel));
+                    }
                 } else {
-                    printLine("Can't host more than one channel.");
+                    printSystem("Can't raid more than one channel.");
                 }
             } else if (cmd.equals("copy") && !streams.isEmpty()) {
                 MiscUtil.copyToClipboard(StringUtil.join(streams, ", "));

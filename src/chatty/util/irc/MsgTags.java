@@ -49,8 +49,8 @@ public class MsgTags extends IrcMsgTags {
         return isValue("chatty-source", "pubsub");
     }
     
-    public String getHosted() {
-        return get("chatty-hosted");
+    public String getChannelJoin() {
+        return get("chatty-channel-join");
     }
     
     public boolean hasReplyUserMsg() {

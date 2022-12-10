@@ -1376,10 +1376,6 @@
         <dt><code>user:name chan:tirean,gocnak</code></dt>
         <dd>Ignores the user with the name <code>name</code> in channels <code>#tirean</code> and <code>#gocnak</code></dd>
         
-        <dt><code>config:info subscribed to</code></dt>
-        <dd>Ignores the <code>x has subscribed to y</code> info messages that
-        you get when someone subscribes in the channel that is being hosted</dd>
-        
         <dt><code>cat:ignore !chan:lotsofs,joshimuz</code></dt>
         <dd>Ignores users in the addressbook category <code>ignore</code> in all channels,
             except <code>#lotsofs</code> and <code>#joshimuz</code></dd>
@@ -1919,21 +1915,7 @@
     </dl>
     
     <h3>Other</h3>
-    <dl class="dl-settings">
-        <dt>Auto-Unhost when your stream goes live</dt>
-        <dd>Automatically
-            sends the <code>/unhost</code> command to your channel if you started
-            your stream session in the last 15 minutes and the stream status
-            changes (usually from offline -> live).<br />
-            For this to work, you need to have joined the channel in Chatty,
-            either with the broadcaster account (so your own account if it's
-            your stream) or with an account that is an editor in the channel
-            (in which case you also have to add the channel to the
-            <code>autoUnhostStreams</code> setting, via
-            <code>/add autoUnhostStreams &lt;streamName&gt;</code>, in order to
-            tell Chatty that you are authorized/want to use the automatic <code>/unhost</code>
-            feature in that channel).</dd>
-        
+    <dl class="dl-settings">        
         <dt>Prepend to window title</dt>
         <dd>Add some arbitrary text to the beginning of the window title. This
             can be useful if you run several instances of Chatty (to be able to

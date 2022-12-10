@@ -75,7 +75,7 @@ public class ContextMenuHelper {
             m.addSeparator();
             m.addItem("join", Language.getString("channelCm.join", numStreams));
             m.addSeparator();
-            m.addItem("hostchannel", Language.getString("channelCm.hostChannel"), miscSubmenu);
+            m.addItem("raidchannel", Language.getString("channelCm.raidChannel"), miscSubmenu);
             m.addSeparator(miscSubmenu);
             m.addItem("copy", Language.getString("channelCm.copyStreamname"), miscSubmenu);
             m.addSeparator(miscSubmenu);

@@ -115,12 +115,6 @@ public class OtherSettings extends SettingsPanel {
                 "statusWriter", 20, true, "Write Stream Status:", true, INFO_WRITER),
                 d.makeGbc(2, 6, 1, 1));
         
-        other.add(d.addSimpleBooleanSetting(
-                "autoUnhost",
-                "Auto-Unhost when your stream goes live",
-                "Automatically sends the /unhost command in your channel if your stream went live in the last 15 minutes"),
-                d.makeGbc(0, 7, 3, 1, GridBagConstraints.WEST));
-        
         SettingsUtil.addLabeledComponent(other, "titleAddition", 0, 8, 2, WEST,
                 d.addSimpleStringSetting("titleAddition", 10, true));
         

@@ -88,7 +88,6 @@ public class CustomCommands {
         Set<String> chans = new HashSet<>();
         client.getOpenChannels().forEach(chan -> { if (Helper.isRegularChannelStrict(chan)) chans.add(Helper.toStream(chan));});
         parameters.put("chans", StringUtil.join(chans, " "));
-        parameters.put("hostedchan", client.getHostedChannel(room.getChannel()));
         parameters.putObject("localUser", client.getLocalUser(room.getChannel()));
         parameters.putObject("settings", client.settings);
         if (!command.getIdentifiersWithPrefix("stream").isEmpty()) {

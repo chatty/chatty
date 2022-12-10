@@ -30,12 +30,6 @@ public class ChannelState {
     
     private boolean emoteOnly;
     
-    /**
-     * The name of the channel that is being hosted. Can be null to indicate no
-     * channe is being hosted.
-     */
-    private String hosting;
-    
     private String lang;
     
     // Should be -1, since 0 means on as well
@@ -67,9 +61,6 @@ public class ChannelState {
             changed = true;
         }
         if (setSlowMode(-1)) {
-            changed = true;
-        }
-        if (setHosting(null)) {
             changed = true;
         }
         if (setR9kMode(false)) {
@@ -178,32 +169,6 @@ public class ChannelState {
         return shieldMode;
     }
     
-    /**
-     * Set the channel that is being hosted.
-     * 
-     * @param target The channel that is being hosted, or null to indicate no
-     * channe is being hosted
-     * @return true if setting this value changed the state, false otherwise
-     */
-    public synchronized boolean setHosting(String target) {
-        if ((hosting == null && target != null)
-                || (hosting != null && !hosting.equals(target))) {
-            this.hosting = target;
-            updateInfo();
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Gets the channel name that is being hosted.
-     * 
-     * @return The name of the hosted channel, or null if none is being hosted
-     */
-    public synchronized String getHosting() {
-        return hosting;
-    }
-    
     public synchronized boolean setLang(String lang) {
         if ((this.lang == null && lang != null)
                 || (this.lang != null && !this.lang.equals(lang))) {
@@ -263,9 +228,6 @@ public class ChannelState {
         }
         if (emoteOnly) {
             result = StringUtil.append(result, sep, "EmoteOnly");
-        }
-        if (hosting != null && !hosting.isEmpty()) {
-            result = StringUtil.append(result, sep, "Hosting: "+hosting);
         }
         if (lang != null && !lang.isEmpty()) {
             result = StringUtil.append(result, sep, lang);

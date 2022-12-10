@@ -56,7 +56,6 @@ public class ChannelCompletion implements AutoCompletionServer {
      * Can contain case, will be completed to that.
      */
     private final Set<String> commands = new TreeSet<>(Arrays.asList(new String[]{
-        "host", "unhost"
     }));
     
     private final Set<String> settingCommands = new TreeSet<>(Arrays.asList(new String[]{
@@ -77,7 +76,7 @@ public class ChannelCompletion implements AutoCompletionServer {
      * Must be all lowercase for comparison.
      */
     private final Set<String> prefixesPreferUsernames = new HashSet<>(Arrays.asList(new String[]{
-        "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ", "/host ",
+        "/ban ", "/to ", "/setname ", "/resetname ", "/timeout ",
         "/unban ", "/ignore ", "/unignore ", "/ignorechat ", "/unignorechat ",
         "/ignorewhisper ", "/unignorewhisper ", "/follow ", "/unfollow ",
         "/untimeout ", "/favorite ", "/unfavorite ", "@@"

@@ -116,8 +116,8 @@ public class InfoMessage {
     
     public Pair<String, String> getLink() {
         if (tags != null) {
-            if (tags.getHosted() != null) {
-                return new Pair<>("Join", "join."+tags.getHosted());
+            if (tags.getChannelJoin() != null) {
+                return new Pair<>("Join", "join."+tags.getChannelJoin());
             }
         }
         return null;

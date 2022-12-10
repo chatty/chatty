@@ -29,9 +29,8 @@ public class ChannelContextMenu extends ContextMenu {
         ContextMenuHelper.addStreamsOptions(this, 1, false);
         addSeparator();
         
-        addItem("hostchannel", Language.getString("channelCm.hostChannel"), MISC_MENU);
+        addItem("raidchannel", Language.getString("channelCm.raidChannel"), MISC_MENU);
         addSeparator(MISC_MENU);
-        addItem("joinHostedChannel", Language.getString("channelCm.joinHosted"), MISC_MENU);
         addItem("copy", Language.getString("channelCm.copyStreamname"), MISC_MENU);
         addSeparator(MISC_MENU);
         addItem("srcOpen", Language.getString("channelCm.speedruncom"), MISC_MENU);
