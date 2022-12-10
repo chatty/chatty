@@ -22,6 +22,6 @@ public class SettingConstants {
         requirementOptions.put("always", "Always");
     }
     
-    protected static final String HTML_PREFIX = "<html><body style='width:320px;'>";
+    protected static final String HTML_PREFIX = "<html><head><style>code { font-size: 1em; }</style></head><body style='width:320px;'>";
     
 }

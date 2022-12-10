@@ -30,6 +30,20 @@ public class LinkLabel extends JEditorPane {
         setContentType("text/html");
         setText(text);
         setCaretPosition(0);
+        /**
+         * This property seems to be related to how font sizes get converted in
+         * HTML. When it is enabled some fonts are too small, for example
+         * affecting text in code tags. Setting the font size for code tags to
+         * 1em seems to work around this issue though.
+         *
+         * It seems like in some Look&Feel (like FlatLaf) this property is
+         * enabled by default while in others it is not. Not sure if this might
+         * also look different on different systems or default fonts.
+         * 
+         * This issue seems to occur in other components when using HTML as well
+         * (at least with JLabel).
+         */
+//        putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.FALSE);
         
         // Link Listener
         this.addHyperlinkListener(new HyperlinkListener() {
@@ -90,6 +104,7 @@ public class LinkLabel extends JEditorPane {
                 + "a {"
                 + "color: "+linkColor+";"
                 + "}"
+                + "code { font-size: 1em; }"
                 + codeColors;
         ((HTMLDocument)getDocument()).getStyleSheet().addRule(fontRule);
     }
