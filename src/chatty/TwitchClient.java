@@ -1363,10 +1363,20 @@ public class TwitchClient {
         commands.add("exportText", p -> {
             CommandParsedArgs args = p.parsedArgs(2);
             if (args != null) {
-                boolean success = MiscUtil.exportText(args.get(0),
-                        args.hasOption("n")
+                String file = args.get(0);
+                String text = args.hasOption("n")
                             ? args.get(1).replace("\\n", "\n")
-                            : args.get(1), args.hasOption("a"));
+                            : args.get(1);
+                boolean append = args.hasOption("a");
+                if (args.hasOption("A")) {
+                    text += "\n";
+                    append = true;
+                }
+                if (args.hasOption("L")) {
+                    text = "\n"+text;
+                    append = true;
+                }
+                boolean success = MiscUtil.exportText(file, text, append);
                 if (success) {
                     if (!args.hasOption("s")) {
                         g.printSystem("File written successfully.");
