@@ -1164,4 +1164,78 @@ public class CacheBulkManagerTest {
         requester.requestCount(1);
     }
     
+    @Test
+    public void testRemoveCachedValue() {
+        MyRequester requester = makeRequester(new String[][][]{
+            {
+                {"a"}, {}, {}, {}
+            },
+            {
+                {"a"}, {}, {}, {}
+            }
+        });
+        MyResultListener listener = makeListener(new String[][][]{
+            {
+                {"a", "r.a"}
+            },
+            {
+                {"a", "r.a"}
+            },
+            {
+                {"a", "r.a2"}
+            },
+            {
+                {"a", "r.a2"}
+            },
+            {
+                {"b", "r.b"}
+            }
+        });
+        
+        CachedBulkManager<String, String> m = new CachedBulkManager<>(requester, DAEMON);
+        // Not cached yet
+        m.query(listener, ASAP, "a");
+        listener.calledCount(0);
+        requester.requestCount(1);
+        
+        // Set result
+        m.setResult("a", "r.a");
+        listener.calledCount(1);
+        requester.requestCount(1);
+        m.setResult("b", "r.b");
+        
+        // Still cached
+        m.query(listener, ASAP, "a");
+        listener.calledCount(2);
+        requester.requestCount(1);
+        assertEquals("r.b", m.get("b"));
+        
+        // Remove cached
+        m.removeCachedValue("a");
+        
+        // Request again
+        m.query(listener, ASAP, "a");
+        listener.calledCount(2);
+        requester.requestCount(2);
+        
+        // Set result again
+        m.setResult("a", "r.a2");
+        listener.calledCount(3);
+        requester.requestCount(2);
+        
+        // Still cached again
+        m.query(listener, ASAP, "a");
+        listener.calledCount(4);
+        requester.requestCount(2);
+        
+        // b is unaffected
+        m.query(listener, ASAP, "b");
+        listener.calledCount(5);
+        requester.requestCount(2);
+        
+        // Remove cached b
+        m.removeCachedValue("b");
+        assertNull(m.get("b"));
+    }
+    
 }
