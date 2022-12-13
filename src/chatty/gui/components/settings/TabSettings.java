@@ -148,6 +148,9 @@ public class TabSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(layoutPanel, "tabsMaxWidth", 0, 5, 3, GridBagConstraints.WEST,
                 d.addSimpleLongSetting("tabsMaxWidth", 3, true));
         
+        layoutPanel.add(d.addSimpleBooleanSetting("tabsHideIfSingle"),
+                d.makeGbc(0, 6, 3, 1));
+        
         //--------------------------
         // Close Empty Tab Panes
         //--------------------------

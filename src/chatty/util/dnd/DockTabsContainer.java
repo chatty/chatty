@@ -35,6 +35,7 @@ public class DockTabsContainer extends JPanel implements DockChild {
     private final DockTabs tabs;
     private boolean singleAllowed;
     private boolean singeAllowedLocked;
+    private boolean noSingle;
     private JPanel emptyLayout;
     private boolean keepEmpty = false;
     
@@ -103,6 +104,10 @@ public class DockTabsContainer extends JPanel implements DockChild {
     
     public boolean isSingleAllowed() {
         return singleAllowed;
+    }
+    
+    public boolean isInSplit() {
+        return !(parent instanceof DockBase);
     }
     
     @Override
@@ -290,7 +295,7 @@ public class DockTabsContainer extends JPanel implements DockChild {
      */
     public void updateSingleAllowed() {
         if (!singeAllowedLocked) {
-            setSingleAllowed(parent instanceof DockBase);
+            setSingleAllowed(parent instanceof DockBase && !noSingle);
             tabs.updateSingleAllowed();
         }
     }
@@ -344,6 +349,10 @@ public class DockTabsContainer extends JPanel implements DockChild {
         }
         if (setting == DockSetting.Type.KEEP_EMPTY) {
             keepEmpty = DockSetting.getBoolean(value);
+        }
+        if (setting == DockSetting.Type.NO_SINGLE) {
+            noSingle = DockSetting.getBoolean(value);
+            updateSingleAllowed();
         }
     }
     

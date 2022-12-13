@@ -77,6 +77,8 @@ public class DockSetting {
         
         KEEP_EMPTY,
         
+        NO_SINGLE,
+        
         POPOUT_TYPE,
         
         POPOUT_TYPE_DRAG,

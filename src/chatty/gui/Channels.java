@@ -274,6 +274,7 @@ public class Channels {
         dock.setSetting(DockSetting.Type.LINE_COLOR, UIManager.getColor("TextField.selectionForeground"));
         dock.setSetting(DockSetting.Type.POPOUT_TYPE_DRAG, getPopoutTypeValue((int)gui.getSettings().getLong("tabsPopoutDrag")));
         dock.setSetting(DockSetting.Type.DIVIDER_SIZE, 7);
+        dock.setSetting(DockSetting.Type.NO_SINGLE, !gui.getSettings().getBoolean("tabsHideIfSingle"));
         updateTabComparator();
         updateKeepEmptySetting();
     }

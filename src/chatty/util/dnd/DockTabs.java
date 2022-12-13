@@ -385,7 +385,8 @@ public class DockTabs extends JTabbedPane implements DockChild {
     
     private void updateTitledComponent(DockContent content) {
         JComponent comp = getComponentByContent(content);
-        if (content.getLongTitle() == null || ((DockTabsContainer)parent).isSingleAllowed()) {
+        if (content.getLongTitle() == null
+                || !((DockTabsContainer)parent).isInSplit()) {
             if (comp instanceof TitledContent) {
                 // Remove title
                 int index = getIndexByContent(content);

@@ -488,6 +488,7 @@ public class SettingsManager {
         settings.addBoolean("tabsCloseSwitchToPrev", true);
         settings.addString("tabsPlacement", "top");
         settings.addString("tabsLayout", "wrap");
+        settings.addBoolean("tabsHideIfSingle", true);
         settings.addLong("tabsLive", 16);
         settings.addLong("tabsMessage", 4);
         settings.addLong("tabsHighlight", 8);
