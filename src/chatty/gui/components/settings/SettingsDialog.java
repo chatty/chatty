@@ -555,7 +555,9 @@ public class SettingsDialog extends JDialog implements ActionListener {
         getPanel(ImageSettings.class).setHiddenBadgesData(owner.getHiddenBadgesData());
         getPanel(ImageSettings.class).setTwitchBadgeTypes(owner.getTwitchBadgeTypes());
         getPanel(HotkeySettings.class).setData(owner.hotkeyManager.getActionsMap(),
-                owner.hotkeyManager.getData(), owner.hotkeyManager.globalHotkeysAvailable());
+                owner.hotkeyManager.getDescriptionsMap(),
+                owner.hotkeyManager.getData(),
+                owner.hotkeyManager.globalHotkeysAvailable());
         getPanel(NotificationSettings.class).setData(owner.getNotificationData());
         getPanel(EmoteSettings.class).setData(owner.localEmotes.getData());
     }

@@ -4,6 +4,7 @@ package chatty.util.hotkeys;
 import chatty.Chatty;
 import chatty.Logging;
 import chatty.gui.MainGui;
+import chatty.util.StringUtil;
 import chatty.util.hotkeys.Hotkey.Type;
 import chatty.util.settings.Settings;
 import java.awt.KeyEventDispatcher;
@@ -12,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -136,11 +138,16 @@ public class HotkeyManager {
      * 
      * @param id The id to be referred to by the hotkey
      * @param label The label to be displayed to the user identifying the action
+     * @param description An optional description displayed to the user
      * @param action The action itself
      */
-    public void registerAction(String id, String label, Action action) {
-        HotkeyAction hotkeyAction = new HotkeyAction(id, label, action);
+    public void registerAction(String id, String label, String description, Action action) {
+        HotkeyAction hotkeyAction = new HotkeyAction(id, label, description, action);
         actions.put(id, hotkeyAction);
+    }
+    
+    public void registerAction(String id, String label, Action action) {
+        registerAction(id, label, null, action);
     }
     
     /**
@@ -175,6 +182,16 @@ public class HotkeyManager {
         Map<String, String> map = new LinkedHashMap<>();
         for (HotkeyAction action : actions.values()) {
             map.put(action.id, action.label);
+        }
+        return map;
+    }
+    
+    public Map<String, String> getDescriptionsMap() {
+        Map<String, String> map = new HashMap<>();
+        for (HotkeyAction action : actions.values()) {
+            if (!StringUtil.isNullOrEmpty(action.description)) {
+                map.put(action.id, action.description);
+            }
         }
         return map;
     }

@@ -3,7 +3,9 @@ package chatty.gui.components.settings;
 
 import chatty.Chatty;
 import chatty.gui.GuiUtil;
+import static chatty.gui.components.settings.CommandSettings.showCommandInfoPopup;
 import chatty.lang.Language;
+import chatty.util.commands.CustomCommand;
 import chatty.util.hotkeys.Hotkey;
 import java.awt.Color;
 import java.awt.Component;
@@ -11,6 +13,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -49,6 +52,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
     private final Set<KeyStroke> conflictWarning = new HashSet<>();
     
     private Map<String, String> actions;
+    private Map<String, String> descriptions;
     private boolean globalHotkeysAvailable;
     
     public HotkeyEditor(JDialog owner, Consumer<Hotkey> globalHotkeyCheck) {
@@ -58,6 +62,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             if (itemEditor == null) {
                 itemEditor = new MyItemEditor(owner, data);
                 itemEditor.setActions(actions);
+                itemEditor.setDescriptions(descriptions);
                 itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
             }
             return itemEditor;
@@ -119,20 +124,25 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
      * Updates with the current data.
      * 
      * @param actions The map (id->label) of current actions
+     * @param descriptions
      * @param hotkeys The list of current hotkeys
      * @param globalHotkeysAvailable Whether global hotkeys are available
      */
-    public void setData(Map<String, String> actions, List<Hotkey> hotkeys,
-            boolean globalHotkeysAvailable) {
+    public void setData(Map<String, String> actions,
+                        Map<String, String> descriptions,
+                        List<Hotkey> hotkeys,
+                        boolean globalHotkeysAvailable) {
         // Set actions first, so it's correctly sorted in the table
         data.setActions(actions);
         setData(hotkeys);
         if (itemEditor != null) {
             itemEditor.setActions(actions);
+            itemEditor.setDescriptions(descriptions);
             itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
         }
         else {
             this.actions = actions;
+            this.descriptions = descriptions;
             this.globalHotkeysAvailable = globalHotkeysAvailable;
         }
     }
@@ -219,6 +229,8 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         private final JDialog dialog;
         private final ComboStringSetting actionId = new ComboStringSetting(new String[0]);
         private final JTextField custom = new JTextField();
+        private final EditorStringSetting anonymousCustomCommand;
+        private final JLabel description = new JLabel();
         private final HotkeyTextField hotkeyChooser;
         //private final JCheckBox global = new JCheckBox("Global");
         private final JLabel hotkeyInfo = new JLabel();
@@ -228,6 +240,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         private boolean globalHotkeysAvailableWarningShown;
         private final MyTableModel data;
         private Map<String, String> actionNames;
+        private Map<String, String> descriptions;
         private Hotkey preset;
         
         private final JRadioButton regular = new JRadioButton("Regular");
@@ -284,6 +297,23 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                 }
             });
             
+            anonymousCustomCommand = new EditorStringSetting(owner, "Anonymous Custom Command", 10, false, false, "", new Editor.Tester() {
+
+                @Override
+                public String test(Window parent, Component component, int x, int y, String value) {
+                    CustomCommand command = CustomCommand.parse(value);
+                    showCommandInfoPopup(component, command);
+                    return null;
+                }
+            });
+            anonymousCustomCommand.setInfo(SettingConstants.HTML_PREFIX
+                    +"Enter the command to execute, for example <code>/echo Currently open channels are: $(chans)</code>.");
+            anonymousCustomCommand.setShowInfoByDefault(true);
+            anonymousCustomCommand.setSettingValue("");
+            anonymousCustomCommand.setChangeListener(e -> {
+                updateButtons();
+            });
+            
             dialog = new JDialog(owner);
             dialog.setTitle("Edit Item");
             //hotkeyChooser.setEditable(false);
@@ -300,6 +330,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                         dialog.setVisible(false);
                     } else if (e.getSource() == actionId) {
                         updateButtons();
+                        updateDescription();
                     } else if (e.getSource() == global) {
                         checkForGlobalHotkeyWarning();
                     }
@@ -344,25 +375,35 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             gbc.weightx = 0.5;
             dialog.add(custom, gbc);
             
-            gbc = GuiUtil.makeGbc(0, 2, 1, 1);
+            gbc = GuiUtil.makeGbc(1, 1, 4, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            dialog.add(anonymousCustomCommand, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 2, 4, 1);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 0.5;
+            dialog.add(description, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 3, 1, 1);
             dialog.add(new JLabel("Hotkey:"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 2, 3, 1);
+            gbc = GuiUtil.makeGbc(1, 3, 3, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
             dialog.add(hotkeyChooser, gbc);
 
-            gbc = GuiUtil.makeGbc(1, 3, 4, 1);
+            gbc = GuiUtil.makeGbc(1, 4, 4, 1);
             gbc.anchor = GridBagConstraints.WEST;
             hotkeyInfo.setForeground(Color.red);
             gbc.insets = new Insets(-1, 5, 3, 5);
             dialog.add(hotkeyInfo, gbc);
             
-            gbc = GuiUtil.makeGbc(1, 4, 3, 1);
+            gbc = GuiUtil.makeGbc(1, 5, 3, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(scopeSelectionPanel, gbc);
             
-            gbc = GuiUtil.makeGbc(1, 5, 3, 1);
+            gbc = GuiUtil.makeGbc(1, 6, 3, 1);
             gbc.anchor = GridBagConstraints.WEST;
             gbc.insets = new Insets(-1, 5, 7, 5);
             dialog.add(scopeTip, gbc);
@@ -370,24 +411,24 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             JLabel delayLabel = new JLabel(Language.getString("settings.hotkeys.delay"));
             delayLabel.setToolTipText(Language.getString("settings.hotkeys.delay.tip"));
             delayLabel.setLabelFor(delay);
-            gbc = GuiUtil.makeGbc(0, 6, 1, 1);
+            gbc = GuiUtil.makeGbc(0, 7, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(delayLabel, gbc);
             
-            gbc = GuiUtil.makeGbc(1, 6, 1, 1);
+            gbc = GuiUtil.makeGbc(1, 7, 1, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(delay, gbc);
             
-            gbc = GuiUtil.makeGbc(2, 6, 2, 1);
+            gbc = GuiUtil.makeGbc(2, 7, 2, 1);
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(new JLabel("(1/10th seconds)"), gbc);
             
-            gbc = GuiUtil.makeGbc(1, 7, 2, 1);
+            gbc = GuiUtil.makeGbc(1, 8, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
             dialog.add(ok, gbc);
             
-            gbc = GuiUtil.makeGbc(3, 7, 1, 1);
+            gbc = GuiUtil.makeGbc(3, 8, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.1;
             dialog.add(cancel, gbc);
@@ -412,13 +453,13 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             if (preset != null) {
                 actionId.setSettingValue(preset.actionId);
                 hotkeyChooser.setHotkey(preset.keyStroke);
-                custom.setText(preset.custom);
+                setCustom(preset.custom);
                 delay.setText(""+preset.delay);
                 setHotkeyType(preset.type);
             } else {
                 actionId.setSettingValue(null);
                 hotkeyChooser.setHotkey(null);
-                custom.setText(null);
+                setCustom("");
                 delay.setText("0");
                 setHotkeyType(null);
             }
@@ -435,9 +476,31 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             if (actionId.getSettingValue() != null && currentHotkey != null) {
                 String action = actionId.getSettingValue();
                 return new Hotkey(action, currentHotkey, getHotkeyType(),
-                        custom.getText(), getDelay());
+                        getCustom(), getDelay());
             }
             return null;
+        }
+        
+        private boolean isAnonCommand() {
+            return "custom.anonCommand".equals(actionId.getSettingValue());
+        }
+        
+        private void setCustom(String text) {
+            if (isAnonCommand()) {
+                anonymousCustomCommand.setSettingValue(text);
+                custom.setText("");
+            }
+            else {
+                anonymousCustomCommand.setSettingValue("");
+                custom.setText(text);
+            }
+        }
+        
+        private String getCustom() {
+            if (isAnonCommand()) {
+                return anonymousCustomCommand.getSettingValue();
+            }
+            return custom.getText();
         }
         
         private int getDelay() {
@@ -473,8 +536,11 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             
             // Custom input field
             boolean customEnabled = action != null && (action.startsWith("custom.") || action.equals("tabs.switch"));
+            boolean anonCustom = isAnonCommand();
             custom.setEnabled(customEnabled);
             custom.setEditable(customEnabled);
+            custom.setVisible(!anonCustom);
+            anonymousCustomCommand.setVisible(anonCustom);
             
             // Scope tip
             if (action != null
@@ -494,8 +560,20 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             
             // Button state
             boolean enabled = actionId.getSettingValue() != null && currentHotkey != null
-                    && (!customEnabled || !custom.getText().isEmpty());
+                    && (!customEnabled || !getCustom().isEmpty());
             ok.setEnabled(enabled);
+        }
+        
+        private void updateDescription() {
+            if (descriptions == null) {
+                return;
+            }
+            String text = descriptions.get(actionId.getSettingValue());
+            description.setVisible(text != null);
+            if (text != null) {
+                description.setText(SettingConstants.HTML_PREFIX+text);
+            }
+            GuiUtil.packKeepCenter(dialog);
         }
         
         private void checkForGlobalHotkeyWarning() {
@@ -516,6 +594,11 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             actionId.addData(actions);
             this.actionNames = actions;
             dialog.pack();
+        }
+        
+        public void setDescriptions(Map<String, String> descriptions) {
+            this.descriptions = descriptions;
+            updateDescription();
         }
         
         public void setGlobalHotkeysAvailable(boolean available) {

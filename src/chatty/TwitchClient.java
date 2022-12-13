@@ -2065,7 +2065,7 @@ public class TwitchClient {
         }
     }
     
-    private void anonCustomCommand(Room room, String text, Parameters parameters) {
+    public void anonCustomCommand(Room room, String text, Parameters parameters) {
         CustomCommand command = CustomCommand.parse(text);
         if (parameters == null) {
             parameters = Parameters.create(null);

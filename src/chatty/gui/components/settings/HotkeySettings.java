@@ -79,9 +79,11 @@ public class HotkeySettings extends SettingsPanel {
         });
     }
     
-    public void setData(Map<String, String> actions, List<Hotkey> hotkeys,
-            boolean globalHotkeysAvailable) {
-        data.setData(actions, hotkeys, globalHotkeysAvailable);
+    public void setData(Map<String, String> actions,
+                        Map<String, String> descriptions,
+                        List<Hotkey> hotkeys,
+                        boolean globalHotkeysAvailable) {
+        data.setData(actions, descriptions, hotkeys, globalHotkeysAvailable);
     }
     
     public List<Hotkey> getData() {

@@ -984,4 +984,15 @@ public class GuiUtil {
         return c.getPreferredSize().width;
     }
     
+    public static void packKeepCenter(Window window) {
+        Dimension size = window.getSize();
+        window.pack();
+        Point location = window.getLocation();
+        location.translate(
+                (size.width - window.getWidth()) / 2,
+                (size.height - window.getHeight()) / 2
+        );
+        window.setLocation(location);
+    }
+    
 }

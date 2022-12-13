@@ -413,6 +413,15 @@ public class MainGui extends JFrame implements Runnable {
         client.command(channels.getLastActiveChannel().getRoom(), command, parameter);
     }
     
+    private void hotkeyCommandAnon(String command) {
+        Channel channel = channels.getActiveChannel();
+        User selectedUser = channel.getSelectedUser();
+        String selectedUserName = selectedUser != null ? selectedUser.getName() : "";
+        Parameters p = Parameters.create(null);
+        p.put("selectedUserName", selectedUserName);
+        client.anonCustomCommand(channel.getRoom(), command, p);
+    }
+    
     /**
      * Adds an action that is also represented in the main menu.
      * 
@@ -450,11 +459,21 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
-        hotkeyManager.registerAction("custom.command", "Custom Command", new AbstractAction() {
+        hotkeyManager.registerAction("custom.command", "Custom Command",
+                "Enter the name of a Custom Command (only the name), as added to the Custom Commands list under \"Commands\". This is useful when you have it added to the Custom Commands list already anyway (for example if you want to use it in another context as well). Otherwise the \"Anon. Custom Command\" may be more convenient.", new AbstractAction() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 hotkeyCommand(e.getActionCommand(), null, false);
+            }
+        });
+        
+        hotkeyManager.registerAction("custom.anonCommand", "Anon. Custom Command",
+                "Enter a Custom Command directly (for example \"/echo $datetime()\" to output the current time as an info message). This is an anonymous Custom Command because it is not added to the Custom Commands list and thus no name is specified for it. It can only be executed via this hotkey.", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hotkeyCommandAnon(e.getActionCommand());
             }
         });
 

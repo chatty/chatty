@@ -13,11 +13,13 @@ public class HotkeyAction {
     
     public final String id;
     public final String label;
+    public final String description;
     public final Action action;
     
-    public HotkeyAction(String id, String label, Action action) {
+    public HotkeyAction(String id, String label, String description, Action action) {
         this.id = id;
         this.label = label;
+        this.description = description;
         this.action = action;
     }
     
