@@ -1471,6 +1471,7 @@ public class MainGui extends JFrame implements Runnable {
                 client.settings.getString("liveStreamsSorting"),
                 client.settings.getBoolean("liveStreamsSortingFav")
         );
+        liveStreamsDialog.setFiltering(client.settings.getBoolean("liveStreamsFavsOnly"));
     }
     
     private void updateFollowerDialogs() {
@@ -2158,6 +2159,9 @@ public class MainGui extends JFrame implements Runnable {
             if (cmd.equals("sortOption_favFirst")) {
                 JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
                 client.settings.setBoolean("liveStreamsSortingFav", item.isSelected());
+            }
+            if (cmd.equals("filterOption_favsOnly")) {
+                client.settings.setBoolean("liveStreamsFavsOnly", ((JCheckBoxMenuItem)e.getSource()).isSelected());
             }
             if (cmd.equals("favoriteGame")) {
                 for (StreamInfo info : streamInfos) {
@@ -5285,7 +5289,8 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             if (setting.equals("liveStreamsSorting")
-                    || setting.equals("liveStreamsSortingFav")) {
+                    || setting.equals("liveStreamsSortingFav")
+                    || setting.equals("liveStreamsFavsOnly")) {
                 updateLiveStreamsDialog();
             }
             if (setting.equals("followersCompact") || setting.equals("followersReg")) {

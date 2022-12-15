@@ -347,6 +347,11 @@ public class LiveStreamsDialog extends JFrame {
         }
     }
     
+    public void setFiltering(boolean favsOnly) {
+        list.setFiltering(favsOnly);
+        updateTitle();
+    }
+    
     public void setHistoryRange(int range) {
         channelInfo.setHistoryRange(range);
     }
@@ -369,8 +374,10 @@ public class LiveStreamsDialog extends JFrame {
     
     private void updateTitle() {
         if (liveStreamListSelected) {
+            int shown = list.getModel().getSize();
+            int total = ((SortedListModel)list.getModel()).getTotalSize();
             setTitle(Language.getString("streams.title",
-                    list.getModel().getSize(),
+                    shown == total ? shown : shown+"/"+total,
                     titleSorting));
         } else {
             setTitle(Language.getString("streams.removed.title"));

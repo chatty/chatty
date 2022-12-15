@@ -72,6 +72,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
     private JPopupMenu lastContextMenu;
     private LiveStreamsDialog.Sorting currentSorting;
     private boolean favFirst;
+    private boolean favsOnly;
     private DockedDialogHelper dockedHelper;
     
     private final ElapsedTime lastCheckedET = new ElapsedTime();
@@ -109,6 +110,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
                     favs.add(Helper.toStream(chan));
                 }
                 resort();
+                data.updateFiltering();
             });
         };
         channelFavorites.addChangeListener(favChangeListener);
@@ -137,6 +139,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
             gameFavs.clear();
             gameFavs.addAll(settings.getList("gameFavorites"));
             resort();
+            data.updateFiltering();
         });
     }
 
@@ -175,6 +178,21 @@ public class LiveStreamsList extends JList<StreamInfo> {
         resort();
         currentSorting = s;
         this.favFirst = favFirst;
+    }
+    
+    public void setFiltering(boolean favsOnly) {
+        if (favsOnly == this.favsOnly) {
+            return;
+        }
+        this.favsOnly = favsOnly;
+        if (favsOnly) {
+            data.setFilter(item -> {
+                return favs.contains(item.stream) || gameFavs.contains(item.getGame());
+            });
+        }
+        else {
+            data.setFilter(null);
+        }
     }
     
     /**
@@ -335,7 +353,7 @@ public class LiveStreamsList extends JList<StreamInfo> {
 
         JListActionHelper.install(this, (a, l, s) -> {
             if (a == Action.CONTEXT_MENU) {
-                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true, favFirst, dockedHelper.isDocked());
+                StreamInfosContextMenu m = new StreamInfosContextMenu(s, true, favFirst, favsOnly, dockedHelper.isDocked());
                 m.setSorting(currentSorting.key);
                 for (ContextMenuListener cml : contextMenuListeners) {
                     m.addContextMenuListener(cml);

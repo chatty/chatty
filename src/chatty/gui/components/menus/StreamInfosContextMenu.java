@@ -21,12 +21,13 @@ public class StreamInfosContextMenu extends ContextMenu {
     
     private static final String SORT_SUBMENU = Language.getString("streams.cm.menu.sortBy");
     private static final String SORT_GROUP = "sort";
+    private static final String FILTER_SUBMENU = Language.getString("streams.cm.menu.filter");
     
     private static final ImageIcon FAV_ICON = new ImageIcon(ContextMenu.class.getResource("/chatty/gui/star.png"));
     private static final ImageIcon GAME_FAV_ICON = new ImageIcon(ContextMenu.class.getResource("/chatty/gui/game.png"));
     
     public StreamInfosContextMenu(List<StreamInfo> selected, boolean liveStreams,
-            boolean favFirst, boolean docked) {
+            boolean favFirst, boolean favsOnly, boolean docked) {
         this.streamInfos = selected;
         List<String> streams = new ArrayList<>();
         for (StreamInfo info : selected) {
@@ -57,6 +58,14 @@ public class StreamInfosContextMenu extends ContextMenu {
             addItem("unfavoriteChannel", Language.getString("channelCm.unfavorite"), SORT_SUBMENU);
             addItem("favoriteGame", Language.getString("channelCm.favoriteGame"), SORT_SUBMENU, GAME_FAV_ICON);
             addItem("unfavoriteGame", Language.getString("channelCm.unfavoriteGame"), SORT_SUBMENU);
+            
+            addCheckboxItem("filterOption_favsOnly", Language.getString("streams.filterOption.favsOnly"), FILTER_SUBMENU, favsOnly);
+            
+            addSeparator(FILTER_SUBMENU);
+            addItem("favoriteChannel", Language.getString("channelCm.favorite"), FILTER_SUBMENU, FAV_ICON);
+            addItem("unfavoriteChannel", Language.getString("channelCm.unfavorite"), FILTER_SUBMENU);
+            addItem("favoriteGame", Language.getString("channelCm.favoriteGame"), FILTER_SUBMENU, GAME_FAV_ICON);
+            addItem("unfavoriteGame", Language.getString("channelCm.unfavoriteGame"), FILTER_SUBMENU);
             
             addItem("liveStreamsSettings", Language.getString("streams.cm.moreSettings"));
             

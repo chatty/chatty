@@ -515,6 +515,7 @@ public class SettingsManager {
         settings.addString("liveStreamsCommand", "");
         settings.addBoolean("liveStreamsChatIcon", true);
         settings.addBoolean("liveStreamsNotificationAction", false);
+        settings.addBoolean("liveStreamsFavsOnly", false);
         settings.addLong("historyRange", 0);
         settings.addBoolean("historyVerticalZoom", false);
         
