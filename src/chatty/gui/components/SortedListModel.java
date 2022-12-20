@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.util.CombinedIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -24,7 +25,7 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
     private final ArrayList<E> data = new ArrayList<>();
     private Comparator<? super E> comparator = null;
     private Predicate<E> filter;
-    private final List<E> filtered = new ArrayList<>();
+    private final List<E> removedByFilter = new ArrayList<>();
 
     /**
      * Set a new Comparator, which also automatically resorts the items.
@@ -52,18 +53,18 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
      */
     public void updateFiltering() {
         if (filter == null) {
-            filtered.forEach(item -> addInternal(item));
-            filtered.clear();
+            removedByFilter.forEach(item -> addInternal(item));
+            removedByFilter.clear();
         }
         else {
-            List<E> toAdd = filterList(filtered, true);
-            filtered.removeAll(toAdd);
+            List<E> toAdd = filterList(removedByFilter, true);
+            removedByFilter.removeAll(toAdd);
 
             List<E> toRemove = filterList(data, false);
             for (E item : toRemove) {
                 removeInternal(item);
             }
-            filtered.addAll(toRemove);
+            removedByFilter.addAll(toRemove);
             for (E item : toAdd) {
                 addInternal(item);
             }
@@ -92,8 +93,15 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
         return data.size();
     }
     
+    /**
+     * The total number of entries, including filtered out ones. getSize() is
+     * used by the list, so it should only return the number that is actually
+     * added to the list.
+     * 
+     * @return 
+     */
     public int getTotalSize() {
-        return data.size() + filtered.size();
+        return data.size() + removedByFilter.size();
     }
 
     @Override
@@ -103,7 +111,7 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
 
     public void add(E item) {
         if (filter != null && !filter.test(item)) {
-            filtered.add(item);
+            removedByFilter.add(item);
         }
         else {
             addInternal(item);
@@ -117,11 +125,11 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
     }
 
     public boolean contains(E item) {
-        return data.contains(item);
+        return data.contains(item) || removedByFilter.contains(item);
     }
 
     public void remove(E item) {
-        filtered.remove(item);
+        removedByFilter.remove(item);
         removeInternal(item);
     }
     
@@ -147,7 +155,7 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
             super.fireIntervalRemoved(this, 0, data.size() - 1);
             data.clear();
         }
-        filtered.clear();
+        removedByFilter.clear();
     }
 
     /**
@@ -156,7 +164,7 @@ public class SortedListModel<E> extends AbstractListModel<E> implements Iterable
      * @return 
      */
     @Override
-    public Iterator iterator() {
-        return data.iterator();
+    public Iterator<E> iterator() {
+        return new CombinedIterator<>(data, removedByFilter);
     }
 }
