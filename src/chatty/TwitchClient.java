@@ -3329,11 +3329,13 @@ public class TwitchClient {
         }
         
         private void checkEventSubListen(User user) {
+            // Is user the local user (can be on any channel though)
             if (!user.getName().equals(c.getUsername())
                     || user.getStream() == null) {
                 return;
             }
             eventSub.setLocalUsername(c.getUsername());
+            eventSub.listenRaid(user.getStream());
             if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_POLLS.scope)
                     && user.isBroadcaster()) {
                 eventSub.listenPoll(user.getStream());
@@ -3366,7 +3368,6 @@ public class TwitchClient {
                 frankerFaceZ.joined(stream);
                 checkModLogListen(user);
                 checkPointsListen(user);
-                eventSub.listenRaid(user.getStream());
                 api.removeShieldModeCache(user.getRoom());
                 checkEventSubListen(user);
                 updateStreamInfoChannelOpen(user.getChannel());

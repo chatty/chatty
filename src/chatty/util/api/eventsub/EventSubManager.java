@@ -41,10 +41,13 @@ public class EventSubManager {
     private volatile String localUserId;
     private volatile String localUsername;
     
+    private final RaidTopicManager raidTopicManager;
+    
     public EventSubManager(String server, final EventSubListener listener, TwitchApi api) {
         this.api = api;
         this.listener = listener;
         this.c = init(server);
+        this.raidTopicManager = new RaidTopicManager(this, api);
     }
     
     private Connections init(String server) {
@@ -121,10 +124,18 @@ public class EventSubManager {
     }
     
     public void listenRaid(String username) {
-        addTopic(new Raid(username));
+        raidTopicManager.listen(username, username.equals(localUsername));
     }
     
     public void unlistenRaid(String username) {
+        raidTopicManager.unlisten(username);
+    }
+    
+    protected void listenRaidInternal(String username) {
+        addTopic(new Raid(username));
+    }
+    
+    protected void unlistenRaidInternal(String username) {
         removeTopic(new Raid(username));
     }
     
