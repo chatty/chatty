@@ -58,6 +58,8 @@ public class DefaultsPanel extends JPanel {
     private final JToggleButton style2Button;
     private final JToggleButton style3Button;
     private final JToggleButton style4Button;
+    private final JToggleButton styleFlatLightButton;
+    private final JToggleButton styleFlatDarkButton;
     private final JCheckBox userlist;
     private final JTextPane fontPreview;
     private final JToggleButton font1Button;
@@ -84,17 +86,23 @@ public class DefaultsPanel extends JPanel {
         style2Button = new JToggleButton("Fast");
         style3Button = new JToggleButton("Smooth");
         style4Button = new JToggleButton("Custom");
+        styleFlatLightButton = new JToggleButton("FlatLight");
+        styleFlatDarkButton = new JToggleButton("FlatDark");
         
         ButtonGroup styleButtonGroup = new ButtonGroup();
         styleButtonGroup.add(style1Button);
         styleButtonGroup.add(style2Button);
         styleButtonGroup.add(style3Button);
         styleButtonGroup.add(style4Button);
+        styleButtonGroup.add(styleFlatLightButton);
+        styleButtonGroup.add(styleFlatDarkButton);
         
         style1Button.addItemListener(e -> updateStyle());
         style2Button.addItemListener(e -> updateStyle());
         style3Button.addItemListener(e -> updateStyle());
         style4Button.addItemListener(e -> updateStyle());
+        styleFlatLightButton.addItemListener(e -> updateStyle());
+        styleFlatDarkButton.addItemListener(e -> updateStyle());
         
         styleImage = new JLabel();
         
@@ -103,9 +111,9 @@ public class DefaultsPanel extends JPanel {
         stylePanel.add(styleImage, gbc);
         
         JPanel styleButtonPanel = new JPanel(new GridBagLayout());
-        gbc = GuiUtil.makeGbc(0, 0, 2, 1, GridBagConstraints.CENTER);
+        gbc = GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.CENTER);
         styleButtonPanel.add(new JLabel("-- "+Language.getString("defaults.lightThemes")+" --"), gbc);
-        gbc = GuiUtil.makeGbc(2, 0, 2, 1, GridBagConstraints.CENTER);
+        gbc = GuiUtil.makeGbc(3, 0, 3, 1, GridBagConstraints.CENTER);
         styleButtonPanel.add(new JLabel("-- "+Language.getString("defaults.darkThemes")+" --"), gbc);
         gbc = GuiUtil.makeGbc(0, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -113,16 +121,25 @@ public class DefaultsPanel extends JPanel {
         styleButtonPanel.add(style1Button, gbc);
         gbc = GuiUtil.makeGbc(1, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 5, 5);
+        gbc.insets = new Insets(5, 0, 5, 0);
         styleButtonPanel.add(style2Button, gbc);
         gbc = GuiUtil.makeGbc(2, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 0);
-        styleButtonPanel.add(style3Button, gbc);
+        gbc.insets = new Insets(5, 0, 5, 5);
+        styleButtonPanel.add(styleFlatLightButton, gbc);
+        
         gbc = GuiUtil.makeGbc(3, 1, 1, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 0, 5, 5);
+        gbc.insets = new Insets(5, 5, 5, 0);
+        styleButtonPanel.add(style3Button, gbc);
+        gbc = GuiUtil.makeGbc(4, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 0);
         styleButtonPanel.add(style4Button, gbc);
+        gbc = GuiUtil.makeGbc(5, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 5);
+        styleButtonPanel.add(styleFlatDarkButton, gbc);
         
         gbc = GuiUtil.makeGbc(0, 2, 2, 1, GridBagConstraints.CENTER);
         gbc.weightx = 1;
@@ -141,7 +158,7 @@ public class DefaultsPanel extends JPanel {
         
         userlist.addItemListener(e -> updateStyle());
         
-        style1Button.setSelected(true);
+        styleFlatLightButton.setSelected(true);
         
         //--------------------------
         // Font
@@ -248,6 +265,12 @@ public class DefaultsPanel extends JPanel {
         else if (style4Button.isSelected()) {
             name = "custom";
         }
+        else if (styleFlatLightButton.isSelected()) {
+            name = "flatLight";
+        }
+        else if (styleFlatDarkButton.isSelected()) {
+            name = "flatDark";
+        }
         else {
             return;
         }
@@ -298,7 +321,7 @@ public class DefaultsPanel extends JPanel {
             helper.setString("laf", "hifi2");
             helper.setString("lafTheme", "Default");
         }
-        else {
+        else if (style4Button.isSelected()) {
             helper.setString("laf", "hifiCustom");
             helper.setString("lafTheme", "Default");
             helper.setString("lafForeground", "#E5E5E5");
@@ -306,6 +329,17 @@ public class DefaultsPanel extends JPanel {
             helper.setLong("lafGradient", 25);
             helper.setLong("lafVariant", 0);
             helper.setString("lafStyle", "classicStrong");
+        }
+        else if (styleFlatLightButton.isSelected()) {
+            helper.setString("laf", "flatlight");
+        }
+        else if (styleFlatDarkButton.isSelected()) {
+            helper.setString("laf", "flatdark");
+        }
+        if (styleFlatLightButton.isSelected() || styleFlatDarkButton.isSelected()) {
+            helper.setBoolean("lafFlatStyledWindow", true);
+            helper.setBoolean("lafFlatEmbeddedMenu", true);
+            helper.setLong("lafFlatTabs", 3);
         }
         helper.setBoolean("lafNativeWindow", true);
         //--------------------------
@@ -321,7 +355,8 @@ public class DefaultsPanel extends JPanel {
             if (style2Button.isSelected()) {
                 value = ColorSettings.LIGHT_FAST[i];
             }
-            else if (style3Button.isSelected()) {
+            else if (style3Button.isSelected()
+                    || styleFlatDarkButton.isSelected()) {
                 value = ColorSettings.DARK_SMOOTH[i];
             }
             else if (style4Button.isSelected()) {
@@ -335,7 +370,8 @@ public class DefaultsPanel extends JPanel {
             if (style2Button.isSelected()) {
                 value = ColorSettings.LIGHT_FAST_BOOLEAN[i];
             }
-            else if (style3Button.isSelected()) {
+            else if (style3Button.isSelected()
+                    || styleFlatDarkButton.isSelected()) {
                 value = ColorSettings.DARK_SMOOTH_BOOLEAN[i];
             }
             else if (style4Button.isSelected()) {
@@ -349,7 +385,10 @@ public class DefaultsPanel extends JPanel {
         if (!fontSkipButton.isSelected()) {
             helper.setString("font", currentFont.getFamily());
             helper.setLong("fontSize", currentFont.getSize());
-            helper.setBoolean("timestampFontEnabled", style1Button.isSelected());
+            helper.setString("userlistFont", currentFont.deriveFont(12f).getFamily() + " 12");
+            helper.setBoolean("timestampFontEnabled", style1Button.isSelected()
+                    || styleFlatLightButton.isSelected()
+                    || styleFlatDarkButton.isSelected());
             helper.setString("timestampFont", currentFont.deriveFont(12f).getFamily() + " 12");
         }
         //--------------------------
