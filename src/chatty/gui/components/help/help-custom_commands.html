@@ -480,6 +480,11 @@
         <dd><em>Example:</em> <code>$upper(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>FREMILY</code>.</dd>
         
+        <dt><code>$trim(&lt;input&gt;)</code></dt>
+        <dd>Removes leading and trailing space (U+0020 and lower, using the
+            <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#trim%28%29">String.trim()</a> method).</dd>
+        <dd><em>Example:</em> <code>$trim( abc )</code> turns into <code>abc</code>.</dd>
+        
         <dt><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code>
         <dd>Search and replace in text.</dd>
         <dd>Especially when using Regex, remember
@@ -666,6 +671,11 @@
             <ul>
                 <li><code>error</code> - A request error will return an error
                     message instead of an empty response.</li>
+                <li><code>trim</code> - Remove leading and trailing space from
+                    the request result. This may be useful if a request returns
+                    any spaces or linebreak characters that cause issues with
+                    what you're using it with. Same as the <code>$trim()</code>
+                    function.</li>
             </ul></dd>
         <dd><em>Note:</em> Normally Custom Commands are performed instantaneously, however the
             replacements for any Custom Command that contains the <code>$request()</code>

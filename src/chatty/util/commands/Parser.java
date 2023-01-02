@@ -200,6 +200,9 @@ public class Parser {
         else if (type.equals("upper")) {
             return upper(isRequired);
         }
+        else if (type.equals("trim")) {
+            return trim(isRequired);
+        }
         else if (type.equals("rand")) {
             return rand(isRequired);
         }
@@ -366,6 +369,13 @@ public class Parser {
         Item identifier = peekParam();
         expect(")");
         return new Upper(identifier, isRequired);
+    }
+    
+    private Item trim(boolean isRequired) throws ParseException {
+        expect("(");
+        Item identifier = param();
+        expect(")");
+        return new Trim(identifier, isRequired);
     }
     
     private Item rand(boolean isRequired) throws ParseException {

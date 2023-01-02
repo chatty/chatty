@@ -43,6 +43,7 @@ public class Request implements Item {
             optionsString.add(optionString);
         }
         boolean outputError = optionsString.contains("error");
+        boolean trim = optionsString.contains("trim");
         
         // General errors
         if (parameters.get("allow-request") == null) {
@@ -69,7 +70,7 @@ public class Request implements Item {
             if (resultText.isEmpty() && isRequired) {
                 return null;
             }
-            return resultText;
+            return trim ? resultText.trim() : resultText;
         }
         catch (Exception ex) {
             return outputError ? ex.getClass().getSimpleName()+": "+ex.getLocalizedMessage() : error();

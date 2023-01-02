@@ -95,6 +95,7 @@ public class UrlOpener {
         if (url == null) {
             return false;
         }
+        url = url.trim();
         URI parsed;
         try {
             parsed = new URI(url);
@@ -168,7 +169,7 @@ public class UrlOpener {
         }
         switch (showUrlsPrompt(parent, urls)) {
             case 0: return openUrls(urls);
-            case 1: MiscUtil.copyToClipboard(urls.get(0));
+            case 1: MiscUtil.copyToClipboard(urls.get(0).trim());
         }
         return true;
     }
@@ -204,7 +205,7 @@ public class UrlOpener {
         // Make text
         String text = "<html><body style='width: 100px;'>";
         for (String url : urls) {
-            url = splitUrl(url);
+            url = splitUrl(url).trim();
             text += url + "<br />";
         }
         // Make options
