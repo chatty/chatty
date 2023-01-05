@@ -105,7 +105,7 @@ public final class Channel extends JPanel {
         mainPane.setDividerSize(DIVIDER_SIZE);
         
         // Text input
-        input = new ChannelEditBox(40);
+        input = new ChannelEditBox();
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
         input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
@@ -118,6 +118,20 @@ public final class Channel extends JPanel {
         // Add components
         add(mainPane, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
+    }
+    
+    /**
+     * Create temporary input box for the $input() function.
+     * 
+     * @return 
+     */
+    public ChannelEditBox createInputBox() {
+        ChannelEditBox result = new ChannelEditBox();
+        result.setCompletionServer(new ChannelCompletion(this, main, result, users));
+        result.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
+        GuiUtil.installLengthLimitDocumentFilter(result, 500, false);
+        TextSelectionMenu.install(result);
+        return result;
     }
     
     public DockChannelContainer getDockContent() {

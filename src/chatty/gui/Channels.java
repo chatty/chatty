@@ -232,6 +232,7 @@ public class Channels {
         });
         KeyChecker.watch(KeyEvent.VK_SHIFT);
         KeyChecker.watch(KeyEvent.VK_CONTROL);
+        instance = this;
     }
     
     public void init() {
@@ -1190,6 +1191,16 @@ public class Channels {
         if (changeListener != null) {
             changeListener.stateChanged(new ChangeEvent(this));
         }
+    }
+    
+    /**
+     * For accessing this instance for the $input() function. Not my favorite
+     * way of doing this, but it'll do for now.
+     */
+    private static Channels instance;
+    
+    public static Channels getInstance() {
+        return instance;
     }
     
     /**

@@ -49,7 +49,7 @@ public class ChannelEditBox extends JTextArea implements KeyListener,
     // Auto completion
     private final AutoCompletion autoCompletion;
     
-    public ChannelEditBox(int size) {
+    public ChannelEditBox() {
         autoCompletion = new AutoCompletion(this);
         autoCompletion.setFont(getFont());
         this.addKeyListener(this);
