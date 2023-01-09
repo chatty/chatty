@@ -7,6 +7,17 @@ body {
     padding: 10px;
     margin: 0;
 }
+/**
+The link color with some LaF might be wrong, so set it explicitly. However just
+a:link and similar doesn't seem to work in Java, but targeting a changes the
+color of all a tags, including <a name=""></a>, in normal browsers. So first set
+everything with a "name" attribute to black for normal browsers (which would set
+*all* of them to black in Java if it came second) and then set them to blue for
+Java.
+*/
+a[name] {
+    color: black;
+}
 a {
     color: blue;
 }
