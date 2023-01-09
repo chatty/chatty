@@ -245,6 +245,12 @@ public class Parser {
         else if (type.equals("request")) {
             return request(isRequired);
         }
+        else if (type.equals("json")) {
+            return json(isRequired);
+        }
+        else if (type.equals("j")) {
+            return jsonPath(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -532,6 +538,26 @@ public class Parser {
         }
         expect(")");
         return new Request(url, options, isRequired);
+    }
+    
+    private Item json(boolean isRequired) throws ParseException {
+        expect("(");
+        Item input = param();
+        expect(",");
+        Item output = param();
+        expect(")");
+        return new Json(input, output, isRequired);
+    }
+    
+    private Item jsonPath(boolean isRequired) throws ParseException {
+        expect("(");
+        Item path = param();
+        Item def = null;
+        if (accept(",")) {
+            def = param();
+        }
+        expect(")");
+        return new JsonPathItem(path, def, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

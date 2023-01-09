@@ -636,6 +636,92 @@
                 <dd>(Preset format, with timezone, no locale, with a time
                     specified in milliseconds since 1970-01-01 00:00:00 UTC.)</dd>
             </dl>
+        </dd>
+        
+        <dt><code>$json(&lt;input&gt;,&lt;output&gt;)</code></dt>
+        <dd>Parse the JSON in <code>&lt;input&gt;</code> and use in <code>&lt;output&gt;</code>,
+            where <code>$j(&lt;path&gt;,[default])</code> can be used to access specific values.
+            The JSON input could e.g. come from the <code>$request()</code>
+            function.</dd>
+        <dd>If the path isn't formatted correctly or the JSON is invalid the
+            command may not work. Check out the Debug Log (e.g. Extra - Debug
+            window) to find out what went wrong.</dd>
+        <dd>The <code>&lt;path&gt;</code> specifies what value to return from
+            the <code>$j(&lt;path&gt;,[default])</code> function, whereas the optional <code>[default]</code>
+            value will be returned if the path is not valid or points to an empty value.</dd>
+        <dd>In the <code>&lt;path&gt;</code> you specify keys of JSON objects
+            separated by <code>-></code> (e.g. <code>key1->key2->key3</code>) or
+            indices of JSON arrays in brackets <code>[ ]</code> (e.g. <code>key1[0]</code>
+            for the first element of the array key1). Additionally the brackets <code>[ ]</code>
+            can contain:
+            <ul>
+                <li><code>last</code> for the last entry of an array</li>
+                <li><code>size</code> to return the number of elements</li>
+                <li><code>filter:&lt;path&gt;[=regex]</code> to select only
+                    certain array items based on whether a path exists or if a
+                    regex is provided the value of the path</li>
+                <li><code>collect:&lt;path&gt;[=regex]</code> iterates over an
+                    array and for each element resolves the path and combines
+                    the resulting values into an array</li>
+                <li><code>combine:&lt;path&gt;[=regex]</code> iterates over an
+                    array and for each element resolves the path and for each
+                    resulting value that is an array adds all of the array
+                    values into a single result array</li>
+                <li><code>unique</code> removes duplicate elements from an array</li>
+                <li><code>join[:delimiter]</code> turns an array into a string
+                    by joining all elements together using the given delimiter
+                    (or "<code>, </code>" if none is provided)</li>
+            </ul></dd>
+        <dd><em>Examples</em> with the following JSON as input:
+            <pre>
+    {
+        "books":[
+            {"title":"book1", "author":"author1", "tags":["tag1","tag2"]},
+            {"title":"book2", "author":"author2", "tags":["tag1"]},
+            {"title":"book3", "author":"author2", "tags":["tag1", "tag3"]},
+            {"title":"book4", "author":"author2"}
+        ],
+        "numBooks": 4,
+        "numAuthors": 2
+    }</pre>
+            <dl>
+                <dt><code>$json($get(var,j),There are $j(numBooks) books of $j(numAuthors) authors.)</code></dt>
+                <dt><code>$json($get(var,j),There are $j(books[size]) books of $j(books->[collect:author][unique][size]) authors.)</code></dt>
+                <dd><code>There are 4 books of 2 authors.</code></dd>
+                <dd>Reading the "num" values provided in the JSON or determining
+                    the same information from the "books" array.</dd>
+                
+                <dt><code>$json($get(var,j),The last book is called $j(books[last]->title) by $j(books[last]->author).)</code></dt>
+                <dd><code>The last book is called book4 by author2.</code></dd>
+                
+                <dt><code>$json($get(var,j),The first book is $j(books[0]))</code></dt>
+                <dd><code>The first book is {"author":"author1","title":"book1","tags":["tag1","tag2"]}</code></dd>
+                <dd>If the end of the specified path is a JSONArray or JSONObject
+                    it will be returned as a JSON encoded String.</dd>
+                
+                <dt><code>$json($get(var,j),$j(books[10]->title,Book not found))</code></dt>
+                <dd><code>Book not found</code></dd>
+                <dd>Since the index <code>10</code> does not exist, the default
+                    value <code>Book not found</code> is returned. If no default
+                    value is provided an empty string would be returned.</dd>
+                
+                <dt><code>$json($get(var,j),Books of author2: $j(books[filter:author=author2][collect:title]))</code></dt>
+                <dd><code>Books of author2: ["book2","book3","book4"]</code></dd>
+                
+                <dt><code>$json($get(var,j),Tags of author2: $j(books[filter:author=author2][combine:tags][unique]))</code></dt>
+                <dd><code>Tags of author2: ["tag1","tag3"]</code></dd>
+                
+                <dt><code>$json($get(var,j),Tags of author2: $j(books[filter:author=author2][combine:tags][unique][join]))</code></dt>
+                <dd><code>Tags of author2: tag1, tag3</code></dd>
+            </dl>
+            You can test these examples yourself if you store the JSON in the
+            variable "j" using the command <code>/set var j copyJSONfromabove</code>
+            and then use the <code>//echo $json($get(var,j),...)</code> command
+            in the chat inputbox
+            to output an info message with the result in chat. Pasting the JSON
+            directly into the <code>$json()</code> function would require
+            escaping the <code>,</code> characters to work.
+        </dd>
     </dl>
     
     <p>The following functions are only available in some contexts:</p>

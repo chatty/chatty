@@ -413,4 +413,74 @@ public class CustomCommandTest {
         assertEquals(parameters.get("display-nick"), "User Name");
     }
     
+    @Test
+    public void testJson() {
+        String json = "{\n"
+                + "        \"books\":[\n"
+                + "            {\"title\":\"book1\", \"author\":\"author1\", \"tags\":[\"tag1\",\"tag2\"]},\n"
+                + "            {\"title\":\"book2\", \"author\":\"author2\", \"tags\":[\"tag1\"]},\n"
+                + "            {\"title\":\"book3\", \"author\":\"author2\", \"tags\":[\"tag1\", \"tag3\"]},\n"
+                + "            {\"title\":\"book4\", \"author\":\"author2\"}\n"
+                + "        ],\n"
+                + "        \"numBooks\": 4,\n"
+                + "        \"numAuthors\": 2\n"
+                + "    }";
+        
+        testJson(json,
+                "$json($(j),$j(numBooks))", "4",
+                "$json($(j),$j(books[size]))", "4",
+                "$json($(j),$j(books[last]->tags))", "",
+                "$json($(j),$j(books[0]->tags[join]))", "tag1, tag2",
+                "$json($(j),$j(books[size]) $j(books[collect:author][unique][size]))", "4 2",
+                "$json($(j),$j(books[filter:author=author2][combine:tags]))", "[\"tag1\",\"tag1\",\"tag3\"]",
+                "$json($(j),$j(books[filter:author=author2][combine:tags][join]))", "tag1, tag1, tag3",
+                "$json($(j),$j(books[filter:author=author2][combine:tags][unique][join]))", "tag1, tag3",
+                "$json($(j),$j(books[collect:author][join:/]))", "author1/author2/author2/author2",
+                "$json($(j),$j(books[filter:tags=.*tag2.*][collect:author][join]))", "author1",
+                // Combine filters on each individual array item
+                "$json($(j),$j(books[combine:tags='.*[0-2]'][join]))", "tag1, tag2, tag1, tag1",
+                // Collect filters on the array in total
+                "$json($(j),$j(books[collect:tags='.*[0-2].*'][combine:][join]))", "tag1, tag2, tag1, tag1, tag3",
+                
+                // Path that doesn't exist in the given JSON
+                "$json($(j),$j(abc))", "",
+                "$$json($(j),$j(abc))", null,
+                "$$json($(j),$j(abc)abc)", "abc",
+                "$json($(j),$$j(abc))", null,
+                "$json($(j),$j(abc,nope))", "nope",
+                
+                // Can't use outside of $json()
+                "$json($(j),$j(numBooks))$j(numBooks)", null,
+                // No JSON
+                "$json(,$j())", null,
+                "$json($(j),$j([]))", null,
+                
+                // Invalid path
+                "$json($(j),$j(books[collect:author=[a-z0-9]+][size]))", null,
+                // Same path, but with ' '
+                "$json($(j),$j(books[collect:author='[a-z0-9]+'][size]))", "4",
+                
+                "$json($(j),$j(numBooks))", "4",
+        );
+        
+        // Construct the path using replacements
+        test("$json($(j),$j($1-))",
+                new String[]{
+                    "numBooks", "4"
+                },
+                new String[]{"j", json});
+    }
+    
+    private static void testJson(String json, String... tests) {
+        Parameters parameters = Parameters.create("");
+        parameters.put("j", json);
+        for (int i = 0; i < tests.length; i += 2) {
+            CustomCommand c = CustomCommand.parse(tests[i]);
+            if (c.hasError()) {
+                throw new RuntimeException(c.getError());
+            }
+            assertEquals(tests[i + 1], c.replace(parameters));
+        }
+    }
+    
 }

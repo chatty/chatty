@@ -184,7 +184,7 @@ public class CustomCommand {
      * @param singleLine No linebreaks in resulting message
      * @return The error message
      */
-    private static String makeErrorMessage(String error, int pos, String input,
+    public static String makeErrorMessage(String error, int pos, String input,
             boolean singleLine) {
         if (pos == -1) {
             // For errors before parsing started
