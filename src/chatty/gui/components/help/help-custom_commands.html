@@ -233,7 +233,7 @@
             <th>Description</th>
         </tr>
         <tr>
-            <th rowspan="10"><em>All</em></th>
+            <th rowspan="9"><em>All</em></th>
             <td><code>chan</code></td>
             <td>The current channel context (without leading #)</td>
         </tr>
@@ -439,15 +439,49 @@
         replacement:
         <code>$(1-) -> $<u>join</u>(1-<u>,/</u>)</code></p>
     
+    <p>Functions by topic (ones marked with * are not available in every context):</p>
+    <ul>
+        <li>Decisions:
+            <a href="#func-if">$if()</a>,
+            <a href="#func-ifeq">$ifeq()</a>,
+            <a href="#func-switch">$switch()</a>,
+            <a href="#func-is">$is()</a>*
+        </li>
+        <li>Text:
+            <a href="#func-join">$join()</a>,
+            <a href="#func-lower">$lower()</a>,
+            <a href="#func-upper">$upper()</a>,
+            <a href="#func-trim">$trim()</a>,
+            <a href="#func-replace">$replace()</a>,
+            <a href="#func-rand">$rand()</a>,
+            <a href="#func-sort">$sort()</a>,
+            <a href="#func-input">$input()</a>
+        </li>
+        <li>Numbers:
+            <a href="#func-randnum">$randnum()</a>,
+            <a href="#func-calc">$calc()</a>,
+            <a href="#func-round">$round()</a>
+        </li>
+        <li>Requests/URLs:
+            <a href="#func-request">$request()</a>*,
+            <a href="#func-urlencode">$urlencode()</a>,
+            <a href="#func-json">$json()</a>
+        </li>
+        <li>Other:
+            <a href="#func-datetime">$datetime()</a>,
+            <a href="#func-get">$get()</a>*
+        </li>
+    </ul>
+    
     <p>The following functions are always available:</p>
     <dl class="defList">
-        <dt><code>$if(&lt;identifier&gt;,&lt;output if exists&gt;,[output if not])</code></dt>
+        <dt><a name="func-if"><code>$if(&lt;identifier&gt;,&lt;output if exists&gt;,[output if not])</code></a></dt>
         <dd>If the value the identifier refers to exists (non-empty), it will
             return the first function parameter, the second otherwise.</dd>
         <dd><em>Example:</em> <code>$if(1,$1,nope)</code> with command parameters <code>cheese cake</code> turns into <code>cheese</code>,
             with no parameters turns into <code>nope</code>, the optional <code>[output if not]</code> function parameter.</dd>
         
-        <dt><code>$ifeq(&lt;identifier&gt;,&lt;comparison&gt;,&lt;output if equal&gt;,[output if not])</code></dt>
+        <dt><a name="func-ifeq"><code>$ifeq(&lt;identifier&gt;,&lt;comparison&gt;,&lt;output if equal&gt;,[output if not])</code></a></dt>
         <dd>Similar to <code>$if</code>, but instead of just checking for the
             existence of a parameter it compares it to a given value
             (<code>&lt;comparison&gt;</code>).</dd>
@@ -456,36 +490,36 @@
             <code>cheese cake</code> turns into an an empty string, since the
             optional <code>[output if not]</code> has not been specified.</dd>
         
-        <dt><code>$switch(&lt;identifier&gt;,&lt;case1&gt;:&lt;result1&gt;,..,[casen]:[resultn],[default])</code></dt>
+        <dt><a name="func-switch"><code>$switch(&lt;identifier&gt;,&lt;case1&gt;:&lt;result1&gt;,..,[casen]:[resultn],[default])</code></a></dt>
         <dd>Similiar to a switch statement in programming, or one or several <code>$ifeq()</code> functions.
             Compares the value associated with the identifier with the case values and returns the following
             result if it matches. If none of the case values match, it will return the default, or an empty value.</dd>
         <dd><em>Example:</em> <code>/set fontSize $switch($get(fontSize),25:50,50:18,25)</code> when added
             as a Custom Command alternates between font sizes 18, 25 and 50.</dd>
         
-        <dt><code>$join(&lt;identifier&gt;,&lt;separator&gt;)</code></dt>
+        <dt><a name="func-join"><code>$join(&lt;identifier&gt;,&lt;separator&gt;)</code></a></dt>
         <dd>Joins together the arguments the identifier refers to, using the
             given separator.</dd>
         <dd><em>Example:</em> <code>$join(1-,/)</code> with <code>1-</code> referring to
             <code>flour sugar eggs</code> turns into <code>flour/sugar/eggs</code></dd>
         <dd>This effectively replaces spaces in the parameters with the separator.</dd>
         
-        <dt><code>$lower(&lt;identifier&gt;)</code></dt>
+        <dt><a name="func-lower"><code>$lower(&lt;identifier&gt;)</code></a></dt>
         <dd>Makes the given input lowercase.</dd>
         <dd><em>Example:</em> <code>$lower(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>fremily</code>.</dd>
         
-        <dt><code>$upper(&lt;identifier&gt;)</code></dt>
+        <dt><a name="func-upper"><code>$upper(&lt;identifier&gt;)</code></a></dt>
         <dd>Makes the given input uppercase.</dd>
         <dd><em>Example:</em> <code>$upper(1)</code> with <code>1</code>
             referring to <code>Fremily</code> turns into <code>FREMILY</code>.</dd>
         
-        <dt><code>$trim(&lt;input&gt;)</code></dt>
+        <dt><a name="func-trim"><code>$trim(&lt;input&gt;)</code></a></dt>
         <dd>Removes leading and trailing space (U+0020 and lower, using the
             <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#trim%28%29">String.trim()</a> method).</dd>
         <dd><em>Example:</em> <code>$trim( abc )</code> turns into <code>abc</code>.</dd>
         
-        <dt><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code>
+        <dt><a name="func-replace"><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code></a></dt>
         <dd>Search and replace in text.</dd>
         <dd>Especially when using Regex, remember
             escaping <code>\</code> (<code>\\</code>) and <code>$</code> (<code>\$</code>)
@@ -513,14 +547,14 @@
         <dd><em>Example:</em> <code>$replace(Was timed out for 30 seconds,.*?(\\d+) seconds,Number of seconds: \$1,regRef)</code> turns into <code>Number of seconds: 30</code></dd>
         <dd><em>Example:</em> <code>$replace($1-,$"~([a-z]+)~",<span style="text-decoration: underline">$replace($(g1),$"(\w)",$"$1+",regRef)</span>,regCustom)</code> adds <code>+</code> behind every character surrounded by <code>~</code> (the inner <code>$replace()</code> is in the <code>replace</code> parameter and executed for each match)</dd>
         
-        <dt><code>$rand([output1],[output2],[output3],..)</code></dt>
+        <dt><a name="func-rand"><code>$rand([output1],[output2],[output3],..)</code></a></dt>
         <dd>Randomly chooses one of the outputs.</dd>
         <dd><em>Example:</em> <code>$rand(cheesecake,strawberry cake,$1-)</code>
             with <code>1-</code> referring to <code>apple pie</code> turns into
             either <code>cheesecake</code>, <code>strawberry cake</code> or
             <code>apple pie</code>.</dd>
         
-        <dt><code>$randnum(&lt;from&gt;,&lt;to&gt;)</code> or <code>$randnum(&lt;to&gt;)</code></dt>
+        <dt><a name="func-randnum"><code>$randnum(&lt;from&gt;,&lt;to&gt;)</code> or <code>$randnum(&lt;to&gt;)</code></a></dt>
         <dd>Randomly chooses a number in the given range (inclusive). If only
             one number is given, it the range is 0 to the given number. If the
             "from" is not a number, it defaults to 0, if the "to" is not a
@@ -530,7 +564,7 @@
         <dd><em>Example:</em> <code>$randum($$1)</code> chooses a random number
             between 0 and what is the first parameter.</dd>
         
-        <dt><code>$calc(&lt;simple math expression&gt;)</code></dt>
+        <dt><a name="func-calc"><code>$calc(&lt;simple math expression&gt;)</code></a></dt>
         <dd>Limited support for performing calculations, with binary operators
             (<code>* / % + -</code>) and functions (<code>sqrt() sin() cos() tan()</code>).</dd>
         <dd><em>Example:</em> <code>//echo $calc(2^3) $calc( (3+4\) / 2)</code>
@@ -541,7 +575,7 @@
             (this uses <code>$" "</code> to specify <a href="#escaping">literal text</a>
             instead of escaping the parenthesis with a backslash).</dd>
         
-        <dt><code>$round(&lt;number&gt;,[numDecimalPlaces],[roundingMode],[minNumDecimalPlaces])</code></dt>
+        <dt><a name="func-round"><code>$round(&lt;number&gt;,[numDecimalPlaces],[roundingMode],[minNumDecimalPlaces])</code></a></dt>
         <dd>Round a number to the given amount of decimal places,
             with a <a href="https://docs.oracle.com/javase/7/docs/api/java/math/RoundingMode.html">rounding mode</a>
             of empty (half-up), <code>ceil</code>, <code>floor</code>,
@@ -552,13 +586,13 @@
         <dd><em>Example:</em> <code>//echo $round(345.5,3,floor,3)</code> outputs <code>345.500</code> (fills up to 3 decimal places)</dd>
         <dd><em>Example:</em> <code>//echo $round(2.565,2,,2)</code> outputs <code>2.57</code> (uses default rounding mode)</dd>
         
-        <dt><code>$urlencode(&lt;input&gt;)</code></dt>
+        <dt><a name="func-urlencode"><code>$urlencode(&lt;input&gt;)</code></a></dt>
         <dd>Uses <a href="https://docs.oracle.com/javase/8/docs/api/java/net/URLEncoder.html#encode-java.lang.String-java.lang.String-">UrlEncoder.encode()</a>
             to prepare the input to be used in a URL query parameter.</dd>
         <dd><em>Example:</em> <code>$urlencode($(msg))</code> in User Dialog
             encodes the currently selected message.</dd>
         
-        <dt><code>$sort(&lt;input&gt;,[type],[separator])</code></dt>
+        <dt><a name="func-sort"><code>$sort(&lt;input&gt;,[type],[separator])</code></a></dt>
         <dd>Sorts the given input alphabetically. The sort type can be "abc"
             (default) for case-insensitive sorting or "Abc" for case-sensitive
             sorting. The separator is what separates the parts that are sorted,
@@ -566,7 +600,7 @@
         <dd><em>Example:</em> <code>$sort(B c a)</code> turns into <code>a B c</code></dd>
         <dd><em>Example:</em> <code>$sort(B c a,Abc)</code> turns into <code>B a c</code></dd>
         
-        <dt><code>$input([message],[intial],[type])</code></dt>
+        <dt><a name="func-input"><code>$input([message],[intial],[type])</code></a></dt>
         <dd>Requests text input from the user by showing an input dialog.
             Execution is paused while the dialog is open. The user may enter an
             empty value (the result is just empty) or cancel the dialog (the
@@ -578,7 +612,7 @@
         <dd><em>Example:</em> <code>$input()</code></dd>
         <dd><em>Example:</em> <code>$input(Enter a number please)</code></dd>
         
-        <dt><code>$datetime([format],[timezone],[locale],[unix time])</code></dt>
+        <dt><a name="func-datetime"><code>$datetime([format],[timezone],[locale],[unix time])</code></a></dt>
         <dd>Outputs the current date/time. You can optionally give a format
             pattern (based on <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns">DateTimeFormatter</a>),
             a timezone (based on <a href="https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html">ZoneId</a>,
@@ -638,7 +672,7 @@
             </dl>
         </dd>
         
-        <dt><code>$json(&lt;input&gt;,&lt;output&gt;)</code></dt>
+        <dt><a name="func-json"><code>$json(&lt;input&gt;,&lt;output&gt;)</code></a></dt>
         <dd>Parse the JSON in <code>&lt;input&gt;</code> and use in <code>&lt;output&gt;</code>,
             where <code>$j(&lt;path&gt;,[default])</code> can be used to access specific values.
             The JSON input could e.g. come from the <code>$request()</code>
@@ -727,7 +761,7 @@
     <p>The following functions are only available in some contexts:</p>
     
     <dl class="defList">
-        <dt><code>$is(&lt;match input&gt;)</code></dt>
+        <dt><a name="func-is"><code>$is(&lt;match input&gt;)</code></a></dt>
         <dd>Outputs <code>true</code> if the match succeeds, nothing otherwise.
             The <code>match input</code> is in the <a href="help-settings.html#Highlight_Matching">Highlight</a>
             format, although what can actually be matched against depends on
@@ -737,7 +771,7 @@
             will output <code>I'm a mod</code> in channels where you are the
             broadcaster or a moderator, <code>Not a mod</code> otherwise.</dd>
         
-        <dt><code>$get(&lt;settingName&gt;,[key])</code></dt>
+        <dt><a name="func-get"><code>$get(&lt;settingName&gt;,[key])</code></a></dt>
         <dd>Returns the value of a setting. Different setting types return
             differently formatted values. There is no comprehensive list of
             settings, unless you count the <a href="https://github.com/chatty/chatty/blob/master/src/chatty/SettingsManager.java">Chatty source</a>.</dd>
@@ -750,7 +784,7 @@
         <dd><em>Example:</em> <code>$if($get(ontop),ONTOP)</code> will return
             <code>ONTOP</code> only if "View - Always on top" is enabled.</dd>
         
-        <dt><code>$request(&lt;url&gt;,[options])</code></dt>
+        <dt><a name="func-request"><code>$request(&lt;url&gt;,[options])</code></a></dt>
         <dd>Performs a GET request on the given http/https URL and returns the
             body of the reponse interpreted as UTF-8 encoded text. If an error
             occurs the response will be empty.</dd>
@@ -761,7 +795,7 @@
                 <li><code>trim</code> - Remove leading and trailing space from
                     the request result. This may be useful if a request returns
                     any spaces or linebreak characters that cause issues with
-                    what you're using it with. Same as the <code>$trim()</code>
+                    what you're using it with. Same as the <a href="#func-trim"><code>$trim()</code></a>
                     function.</li>
             </ul></dd>
         <dd><em>Note:</em> Normally Custom Commands are performed instantaneously, however the
