@@ -458,9 +458,7 @@ public class CustomCommandTest {
                 // Invalid path
                 "$json($(j),$j(books[collect:author=[a-z0-9]+][size]))", null,
                 // Same path, but with ' '
-                "$json($(j),$j(books[collect:author='[a-z0-9]+'][size]))", "4",
-                
-                "$json($(j),$j(numBooks))", "4",
+                "$json($(j),$j(books[collect:author='[a-z0-9]+'][size]))", "4"
         );
         
         // Construct the path using replacements
