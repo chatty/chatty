@@ -71,11 +71,45 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.22">Version 0.22</a> <a name="latest">(This one!)</a> (2022-??-??)
+        <a name="0.22">Version 0.22</a> <a name="latest">(This one!)</a> (2023-01-15)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-Beta, TBD
+### Twitch Features
+- Added chat message for outgoing raids with join link (due to API limits only
+  in at most 10 live channels)
+- Show poll start/end messages (broadcaster only)
+- Added shield mode commands and display (for moderators)
+
+### Custom Commands
+- Added "Anonymous Custom Command" hotkey action, where a Custom Command can be
+  entered directly (instead of a the name of a Custom Command)
+- Added function `$trim()` to remove leading and trailing whitespace
+- Added `trim` option to `$request()`
+- Added function `$json()` to parse JSON and access specific values
+- Changed `$input()` inputbox to have the same features as the channel inputbox
+  if run in a channel context
+- Added `/exportText` options `-A` and `-L`
+
+### Other
+- Added FlatLaf (new modern Look&Feel, selectable in the "Look" settings)
+- Added feature to make a popout with one channel transparent
+- Made AutoMod dialog dockable
+- Improved Settings Dialog
+- Removed SRL menu
+- Removed some hosting related stuff, added raid context menu entries
+- Added setting whether to hide tab pane when only a single channel is open
+  (hidden by default, as was the previous behaviour)
+- Added local caching to Pronouns for more reliability and faster display
+- Added new Chatty icons to img folder
+- Added context menu setting to Live Streams list to only show favorites
+- Updated help
+
+### Bugfixes
+- Fixed `/color` command not being able to set some default colors
+- Fixed error occuring for some commands when no parameter is provided
+- Fixed commands `/unvip` and `/unmod`
+- Fixed channels sometimes not opening in the correct popout
     </pre>
     
     <h2>
