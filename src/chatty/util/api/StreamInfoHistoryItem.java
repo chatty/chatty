@@ -2,9 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.MiscUtil;
-import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo.StreamType;
-import java.util.List;
 
 /**
  * A single datapoint in the stream info history, holding information about
@@ -22,7 +20,6 @@ public class StreamInfoHistoryItem {
     private final long time;
     private final String title;
     private final StreamType streamType;
-    private final List<StreamTag> community;
     private final long streamStartTime;
     private final long streamStartTimeWithPicnic;
     
@@ -35,13 +32,12 @@ public class StreamInfoHistoryItem {
         this.time = time;
         this.title = "Stream offline";
         this.streamType = null;
-        this.community = null;
         this.streamStartTime = -1;
         this.streamStartTimeWithPicnic = -1;
     }
     
     public StreamInfoHistoryItem(long time, int viewers, String status, String game,
-            StreamType streamType, List<StreamTag> community, long startedTime,
+            StreamType streamType, long startedTime,
             long startedTimeWithPicnic) {
         this.viewers = viewers;
         this.status = status;
@@ -55,7 +51,6 @@ public class StreamInfoHistoryItem {
             title = MiscUtil.intern(status);
         }
         this.streamType = streamType;
-        this.community = community;
         this.streamStartTime = startedTime;
         this.streamStartTimeWithPicnic = startedTimeWithPicnic;
     }
@@ -97,10 +92,6 @@ public class StreamInfoHistoryItem {
     
     public long getTime() {
         return time;
-    }
-    
-    public List<StreamTag> getCommunities() {
-        return community;
     }
     
     public StreamType getStreamType() {

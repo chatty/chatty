@@ -46,17 +46,17 @@ public class ChannelInfoManager {
             // The result of changing channel info requires some extra
             // handling, because it can have different response codes.
             if (responseCode == 404) {
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.NOT_FOUND);
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.NOT_FOUND, null);
             } else if (responseCode == 401 || responseCode == 403) {
                 LOGGER.warning("Error setting channel info: Access denied");
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED);
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED, null);
                 api.accessDenied();
             } else if (responseCode == 422) {
                 LOGGER.warning("Error setting channel info: Probably invalid title");
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.INVALID_STREAM_STATUS);
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.INVALID_STREAM_STATUS, null);
             } else {
                 LOGGER.warning("Error setting channel info: Unknown error (" + responseCode + ")");
-                listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+                listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED, null);
             }
         }
     }

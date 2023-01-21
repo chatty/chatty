@@ -5042,12 +5042,12 @@ public class MainGui extends JFrame implements Runnable {
         return client.settings.getMap("tagsFavorites");
     }
     
-    public void putChannelInfoResult(final RequestResultCode result) {
+    public void putChannelInfoResult(final RequestResultCode result, String error) {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                adminDialog.setPutResult(result);
+                adminDialog.setPutResult(result, error);
             }
         });
     }

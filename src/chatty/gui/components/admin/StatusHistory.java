@@ -1,8 +1,9 @@
 
 package chatty.gui.components.admin;
 
+import chatty.util.StringUtil;
+import chatty.util.api.ChannelStatus.StreamTag;
 import chatty.util.api.StreamCategory;
-import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.util.ArrayList;
@@ -325,8 +326,9 @@ public class StatusHistory implements SettingsListener {
             // New format, for several Communities
             for (StreamTag c : entry.tags) {
                 List<String> cdata = new ArrayList<>();
-                cdata.add(c.getId());
-                cdata.add(c.getDisplayName());
+                // With new freeform tags only save the name
+                cdata.add("");
+                cdata.add(c.getName());
                 clist.add(cdata);
             }
             /**
@@ -369,9 +371,11 @@ public class StatusHistory implements SettingsListener {
                     List clist = (List) list.get(6);
                     for (Object obj : clist) {
                         List cdata = (List) obj;
-                        String tagId = (String) cdata.get(0);
+                        // With new freefrom tags the id is not used, and spaces
+                        // are not allowed
+                        String tagId = (String) cdata.get(0); // Unused now
                         String tagName = (String) cdata.get(1);
-                        tags.add(new StreamTag(tagId, tagName));
+                        tags.add(new StreamTag(StringUtil.removeWhitespace(tagName)));
                     }
                 }
             }

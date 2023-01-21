@@ -126,7 +126,7 @@ public class TimestampTest {
         long testTime = time - 1;
         long startTime = testTime - duration;
         long startTimePicnic = testTime - picnicDuration;
-        StreamInfoHistoryItem item = new StreamInfoHistoryItem(testTime, 0, null, null, StreamInfo.StreamType.LIVE, null, startTime, startTimePicnic);
+        StreamInfoHistoryItem item = new StreamInfoHistoryItem(testTime, 0, null, null, StreamInfo.StreamType.LIVE, startTime, startTimePicnic);
         LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
         history.put(testTime, item);
         info.setHistory(history);

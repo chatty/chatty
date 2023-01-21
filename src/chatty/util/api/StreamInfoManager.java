@@ -6,10 +6,8 @@ import chatty.util.ElapsedTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo.StreamType;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -524,14 +522,6 @@ public class StreamInfoManager {
         if (thumbnailUrl != null) {
             streamInfo.setThumbnailUrl(thumbnailUrl);
         }
-        
-        // Community (if cached, will immediately set Community correct again
-        // for use in history, otherwise requested async and not in this history
-        // item)
-        streamInfo.setCommunities(null);
-        //api.getCommunity(community_id, (r,e) -> { streamInfo.setCommunity(r); });
-        //System.out.println("requesting: "+community_ids);
-        //api.getCommunities(community_ids, (r,e) -> { streamInfo.setCommunities(r); });
         
         if (follows) {
             streamInfo.setFollowed(status, game, viewers, timeStarted, streamType);

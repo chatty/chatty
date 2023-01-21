@@ -11,11 +11,6 @@ import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.BlockedTermsManager.BlockedTerm;
 import chatty.util.api.BlockedTermsManager.BlockedTerms;
-import chatty.util.api.StreamTagManager.StreamTagsListener;
-import chatty.util.api.StreamTagManager.StreamTag;
-import chatty.util.api.StreamTagManager.StreamTagListener;
-import chatty.util.api.StreamTagManager.StreamTagPutListener;
-import chatty.util.api.StreamTagManager.StreamTagsResult;
 import chatty.util.api.TwitchApi.AutoModAction;
 import chatty.util.api.TwitchApi.AutoModActionResult;
 import chatty.util.api.TwitchApi.RequestResultCode;
@@ -241,126 +236,14 @@ public class Requests {
         newApi.add(url, "PATCH", info.makePutJson(), token, r -> {
             switch (r.responseCode) {
                 case 204:
-                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS);
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.SUCCESS, null);
                     break;
                 case 401:
                 case 403:
-                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED);
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.ACCESS_DENIED, getErrorMessage(r.errorText));
                     break;
                 default:
-                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
-                    break;
-            }
-        });
-    }
-    
-    private int allTagsRequestCount;
-    
-    public void getAllTags(StreamTagManager.StreamTagsListener listener) {
-        allTagsRequestCount = 0;
-        getAllTags(api.defaultToken, null, listener);
-    }
-    
-    private void getAllTags(String token, String cursor, StreamTagManager.StreamTagsListener listener) {
-        String url = "https://api.twitch.tv/helix/tags/streams?first=100";
-        if (cursor != null) {
-            url += "&after="+cursor;
-        }
-        allTagsRequestCount++;
-        // Just in case
-        LOGGER.info("Request "+allTagsRequestCount);
-        if (allTagsRequestCount > 10) {
-            return;
-        }
-        newApi.add(url, "GET", token, r -> {
-            if (r.responseCode == 200) {
-                StreamTagsResult data = StreamTagManager.parseAllTags(r.text);
-                if (data != null) {
-                    listener.received(data.tags, null);
-                    if (!StringUtil.isNullOrEmpty(data.cursor)) {
-                        getAllTags(token, data.cursor, listener);
-                    } else {
-                        listener.received(null, null);
-                    }
-                    data.tags.forEach(t -> { api.communitiesManager.addTag(t); });
-                } else {
-                    listener.received(null, "Parse error");
-                }
-            } else {
-                listener.received(null, "Error "+r.responseCode);
-            }
-        });
-    }
-    
-    public void getTagsByIds(Set<String> ids, StreamTagsListener listener) {
-        String parameters = "?tag_id="+StringUtil.join(ids, "&tag_id=");
-        String url = "https://api.twitch.tv/helix/tags/streams"+parameters;
-        newApi.add(url, "GET", api.defaultToken, r -> {
-            if (r.responseCode == 200) {
-                StreamTagsResult data = StreamTagManager.parseAllTags(r.text);
-                if (data != null) {
-                    data.tags.forEach(t -> { api.communitiesManager.addTag(t); });
-                    listener.received(data.tags, null);
-                } else {
-                    listener.received(null, "Parse error");
-                }
-            } else {
-                listener.received(null, "Request error");
-            }
-        });
-    }
-    
-    public void setStreamTags(String userId, Collection<StreamTag> tags,
-            StreamTagPutListener listener) {
-        List<String> tagIds = new ArrayList<>();
-        tags.forEach(t -> tagIds.add(t.getId()));
-        String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
-        String json = JSONUtil.listMapToJSON("tag_ids", tagIds);
-        newApi.add(url, "PUT", json, api.defaultToken, r -> {
-            switch (r.responseCode) {
-                case 204:
-                    listener.result(null);
-                    break;
-                case 400:
-                case 403:
-                    api.getInvalidStreamTags(tags, (t, e) -> {
-                        if (e != null || t == null || t.isEmpty()) {
-                            listener.result("Error " + r.responseCode);
-                        }
-                        else {
-                            listener.result("Invalid: " + t);
-                        }
-                    });
-                    break;
-                case 401:
-                    listener.result("Access denied");
-                    break;
-                default:
-                    listener.result("Error "+r.responseCode);
-                    break;
-            }
-        });
-    }
-    
-    public void getTagsByStream(String userId, StreamTagsListener listener) {
-        String url = "https://api.twitch.tv/helix/streams/tags?broadcaster_id="+userId;
-        newApi.add(url, "GET", api.defaultToken, r -> {
-            switch (r.responseCode) {
-                case 204:
-                case 404:
-                    listener.received(null, null);
-                    break;
-                case 200:
-                    StreamTagsResult result = StreamTagManager.parseAllTags(r.text);
-                    if (result == null) {
-                        listener.received(null, "Parse error");
-                    }
-                    else {
-                        listener.received(result.tags, url);
-                    }
-                    break;
-                default:
-                    listener.received(null, "Error "+r.responseCode);
+                    listener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED, getErrorMessage(r.errorText));
                     break;
             }
         });

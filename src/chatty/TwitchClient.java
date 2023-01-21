@@ -70,7 +70,6 @@ import chatty.util.api.ResultManager;
 import chatty.util.api.StreamCategory;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
-import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.UserInfo;
 import chatty.util.api.eventsub.EventSubListener;
@@ -2021,15 +2020,6 @@ public class TwitchClient {
         } else if (command.equals("clearoldsetups")) {
             Stuff.init();
             Stuff.clearOldSetups();
-        } else if (command.equals("tags")) {
-            Set<StreamTag> tags = new HashSet<>();
-            tags.add(new StreamTag("id", "name", "summary", false));
-            if (parameter != null) {
-                tags.add(new StreamTag(parameter, "name2", "summary", false));
-            }
-            api.getInvalidStreamTags(tags, (t,e) -> {
-                System.out.println(t+" "+e);
-            });
         } else if (command.equals("-")) {
             g.printSystem(Debugging.command(parameter));
         } else if (command.equals("connection")) {
@@ -2753,8 +2743,8 @@ public class TwitchClient {
         }
     
         @Override
-        public void putChannelInfoResult(RequestResultCode result) {
-            g.putChannelInfoResult(result);
+        public void putChannelInfoResult(RequestResultCode result, String error) {
+            g.putChannelInfoResult(result, error);
         }
 
         @Override

@@ -17,10 +17,9 @@ import chatty.util.DateTime;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelInfo;
 import chatty.util.api.ChannelStatus;
+import chatty.util.api.ChannelStatus.StreamTag;
 import chatty.util.api.ResultManager;
 import chatty.util.api.StreamCategory;
-import chatty.util.api.StreamTagManager;
-import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.TwitchApi;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -97,11 +96,8 @@ public class StatusPanel extends JPanel {
     
     private boolean loading;
     private boolean loadingStatus;
-    private boolean loadingTags;
     private String statusLoadError;
-    private String tagsLoadError;
     private String statusPutResult;
-    private String tagsPutResult;
     private long lastPutResult = -1;
     
     public StatusPanel(AdminDialog parent, MainGui main, TwitchApi api) {
@@ -247,10 +243,8 @@ public class StatusPanel extends JPanel {
                 if (e.getSource() == update) {
                     if (currentChannel != null && !currentChannel.isEmpty()) {
                         loadingStatus = true;
-                        loadingTags = true;
                         setLoading(true);
-                        main.putChannelInfo(ChannelStatus.createPut(currentChannel, status.getText(), currentStreamCategory));
-                        putTags();
+                        main.putChannelInfo(ChannelStatus.createPut(currentChannel, status.getText(), currentStreamCategory, currentStreamTags));
                         addCurrentToHistory();
                     }
                 } else if (e.getSource() == reloadButton) {
@@ -269,7 +263,7 @@ public class StatusPanel extends JPanel {
                     statusEdited();
                 } else if (e.getSource() == selectTags) {
                     selectTagsDialog.setLocationRelativeTo(StatusPanel.this);
-                    List<StreamTagManager.StreamTag> result = selectTagsDialog.open(currentStreamTags);
+                    List<StreamTag> result = selectTagsDialog.open(currentStreamTags);
                     if (result != null) {
                         setTags(result);
                         statusEdited();
@@ -365,7 +359,7 @@ public class StatusPanel extends JPanel {
                                 params.put("title", status.getText());
                                 params.put("game", game.getText());
                                 params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
-                                    return ((StreamTag) o).getId();
+                                    return ((StreamTag) o).getName();
                                 }));
                                 params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
                                     return ((StreamTag) o).getDisplayName();
@@ -414,29 +408,12 @@ public class StatusPanel extends JPanel {
             streamTags.setText(null);
         } else {
             for (StreamTag t : tags) {
-                if (t.canUserSet()) {
+                if (t != null && t.isValid()) {
                     currentStreamTags.add(t);
                 }
             }
             streamTags.setText(StringUtil.join(currentStreamTags, ", "));
         }
-    }
-    
-    private void putTags() {
-        final String channel = currentChannel;
-        api.setStreamTags(currentChannel, currentStreamTags, error -> {
-            SwingUtilities.invokeLater(() -> {
-                if (currentChannel.equals(channel)) {
-                    if (error != null) {
-                        tagsPutResult = "Failed setting tags. (" + error + ")";
-                    } else {
-                        tagsPutResult = "Tags updated.";
-                    }
-                    loadingTags = false;
-                    checkLoadingDone();
-                }
-            });
-        });
     }
     
     public void channelStatusReceived(ChannelStatus channelStatus, TwitchApi.RequestResultCode result) {
@@ -445,6 +422,7 @@ public class StatusPanel extends JPanel {
                 status.setText(channelStatus.title);
                 currentStreamCategory = channelStatus.category;
                 game.setText(channelStatus.category.name);
+                setTags(channelStatus.tags);
             }
             else {
                 infoLastLoaded = -1;
@@ -466,7 +444,7 @@ public class StatusPanel extends JPanel {
      * 
      * @param result 
      */
-    public void setPutResult(TwitchApi.RequestResultCode result) {
+    public void setPutResult(TwitchApi.RequestResultCode result, String error) {
         if (result == TwitchApi.RequestResultCode.SUCCESS) {
             statusPutResult = Language.getString("admin.infoUpdated");
         } else {
@@ -478,8 +456,12 @@ public class StatusPanel extends JPanel {
                 }
                 updated.setText("Error: Access denied");
             } else if (result == TwitchApi.RequestResultCode.FAILED) {
-                statusPutResult = "Update: Unknown error";
-                updated.setText("Error: Unknown error");
+                String errorText = "Error: Unknown error";
+                if (!StringUtil.isNullOrEmpty(error)) {
+                    errorText = "Error: "+error;
+                }
+                statusPutResult = errorText;
+                updated.setText(errorText);
             } else if (result == TwitchApi.RequestResultCode.NOT_FOUND) {
                 statusPutResult = "Update: Channel not found.";
                 updated.setText("Error: Channel not found.");
@@ -511,53 +493,28 @@ public class StatusPanel extends JPanel {
      */
     private void getChannelInfo() {
         loadingStatus = true;
-        loadingTags = true;
         statusLoadError = null;
-        tagsLoadError = null;
         
         setLoading(true);
         api.getChannelStatus(currentChannel);
-        final String channel = currentChannel;
-        api.getTagsByStream(currentChannel, (tags, e) -> {
-            SwingUtilities.invokeLater(() -> {
-                // Tags may contain automatically set tags as well
-                if (currentChannel.equals(channel)) {
-                    if (tags == null) {
-                        tagsLoadError = e == null ? "" : e;
-                    } else {
-                        setTags(tags);
-                    }
-                    loadingTags = false;
-                    checkLoadingDone();
-                }
-                if (tags != null) {
-                    for (StreamTag c : tags) {
-                        updateStreamTagName(c);
-                    }
-                }
-            });
-        });
     }
     
     private void checkLoadingDone() {
-        if (!loadingStatus && !loadingTags) {
+        if (!loadingStatus) {
             statusEdited = false;
             updated.setText(Language.getString("admin.infoLoaded.now"));
-            if (statusPutResult != null || tagsPutResult != null) {
-                setPutResult(statusPutResult+" / "+tagsPutResult);
+            if (statusPutResult != null) {
+                setPutResult(statusPutResult);
                 statusPutResult = null;
-                tagsPutResult = null;
             }
-            if (statusLoadError != null || tagsLoadError != null) {
+            if (statusLoadError != null) {
                 infoLastLoaded = -1;
                 String error = getError(statusLoadError);
-                error = StringUtil.append(error, ", ", getError(tagsLoadError));
                 if (error.isEmpty()) {
                     error = "Unkonwn Error";
                 }
                 updated.setText("Loading failed: "+error);
                 statusLoadError = null;
-                tagsLoadError = null;
             } else {
                 infoLastLoaded = System.currentTimeMillis();
             }
@@ -609,26 +566,6 @@ public class StatusPanel extends JPanel {
             if (ago > PUT_RESULT_DELAY) {
                 setLoading(false);
             }
-        }
-    }
-    
-    /**
-     * This should be done from an up-to-date source, like a direct response
-     * from the API. It might not be necessary, but just in case a Tag gets
-     * renamed at some point, at least this way it's possible to change it for
-     * existing status/favorite entries.
-     * 
-     * @param c 
-     */
-    protected void updateStreamTagName(StreamTag c) {
-        if (c == null) {
-            return;
-        }
-        main.getStatusHistory().updateStreamTagName(c);
-        Map<String, String> tags = main.getStreamTagFavorites();
-        if (tags.containsKey(c.getId())) {
-            tags.put(c.getId(), c.getDisplayName());
-            main.setStreamTagFavorites(tags);
         }
     }
     

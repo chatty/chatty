@@ -1,8 +1,8 @@
 
 package chatty.gui.components.admin;
 
+import chatty.util.api.ChannelStatus.StreamTag;
 import chatty.util.api.StreamCategory;
-import chatty.util.api.StreamTagManager.StreamTag;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

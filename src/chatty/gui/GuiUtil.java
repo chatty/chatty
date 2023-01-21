@@ -721,6 +721,15 @@ public class GuiUtil {
         }
     }
     
+    public static JLabel createInputLenghtLabel(JTextComponent comp, int max) {
+        JLabel label = new JLabel();
+        GuiUtil.addChangeListener(comp.getDocument(), e -> {
+            label.setText(String.format("%d/%d", comp.getText().length(), max));
+        });
+        label.setText(String.format("%d/%d", comp.getText().length(), max));
+        return label;
+    }
+    
     /**
      * Set the height of the target component to the height of the source
      * component, by using preferred size.

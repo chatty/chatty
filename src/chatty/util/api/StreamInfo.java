@@ -5,7 +5,6 @@ import chatty.Helper;
 import chatty.util.DateTime;
 import chatty.util.ElapsedTime;
 import chatty.util.StringUtil;
-import chatty.util.api.StreamTagManager.StreamTag;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,7 +54,6 @@ public class StreamInfo {
     private String status = null;
     private StreamCategory game = StreamCategory.EMPTY;
     private int viewers = 0;
-    private List<StreamTag> communities;
     private long startedAt = -1;
     private long startedAtSameAfterOffline;
     private final ElapsedTime lastFollowedUpdate = new ElapsedTime();
@@ -262,7 +260,7 @@ public class StreamInfo {
                 addHistoryItem(System.currentTimeMillis(),
                         new StreamInfoHistoryItem(System.currentTimeMillis(),
                                 viewers, status, game.name,
-                                streamType, getCommunities(),
+                                streamType,
                                 getTimeStarted(), getTimeStartedWithPicnic()));
             }
             result = setUpdateSucceeded(true);
@@ -508,14 +506,6 @@ public class StreamInfo {
             return true;
         }
         return false;
-    }
-    
-    public synchronized void setCommunities(List<StreamTag> communities) {
-        this.communities = communities;
-    }
-    
-    public synchronized List<StreamTag> getCommunities() {
-        return communities;
     }
     
     public synchronized StreamType getStreamType() {

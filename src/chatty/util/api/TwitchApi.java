@@ -7,10 +7,6 @@ import chatty.util.CachedBulkManager;
 import chatty.util.StringUtil;
 import chatty.util.api.BlockedTermsManager.BlockedTerm;
 import chatty.util.api.BlockedTermsManager.BlockedTerms;
-import chatty.util.api.StreamTagManager.StreamTagsListener;
-import chatty.util.api.StreamTagManager.StreamTag;
-import chatty.util.api.StreamTagManager.StreamTagListener;
-import chatty.util.api.StreamTagManager.StreamTagPutListener;
 import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
@@ -53,7 +49,6 @@ public class TwitchApi {
     protected final BadgeManager badgeManager;
     protected final UserIDs userIDs;
     protected final ChannelInfoManager channelInfoManager;
-    protected final StreamTagManager communitiesManager;
     protected final CachedBulkManager<Req, Boolean> m;
     protected final ResultManager resultManager;
     protected final UserInfoManager userInfoManager;
@@ -78,7 +73,6 @@ public class TwitchApi {
         channelInfoManager = new ChannelInfoManager(this, resultListener);
         userIDs = new UserIDs(this);
         userInfoManager = new UserInfoManager(this);
-        communitiesManager = new StreamTagManager();
         emoticonManager2 = new EmoticonManager2(resultListener, requests);
         blockedTermsManager = new BlockedTermsManager(requests);
         m = new CachedBulkManager<>(new CachedBulkManager.Requester<Req, Boolean>() {
@@ -405,7 +399,7 @@ public class TwitchApi {
     public void putChannelInfoNew(ChannelStatus info) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
-                resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+                resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED, "Could not get user id");
             } else {
                 String streamId = r.getId(info.channelLogin);
                 if (!info.hasCategoryId()) {
@@ -420,7 +414,7 @@ public class TwitchApi {
                         }
                         if (!categoryFound) {
                             LOGGER.warning("Stream Category "+info.category.name+" not found");
-                            resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED);
+                            resultListener.putChannelInfoResult(TwitchApi.RequestResultCode.FAILED, "Category not found");
                         }
                     });
                 }
@@ -461,86 +455,6 @@ public class TwitchApi {
     
     public void removeBlockedTerm(BlockedTerm term, Consumer<BlockedTerm> listener) {
         requests.removeBlockedTerm(term, listener);
-    }
-    
-    //-------------
-    // Stream Tags
-    //-------------
-    /**
-     * Gets Community by id, which is guaranteed to contain description/rules.
-     * Cached only, so it doesn't requests it if it's not in the cache.
-     * 
-     * @param id
-     * @return 
-     */
-    public StreamTag getCachedOnlyTagInfo(String id) {
-        return communitiesManager.getCachedByIdWithInfo(id);
-    }
-    
-    public void requestAllTags(StreamTagManager.StreamTagsListener listener) {
-        requests.getAllTags(listener);
-    }
-    
-    /**
-     * Immediately requests the Community for the given id (no caching).
-     * 
-     * @param id
-     * @param listener 
-     */
-    public void getStreamTagById(String id, StreamTagListener listener) {
-        requests.getTagsByIds(new HashSet<>(Arrays.asList(new String[]{id})), (t,e) -> {
-            if (t != null && t.size() == 1) {
-                listener.received(t.iterator().next(), e);
-            } else {
-                listener.received(null, e);
-            }
-        });
-    }
-    
-    public void getInvalidStreamTags(Collection<StreamTag> checkTags, StreamTagsListener listener) {
-        Set<String> ids = new HashSet<>();
-        checkTags.forEach(t -> ids.add(t.getId()));
-        requests.getTagsByIds(ids, (resultTags, e) -> {
-            if (e != null) {
-                listener.received(resultTags, e);
-            } else {
-                Set<StreamTag> invalid = new HashSet<>();
-                // Any found tags that can not be manually set are invalid
-                resultTags.forEach(tag -> {
-                    if (!tag.canUserSet()) {
-                        invalid.add(tag);
-                    }
-                });
-                // Any not found tags are invalid
-                checkTags.forEach(tag -> {
-                    if (!resultTags.contains(tag)) {
-                        invalid.add(tag);
-                    }
-                });
-                listener.received(invalid, e);
-            }
-        });
-    }
-    
-    public void setStreamTags(String channelName, List<StreamTag> tags,
-            StreamTagPutListener listener) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                listener.result("Failed getting user id");
-            } else {
-                requests.setStreamTags(r.getId(channelName), tags, listener);
-            }
-        }, channelName);
-    }
-    
-    public void getTagsByStream(String stream, StreamTagsListener listener) {
-        userIDs.getUserIDsAsap(r -> {
-            if (r.hasError()) {
-                listener.received(null, "Error resolving id.");
-            } else {
-                requests.getTagsByStream(r.getId(stream), listener);
-            }
-        }, stream);
     }
     
     //-------------

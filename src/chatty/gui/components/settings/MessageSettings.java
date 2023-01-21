@@ -424,7 +424,7 @@ public class MessageSettings extends SettingsPanel {
                     if (uptimeDuration < 10*60*1000) {
                         startTimePicnic = startTime;
                     }
-                    StreamInfoHistoryItem item = new StreamInfoHistoryItem(testTime, 0, null, null, StreamInfo.StreamType.LIVE, null, startTime, startTimePicnic);
+                    StreamInfoHistoryItem item = new StreamInfoHistoryItem(testTime, 0, null, null, StreamInfo.StreamType.LIVE, startTime, startTimePicnic);
                     LinkedHashMap<Long, StreamInfoHistoryItem> history = new LinkedHashMap<>();
                     history.put(testTime, item);
                     info.setHistory(history);

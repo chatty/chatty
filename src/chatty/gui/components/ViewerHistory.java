@@ -4,17 +4,12 @@ package chatty.gui.components;
 import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.laf.LaF;
-import chatty.gui.components.menus.ContextMenu;
-import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HistoryContextMenu;
 import chatty.lang.Language;
-import chatty.util.api.StreamTagManager.StreamTag;
-import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
@@ -148,15 +143,9 @@ public class ViewerHistory extends JComponent {
         public long startTime;
         public long picnicStartTime;
         
-        public void add(String title, String game, int viewers, StreamType streamType, StreamTag... communities) {
-            java.util.List<StreamTag> c;
-            if (communities == null) {
-                c = null;
-            } else {
-                c = Arrays.asList(communities);
-            }
+        public void add(String title, String game, int viewers, StreamType streamType) {
             history.put(currentTime, new StreamInfoHistoryItem(currentTime,
-                    viewers, title, game, streamType, c,
+                    viewers, title, game, streamType,
                     startTime, picnicStartTime));
             currentTime += 120*1000;
         }
@@ -168,39 +157,39 @@ public class ViewerHistory extends JComponent {
         if (Chatty.DEBUG) {
             
             HistoryTest test = new HistoryTest();
-            
-            
-            history = new LinkedHashMap<>();
-            StreamTag c1 = new StreamTag("abc", "VarietyStreaming");
-            StreamTag c2 = new StreamTag("abc", "Speedrunning");
-            StreamTag c3 = new StreamTag("abc", "Pro-Audio");
-            
-            test.startTime = -5*60*1000;
-            test.picnicStartTime = -10*60*1000;
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1, c2);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 6, StreamType.LIVE, c1, c2, c3);
-            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1, c2, c3);
-            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
-            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
-            test.add("Pause", "The Elder Scrolls V: Skyrim", 10, StreamType.LIVE, c1);
-            test.add("Pause", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 10, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 14, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
-            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 18, StreamType.WATCH_PARTY, c1);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, (StreamTag) null);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 34, StreamType.LIVE, c2);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);
-            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
-            for (int i=0;i<100;i++) {
-                test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
-            }
+//            
+//            
+//            history = new LinkedHashMap<>();
+//            StreamTag c1 = new StreamTag("abc", "VarietyStreaming");
+//            StreamTag c2 = new StreamTag("abc", "Speedrunning");
+//            StreamTag c3 = new StreamTag("abc", "Pro-Audio");
+//            
+//            test.startTime = -5*60*1000;
+//            test.picnicStartTime = -10*60*1000;
+//            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1, c2);
+//            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
+//            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 4, StreamType.LIVE, c1, c2);
+//            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 6, StreamType.LIVE, c1, c2, c3);
+//            test.add("Leveling Battlemage", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1, c2, c3);
+//            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
+//            test.add("Pause", "The Elder Scrolls V: Skyrim", 5, StreamType.LIVE, c1);
+//            test.add("Pause", "The Elder Scrolls V: Skyrim", 10, StreamType.LIVE, c1);
+//            test.add("Pause", "The Elder Scrolls V: Skyrim", 8, StreamType.LIVE, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 5, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 10, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 14, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 12, StreamType.WATCH_PARTY, c1);
+//            test.add("Diebesgilde", "The Elder Scrolls V: Skyrim", 18, StreamType.WATCH_PARTY, c1);
+//            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 20, StreamType.LIVE, (StreamTag) null);
+//            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 34, StreamType.LIVE, c2);
+//            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 40, StreamType.LIVE, c2);
+//            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 45, StreamType.LIVE, c2);
+//            test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
+//            for (int i=0;i<100;i++) {
+//                test.add("any% attempts", "Tomb Raider III: Adventures of Lara Croft", 59, StreamType.LIVE, c2);
+//            }
             
 //            history.put((long) 1000*1000, new StreamInfoHistoryItem(5,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1000*1000, 1000*1000));
 //            history.put((long) 1120*1000, new StreamInfoHistoryItem(4,"Leveling Battlemage","The Elder Scrolls V: Skyrim", StreamType.LIVE, c1, 1120*1000, 1120*1000));
@@ -484,12 +473,12 @@ public class ViewerHistory extends JComponent {
             }
             int pointSize = POINT_SIZE;
             
-            if (prevItem != null && !Objects.equals(prevItem.getCommunities(), historyObject.getCommunities())) {
-                pointSize += 1;
-                g.fillRect(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
-            } else {
+//            if (prevItem != null && !Objects.equals(prevItem.getCommunities(), historyObject.getCommunities())) {
+//                pointSize += 1;
+//                g.fillRect(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
+//            } else {
                 g.fillOval(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
-            }
+//            }
             
             
             prevItem = historyObject;

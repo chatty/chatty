@@ -19,7 +19,7 @@ public interface TwitchApiResultListener {
     void tokenVerified(String token, TokenInfo tokenInfo);
     void tokenRevoked(String error);
     void runCommercialResult(String stream, String text, RequestResultCode result);
-    void putChannelInfoResult(RequestResultCode result);
+    void putChannelInfoResult(RequestResultCode result, String error);
     void receivedChannelInfo(String channel, ChannelInfo info, RequestResultCode result);
     void receivedChannelStatus(ChannelStatus status, RequestResultCode resultCode);
     void accessDenied();

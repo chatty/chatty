@@ -404,8 +404,8 @@ public class AdminDialog extends JDialog {
         statusPanel.channelStatusReceived(status, result);
     }
     
-    public void setPutResult(RequestResultCode result) {
-        statusPanel.setPutResult(result);
+    public void setPutResult(RequestResultCode result, String error) {
+        statusPanel.setPutResult(result, error);
     }
 
     public void commercialResult(String stream, String text, RequestResultCode result) {

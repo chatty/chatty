@@ -16,7 +16,6 @@ import static chatty.util.DateTime.H;
 import static chatty.util.DateTime.S;
 import chatty.util.MiscUtil;
 import chatty.util.StringUtil;
-import chatty.util.api.StreamTagManager.StreamTag;
 import chatty.util.api.StreamInfo;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfoHistoryItem;
@@ -68,7 +67,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
     
 //    private final LinkLabel communityLabel;
     private final LinkLabel testLabel = new LinkLabel(null, null);
-    private List<StreamTag> communities;
     
     private final JLabel historyLabel = new JLabel(Language.getString("channelInfo.viewers")+":");
     private final ViewerHistory history = new ViewerHistory();
@@ -305,14 +303,12 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             }
             timeStarted = streamInfo.getTimeStarted();
             onlineSince.setText(null);
-            setCommunities(streamInfo.getCommunities());
             updateStreamType(streamInfo.getStreamType());
         }
         else if (streamInfo.isValid()) {
             statusText = Language.getString("channelInfo.streamOffline");
             gameText = "";
             timeStarted = -1;
-            setCommunities(null);
         }
         else {
             statusText = Language.getString("channelInfo.noInfo");
@@ -320,7 +316,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
             timeStarted = -1;
             onlineSince.setText(null);
             onlineSince.setToolTipText(null);
-            setCommunities(null);
         }
         title.setText(statusText);
         game.setText(gameText);
@@ -343,15 +338,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         if (streamInfo == currentStreamInfo) {
             set(streamInfo);
         }
-    }
-    
-    private void setCommunities(List<StreamTag> c) {
-        if (c != null && c.contains(null)) {
-            // This usually shouldn't contain null elements, but just in case
-            c = new ArrayList<>(c);
-            c.removeIf(e -> { return e == null; });
-        }
-        communities = c;
     }
     
     private void updateCommunities() {
@@ -508,7 +494,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         updateStatusLabel();
         updateStreamType(item.getStreamType());
         updateOnlineTime(item);
-        setCommunities(item.getCommunities());
         updateCommunities();
     }
     
@@ -520,7 +505,6 @@ public class ChannelInfoDialog extends JDialog implements ViewerHistoryListener 
         updateStatusLabel();
         updateStreamType(currentStreamInfo.getStreamType());
         updateOnlineTime(currentStreamInfo);
-        setCommunities(currentStreamInfo.getCommunities());
         updateCommunities();
     }
     

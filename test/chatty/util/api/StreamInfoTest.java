@@ -89,7 +89,7 @@ public class StreamInfoTest {
         
         public void add() {
             if (live) {
-                history.put(currentTime, new StreamInfoHistoryItem(currentTime, 0, "test", "game", StreamInfo.StreamType.LIVE, null, startTime, picnicStartTime));
+                history.put(currentTime, new StreamInfoHistoryItem(currentTime, 0, "test", "game", StreamInfo.StreamType.LIVE, startTime, picnicStartTime));
             }
             else {
                 history.put(currentTime, new StreamInfoHistoryItem(currentTime));
