@@ -66,6 +66,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -722,11 +723,24 @@ public class GuiUtil {
     }
     
     public static JLabel createInputLenghtLabel(JTextComponent comp, int max) {
-        JLabel label = new JLabel();
+        JLabel label = new JLabel() {
+            
+            @Override
+            public Dimension getPreferredSize() {
+                int width = getFontMetrics(getFont()).stringWidth(max+"/"+max);
+                Dimension d = super.getPreferredSize();
+                return new Dimension(Math.max(d.width, width), d.height);
+            }
+            
+        };
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        Runnable action = () -> label.setText(String.format("%d/%d", comp.getText().length(), max));
         GuiUtil.addChangeListener(comp.getDocument(), e -> {
-            label.setText(String.format("%d/%d", comp.getText().length(), max));
+            // Set value after change
+            action.run();
         });
-        label.setText(String.format("%d/%d", comp.getText().length(), max));
+        // Set initial value
+        action.run();
         return label;
     }
     

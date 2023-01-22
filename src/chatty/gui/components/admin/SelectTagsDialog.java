@@ -169,7 +169,9 @@ public class SelectTagsDialog extends JDialog {
         gbc = makeGbc(0, 4, 2, 2);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weighty = 1;
-        add(new JScrollPane(list), gbc);
+        JScrollPane listScroll = new JScrollPane(list);
+        listScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        add(listScroll, gbc);
         
         gbc = makeGbc(2, 5, 3, 1);
         gbc.fill = GridBagConstraints.HORIZONTAL;
