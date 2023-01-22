@@ -449,6 +449,16 @@ public class Requests {
         });
     }
     
+    public void shoutout(String streamId, String targetId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/shoutouts",
+                "from_broadcaster_id", streamId,
+                "moderator_id", api.localUserId,
+                "to_broadcaster_id", targetId);
+        newApi.add(url, "POST", api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
     public void setVip(String streamId, String targetId, boolean add, SimpleRequestResultListener listener) {
         String url = makeUrl("https://api.twitch.tv/helix/channels/vips",
                 "broadcaster_id", streamId,

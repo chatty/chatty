@@ -77,6 +77,7 @@ import chatty.util.api.eventsub.EventSubManager;
 import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.ShieldModePayload;
+import chatty.util.api.eventsub.payloads.ShoutoutPayload;
 import chatty.util.api.pubsub.RewardRedeemedMessageData;
 import chatty.util.api.pubsub.Message;
 import chatty.util.api.pubsub.ModeratorActionData;
@@ -691,6 +692,7 @@ public class TwitchClient {
             eventSub.unlistenRaid(room.getStream());
             eventSub.unlistenPoll(room.getStream());
             eventSub.unlistenShield(room.getStream());
+            eventSub.unlistenShoutouts(room.getStream());
         }
     }
     
@@ -2684,6 +2686,26 @@ public class TwitchClient {
                         mode.moderatorLogin,
                         null));
             }
+            if (message.data instanceof ShoutoutPayload) {
+                ShoutoutPayload shoutout = (ShoutoutPayload) message.data;
+                String channel = Helper.toChannel(shoutout.stream);
+                // Message
+                String infoText = String.format("[Shoutout] Was given to %s (@%s)",
+                        shoutout.target_name,
+                        shoutout.moderator_login);
+                MsgTags tags = MsgTags.create("chatty-channel-join", Helper.toChannel(shoutout.target_login));
+                g.printInfo(c.getRoomByChannel(channel), infoText, tags);
+                // Mod Action
+                List<String> args = new ArrayList<>();
+                args.add(shoutout.target_login);
+                handleModAction(new ModeratorActionData(
+                        "", "chat_moderator_actions", "",
+                        shoutout.stream,
+                        "shoutout",
+                        args,
+                        shoutout.moderator_login,
+                        null));
+            }
         }
 
         @Override
@@ -3334,6 +3356,10 @@ public class TwitchClient {
                     && (user.isModerator() || user.isBroadcaster())) {
                 eventSub.listenShield(user.getStream());
                 api.getShieldMode(user.getRoom(), true);
+            }
+            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_SHOUTOUTS.scope)
+                    && (user.isModerator() || user.isBroadcaster())) {
+                eventSub.listenShoutouts(user.getStream());
             }
         }
         

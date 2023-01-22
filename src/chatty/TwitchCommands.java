@@ -159,6 +159,11 @@ public class TwitchCommands {
                 api.deleteMsg(p.getRoom(), null, listener);
             });
         });
+        commands.add("shoutout", "<user>", p -> {
+            userCommand(client, p, p.parsedArgs(1, 1), (user, resultListener) -> {
+                api.shoutout(user, resultListener);
+            }, "");
+        });
         //--------------------------
         // Broadcaster
         //--------------------------

@@ -6,6 +6,7 @@ import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.SubscriptionPayload;
 import chatty.util.api.eventsub.payloads.SessionPayload;
 import chatty.util.api.eventsub.payloads.ShieldModePayload;
+import chatty.util.api.eventsub.payloads.ShoutoutPayload;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -41,6 +42,8 @@ public class Payload {
                 case "channel.shield_mode.begin":
                 case "channel.shield_mode.end":
                     return ShieldModePayload.decode(payload);
+                case "channel.shoutout.create":
+                    return ShoutoutPayload.decode(payload);
             }
         }
         

@@ -559,6 +559,12 @@ public class TwitchApi {
         });
     }
     
+    public void shoutout(User targetUser, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.shoutout(streamId, targetId, listener);
+        });
+    }
+    
     public void setVip(User targetUser, boolean add, SimpleRequestResultListener listener) {
         runWithUserIds(targetUser, listener, (streamId, targetId) -> {
             requests.setVip(streamId, targetId, add, listener);

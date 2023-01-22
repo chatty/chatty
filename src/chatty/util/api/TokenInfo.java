@@ -37,7 +37,8 @@ public class TokenInfo {
                 Scope.BLOCKED_READ,
                 Scope.BLOCKED_MANAGE,
                 Scope.ANNOUNCEMENTS,
-                Scope.MANAGE_SHIELD
+                Scope.MANAGE_SHIELD,
+                Scope.MANAGE_SHOUTOUTS
         ),
         BROADCASTER("broadcaster",
                 Scope.MANAGE_MODS,
@@ -100,7 +101,8 @@ public class TokenInfo {
         MANAGE_SHIELD("moderator:manage:shield_mode", "manageShield"),
         MANAGE_COLOR("user:manage:chat_color", "manageColor"),
         MANAGE_RAIDS("channel:manage:raids", "manageRaids"),
-        MANAGE_POLLS("channel:manage:polls", "managePolls");
+        MANAGE_POLLS("channel:manage:polls", "managePolls"),
+        MANAGE_SHOUTOUTS("moderator:manage:shoutouts", "manageShoutouts");
         
         public String scope;
         public String label;

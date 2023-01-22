@@ -159,6 +159,14 @@ public class EventSubManager {
         removeTopic(new ShieldEnd(username));
     }
     
+    public void listenShoutouts(String username) {
+        addTopic(new ShoutoutCreate(username));
+    }
+    
+    public void unlistenShoutouts(String username) {
+        removeTopic(new ShoutoutCreate(username));
+    }
+    
     /**
      * Adds the given topic to be requested. If the topic is already being
      * listened to, it will still be added, processed and tried to listen to
@@ -502,6 +510,36 @@ public class EventSubManager {
         @Override
         public Topic copy() {
             return new ShieldEnd(stream);
+        }
+
+    }
+    
+    private class ShoutoutCreate extends StreamTopic {
+
+        ShoutoutCreate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.shoutout.create", condition, sessionId, "beta");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ShoutoutCreate(stream);
         }
 
     }
