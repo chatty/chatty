@@ -14,6 +14,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import static java.awt.event.InputEvent.ALT_DOWN_MASK;
@@ -21,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,8 @@ public class SelectTagsDialog extends JDialog {
     private static final ImageIcon ADD_ICON = new ImageIcon(SelectTagsDialog.class.getResource("list-add.png"));
     private static final ImageIcon REMOVE_ICON = new ImageIcon(SelectTagsDialog.class.getResource("list-remove.png"));
     private static final ImageIcon SORT_ICON = new ImageIcon(SelectTagsDialog.class.getResource("sort.png"));
+    private static final ImageIcon EDIT_ICON = new ImageIcon(SelectTagsDialog.class.getResource("edit.png"));
+    private static final ImageIcon WARNING_ICON = new ImageIcon(SelectTagsDialog.class.getResource("warning.png"));
     
     private final MainGui main;
 
@@ -223,7 +227,7 @@ public class SelectTagsDialog extends JDialog {
         });
         
         // Button for currentPanel
-        addButton.setMargin(new Insets(0, 3, 0, 4));
+        GuiUtil.smallButtonInsets(addButton);
         addButton.addActionListener(e -> {
             addSelected();
         });
@@ -292,6 +296,7 @@ public class SelectTagsDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         currentPanel.removeAll();
         gbc.insets = new Insets(2, 2, 2, 2);
+        int minWidth = -1;
         for (int i = 0; i < MAX_TAGS; i++) {
             StreamTag tag;
             if (current.size() > i) {
@@ -304,23 +309,39 @@ public class SelectTagsDialog extends JDialog {
             gbc.anchor = GridBagConstraints.CENTER;
             JLabel label = new JLabel(tag.toString().isEmpty() ? "empty" : tag.toString());
             label.setEnabled(tag.isValid());
+            if (hasSpecialCharacters(tag.getName())) {
+                label.setIcon(WARNING_ICON);
+                label.setHorizontalTextPosition(SwingConstants.LEFT);
+                label.setToolTipText("Tag may not work since it appears to contain special characters.");
+            }
             currentPanel.add(label, gbc);
 
             gbc.gridx = 1;
             gbc.anchor = GridBagConstraints.EAST;
             gbc.weightx = 0;
             currentPanel.add(createRemoveTagButton(tag), gbc);
-            
+
             gbc.gridx = 2;
             gbc.anchor = GridBagConstraints.EAST;
             gbc.weightx = 0;
+            currentPanel.add(createEditButton(tag), gbc);
+
+            gbc.gridx = 3;
+            gbc.anchor = GridBagConstraints.EAST;
+            gbc.weightx = 0;
             currentPanel.add(createMoveButton(tag), gbc);
+            
+            if (minWidth == -1) {
+                minWidth = label.getFontMetrics(label.getFont())
+                        .stringWidth(String.join("", Collections.nCopies(MAX_TAG_LENGTH, "A")));
+            }
         }
         gbc.insets = new Insets(5, 2, 2, 2);
         gbc.gridy++;
         gbc.gridx = 0;
         gbc.gridwidth = 1;
-        gbc.ipadx = 100;
+        // Not guaranteed to be wide enough, but it's just to reduce resizing
+        gbc.ipadx = minWidth - addButton.getPreferredSize().width;
         gbc.anchor = GridBagConstraints.CENTER;
         currentPanel.add(addButton, gbc);
         currentPanel.invalidate();
@@ -383,9 +404,67 @@ public class SelectTagsDialog extends JDialog {
         menu.show(button, 0, button.getHeight());
     }
     
+    private JButton createEditButton(StreamTag tag) {
+        JButton button = new JButton();
+        configureButton(button, EDIT_ICON);
+        button.addActionListener(e -> {
+            String result = StringUtil.removeWhitespace(showTagEditDialog(this, tag));
+            if (!StringUtil.isNullOrEmpty(result)) {
+                int index = current.indexOf(tag);
+                current.remove(tag);
+                current.add(index, new StreamTag(result));
+                updateCurrent();
+            }
+        });
+        button.setToolTipText(Language.getString("admin.tags.button.edit.tip", tag.toString()));
+        button.setEnabled(tag.isValid());
+        return button;
+    }
+
+    private static String showTagEditDialog(Window parent, StreamTag tag) {
+        JDialog dialog = new JDialog(parent);
+        dialog.setTitle(Language.getString("admin.tags.button.edit.tip", tag.toString()));
+        dialog.setLayout(new GridBagLayout());
+        dialog.setModal(true);
+        dialog.setResizable(false);
+        // Input
+        JTextField input = new JTextField(25);
+        input.setText(tag.getName());
+        GuiUtil.installLengthLimitDocumentFilter(input, 25, false);
+        dialog.add(input, GuiUtil.makeGbc(0, 0, 2, 1));
+        dialog.add(GuiUtil.createInputLenghtLabel(input, 25), GuiUtil.makeGbc(2, 0, 1, 1));
+        // Buttons
+        JButton ok = new JButton(Language.getString("dialog.button.ok"));
+        ok.setActionCommand("");
+        JButton cancel = new JButton(Language.getString("dialog.button.cancel"));
+        ok.addActionListener(a -> {
+            dialog.dispose();
+            ok.setActionCommand("save");
+        });
+        input.addActionListener(a -> {
+            dialog.dispose();
+            ok.setActionCommand("save");
+        });
+        cancel.addActionListener(a -> dialog.dispose());
+        GridBagConstraints gbc = GuiUtil.makeGbc(0, 1, 1, 1);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        dialog.add(ok, gbc);
+        dialog.add(cancel, GuiUtil.makeGbc(1, 1, 1, 1));
+        // Finish
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+        if (ok.getActionCommand().equals("save")) {
+            return input.getText();
+        }
+        return null;
+    }
+    
     private void configureButton(JButton button, ImageIcon icon) {
         button.setIcon(icon);
-        button.setMargin(new Insets(0, 0, 0, 0));
+//        button.setMargin(new Insets(0, 0, 0, 0));
+        GuiUtil.smallButtonInsetsSquare(button);
         button.setSize(10, 10);
     }
     
@@ -472,6 +551,15 @@ public class SelectTagsDialog extends JDialog {
             selected = c;
         }
         updateAddButton();
+    }
+    
+    private static boolean hasSpecialCharacters(String text) {
+        for (int codepoint : text.codePoints().toArray()) {
+            if (!Character.isAlphabetic(codepoint) && !Character.isDigit(codepoint)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**

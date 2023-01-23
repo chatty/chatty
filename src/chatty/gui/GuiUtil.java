@@ -103,6 +103,10 @@ public class GuiUtil {
         button.setMargin(LaF.defaultButtonInsets() ? null : new Insets(-1, 10, -1, 10));
     }
     
+    public static void smallButtonInsetsSquare(AbstractButton button) {
+        button.setMargin(LaF.defaultButtonInsets() ? null : new Insets(0, 0, 0, 0));
+    }
+    
     public static void installEscapeCloseOperation(final JDialog dialog) {
         Action closingAction = new AbstractAction() {
 

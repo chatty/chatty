@@ -232,6 +232,9 @@ public class StringUtil {
      * @return 
      */
     public static String removeWhitespace(String input) {
+        if (input == null) {
+            return null;
+        }
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
