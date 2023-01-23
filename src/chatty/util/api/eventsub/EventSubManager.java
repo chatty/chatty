@@ -467,7 +467,7 @@ public class EventSubManager {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("broadcaster_user_id", userId);
                 condition.put("moderator_user_id", localUserId);
-                return Helper.makeAddEventSubBody("channel.shield_mode.begin", condition, sessionId, "beta");
+                return Helper.makeAddEventSubBody("channel.shield_mode.begin", condition, sessionId, "1");
             }
             return null;
         }
@@ -497,7 +497,7 @@ public class EventSubManager {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("broadcaster_user_id", userId);
                 condition.put("moderator_user_id", localUserId);
-                return Helper.makeAddEventSubBody("channel.shield_mode.end", condition, sessionId, "beta");
+                return Helper.makeAddEventSubBody("channel.shield_mode.end", condition, sessionId, "1");
             }
             return null;
         }
