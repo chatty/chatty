@@ -22,7 +22,7 @@ public class OtherBadges {
     
     private static final Logger LOGGER = Logger.getLogger(OtherBadges.class.getName());
     
-    private static final String CACHE_FILE = Chatty.getCacheDirectory()+"other_badges";
+    private static final String CACHE_FILE = Chatty.getPathCreate(Chatty.PathType.CACHE).resolve("other_badges").toString();
     public static final int CACHE_EXPIRES_AFTER = 60*60*24;
     
     public static void requestBadges(OtherBadgesListener listener, boolean forcedRefresh) {

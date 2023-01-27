@@ -85,17 +85,12 @@ public class ChatLog {
      * be created
      */
     private Path createPath() {
-        String pathToUse = Chatty.getUserDataDirectory()+"logs";
-        String customPath = settings.getString("logPath");
-        if (!customPath.isEmpty()) {
-            pathToUse = customPath;
-        }
-        try {
-            return Paths.get(pathToUse);
-        } catch (InvalidPathException ex) {
-            LOGGER.warning("Invalid path for chatlog: "+pathToUse);
+        String invalidPath = Chatty.getInvalidCustomPath(Chatty.PathType.LOGS);
+        if (invalidPath != null) {
+            LOGGER.warning("Invalid path for chatlog: "+invalidPath);
             return null;
         }
+        return Chatty.getPath(Chatty.PathType.LOGS);
     }
     
     /**

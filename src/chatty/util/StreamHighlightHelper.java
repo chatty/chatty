@@ -2,6 +2,7 @@
 package chatty.util;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import chatty.Helper;
 import chatty.Logging;
 import chatty.User;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -47,8 +47,7 @@ public class StreamHighlightHelper {
     public StreamHighlightHelper(Settings settings, TwitchApi api) {
         this.settings = settings;
         this.api = api;
-        // Chatty.getExportDirectory() should create the directory
-        this.file = Paths.get(Chatty.getExportDirectory()+FILE_NAME);
+        this.file = Chatty.getPathCreate(PathType.EXPORT).resolve(FILE_NAME);
     }
     
     /**

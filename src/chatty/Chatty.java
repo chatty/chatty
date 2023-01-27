@@ -8,12 +8,12 @@ import chatty.util.ElapsedTime;
 import chatty.util.LogUtil;
 import chatty.util.MiscUtil;
 import chatty.util.SingleInstance;
-import java.io.File;
-import java.nio.file.Files;
+import chatty.util.settings.Settings;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -89,18 +89,8 @@ public class Chatty {
     private static final ElapsedTime UPTIME = new ElapsedTime(true);
     
     private static final long STARTED_TIME = System.currentTimeMillis();
-
-    /**
-     * Custom Settings directory, either the current working directory if the
-     * -cd parameter was used, or the directory specified with the -d parameter.
-     */
-    private static String settingsDir = null;
     
-    private static String invalidSettingsDir = null;
-    
-    private static String settingsDirInfo = null;
-    
-    private static String originalWdir = null;
+    private final static CustomPaths paths = new CustomPaths();
     
     private static String[] args;
     
@@ -132,35 +122,27 @@ public class Chatty {
         if (parsedArgs.containsKey("appwdir") && !parsedArgs.containsKey("regularwdir")) {
             Path path = Stuff.determineJarPath();
             if (path != null) {
-                originalWdir = System.getProperty("user.dir");
+                paths.setCustom(PathType.WORKING, path, "-appwdir", false);
+                // Afterwards set the property as well in case a path is created
+                // somewhere that relies on it
                 System.setProperty("user.dir", path.getParent().toString());
             }
         }
         
         if (parsedArgs.containsKey("cd")) {
-            settingsDir = System.getProperty("user.dir");
-            settingsDirInfo = "-cd";
+            paths.setCustom(PathType.SETTINGS, System.getProperty("user.dir"), "-cd", false);
         }
         if (parsedArgs.containsKey("portable")) {
             Path path = Stuff.determineJarPath();
             if (path != null) {
-                settingsDir = path.getParent().resolve("portable_settings").toString();
-                settingsDirInfo = "-portable";
+                paths.setCustom(PathType.SETTINGS, path.getParent().resolve("portable_settings"), "-portable", false);
             }
         }
         if (parsedArgs.containsKey("d")) {
-            String dir = parsedArgs.get("d");
-            Path path = Paths.get(dir);
-            if (!path.isAbsolute()) {
-                path = Paths.get(System.getProperty("user.dir"), dir);
-            }
-            if (Files.isDirectory(path)) {
-                settingsDir = path.toString();
-                settingsDirInfo = "-d";
-            }
-            else {
-                invalidSettingsDir = path.toString();
-            }
+            paths.setCustom(PathType.SETTINGS, parsedArgs.get("d"), "-d", true);
+        }
+        if (parsedArgs.containsKey("debugdir")) {
+            paths.setCustom(PathType.DEBUG, parsedArgs.get("debugdir"), "-debugdir", true);
         }
         
         final TwitchClient client = new TwitchClient(parsedArgs);
@@ -225,56 +207,36 @@ public class Chatty {
         return port;
     }
     
-    /**
-     * Gets the directory to save data in (settings, cache) and also creates it
-     * if necessary.
-     *
-     * @return
-     */
-    public static String getUserDataDirectory() {
-        if (settingsDir != null) {
-            return settingsDir + File.separator;
+    //--------------------------
+    // Paths
+    //--------------------------
+    public enum PathType {
+        SETTINGS(() -> Paths.get(System.getProperty("user.home"), ".chatty"), null),
+        WORKING(() -> Paths.get(System.getProperty("user.dir")), null),
+        BACKUP(() -> getUserDataDirectory().resolve("backup"), null),
+        IMAGE(() -> getWorkingDirectory().resolve("img"), "imgPath"),
+        DEBUG(() -> getUserDataDirectory().resolve("debuglogs"), null),
+        CACHE(() -> getUserDataDirectory().resolve("cache"), "cachePath"),
+        SOUND(() -> getWorkingDirectory().resolve("sounds"), "soundsPath"),
+        EXPORT(() -> getUserDataDirectory().resolve("exported"), "exportPath"),
+        LOGS(() -> getUserDataDirectory().resolve("logs"), "logPath");
+        
+        public final Supplier<Path> createDefault;
+        public final String settingName;
+        
+        PathType(Supplier<Path> createDefault, String settingName) {
+            this.createDefault = createDefault;
+            this.settingName = settingName;
         }
-        String dir = System.getProperty("user.home")
-                + File.separator 
-                + ".chatty" 
-                + File.separator;
-        new File(dir).mkdirs();
-        return dir;
+        
     }
     
-    /**
-     * If non-null, a settings directory that didn't exist was given with the
-     * -d commandline option.
-     * 
-     * @return 
-     */
-    public static String getInvalidSettingsDirectory() {
-        return invalidSettingsDir;
+    private static Path getUserDataDirectory() {
+        return paths.getPath(PathType.SETTINGS);
     }
     
-    public static String getSettingsDirectoryInfo() {
-        return settingsDirInfo;
-    }
-    
-    public static String getOriginalWdir() {
-        return originalWdir;
-    }
-    
-    public static String getExportDirectory() {
-        String dir = getUserDataDirectory()+"exported"+File.separator;
-        new File(dir).mkdirs();
-        return dir;
-    }
-    
-    public static String getCacheDirectory() {
-        String dir = getUserDataDirectory()+"cache"+File.separator;
-        new File(dir).mkdirs();
-        return dir;
-    }
-    
-    public static String getWorkingDirectory() {
-        return System.getProperty("user.dir")+File.separator;
+    private static Path getWorkingDirectory() {
+        return paths.getPath(PathType.WORKING);
     }
     
     /**
@@ -282,7 +244,7 @@ public class Chatty {
      * directory. This can be necessary if the "-appwdir" option was used, since
      * setting the "user.dir" property doesn't necessarily affect the regular
      * functions (such as Paths.get("test").toAbsolutePath()).
-     * 
+     *
      * @param path
      * @return The absolute path, or the given path if it is already absolute
      */
@@ -293,26 +255,57 @@ public class Chatty {
         return Paths.get(System.getProperty("user.dir"), path.toString());
     }
     
-    public static String getSoundDirectory() {
-        return getWorkingDirectory()+"sounds"+File.separator;
+    public static Path getPath(PathType type) {
+        return paths.getPath(type);
+    }
+
+    public static Path getPathCreate(PathType type) {
+        return paths.getPathAndCreate(type);
     }
     
-    public static String getImageDirectory() {
-        return getWorkingDirectory()+"img"+File.separator;
+    public static void setCustomPath(PathType type, Path path) {
+        paths.setCustom(type, path, null, true);
     }
     
-    public static String getBackupDirectory() {
-        return getUserDataDirectory()+"backup"+File.separator;
+    public static Path getDefaultPath(PathType type) {
+        return paths.get(type).getDefault();
+    }
+    
+    public static Path getOrigPath(PathType type) {
+        return paths.get(type).getOrig();
+    }
+    
+    public static String getPathDebug() {
+        return paths.getDebugInfo();
+    }
+    
+    public static String getCustomPathInfo(PathType type) {
+        return paths.get(type).getCustomInfo();
+    }
+    
+    public static String getPathInfo(PathType type) {
+        return paths.getInfo(type);
+    }
+
+    public static String getInvalidCustomPath(PathType type) {
+        return paths.get(type).getInvalid();
+    }
+    
+    public static String getInvalidPathInfo() {
+        return paths.getInvalidInfo();
+    }
+    
+    public static void setSettings(Settings settings) {
+        paths.setSettings(settings);
     }
     
     public static String getTempDirectory() {
         return System.getProperty("java.io.tmpdir");
     }
     
-    public static String getDebugLogDirectory() {
-        return getUserDataDirectory()+"debuglogs"+File.separator;
-    }
-    
+    //--------------------------
+    // Other
+    //--------------------------
     public static String chattyVersion() {
         return String.format("Chatty Version %s%s%s",
                 Chatty.VERSION,

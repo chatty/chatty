@@ -21,7 +21,7 @@ public class CheerEmoticonManager extends CachedManager {
     private static final Logger LOGGER = Logger.getLogger(CheerEmoticonManager.class.getName());
 
     public static final int CACHED_EMOTICONS_EXPIRE_AFTER = 60 * 60 * 24;
-    private static final String FILE = Chatty.getCacheDirectory() + "cheer_emoticons";
+    private static final String FILE = Chatty.getPathCreate(Chatty.PathType.CACHE).resolve("cheer_emoticons").toString();
     
     private final TwitchApiResultListener listener;
     

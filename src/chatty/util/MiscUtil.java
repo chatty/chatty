@@ -2,6 +2,7 @@
 package chatty.util;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Graphics;
@@ -55,6 +56,10 @@ public class MiscUtil {
         c.setContents(new StringSelection(text), null);
     }
     
+    public static boolean openFile(Path folder, Component parent) {
+        return openFolder(folder.toFile(), parent);
+    }
+    
     public static boolean openFolder(File folder, Component parent) {
         try {
             Desktop.getDesktop().open(folder);
@@ -73,7 +78,7 @@ public class MiscUtil {
             Desktop.getDesktop().open(file);
         } catch (Exception ex) {
             if (parent != null) {
-                JOptionPane.showMessageDialog(parent, "Opening folder failed.\n"+ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(parent, "Opening failed.\n"+ex.getLocalizedMessage());
             }
             return false;
         }
@@ -87,7 +92,7 @@ public class MiscUtil {
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, new String[]{"Open File", "Cancel"}, 0);
         if (chosenOption == 0) {
-            return openFile(path, parent);
+            return MiscUtil.openFile(path, parent);
         }
         return false;
     }
@@ -321,8 +326,8 @@ public class MiscUtil {
     }
     
     public static boolean exportText(String fileName, String text, boolean append) {
-        Path file = Paths.get(Chatty.getExportDirectory(), fileName).toAbsolutePath().normalize();
-        if (!file.startsWith(Chatty.getExportDirectory())) {
+        Path file = Chatty.getPathCreate(PathType.EXPORT).resolve(fileName).toAbsolutePath().normalize();
+        if (!file.startsWith(Chatty.getPath(PathType.EXPORT))) {
             LOGGER.warning("Invalid filename (may contain '..'?): " + fileName);
             return false;
         }

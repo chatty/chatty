@@ -65,7 +65,7 @@ public class StreamStatusWriter implements SettingChangeListener {
     /**
      * The base path for writing the files.
      */
-    private final String path;
+    private final Path path;
     private final TwitchApi api;
     
     /**
@@ -74,7 +74,7 @@ public class StreamStatusWriter implements SettingChangeListener {
      * @param path The path to use as base for the file to write the info to
      * @param api A reference to the TwitchApi to request info from for testing
      */
-    public StreamStatusWriter(String path, TwitchApi api) {
+    public StreamStatusWriter(Path path, TwitchApi api) {
         this.path = path;
         this.api = api;
     }
@@ -185,7 +185,6 @@ public class StreamStatusWriter implements SettingChangeListener {
      * @param content 
      */
     private void write(String fileName, String content) {
-        Path path = Paths.get(this.path, "exported");
         Path file = path.resolve(fileName);
         try {
             Files.createDirectories(path);

@@ -10,6 +10,7 @@ import chatty.util.commands.CustomCommands;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
 import chatty.ChannelStateManager.ChannelStateListener;
+import chatty.Chatty.PathType;
 import chatty.Commands.CommandParsedArgs;
 import chatty.util.api.TwitchApiResultListener;
 import chatty.util.api.Emoticon;
@@ -104,6 +105,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -226,13 +228,10 @@ public class TwitchClient {
         LOGGER.info(Chatty.chattyVersion());
         LOGGER.info(Helper.systemInfo());
         LOGGER.info("[Working Directory] "+System.getProperty("user.dir")
-                +" [Settings Directory] "+Chatty.getUserDataDirectory()
+                +" [Settings Directory] "+Chatty.getPath(PathType.SETTINGS)
                 +" [Classpath] "+System.getProperty("java.class.path")
                 +" [Launch Options] "+ManagementFactory.getRuntimeMXBean().getInputArguments());
         
-        if (Chatty.getOriginalWdir() != null) {
-            LOGGER.info("Working directory changed due to -appwdir (from: "+Chatty.getOriginalWdir()+")");
-        }
         Helper.checkSLF4JBinding();
         
         // Settings
@@ -246,6 +245,8 @@ public class TwitchClient {
         settingsManager.backupFiles();
         settingsManager.startAutoSave(this);
         
+        Chatty.setSettings(settings);
+        
         Language.setLanguage(settings.getString("language"));
         /**
          * Not sure how much there is that doesn't get affected by a locale
@@ -255,10 +256,15 @@ public class TwitchClient {
         Helper.setDefaultLocale(settings.getString("locale"));
         Helper.setDefaultTimezone(settings.getString("timezone"));
         
+        String pathDebug = Chatty.getPathDebug();
+        if (!StringUtil.isNullOrEmpty(pathDebug)) {
+            LOGGER.info(pathDebug);
+        }
+        
         launchCommand = args.get("cc");
         
-        addressbook = new Addressbook(Chatty.getUserDataDirectory()+"addressbook",
-            Chatty.getUserDataDirectory()+"addressbookImport.txt", settings);
+        addressbook = new Addressbook(Chatty.getPath(PathType.SETTINGS).resolve("addressbook").toString(),
+            Chatty.getPath(PathType.SETTINGS).resolve("addressbookImport.txt").toString(), settings);
         if (!addressbook.loadFromSettings()) {
             addressbook.loadFromFile();
         }
@@ -304,7 +310,7 @@ public class TwitchClient {
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings, api);
         sevenTV = new SevenTV(new EmoteListener(), api);
         
-        ImageCache.setDefaultPath(Paths.get(Chatty.getCacheDirectory()+"img"));
+        ImageCache.setDefaultPath(Chatty.getPathCreate(PathType.CACHE).resolve("img"));
         ImageCache.setCachingEnabled(settings.getBoolean("imageCache"));
         ImageCache.deleteExpiredFiles();
         EmoticonSizeCache.loadFromFile();
@@ -347,7 +353,7 @@ public class TwitchClient {
         
         w = new WhisperManager(new MyWhisperListener(), settings, c, this);
         
-        streamStatusWriter = new StreamStatusWriter(Chatty.getUserDataDirectory(), api);
+        streamStatusWriter = new StreamStatusWriter(Chatty.getPath(PathType.EXPORT), api);
         streamStatusWriter.setSetting(settings.getString("statusWriter"));
         streamStatusWriter.setEnabled(settings.getBoolean("enableStatusWriter"));
         settings.addSettingChangeListener(streamStatusWriter);
@@ -475,7 +481,7 @@ public class TwitchClient {
         
         if (!settingsManager.checkSettingsDir()) {
             warning("The settings directory could not be created, so Chatty"
-                    + " will not function correctly. Make sure that "+Chatty.getUserDataDirectory()
+                    + " will not function correctly. Make sure that "+Chatty.getPath(PathType.SETTINGS)
                     + " is accessible or change it using launch options.");
             return;
         }
@@ -549,6 +555,11 @@ public class TwitchClient {
         String timerCommandLoadResult = timerCommand.loadFromSettings(settings);
         if (timerCommandLoadResult != null) {
             g.printSystem(timerCommandLoadResult);
+        }
+        
+        String customPathsWarning = Chatty.getInvalidPathInfo();
+        if (!customPathsWarning.isEmpty()) {
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(g, customPathsWarning));
         }
     }
     
@@ -1245,16 +1256,16 @@ public class TwitchClient {
         // System/Util
         //------------
         commands.add("dir", p -> {
-            g.printSystem("Settings directory: '"+Chatty.getUserDataDirectory()+"'");
+            g.printSystem("Settings directory: "+Chatty.getPathInfo(PathType.SETTINGS));
         });
         commands.add("wdir", p -> {
-            g.printSystem("Working directory: '"+Chatty.getWorkingDirectory()+"'");
+            g.printSystem("Working directory: "+Chatty.getPathInfo(PathType.WORKING));
         });
         commands.add("opendir", p -> {
-            MiscUtil.openFolder(new File(Chatty.getUserDataDirectory()), g);
+            MiscUtil.openFile(Chatty.getPath(PathType.SETTINGS), g);
         });
         commands.add("openwdir", p -> {
-            MiscUtil.openFolder(new File(Chatty.getWorkingDirectory()), g);
+            MiscUtil.openFile(Chatty.getPath(PathType.WORKING), g);
         });
         commands.add("showJarDir", p -> {
             Path path = Stuff.determineJarPath();
@@ -1275,10 +1286,10 @@ public class TwitchClient {
             }
         });
         commands.add("showBackupDir", p -> {
-            g.printSystem("Backup directory: "+Chatty.getBackupDirectory());
+            g.printSystem("Backup directory: "+Chatty.getPathInfo(PathType.BACKUP));
         });
         commands.add("openBackupDir", p -> {
-            MiscUtil.openFolder(new File(Chatty.getBackupDirectory()), g);
+            MiscUtil.openFile(Chatty.getPathCreate(PathType.BACKUP), g);
         });
         commands.add("showTempDir", p -> {
             g.printSystem("System Temp directory: "+Chatty.getTempDirectory());
@@ -1287,18 +1298,13 @@ public class TwitchClient {
             MiscUtil.openFolder(new File(Chatty.getTempDirectory()), g);
         });
         commands.add("showDebugDir", p -> {
-            g.printSystem("Debug Log Directory: "+Chatty.getDebugLogDirectory());
+            g.printSystem("Debug Log Directory: "+Chatty.getPathInfo(PathType.DEBUG));
         });
         commands.add("openDebugDir", p -> {
-            MiscUtil.openFolder(new File(Chatty.getDebugLogDirectory()), g);
+            MiscUtil.openFile(Chatty.getPath(PathType.DEBUG), g);
         });
         commands.add("showLogDir", p -> {
-            if (chatLog.getPath() != null) {
-                g.printSystem("Chat Log Directory: "+chatLog.getPath().toAbsolutePath().toString());
-            }
-            else {
-                g.printSystem("Invalid Chat Log Directory");
-            }
+            g.printSystem("Chat Log Directory: " + Chatty.getPathInfo(PathType.LOGS));
         });
         commands.add("openLogDir", p -> {
             if (chatLog.getPath() != null) {

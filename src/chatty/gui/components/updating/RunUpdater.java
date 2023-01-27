@@ -62,7 +62,7 @@ public class RunUpdater {
             restartArgs.addAll(Arrays.asList(chattyArgs));
         }
         // Common arguments
-        command.add(makeParam("runChattyWdir", removeBackslashSuffix(Chatty.getWorkingDirectory())));
+        command.add(makeParam("runChattyWdir", removeBackslashSuffix(Chatty.getPath(Chatty.PathType.WORKING).toString())));
         String restartParams = makeJavaParam("runChattyParam", restartArgs);
         if (restartParams == null) {
             throw new IOException("Could not build restart parameters: "

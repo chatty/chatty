@@ -43,10 +43,10 @@ public class Pronouns {
     
     private static final String NOT_FOUND = "__EMPTY_RESULT__";
     
-    private static final String CACHE_FILE1 = Chatty.getCacheDirectory()+"pronouns1";
+    private static final String CACHE_FILE1 = Chatty.getPath(Chatty.PathType.CACHE).resolve("pronouns1").toString();
     public static final int CACHE_EXPIRES_AFTER = 60*60*24;
     
-    private static final Path CACHE_FILE2 = Paths.get(Chatty.getCacheDirectory()+"pronouns2");
+    private static final Path CACHE_FILE2 = Chatty.getPath(Chatty.PathType.CACHE).resolve("pronouns2");
     
     public Pronouns() {
         data = new CachedBulkManager<>(new CachedBulkManager.Requester<String, String>() {

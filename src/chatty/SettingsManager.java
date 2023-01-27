@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.Chatty.PathType;
 import chatty.gui.components.updating.Version;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.WindowStateManager;
@@ -18,8 +19,6 @@ import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -66,8 +65,8 @@ public class SettingsManager {
     
     public SettingsManager() {
         fileManager = new FileManager(
-                Paths.get(Chatty.getUserDataDirectory()),
-                Paths.get(Chatty.getBackupDirectory()));
+                Chatty.getPathCreate(PathType.SETTINGS),
+                Chatty.getPathCreate(PathType.BACKUP));
         FileManager.FileContentInfoProvider fileInfoProvider = new FileManager.FileContentInfoProvider() {
 
             @Override
@@ -148,6 +147,9 @@ public class SettingsManager {
         settings.addBoolean("globalHotkeysEnabled", true);
         settings.addBoolean("inputHistoryMultirowRequireCtrl", true);
         
+        settings.addString("cachePath", "");
+        settings.addString("imgPath", "");
+        settings.addString("exportPath", "");
 
         //===========
         // Connecting
@@ -1035,9 +1037,10 @@ public class SettingsManager {
     }
     
     public void debugSettings() {
-        if (Chatty.getInvalidSettingsDirectory() != null) {
-            LOGGER.warning("Invalid -d dir: "+Chatty.getInvalidSettingsDirectory());
-        }
+//        String invalidPath = Chatty.getInvalidCustomPath(PathType.SETTINGS);
+//        if (invalidPath != null) {
+//            LOGGER.warning("Invalid -d dir: "+invalidPath);
+//        }
 //        StringBuilder result = new StringBuilder("Settings: ");
 //        boolean first = true;
 //        for (String setting : debugSettings) {
@@ -1054,8 +1057,7 @@ public class SettingsManager {
     }
     
     public boolean checkSettingsDir() {
-        Path path = Paths.get(Chatty.getUserDataDirectory());
-        return Files.isDirectory(path);
+        return Files.isDirectory(Chatty.getPath(PathType.SETTINGS));
     }
     
     private void addDefaultHotkey(String version, String id, String hotkey) {

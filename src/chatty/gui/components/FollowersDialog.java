@@ -2,6 +2,7 @@
 package chatty.gui.components;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import chatty.Helper;
 import chatty.User;
 import chatty.gui.DockedDialogHelper;
@@ -584,7 +585,7 @@ public class FollowersDialog extends JDialog {
     private void saveToFile(boolean onlyName) {
         FollowerInfo info = lastValidInfo;
         if (info != null) {
-            Path path = Paths.get(Chatty.getUserDataDirectory(),"exported");
+            Path path = Chatty.getPath(PathType.EXPORT);
             Path file = path.resolve(StringUtil.toLowerCase(type.toString())+".txt");
             try {
                 Files.createDirectories(path);

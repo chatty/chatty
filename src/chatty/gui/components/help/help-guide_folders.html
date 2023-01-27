@@ -32,7 +32,7 @@
     <p>Learn what directories and files Chatty creates/uses.</p>
 
     <h2><a name="files">Files / Directory structure</a></h2>
-    <h3>Settings Directory</h3>
+    <h3><a name="settings-dir">Settings Directory</a></h3>
         <p>The settings directory by default is in your user home directory in a
             subdirectory called <code>.chatty</code>. You can enter the command
             <code>/dir</code> to display and <code>/openDir</code> to open the
@@ -89,7 +89,7 @@
         </tr>
         <tr>
             <td>|-- cache</td>
-            <td class="fileCommentFolder">[Directory]</td>
+            <td class="fileCommentFolder">[Directory] (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- &lt;cache files&gt;</td>
@@ -101,7 +101,7 @@
         </tr>
         <tr>
             <td>|-- debuglogs</td>
-            <td class="fileCommentFolder">[Directory]</td>
+            <td class="fileCommentFolder">[Directory] (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- &lt;debug files&gt;</td>
@@ -113,11 +113,15 @@
         </tr>
         <tr>
             <td>|-- exported</td>
-            <td class="fileCommentFolder">[Directory]</td>
+            <td class="fileCommentFolder">[Directory] (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp;&nbsp;&nbsp;|-&nbsp;stream_highlights.txt</td>
             <td class="fileComment">Recorded <a href="help.html#streamhighlights">stream highlights</a></td>
+        </tr>
+        <tr>
+            <td>|&nbsp;&nbsp;&nbsp;|-&nbsp;&lt;exported text&gt;</td>
+            <td class="fileComment"><a href="help.html#commands-system">/exportText command</a> output</td>
         </tr>
         <tr>
             <td>|</td>
@@ -125,7 +129,7 @@
         </tr>
         <tr>
             <td>|-- logs</td>
-            <td class="fileCommentFolder">[Directory]</td>
+            <td class="fileCommentFolder">[Directory] (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- &lt;log files&gt;</td>
@@ -188,7 +192,7 @@
         </tr>
         <tr>
             <td>|-- sounds</td>
-            <td class="fileCommentFolder">[Folder] Sound files for Notifications</td>
+            <td class="fileCommentFolder">[Folder] Sound files for Notifications (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp; &nbsp;|- &lt;sound&gt;.wav</td>
@@ -196,7 +200,7 @@
         </tr>
         <tr>
             <td>|-- img</td>
-            <td class="fileCommentFolder">[Folder] Image files for Custom Badges</td>
+            <td class="fileCommentFolder">[Folder] Image files for Custom Badges (<a href="#customize">customize</a>)</td>
         </tr>
         <tr>
             <td>|&nbsp;&nbsp;&nbsp;|-&nbsp;&lt;various&nbsp;images&gt;</td>
@@ -207,6 +211,22 @@
     <h3>JAR Location</h3>
     <p>This is where the Chatty.jar is located and is used for loading libraries
     that Chatty uses.</p>
+    
+    <h3><a name="customize">Customize</a></h3>
+    <p>Some folders can be changed:</p>
+    <ul>
+        <li>Settings directory: See <a href="#settings-dir">Settings Directory</a>
+            (this one also affects the default location of some other folders)</li>
+        <li>Debuglogs: Using the <code>-debugdir</code> <a href="help.html#launch">launch option</a></li>
+        <li>Logs: In the Settings under "Log to file"</li>
+        <li>Cache: In the Settings under "Other"</li>
+        <li>Exported files: In the Settings under "Other"</li>
+        <li>Images: In the Settings under "Other"</li>
+        <li>Sounds: In the Settings under "Notifications"</li>
+    </ul>
+    
+    <p>Changing folders usually requires a restart of Chatty to be properly
+        applied.</p>
     
     <h2><a name="uninstall">Uninstall</a></h2>
     <p>To remove Chatty from your computer:</p>

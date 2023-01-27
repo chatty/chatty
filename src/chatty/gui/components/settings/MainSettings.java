@@ -144,15 +144,15 @@ public class MainSettings extends SettingsPanel {
         // Settings
         //==========================
         String dirInfo = Language.getString("settings.directory.default");
-        if (Chatty.getSettingsDirectoryInfo() != null) {
-            dirInfo = Language.getString("settings.directory.argument", Chatty.getSettingsDirectoryInfo());
+        if (Chatty.getCustomPathInfo(Chatty.PathType.SETTINGS) != null) {
+            dirInfo = Language.getString("settings.directory.argument", Chatty.getCustomPathInfo(Chatty.PathType.SETTINGS));
         }
         
         JLabel dirLabel = new JLabel(Language.getString("settings.directory.info", dirInfo));
         dirPanel.add(dirLabel,
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         
-        JTextField dir = new JTextField(Chatty.getUserDataDirectory(), 30);
+        JTextField dir = new JTextField(Chatty.getPath(Chatty.PathType.SETTINGS).toString(), 30);
         dirLabel.setLabelFor(dir);
         dir.setEditable(false);
         gbc = d.makeGbc(0, 1, 1, 1);
@@ -163,15 +163,15 @@ public class MainSettings extends SettingsPanel {
         JButton openDirButton = new JButton(Language.getString("settings.chooseFolder.button.open"));
         GuiUtil.smallButtonInsets(openDirButton);
         openDirButton.addActionListener(e -> {
-            MiscUtil.openFolder(new File(Chatty.getUserDataDirectory()), this);
+            MiscUtil.openFile(Chatty.getPath(Chatty.PathType.SETTINGS), this);
         });
         dirPanel.add(openDirButton, d.makeGbc(1, 1, 1, 1));
         
-        if (Chatty.getInvalidSettingsDirectory() != null) {
+        if (Chatty.getInvalidCustomPath(Chatty.PathType.SETTINGS) != null) {
             dirPanel.add(new JLabel(Language.getString("settings.directory.invalid")),
                     d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
             
-            JTextField invalidDir = new JTextField(Chatty.getInvalidSettingsDirectory(), 30);
+            JTextField invalidDir = new JTextField(Chatty.getInvalidCustomPath(Chatty.PathType.SETTINGS), 30);
             invalidDir.setEditable(false);
             gbc = d.makeGbc(0, 3, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;

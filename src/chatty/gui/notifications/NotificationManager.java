@@ -376,11 +376,8 @@ public class NotificationManager {
         }
         n.setSoundPlayed();
         
-        String soundsPath = Chatty.getSoundDirectory();
-        if (!settings.getString("soundsPath").isEmpty()) {
-            soundsPath = settings.getString("soundsPath");
-        }
-        Path path = Paths.get(soundsPath, n.soundFile);
+        Path soundsPath = Chatty.getPath(Chatty.PathType.SOUND);
+        Path path = soundsPath.resolve(n.soundFile);
         try {
             Sound.play(path, n.soundVolume, "notification_"+n.type.toString(), 0);
         } catch (Exception ex) {

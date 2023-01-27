@@ -993,7 +993,7 @@ public class Emoticons {
         customEmotes.clear();
         customEmotesById.clear();
         
-        Path file = Paths.get(Chatty.getUserDataDirectory()+"emotes.txt");
+        Path file = Chatty.getPath(Chatty.PathType.SETTINGS).resolve("emotes.txt");
         try (BufferedReader r = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
             int countLoaded = 0;
             String line;
@@ -1077,7 +1077,7 @@ public class Emoticons {
                     url = item;
                     if (!item.startsWith("http")) {
                         try {
-                            Path path = Paths.get(Chatty.getUserDataDirectory()).resolve(Paths.get(url));
+                            Path path = Chatty.getPath(Chatty.PathType.SETTINGS).resolve(Paths.get(url));
                             url = path.toUri().toURL().toString();
                         } catch (MalformedURLException ex) {
                             url = null;

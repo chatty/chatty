@@ -217,7 +217,7 @@ public class LogSettings extends SettingsPanel {
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         
-        PathSetting logPath = new PathSetting(d, Chatty.getUserDataDirectory()+"logs");
+        PathSetting logPath = new PathSetting(d, Chatty.getDefaultPath(Chatty.PathType.LOGS).toString());
         d.addStringSetting("logPath", logPath);
         otherSettings.add(new JLabel(Language.getString("settings.log.folder")),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.NORTHWEST));

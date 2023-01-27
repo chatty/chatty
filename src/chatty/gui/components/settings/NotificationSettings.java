@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.notifications.Notification;
@@ -23,6 +24,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -196,7 +198,7 @@ public class NotificationSettings extends SettingsPanel {
         gbc = d.makeGbc(0, 2, 3, 1);
         gbc.insets = new Insets(3,10,3,8);
         
-        PathSetting path = new PathSetting(d, Chatty.getSoundDirectory());
+        PathSetting path = new PathSetting(d, Chatty.getDefaultPath(Chatty.PathType.SOUND).toString());
         d.addStringSetting("soundsPath", path);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
@@ -386,8 +388,15 @@ public class NotificationSettings extends SettingsPanel {
     
     
     protected void scanFiles(boolean showMessage) {
-        
         Path path = soundsPath.getCurrentPath();
+        if (path == null) {
+            if (showMessage) {
+                JOptionPane.showMessageDialog(this, "Invalid sound folder");
+            }
+            editor.setSoundFiles(Chatty.getPath(PathType.SETTINGS), new String[0]);
+            filesResult.setText("Error");
+            return;
+        }
         Debugging.println("scan Files "+path);
         File file = path.toFile();
         File[] files = file.listFiles(new WavFilenameFilter());

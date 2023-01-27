@@ -2,6 +2,7 @@
 package chatty.util.api.usericons;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import chatty.Helper;
 import chatty.util.ImageCache;
 import chatty.util.ImageCache.ImageResult;
@@ -161,7 +162,7 @@ public class UsericonFactory {
                 if (fileName.startsWith("http")) {
                     url = new URL(fileName);
                 } else if (!fileName.trim().isEmpty()) {
-                    Path path = Paths.get(Chatty.getImageDirectory()).resolve(Paths.get(fileName));
+                    Path path = Chatty.getPathCreate(PathType.IMAGE).resolve(Paths.get(fileName));
                     url = path.toUri().toURL();
                 }
             }

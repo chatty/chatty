@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.Chatty;
 import chatty.Helper;
 import chatty.gui.GuiUtil;
 import chatty.lang.Language;
@@ -84,7 +85,11 @@ public class PathSetting extends JPanel implements StringSetting {
                 } else if (e.getSource() == resetButton) {
                     setSettingValue("");
                 } else if (e.getSource() == openButton) {
-                    MiscUtil.openFolder(getCurrentPath().toFile(), parentComponent);
+                    Path path = getCurrentPath();
+                    if (path == null) {
+                        path = Chatty.getPath(Chatty.PathType.SETTINGS);
+                    }
+                    MiscUtil.openFolder(path.toFile(), parentComponent);
                 }
             }
         };
@@ -118,7 +123,9 @@ public class PathSetting extends JPanel implements StringSetting {
                 listener.pathChanged(getCurrentPath());
             }
         }
-        display.setText((value.isEmpty() ? "["+Language.getString("settings.chooseFolder.default")+"] " : "")+getCurrentPathValue());
+        String isInvalid = getCurrentPath() == null ? "[invalid]" : "";
+        String isDefault = value.isEmpty() ? "[" + Language.getString("settings.chooseFolder.default") + "] " : "";
+        display.setText(isDefault + isInvalid + getCurrentPathValue());
     }
     
     /**
@@ -159,7 +166,11 @@ public class PathSetting extends JPanel implements StringSetting {
      * Open a JFileChooser to select a directory to use.
      */
     private void chooseDirectory() {
-        JFileChooser chooser = new JFileChooser(getCurrentPath().toFile());
+        Path path = getCurrentPath();
+        if (path == null) {
+            path = Chatty.getPath(Chatty.PathType.SETTINGS);
+        }
+        JFileChooser chooser = new JFileChooser(path.toFile());
         chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (chooser.showDialog(parentComponent, Language.getString("settings.chooseFolder")) == JFileChooser.APPROVE_OPTION) {

@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.Chatty;
+import chatty.Chatty.PathType;
 import chatty.gui.components.LinkLabel;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -45,6 +46,7 @@ public class OtherSettings extends SettingsPanel {
         JPanel graphics = addTitledPanel("Graphic Settings", 0);
         JPanel updates = addTitledPanel("Updates", 1);
         JPanel other = addTitledPanel("Other", 2);
+        JPanel paths = addTitledPanel("Paths", 3);
 
         //------------------
         // Graphics settings
@@ -142,6 +144,21 @@ public class OtherSettings extends SettingsPanel {
                 SettingsDialog.makeGbcSub(0, 11, 3, 1, GridBagConstraints.WEST));
         
         SettingsUtil.addSubsettings(pronouns1, pronouns2);
+        
+        //--------------------------
+        // Paths
+        //--------------------------
+        PathSetting cachePath = new PathSetting(d, Chatty.getDefaultPath(PathType.CACHE).toString());
+        d.addStringSetting("cachePath", cachePath);
+        SettingsUtil.addLabeledComponent(paths, "cachePath", 0, 0, 1, GridBagConstraints.NORTHEAST, cachePath, true);
+        
+        PathSetting imgPath = new PathSetting(d, Chatty.getDefaultPath(PathType.IMAGE).toString());
+        d.addStringSetting("imgPath", imgPath);
+        SettingsUtil.addLabeledComponent(paths, "imgPath", 0, 1, 1, GridBagConstraints.NORTHEAST, imgPath, true);
+        
+        PathSetting exportPath = new PathSetting(d, Chatty.getDefaultPath(PathType.EXPORT).toString());
+        d.addStringSetting("exportPath", exportPath);
+        SettingsUtil.addLabeledComponent(paths, "exportPath", 0, 2, 1, GridBagConstraints.NORTHEAST, exportPath, true);
     }
     
 }
