@@ -112,7 +112,7 @@ public class BackupManager extends JDialog {
         
         openDirButton = new JButton("Open Backup Directory");
         openDirButton.addActionListener(e -> {
-            MiscUtil.openFolder(fileManager.getBackupPath().toFile(), this);
+            MiscUtil.openFile(fileManager.getBackupPath().toFile(), this);
         });
         gbc = GuiUtil.makeGbc(0, 2, 1, 1);
         gbc.weightx = 2.0;

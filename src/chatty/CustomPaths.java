@@ -67,6 +67,10 @@ public class CustomPaths {
             return false;
         }
     }
+    
+    public void updateFromSettings(PathType type) {
+        loadFromSettings(type);
+    }
 
     public synchronized void setCustom(Chatty.PathType type, Path path, String info, boolean requireExists) {
         ChattyPath p = get(type);

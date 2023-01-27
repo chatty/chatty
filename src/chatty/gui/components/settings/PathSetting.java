@@ -89,7 +89,7 @@ public class PathSetting extends JPanel implements StringSetting {
                     if (path == null) {
                         path = Chatty.getPath(Chatty.PathType.SETTINGS);
                     }
-                    MiscUtil.openFolder(path.toFile(), parentComponent);
+                    MiscUtil.openFile(path.toFile(), parentComponent);
                 }
             }
         };

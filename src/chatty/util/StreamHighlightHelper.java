@@ -202,7 +202,7 @@ public class StreamHighlightHelper {
         if (!file.toFile().exists()) {
             return "Error opening stream highlights file (not present).";
         }
-        if (MiscUtil.openFolder(file.toFile(), null)) {
+        if (MiscUtil.openFile(file.toFile(), null)) {
             return "Opened stream highlights file in default application.";
         }
         return "Error opening stream highlights file.";

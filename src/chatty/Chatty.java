@@ -263,6 +263,10 @@ public class Chatty {
         return paths.getPathAndCreate(type);
     }
     
+    public static void updateCustomPathFromSettings(PathType type) {
+        paths.updateFromSettings(type);
+    }
+    
     public static void setCustomPath(PathType type, Path path) {
         paths.setCustom(type, path, null, true);
     }

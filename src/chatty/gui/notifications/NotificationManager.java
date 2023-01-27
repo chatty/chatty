@@ -376,6 +376,7 @@ public class NotificationManager {
         }
         n.setSoundPlayed();
         
+        Chatty.updateCustomPathFromSettings(Chatty.PathType.SOUND);
         Path soundsPath = Chatty.getPath(Chatty.PathType.SOUND);
         Path path = soundsPath.resolve(n.soundFile);
         try {

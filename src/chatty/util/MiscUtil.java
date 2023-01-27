@@ -22,7 +22,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.StandardOpenOption;
@@ -57,28 +56,19 @@ public class MiscUtil {
     }
     
     public static boolean openFile(Path folder, Component parent) {
-        return openFolder(folder.toFile(), parent);
+        return openFile(folder.toString(), parent);
     }
     
-    public static boolean openFolder(File folder, Component parent) {
-        try {
-            Desktop.getDesktop().open(folder);
-        } catch (Exception ex) {
-            if (parent != null) {
-                JOptionPane.showMessageDialog(parent, "Opening folder failed.\n"+ex.getLocalizedMessage());
-            }
-            return false;
-        }
-        return true;
+    public static boolean openFile(File file, Component parent) {
+        return openFile(file.toString(), parent);
     }
     
-    public static boolean openFile(String path, Component parent) {
+    public static boolean openFile(String file, Component parent) {
         try {
-            File file = new File(path);
-            Desktop.getDesktop().open(file);
+            Desktop.getDesktop().open(new File(file));
         } catch (Exception ex) {
             if (parent != null) {
-                JOptionPane.showMessageDialog(parent, "Opening failed.\n"+ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(parent, "Opening file/folder failed.\n"+ex.getLocalizedMessage());
             }
             return false;
         }

@@ -1279,7 +1279,7 @@ public class TwitchClient {
         commands.add("openJarDir", p -> {
             Path path = Stuff.determineJarPath();
             if (path != null) {
-                MiscUtil.openFolder(path.getParent().toFile(), g);
+                MiscUtil.openFile(path.getParent().toFile(), g);
             }
             else {
                 g.printSystem("JAR directory unknown");
@@ -1295,7 +1295,7 @@ public class TwitchClient {
             g.printSystem("System Temp directory: "+Chatty.getTempDirectory());
         });
         commands.add("openTempDir", p -> {
-            MiscUtil.openFolder(new File(Chatty.getTempDirectory()), g);
+            MiscUtil.openFile(new File(Chatty.getTempDirectory()), g);
         });
         commands.add("showDebugDir", p -> {
             g.printSystem("Debug Log Directory: "+Chatty.getPathInfo(PathType.DEBUG));
@@ -1308,7 +1308,7 @@ public class TwitchClient {
         });
         commands.add("openLogDir", p -> {
             if (chatLog.getPath() != null) {
-                MiscUtil.openFolder(chatLog.getPath().toAbsolutePath().toFile(), g);
+                MiscUtil.openFile(chatLog.getPath().toAbsolutePath().toFile(), g);
             }
             else {
                 g.printSystem("Invalid Chat Log Directory");
@@ -1318,7 +1318,7 @@ public class TwitchClient {
             g.printSystem("JRE directory: "+System.getProperty("java.home"));
         });
         commands.add("openJavaDir", p -> {
-            MiscUtil.openFolder(new File(System.getProperty("java.home")), g);
+            MiscUtil.openFile(new File(System.getProperty("java.home")), g);
         });
         commands.add("showFallbackFontDir", p -> {
             Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
@@ -1327,11 +1327,11 @@ public class TwitchClient {
         commands.add("openFallbackFontDir", p -> {
             Path path = Paths.get(System.getProperty("java.home"), "lib", "fonts", "fallback");
             if (Files.exists(path)) {
-                MiscUtil.openFolder(path.toFile(), g);
+                MiscUtil.openFile(path.toFile(), g);
             } else {
                 path = path.getParent();
                 g.showPopupMessage("Fallback font folder does not exist. Create a folder called 'fallback' in '"+path+"'.");
-                MiscUtil.openFolder(path.toFile(), g);
+                MiscUtil.openFile(path.toFile(), g);
             }
         });
         commands.add("copy", p -> {

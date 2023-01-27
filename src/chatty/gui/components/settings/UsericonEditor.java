@@ -383,7 +383,7 @@ class UsericonEditor extends TableEditor<Usericon> {
                         dialog.setVisible(false);
                     }
                     else if (e.getSource() == openDir) {
-                        MiscUtil.openFolder(Chatty.getPathCreate(PathType.IMAGE).toFile(), dialog);
+                        MiscUtil.openFile(Chatty.getPathCreate(PathType.IMAGE).toFile(), dialog);
                     }
                     else if (e.getSource() == scanDir) {
                         scanFiles();
