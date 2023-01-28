@@ -7,6 +7,7 @@ Twitch specific features.
 * Website: https://chatty.github.io
 * E-Mail: chattyclient@gmail.com
 * Twitter: @ChattyClient (https://twitter.com/ChattyClient)
+* Mastodon: https://mstdn.social/@chattyclient
 * YouTube: https://www.youtube.com/user/chattyclient
 * Discord: https://discord.gg/WTuqGeJ
 
@@ -42,7 +43,7 @@ License Information
 Chatty, as a whole, is released under the GPLv3 or later (see included
 `LICENSE` file).
 
-    Copyright (C) 2017-2022  tduva and contributors
+    Copyright (C) 2017-2023  tduva and contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

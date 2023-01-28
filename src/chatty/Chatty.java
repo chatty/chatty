@@ -122,10 +122,11 @@ public class Chatty {
         if (parsedArgs.containsKey("appwdir") && !parsedArgs.containsKey("regularwdir")) {
             Path path = Stuff.determineJarPath();
             if (path != null) {
+                path = path.getParent();
                 paths.setCustom(PathType.WORKING, path, "-appwdir", false);
                 // Afterwards set the property as well in case a path is created
                 // somewhere that relies on it
-                System.setProperty("user.dir", path.getParent().toString());
+                System.setProperty("user.dir", path.toString());
             }
         }
         
