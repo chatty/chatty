@@ -4,6 +4,7 @@ package chatty.gui.laf;
 import chatty.util.MiscUtil;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatPropertiesLaf;
+import java.awt.Component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -40,7 +41,16 @@ public class FlatLafUtil {
         p.put("TitlePane.useWindowDecorations", String.valueOf(settings.flatStyledWindow));
         p.put("@baseTheme", baseTheme);
         p.putAll(pCustom);
-        FlatPropertiesLaf l = new FlatPropertiesLaf("Customized Flat LaF", p);
+        FlatPropertiesLaf l = new FlatPropertiesLaf("Customized Flat LaF", p) {
+            
+            @Override
+            public void provideErrorFeedback(Component component) {
+                if (settings.errorSound) {
+                    super.provideErrorFeedback(component);
+                }
+            }
+            
+        };
         FlatLaf.setup(l);
     }
     

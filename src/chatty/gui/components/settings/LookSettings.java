@@ -167,6 +167,9 @@ public class LookSettings extends SettingsPanel {
         
         SettingsUtil.addSubsettings(laf, s -> !s.equals("default") && !s.equals("system") && !s.startsWith("flat"), theme, lafNativeWindow);
         
+        generalOptions.add(d.addSimpleBooleanSetting("lafErrorSound"),
+                d.makeGbc(0, 9, 2, 1, GridBagConstraints.WEST));
+        
         //--------------------------
         // Flat Options
         //--------------------------

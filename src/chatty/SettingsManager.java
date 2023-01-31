@@ -212,6 +212,7 @@ public class SettingsManager {
         settings.addBoolean("lafFlatEmbeddedMenu", false);
         settings.addString("lafFlatProperties", "");
         settings.addLong("lafFlatTabs", 3);
+        settings.addBoolean("lafErrorSound", false);
         settings.addString("language", "");
         settings.addString("locale", "");
         settings.addString("timezone", "");

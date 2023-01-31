@@ -15,12 +15,14 @@ import com.jtattoo.plaf.luna.LunaLookAndFeel;
 import com.jtattoo.plaf.mint.MintLookAndFeel;
 import com.jtattoo.plaf.noire.NoireLookAndFeel;
 import java.awt.Color;
+import java.awt.Component;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.Border;
@@ -74,7 +76,7 @@ public class LaF {
             "laf", "lafTheme", "lafScroll", "lafForeground", "lafBackground",
             "lafStyle", "lafCustomTheme", "lafGradient", "lafVariant",
             "lafNativeWindow", "lafFlatProperties", "lafFlatStyledWindow",
-            "lafFlatEmbeddedMenu", "lafFlatTabs"});
+            "lafFlatEmbeddedMenu", "lafFlatTabs", "lafErrorSound"});
         return settingNames.contains(settingName);
     }
     
@@ -95,12 +97,13 @@ public class LaF {
         public final boolean flatEmbeddedMenu;
         public final String flatProperties;
         public final long flatTabs;
+        public final boolean errorSound;
         
         public LaFSettings(String lafCode, String theme, int fontScale,
                            Map<String, String> custom, Color fg, Color bg,
                            String style, int gradient, String scroll, int variant,
                            boolean nativeWindow, boolean styledWindow, boolean embeddedMenu,
-                           String flatProperties, long flatSelectedTab) {
+                           String flatProperties, long flatSelectedTab, boolean errorSound) {
             this.lafCode = lafCode;
             this.theme = theme;
             this.fontScale = fontScale;
@@ -116,6 +119,7 @@ public class LaF {
             this.flatEmbeddedMenu = embeddedMenu;
             this.flatProperties = flatProperties;
             this.flatTabs = flatSelectedTab;
+            this.errorSound = errorSound;
         }
         
         public static LaFSettings fromSettings(Settings settings) {
@@ -132,7 +136,8 @@ public class LaF {
                     settings.getBoolean("lafFlatStyledWindow"),
                     settings.getBoolean("lafFlatEmbeddedMenu"),
                     settings.getString("lafFlatProperties"),
-                    settings.getLong("lafFlatTabs"));
+                    settings.getLong("lafFlatTabs"),
+                    settings.getBoolean("lafErrorSound"));
         }
         
         public static LaFSettings fromSettingsDialog(SettingsDialog d, Settings settings) {
@@ -151,7 +156,8 @@ public class LaF {
                 d.getBooleanSettingValue("lafFlatStyledWindow"),
                 d.getBooleanSettingValue("lafFlatEmbeddedMenu"),
                 d.getStringSetting("lafFlatProperties"),
-                d.getLongSetting("lafFlatTabs"));
+                d.getLongSetting("lafFlatTabs"),
+                d.getBooleanSettingValue("lafErrorSound"));
         }
         
     }
@@ -164,6 +170,7 @@ public class LaF {
         String theme = settings.theme;
         try {
             String laf = null;
+            LookAndFeel lafInstance = null;
             if (lafCode.startsWith(":")) {
                 laf = lafCode.substring(1);
             } else {
@@ -256,12 +263,26 @@ public class LaF {
                         break;
                     default:
                         laf = UIManager.getCrossPlatformLookAndFeelClassName();
+                        if (!settings.errorSound) {
+                            lafInstance = new javax.swing.plaf.metal.MetalLookAndFeel() {
+
+                                @Override
+                                public void provideErrorFeedback(Component component) {
+                                        // Empty
+                                }
+
+                            };
+                        }
                         MetalLookAndFeel.setCurrentTheme(new OceanTheme());
                 }
             }
             
             LOGGER.info("[LAF] Set " + lafCode + "/" + theme + " [" + laf + "]");
-            if (laf != null) {
+            if (lafInstance != null) {
+                UIManager.setLookAndFeel(lafInstance);
+                lafClass = laf;
+            }
+            else if (laf != null) {
                 UIManager.setLookAndFeel(laf);
                 lafClass = laf;
             }
@@ -405,6 +426,7 @@ public class LaF {
         if (settings.nativeWindow) {
             properties.put("windowDecoration", "off");
         }
+        properties.put("provideErrorFeedback", settings.errorSound ? "on" : "off");
         return properties;
     }
     
