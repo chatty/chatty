@@ -1,17 +1,24 @@
-<p>The success message that gets output when adding a Stream Highlight (error messages can not be customized). The following parameters can be used:</p>
+<p>Customizing Stream Highlight output (to file or chat response) uses [help-commands: Custom Command] syntax, with the following parameters:</p>
 
 <ul>
     <li><code>$(added)</code> - "highlight" or "highlight/marker" depending on settings</li>
     <li><code>$(chan)</code> - the channel name</li>
-    <li><code>$(uptime)</code> - the stream uptime</li>
-    <li><code>$(comment)</code> - shortened comment in parentheses</li>
-    <li><code>$(fullcomment)</code> - the entire comment in parentheses</li>
+    <li><code>$(uptime)</code> - the stream uptime or "Stream Time N/A"</li>
+    <li><code>$(timestamp)</code> - a current timestamp (see the [help-commands:func-datetime <code>$datetime()</code> function] for more customization)</li>
+    <li><code>$(comment)</code> - shortened comment in parentheses and chat user</li>
+    <li><code>$(fullcomment)</code> - the entire comment in parentheses and chat user</li>
+    <li><code>$(rawcomment)</code> - the entire comment</li>
     <li><code>$(chatuser)</code> - the user that executed the chat command, or empty if triggered locally</li>
+    <li><code>$(streamtitle)</code> and other [help-commands:stream-identifiers Stream Info] data</li>
 </ul>
 
-<p>Example:</p>
+<p>Examples:</p>
 
 <dl>
+    <dt><code>$(timestamp) $(chan) [$(uptime)] $if(chatuser,[$(chatuser)] )$(rawcomment)$if(addedmarker, (Created Stream Marker\))</code></dt>
+    <dd>Close to what gets written to file by default.</dd>
     <dt><code>Added stream highlight [$(uptime)] $(comment) $if(chatuser,\(This is a mod-only command\))</code></dt>
-    <dd>Compared to default this omits some information, but adds a note about who can run the chat command (but only if actually ran from chat command, note escaping the parentheses as well).</dd>
+    <dd>Compared to default chat response this omits some information, but adds a note about who can run the chat command (but only if actually ran from chat command, note escaping the parentheses as well).</dd>
 </dl>
+
+<p>Note that for customizing the chat response, there may be some error messages that can't be customized.</p>

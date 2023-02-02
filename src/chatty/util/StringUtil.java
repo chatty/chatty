@@ -540,6 +540,17 @@ public class StringUtil {
         return input.split("\r\n|\n|\r");
     }
     
+    public static String quote(String input) {
+        return quote(input, "\"");
+    }
+    
+    public static String quote(String input, String quote) {
+        if (input == null) {
+            return null;
+        }
+        return quote+input.replaceAll(Pattern.quote(quote), quote+quote)+quote;
+    }
+    
     public static final NullComparator NULL_COMPARATOR = new NullComparator();
 
     private static class NullComparator implements Comparator<String> {

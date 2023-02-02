@@ -768,6 +768,9 @@ public class SettingsManager {
         settings.addBoolean("streamHighlightChannelRespond", false);
         settings.addString("streamHighlightResponseMsg", "Added stream $(added) for $(chan) [$(uptime)] $(comment)");
         settings.addBoolean("streamHighlightMarker", true);
+        settings.addBoolean("streamHighlightCustomEnabled", false);
+        settings.addString("streamHighlightCustom", "$(timestamp),$(chan),$(uptime),$(streamgame),$(chatuser),$quote($(rawcomment))");
+        settings.addBoolean("streamHighlightExtra", true);
 
         // Stream Status Writer
         settings.addBoolean("enableStatusWriter", false);

@@ -233,7 +233,7 @@
             <th>Description</th>
         </tr>
         <tr>
-            <th rowspan="9"><em>All</em></th>
+            <th rowspan="4"><em>All</em></th>
             <td><code>chan</code></td>
             <td>The current channel context (without leading #)</td>
         </tr>
@@ -248,27 +248,8 @@
                 without leading #)</td>
         </tr>
         <tr>
-            <td><code>streamstatus</code></td>
-            <td>Stream Status (Title/Game or Offline)</td>
-        </tr>
-        <tr>
-            <td><code>streamtitle</code></td>
-            <td>Stream Title (only if live)</td>
-        </tr>
-        <tr>
-            <td><code>streamgame</code></td>
-            <td>Stream Game (only if live)</td>
-        </tr>
-        <tr>
-            <td><code>streamviewers</code></td>
-            <td>Number of viewers (only if live)</td>
-        </tr>
-        <tr>
-            <td><code>streamuptime</code></td>
-            <td>Stream Uptime (only if live)</td>
-        </tr>
-        <tr>
-            <td colspan="2">The stream info is of the current channel context</td>
+            <td><code>stream...</code></td>
+            <td><a href="#stream-identifiers">Stream Info (e.g. uptime, stream title) identifiers</a></td>
         </tr>
         <!-- User Context Menu -->
         <tr>
@@ -417,6 +398,20 @@
         <li><code>user-channel</code> - The name of the channel the user talked in (with leading # if applicable)</li>
     </ul>
     
+    <h3><a name="stream-identifiers">Stream Info Identifiers</a></h3>
+    <p>The stream info is of the current channel context, if available.</p>
+    <ul>
+        <li><code>streamstatus</code> - Stream Status ("Title (Game)" or "Offline")</li>
+    </ul>
+    <p>Only available if live:</p>
+    <ul>
+        <li><code>streamtitle</code> - Stream Title</li>
+        <li><code>streamgame</code> - Stream Game</li>
+        <li><code>streamviewers</code> - Number of viewers</li>
+        <li><code>streamuptime</code> - Stream Uptime, ignoring short breaks as shown in the Chatty titlebar</li>
+        <li><code>streamuptime2</code> - Actual Stream Uptime as reported by Twitch directly</li>
+    </ul>
+    
     <h3>Pre-defined Parameters Example</h3>
     <dl class="defList">
         <dt><code>/streaminfo /echo [Stream Status] $(streamstatus) [Uptime] $(streamuptime)</code></dt>
@@ -452,6 +447,7 @@
             <a href="#func-lower">$lower()</a>,
             <a href="#func-upper">$upper()</a>,
             <a href="#func-trim">$trim()</a>,
+            <a href="#func-quote">$quote()</a>,
             <a href="#func-replace">$replace()</a>,
             <a href="#func-rand">$rand()</a>,
             <a href="#func-sort">$sort()</a>,
@@ -518,6 +514,14 @@
         <dd>Removes leading and trailing space (U+0020 and lower, using the
             <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#trim%28%29">String.trim()</a> method).</dd>
         <dd><em>Example:</em> <code>$trim( abc )</code> turns into <code>abc</code>.</dd>
+        
+        <dt><a name="func-quote"><code>$quote(&lt;input&gt;,[quote character])</code></a></dt>
+        <dd>Add quotes around the input. Any quotes in input will be doubled.
+            A custom quote character can be specified, by default a double-quote
+            (<code>"</code>) is used.</dd>
+        <dd><em>Example:</em> <code>$quote(51° 28' 38" N)</code> turns into
+            <code>"51° 28' 38"" N"</code> and <code>$quote(51° 28' 38" N,')</code>
+            turns into <code>'51° 28'' 38" N'</code>.</dd>
         
         <dt><a name="func-replace"><code>$replace(&lt;input&gt;,&lt;search&gt;,&lt;replace&gt;,[method])</code></a></dt>
         <dd>Search and replace in text.</dd>

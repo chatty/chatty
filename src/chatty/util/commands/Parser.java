@@ -251,6 +251,9 @@ public class Parser {
         else if (type.equals("j")) {
             return jsonPath(isRequired);
         }
+        else if (type.equals("quote")) {
+            return quote(isRequired);
+        }
         else {
             error("Invalid function '"+type+"'", 0);
             return null;
@@ -558,6 +561,17 @@ public class Parser {
         }
         expect(")");
         return new JsonPathItem(path, def, isRequired);
+    }
+    
+    private Item quote(boolean isRequired) throws ParseException {
+        expect("(");
+        Item input = param();
+        Item quote = null;
+        if (accept(",")) {
+            quote = param();
+        }
+        expect(")");
+        return new Quote(input, quote, isRequired);
     }
     
     private Replacement replacement(boolean isRequired) throws ParseException {

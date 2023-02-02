@@ -158,6 +158,16 @@ public class StringUtilTest {
     }
     
     @Test
+    public void testQuote() {
+        assertEquals("\"abc\"", StringUtil.quote("abc"));
+        assertEquals("'abc'", StringUtil.quote("abc", "'"));
+        assertEquals("''", StringUtil.quote("", "'"));
+        assertEquals("'O''Neill'", StringUtil.quote("O'Neill", "'"));
+        assertEquals("''''", StringUtil.quote("'", "'"));
+        assertEquals("+abc+", StringUtil.quote("abc", "+"));
+    }
+    
+    @Test
     public void testReplaceFunc() {
         assertEquals("a b c ", StringUtil.replaceFunc("~abc~", "~([a-z]+)~", m -> {
             return m.group(1).replaceAll("([a-z])", "$1 ");
