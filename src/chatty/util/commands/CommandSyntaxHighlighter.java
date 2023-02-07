@@ -7,13 +7,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.text.JTextComponent;
 
 /**
  *
@@ -36,43 +34,6 @@ public class CommandSyntaxHighlighter extends SyntaxHighlighter {
             items.removeIf(item -> item.start >= errorOffset2 || item.end >= errorOffset2);
             add(errorOffset, errorOffset + 1, Type.ERROR);
         }
-//        CustomCommand command = CustomCommand.parse(input);
-//        Map<Integer, String> parts = command.literals.getParts();
-//        fillIndices(parts, input);
-//        if (command.hasError()) {
-//            int errorOffset = command.getErrorOffset() >= input.length() ? input.length() - 1 : command.getErrorOffset();
-//            items.removeIf(item -> item.start >= errorOffset || item.end >= errorOffset);
-//            add(errorOffset, errorOffset + 1, Type.ERROR);
-//        }
-    }
-    
-    public List<chatty.util.commands.Item> fillIndices(Map<Integer, String> parts, String input) {
-        List<chatty.util.commands.Item> result = new ArrayList<>();
-        int lastStart = -1;
-        int lastEnd = -1;
-        for (Map.Entry<Integer, String> part : parts.entrySet()) {
-            int start = part.getKey();
-            int end = part.getKey() + part.getValue().length();
-//            System.out.println(start+" "+end+" "+part.getValue());
-            if (lastStart == -1) {
-                if (start > 0) {
-                    add(0, start);
-                }
-            }
-            else {
-                add(lastEnd, start);
-            }
-            lastStart = start;
-            lastEnd = end;
-        }
-//        System.out.println(lastEnd);
-        if (lastEnd != -1 && lastEnd < input.length()) {
-            add(lastEnd, input.length());
-        }
-        if (lastEnd == -1) {
-            add(0, input.length());
-        }
-        return result;
     }
     
     public static void main(String[] args) {
@@ -87,7 +48,7 @@ public class CommandSyntaxHighlighter extends SyntaxHighlighter {
         System.out.println(ColorCorrectionNew.matchLightness(Color.BLUE, Color.BLACK, 0.8f));
     }
     
-    private static JTextComponent create(Color foreground, Color background) {
+    private static JComponent create(Color foreground, Color background) {
         JTextArea text = new JTextArea();
         text.setForeground(foreground);
         text.setBackground(background);
@@ -96,8 +57,8 @@ public class CommandSyntaxHighlighter extends SyntaxHighlighter {
         text.setRows(3);
         text.setFont(Font.decode("Monospaced"));
         SyntaxHighlighter.install(text, new CommandSyntaxHighlighter());
-        text.setText("$(username) $1- $\"abc\" \\$(username) $replace($1-,$'abc',replace,reg)\n\n");
-        return text;
+        text.setText("$(username) $1- $\"abc\" \\$(username) $replace($1-,$'abc',replace,reg)");
+        return new JScrollPane(text);
     }
 
 }

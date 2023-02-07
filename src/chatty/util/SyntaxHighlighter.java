@@ -192,6 +192,7 @@ public abstract class SyntaxHighlighter {
     
     public static Runnable install(JTextComponent comp, SyntaxHighlighter hl) {
         Highlighter.HighlightPainter highlightPainterError = new MyHighlightPainter();
+        // For selected color to the shown, although might cause issues
         ((DefaultHighlighter)comp.getHighlighter()).setDrawsLayeredHighlights(false);
         Runnable update = () -> {
             comp.getHighlighter().removeAllHighlights();
@@ -218,6 +219,8 @@ public abstract class SyntaxHighlighter {
                     // Ignore
                 }
             }
+            // Didn't always repaint highlights on other lines
+            comp.repaint();
         };
         addChangeListener(comp.getDocument(), e -> {
             update.run();

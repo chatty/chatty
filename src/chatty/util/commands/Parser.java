@@ -653,7 +653,10 @@ public class Parser {
                 b.append(reader.next());
             }
         }
-        addHl("\\");
+        // The last character isn't necessarily a closing quote
+        if (reader.last().matches(QUOTES)) {
+            addHl("\\");
+        }
         // Ending quote would have already been consumed
         return new Literal(b.toString());
     }
