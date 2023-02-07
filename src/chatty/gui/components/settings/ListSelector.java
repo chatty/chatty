@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.components.LinkLabelListener;
 import chatty.gui.components.settings.Editor.Tester;
 import chatty.lang.Language;
+import chatty.util.SyntaxHighlighter;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -57,6 +58,7 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     private final Supplier<Editor> allEditorCreator;
     private LinkLabelListener linkLabelListener;
     private Tester tester;
+    private SyntaxHighlighter syntaxHighlighter;
     
     private Consumer<List<String>> changeListener;
 
@@ -240,6 +242,9 @@ public class ListSelector extends JPanel implements ListSetting<String> {
         if (editor == null) {
             editor = editorCreator.get();
             editor.setLinkLabelListener(linkLabelListener);
+            if (editor instanceof Editor) {
+                ((Editor) editor).setSyntaxHighlighter(syntaxHighlighter);
+            }
             setTester(tester);
         }
         return editor;
@@ -435,6 +440,16 @@ public class ListSelector extends JPanel implements ListSetting<String> {
     
     public void setDataFormatter(DataFormatter<String> formatter) {
         this.formatter = formatter;
+    }
+    
+    public void setSyntaxHighlighter(SyntaxHighlighter highlighter) {
+        if (highlighter == null) {
+            return;
+        }
+        this.syntaxHighlighter = highlighter;
+        if (editor instanceof Editor) {
+            ((Editor) editor).setSyntaxHighlighter(highlighter);
+        }
     }
     
     /**

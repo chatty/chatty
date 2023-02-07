@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.CommandSettings.showCommandInfoPopup;
 import chatty.lang.Language;
+import chatty.util.commands.CommandSyntaxHighlighter;
 import chatty.util.commands.CustomCommand;
 import chatty.util.hotkeys.Hotkey;
 import java.awt.Color;
@@ -313,6 +314,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             anonymousCustomCommand.setChangeListener(e -> {
                 updateButtons();
             });
+            anonymousCustomCommand.setSyntaxHighlighter(new CommandSyntaxHighlighter());
             
             dialog = new JDialog(owner);
             dialog.setTitle("Edit Item");

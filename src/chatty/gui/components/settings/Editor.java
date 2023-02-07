@@ -6,6 +6,7 @@ import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
 import chatty.util.LineNumbers;
+import chatty.util.SyntaxHighlighter;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -52,11 +54,14 @@ public class Editor implements StringEditor {
     private final JButton cancelButton = new JButton(Language.getString("dialog.button.cancel"));
     private final JButton testButton = new JButton(Language.getString("dialog.button.test"));
     private final JToggleButton toggleInfoButton = new JToggleButton(Language.getString("dialog.button.help"));
+    private final JCheckBox toggleHighlighting = new JCheckBox("Syntax Highlighting");
     private final Window parent;
     private final LinkLabel info;
     
     private DataFormatter<String> formatter;
     private Tester tester;
+    private SyntaxHighlighter highlighter;
+    private Runnable highlighterUpdate;
     private boolean allowEmpty;
     private boolean showInfoByDefault;
 
@@ -79,12 +84,12 @@ public class Editor implements StringEditor {
         gbc.insets = new Insets(5, 5, 5, 5);
         dialog.add(label, gbc);
         
-        gbc = GuiUtil.makeGbc(2, 0, 1, 1, GridBagConstraints.EAST);
+        gbc = GuiUtil.makeGbc(3, 0, 1, 1, GridBagConstraints.EAST);
         GuiUtil.smallButtonInsets(testButton);
         dialog.add(testButton, gbc);
         testButton.setVisible(false);
 
-        gbc = GuiUtil.makeGbc(0, 1, 3, 1);
+        gbc = GuiUtil.makeGbc(0, 1, 4, 1);
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -102,7 +107,7 @@ public class Editor implements StringEditor {
         scrollpane = new JScrollPane(input);
         dialog.add(scrollpane, gbc);
         
-        gbc = GuiUtil.makeGbc(0, 4, 3, 1);
+        gbc = GuiUtil.makeGbc(0, 4, 4, 1);
         gbc.insets = new Insets(5, 8, 8, 8);
         gbc.anchor = GridBagConstraints.CENTER;
         info = new LinkLabel("", null);
@@ -117,11 +122,14 @@ public class Editor implements StringEditor {
         dialog.add(toggleInfoButton, gbc);
         
         gbc = GuiUtil.makeGbc(1, 3, 1, 1);
+        dialog.add(toggleHighlighting, gbc);
+        
+        gbc = GuiUtil.makeGbc(2, 3, 1, 1);
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 1;
         dialog.add(okButton, gbc);
 
-        gbc = GuiUtil.makeGbc(2, 3, 1, 1);
+        gbc = GuiUtil.makeGbc(3, 3, 1, 1);
         dialog.add(cancelButton, gbc);
 
         ActionListener buttonAction = new ButtonAction();
@@ -129,6 +137,19 @@ public class Editor implements StringEditor {
         cancelButton.addActionListener(buttonAction);
         toggleInfoButton.addActionListener(buttonAction);
         testButton.addActionListener(buttonAction);
+        
+        toggleHighlighting.setVisible(false);
+        toggleHighlighting.setSelected(true);
+        toggleHighlighting.addItemListener(e -> {
+            if (toggleHighlighting.isSelected()) {
+                highlighter.setEnabled(true);
+                highlighterUpdate.run();
+            }
+            else {
+                input.getHighlighter().removeAllHighlights();
+                highlighter.setEnabled(false);
+            }
+        });
 
         okButton.setMnemonic(KeyEvent.VK_S);
         cancelButton.setMnemonic(KeyEvent.VK_C);
@@ -202,6 +223,14 @@ public class Editor implements StringEditor {
     public void setTester(Tester tester) {
         this.tester = tester;
         testButton.setVisible(tester != null);
+    }
+    
+    public void setSyntaxHighlighter(SyntaxHighlighter highlighter) {
+        if (this.highlighter == null && highlighter != null) {
+            this.highlighter = highlighter;
+            this.highlighterUpdate = SyntaxHighlighter.install(input, highlighter);
+            toggleHighlighting.setVisible(true);
+        }
     }
     
     public void setLinkLabelListener(LinkLabelListener listener) {

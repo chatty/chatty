@@ -4,6 +4,7 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.LinkLabelListener;
 import chatty.lang.Language;
+import chatty.util.SyntaxHighlighter;
 import java.awt.BorderLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -27,6 +28,7 @@ public class EditorStringSetting extends JPanel implements StringSetting {
     private final JButton editButton;
     private LinkLabelListener linkLabelListener;
     private boolean showInfoByDefault;
+    private SyntaxHighlighter syntaxHighlighter;
     
     private String value;
     private String info;
@@ -68,6 +70,9 @@ public class EditorStringSetting extends JPanel implements StringSetting {
                     editor = editorCreator.get();
                     setLinkLabelListener(linkLabelListener);
                     setShowInfoByDefault(showInfoByDefault);
+                    if (editor instanceof Editor) {
+                        ((Editor) editor).setSyntaxHighlighter(syntaxHighlighter);
+                    }
                 }
                 String result = editor.showDialog(title, value, info);
                 if (result != null) {
@@ -102,6 +107,13 @@ public class EditorStringSetting extends JPanel implements StringSetting {
         }
         else {
             linkLabelListener = listener;
+        }
+    }
+    
+    public void setSyntaxHighlighter(SyntaxHighlighter hl) {
+        this.syntaxHighlighter = hl;
+        if (editor instanceof Editor) {
+            ((Editor) editor).setSyntaxHighlighter(syntaxHighlighter);
         }
     }
     

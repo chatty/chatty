@@ -4,6 +4,8 @@ package chatty.gui.components.settings;
 import chatty.gui.Highlighter;
 import chatty.gui.components.LinkLabel;
 import chatty.lang.Language;
+import chatty.util.SyntaxHighlighter;
+import chatty.util.commands.CommandSyntaxHighlighter;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -55,6 +57,19 @@ public class MatchingPresets extends LazyDialog {
             setting.setTester(CommandSettings.createCommandTester());
             setting.setChangeListener(value -> {
                 HighlighterTester.testPresets = Highlighter.HighlightItem.makePresets(value);
+            });
+            setting.setSyntaxHighlighter(new CommandSyntaxHighlighter() {
+                
+                @Override
+                public void update(String input) {
+                    if (input.startsWith("_")) {
+                        super.update(input);
+                    }
+                    else {
+                        super.update("");
+                    }
+                }
+                
             });
             add(setting, gbc);
 

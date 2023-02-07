@@ -12,6 +12,7 @@ import chatty.gui.components.menus.TestContextMenu;
 import chatty.gui.components.userinfo.UserInfoDialog;
 import chatty.gui.components.userinfo.UserInfoListener;
 import chatty.util.StringUtil;
+import chatty.util.commands.CommandSyntaxHighlighter;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.CustomCommands;
 import chatty.util.commands.Parameters;
@@ -67,6 +68,7 @@ public class CommandSettings extends SettingsPanel {
         items.setTester(createCommandTester());
         items.setInfo(INFO_COMMANDS);
         items.setInfoLinkLabelListener(d.getLinkLabelListener());
+        items.setSyntaxHighlighter(new CommandSyntaxHighlighter());
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -175,9 +177,9 @@ public class CommandSettings extends SettingsPanel {
             message += "No command.";
         } else if (command.hasError()) {
             message += "<p style='font-family:monospaced;'>"
-                    + "Error: "+formatCommandInfo(command.getError())+"</p>";
+                    + "Error: "+formatCommandInfo(command.getError(), true)+"</p>";
         } else {
-            message += formatCommandInfo(command.toString());
+            message += formatCommandInfo(command.toString(), false);
         }
         String name = "";
         String chan = "";
@@ -190,11 +192,19 @@ public class CommandSettings extends SettingsPanel {
     }
     
     public static String formatCommandInfo(String input) {
+        return formatCommandInfo(input, false);
+    }
+    
+    public static String formatCommandInfo(String input, boolean singleLine) {
         if (input == null) {
             return "<em>Empty</em>";
         }
-        return Helper.htmlspecialchars_encode(input)
-                .replace("\n", "<br>").replace(" ", "&nbsp;");
+        String result = Helper.htmlspecialchars_encode(input)
+                .replace("\n", "<br>");
+        if (singleLine) {
+            result = result.replace(" ", "&nbsp;");
+        }
+        return result;
     }
     
 }

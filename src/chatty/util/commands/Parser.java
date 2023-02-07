@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.SyntaxHighlighter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,6 +31,13 @@ public class Parser {
         this.escape = escape;
     }
     
+    private SyntaxHighlighter syntaxHighlighter;
+    
+    Items parse(SyntaxHighlighter syntaxHighlighter) throws ParseException {
+        this.syntaxHighlighter = syntaxHighlighter;
+        return parse();
+    }
+    
     /**
      * Parses a Custom Command.
      * 
@@ -43,7 +51,7 @@ public class Parser {
         if (special.equals(escape) && !escape.isEmpty()) {
             error("Special and escape must not be equal", 0);
         }
-        return parse(null);
+        return parse((String) null);
     }
     
     /**
@@ -80,6 +88,34 @@ public class Parser {
         return items;
     }
     
+    private void startHl(int offset, SyntaxHighlighter.Type type) {
+        if (syntaxHighlighter != null) {
+            syntaxHighlighter.start(reader.pos() + offset, type);
+        }
+    }
+    
+    private void endHl() {
+        if (syntaxHighlighter != null) {
+            syntaxHighlighter.end(reader.pos() + 1);
+        }
+    }
+    
+    private void addHl(String character) {
+        if (syntaxHighlighter == null || "$".contains(character)) {
+            return;
+        }
+        
+        if ("-".contains(character)) {
+            syntaxHighlighter.add(reader.pos(), reader.pos() + 1, SyntaxHighlighter.Type.IDENTIFIER);
+        }
+        else if (character.equals("\\")) {
+            syntaxHighlighter.add(reader.pos(), reader.pos() + 1, SyntaxHighlighter.Type.ESCAPE);
+        }
+        else {
+            syntaxHighlighter.add(reader.pos(), reader.pos() + 1, SyntaxHighlighter.Type.REGULAR2);
+        }
+    }
+    
     /**
      * If the parser encountered something unexpected, this will create an error
      * message and throw a ParseException.
@@ -90,7 +126,7 @@ public class Parser {
     private void error(String message, int offset) throws ParseException {
         throw new ParseException(message, reader.pos() + offset);
     }
-
+    
     /**
      * A single character that the parser can accept as next character, but
      * won't throw an error if it's not there. If the character is indeed there
@@ -102,6 +138,7 @@ public class Parser {
     private boolean accept(String character) {
         if (reader.hasNext() && reader.peek().equals(character)) {
             reader.next();
+            addHl(character);
             return true;
         }
         return false;
@@ -129,6 +166,7 @@ public class Parser {
         if (!reader.hasNext() || !reader.next().equals(character)) {
             error("Expected '"+character+"'", 0);
         }
+        addHl(character);
     }
     
     /**
@@ -170,6 +208,7 @@ public class Parser {
     private Item specialThing() throws ParseException {
         String quote;
         if ((quote = acceptMatch(QUOTES)) != null) {
+            startHl(-1, SyntaxHighlighter.Type.ESCAPE);
             return literal(quote);
         }
         // Not quite sure yet how this feature should work exactly
@@ -177,8 +216,10 @@ public class Parser {
 //        if (escapeCharacter.length() == 1) {
 //            return changedEscapeCharacter(escapeCharacter);
 //        }
+        startHl(0, SyntaxHighlighter.Type.REGULAR);
         boolean isRequired = accept(special);
         String type = functionName();
+        endHl();
         if (type.isEmpty()) {
             return replacement(isRequired);
         }
@@ -266,6 +307,7 @@ public class Parser {
      * @return 
      */
     private Item identifier() throws ParseException {
+        startHl(1, SyntaxHighlighter.Type.IDENTIFIER);
         String ref = readAll("[a-zA-Z0-9-_]");
         if (ref.isEmpty()) {
             error("Expected identifier", 1);
@@ -277,14 +319,18 @@ public class Parser {
                 error("Invalid numeric identifier 0", 0);
             }
             boolean toEnd = m.group(2) != null;
+            endHl();
             return new RangeIdentifier(index, toEnd);
         } else {
+            endHl();
             return new Identifier(ref);
         }
     }
     
     private Item tinyIdentifier() throws ParseException {
+        startHl(1, SyntaxHighlighter.Type.IDENTIFIER);
         String ref = readOne("[0-9]");
+        endHl();
         if (ref.isEmpty()) {
             error("Expected numeric identifier", 1);
         }
@@ -592,6 +638,7 @@ public class Parser {
     
     private Item literal(String quote) throws ParseException {
         StringBuilder b = new StringBuilder();
+        endHl();
         while (reader.hasNext()) {
             if (reader.peek().equals(quote)) {
                 reader.next();
@@ -606,6 +653,7 @@ public class Parser {
                 b.append(reader.next());
             }
         }
+        addHl("\\");
         // Ending quote would have already been consumed
         return new Literal(b.toString());
     }
