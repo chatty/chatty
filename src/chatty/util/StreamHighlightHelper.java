@@ -166,6 +166,13 @@ public class StreamHighlightHelper {
         
         if (settings.getBoolean("streamHighlightCustomEnabled")) {
             CustomCommand cc = CustomCommand.parse(settings.getString("streamHighlightCustom"));
+            if (cc.hasError()) {
+                /**
+                 * Fail in case of error (don't fall back to default because the
+                 * user wouldn't immediately notice what is written to file).
+                 */
+                return "Failed adding stream highlight (error in custom format)."+createdMarkerText;
+            }
             String ccResult = cc.replace(params);
             if (StringUtil.isNullOrEmpty(ccResult)) {
                 return "Failed adding stream highlight (empty)."+createdMarkerText;
@@ -188,9 +195,16 @@ public class StreamHighlightHelper {
                 // Command
                 String template = settings.getString("streamHighlightResponseMsg");
                 CustomCommand cc = CustomCommand.parse(template);
-                String result = cc.replace(params);
+                String result = null;
+                if (!cc.hasError()) {
+                    result = cc.replace(params);
+                }
                 if (StringUtil.isNullOrEmpty(StringUtil.trim(result))) {
-                    // Use default in case of error or empty command
+                    /**
+                     * Use default in case of error or empty command (the user
+                     * should notice the result in chat, so it should be fine to
+                     * fall back to default).
+                     */
                     result = CustomCommand.parse(settings.getStringDefault("streamHighlightResponseMsg")).replace(params);
                 }
                 return result;
