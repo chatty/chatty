@@ -204,6 +204,10 @@ public class CommandSettings extends SettingsPanel {
         if (singleLine) {
             result = result.replace(" ", "&nbsp;");
         }
+        else {
+            // Preserve display of several spaces in a row
+            result = result.replace("  ", "&nbsp;&nbsp;");
+        }
         return result;
     }
     
