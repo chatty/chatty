@@ -215,19 +215,23 @@ public class CachedBulkManager<Key,Item> {
                 if (!shouldRemove(entry.getValue())) {
                     JSONArray item = new JSONArray();
                     item.add(entry.getValue().valueTimestamp);
-                    item.add(itemToString.apply(entry.getKey(), entry.getValue().value));
-                    items.add(item);
+                    String value = itemToString.apply(entry.getKey(), entry.getValue().value);
+                    if (value != null) {
+                        item.add(value);
+                        items.add(item);
+                    }
                 }
             }
             data.put("items", items);
             
             try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
                 writer.write(data.toJSONString());
-                LOGGER.info(debugPrefix + "Saved.");
+                LOGGER.info(String.format("%sSaved to %s (%d/%d items)",
+                        debugPrefix, file, items.size(), cache.size()));
             }
             catch (IOException ex) {
-                LOGGER.warning(String.format("%sError saving cache to file: %s",
-                        debugPrefix, ex));
+                LOGGER.warning(String.format("%sError saving cache to %s: %s",
+                        debugPrefix, file, ex));
             }
         }
     }
@@ -251,12 +255,12 @@ public class CachedBulkManager<Key,Item> {
                         }
                     }
                 }
-                LOGGER.info(String.format("%sLoaded from file (now %d cached items)",
-                        debugPrefix, cache.size()));
+                LOGGER.info(String.format("%sLoaded from %s (%d/%d items)",
+                        debugPrefix, file, cache.size(), items.size()));
             }
             catch (Exception ex) {
-                LOGGER.warning(String.format("%sError loading cache from file: %s",
-                        debugPrefix, ex));
+                LOGGER.warning(String.format("%sError loading cache from %s: %s",
+                        debugPrefix, file, ex));
             }
         }
     }

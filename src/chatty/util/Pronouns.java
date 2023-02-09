@@ -90,6 +90,9 @@ public class Pronouns {
     
     public void saveCache() {
         data.saveCacheToFile(CACHE_FILE2, (key, item) -> {
+            if (NOT_FOUND.equals(item)) {
+                return null;
+            }
             return key+","+item;
         });
     }
