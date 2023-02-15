@@ -460,7 +460,7 @@ public class LinkController extends MouseAdapter {
         }
         else if (link != null) {
             if (link.startsWith("join.")) {
-                String c = link.substring("join.".length());
+                String c = Helper.toStream(link.substring("join.".length()));
                 m = new StreamsContextMenu(Arrays.asList(new String[]{c}), contextMenuListener);
             }
         }

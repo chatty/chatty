@@ -2060,6 +2060,9 @@ public class TwitchClient {
             }
         } else if (command.equals("testr")) {
             api.test();
+        } else if (command.equals("joinlink")) {
+            MsgTags tags = MsgTags.create("chatty-channel-join", Helper.toChannel("twitch"));
+            g.printInfo(c.getRoomByChannel(channel), "Join link:", tags);
         }
     }
     
