@@ -1,9 +1,11 @@
 
 package chatty.gui;
 
+import chatty.gui.components.settings.SettingsUtil;
 import chatty.lang.Language;
 import chatty.util.MiscUtil;
 import chatty.util.ProcessManager;
+import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 
 /**
@@ -32,15 +35,10 @@ public class UrlOpener {
     /**
      * Save whether to currently use a prompt by default.
      */
-    private static boolean prompt = true;
+    private static Settings settings;
     
-    /**
-     * Changes whether to use a prompt by default.
-     * 
-     * @param usePrompt 
-     */
-    public static void setPrompt(boolean usePrompt) {
-        prompt = usePrompt;
+    public static void setSettings(Settings settings) {
+        UrlOpener.settings = settings;
     }
     
     private static boolean customCommandEnabled;
@@ -164,10 +162,10 @@ public class UrlOpener {
         if (urls.isEmpty()) {
             return false;
         }
-        if (!forcePrompt && !prompt) {
+        if (!forcePrompt && (settings != null && !settings.getBoolean("urlPrompt"))) {
             return openUrls(urls);
         }
-        switch (showUrlsPrompt(parent, urls)) {
+        switch (showUrlsPrompt(parent, urls, forcePrompt)) {
             case 0: return openUrls(urls);
             case 1: MiscUtil.copyToClipboard(urls.get(0).trim());
         }
@@ -201,7 +199,7 @@ public class UrlOpener {
      * @return 0 if the URL should be opened, 1 if it should be copied, 2 if
      *  nothing should be done
      */
-    private static int showUrlsPrompt(Component parent, List<String> urls) {
+    private static int showUrlsPrompt(Component parent, List<String> urls, boolean forced) {
         // Make text
         String text = "<html><body style='width: 100px;'>";
         for (String url : urls) {
@@ -218,9 +216,17 @@ public class UrlOpener {
         } else {
             options = new String[]{okOption, cancelOption};
         }
+        
+        JCheckBox setting = new JCheckBox(Language.getString("openUrl.setting"));
+        setting.setToolTipText(SettingsUtil.addTooltipLinebreaks(Language.getString("openUrl.setting.tip")));
+        Object[] content = {text};
+        if (!forced) {
+            content = new Object[]{text+"<br />", setting};
+        }
+        
         // Show dialog
         int chosenOption = JOptionPane.showOptionDialog(parent,
-                text,
+                content,
                 Language.getString("openUrl.title"),
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, options, 1);
@@ -228,6 +234,9 @@ public class UrlOpener {
         // If only two options, then 2nd option (Cancel) is 1, but should be 2
         if (urls.size() > 1 && chosenOption == 1) {
             return 2;
+        }
+        if (setting.isSelected() && chosenOption != 2) {
+            settings.setBoolean("urlPrompt", false);
         }
         return chosenOption;
     }
