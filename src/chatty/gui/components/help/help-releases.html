@@ -72,11 +72,39 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.23">Version 0.23</a> <a name="latest">(This one!)</a> (2023-??-??)
+        <a name="0.23">Version 0.23</a> <a name="latest">(This one!)</a> (2023-02-17)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-Beta, TBD
+### Twitch Features
+- Added support for new stream tags API
+  - Up to 10 tags, max 25 characters, no spaces or special characters
+  - Existing favorited/Status History tags automatically get their spaces
+    removed, however you will need to replace any special characters yourself as
+    you see fit
+- Added `/shoutout` command and display of shoutouts for moderators
+
+### Custom Commands 
+- Changed "Test" dialog output to be less wide with long commands
+- Added some syntax highlighting to some settings
+- Added function `$quote()` for easier quoting (e.g. to write CSV)
+
+### Other
+- Added settings to customize cache, image and exported directories, added
+  launch option to customize debug directory
+- Added a setting (disabled by default) for the Look&Feel error sound (e.g. when
+  backspacing at the start of an input field)
+- Removed session debug log file
+- Added Stream Highlights customization settings for file output
+- Improved Pronouns caching
+- "Open URL" Popup: Added checkbox to disable the popup, apply setting to some
+  more places
+- Updated help
+
+### Bugfixes
+- Fixed Join-link (e.g. for raids) context menu entries
+- Fixed Stream Highlights error when customized chat response message wasn't a
+  valid Custom Command
     </pre>
     
     <h2>

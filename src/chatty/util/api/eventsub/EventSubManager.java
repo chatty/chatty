@@ -527,7 +527,7 @@ public class EventSubManager {
                 Map<String, String> condition = new HashMap<>();
                 condition.put("broadcaster_user_id", userId);
                 condition.put("moderator_user_id", localUserId);
-                return Helper.makeAddEventSubBody("channel.shoutout.create", condition, sessionId, "beta");
+                return Helper.makeAddEventSubBody("channel.shoutout.create", condition, sessionId, "1");
             }
             return null;
         }
