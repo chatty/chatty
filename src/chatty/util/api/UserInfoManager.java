@@ -23,6 +23,7 @@ public class UserInfoManager {
     private static final Logger LOGGER = Logger.getLogger(UserInfoManager.class.getName());
 
     private final CachedBulkManager<String, UserInfo> perLogin;
+    private final CachedBulkManager<String, UserInfo> perId;
     
     public UserInfoManager(TwitchApi api) {
         perLogin = new CachedBulkManager<>(new CachedBulkManager.Requester<String, UserInfo>() {
@@ -34,6 +35,14 @@ public class UserInfoManager {
             }
             
         }, CachedBulkManager.NONE);
+
+        perId = new CachedBulkManager<>(
+            (manager, asap, normal, backlog) -> {
+                Set<String> toRequest = manager.makeAndSetRequested(asap, normal, backlog, 100);
+                api.requests.requestUserInfoById(toRequest);
+            },
+            CachedBulkManager.NONE
+        );
     }
     
     public UserInfo getCachedOnly(String login) {
@@ -56,6 +65,21 @@ public class UserInfoManager {
     }
     
     /**
+     * Get cached user info or request if necessary, using the user ID.
+     *
+     * @param id The user ID
+     * @param result Receives the result if a request is necessary, UserInfo
+     * could be null in case of request error
+     * @return Cached UserInfo, or null if none cached for this user
+     */
+    public UserInfo getCachedById(String id, Consumer<UserInfo> result) {
+        return perId.getOrQuerySingle(r -> {
+            // Can contain null in case of request error
+            result.accept(r.get(id));
+        }, CachedBulkManager.ASAP, id);
+    }
+
+    /**
      * Get info for the given list of usernames, returned to the listener. A
      * request is performed if necessary, but cached results may be returned as
      * well.
@@ -71,6 +95,22 @@ public class UserInfoManager {
         }, CachedBulkManager.ASAP, logins);
     }
     
+    /**
+     * Get info for the given list of IDs, returned to the listener. A
+     * request is performed if necessary, but cached results may be returned as
+     * well.
+     *
+     * @param unique Only one request per object is kept, overwriting older ones
+     * (unless this is null)
+     * @param ids 
+     * @param resultListener
+     */
+    public void getCachedById(Object unique, List<String> ids, Consumer<Map<String, UserInfo>> resultListener) {
+        perId.query(unique, (result) -> {
+            resultListener.accept(result.getResults());
+        }, CachedBulkManager.ASAP, ids);
+    }
+    
     public void resultReceived(Set<String> requested, Collection<UserInfo> result) {
         if (result == null) {
             perLogin.setError(requested);
@@ -80,6 +120,7 @@ public class UserInfoManager {
             for (UserInfo info : result) {
                 notFound.remove(info.login);
                 perLogin.setResult(info.login, info);
+                perId.setResult(info.id, info);
             }
             perLogin.setNotFound(notFound);
         }
@@ -109,6 +150,21 @@ public class UserInfoManager {
             LOGGER.warning("Error parsing user info: "+ex);
         }
         return null;
+    }
+    
+    public void idResultReceived(Set<String> requested, Collection<UserInfo> result) {
+        if (result == null) {
+            perId.setError(requested);
+        }
+        else {
+            Set<String> notFound = new HashSet<>(requested);
+            for (UserInfo info : result) {
+                notFound.remove(info.id);
+                perId.setResult(info.id, info);
+                perLogin.setResult(info.login, info);
+            }
+            perId.setNotFound(notFound);
+        }
     }
     
 }
