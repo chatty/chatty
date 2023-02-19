@@ -43,6 +43,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -205,6 +206,26 @@ public class Requests {
     
     public void requestUserIDs(Set<String> usernames) {
         requestUserInfo(usernames);
+    }
+
+    public void requestUserInfoById(Set<String> requestedIds) {
+        String url = "https://api.twitch.tv/helix/users?" + makeNewApiParameters("id", requestedIds);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(r.text);
+            Map<String, String> ids = null;
+            Set<String> usernames = null;
+            if (parsedResult != null) {
+                ids = new HashMap<>();
+                for (UserInfo info : parsedResult) {
+                    ids.put(info.login, info.id);
+                }
+                
+                usernames = ids.keySet();
+            }
+            // Error or missing values are handled in these methods as well
+            api.userInfoManager.idResultReceived(requestedIds, parsedResult);
+            api.userIDs.handleRequestResult(usernames, ids);
+        });
     }
 
     //================

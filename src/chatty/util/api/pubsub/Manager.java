@@ -154,6 +154,7 @@ public class Manager {
         this.token = token;
         addTopic(new ModLog(username));
         addTopic(new AutoMod(username));
+        addTopic(new LowTrustUsers(username));
     }
     
     /**
@@ -164,6 +165,7 @@ public class Manager {
     public void unlistenModLog(String username) {
         removeTopic(new ModLog(username));
         removeTopic(new AutoMod(username));
+        removeTopic(new LowTrustUsers(username));
     }
     
     public void listenUserModeration(String username, String token) {
@@ -462,6 +464,22 @@ public class Manager {
             return null;
         }
 
+    }
+
+    private class LowTrustUsers extends StreamTopic {
+
+        LowTrustUsers(String stream) {
+            super(stream);
+        }
+
+        @Override
+        public String make() {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                return "low-trust-users." + localUserId + "." + userId;
+            }
+            return null;
+        }
     }
     
 }
