@@ -2617,6 +2617,24 @@ public class TwitchClient {
                         handleLowTrustUser(data);
                     }
                 }
+                else if (message.data instanceof LowTrustUserUpdateData) {
+                    LowTrustUserUpdateData data = (LowTrustUserUpdateData) message.data;
+                    String channel = Helper.toChannel(data.stream);
+                    
+                    // Mod Action
+                    List<String> args = new ArrayList<>();
+                    args.add(data.targetUsername);
+                    handleModAction(new ModeratorActionData(
+                        "", "chat_moderator_actions", "",
+                        data.stream,
+                        data.treatment.name(),
+                        args,
+                        data.moderatorUsername,
+                        null));
+                    
+                    User targetUser = c.getUser(channel, data.targetUsername);
+                    targetUser.addInfo("", data.makeInfo());
+                }
             }
         }
 
@@ -2641,6 +2659,8 @@ public class TwitchClient {
             String channel = Helper.toChannel(data.stream);
             
             g.printLowTrustUserInfo(c.getUser(channel, data.username), data);
+            User targetUser = c.getUser(channel, data.username);
+            targetUser.addInfo("", data.makeInfo());
         }
         
     }

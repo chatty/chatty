@@ -105,6 +105,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private static final Logger LOGGER = Logger.getLogger(ChannelTextPane.class.getName());
     
     private static final ImageIcon REPLY_ICON = new ImageIcon(MainGui.class.getResource("reply.png"));
+    private static final ImageIcon NO_CHAT_ICON = new ImageIcon(MainGui.class.getResource("no_chat.png"));
     
     private final DefaultStyledDocument doc;
     
@@ -150,7 +151,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, GENERAL_LINK,
-        REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO,
+        REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO, IS_RESTRICTED,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_BACKGROUND_ORIG, CUSTOM_FOREGROUND,
@@ -679,7 +680,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         
         LowTrustUserMessageData pendingLowTrust = pendingLowTrustInfoCache.remove(user);
         if (pendingLowTrust != null) {
-            printLowTrustUpdate(user, pendingLowTrust);
+            printLowTrustInfo(user, pendingLowTrust);
         }
 
         lastUsers.add(new MentionCheck(user));
@@ -1064,32 +1065,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
 
             LowTrustUserMessageData lowTrustData = (LowTrustUserMessageData) attributes.getAttribute(Attribute.LOW_TRUST_INFO);
             if (lowTrustData != null) {
-                List<String> elements = new ArrayList<>();
-
-                for (LowTrustUserMessageData.Type userType : lowTrustData.userTypes) {
-                    String str = userType.description;
-
-                    if (userType.equals(LowTrustUserMessageData.Type.BANNED_IN_SHARED_CHANNEL) &&
-                        !lowTrustData.bannedInChannels.isEmpty()) {
-                        if (lowTrustData.bannedInChannelsNames.isEmpty()) {
-                            str += "[...]";
-                        } else {
-                            str += "[" + String.join("/", lowTrustData.bannedInChannelsNames) + "]";
-                        }
-                    }
-
-                    elements.add(str);
-                }
-
-                if (lowTrustData.evaluation != null) {
-                    elements.add(lowTrustData.evaluation.description);
-                }
-
-                if (lowTrustData.treatment != null) {
-                    elements.add(lowTrustData.treatment.description);
-                }
-
-                text = StringUtil.append(text, " ", "(low trust: " + elements.stream().filter(Objects::nonNull).collect(Collectors.joining("/")) + ")");
+                text = StringUtil.append(text, " ", "(" + lowTrustData.makeInfo() + ")");
             }
             
             //--------------------------
@@ -1139,7 +1115,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         return "";
     }
 
-    public void printLowTrustUpdate(User user, LowTrustUserMessageData data) {        
+    public void printLowTrustInfo(User user, LowTrustUserMessageData data) {        
         for (Userline userLine : getUserLines(user)) {
             String elementId = getIdFromElement(userLine.userElement);
             if (elementId != null && elementId.equals(data.aboutMessageId)) {
@@ -2079,6 +2055,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         else {
             userName = user.getName();
+        }
+        
+        if (tags.isRestrictedMessage()) {
+            SimpleAttributeSet style = new SimpleAttributeSet();
+            StyleConstants.setIcon(style, addSpaceToIcon(NO_CHAT_ICON));
+            style.addAttribute(Attribute.IS_RESTRICTED, true);
+            print("'", style);
         }
         
         // Badges or Status Symbols

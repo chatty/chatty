@@ -279,6 +279,7 @@ public class LinkController extends MouseAdapter {
         String replacedText = getReplacedText(element);
         String replyMsgId = getReplyText(element);
         User mention = getMention(element);
+        boolean isRestricted = element.getAttributes().getAttribute(ChannelTextPane.Attribute.IS_RESTRICTED) != null;
         if (emoteImage != null) {
             popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericonImage != null) {
@@ -289,6 +290,8 @@ public class LinkController extends MouseAdapter {
             popup.show(textPane, element, p -> makeReplyPopupText(replyMsgId, p), 1);
         } else if (mention != null && mentionMessages > 0) {
             popup.show(textPane, element, p -> makeMentionPopupText(mention, p, mentionMessages), 1);
+        } else if (isRestricted) {
+            popup.show(textPane, element, p -> p.setText(POPUP_HTML_PREFIX+"Message not posted to chat (restricted)"), 1);
         } else {
             popup.hide();
         }
@@ -299,7 +302,8 @@ public class LinkController extends MouseAdapter {
                 || (user = getUser(element)) != null
                 || mention != null
                 || emoteImage != null
-                || usericonImage != null;
+                || usericonImage != null
+                || isRestricted;
         
         if (isClickableElement) {
             textPane.setCursor(HAND_CURSOR);

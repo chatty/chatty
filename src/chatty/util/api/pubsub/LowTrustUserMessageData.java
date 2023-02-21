@@ -8,18 +8,19 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class LowTrustUserMessageData extends MessageData {
+
     private static final Logger LOGGER = Logger.getLogger(LowTrustUserMessageData.class.getName());
 
     public final String stream;
     public final String username;
     public final String aboutMessageId;
+    public final String moderatorUsername;
     public final Set<Type> userTypes;
-    public final BanEvasionEvaluation evaluation;
+    public final BanEvasionEvaluation banEvasionEvaluation;
     public final Treatment treatment;
     public final Set<String> bannedInChannels;
     public final Set<String> bannedInChannelsNames = new HashSet<>();
@@ -42,7 +43,8 @@ public class LowTrustUserMessageData extends MessageData {
     public enum Treatment {
         NO_TREATMENT("not monitored"),
         ACTIVE_MONITORING("monitoring"),
-        RESTRICTED("restricted");
+        RESTRICTED("restricted"),
+        UNKNOWN("unknown");
 
         public final String description;
 
@@ -53,9 +55,9 @@ public class LowTrustUserMessageData extends MessageData {
 
     public enum Type {
         //FIXME find out what the other values here are
-        BANNED_IN_SHARED_CHANNEL("banned in shared mod channels"),
-        MANUALLY_ADDED("added manually"),
-        DETECTED_BAN_EVADER("detected as a ban evader");
+        BANNED_IN_SHARED_CHANNEL("shared ban"),
+        MANUALLY_ADDED("manual"),
+        DETECTED_BAN_EVADER("ban evader");
 
         public final String description;
 
@@ -69,6 +71,7 @@ public class LowTrustUserMessageData extends MessageData {
                                    String stream,
                                    String username,
                                    String aboutMessageId,
+                                   String moderatorUsername,
                                    Set<Type> userTypes,
                                    BanEvasionEvaluation evaluation,
                                    Treatment treatment,
@@ -78,22 +81,24 @@ public class LowTrustUserMessageData extends MessageData {
         this.stream = stream;
         this.username = username;
         this.aboutMessageId = aboutMessageId;
+        this.moderatorUsername = moderatorUsername;
         this.userTypes = userTypes;
-        this.evaluation = evaluation;
+        this.banEvasionEvaluation = evaluation;
         this.treatment = treatment;
         this.bannedInChannels = bannedInChannels;
         this.text = text;
     }
     
-    public void fetchUserInfoForBannedChannels(TwitchApi api, final Consumer<Object> reportDone) {
+    public void fetchUserInfoForBannedChannels(TwitchApi api, final Runnable reportDone) {
         if (bannedInChannels.isEmpty()) {
-            reportDone.accept(null);
+            reportDone.run();
             return;
         }
         
-        api.getCachedUserInfoById(new ArrayList<>(bannedInChannels), longUserInfoMap -> {
-            bannedInChannelsNames.addAll(longUserInfoMap.values().stream().map(ui -> ui.displayName).collect(Collectors.toSet()));
-            reportDone.accept(null);
+        api.getCachedUserInfoById(new ArrayList<>(bannedInChannels), userInfoMap -> {
+            // Result may contain null values in case of errors, so filter out
+            bannedInChannelsNames.addAll(userInfoMap.values().stream().filter(Objects::nonNull).map(u -> u.displayName).collect(Collectors.toSet()));
+            reportDone.run();
         });
     }
 
@@ -107,15 +112,10 @@ public class LowTrustUserMessageData extends MessageData {
         if (msgType.equals("low_trust_user_new_message")) {
             JSONObject lowTrustUser = (JSONObject) data.get("low_trust_user");
 
-            Set<Type> userTypes = new HashSet<>();
-            for (String s : Objects.requireNonNull(JSONUtil.getStringList(lowTrustUser, "types"))) {
-                try {
-                    userTypes.add(Type.valueOf(s));
-                } catch (IllegalArgumentException e) {
-                    LOGGER.warning(String.format("FIXME: Unhandled low trust user type %s", s));
-                }
-            }
-
+            JSONObject updatedBy = (JSONObject) lowTrustUser.get("updated_by");
+            String moderatorUsername = JSONUtil.getString(updatedBy, "login");
+            
+            Set<Type> userTypes = getTypes(JSONUtil.getStringList(lowTrustUser, "types"));
             BanEvasionEvaluation evaluation = null;
             String evaluationString = JSONUtil.getString(lowTrustUser, "ban_evasion_evaluation");
 
@@ -125,7 +125,7 @@ public class LowTrustUserMessageData extends MessageData {
                 LOGGER.warning(String.format("FIXME: Unhandled low trust user evaluation %s", evaluationString));
             }
 
-            Treatment treatment = null;
+            Treatment treatment = Treatment.UNKNOWN;
             String treatmentString = JSONUtil.getString(lowTrustUser, "treatment");
 
             try {
@@ -141,19 +141,74 @@ public class LowTrustUserMessageData extends MessageData {
             }
             
             return new LowTrustUserMessageData(
-                topic,
-                message,
-                stream,
-                JSONUtil.getString((JSONObject) lowTrustUser.get("sender"), "login"),
-                JSONUtil.getString(data, "message_id"),
-                userTypes,
-                evaluation,
-                treatment,
-                bannedInChannels,
-                JSONUtil.getString((JSONObject) data.get("message_content"), "text")
+                    topic,
+                    message,
+                    stream,
+                    JSONUtil.getString((JSONObject) lowTrustUser.get("sender"), "login"),
+                    JSONUtil.getString(data, "message_id"),
+                    moderatorUsername,
+                    userTypes,
+                    evaluation,
+                    treatment,
+                    bannedInChannels,
+                    JSONUtil.getString((JSONObject) data.get("message_content"), "text")
             );
         }
 
         return null;
     }
+    
+    public static Set<Type> getTypes(List<String> data) {
+        Set<Type> userTypes = new HashSet<>();
+        for (String s : data) {
+            try {
+                userTypes.add(Type.valueOf(s));
+            }
+            catch (IllegalArgumentException e) {
+                LOGGER.warning(String.format("FIXME: Unhandled low trust user type %s", s));
+            }
+        }
+        return userTypes;
+    }
+    
+    public static String getTreatmentShort(Treatment treatment) {
+        switch (treatment) {
+            case ACTIVE_MONITORING:
+                return "Monitored user";
+            case RESTRICTED:
+                return "Restricted user";
+        }
+        return treatment.description;
+    }
+    
+    public String makeInfo() {
+        List<String> elements = new ArrayList<>();
+
+        if (treatment != null) {
+            elements.add(getTreatmentShort(treatment));
+        }
+        
+        for (LowTrustUserMessageData.Type userType : userTypes) {
+            String str = userType.description;
+
+            if (userType == LowTrustUserMessageData.Type.BANNED_IN_SHARED_CHANNEL
+                    && !bannedInChannelsNames.isEmpty()) {
+                str += ": " + String.join("/", bannedInChannelsNames);
+            }
+
+            elements.add(str);
+        }
+        
+        if (userTypes.contains(Type.MANUALLY_ADDED) && moderatorUsername != null) {
+            elements.add("@" + moderatorUsername);
+        }
+
+        if (banEvasionEvaluation != null
+                && banEvasionEvaluation != LowTrustUserMessageData.BanEvasionEvaluation.UNLIKELY_EVADER) {
+            elements.add(banEvasionEvaluation.description);
+        }
+
+        return elements.stream().filter(Objects::nonNull).collect(Collectors.joining(", "));
+    }
+    
 }

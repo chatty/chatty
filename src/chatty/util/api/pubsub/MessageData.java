@@ -48,7 +48,11 @@ public class MessageData {
             }
         }
         else if (topic.startsWith("low-trust-users")) {
-            LowTrustUserMessageData result = LowTrustUserMessageData.decode(topic, message, userIds);
+            MessageData result = LowTrustUserMessageData.decode(topic, message, userIds);
+            if (result != null) {
+                return result;
+            }
+            result = LowTrustUserUpdateData.decode(topic, message, userIds);
             if (result != null) {
                 return result;
             }

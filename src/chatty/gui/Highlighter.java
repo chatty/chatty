@@ -931,6 +931,11 @@ public class Highlighter {
                                 return user.getNumberOfMessages() == 0;
                             });
                         }
+                        else if (part.equals("restricted")) {
+                            addTagsItem("Restricted Message", null, tags -> {
+                                return tags.isRestrictedMessage();
+                            });
+                        }
                         else if (part.startsWith("repeatedmsg")) {
 //                            String options = parsePrefix(item, "repeatmsg:");
 //                            String[] split = options.split("/");

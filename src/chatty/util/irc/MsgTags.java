@@ -53,6 +53,10 @@ public class MsgTags extends IrcMsgTags {
         return get("chatty-channel-join");
     }
     
+    public boolean isRestrictedMessage() {
+        return isValue("chatty-is-restricted", "1");
+    }
+    
     public boolean hasReplyUserMsg() {
         return hasValue("reply-parent-msg-body") && hasValue("reply-parent-display-name");
     }

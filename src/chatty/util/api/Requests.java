@@ -213,7 +213,7 @@ public class Requests {
         newApi.add(url, "GET", api.defaultToken, r -> {
             Collection<UserInfo> parsedResult = UserInfoManager.parseJSON(r.text);
             Map<String, String> ids = null;
-            Set<String> usernames = null;
+            Set<String> usernames = new HashSet<>();
             if (parsedResult != null) {
                 ids = new HashMap<>();
                 for (UserInfo info : parsedResult) {
@@ -222,6 +222,7 @@ public class Requests {
                 
                 usernames = ids.keySet();
             }
+            
             // Error or missing values are handled in these methods as well
             api.userInfoManager.idResultReceived(requestedIds, parsedResult);
             api.userIDs.handleRequestResult(usernames, ids);

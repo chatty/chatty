@@ -4081,19 +4081,27 @@ public class MainGui extends JFrame implements Runnable {
     public void printLowTrustUserInfo(User user, final LowTrustUserMessageData data) {
         String channel = Helper.toValidChannel(data.stream);
         if (channels.isChannel(channel)) {
-            data.fetchUserInfoForBannedChannels(client.api, o -> SwingUtilities.invokeLater(() -> {
+            data.fetchUserInfoForBannedChannels(client.api, () -> SwingUtilities.invokeLater(() -> {
+                //--------------------------
+                // Restricted Message
+                //--------------------------
                 Channel chan = channels.getExistingChannel(channel);
-                if (data.treatment == LowTrustUserMessageData.Treatment.RESTRICTED &&
-                    client.settings.getBoolean("showRestrictedMessagesInChat")) {
-                    // message is not being posted to actual chat, display it here anyway
-                    HashMap<String, String> map = new HashMap<>();
-                    map.put("id", data.aboutMessageId);
-                    MsgTags tags = new MsgTags(map);
-
+                if (data.treatment == LowTrustUserMessageData.Treatment.RESTRICTED
+                        && client.settings.getBoolean("showRestrictedMessages")) {
+                    // Message is not being posted to actual chat, display it here anyway
+                    MsgTags tags = MsgTags.create(
+                            "id", data.aboutMessageId,
+                            "chatty-is-restricted", "1"
+                    );
                     printMessage(user, data.text, false, tags);
                 }
                 
-                chan.printLowTrustUpdate(user, data);
+                //--------------------------
+                // Appended Info
+                //--------------------------
+                if (client.settings.getBoolean("showLowTrustInfo")) {
+                    chan.printLowTrustInfo(user, data);
+                }
             }));
         }
     }

@@ -620,7 +620,8 @@ public class SettingsManager {
         settings.addLong("filterCombiningCharacters", Helper.FILTER_COMBINING_CHARACTERS_LENIENT);
         
         // Low-trust/restricted messages
-        settings.addBoolean("showRestrictedMessagesInChat", false);
+        settings.addBoolean("showLowTrustInfo", false);
+        settings.addBoolean("showRestrictedMessages", false);
 
 
         //==============

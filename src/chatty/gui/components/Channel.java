@@ -299,8 +299,8 @@ public final class Channel extends JPanel {
         text.printMessage(message);
     }
 
-    public void printLowTrustUpdate(User user, LowTrustUserMessageData data) {
-        text.printLowTrustUpdate(user, data);
+    public void printLowTrustInfo(User user, LowTrustUserMessageData data) {
+        text.printLowTrustInfo(user, data);
     }
     
     // Style
