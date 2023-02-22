@@ -272,6 +272,9 @@ public class HighlightSettings extends SettingsPanel {
             this.d = d;
             substitutesEnabled = d.addSimpleBooleanSetting("matchingSubstitutesEnabled");
             substitutes = d.addListSetting("matchingSubstitutes", "Substitutes", 180, 250, true, true);
+            substitutes.setChangeListener(value -> {
+                updateTestSubstitutes();
+            });
         }
         
         public JDialog createDialog() {
@@ -317,9 +320,6 @@ public class HighlightSettings extends SettingsPanel {
                 gbc.weightx = 1;
                 gbc.weighty = 1;
                 substitutes.setEditor(() -> new SubstitutesEditor(this));
-                substitutes.setChangeListener(value -> {
-                    updateTestSubstitutes();
-                });
                 add(substitutes, gbc);
 
                 JButton closeButton = new JButton(Language.getString("dialog.button.close"));
