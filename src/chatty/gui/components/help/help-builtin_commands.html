@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+	<title>Chatty - Custom Commands / Context Menus</title>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+<body>
+    <div id="backlink"><a href="help.html">To main help page</a></div>
+    <h1>Built-in Commands</h1>
+    <p>This list of commands is built into Chatty and can't be changed. You can
+        however create your own <a href="help-custom_commands.html">Custom Commands &amp; Customized Context Menus</a>.</p>
+    
+    <dl class="dl-settings">
+        <dt>All command names are case-insensitive</dt>
+        <dd>Example: Both <code>/me</code> and <code>/ME</code> are the same command</dd>
+        
+        <dt><code>&lt;parameter&gt;</code> represents a required parameter</dt>
+        <dd>Example: For <code>/me &lt;message&gt;</code> you need to enter a
+            message: <code>/me likes cheese!</code></dd>
+        
+        <dt><code>[parameter]</code> represents an optional parameter</dt>
+        <dd>Example: For <code>/ban &lt;username&gt; [reason]</code> you don't need
+            to give a reason, but you can: <code>/ban abc spam</code></dd>
+    </dl>
+    
+    <p><em>Tip:</em> You can also use TAB Completion for many commands. Enter
+        the beginning of a command name (e.g. <code>/sub</code>) and then press
+        TAB to find matching commands (e.g. <code>/subscribers</code>, which
+        allows moderators to turn on sub-only mode).</p>
+    
+    <ul>
+        <li><a href="#commands-chat">Chat / Twitch Commands</a></li>
+        <li><a href="#commands-settings">Settings / Customization Commands</a></li>
+        <li><a href="#commands-gui">GUI Commands</a></li>
+        <li><a href="#commands-system">System Commands</a></li>
+        <li>Commands that change how other commands are run:<ul>
+                <li><a href="#commands-chain">Run several commands at once</a></li>
+                <li><a href="#commands-foreach">Run a command for each value in a list</a></li>
+                <li><a href="#commands-runin">Run a command in a specific channel context</a></li>
+                <li><a href="#commands-timer">Run a command on a delay</a></li>
+            </ul></li>
+    </ul>
+    
+    <h2><a name="commands-chat">Chat / Twitch Commands</a></h2>
+    <ul>
+        <li><code>/say &lt;message&gt;</code> - Send a regular chat message, alternative to just entering the text (it being a command can be useful in some cases, e.g. if you want to ensure that a message starting with a replacement can't trigger another command or to use an <a href="help-custom_commands.html#anonymous-custom-commands">Anonymous Custom Command</a> using <code>//say</code>)</li>
+        <li><code>/me &lt;message&gt;</code> - Send an action message (* nickname says something)</li>
+        <li><code>/msgreply &lt;message&gt;</code> - Send a reply to a specific message, only works when added to the User Context Menu or User Dialog
+            in the Commands settings (e.g. <code>Reply=/msgreply $$input(Reply to $(nick))</code>)</li>
+
+        <li><code>/join &lt;channel&gt;</code> - Joins the given channels, see <a href="help.html#join">Joining Channels</a> for more information</li>
+        <li><code>/part</code> or <code>/close</code> - Leaves the current channel</li>
+        <li><code>/rejoin</code> - Rejoins the channel (without clearing users or chat)</li>
+        <li><code>/reconnect</code> - Disconnects and reconnects</li>
+        <li><code>/clearchat</code> - Clears the current chat window of all text (only locally)</li>
+        <li><code>/connection</code> - Show info about the current connection</li>
+    </ul>
+    
+    <h3>Moderation</h3>
+    <ul>
+        <li><code>/to &lt;nick&gt; [time] [reason]</code> - Timeout the user with the given nickname for "time" seconds (time is optional)</li>
+        <li><code>/timeout</code>, <code>/ban</code>, <code>/unban</code>,
+            <code>/slow</code>, <code>/slowoff</code>,
+            <code>/subscribers</code>, <code>/subscribersoff</code>,
+            <code>/shieldMode</code>, <code>/shieldModeOff</code>,
+            <code>/clear</code>, <code>/mods</code>,
+            <code>/raid</code>, <code>/unraid</code>,
+            <code>/color</code>
+            just like in normal Twitch Chat</li>
+        <li><code>/userinfo &lt;username&gt;</code> - To open the User Info Dialog
+            on a specific user of the current channel (if available)</li>
+    </ul>
+    
+    
+    <h3><a name="commands-twitch">Other Twitch Commands</a></h3>
+    <ul>
+        <li><a href="help.html#streamhighlights">Stream Highlights / Markers commands</a> (including <code>/marker</code>)</li>
+    </ul>
+    
+    <h2><a name="commands-settings">Settings / Customization Commands</a></h2>
+    <ul>
+        <li><a href="help-setting_commands.html">Setting commands</a></li>
+        <li><code>/setcolor &lt;name&gt;</code> - Opens the usercolor settings
+        for the given name</li>
+        <li><a href="help-addressbook.html">Addressbook commands</a></li>
+        <li><a href="help.html#streamchat">Stream Chat commands</a></li>
+        <li><code>/favorite [channel]</code>, <code>/unfavorite [channel]</code>
+            - Edit the Channel Favorites list (defaults to current channel if
+            none is given)</li>
+        <li><code>/ignore &lt;user&gt;</code>, <code>/unignore &lt;user&gt;</code>
+            - Add/remove a user from "Settings - Ignore - Ignored Users" (chat
+            and whisper, only takes effect locally in Chatty),
+            <code>/ignoreChat</code>, <code>/unignoreChat</code>,
+            <code>/ignoreWhisper</code>, <code>/unignoreWhisper</code> to do the
+            same, except it only affects one type of message</li>
+    </ul>
+    
+    <h2><a name="commands-gui">GUI Commands</a></h2>
+    
+    <h3>Manipulate the GUI</h3>
+    <ul>
+        <li><a href="help.html#layouts-save-load">Save and load layouts</a></li>
+        <li><code>/insert &lt;text&gt;</code> - Inserts the given text into the input box at
+            the current caret position (can be useful for Custom Commands put
+            in a menu)</li>
+        <li><code>/insertword &lt;text&gt;</code> - Same as <code>/insert</code>,
+            but adds spaces so it's separated from text before and after (if present)</li>
+        <li><code>/setSize &lt;width&gt; &lt;height&gt;</code> - Sets the main window size</li>
+        <li><code>/echo &lt;text&gt;</code> - Outputs the given text as an info message</li>
+        <li><code>/triggerNotification [-hmt] &lt;text&gt;</code> - Triggers a
+            command notification event that was added in the Notification Settings
+            (if none is added, this won't do anything), <code>-h</code> to hide
+            notification popup, <code>-m</code> to don't play sound, <code>-t</code>
+            to specify the title of the notification popup (e.g.
+            <code>/triggerNotification -mt "This is the title" This is the text</code>)</li>
+    </ul>
+    
+    <h3>Open windows in Chatty</h3>
+    <ul>
+        <li><code>/popoutchannel</code> - Opens current the channel in a popout</li>
+        <li><code>/settings</code>, <code>/livestreams</code>, <code>/channeladmin</code>,
+            <code>/channelinfo</code>, <code>/search</code>, <code>/openFollowers</code>,
+            <code>/openSubscribers</code> - Opens the according dialog</li>
+        <li><code>/userinfo &lt;username&gt;</code> - To open the User Info Dialog
+            on a specific user of the current channel (if available)</li>
+        <li><code>/releaseinfo</code> - Opens the help with the release information</li>
+    </ul>
+    
+    <h2><a name="commands-system">System Commands</a></h2>
+    <h3>Open / affect things outside of Chatty</h3>
+    <ul>
+        <li><code>/openUrl &lt;url&gt;</code> - Opens the given url (see <a href="help-setting_commands.html#openurl">Open URL Command settings</a>)</li>
+        <li><code>/openUrlPrompt &lt;url&gt;</code> - Opens the given url after
+        showing a prompt for confirmation</li>
+        <li><code>/openFile &lt;path&gt;</code> - Opens the given path in the default application</li>
+        <li><code>/openFilePrompt &lt;path&gt;</code> - Opens the given path in the default application (with prompt asking for confirmation)</li>
+        <li><code>/copy</code> - Copies the given text to the clipboard</li>
+        <li><code>/exportText [-sna] &lt;fileName&gt; &lt;text&gt;</code> - Write the text to a file in the "exported" directory in the settings directory (UTF-8)
+            <ul>
+                <li><code>-s</code> - no info message when writing successfully</li>
+                <li><code>-n</code> - replace "\n" in the text with a newline</li>
+                <li><code>-a</code> - append to the file (instead of overwriting it)</li>
+                <li><code>-A</code> - append to the file and append a newline character</li>
+                <li><code>-L</code> - append to the file on a new line (prepend a newline character)</li>
+            </ul>
+            (Example: <code>/exportText -n abc.txt one\ntwo</code> - Writes "one" and "two" as separate lines)</li>
+        <li><code>/proc</code> - <a href="help.html#custom-processes">Execute a system process</a> (be careful with this)</li>
+    </ul>
+    
+    <h3>Learn things about Chatty</h3>
+    <ul>
+        <li><code>/uptime</code> - Shows how long Chatty has been running</li>
+        <li><code>/appinfo</code> - Shows Chatty version, uptime, current memory usage, system info and connection status</li>
+        <li><code>/dir</code> / <code>/openDir</code> - Show/open the settings directory</li>
+        <li><code>/wdir</code> / <code>/openWdir</code> - Show/open the current working directory</li>
+        <li><code>/showBackupDir</code> / <code>/openBackupDir</code> - Show/open the <a href="help-guide_folders.html#backup">backup directory</a></li>
+        <li><code>/showDebugDir</code> / <code>/openDebugDir</code> - Show/open the debug log directory</li>
+        <li><code>/showLogDir</code> / <code>/openLogDir</code> - Show/open the chat log directory</li>
+        <li><code>/showJavaDir</code> / <code>/openJavaDir</code> - Show/open the directory of the JRE used by Chatty</li>
+        <li><code>/showFallbackFontDir</code> / <code>/openFallbackFontDir</code> - Show/open the directory where Java looks for <a href="help-troubleshooting.html#font">fallback fonts</a></li>
+        <li><code>/showTempDir</code> / <code>/openTempDir</code> - Show/open the system's temp directory</li>
+        <li><code>/ffz</code> - Shows the FFZ channel emote codes for the current channel</li>
+    </ul>
+    
+    <h3>Housekeeping Commands</h3>
+    <ul>
+        <li><code>/refresh &lt;emoticons/badges/ffz/ffzglobal/bttvemotes&gt;</code>
+            - Refresh the given data from it's respective API:
+            <ul>
+                <li><code>emoticons</code>: Twitch Emotes</li>
+                <li><code>badges</code>: Twitch Badges (current channel)</li>
+                <li><code>ffz</code>: FFZ Emotes (current channel)</li>
+                <li><code>ffzglobal</code>: Global FFZ Emotes</li>
+                <li><code>bttvemotes</code>: BTTV Emotes (global and current channel)</li>
+            </ul>
+            <em>This downloads the lists from the Internet, which may be useful
+                if new emotes have been added (it's basicially like pressing
+                reload in your browser, but only for some select stuff per command).</em></li>
+        <li><a name="commands-clearUserMessages"><code>/clearUserMessages [-an]</code></a>
+            - Clears the message history in the User Dialog for all users in the
+            current channel, <code>-a</code> for all channels, <code>-n</code>
+            to only clear the number of messages (e.g. so the <code>config:firstmsg</code>
+            Highlight prefix matches again)</li>
+    </ul>
+    
+    <h3><a name="commands-test">Test Commands</a></h3>
+    <ul>
+        <li><code>/testNotification [channel]</code> - Display a test notification (optionally with channel,
+            which means right-clicking on the notification will join that channel)</li>
+        <li><code>/debug simulate &lt;type&gt;</code> - Simulates a chat message
+            for testing. See the Chatty source code for possible values.
+        </li>
+        <li><code>/debug</code> allows for a number of debug commands to be run,
+            but those may produce errors and strange behaviour, so you usually
+            shouldn't mess around with it.</li>
+    </ul>
+    
+    <h3><a name="commands-advanced">Advanced commands</a></h3>
+    <ul>
+        <li><code>/server &lt;host&gt;[:port]</code> - Connect to a custom server</li>
+        <li><code>/raw &lt;command&gt;</code> - Send a raw command to the server</li>
+        <li><code>/changetoken &lt;token&gt;</code> - Checks if the given token
+            is valid and sets it as new token if it is</li>
+        
+    </ul>
+    
+    <h2><a name="commands-chain">Execute several commands</a></h2>
+    <p>The <code>/chain</code> command allows you to run several commands at the
+        same time. Each part separated by a <code>|</code> is basicially
+        entered into the inputbox again.</p>
+    
+    <dl class="defList">
+        <dt><code>/chain [command1] | [command2] | [command3]</code></dt>
+        <dd>Runs command1, then command2, then command3. This can be repeated
+            further by adding more parts separated by <code>|</code>.</dd>
+        <dd>Whitespace around each command is trimmed.</dd>
+        <dd><em>Note:</em> A <code>|</code> character in a command would be
+            interpreted as a command separator. Escape <code>|</code> with
+            itself to use the character without special meaning (<code>||</code>).
+            If used in a Custom Command, the function <code>$cs()</code> (as in
+            <u>c</u>hain <u>s</u>afe) can be used around replacements for
+            escaping (e.g. <code>$cs($1-)</code>).</dd>
+    </dl>
+    
+    <p>Examples:</p>
+    <dl class="defList">
+        <dt><code>/chain /echo a | /echo b</code></dt>
+        <dd>Outputs <code>a</code> and <code>b</code></dd>
+        
+        <dt><code>/chain /echo a | /echo ||b||</code></dt>
+        <dd>Outputs <code>a</code> and <code>|b|</code></dd>
+    </dl>
+    
+    <p>When using <code>/chain</code> with <a href="help-custom_commands.html">Custom Command</a>
+        replacements, consider the following:</p>
+    
+    <dl class="defList">
+        <dt><code>/chain /echo $cs($(msg)) | /echo abc</code></dt>
+        <dd>All replacements are performed before the <code>/chain</code>
+            command is executed, so anything in <code>$(msg)</code> is put in
+            first. If <code>$(msg)</code> contained <code>Hello World!</code>:<br />
+            <code>/chain /echo Hello World! | /echo abc</code></dd>
+        <dt><code>/chain /echo $(msg) | /echo abc</code></dt>
+        <dd>Assuming no escaping were to take place: If <code>$(msg)</code>
+            would contain <code>Hello | World!</code> then the <code>|</code>
+            in it would be interpreted as a command separator and thus <code>World!</code>
+            would be separately entered into the inputbox (so it would output
+            two <code>/echo</code> info messages and send <code>World!</code> to
+            chat):<br />
+            <code>/chain /echo Hello | World! | /echo abc</code></dd>
+        <dd>This could cause serious issues, so it is recommended to always
+            make sure text is safe to be used in the <code>/chain</code> command:
+            <ul>
+                <li>Wrap replacements in the <code>$cs()</code> function (as in <u>c</u>hain <u>s</u>afe)
+                    when used in a <code>/chain</code> command to escape
+                    <code>|</code> characters: <code>$cs($(msg))</code></li>
+                <li>In addition, any top-level replacement will escape
+                    <code>|</code> characters automatically if the Custom Command
+                    begins with <code>/chain </code> (so the above
+                    example should normally not cause issues). However it is
+                    good practice to always use the <code>$cs()</code> function
+                    anyway (it won't be escaped twice) in case something changes
+                    in the future so that the Custom Command doesn't begin with
+                    <code>/chain</code> anymore.<br />
+                    You can prevent this automatic escaping (if you are
+                    absolutely sure that you want replacements to be able to
+                    insert any command) by adding a backslash in front (this
+                    doesn't work when you enter the <code>/chain</code> command
+                    directly into the inputbox):<br />
+                    <code>\/chain /echo Hello | World! | /echo abc</code></li>
+            </ul>
+            When properly escaped, it will turn into this (which outputs
+            <code>Hello | World!</code> and <code>abc</code>):<br />
+            <code>/chain /echo Hello || World! | /echo abc</code>
+        </dd>
+        
+        <dt><code>/chain /echo abc $(chain-test)</code></dt>
+        <dd>You can test this by using the <code>$(chain-test)</code> replacement.
+            This should (if e.g. added in the body of a Custom Command) output the following info message:<br />
+            <code>abc | /echo Test || Message</code></dd>
+        <dd>If you add a backslash in front, it will output two info messages:<br />
+            <code>abc</code><br />
+            <code>Test | Message</code></dd>
+    </dl>
+    
+    <h2><a name="commands-foreach">Execute the same command for each entry in a list</a></h2>
+    <p>The <code>/foreach</code> command allows you to run the same command for
+        each entry of a space separated list. The command section is run as a
+        Custom Command, with the <code>$1</code> replacement containing a single
+        list entry.</p>
+    
+    <dl class="defList">
+        <dt><code>/foreach [list] > [command]</code></dt>
+        <dd>The command consist of the comma-separated list, the <code>&gt;</code>
+            character and the command to execute (whereas the command is run as
+            it's own Custom Command with the <code>$1</code> replacement).</dd>
+        <dd>List and command are trimmed for leading and trailing whitespace.</dd>
+        <dd><em>Note:</em> Everything after the first <code>&gt;</code>
+            character is interpreted as the command. If you want to use a
+            <code>&gt;</code> in the list section you have to escape it with
+            itself for it to be treated literally (<code>&gt;&gt;</code>). Both the
+            list and command section will consume a single <code>&gt;</code> only
+            if they are repeated (<code>&gt;&gt;</code> to <code>&gt;</code>, but
+            <code>></code> unmodified).</dd>
+        <dd>If you use a Custom Command replacement in the <code>[list]</code>
+            section, make sure the text is safe to use:
+            <ul>
+                <li>Wrap replacements in the <code>$fs()</code> function (as in <u>f</u>oreach <u>s</u>afe)
+                    to escape <code>&gt;</code> characters: <code>$fs($1-)</code></li>
+                <li>In addition, any top-level replacements will escape <code>&gt;</code>
+                    characters automatically if the Custom Command begins with
+                    <code>/foreach </code>. However it is good practice to
+                    always use the <code>$fs()</code> function anyway (it won't
+                    be escaped twice) in case something changes in the future so
+                    that the Custom Command doesn't begin with <code>/foreach</code>
+                    anymore.</li>
+            </ul>
+        </dd>
+    </dl>
+    <p>Examples:</p>
+    <dl class="defList">
+        <dt><code>/foreach a b c > /echo $1</code></dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            entered into the chat inputbox.</dd>
+        
+        <dt><code>//foreach a b c > /echo \$1</code></dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            entered into the chat inputbox. Note that the double slash at the
+            start runs this as a Custom Command, so the <code>$1</code> needs to
+            be escaped, so it is only replaced when the <code>/echo</code> is
+            run for each list entry.</dd>
+        
+        <dt><code>/foreach a &lt;b>> c > /echo $1</code></dt>
+        <dd>Outputs <code>a</code>, <code>&lt;b&gt;</code> and <code>c</code>
+            when entered into the chat inputbox. Note the escaped <code>&gt;</code>
+            in the list entry.</dd>
+        
+        <dt><code>Open Streams=/foreach $fs($1-) > /openUrl https://twitch.tv/\$1</code> (added as a Streams Context menu entry)</dt>
+        <dd>When several channels are selected and the command run, it will
+            replace <code>$1-</code> with the list of selected streams and then
+            open the URL for each one of them. Note that the <code>$1</code> in
+            the <code>/openUrl</code> command is escaped.</dd>
+    </dl>
+    
+    <p>Detailed Explanation Example:</p>
+    <dl class="defList">
+        <dt><code>/foreachtest /foreach a b c > /echo \$1</code> (added to the Custom Commands list)</dt>
+        <dd>Outputs <code>a</code>, <code>b</code> and <code>c</code> when
+            <code>/foreachtest</code> is entered into the chat inputbox.</dd>
+        <dd>Note the <code>\$1</code> with the escape character in front, which
+            preserves it for replacement when the <code>/echo</code> is run.
+            <p>This is what happens when you enter <code>/foreachtest</code>:</p>
+            <ol>
+                <li>Replacements are performed on the Custom Command
+                    <code>/foreach a b c > /echo \$1</code>. Since the <code>$1</code>
+                    is escaped it is treated as plain text and not replaced (the
+                    <code>\</code> is consumed).</li>
+                <li>The result <code>/foreach a b c > /echo $1</code> is run
+                    and the <code>/foreach</code> command will use everything
+                    after the <code>></code> as the Custom Command to run (and
+                    trim whitespace).</li>
+                <li>The Custom Command <code>/echo $1</code> is run with <code>a</code>
+                    as parameter, which results in <code>/echo a</code> being
+                    run. The same is repeated for <code>b</code> and <code>c</code>.</li>
+            </ol>
+            
+            <p>If the <code>$1</code> is not escaped:</p>
+            <ol>
+                <li>Replacements are performed on the Custom Command
+                    <code>/foreach a b c > /echo $1</code>. The <code>$1</code>
+                    is replaced with an empty string (no argument given with the
+                    <code>/foreachtest</code> command).</li>
+                <li>The result <code>/foreach a b c > /echo </code> is run
+                    and the <code>/foreach</code> command will use everything
+                    after the <code>></code> as the Custom Command to run (and
+                    trim whitespace).</li>
+                <li>The Custom Command <code>/echo</code> is run with <code>a</code>
+                    as parameter (although there is no replacement to make use
+                    of it), which results in <code>/echo</code> being run,
+                    resulting in an error message. The same is repeated for
+                    <code>b</code> and <code>c</code>.</li>
+            </ol>
+            <p>If the <code>$1</code> is not escaped, but you provide a command
+                argument, e.g. <code>/foreachtest 123</code>, then it will
+                replace the <code>$1</code> with <code>123</code> in the first
+                step, so <code>/echo 123</code> will be run three times.</p>
+        </dd>
+    </dl>
+    
+    <h2><a name="commands-runin">Run a command in a specific open channel</a></h2>
+    <p>The <code>/runin</code> command runs a command in the context of a
+        specific open channel, as if you had entered it into the channel's
+        inputbox. Without this, commands usually run in the context of the
+        currently active channel.</p>
+    
+    <dl class="defList">
+        <dt><code>/runin [channel] [command]</code></dt>
+        <dd>The channel must be a regular channel with or without leading "#" (<code>#channelname</code>)
+            or a whisper channel (<code>$username</code>).</dd>
+        <dd>The command can be anything you could enter into a chat inputbox.</dd>
+    </dl>
+    
+    <p>Examples:</p>
+    <dl class="defList">
+        <dt><code>/runin #chan2 /echo abc</code></dt>
+        <dd>Outputs the info message "abc" in the channel "#chan2" (if it is
+            open in Chatty).</dd>
+        
+        <dt><code>//runin #chan2 //echo Channel context: \\$(chan) -> \$(chan)</code></dt>
+        <dd>This example is entered directly into a chat inputbox and outputs
+            an info message about the changed channel context in "#chan2". Let's say the
+            command is entered in the channel "#chan1".</dd>
+        <dd>The command begins with two slashes (<code>//</code>), so it is
+            interpreted as an anonymous Custom Command:
+            <ul>
+                <li><code>\\$(chan)</code> turns into <code>\#chan1</code> (the <code>\\</code> escaped
+                    the backslash itself, not the <code>$</code>, so the replacement is performed)</li>
+                <li><code>\$(chan)</code> turns into <code>$(chan)</code> (this <code>\</code> actually escapes the
+                    <code>$</code>, so the replacement is not performed here)</li>
+            </ul>
+            The result <code>/runin #chan2 //echo Channel context: \#chan1 -> $(chan)</code>
+            is run, which runs <code>//echo Channel context: \#chan1 -> $(chan)</code>
+            in "#chan2".</dd>
+        <dd>Yet again, the command begins with two slashes (<code>//</code>) and
+            is interpreted as an anonymous Custom Command:
+            <ul>
+                <li><code>\#chan1</code> turns into <code>#chan1</code> (the
+                    backslash removes any special meaning from the following
+                    characters, which in this case is not necessary, but it you
+                    had entered this in a whisper channel <code>$user1</code>
+                    then the <code>$</code> would have had to be escaped)</li>
+                <li><code>$(chan)</code> turns into <code>#chan2</code> (this
+                    Custom Command is run in the new channel context, so it
+                    turns into the target channel, which does not need to be
+                    escaped further, even if it were <code>$user2</code>, since
+                    it doesn't get interpreted as a Custom Command after this)</li>
+            </ul>
+            The resulting command <code>/echo Channel context: #chan1 -> #chan2</code>
+            is then run and outputs an info message.
+        </dd>
+    </dl>
+    
+    <h2><a name="commands-timer">Execute a command on a delay</a></h2>
+    <p>The <code>/timer</code> command allows you to run a delayed command after
+        a duration or at a certain time. The timed command is run as if it was
+        entered into the inputbox of the same channel that the <code>/timer</code>
+        command was entered in (the command is not run at all if the channel is
+        not a regular channel or not open anymore, unless the <code>-a</code>
+        option is used).</p>
+    
+    <p>Certain restrictions apply:</p>
+    <ul>
+        <li>A timed command can't contain another <code>/timer</code> command as well as some other commands.</li>
+        <li>A timed message can only be send to regular channels (not whispers)
+            and only as a moderator of the channel.</li>
+        <li>Parameters from the context of where <code>/timer</code> is called
+            do not carry over into the context when the timed command is executed.
+            Note that in a lot of cases the parameters would already have been
+            replaced anyway. Consider a button "Test" added to the User Dialog:
+            <ul>
+                <li>In case of <code>Test=/timer 1 /echo $(nick)</code>
+                    replacements are performed on <code>/timer 1 /echo $(nick)</code>,
+                    resulting in <code>/timer 1 /echo someusername</code>, resulting in
+                    <code>/echo someusername</code> one second later.</li>
+                <li>On the other hand <code>Test=/timer 1 //echo \$(nick)</code>
+                    replacements are performed on <code>/timer 1 //echo \$(nick)</code>
+                    (note that <code>\$(nick)</code> is escaped, so it is not
+                    replaced yet), resulting in <code>/timer 1 //echo $(nick)</code>,
+                    resulting in <code>//echo $(nick)</code> one second later, which
+                    (because of the double-slash) is parsed as a Custom Command and
+                    replacements are performed, which won't find the "nick" parameter
+                    because it didn't carry over. Normally there is no reason to do it
+                    like this though.</li>
+            </ul>
+    </ul>
+    
+    <dl class="defList">
+        <dt><code>/timer [-options] [:id] &lt;duration|time|'list'|'stop'&gt; &lt;timed command&gt;</code></dt>
+        <dd>Optionally one or several options (<code>-rs</code>) can be specified:
+            <ul>
+                <li><code>-r</code> (Keeps the timer through a restart of Chatty
+                    if it hasn't run yet. The timer is saved in the settings and
+                    restored with the same target time, channel and timed
+                    command. If the target time has already been passed when
+                    Chatty is started again it will immediately run the timed
+                    command.)</li>
+                <li><code>-o</code> (If a timer of the same id already exists,
+                    overwrite it, without this option the new timer would not be
+                    started in such a case.)</li>
+                <li><code>-s</code> (Silent, starting the timer successfully
+                    doesn't output a message.)</li>
+                <li><code>-a</code> (Always run the command, even if the channel
+                    the timer was started in is not open anymore or not valid,
+                    which can make sense if the command being run is not
+                    channel-specific, such as modifying the Addressbook. If the
+                    channel is not open anymore the currently active channel is
+                    used, in which case sending messages it not allowed.)</li>
+                <li>Full example: <code>/timer -rs 10m /echo hello</code>
+                    (Outputs "hello" in 10 minutes, keeps it when Chatty is
+                    restarted within that time and doesn't output a timer
+                    started message.)</li>
+            </ul>
+        </dd>
+        <dd>The id is used to identify a timer after it has been started (e.g.
+            to stop it). Can be anything (no spaces), if it ends with <code>*</code>
+            an automatically generated number will be appended to make the id
+            unique if used more than once. If no id is specified an
+            automatically generated number without prefix will be used.
+            <ul>
+                <li><code>:abc</code> (the id is "abc")</li>
+                <li><code>:abc*</code> (the id might be "abc1", "abc2", "abc3", ...)</li>
+                <li><em>Not specified</em> (the id is an automatically generated number)</li>
+                <li>Full example: <code>/timer :abc 10m /echo hello</code>
+                    (outputs "hello" in 10 minutes, with the timer id "abc")</li>
+            </ul>
+        </dd>
+        <dd>The duration is in seconds by default, but you can also append a
+            time unit and several durations that get added up (no spaces):
+            <ul>
+                <li><code>5ms</code> (milliseconds)</li>
+                <li><code>5s</code> (seconds)</li>
+                <li><code>5m</code> (minutes)</li>
+                <li><code>5h</code> (hours)</li>
+                <li><code>5h10m</code> (5 hours 10 minutes)</li>
+                <li><code>5h10</code> (5 hours 10 minutes)</li>
+                <li><code>5h10m30</code> (5 hours 10 minutes 30 seconds)</li>
+                <li>Full example: <code>/timer 5h /echo hello</code> (outputs "hello" in 5 hours)</li>
+            </ul>
+        </dd>
+        <dd>An absolute time is written like a digital clock in 24hr format, a
+            date can be added in front, in which case it has to be enclosed in
+            <code>[ ]</code>. With no date specified the next occurence of the
+            time is used, so e.g. if it's already in the evening a time of 5 in
+            the morning would be on the next day:
+            <ul>
+                <li><code>5:30</code> (5:30 in the morning)</li>
+                <li><code>17:30</code> (5:30 in the afternoon)</li>
+                <li><code>5:30:50</code> (5:30 and 50 seconds in the morning)</li>
+                <li><code>[05:20:00]</code> (the time can also be enclosed in
+                    <code>[ ]</code>)</li>
+                <li><code>[2022-01-10 5:30]</code> (when including the date the
+                    <code>[ ]</code> is required and the date has to always be
+                    the full date in the format YYYY-MM-DD)</li>
+                <li>Full example: <code>/timer 16:30 /echo hello</code> (outputs
+                    the info message "hello" at 4:30 PM)</li>
+            </ul>
+        </dd>
+        <dd>Output info about currently active timers:
+            <ul>
+                <li><code>list</code> (Lists all timers, soonest to run first.)</li>
+                <li><code>-q list</code> (Same as above, but the list is in timer start order.)</li>
+                <li><code>:a* list</code> (Outputs information about timers with ids that begin with "a".)</li>
+                <li><code>list a*</code> (Same as above, but id in place of the timed command.)</li>
+                <li>Full example: <code>/timer list a*</code> (Shows all active timers with ids that begin with "a".)</li>
+            </ul>
+        </dd>
+        <dd>Stop active timers:
+            <ul>
+                <li><code>:abc1 stop</code> (Stops a timer with the id "abc1".)</li>
+                <li><code>stop abc1</code> (Same as above, but id in place of the timed command.)</li>
+                <li><code>:abc* stop</code> (Stops all timers with ids that begin with "abc".)</li>
+                <li><code>:* stop</code> (Stops all active timers.)</li>
+                <li>Full example: <code>/timer stop *</code> (Stops all active timers.)</li>
+            </ul>
+        </dd>
+    </dl>
+</body>
+</html>
