@@ -19,7 +19,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 /**
@@ -53,12 +52,13 @@ public class SearchDialog extends JDialog {
         }
         dialog.setChannel(channel);
         dialog.setVisible(true);
+        // I don't think this really changes anything, but just in case
+        dialog.pack();
     }
     
     private SearchDialog(final MainGui g, final Window owner) {
         super(owner);
         setTitle(Language.getString("searchDialog.title"));
-        setResizable(false);
         setLayout(new GridBagLayout());
  
         GridBagConstraints gbc = new GridBagConstraints();
@@ -66,10 +66,13 @@ public class SearchDialog extends JDialog {
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.insets = new Insets(5,5,5,5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
         
         add(searchText, gbc);
         gbc.gridx = 1;
+        gbc.weightx = 0;
         GuiUtil.smallButtonInsets(searchButton);
         searchButton.setFocusable(false);
         add(searchButton, gbc);
