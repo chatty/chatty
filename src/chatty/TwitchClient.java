@@ -2634,6 +2634,7 @@ public class TwitchClient {
                     
                     User targetUser = c.getUser(channel, data.targetUsername);
                     targetUser.addInfo("", data.makeInfo());
+                    g.updateUserinfo(targetUser);
                 }
             }
         }
@@ -2660,7 +2661,8 @@ public class TwitchClient {
             
             g.printLowTrustUserInfo(c.getUser(channel, data.username), data);
             User targetUser = c.getUser(channel, data.username);
-            targetUser.addInfo("", data.makeInfo());
+            targetUser.addLowTrust(data);
+            g.updateUserinfo(targetUser);
         }
         
     }

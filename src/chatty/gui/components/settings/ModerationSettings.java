@@ -333,6 +333,8 @@ public class ModerationSettings extends SettingsPanel {
                     SettingsDialog.makeNoGapGbc(0, 2, 1, 1, GridBagConstraints.WEST));
             add(makeOption(PastMessages.AUTO_MOD, "autoMod"),
                     SettingsDialog.makeNoGapGbc(1, 2, 1, 1, GridBagConstraints.WEST));
+            add(makeOption(PastMessages.LOW_TRUST, "lowTrust"),
+                    SettingsDialog.makeNoGapGbc(0, 3, 2, 1, GridBagConstraints.WEST));
         }
         
         private JCheckBox makeOption(int option, String labelKey) {

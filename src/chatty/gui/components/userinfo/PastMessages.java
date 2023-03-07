@@ -44,6 +44,7 @@ public class PastMessages extends JTextArea {
     public final static int REPEATED_MSG = 1 << 1;
     public final static int MOD_ACTION = 1 << 2;
     public final static int AUTO_MOD = 1 << 3;
+    public final static int LOW_TRUST = 1 << 4;
     
     public PastMessages(RepeatMsgHelper repeat, Settings settings) {
         setEditable(false);
@@ -82,7 +83,8 @@ public class PastMessages extends JTextArea {
     }
     
     private void endHighlight(int pos, int type) {
-        if (MiscUtil.isBitEnabled((int)settings.getLong("userMessagesHighlight"), type)) {
+        if (MiscUtil.isBitEnabled((int)settings.getLong("userMessagesHighlight"), type)
+                && pos > highlightStart) {
             highlights.put(highlightStart, pos);
         }
     }
@@ -98,9 +100,12 @@ public class PastMessages extends JTextArea {
             b.append(" lines are saved>\n");
         }
         String currentMsgText = user.getMessageText(currentMessageId);
+        String lowTrustInfo = null;
+        int messageCountSinceLowTrustInfo = 0;
         List<User.Message> messages = user.getMessages();
         int currentDay = 0;
         for (User.Message m : messages) {
+            messageCountSinceLowTrustInfo++;
             // Date separator
             LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(m.getTime()), ZoneId.systemDefault());
             if (date.getDayOfMonth() != currentDay) {
@@ -113,6 +118,21 @@ public class PastMessages extends JTextArea {
             // Messages
             if (m instanceof User.TextMessage) {
                 User.TextMessage tm = (User.TextMessage)m;
+                
+                if (tm.lowTrust != null) {
+                    if (lowTrustInfo == null
+                            || !lowTrustInfo.equals(tm.lowTrust.makeInfo())
+                            || messageCountSinceLowTrustInfo > 4) {
+                        lowTrustInfo = tm.lowTrust.makeInfo();
+                        b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("I ");
+                        startHighlight(b.length(), LOW_TRUST);
+                        b.append(lowTrustInfo);
+                        endHighlight(b.length(), LOW_TRUST);
+                        b.append("\n");
+                        messageCountSinceLowTrustInfo = 0;
+                    }
+                }
+                
                 int simPercentage = 0;
                 if (!StringUtil.isNullOrEmpty(currentMessageId)
                         && currentMessageId.equals(tm.id)) {
@@ -126,6 +146,18 @@ public class PastMessages extends JTextArea {
                     simPercentage = repeatHelper.getPercentage(user, tm.text, currentMsgText);
                 }
                 b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                if (tm.lowTrust != null) {
+                    startHighlight(b.length(), LOW_TRUST);
+                    switch (tm.lowTrust.treatment) {
+                        case ACTIVE_MONITORING:
+                            b.append("[M]");
+                            break;
+                        case RESTRICTED:
+                            b.append("[R]");
+                            break;
+                    }
+                    endHighlight(b.length(), LOW_TRUST);
+                }
                 if (simPercentage > 0) {
                     startHighlight(b.length() + 1, REPEATED_MSG);
                     b.append(" [").append(simPercentage).append("%]");
