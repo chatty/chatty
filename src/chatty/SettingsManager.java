@@ -257,7 +257,6 @@ public class SettingsManager {
         settings.addBoolean("ffzModIcon", true);
         settings.addBoolean("bttvEmotes", true);
         settings.addBoolean("seventv", true);
-        settings.addBoolean("showAnimatedEmotes", true);
         settings.addBoolean("animatedEmotes", true);
         settings.addLong("animationPause", 2);
         settings.addLong("animationPauseFrame", 2);
@@ -266,6 +265,7 @@ public class SettingsManager {
         settings.addList("favoriteEmotes", new ArrayList(), Setting.LIST);
         settings.addLong("smilies", 10);
         settings.addList("localEmotes", new ArrayList(), Setting.LIST);
+        settings.addBoolean("webp", true);
         
         settings.addString("emoji", "twemoji");
         settings.addBoolean("emojiReplace", true);

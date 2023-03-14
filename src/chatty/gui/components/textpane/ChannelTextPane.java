@@ -179,7 +179,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, USERICON_SCALE_FACTOR,
         CUSTOM_USERICON_SCALE_MODE, BOT_BADGE_ENABLED,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
-        PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, EMOTICONS_BTTV_SHOW_ANIMATED,
+        PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED,
         EMOTICONS_ANIMATED,
         SHOW_TOOLTIPS, SHOW_TOOLTIP_IMAGES, BOTTOM_MARGIN,
         
@@ -2908,10 +2908,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             if (main.emoticons.isEmoteIgnored(emoticon, IgnoredEmotes.CHAT)) {
                 continue;
             }
-            if (emoticon.isAnimated()
-                    && !styles.isEnabled(Setting.EMOTICONS_BTTV_SHOW_ANIMATED)) {
-                continue;
-            }
             Matcher m = emoticon.getMatcher(text);
             while (m.find()) {
                 // As long as this emoticon is still found in the text, add
@@ -3761,7 +3757,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             addSetting(Setting.BOT_BADGE_ENABLED, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE, true);
             addSetting(Setting.PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED, false);
-            addSetting(Setting.EMOTICONS_BTTV_SHOW_ANIMATED, false);
             addSetting(Setting.EMOTICONS_ANIMATED, false);
             addSetting(Setting.SHOW_TOOLTIPS, true);
             addSetting(Setting.SHOW_TOOLTIP_IMAGES, true);

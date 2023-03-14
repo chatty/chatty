@@ -191,9 +191,16 @@ public class FrankerFaceZParsing {
             int width = JSONUtil.getInteger(emote, "width", -1);
             int height = JSONUtil.getInteger(emote, "height", -1);
             String code = (String)emote.get("name");
+            
             JSONObject urls = (JSONObject)emote.get("urls");
+            boolean isAnimated = false;
+            if (emote.containsKey("animated")) {
+                urls = (JSONObject)emote.get("animated");
+                isAnimated = true;
+            }
             String url1 = (String)urls.get("1");
             String url2 = (String)urls.get("2");
+            
             int id = ((Number)emote.get("id")).intValue();
             
             // Creator
@@ -217,6 +224,7 @@ public class FrankerFaceZParsing {
             b.setCreator(creator);
             b.setStringId(String.valueOf(id));
             b.addStreamRestriction(streamRestriction);
+            b.setAnimated(isAnimated);
             b.addInfo(info);
             b.setSubType(subType);
             return b.build();

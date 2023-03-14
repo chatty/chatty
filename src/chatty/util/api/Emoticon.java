@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import chatty.util.api.CachedImage.CachedImageUser;
+import chatty.util.seventv.WebPUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -295,21 +296,34 @@ public class Emoticon {
         String result = url;
         result = result.replace("{{id}}", id);
         result = result.replace("{{image}}", factor + "x");
+        if (WebPUtil.shouldUseWebP()) {
+            result += ".webp";
+        }
         return result;
     }
     
     public String getFFZUrl(int factor) {
+        String gif = isAnimated() && !WebPUtil.shouldUseWebP() ? ".gif" : "";
         if (factor == 2 && urlX2 != null) {
-            return urlX2;
+            return urlX2+gif;
         }
-        return url;
+        return url+gif;
     }
     
     public String getSevenTVEmoteUrl(String id, int factor) {
         if (StringUtil.isNullOrEmpty(id) || StringUtil.isNullOrEmpty(url) || factor > 4) {
             return null;
         }
-        return url.replace("{size}", factor+"x");
+        String result = url.replace("{size}", factor+"x");
+        if (!WebPUtil.shouldUseWebP()) {
+            if (isAnimated()) {
+                result = result.replace(".webp", ".gif");
+            }
+            else {
+                result = result.replace(".webp", ".png");
+            }
+        }
+        return result;
     }
 
     /**

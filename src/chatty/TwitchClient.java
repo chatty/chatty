@@ -93,6 +93,7 @@ import chatty.util.settings.FileManager;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import chatty.util.seventv.SevenTV;
+import chatty.util.seventv.WebPUtil;
 import chatty.util.srl.SpeedrunsLive;
 import java.awt.Color;
 import java.io.File;
@@ -361,6 +362,11 @@ public class TwitchClient {
         
         LaF.setLookAndFeel(LaFSettings.fromSettings(settings));
         GuiUtil.addMacKeyboardActions();
+        
+        if (settings.getBoolean("webp")) {
+            WebPUtil.runIfWebPAvailable(() -> {});
+        }
+        WebPUtil.setUseWebP(settings.getBoolean("webp"));
         
         // Create GUI
         LOGGER.info("Create GUI..");

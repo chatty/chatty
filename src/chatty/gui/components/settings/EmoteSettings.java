@@ -94,6 +94,9 @@ public class EmoteSettings extends SettingsPanel {
         main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick"),
                 d.makeGbc(0, 5, 3, 1));
         
+        //--------------------------
+        // Animations
+        //--------------------------
         ComboLongSetting animatePauseSetting = d.addComboLongSetting("animationPause", 0, 1, 2);
         ComboLongSetting animatePauseFrameSetting = d.addComboLongSetting("animationPauseFrame", 0, 1, 2);
         
@@ -106,6 +109,20 @@ public class EmoteSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(main, "animationPauseFrame",
                 0, 7, 4, GridBagConstraints.WEST,
                 animatePauseFrameSetting);
+        
+        //--------------------------
+        // WebP
+        //--------------------------
+        JLabel webpTest = new JLabel("WebP not supported.");
+        main.add(webpTest,
+                SettingsDialog.makeGbc(2, 8, 3, 1, GridBagConstraints.WEST));
+        WebPUtil.runIfWebPAvailable(() -> {
+            webpTest.setText("WebP is supported.");
+        });
+        
+        main.add(
+                d.addSimpleBooleanSetting("webp"),
+                d.makeGbc(0, 8, 2, 1, GridBagConstraints.WEST));
         
         //==========================
         // Provider specific
@@ -178,9 +195,6 @@ public class EmoteSettings extends SettingsPanel {
         bttvSettings.add(d.addSimpleBooleanSetting("bttvEmotes"),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         
-        bttvSettings.add(d.addSimpleBooleanSetting("showAnimatedEmotes"),
-                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
-        
         SettingsUtil.topAlign(bttvSettings, 10);
         
         //--------------------------
@@ -188,20 +202,6 @@ public class EmoteSettings extends SettingsPanel {
         //--------------------------
         seventvSettings.add(d.addSimpleBooleanSetting("seventv"),
                 SettingsDialog.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
-        
-        JLabel webpTest = new JLabel();
-        seventvSettings.add(webpTest,
-                SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
-        providerSettingsTabs.addChangeListener(e -> {
-            if (providerSettingsTabs.getSelectedComponent().equals(seventvSettings)) {
-                if (webpTest.getText().isEmpty()) {
-                    webpTest.setText("Required WebP decoding not available.");
-                    WebPUtil.runIfWebPAvailable(() -> {
-                        webpTest.setText("Required WebP decoding available.");
-                    });
-                }
-            }
-        });
         
         SettingsUtil.topAlign(seventvSettings, 10);
 

@@ -33,6 +33,8 @@ public class WebPUtil {
     
     private static final List<Runnable> waiting = new ArrayList<>();
     
+    private static boolean useWebP;
+    
     private static boolean checking;
     private static boolean checked;
     private static boolean available;
@@ -80,6 +82,18 @@ public class WebPUtil {
                     }, "WebP Check").start();
                 }
             }
+        }
+    }
+    
+    public static void setUseWebP(boolean enabled) {
+        synchronized(LOCK) {
+            useWebP = enabled;
+        }
+    }
+    
+    public static boolean shouldUseWebP() {
+        synchronized(LOCK) {
+            return useWebP && isAvailable();
         }
     }
     

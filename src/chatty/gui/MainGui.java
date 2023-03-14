@@ -115,6 +115,7 @@ import javax.swing.event.MenuListener;
 import chatty.util.dnd.DockPopout;
 import chatty.util.gif.FocusUpdates;
 import chatty.util.gif.GifUtil;
+import chatty.util.seventv.WebPUtil;
 import java.util.function.Consumer;
 import org.json.simple.JSONValue;
 
@@ -5251,6 +5252,11 @@ public class MainGui extends JFrame implements Runnable {
                     emotesDialog.setEmoteImageType(Emoticon.makeImageType(bool));
                 } else if (setting.equals("matchingSubstitutesEnabled")) {
                     updateHighlight();
+                } else if (setting.equals("webp")) {
+                    if (bool) {
+                        WebPUtil.runIfWebPAvailable(() -> {});
+                    }
+                    WebPUtil.setUseWebP(bool);
                 }
                 if (setting.startsWith("title") || setting.equals("tabsChanTitles")) {
                     updateState(true);

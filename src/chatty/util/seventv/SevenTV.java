@@ -52,20 +52,16 @@ public class SevenTV {
         channel = Helper.toStream(channel);
         if (StringUtil.isNullOrEmpty(channel)) {
             // Global
-            WebPUtil.runIfWebPAvailable(() -> {
-                requestEmotes(Type.GLOBAL, null, null, forcedUpdate);
-            });
+            requestEmotes(Type.GLOBAL, null, null, forcedUpdate);
         }
         else {
             // Channel
             String stream = channel;
-            WebPUtil.runIfWebPAvailable(() -> {
-                api.getUserId(r -> {
-                    if (!r.hasError()) {
-                        requestEmotes(Type.CHANNEL, stream, r.getId(stream), forcedUpdate);
-                    }
-                }, stream);
-            });
+            api.getUserId(r -> {
+                if (!r.hasError()) {
+                    requestEmotes(Type.CHANNEL, stream, r.getId(stream), forcedUpdate);
+                }
+            }, stream);
         }
     }
     
@@ -156,9 +152,9 @@ public class SevenTV {
         try {
             String id = JSONUtil.getString(emoteObject, "id");
             String code = JSONUtil.getString(emoteObject, "name");
-            boolean animated = JSONUtil.getBoolean(emoteObject, "animated", false);
             
             JSONObject data = (JSONObject) emoteObject.get("data");
+            boolean animated = JSONUtil.getBoolean(data, "animated", false);
             JSONObject host = (JSONObject) data.get("host");
 
             File file = getFile(host);
@@ -172,7 +168,7 @@ public class SevenTV {
             Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.SEVENTV, code, file.url);
             b.setSize(width, height);
             b.setStringId(id);
-//            b.setAnimated(animated); // Have to check first what this affects
+            b.setAnimated(animated);
             
             if (stream != null) {
                 b.addStreamRestriction(stream);
