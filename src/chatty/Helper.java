@@ -72,6 +72,57 @@ public class Helper {
      * @param prepend Whether to prepend # if necessary
      * @return Set of channels sorted as in the String
      */
+
+
+    private static HashMap<String,Boolean> setPossibleChannelType(String[] catSplit, HashMap<String,Boolean> channelType){
+
+        for (int i = 1; i < catSplit.length; i++) {
+            if (catSplit[i].equals("#")) {
+                channelType.put("onlyChans",true);
+            }
+            else if (catSplit[i].equals("!#")) {
+                channelType.put("noChans",true);
+
+            }
+            else if (catSplit[i].equals("live")) {
+                channelType.put("onlyLive",true);
+            }
+        }
+        return channelType;
+    }
+
+    private static List<String> storePossibleChannelNamesToList(String cat, HashMap<String,Boolean> channelType){
+        List<String> chans = new ArrayList<>();
+        if (cat.equals("*")) {
+            chans = new ArrayList<>(parseChannelHelper.getFavorites());
+        }
+        else {
+            for (String name : parseChannelHelper.getNamesByCategory(cat)) {
+                if ((!channelType.get("noChans") || !name.startsWith("#"))
+                        && (!channelType.get("onlyChans") || name.startsWith("#"))) {
+                    chans.add(name);
+                }
+            }
+        }
+        return chans;
+    }
+
+    private static void getPossibleChannelNames(String channel, boolean prepend, Set<String> result){
+        String[] channelTypes = new String[]{"noChans","onlyChans","onlyLive"};
+        HashMap<String,Boolean> channelTypeHM = new HashMap<>();
+        for(String channelType: channelTypes){
+            channelTypeHM.put(channelType,false);
+        }
+        String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
+        String cat = catSplit[0];
+        channelTypeHM = setPossibleChannelType(catSplit,channelTypeHM);
+        List<String> chans = storePossibleChannelNamesToList(cat,channelTypeHM);
+        for (String chan : chans) {
+            if (!channelTypeHM.get("onlyLive") || parseChannelHelper.isStreamLive(Helper.toStream(chan))) {
+                addValidChannel(chan, prepend, result);
+            }
+        }
+    }
     public static Set<String> parseChannelsFromString(String channels, boolean prepend) {
         String[] parts = channels.split(",");
         Set<String> result = new LinkedHashSet<>();
@@ -82,39 +133,7 @@ public class Helper {
                 addValidChannel(channel, prepend, result);
             }
             else if (channel.startsWith("[") && channel.endsWith("]") && channel.length() > 2 && parseChannelHelper != null) {
-                String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
-                String cat = catSplit[0];
-                boolean noChans = false;
-                boolean onlyChans = false;
-                boolean onlyLive = false;
-                for (int i = 1; i < catSplit.length; i++) {
-                    if (catSplit[i].equals("#")) {
-                        onlyChans = true;
-                    }
-                    else if (catSplit[i].equals("!#")) {
-                        noChans = true;
-                    }
-                    else if (catSplit[i].equals("live")) {
-                        onlyLive = true;
-                    }
-                }
-                List<String> chans = new ArrayList<>();
-                if (cat.equals("*")) {
-                    chans = new ArrayList<>(parseChannelHelper.getFavorites());
-                }
-                else {
-                    for (String name : parseChannelHelper.getNamesByCategory(cat)) {
-                        if ((!noChans || !name.startsWith("#"))
-                                && (!onlyChans || name.startsWith("#"))) {
-                            chans.add(name);
-                        }
-                    }
-                }
-                for (String chan : chans) {
-                    if (!onlyLive || parseChannelHelper.isStreamLive(Helper.toStream(chan))) {
-                        addValidChannel(chan, prepend, result);
-                    }
-                }
+                getPossibleChannelNames(channel,prepend,result);
             }
         }
         return result;
