@@ -1686,8 +1686,9 @@ public class TwitchClient {
             }
         });
         commands.add("runin", p -> {
-            String[] split;
-            if (!p.hasArgs() || (split = p.getArgs().split(" ", 2)).length != 2) {
+            String[] split = p.getArgs().split(" ", 2);
+            Boolean isCommandIncomplete = !p.hasArgs() || split.length != 2;
+            if (isCommandIncomplete) {
                 g.printSystem("Usage: /runin [channel] [command]");
                 return;
             }
