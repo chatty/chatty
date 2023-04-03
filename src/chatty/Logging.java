@@ -126,7 +126,7 @@ public class Logging {
                 record.getSourceClassName(),
                 record.getSourceMethodName(),
                 record.getLevel().getName(),
-                getStacktraceForLogging(record.getThrown()));
+                StackTrace.getStacktraceForLogging(record.getThrown()));
         }
         
     }
@@ -137,7 +137,7 @@ public class Logging {
                 simpleFormatMessage(record),
                 record.getSourceClassName(),
                 record.getSourceMethodName(),
-                getStacktraceForLogging(record.getThrown()));
+                StackTrace.getStacktraceForLogging(record.getThrown()));
     }
     
     private static String simpleFormatMessage(LogRecord record) {
@@ -154,22 +154,6 @@ public class Logging {
         }
     }
     
-    public static String getStacktrace(Throwable t) {
-        StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
-        return sw.toString();
-    }
-    
-    public static String getStacktraceForLogging(Throwable t) {
-        if (t != null) {
-            try {
-                return "\n:"+getStacktrace(t);
-            } catch (Exception ex) {
-                return "\n:Error getting stacktrace";
-            }
-        }
-        return "";
-    }
     
     static class FileFilter implements Filter {
 
